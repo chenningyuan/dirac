@@ -50,6 +50,97 @@ def extract_time(time_string):
     total_time=secs+(60*mins)+(60*60*hours)
     return total_time
 
+def is_windows():
+    """
+    returns true if this machine is Windows operating system
+    """
+    import distutils.util
+    platform = distutils.util.get_platform()
+    if platform.find("win") == -1:
+        return False
+    else:
+        return True
+
+class extract_path_file:
+    """
+    general class which can separate the pure file name from its path
+    used (not only) for the backup procedure
+    """
+    def __init__(self):
+        self.pure_file_name = ''
+        self.pure_file_path = ''
+        self.short_file_path= ''
+        self.extracted = False
+    def get_path_file(self,full_file_name):
+        """
+        extracts file name and it's path (directory) by splitting string
+        """
+        from string import rfind
+        if is_windows():
+            string_to_find='\\' # Windows
+        else:
+            string_to_find='/' # Unix
+        position = full_file_name.rfind(string_to_find)
+        if (position+1 < len(full_file_name)) :
+            self.pure_file_name=full_file_name[position+1:len(full_file_name)]
+            self.pure_file_path=full_file_name[0:position]
+            self.extracted=True
+        else:
+            print 'can not extract'
+            self.extracted=False
+
+        if (len(self.pure_file_path) > 20):
+           max_len=12
+           temp_path=self.pure_file_path
+           len_tp=len(temp_path)
+           #print  temp_path 
+           self.short_file_path=temp_path[0:max_len]+'...'+temp_path[len_tp-max_len:len_tp]
+
+
+def backup_file(some_file,upto,iprint):
+    """
+    Important routine doing backup of the file "some_file", version up to
+    number "upto"
+    """
+    import os.path, shutil
+    def do_copy_print(backup_file_name,backup_file_name_p1):
+        shutil.copy(backup_file_name,backup_file_name_p1)
+        #         "file.n"  -->  "file.n+1"
+        pure_file_path='';pure_file_name=''
+        pure_file_path_p1='';pure_file_name_p1=''
+        result=extract_path_file()
+        result.get_path_file(backup_file_name)
+        result_p1=extract_path_file()
+        result_p1.get_path_file(backup_file_name_p1)
+        if (result.extracted is True and result_p1.extracted is True  and \
+            result.pure_file_path == result_p1.pure_file_path ) :
+            if (iprint >=3):
+                print 'backing up file:', result.pure_file_name,'-->',result_p1.pure_file_name,\
+            'in:',result.short_file_path
+            pass
+        else :
+            if (iprint >=3):
+                print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
+            pass
+
+#   backup-s file by copying it up to 'upto' version
+    upto_default = 7
+    if (upto is None):
+        upto = upto_default
+    for vers in range(upto-1,-1,-1):
+        backup_file_name=some_file+"."+str(vers)
+        backup_file_name_p1=some_file+"."+str(vers+1)
+        if (os.path.isfile(backup_file_name)):
+            do_copy_print(backup_file_name,backup_file_name_p1)
+    if (os.path.isfile(some_file)):
+        do_copy_print(some_file,backup_file_name)
+
+    epf=extract_path_file()
+    epf.get_path_file(some_file)
+    if (iprint >= 0):
+        print '  backed up file ',epf.pure_file_name
+
+
 # define example usage
 
 usage = '''
@@ -200,11 +291,12 @@ and absolute errors otherwise.</p>
 if not os.path.isdir('test/LOGS'):
     os.mkdir('test/LOGS')
 
+backup_file(some_file='test/LOGS/runtest.htm',upto=None,iprint=None)
 f = open('test/LOGS/runtest.htm', 'w')
 f.write(html_header)
 f.close()
 
-#miro: do backup first ?
+backup_file(some_file='test/LOGS/runtest.log',upto=None,iprint=None)
 pam_output_file = open('test/LOGS/runtest.log','w', 0)
 pam_output_file.write(" runtest pam outputs \n\n ") 
 
