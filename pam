@@ -757,7 +757,7 @@ class pam_enviroment:
                     print
                     print 'start sequential run (default) since --mpi=xxx has not been set.'
 
-        if os.path.isfile(options.dest_mpirun):
+        if os.path.isfile(str(options.dest_mpirun)):
             # todo : check functionality of mpirun ?
             self.mpirun = options.dest_mpirun
             self.parallel_run = True
