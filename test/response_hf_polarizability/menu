@@ -1,4 +1,4 @@
-dc.inp            H2O.mol
-bss.inp           H2O.mol
-bss+mfsso.inp     H2O.mol
-bss_rkb+mfsso.inp H2O.mol
+dc.inp            H2O.mol --timeout=1m
+bss.inp           H2O.mol --timeout=50s
+bss+mfsso.inp     H2O.mol --timeout=50s
+bss_rkb+mfsso.inp H2O.mol --timeout=50s
