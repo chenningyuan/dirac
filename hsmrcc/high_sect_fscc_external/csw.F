@@ -130,6 +130,7 @@ c     iopt(10) .ne.0 - do not write tape9
       call ordv_csw
       call ordta0_csw
 
+      ! miro: no convergence for CCSD/CCSDT, fix needed
       if (iopt(17).ne.0) then
         call calvw0_csw
         call move     ("v30 ","t33 ")
