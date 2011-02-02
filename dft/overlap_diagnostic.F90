@@ -384,7 +384,7 @@ contains
      diff = dabs((trace/nr_mo) - 1.0d0)
      diff_tolerance = 1.0d-4
      if (diff > diff_tolerance) then
-        call quit('avg O_ia trace significantly different from 1.0')
+        call quit('overlap_diagnostic: avg O_ia trace significantly different from 1.0')
      end if
 
    end subroutine
@@ -521,4 +521,4 @@ contains
 
    end subroutine
 
-end module
+end module overlap_diagnostic
