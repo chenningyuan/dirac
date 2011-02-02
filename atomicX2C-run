@@ -322,24 +322,24 @@ class run_frag:
      def get_fragment_name(self):
          return string.replace(self.mol,       '.mol', '' )
      def run_and_normal_exit(self):
-         mkdir_p(self.path_frag)
          os.chdir(self.path_frag)
          # run pam
          command = '%s/pam --inp=%s --mol=%s %s' \
              % (root_directory, self.inp, self.mol, self.pam_flags)
-         p = subprocess.Popen(command,
-                              shell=True,
-                              stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
-         
-         pam_output = p.communicate()[0]
-         pam_output_file.write(pam_output)
+#        p = subprocess.Popen(command,
+#                             shell=True,
+#                             stdin=subprocess.PIPE,
+#                             stdout=subprocess.PIPE)
+#        
+#        pam_output = p.communicate()[0]
+#        pam_output_file.write(pam_output)
          os.chdir(self.root_calc_path)
          # check whether DIRAC terminated normally
-         if 'exit           : normal' in pam_output:
-             return True
-         else:
-             return False
+#        if 'exit           : normal' in pam_output:
+#            return True
+#        else:
+#            return False
+         return True
 
      def print_result(self, progress, result_text, elapsed):
          """
@@ -347,7 +347,7 @@ class run_frag:
          """
          elapsed_str=time.strftime('%Mm%Ss', time.gmtime(elapsed))
          print '%10s %12s %32s %s' % \
-               (progress.rjust(10), result_text.rjust(12), self.get_fragment_name().rjust(32), elapsed_str.rjust())
+               (progress.rjust(10), result_text.rjust(12), self.get_fragment_name().rjust(32), elapsed_str.rjust(16))
 
      def copy_X2C_outputfiles(self):
          shutil.copy(self.path_frag      + '/' + 'X2CMAT',\
@@ -367,6 +367,7 @@ class run_frag:
          """
           write fragment inputs (.inp and .mol)
          """
+         os.chdir(self.path_frag)
          if not options.user_dirac_fragment_inp:
             f = file(self.inp,'w',0)
             f.write(dirac_frag_input_content)
@@ -375,6 +376,7 @@ class run_frag:
          f = file(self.mol,'w',0)
          f.write(mol_frag_input_content)
          f.close()
+         os.chdir(self.root_calc_path)
 
      def is_run(self):
          return True
@@ -518,16 +520,16 @@ print '  -----------------------------------------------------------------------
 # main function
 def main(*args):
 
-#   prepare for writing fragment files
+#   initialize marker list, atomic numbers and exponents for each fragment
     mol_orig_info = prepare_lists_for_x2c_fragment_mol(mol_file_lines, num_fragments)
 
     start_marker         = []
     end_marker           = []
     atomic_number_list   = []
     atomic_exponent_list = []
-    start_marker = mol_orig_info.prepare_startlist()
-    end_marker   = mol_orig_info.prepare_endmarkerlist(start_marker)
-    (atomic_number_list, atomic_exponent_list) =  mol_orig_info.prepare_Z_and_exponent_list(start_marker)
+    start_marker                               = mol_orig_info.prepare_startlist()
+    end_marker                                 = mol_orig_info.prepare_endmarkerlist(start_marker)
+    (atomic_number_list, atomic_exponent_list) = mol_orig_info.prepare_Z_and_exponent_list(start_marker)
     
     if options.being_verbose:
         print 'num_fragments is %i' % num_fragments
@@ -541,12 +543,11 @@ def main(*args):
         print atomic_exponent_list
 
 #   create a list of fragment tasks and prepare fragment inputs
+
     l             = []
     m             = []
     n             = []
     i             = 0
-    dirac_input   = ''
-    mol_input     = ''
     lookup_symbol = periodic_table_plus_ext()
     fraginp_lines = x2c_fragment_dirac_input()
     fragmol_lines = x2c_fragment_basis_set_input()
@@ -554,15 +555,18 @@ def main(*args):
     fragmol_lines.set_symmetry('')
 
     while i < num_fragments:
-#       .inp input
+        dirac_input   = ''
+        mol_input     = ''
+#       set the name of the .inp input and store content in n[]
         if options.user_dirac_fragment_inp:
             print '*** user-provided fragment inputs are not supported yet'
             sys.exit()
         else:
             dirac_input += lookup_symbol.get_element_symbol(atomic_number_list[i]) + '.inp'
             n.append(fraginp_lines.assemble_dirac_fragment_input())
-#       .mol input
+#       set the name of the .mol input
         mol_input       += lookup_symbol.get_element_symbol(atomic_number_list[i]) + '.mol'
+#       set the name of the .mol input and store its content in m[]
         frag_basis_set = ''
         for j in range (start_marker[i], (end_marker[i]+1)):
             frag_basis_set += mol_file_lines[j]
@@ -575,7 +579,7 @@ def main(*args):
         l.append(run_frag(cwd, x2c_fragment_scratch_files_path, dirac_input, mol_input))
         i += 1
 
-    sys.exit()
+#   sys.exit()
 
     # get number of actual x2c calculations (fragments + molecule)
 
@@ -591,62 +595,33 @@ def main(*args):
     nr_crashed          = 0
 
     for task in l:
+        mkdir_p(x2c_fragment_scratch_files_path)
         nr_of_x2c_runs_done += 1
+        task.write_fragment_inputs(n[nr_of_x2c_runs_done-1], m[nr_of_x2c_runs_done-1])
         start                = time.time()
-        task.write_fragment_inputs()
         if task.run_and_normal_exit():
-            if os.path.isfile('result/%s' % task.get_output_name()):
-                # overwrite reference files
-                if options.overwrite:
-                    os.system('cp %s result/%s' % (task.get_output_name(), task.get_output_name()))
-            
-                # create directory where outputs are compared
-                if not os.path.isdir('compare'):
-                    os.mkdir('compare')
-           
-                task.apply_filter() 
-            
-                if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
-                    result_text = 'OK'
-                    nr_ok += 1
-                else:
-                    result_text = 'FAIL'
-                    nr_failed += 1
-            else:
-                result_text = ' '
-                nr_without_ref += 1
+            result_text = 'done'
+            nr_ok += 1
         else:
-            result_text = 'CRASH'
+            result_text = 'failed'
             nr_crashed += 1
-
         elapsed = (time.time() - start)
-        global_elapsed = (time.time() - global_start)
 
-        progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-        task.print_result(progress, result_text, elapsed, global_elapsed) 
-        
-        if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
+        progress = '[%3i%s]' % (100.0*float(nr_of_x2c_runs_done)/float(total_nr_of_x2c_runs), r'%')
+        task.print_result(progress, result_text, elapsed)
+
+        task.copy_X2C_outputfiles()
+        task.clean_fragment_scratch_dir()
+
+        if nr_crashed > 0:
             print
-            print 'cowardly gave up after the first problem'
-            print '(fix your code or remove --giveup to continue)'
+            print 'cannot continue since %i fragment calculation(s) crashed' % nr_crashed
+            print 'check the fragment output for more information.'
             sys.exit(1)
-
-    print
-    print 'summary: %5i ok'                % nr_ok
-    if nr_failed > 0:
-         print '         %5i failed'            % nr_failed
-    if nr_crashed > 0:
-         print '         %5i crashed'           % nr_crashed
-    if nr_without_ref > 0:
-         print '         %5i without reference' % nr_without_ref
-    print
 
     pam_output_file.close()
 
-    # return code (for trac-bitten to get label of the failed test)
-    if   nr_failed > 0 :
-        return 2
-    elif nr_crashed > 0:
+    if nr_crashed > 0:
         return 3
     else:
         return 0
@@ -658,6 +633,6 @@ if __name__ == '__main__':
 # clean-up the scratch directory
 clean_fragment_directory = 'rm -rf '\
                          + x2c_fragment_scratch_files_path
-os.system(clean_fragment_directory)
+#os.system(clean_fragment_directory)
 pam_output_file.close()
 
