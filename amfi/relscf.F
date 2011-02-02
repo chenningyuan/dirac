@@ -3739,9 +3739,13 @@ C
       IF(IFLAG.GT.0) GO TO 115
 C
 C      PLACE EIGENVALUES IN EIVU
+      eigval_min = 1.0d0
       DO J=1,N
         EIVU(J)=A(J,J)
+        eigval_min = min(eigval_min,EIVU(J))
       END DO
+      if(eigval_min.le.0.0d0) call quit(' *** linear dependency 
+     &  detected you may want check your basis set input!***')
 
       RETURN
       END
