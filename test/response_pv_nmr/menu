@@ -1,4 +1,4 @@
-  shielding_dc.inp H2O2.mol --timeout=5m
+  shielding_dc.inp H2O2.mol --timeout=8m
   shielding_nr.inp H2O2.mol --timeout=3m
-spinspin_dc.inp  H2O2.mol --timeout=10m
+spinspin_dc.inp  H2O2.mol --timeout=17m
 spinspin_nr.inp  H2O2.mol --timeout=3m
