@@ -766,8 +766,8 @@ class pam_enviroment:
                 print 'parallel run TRUE !'
                 print 'assigned mpirun=', self.mpirun
         else:
-            print 'MPIRUN "', options.dest_mpirun, \
-                '" in the given default path is not available, pam continues with a serial run.'
+            #print 'MPIRUN "', options.dest_mpirun, \
+            #    '" in the given default path is not available, pam continues with a serial run.'
             self.parallel_build = False
             self.parallel_run = False
 
