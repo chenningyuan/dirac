@@ -734,16 +734,16 @@ class pam_enviroment:
     # miro: no read-in default for "--nw", as we need to check whether the parameter was set
     # take the default value from the previously set "self.max_memory_work_master"
 
-        if options.dest_nw is not None:
-            # own set value
+        if options.dest_nw:
+            # user value
             self.max_memory_work_slave = int(options.dest_nw)
         else:
-            # none value set - take the master setting
+            # default: same value as the master
             self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
 
-        if options.dest_mpi is not None:
+        if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
             self.parallel_run = True
             if self.iprint >= 5:
@@ -753,42 +753,37 @@ class pam_enviroment:
         else:
             self.parallel_run = False
             if self.parallel_build == True:
-                print
-                print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
-
-# radovan: it is always not none
-
-        if options.dest_mpirun is not None:
-            if os.path.isfile(options.dest_mpirun):
-                # todo : check functionality of mpirun ?
-                self.mpirun = options.dest_mpirun
-                self.parallel_run = True
-                self.parallel_build = True
                 if self.iprint >= 5:
-                    print 'parallel run TRUE !'
-                    print 'assigned mpirun=', self.mpirun
-            else:
-                print 'MPIRUN "', options.dest_mpirun, \
-                    '" you assigned is wrong, no parallel run !'
-                self.parallel_build = False
-                self.parallel_run = False
-        else:
-            pass
+                    print
+                    print 'start sequential run (default) since --mpi=xxx has not been set.'
 
-        if options.dest_mpiarg is not None:
+        if os.path.isfile(options.dest_mpirun):
+            # todo : check functionality of mpirun ?
+            self.mpirun = options.dest_mpirun
+            self.parallel_run = True
+            self.parallel_build = True
+            if self.iprint >= 5:
+                print 'parallel run TRUE !'
+                print 'assigned mpirun=', self.mpirun
+        else:
+            print 'MPIRUN "', options.dest_mpirun, \
+                '" in the given default path is not available, pam continues with a serial run.'
+            self.parallel_build = False
+            self.parallel_run = False
+
+        if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
             if self.iprint >= 5:
                 print 'assigned mpiarg=', self.mpiarg
 
-# radovan: it is always not none
-        if options.dest_machfile is not None:
+        if options.dest_machfile:
             self.machinefile = options.dest_machfile
 
      # todo: check it
             if self.iprint >= 5:
                 print 'assigned machinefile=', self.machinefile
 
-        if options.dest_install_dir is not None:
+        if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
                 install_dir = str(options.dest_install_dir)
                 if self.iprint >= 5:
@@ -799,7 +794,7 @@ class pam_enviroment:
         elif install_dir_default is None:
             sys.exit('The installation directory is not set ! Error exit !')
 
-        if options.dest_scratch is not None:
+        if options.dest_scratch:
             self.process_scratch_dir_name(scratch_dir_string=str(options.dest_scratch))
             if self.iprint >= 5:
                 print '\nassigned self.scratch_dir=',self.scratch_dir
@@ -852,7 +847,7 @@ class pam_enviroment:
         self.infock = options.dest_infock
         self.outfock = options.dest_outfock
 
-        if options.dest_fullrestart is not None:
+        if options.dest_fullrestart:
             self.archive_name = options.dest_fullrestart
             self.full_restart = True
             if self.iprint >= 5:
@@ -865,7 +860,7 @@ class pam_enviroment:
         if options.dest_debug:
             self.debug = True
 
-        if options.dest_debugger is not None:
+        if options.dest_debugger:
             if os.path.isfile(options.dest_debugger):
                 self.debugger = options.dest_debugger
             else:
