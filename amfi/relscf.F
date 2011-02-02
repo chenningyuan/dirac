@@ -3739,13 +3739,9 @@ C
       IF(IFLAG.GT.0) GO TO 115
 C
 C      PLACE EIGENVALUES IN EIVU
-      eigval_min = 1.0d0
       DO J=1,N
         EIVU(J)=A(J,J)
-        eigval_min = min(eigval_min,EIVU(J))
       END DO
-      if(eigval_min.le.0.0d0) call quit(' *** linear dependency 
-     &  detected you may want check your basis set input!***')
 
       RETURN
       END
@@ -3817,6 +3813,12 @@ C
         CALL JACVAO (DT,NBAS1,EPSI,V,THRSH)
 
 C$    INTRODUCE NEW VECTOR LOOP (INTERMEDIATE STORAGE OF TERM)
+        eigval_min = 1.0d0
+        DO I=1,NBAS1
+          eigval_min = min(eigval_min,EPSI(I))
+        END DO
+        if(eigval_min.le.0.0d0) call quit(' *** linear dependency 
+     &     detected you may want check your basis set input!***')
         DO I=1,NBAS1
           DT(I)=1.D0/DSQRT(EPSI(I))
         END DO
@@ -3920,19 +3922,19 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
            DO I=1,ILOOP
               IND=1
  29           CONTINUE
-              MIN=1
+              iMIN=1
               DO J=2,NBAS1
-                 IF (EPSI(MIN).GT.EPSI(J)) MIN=J
+                 IF (EPSI(iMIN).GT.EPSI(J)) iMIN=J
               END DO
               IF (ITOS.EQ.1) GO TO 28
               IF (IND.EQ.NSTEP2) GO TO 28
-              EPSI(MIN)=0.1D+39
+              EPSI(iMIN)=0.1D+39
               IND=IND+1
               GO TO 29
- 28           EPS(NSTEP1)=EPSI(MIN)
-              EPSI(MIN)=0.1D+39
+ 28           EPS(NSTEP1)=EPSI(iMIN)
+              EPSI(iMIN)=0.1D+39
               DO J=1,NBAS1
-                 JJ=NBAS1*(MIN-1)+J
+                 JJ=NBAS1*(iMIN-1)+J
                  C(J,NSTEP1)=DT(JJ)
               END DO
               NSTEP1=NSTEP1+1
