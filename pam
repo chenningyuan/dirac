@@ -861,7 +861,7 @@ class pam_enviroment:
             self.debug = True
 
         if options.dest_debugger:
-            if os.path.isfile(options.dest_debugger):
+            if os.path.isfile(str(options.dest_debugger)):
                 self.debugger = options.dest_debugger
             else:
                 print 'Debugger ', options.dest_debugger, \
@@ -1260,7 +1260,7 @@ class pam_enviroment:
             elif name == 'VALGRIND':
                 self.valgrind = value
             elif name == 'MPIRUN':
-                if os.path.isfile(value): #ulf: Does this make sense??
+                if os.path.isfile(value): #ulf: Does this make sense?? #miro: checking what is read
                     self.mpirun = value
                     self.parallel_build = True
                 else:
@@ -1393,7 +1393,7 @@ class pam_enviroment:
 
   # profile after the DIRAC execution- we are in the scratch directory
 
-        if os.path.isfile(self.f):
+        if os.path.isfile(str(self.f)):
             print 'profiling...'
             self.profile_command = self.profiler + ' ' + self.dirac_exe \
                 + ' ' + self.profiling_file
