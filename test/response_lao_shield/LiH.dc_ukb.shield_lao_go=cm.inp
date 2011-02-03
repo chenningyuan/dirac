@@ -51,6 +51,7 @@
 #.NOTWO
 #.SYMCON
 #.NOEPRN
+.DOEPRN
 #.NOLOND
 #.GAUGEO
 #0.0  0.0  0.0         
