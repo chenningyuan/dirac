@@ -666,8 +666,10 @@ dftsyncfunc_(int* amImaster)
         char* line = malloc(dft_conf_len);
         if(*amImaster)
             strcpy(line, DftConfString);
-
+       
         MPI_Bcast(line, dft_conf_len, MPI_CHAR, diracinfpar_.mparid, MPI_COMM_WORLD);
+        MPI_Bcast(&dcrham_.hfxmu,1,MPI_DOUBLE,diracinfpar_.mparid,MPI_COMM_WORLD);
+
         if(!*amImaster)
             dftinput_(line, &success, dft_conf_len);
 
