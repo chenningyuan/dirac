@@ -319,18 +319,13 @@ class run_frag:
              print 'options passed on to \"pam\": %s' % pam_flags_extra
 
      def get_output_name(self):
-         (inp_file_strip, mol_file_strip) = self.get_short_inp_names()
+         (inp_file_strip, mol_file_strip) = stripped_names(self.inp, self.mol)
          return '%s_%s.out' % (inp_file_strip, mol_file_strip)
-     def get_short_inp_names(self):
-         inp_file_strip = string.replace(self.inp,       '.inp', '')
-         mol_file_strip = string.replace(self.mol,       '.mol', '')
-         mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
-         return inp_file_strip, mol_file_strip
      def get_fragment_name(self):
          return string.replace(self.mol,       '.mol', '' )
      def run_and_normal_exit(self, full_pam_flags):
          os.chdir(self.path_frag)
-         (input, basis) = self.get_short_inp_names()
+         (input, basis) = stripped_names(self.inp, self.mol)
          # run pam
          command = '%s/pam --inp=%s --mol=%s %s' \
              % (root_directory, input, basis, full_pam_flags)
@@ -387,7 +382,7 @@ class run_frag:
                   sys.exit(1)
              i += 1
 
-         (name1, name2) = self.get_short_inp_names()
+         (name1, name2) = stripped_names(self.inp, self.mol) 
 
          if os.path.isfile(self.root_calc_path + '/' + name1 + '.inp'):
              shutil.copy(self.root_calc_path + '/' + name1 + '.inp',\
@@ -459,20 +454,27 @@ class run_frag:
 # function definitions
 def get_original_molfile_content(orig_mol_file):
 
-    mol_file_strip     = string.replace(orig_mol_file,  '.mol', '')
-    mol_file_strip     = string.replace(mol_file_strip, '.xyz', '')
-    molecule_file_full = mol_file_strip + '.mol'
-    if os.path.isfile(molecule_file_full):
-        mol_file_lines = []
-        f = open(molecule_file_full, 'r')
-        for line in f.readlines():
-            mol_file_lines.append(line.strip('\n'))
-        f.close()
-    else:
-        print 'molecular input file for the full system %s does not exist, please check your input'\
-             % molecule_file_full
-        sys.exit()
+    mol_file_lines        = []
+    (bla, mol_file_strip) = stripped_names('bla', orig_mol_file)
+    f = open(mol_file_strip + get_original_molfile_extension(mol_file_strip) , 'r')
+    for line in f.readlines():
+        mol_file_lines.append(line.strip('\n'))
+    f.close()
+    
     return mol_file_lines
+
+def get_original_molfile_extension(mol_file_strip):
+
+    if os.path.isfile(mol_file_strip + '.mol'):
+        extension = '.mol'
+    elif os.path.isfile(mol_file_strip + '.xyz'):
+        extension = '.xyz'
+    else:
+        print 'neither a %s nor a %s molecular input file for the full system does exist, please check your input.'\
+             % (mol_file_strip + '.mol' , mol_file_strip + '.xyz')
+        sys.exit(1)
+
+    return extension
 
 def check_original_molfile_content_and_get_num_fragments(mol_file_lines):
 
