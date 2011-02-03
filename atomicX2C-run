@@ -13,14 +13,18 @@
 #    to yield an approximate molecular one.
 #
 #
-# Written by  :  Stefan Knecht, Denmark, Jan 2011 - ?
-#                report problems/bugs to knecht@ifk.sdu.dk
+# Written by   :  Stefan Knecht, Denmark, Jan 2011 - ?
+#                 report problems/bugs to knecht@ifk.sdu.dk
 #
-#                version 0.1: 03.02.2011
+#                 version 0.1: 03.02.2011
 #
-# Contributors:  Radovan Bast, Norway (structure adapted from runtest)
-#                Andre Gomes,  France (thanks for the periodic table)
+# Contributors :  Radovan Bast, Norway (structure adapted from runtest)
+#                 Andre Gomes,  France (thanks for the periodic table)
 #
+# x2c wish list:  1. full support for .xyz molecular input files.
+#                 2. full support for user-provided Dirac input files.
+#                 3. automatic check for existing X2CMAT."fragment" files which 
+#                    would allow us to skip the atomic x2c run for a given fragment.
 
 import os
 import errno
