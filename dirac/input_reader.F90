@@ -919,8 +919,9 @@ contains
 
     call reset_available_kw_list()
 
-    if (kw_matches(word, '.FRAx2c')) then
-      x2cmod_fragment_x2c = .true.
+    if (kw_matches(word, '.FGMx2c')) then
+!     x2cmod_fragment_x2c = .true.
+      x2cmod_fragment_x2c = .false.
     end if
 
     if (kw_matches(word, '.PRINT ')) then
