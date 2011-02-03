@@ -732,6 +732,10 @@ class pam_enviroment:
     
         if len(sys.argv) == 1: #   user has given no arguments: print help and exit    
             print parser.format_help().strip()
+            print
+            print '  further information on Dirac calculations may be found at:'
+            print '  http://wiki.chem.vu.nl/dirac/index.php/Dirac_Program'
+            print
             sys.exit()
 
         self.iprint = int(options.dest_iprint)
