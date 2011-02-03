@@ -387,7 +387,7 @@ def main(*args):
     nr_crashed       = 0
     nr_failed        = 0
     nr_without_ref   = 0
-    global_start = time.time()
+    global_elapsed   = 0.0
 
     for task in l:
         if task.is_shell_command():
@@ -421,7 +421,7 @@ def main(*args):
                 nr_crashed += 1
 
             elapsed = (time.time() - start)
-            global_elapsed = (time.time() - global_start)
+            global_elapsed += elapsed
 
             # check whether quick is quick and regular is not quick
             # if not suggest change in todo.txt
