@@ -48,6 +48,7 @@ import stat
 import time
 import fileinput
 import datetime
+import platform
 
 global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
@@ -73,6 +74,9 @@ class pam_enviroment:
     def __init__(self):
         '''Initialize the global set of variables'''
         from common import get_username, get_hostname, get_hostname_ip
+
+        # returns the name of the operating system, empty if it cannot be determined
+        self.operating_system = platform.system()
 
         # print level
         self.iprint = 1
@@ -109,9 +113,16 @@ class pam_enviroment:
 
         self.parallel_build = False  # parallel build - read from Makefile.config
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
-        self.mpirun = ''  # MPIRUN launcher
         self.mpiarg = ''  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
+ 
+        # depending on the operating_system, we set a default for the MPI launcher
+        # Linux, Windows, ...
+        if self.operating_system != 'AIX':
+            self.mpirun = 'mpirun'
+        #   IBM
+        else:
+            self.mpirun = 'poe'
 
     #   local disks for parallel calculations (to be set by configure)   #
 
@@ -268,13 +279,14 @@ class pam_enviroment:
 
     def show_settings(self):
         "Print current settings to stdout"
+        print "Operating system:     " + self.operating_system
         print "Current settings:"
         print "  Install directory   " + self.dirac_home
         print "  Basis directories   " + self.basdir
         print "  Scratch directory   " + self.scratch_dir
         print "  Parallel build      " + str(self.parallel_build)
         if self.parallel_build:
-            print "    mpirun            " + str(self.mpirun)
+            print "    mpi launcher      " + str(self.mpirun)
             print "    mpirun extra args " + str(self.mpiarg)
             print "    Local disks       " + str(self.localdisks)
             print "    Machine file      " + self.machinefile
@@ -761,7 +773,7 @@ class pam_enviroment:
                     print 'start sequential run (default) since --mpi=xxx has not been set.'
 
         if options.dest_mpirun:
-            # agreed: no verification of mpirun, it's user's responsibility
+            # set mpirun command, use default otherwise
             self.mpirun = options.dest_mpirun
             self.parallel_run = True
             self.parallel_build = True
@@ -1258,8 +1270,6 @@ class pam_enviroment:
             elif name == 'VALGRIND':
                 self.valgrind = value
             elif name == 'MPIRUN':
-                # agreed: no verifycation of read-in value
-                self.mpirun = value
                 self.parallel_build = True
             elif name == 'LOCALDISKS':
                 if value == 'yes':
