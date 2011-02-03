@@ -1067,7 +1067,7 @@ class pam_enviroment:
             try:
                 machinefile_content = os.environ[machinefile_temp]
             except:
-                print 'The ', self.machinefile, \
+                print '  The ', self.machinefile, \
                     ' enviroment variable for machinefile not active (no batch system).'
             if self.iprint >= 4:
                 print 'machinefile enviromental variable points to', \
@@ -1113,7 +1113,7 @@ class pam_enviroment:
                         os.system(self.rsh + ' ' + node + ' "ls -l '
                                   + self.scratch_dir + ' "')
         else:
-            print 'All CPUs are on the master, no distribution of scratch_dir over different nodes.'
+            print '  All CPUs are on the master, no distribution of scratch_dir over different nodes.'
 
     def set_output_file(self):
         '''Set the name of the output file by using "self.output_name"
@@ -1267,7 +1267,7 @@ class pam_enviroment:
                     self.mpirun = value
                     self.parallel_build = True
                 else:
-                    print 'MPIRUN launcher in Makefile.config in not existing !'
+                    print 'MPIRUN launcher in Makefile.config is wrong, please check:',value
                     self.parallel_build = False
                     pass
             elif name == 'LOCALDISKS':
@@ -1562,7 +1562,7 @@ class pam_enviroment:
     # warning message on # of proc >1
 
         if not self.parallel_build and int(self.nr_proc) >= 1:
-            print 'This is serial run (no or wrong MPIRUN assigned), the flag --mpi=', \
+            print '  This is serial run (no or wrong MPIRUN assigned), the flag --mpi=', \
                 self.nr_proc, ' has no meaning.'
             print
 
