@@ -314,7 +314,7 @@ class run_frag:
                  pam_flags_extra += '--nobackup --silent ' 
              else:
                  pam_flags_extra += '--nobackup ' 
-         self.pam_flags = pam_flags_extra
+         self.pam_flags = pam_flags_extra + ' '
          if options.being_verbose:
              print 'options passed on to \"pam\": %s' % pam_flags_extra
 
