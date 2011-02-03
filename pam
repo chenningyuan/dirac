@@ -117,12 +117,12 @@ class pam_enviroment:
         self.nr_proc = 0  # number of processors, default 0-serial run
  
         # depending on the operating_system, we set a default for the MPI launcher
-        # Linux, Windows, ...
-        if self.operating_system != 'AIX':
-            self.mpirun = 'mpirun'
+        if self.operating_system == 'AIX':
         #   IBM
-        else:
             self.mpirun = 'poe'
+        else:
+        #   Linux, Windows, ...
+            self.mpirun = 'mpirun'
 
     #   local disks for parallel calculations (to be set by configure)   #
 
