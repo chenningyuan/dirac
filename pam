@@ -306,10 +306,13 @@ class pam_enviroment:
             print 'self.scratch_dir=', self.scratch_dir
 
     def create_scratch_dir(self):
+        """   
+         create the scratch directory if it not exist
+        """
         if not os.path.isdir(self.scratch_dir):
             os.mkdir(self.scratch_dir)
         else:
-            print 'The scratch directory ', self.scratch_dir, ' exists.'
+            print '  The scratch directory already exists.'
 
     def copy_file(self, src, dest):
         """copy file from directory "scr" to "dest"

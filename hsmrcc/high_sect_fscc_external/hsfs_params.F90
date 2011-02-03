@@ -30,7 +30,7 @@ subroutine assign_hsfs_parameters
 !---------------------------------------------------------------------------------------------
 ! very important - assign dimensions of arrays for various allocations
 !
-! MUST be the first calling 
+! MUST be the very first calling 
 !---------------------------------------------------------------------------------------------
 #include "priunit.h"
 
@@ -40,7 +40,8 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
 !  nbig = 20000000
  !nbig =  90000000
  !nbig  = 240000000
- nbig  = 600000000
+ !nbig  = 600000000
+ nbig  = 300000000
 
  ndij = 960000
 
