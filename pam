@@ -181,12 +181,11 @@ class pam_enviroment:
     # memory allocation
 
         self.default_memory_work_master = 64
-        self.default_memory_work_slave = self.default_memory_work_master
-        self.default_memory_dynamic = 0
 
         self.max_memory_work_master = self.default_memory_work_master
-        self.max_memory_work_slave = self.default_memory_work_slave
-        self.max_memory_dynamic = self.default_memory_dynamic
+        self.max_memory_work_slave  = self.default_memory_work_master
+        self.default_memory_dynamic = 0
+        self.max_memory_dynamic     = self.default_memory_dynamic
 
         self.full_restart = False
         self.archive_name = ''
@@ -463,19 +462,19 @@ class pam_enviroment:
 
         parser = OptionParser(usage)
 
-        group = OptionGroup(parser, 'Input and molecule files')
+        group = OptionGroup(parser, 'Input files - mandatory specifications')
         group.add_option('--inp', type='string', action='store',
-                         dest='inp_file', help='input file *.inp')
+                         dest='inp_file', help='Dirac input file containing the job directives [*.inp]')
         group.add_option('--mol', type='string', action='store',
                          dest='mol_file',
-                         help='molecule file *.mol or *.xyz')
+                         help='file containing the basis set and geometry specifications [*.mol or *.xyz]')
         group.add_option(
             '--fullrestart',
             type='string',
             action='store',
             dest='dest_fullrestart',
-            help="""all files from ARCHIVE.tgz are unpacked,
-                    not just DFCOEF - this allows you to omit --inp and --mol
+            help="""restart from files within ARCHIVE.tgz; 
+                    no \"--inp\" and \"--mol\" specifications needed.
                  """,
             metavar='ARCHIVE.tgz',
             )
@@ -509,8 +508,7 @@ class pam_enviroment:
             dest='dest_mw',
             default=self.default_memory_work_master,
             help="""set max memory (in megawords) for WORK array
-                     for the master (and slaves if --nw not specified)
-                     [default: %default]
+                    for the master [default: %default]
                   """,
             metavar='INTEGER',
             )
@@ -519,9 +517,9 @@ class pam_enviroment:
             type='int',
             action='store',
             dest='dest_nw',
+            default=self.max_memory_work_slave,
             help="""set max memory (in megawords) for WORK array
-                     for the slaves
-                     [default: the same set value as for Master ]
+                    for the co-workers [default: %default]
                   """,
             metavar='INTEGER',
             )
@@ -538,17 +536,58 @@ class pam_enviroment:
             )
         parser.add_option_group(group)
 
-        group = OptionGroup(parser, 'Scratch directory')
-   
-        default_scratch_help='set scratch directory [default:'+self.scratch_path+'/<loginname.mol_inp>.PID]'
+
+        group = OptionGroup(parser, 'MPI settings')
         group.add_option(
-            '--scratch',
+            '--mpi',
+            type='int',
+            action='store',
+            dest='dest_mpi',
+            default=0,
+            help='set number of cores in parallel run [default: %default]',
+            metavar='INTEGER',
+            )
+
+        help_mpirun='set MPI launcher, otherwise taken from your $PATH.'
+        group.add_option(
+            '--mpirun',
             type='string',
             action='store',
-            dest='dest_scratch',
-            help=default_scratch_help,
-            metavar='FULL_PATH',
+            dest='dest_mpirun',
+            help=help_mpirun,
+            metavar='STRING',
             )
+        
+        group.add_option(
+            '--mpiarg',
+            type='string',
+            action='store',
+            dest='dest_mpiarg',
+            default=None,
+            help='additonal options passed on to the MPI launcher [default: %default]',
+            metavar='STRING',
+            )
+
+        help_machfile="""specify a machinefile for a parallel run 
+                         [default: %default]
+                  """
+        if len(self.machinefile)>0:
+            help_machfile_note=''+self.machinefile+''
+        else:
+            help_machfile_note='None'
+        group.add_option(
+            '--machfile',
+            type='string',
+            action='store',
+            dest='dest_machfile',
+            help=help_machfile,
+            default=help_machfile_note,
+            metavar='STRING',
+            )
+        parser.add_option_group(group)
+
+        group = OptionGroup(parser, 'Managing data/file transfer')
+   
         group.add_option(
             '--put',
             '--copy',
@@ -588,62 +627,19 @@ class pam_enviroment:
                          )
         parser.add_option_group(group)
 
-        group = OptionGroup(parser, 'MPI parallelization')
-        group.add_option(
-            '--mpi',
-            type='int',
-            action='store',
-            dest='dest_mpi',
-            default=None,
-            help='set number of cores [default: %default]',
-            metavar='INTEGER',
-            )
-
-        help_mpirun='set MPI launcher, default is to use MPIRUN set in Makefile.config'
-        if len(self.mpirun)>0:
-            help_mpirun_note=' ['+self.mpirun+']'
-        else:
-            help_mpirun_note=' [none]'
-        help_mpirun=help_mpirun+help_mpirun_note
-        group.add_option(
-            '--mpirun',
-            type='string',
-            action='store',
-            dest='dest_mpirun',
-            help=help_mpirun,
-            metavar='STRING',
-            )
-        
-        group.add_option(
-            '--mpiarg',
-            type='string',
-            action='store',
-            dest='dest_mpiarg',
-            help='additonal arguments for the MPI launcher, default - none',
-            metavar='STRING',
-            )
-
-        help_machfile="""set machinefile for parallel run
-                     default is to use the machinefile set in Makefile.config
-                  """
-        if len(self.machinefile)>0:
-            help_machfile_note=' ['+self.machinefile+']'
-        else:
-            help_machfile_note=' [none]'
-        help_machfile=help_machfile+help_machfile_note
-        group.add_option(
-            '--machfile',
-            type='string',
-            action='store',
-            dest='dest_machfile',
-            help=help_machfile,
-            metavar='STRING',
-            )
-        parser.add_option_group(group)
-
 #   radovan: this can be evaluated from sys.argv[0]
 
-        group = OptionGroup(parser, 'Modify default locations')
+        group = OptionGroup(parser, 'Modify default paths and settings')
+
+        default_scratch_help='set scratch directory [default:'+self.scratch_path+'/<loginname.mol_inp>.PID]'
+        group.add_option(
+            '--scratch',
+            type='string',
+            action='store',
+            dest='dest_scratch',
+            help=default_scratch_help,
+            metavar='FULL_PATH',
+            )
         group.add_option(
             '--installdir',
             type='string',
@@ -674,7 +670,7 @@ class pam_enviroment:
         parser.add_option_group(group)
 
         group = OptionGroup(parser,
-                            'Advanced (programming, debugging, and automation)'
+                            'Advanced options for programming and debugging'
                             )
         group.add_option('--show', action='store_true',
                          dest='just_show_settings', default=False,
@@ -750,48 +746,41 @@ class pam_enviroment:
     # take the default value from the previously set "self.max_memory_work_master"
 
         if options.dest_nw:
-            # user value
+            # user value, use default otherwise
             self.max_memory_work_slave = int(options.dest_nw)
-        else:
-            # default: same value as the master
-            self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
 
         if options.dest_mpi:
-            self.nr_proc = int(options.dest_mpi)
+            self.nr_proc      = int(options.dest_mpi)
             self.parallel_run = True
             if self.iprint >= 5:
                 print 'assigned self.nr_proc=', self.nr_proc
                 print 'assigned self.self.parallel_run=', \
                     self.parallel_run
-        else:
-            self.parallel_run = False
-            if self.parallel_build == True:
+
+            if options.dest_mpirun:
+              # set the mpi launcher, use default otherwise
+                self.mpirun = options.dest_mpirun
                 if self.iprint >= 5:
-                    print
-                    print 'start sequential run (default) since --mpi=xxx has not been set.'
+                    print 'assigned mpirun=', self.mpirun
 
-        if options.dest_mpirun:
-            # set mpirun command, use default otherwise
-            self.mpirun = options.dest_mpirun
-            self.parallel_run = True
-            self.parallel_build = True
+            if options.dest_mpiarg:
+                self.mpiarg = options.dest_mpiarg
+                if self.iprint >= 5:
+                    print 'assigned mpiarg=', self.mpiarg
+
+            if options.dest_machfile:
+                self.machinefile = options.dest_machfile
+
+                if self.iprint >= 5:
+                    print 'assigned machinefile=', self.machinefile
+
+        else:
             if self.iprint >= 5:
-                print 'parallel run TRUE !'
-                print 'assigned mpirun=', self.mpirun
+                print
+                print 'start sequential run (default); --mpi=xxx has not been specified.'
 
-        if options.dest_mpiarg:
-            self.mpiarg = options.dest_mpiarg
-            if self.iprint >= 5:
-                print 'assigned mpiarg=', self.mpiarg
-
-        if options.dest_machfile:
-            self.machinefile = options.dest_machfile
-
-     # todo: check it
-            if self.iprint >= 5:
-                print 'assigned machinefile=', self.machinefile
 
         if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
@@ -1167,12 +1156,7 @@ class pam_enviroment:
 
         this_dirac_exe = self.scratch_dir + '/dirac.x'
 
-#   radovan: if self.parallel_build == False,
-#            then self.parallel_run should be set to False
-#            and only self.parallel_run should be checked
-#            no reason to check both several times
-
-        if self.parallel_run and self.parallel_build:
+        if self.parallel_run:
 
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
@@ -1528,12 +1512,7 @@ class pam_enviroment:
 
     def print_header(self):
 
-#   radovan: if self.parallel_build == False,
-#            then self.parallel_run should be set to False
-#            and only self.parallel_run should be checked
-#            no reason to check both several times
-
-        if self.parallel_run and self.parallel_build:
+        if self.parallel_run:
             dirac_run = 'parallel ( launcher:'+self.mpirun+')'
         else:
             dirac_run = 'serial'
@@ -1559,13 +1538,6 @@ class pam_enviroment:
             print '  Allowed runtime:', self.timeout, \
                 ' seconds. Killing afterwards.'
         print
-
-    # warning message on # of proc >1
-
-        if not self.parallel_build and int(self.nr_proc) >= 1:
-            print '  This is serial run (no or wrong MPIRUN assigned), the flag --mpi=', \
-                self.nr_proc, ' has no meaning.'
-            print
 
         sys.stdout.flush()
     
