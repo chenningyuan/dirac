@@ -3,7 +3,7 @@
 #
 # Python replacement of the previous bash-written pam(.sh) script
 #
-# Reads crucial data from Makefile.config (to be replaced by some python module ?)
+# Reads some crucial data from Makefile.config
 #
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
@@ -760,19 +760,14 @@ class pam_enviroment:
                     print
                     print 'start sequential run (default) since --mpi=xxx has not been set.'
 
-        if os.path.isfile(str(options.dest_mpirun)):
-            # todo : check functionality of mpirun ?
+        if options.dest_mpirun:
+            # agreed: no verification of mpirun, it's user's responsibility
             self.mpirun = options.dest_mpirun
             self.parallel_run = True
             self.parallel_build = True
             if self.iprint >= 5:
                 print 'parallel run TRUE !'
                 print 'assigned mpirun=', self.mpirun
-        else:
-            #print 'MPIRUN "', options.dest_mpirun, \
-            #    '" in the given default path is not available, pam continues with a serial run.'
-            self.parallel_build = False
-            self.parallel_run = False
 
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
@@ -1263,13 +1258,9 @@ class pam_enviroment:
             elif name == 'VALGRIND':
                 self.valgrind = value
             elif name == 'MPIRUN':
-                if os.path.isfile(value): #ulf: Does this make sense?? #miro: checking what is read
-                    self.mpirun = value
-                    self.parallel_build = True
-                else:
-                    print 'MPIRUN launcher in Makefile.config is wrong, please check:',value
-                    self.parallel_build = False
-                    pass
+                # agreed: no verifycation of read-in value
+                self.mpirun = value
+                self.parallel_build = True
             elif name == 'LOCALDISKS':
                 if value == 'yes':
                     self.localdisks = True
@@ -1533,7 +1524,7 @@ class pam_enviroment:
 #            no reason to check both several times
 
         if self.parallel_run and self.parallel_build:
-            dirac_run = 'parallel'
+            dirac_run = 'parallel ( launcher:'+self.mpirun+')'
         else:
             dirac_run = 'serial'
         print
