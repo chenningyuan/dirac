@@ -657,7 +657,8 @@ dftsyncfunc_(int* amImaster)
     int success; /* jvs: this is not used !!! */
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
-    if(diracinfpar_.nodes==0||Initialized) return;
+    MPI_Bcast(&dcrham_.hfxmu,1,MPI_DOUBLE,diracinfpar_.mparid,MPI_COMM_WORLD);
+    if(diracinfpar_.nodes==0||Initialized) return; 
     MPI_Bcast(&do_alda_hs,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&do_alda_ha,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&do_xalda,     1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
@@ -668,7 +669,6 @@ dftsyncfunc_(int* amImaster)
             strcpy(line, DftConfString);
        
         MPI_Bcast(line, dft_conf_len, MPI_CHAR, diracinfpar_.mparid, MPI_COMM_WORLD);
-        MPI_Bcast(&dcrham_.hfxmu,1,MPI_DOUBLE,diracinfpar_.mparid,MPI_COMM_WORLD);
 
         if(!*amImaster)
             dftinput_(line, &success, dft_conf_len);
