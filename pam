@@ -84,7 +84,7 @@ class pam_enviroment:
 
         self.just_show_settings = False
 
-     # ## contains installation directory ...
+     #  installation directory ...
 
         self.dirac_home = install_dir
 
@@ -94,19 +94,21 @@ class pam_enviroment:
         self.basdir = '.:' + install_dir_default + '/basis:' \
             + install_dir_default + '/basis_dalton'
 
+
+    # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
     # ... variables related to the scratch directory
 
         self.scratch_dir = ''
-        self.scratch_path = '/tmp'
-        self.keep_scratch = False
+        self.scratch_path = '/tmp'  # default scratch on most servers
+        self.keep_scratch = False   # default - delete the scratch after the job
         self.create_scratch_dir_name = True
 
     # ... current PID to have unique string for each pam run; TODO: get also short random string ?
         self.current_pid=os.getpid()
    
-    # .. dirac.x subprocess variable
+    # .. dirac.x subprocess variable (pointer)
         self.dirac_p=None
 
     # ... variables related to parallel calculations
@@ -124,7 +126,7 @@ class pam_enviroment:
         #   Linux, Windows, ...
             self.mpirun = 'mpirun'
 
-    #   local disks for parallel calculations (to be set by configure)   #
+    #   wanted local disks for parallel calculations (set by configure) ?  #
 
         self.localdisks = False
 
