@@ -338,15 +338,25 @@ class pam_enviroment:
 
         epf_src = extract_path_file()
         epf_src.get_path_file(src)
-
-        shutil.copy(src, dest)
-        if self.iprint > 0:
-            print '  Copying file ', epf_src.pure_file_name, \
+      
+        # miro: to get clear error message one has to adapt try-except
+        try:
+            shutil.copy(src, dest)
+            if self.iprint > 0:
+                print '  Copying file ', epf_src.pure_file_name, \
                 ' to the scratch directory (as ', epf_dest.pure_file_name, \
                 ').'
-        if self.iprint >= 3:
-            print ' src full path:', src
-            print 'dest full path:', dest
+            if self.iprint >= 3:
+                print ' src full path:', src
+                print 'dest full path:', dest
+        except:
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,\
+               'Copying of files - shutil.copy(src, dest) - failed, error exit !'
+                print >> stream,' src full path:', src
+                print >> stream,'dest full path:', dest
+                print >> stream,'  input dir      :', self.input_directory
+                sys.exit(13)
 
     def process_scratch_dir_name(self,scratch_dir_string):
         """ Process scratch_dir name - called from reading --scratch argument """
@@ -1244,7 +1254,7 @@ class pam_enviroment:
                     print 'Makefile.config:', \
                         install_dir_temp
                     print '            pam:', install_dir
-                    sys.exit(-1)
+                    sys.exit(12)
                 else:
                     pass
             elif name == 'SCRATCH_DIR':
