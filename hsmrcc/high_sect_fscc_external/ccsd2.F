@@ -3706,14 +3706,15 @@ c *************************************************
       use print_level
 #if defined HSFS_DYN_ALLOC
       use dat_mod
+#include "implicit.h"
+#include "priunit.h"
 #else
+#include "implicit.h"
+#include "priunit.h"
 !     implicit real*8 (a-h,o-z)
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
-
-#include "implicit.h"
-#include "priunit.h"
 
       character typ(2,5),cc(200)
       character*8 title(10)
