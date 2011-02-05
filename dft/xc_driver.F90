@@ -81,11 +81,7 @@ module xc_driver
 #include "dcborb.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-#ifdef INT_STAR8
   dimension     istat(mpi_status_size)
-#else
-  integer    :: istat(mpi_status_size)
-#endif /* ifdef INT_STAR8 */
 #endif /* ifdef VAR_MPI */
 
   integer, parameter :: bllen = 1 !later more, now slowdft

@@ -134,11 +134,7 @@ module london_prp_cfg
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-#ifdef INT_STAR8
   dimension     istat(mpi_status_size)
-#else
-  integer    :: istat(mpi_status_size)
-#endif /* ifdef INT_STAR8 */
 #endif /* ifdef VAR_MPI */
 
 
