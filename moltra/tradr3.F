@@ -804,11 +804,7 @@ C
          IF (NPASS.GT.1) THEN
              CALL DZERO(GMAT,NSIZG)
              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
          ENDIF
 C
 C        Calculate the size of the H-matrix for this pass
@@ -847,7 +843,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck READGBF */
-      SUBROUTINE READGBF(LGFIL,IREC,RBUF,LBUF,NGBFSZ,GMAT)
+      SUBROUTINE READGBF(LGFIL,IREC,NGBFSZ,GMAT)
 C
 C     Read a batch of scalar integrals into memory
 C
@@ -856,7 +852,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION RBUF(NGBFSZ),LBUF(NGBFSZ),GMAT(*)
+      Real(8) :: RBUF(NGBFSZ),GMAT(*)
+      Integer :: LBUF(NGBFSZ)
 C
       IF (IREC.EQ.0) RETURN
 C
