@@ -2275,12 +2275,13 @@ C Miro: for determination of IATIm why not not use rather ITYP ?
 C
       SKIP_JM4 = .TRUE.
 !     SKIP_JM4 = .FALSE.
+
 CMI ... catch possible exotic IAND...
       IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
         CALL QUIT('quit here due to IAIND !')
       ENDIF
 
-C  remove this part (THEN block) if everythink goes well 
+CMI  remove this part (THEN block) if everythink goes well and keep only ELSE branch
       IF (.NOT.SKIP_JM4) THEN
 
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
@@ -2301,10 +2302,11 @@ CMI    exception for the i*BETA*GAMMA5 operator
       ENDIF
 
       ELSE
-!  ---------------------------------------------------------------------
-!       ... scalar , gamma5, and beta matrix operators have IATIM=+1
+!  -------------------------------------------------------------------------------------------------
+!   Simplification branch:
+!       ...only  scalar , gamma5, and beta matrix operators have IATIM=+1, the rest has IATIM=-1
 ! FYI: only this part (ELSE block) is to be kept for the future
-!  ---------------------------------------------------------------------
+!  --------------------------------------------------------------------------------------------------
        IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19) THEN
         IATIM=+1
        ELSE ! the rest ....
@@ -2312,6 +2314,14 @@ CMI    exception for the i*BETA*GAMMA5 operator
        ENDIF
 
       ENDIF
+
+CMI - TODO force change of the time rev.symm. if wanted
+!     IF (IPRPTYP(INDXPR).EQ.2.OR.
+!    &   IPRPTYP(INDXPR).EQ.3.OR.IPRPTYP(INDXPR).EQ.4) THEN
+!       IATIM=+1
+!       WRITE(LUPRI,*) 'forcing IATIM=1 for IPRPTYP(INDXPR)!'
+!     ENDIF
+
 
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
