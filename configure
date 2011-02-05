@@ -1107,7 +1107,7 @@ compiler_fortran(){
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
-comp_list='ifort ifc g95 g90 gfortran gfortran44 gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
+comp_list='ifort ifc g95 g90 gfortran gfortran44 gfortran-4.2 gfortran-4.3 pgf95 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
 # Prefer "parallel" compilers if mpi
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf mpiifort openmpif90 mpif90 mpif77 $comp_list"
@@ -1301,6 +1301,8 @@ case "$F90_COMP_NAME" in
       F90real=gfortran
    elif "$F90_COMP" $mpishowopt | grep -q pathf90  > /dev/null; then
       F90real=pathf90
+   elif "$F90_COMP" $mpishowopt | grep -q pgf95    > /dev/null; then
+      F90real=pgf95
    elif "$F90_COMP" $mpishowopt | grep -q pgf90    > /dev/null; then
       F90real=pgf90
    elif "$F90_COMP" $mpishowopt | grep -q lfc      > /dev/null; then
@@ -1327,6 +1329,8 @@ mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
       F90real=ifort
    elif [[ "$F90_COMP"  == *"gfortran"* ]]; then
       F90real=gfortran
+   elif [[ "$F90_COMP"  == *"pgf95"* ]]; then
+      F90real=pgf95
    elif [[ "$F90_COMP"  == *"pgf90"* ]]; then
       F90real=pgf90
    fi
@@ -2134,7 +2138,7 @@ set_bit_arch(){
 # provide specific compiler with the appropriate integer flag
     case "$F90real" in
 #
-      g95|pgf90|ifc|ifort|pathf90)
+      g95|pgf95|pgf90|ifc|ifort|pathf90)
          opt="$opt -i8"
          safe="$safe -i8" 
          mcmodel_medium="-mcmodel=medium -shared-intel" # mi: check if it is for all these compilers !
@@ -2155,11 +2159,23 @@ set_bit_arch(){
          mcmodel_medium=" " 
          ;;
     esac
+    case "$F90real" in
+      pgf95|pgf90)
+         opt="$opt -m64"
+         safe="$safe -m64" 
+         ;;
+    esac
   else  
     if [ "$IsLP64" != "1" ]; then # we are on truly 32-bit architectures 
       cpp_f90="-DARCH32BIT $cpp_f90"
       cpp_cc="-DARCH32BIT $cpp_cc"
     fi
+    case "$F90real" in
+      pgf95|pgf90)
+         opt="$opt -m32"
+         safe="$safe -m32"
+        ;;
+    esac
   fi
 
 if [ $IPRINT -ge "5" ];  then
@@ -2218,14 +2234,14 @@ get_f90_flags(){
       F_profile="-pg"
       ldflag="-lstdc++"
       ;;
-    pgf90)
-      opt="-g -Mpreprocess -fastsse"
-      safe="-g -Mpreprocess "
+    pgf95|pgf90)
+      opt="-g -Mpreprocess"
+      safe="-g -Mframe"
       opt_1="-O1"
       opt_2="-fast"
-      opt_3="-fastsse"
-      cpp_f90="$cpp_f90 -DVAR_PGF90"
-      cpp_cc="$cpp_cc -DVAR_PGCC"
+      opt_3="-fast -Munroll"
+      cpp_f90="$cpp_f90"
+      cpp_cc="$cpp_cc"
       mod="-module $MODULE_DIR"
       noformain="-Mnomain"
       F_check_flags="-Mbounds" # please add more 
