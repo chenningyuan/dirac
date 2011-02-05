@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#if !defined (VAR_IFC)
+!#if !defined (VAR_IFC)
 Module Indexed_Quantities
 !----------------------------------------------------------------------------
 !
@@ -404,4 +404,4 @@ call QExit('equal_IndxTerms')
 end function equal_IndxTerms
 
 End Module Indexed_Quantities
-#endif
+!#endif

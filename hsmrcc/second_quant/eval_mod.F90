@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#if !defined (VAR_IFC)
+!#if !defined (VAR_IFC)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module Evaluate_strings
 !------------------------------------------------------------------------
@@ -259,4 +259,4 @@ call QExit('evaluate_string_exp_val')
 end subroutine Xevaluate_string_exp_val
 
 end module Evaluate_strings
-#endif
+!#endif

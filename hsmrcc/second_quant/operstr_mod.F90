@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#if !defined (VAR_IFC)
+!#if !defined (VAR_IFC)
 
 Module Operators_string
 !
@@ -2221,4 +2221,4 @@ end function equal_elements
 
 End Module Operators_string
 
-#endif
+!#endif
