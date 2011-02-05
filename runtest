@@ -122,9 +122,9 @@ group.add_option('--giveup',
                  dest='giveup',
                  default=False,
                  help='give up after first failing test [default: %default]')
-group.add_option('--time-giveup',
+group.add_option('--timeout',
                  action='store',
-                 dest='timegiveup',
+                 dest='timeout',
                  default=None,
                  help='time limit for runtest [default: %default]',
                  metavar='"hh:mm:ss"')
@@ -180,13 +180,9 @@ if options.individual:
         if test != '':
             list_of_tests_to_run.append(test)
 
-timegiveup=0
-timegiveup_set=False
-if options.timegiveup:
-# extract the total time in seconds
-    timegiveup=extract_time(options.timegiveup)
-    timegiveup_set=True
-    #print 'timeout is',timegiveup; sys.exit(2)
+if options.timeout:
+    # extract the total time in seconds
+    timeout = extract_time(options.timeout)
 
 # write the html header
 
@@ -443,12 +439,11 @@ def main(*args):
                 print '(fix your code or remove --giveup to continue)'
                 sys.exit(1)
 
-            if (timegiveup_set):
-                if (global_elapsed > timegiveup):  
-                #miro: wouldn't we have to have it red (ie in stderr stream) ?
-                    print ''
-                    print 'Giving up. Time exceeded ! '
-                    print ''
+            if options.timeout:
+                if global_elapsed > timeout:  
+                    print
+                    print 'Giving up. Time exceeded !'
+                    print
                     sys.exit(2)
 
     print
