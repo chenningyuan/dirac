@@ -88,8 +88,9 @@ c     iopt(10) .ne.0 - do not write tape9
 
       write(LUPRI,*) 'iopt(17)=',iopt(17)
 
+#if defined HSFS_DYN_ALLOC
       call check_modules
-
+#endif
       csdstim = cputime(real(0.))
       csdltim = csdstim
       call rdin
@@ -122,7 +123,9 @@ c     iopt(10) .ne.0 - do not write tape9
         end if
       end if
 
+#if defined HSFS_DYN_ALLOC
       call check_modules
+#endif
 
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr    ("t1v ","t1c ","tv  ","tvm ")
@@ -233,7 +236,9 @@ c     iopt(10) .ne.0 - do not write tape9
         write(LUPRI,*) ' iopt(17)=',iopt(17)
       end if
 
+#if defined HSFS_DYN_ALLOC
       call check_modules
+#endif
 
       call endiag_csw 
       call eneru2 (egr0,1,3,max(1,iopt(1)))
@@ -491,7 +496,9 @@ C  *********************************************************************
 #include "dat.h"
 #endif
 
+#if defined HSFS_DYN_ALLOC
       call check_modules
+#endif
 
 c  GROUP I
 c   diag 1
@@ -503,7 +510,9 @@ c v1 Feb 95
       call mult       ("s1  ","ph  ","s2  ",311)
       call add        ("box1",1.d0,"s2  ",-.5d0,"box1")
 
+#if defined HSFS_DYN_ALLOC
       call check_modules
+#endif
 
 c   diag 2
       call fold4      ("tv1 ","s1  ",2,4)
@@ -523,7 +532,7 @@ c   diag 4
       call reorder    ("s3  ","s1  ",1324,4)
       call add        ("s1  ",-1.d0,"box1",1.d0,"box1")
 
-      call check_modules
+      !call check_modules
 
 c   diag 5
       call reorder    ("vhhp","s1  ",1432,4)
@@ -648,7 +657,7 @@ c   diag 10
       call reorder    ("s2  ","s1  ",2143,4)
       call add        ("s1  ",1.d0,"box2",1.d0,"box2")
 
-      call check_modules
+      !call check_modules
 c
       if (iopt(17).lt.3) then
         call fold4      ("tv  ","s1  ",3,4)
@@ -700,7 +709,7 @@ c  diag e5
         call add      ("s3  ",0.5d0,"twf ",1.d0,"twf ")
       end if
       if (iopt(17).ne.3) then
-        call check_modules
+        !call check_modules
         call sqr3     ("twf ")
       end if
       call prtime     ("endiag  ",0,0)

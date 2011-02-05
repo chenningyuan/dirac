@@ -941,13 +941,13 @@ end module high_sect_execs
 
  end module get_gamess_mo_ints
 
-#if defined HSFS_DYN_ALLOC
 subroutine check_modules
 !##########################################################################
 !
 !   General checking routine for all dynamically allocated arrays
 !
 !##########################################################################
+#if defined HSFS_DYN_ALLOC
 use gen_mod
 use cint_mod
 use prm_mod
@@ -966,8 +966,11 @@ call check_dat_mod
 call check_idv_mod
 call check_cij1_mod
 call check_ijtemp_mod
+#else
+#include "priunit.h"
+ write(LUPRI,*) 'no checking of modules, this is nasty STATIC version.'
+#endif
 
 end subroutine check_modules
-#endif
 
 
