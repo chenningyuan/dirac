@@ -371,6 +371,8 @@ this_module = 'hscc'
 dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) HSMRCC code together with its objects')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
+# include dynamic version, not static !
+dirac_modules[this_module].add_dependency('hsfsdyn')
 dirac_modules[this_module].add_directory('hsmrcc')
 dirac_modules[this_module].add_directory('hsmrcc/second_quant')
 dirac_modules[this_module].add_directory('hsmrcc/interface')
