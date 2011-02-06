@@ -1385,6 +1385,8 @@ class pam_enviroment:
             if self.set_timeout_limit:
                for stream in [sys.stdout,sys.stderr]:
                    print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
+                   print >> stream,'  input dir      :', self.input_directory
+                   stream.flush()
             return_code = signal.SIGTERM
 
     # do the profiling after the execution
