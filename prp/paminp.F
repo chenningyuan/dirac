@@ -804,6 +804,7 @@ C***********************************************************************
 C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Last revision: May 14 1996 - tsaue
+C                 Febr. 2011   M Ilias (TRS_FLIP)
 C
 C  Assign a new property operator based on the input
 C  and the /XCBPRP/ list.
@@ -889,29 +890,34 @@ C     2   Property labels (to be found on file)
 C     3   Class label
 C     4   Separate factor for each component
 C     5   Common factor for all components
+C     6   Keyword to force the time-reversal symmetry flip
 C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 28)
+      PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
       CHARACTER   PLABEL(3)*8, PNAME*16
-      LOGICAL     CLABEL
+      LOGICAL     CLABEL 
+      LOGICAL     TRS_FLIP
 C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',
+     &           'TRS_FLIP',
      &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
+     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
+     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
 C
       CALL QENTER('XPRINP')
 C
@@ -925,6 +931,9 @@ C
       PFAC(2) = D1
       PFAC(3) = D1
       CLABEL  = .FALSE.
+      TRS_FLIP = .FALSE.
+      !mi - position of the Fock operator in the TABKW list, or "border" index
+      I_FOCKMAT=6
 C
       IKW = 0
 C
@@ -933,7 +942,7 @@ C     *** Read line ***
 C     *****************
 C
   100 READ (LUCMDX,'(A)',END=8000) LINE
-      IF (IPRINT .GT. 100) THEN
+      IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(A)') '***** Input line read in XPRINP:'
          WRITE (LUPRI,'(A)') LINE
       END IF
@@ -997,7 +1006,7 @@ C        default diagonal operator name = label
          NFAC      = 0
          IKW       = 1
       ELSE IF (IKW .EQ. 1) THEN
-C        IKW .eq. 1 :  Keywords
+C        IKW .eq. 1 :  Property operator keywords
          LKW = MIN(8,LTKN)
          READ(LINE(ITKN:80),'(A)') KEYWD(1:LKW)
          IF (LKW .LT. 3) THEN
@@ -1017,21 +1026,22 @@ C
 C          If keyword defines operator type, then initialize
 C          =================================================
 C
-           IF (I .GT. 5) THEN
+           IF ( I .GT. I_FOCKMAT ) THEN
 C             (the first five entries in TABKW are not operator types)
-CMI      ---- assignement of IPTYP -----
-              IPTYP = I - 5
+CMI      ---- assignement of IPTYP needed in further routines -----
+              IPTYP = I - I_FOCKMAT
               NLABEL= 0
               NFAC  = 0
               IKW = 2
            END IF
+
 C
 C          If keyword Fock defines matrix read, then initialize
 C          ====================================================
 C          (the matrix is assumed totally symmetric 
 C           under point group and time reversal symmetry)
 C
-           IF (I .EQ. 5) THEN
+           IF (I .EQ. I_FOCKMAT) THEN
               IPTYP = 0
               NLABEL= 0
               NFAC  = 0
@@ -1039,7 +1049,14 @@ C
               ISYXPR = 1
               ITRXPR = 1
            END IF
-           GO TO (4,5,6,7,1,1,1,1,1,2,2,2,3,
+ 
+           ! ... initialize ...
+           TRS_FLIP=.FALSE.
+           ! write(LUPRI,*) 'operatorik:',I,KEYWD(1:LKW)
+
+!mi     ...jump on operator types according to the variable I prepared above, I : 1-26
+!           4-8 are operators characteritics, TABKW(1-5)
+           GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
      &            1,1,1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
@@ -1049,7 +1066,7 @@ C
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT,iBETAGAMMA5
+C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1063,25 +1080,31 @@ C&&&&    Three components: ALPHADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
-C&&&&    Class keyword
+C&&&&    Class keyword, CLASS, TABKW(1)
     4    CONTINUE
            CLABEL = .TRUE.
            IKW = 3
          GO TO 300
-C&&&&    Read a multiplicative factor for each component
+C&&&&    Read a multiplicative factor for each component, FACTORS, TABKW(2)
     5    CONTINUE
            IKW  = 4
          GO TO 300
-C&&&&    Read a common factor for each component
+C&&&&    Read a common factor for each component, COMFACTOR, TABKW(3)
     6    CONTINUE
            IKW  = 5
          GO TO 300
-C&&&     Multiply with current value of the speed of light
+C&&&     Multiply with current value of the speed of light, CMULT
     7    CONTINUE
            PFAC(1) = PFAC(1)*CVAL          
            PFAC(2) = PFAC(2)*CVAL          
-           PFAC(3) = PFAC(3)*CVAL          
-         GO TO 100
+           PFAC(3) = PFAC(3)*CVAL 
+         GO TO 300
+C&&&     miro: Time-reversal symmetry flip, TRS_FLIP, as newly added operator characteristic
+    8    CONTINUE
+           TRS_FLIP=.TRUE.
+           IKW=6
+         GO TO 300
+         !GO TO 100
 C
 C     Read property labels for each component
 C     =======================================
@@ -1100,9 +1123,10 @@ C
       ELSE IF (IKW .EQ. 3) THEN
 C        IKW .eq. 3 :  Class label
 CHJMAERKE: implement interpretation of class keyword
+!miro - missing field, HJJ has an idea...
 C
-C     Read factor for each component
-C     ==============================
+C     FACTORS, read factor for each component
+C     ==================================================
 C
       ELSE IF (IKW .EQ. 4) THEN
 C        IKW .eq. 4 :  Separate factor for each component
@@ -1115,7 +1139,7 @@ C        IKW .eq. 4 :  Separate factor for each component
          PFAC(NFAC) = TMP*PFAC(NFAC)
          IF (NFAC .GE. NPCOMP) IKW = 1
 C
-C     Read a common factor for all components
+C     COMFACTOR, read a common factor for all components
 C     =======================================
       ELSE IF (IKW .EQ. 5) THEN
 C        IKW .eq. 5 :  Common factor for all components
@@ -1128,6 +1152,12 @@ C        IKW .eq. 5 :  Common factor for all components
          PFAC(2) = COMFAC*PFAC(2)
          PFAC(3) = COMFAC*PFAC(3)
          IKW = 1
+
+!         TRS_FLIP
+      ELSE IF (IKW .EQ. 6) THEN
+         write(LUPRI,*) 'TRS_FLIP !'
+         TRS_FLIP=.TRUE.
+         IKW=1
 C
 C     Unknown IKW
 C     ===========
@@ -1156,7 +1186,8 @@ CHJMAERKE: implement interpretation of class keyword
      &      ' XPRINP: INPUT ERROR following '//WORD,
      &      ' Keyword "'//KEYWD(1:LKW)//'" not implemented yet.'
       ELSE
-         IF (IPRINT.GE.15) THEN
+      ! miro-output and XPRIND
+         IF (IPRINT.GE.5) THEN
            WRITE(LUPRI,'(/,6x,a)') '*** Output from XPRINP ***'
            WRITE(LUPRI,'(2x,a,a16)') 'PNAME=',PNAME
            WRITE(LUPRI,'(2x,a,i2,a,i2)') 
@@ -1166,12 +1197,19 @@ CHJMAERKE: implement interpretation of class keyword
            WRITE(LUPRI,'(2x,a,3f10.6)') 
      &     'PFAC(1-NPCOMP)=',(PFAC(I),I=1,NPCOMP)
            WRITE(LUPRI,'(2x,a,i2,a,i2,a,i2)') 
-     &     'INDXPR=',INDXPR,' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
+     &     'initial values: INDXPR=',INDXPR,
+     &    ' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
          ENDIF
 CMI      ... assign remaining parameters
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-         IF (IPRINT.GE.20) THEN
+         IF (TRS_FLIP) THEN
+           ! miro: perform the time-reversal symmetry flip of the operaror
+           CALL OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                            INDXPR,ISYXPR,ITRXPR,IPRINT)
+           TRS_FLIP=.FALSE.
+         ENDIF
+         IF (IPRINT.GE.8) THEN
            WRITE(LUPRI,'(/,6x,a)')
      &      '*** Output from XPRINP after XPRIND ***'
            WRITE(LUPRI,'(2x,a,i2,a,i2,a,i2)') 
@@ -1243,6 +1281,27 @@ C
  9999 CALL QEXIT('XPRTKN')
       RETURN
       END
+      SUBROUTINE OPERATOR_TRS_FLIP(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+! Perform the operator time-reversal symmetry flip (thanks to TRS_FLIP characteritics)
+!
+! Called by XPRINT
+!
+! M.Ilias, Banska Bystrica, February 2011
+!
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+      CHARACTER PNAME*16
+      DIMENSION PFAC(NPCOMP)
+      WRITE(LUPRI,*)
+     &'Flipping time reversal symmetry for the selected operator ',
+     & PNAME
+      IPRPTIM(INDXPR) =  - IPRPTIM(INDXPR)
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
