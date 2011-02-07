@@ -1,5 +1,5 @@
 quick
-roa_ll.inp h2o2.mol --copy=DALTON.HES
+roa_ll.inp h2o2.mol --copy=DALTON.HES  --timeout=8m
 
 regular
-roa_dc.inp h2o2.mol --copy=DALTON.HES
+roa_dc.inp h2o2.mol --copy=DALTON.HES  --timeout=30m
