@@ -691,7 +691,7 @@ class pam_enviroment:
                          help='print current settings and exit')
         group.add_option('--trond', action='store_true',
                          dest='expert_mode', default=False,
-                         help='Turn of safety checks')
+                         help='Turn off safety checks')
         group.add_option('--silent', action='store_true',
                          dest='silent_pam', default=False,
                          help='run pam silent with minimal output')
