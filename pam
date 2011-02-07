@@ -84,6 +84,8 @@ class pam_enviroment:
 
         self.just_show_settings = False
 
+        self.expert_mode = False # disable various safety checks
+        
      #  installation directory ...
 
         self.dirac_home = install_dir
@@ -687,6 +689,9 @@ class pam_enviroment:
         group.add_option('--show', action='store_true',
                          dest='just_show_settings', default=False,
                          help='print current settings and exit')
+        group.add_option('--trond', action='store_true',
+                         dest='expert_mode', default=False,
+                         help='Turn of safety checks')
         group.add_option('--silent', action='store_true',
                          dest='silent_pam', default=False,
                          help='run pam silent with minimal output')
@@ -1007,13 +1012,13 @@ class pam_enviroment:
     def copy_files(self):
         '''copies file from the home directory to the scratch directory'''
 
-        def copy_single_file(file_name, warning):
+        def copy_single_file(file_name):
             full_file_name = self.input_directory + '/' + file_name
             if os.path.isfile(full_file_name):
                 file_name_scratch = self.scratch_dir + '/' + file_name
                 self.copy_file(full_file_name, file_name_scratch)
             else:
-                if warning:
+                if self.expert_mode:
                     for stream in [sys.stdout,sys.stderr]:
                         print  >> stream,'  Warning: file "', file_name, \
                         '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
@@ -1038,7 +1043,7 @@ class pam_enviroment:
                        + 'DIRAC.INP')
 
         if self.full_restart:
-            copy_single_file(self.archive_name,warning=None)
+            copy_single_file(self.archive_name)
             archive_scratch_dir = self.scratch_dir + '/' + self.archive_name
             unpack_command = 'tar --directory ' + self.scratch_dir \
                 + ' -xvf ' + archive_scratch_dir
@@ -1052,16 +1057,16 @@ class pam_enviroment:
                 print 'self.put_files=', self.put_files
                 print '  files_to_put=', files_to_put
             for file_name in files_to_put:
-                copy_single_file(file_name,warning=None)
+                copy_single_file(file_name)
 
     # copies files to scratch_dir
 
         if self.incmo:
             file_name = 'DFCOEF'
-            copy_single_file(file_name,warning=True)
+            copy_single_file(file_name)
         if self.infock:
             file_name = 'DFFCK2'
-            copy_single_file(file_name,warning=None)
+            copy_single_file(file_name)
 
     def distribute_scratch_dir(self):
         '''This routine is called when local disks are selected
