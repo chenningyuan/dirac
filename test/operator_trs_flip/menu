@@ -1,0 +1,6 @@
+quick
+MgF.dc_rkb.scf_1fs_xalyalzal_fc.inp  MgF.sto-2g.C2v.mol  --timeout=1m
+MgF+.dc_rkb.scf_1fs_xalyalzal_fc.inp MgF.sto-2g.C2v.mol  --timeout=1m
+
+regular
+MgF.dc_rkb.scf_1fs_xalyalzal_fc.inp  MgF.sto-2g.C1.mol  --timeout=1m
