@@ -2196,13 +2196,13 @@ get_f90_flags(){
       #opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
       opt="-g -O3 -ffast-math -fsloppy-char"
       f90_extraflags="-cpp"
-      safe="-g -fsloppy-char"
+      safe="-g -fsloppy-char -ftrace=full"
       opt_1="-O1"
       opt_2="-O2 -ffast-math"
       opt_3="-O3 -ffast-math"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
-      F_check_flags="-Wall -fbounds-check -ftrace=full" # please add more
+      F_check_flags="-Wall -fbounds-check " # please add more
       F_profile="-pg" # 
       ldflag="" # mi: "-lstdc++" must be omitted
       ;;
