@@ -1346,7 +1346,7 @@ class pam_enviroment:
 
                 self.write_into_output()
 
-        # process the dirac/x as the child subprocess
+        # process the dirac.x as the child subprocess
 
                 if self.iprint == 0:
                     self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True,
@@ -1376,8 +1376,8 @@ class pam_enviroment:
         except:
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
-                'Going to kill (SIGTERM) dirac.x executable process of pid=',\
-                self.dirac_p.pid
+                'Going to kill (SIGTERM) dirac.x-executable process (PID=',\
+                self.dirac_p.pid,').'
 
             # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
 
