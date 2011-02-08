@@ -4020,7 +4020,7 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.FDERSP','.xA    ','.xB    ','.xC    '/
+     &            '.FDERSP','.HFXATT','.xB    ','.xC    '/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4629,8 +4629,9 @@ C activates fde response
           write (*,*) 'Keyword inactive in this release'
 #endif
           GOTO 100
-! .xA
+! .HFXATT
   158     CONTINUE
+          READ(LUCMD,*) HFXATT          
           GOTO 100
 ! .xB
   159     CONTINUE
