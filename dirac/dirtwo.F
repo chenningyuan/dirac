@@ -162,7 +162,8 @@ C             computed. We could for example, when DOSRINT=.TRUE.,
 C             calculate coulomb integrals over 1/r12 and then coulomb
 C             integrals over - erf(mu r12)/r12 and add them.      
 C
-CTROND  Gaunt-integrals should be turned off !
+C       Trond:  Gaunt-integrals should be turned off !
+C
         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
         HFXFAC = HFXTMP
