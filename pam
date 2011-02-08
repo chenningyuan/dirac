@@ -1252,16 +1252,7 @@ class pam_enviroment:
             (name,value) = namval(line)
             value = os.path.expandvars(value)
             if name == 'INSTALL_DIR':
-                install_dir_temp = value
-                # check if the install-dir is OK
-                if install_dir != install_dir_temp:
-                    print 'disagreement with the installation directory !'
-                    print 'Makefile.config:', \
-                        install_dir_temp
-                    print '            pam:', install_dir
-                    sys.exit(12)
-                else:
-                    pass
+                pass
             elif name == 'SCRATCH_DIR':
                 self.scratch_path = value
                 if not os.path.isdir(self.scratch_path):
