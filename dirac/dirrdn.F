@@ -2179,7 +2179,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 16, NTABLE = 20)
+      PARAMETER (NDIR = 17, NTABLE = 21)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2196,12 +2196,14 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
-     &             '*GASCIP','*HSFS  ','*KRCCCA','.XXXXXX'/
+     &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
+     &             '.XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
-     &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  '/
+     &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
+     &             '.ARDUCC'/
 C
       NJOBS = 0
 C
@@ -2273,7 +2275,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120),I
+     &                117,118,119,120,121),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2418,6 +2420,12 @@ C&&& HSFS : Do High Sect FSCC calculations (new code)
             DOHSFS = .TRUE.
             write(LUPRI,*) 'DO HSFS run !'
             GO TO 100
+C&&&& ARDUCC: Perform MRCC calculation
+ 121     CONTINUE
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
+            DOARDUC = .TRUE.
+            NJOBS = NJOBS + 1
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
@@ -2468,6 +2476,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOGASCIP) WRITE(LUPRI,'(A)') ' * Run GASCIP CI code'
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
+      IF(DOARDUC)WRITE(LUPRI,'(A)') ' * Run ARDUCCA CC code'
       IF(DOADC) WRITE(LUPRI,'(A)') ' * Run RELADC code'
       IF(DOKRCI)
      &   WRITE(LUPRI,'(A)') ' * Kramers restricted CI calculation'
@@ -2519,7 +2528,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2607,6 +2616,9 @@ C     '*KRCCCALC' - Kramers Restricted CC CALCulation
         GO TO 200
 C
    16 CONTINUE
+        CALL ARDINP(WORD,.FALSE.,WORK,LWORK)
+        GO TO 200
+   17 CONTINUE
         GO TO 200
 C
     1 CONTINUE
@@ -2634,6 +2646,7 @@ C
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
+      CALL ARDINP(WORD,.TRUE.,WORK,LWORK)
 
       CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
       CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
@@ -2943,6 +2956,276 @@ C&&& MEMFAC     : memory multiplier
      *            '" not recognized in LUCTINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in LUCTINP.')
+            END IF
+      END IF
+  300 CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ARDINP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C       Input section for ARDUCCA module
+C
+C       Written by Lasse Sorensen
+C       modified LUCTINP routine by Timo Fleig
+C
+C       Last revision:
+C         Timo Fleig,    June 17, 2007
+C             - Activation of CC linear response
+C         Timo Fleig, February 8, 2011
+C             - Modifications for adaptation to trunk
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "luctinp.h"
+C only SPINFR used on next block
+#include "dcbham.h"
+C
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+      LOGICAL   SET,RESET,NEWDEF
+      CHARACTER WORD*7,WORD1*7,PROMPT*1,TABLE(NTABLE)*7
+C
+      DIMENSION WORK(LWORK)
+      DIMENSION NCALCSEQ(MXNGAS)
+C
+C
+      DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
+     &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
+     &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
+     &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.SEQUEN',
+     &            '.CMB_CC','.NEWCCV','.RES_CC','.CCLR  ','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C     Initialize keyword status flags driving interface.
+C     (Therefore local keywords do not have to be initialized!)
+C
+      DO IKW = 1,NTABLE
+         IMOKW(IKW) = 0
+      END DO
+C
+C     Process input for ARDUCCA
+C     =========================
+C
+      NEWDEF = (WORD .EQ. '*ARDUCC')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+C     Check that this is a spinfree calculation!
+      IF (SPINFR.EQV..FALSE.) THEN
+        CALL ABEND2('SPINFREE MUST BE SPECIFIED FOR ARDUCCA CALC')
+      END IF
+C
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     &            '" not recognized in LUCITA.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in LUCTINP.')
+C
+C&&& TITLE : One title line for CI specification
+    1          CONTINUE
+                  READ(LUCMD,'(A)') TITLUC
+                  IMOKW(1) = 1
+               GO TO 100
+    2          CONTINUE
+C&&& INIWFC: Initial DHF wave function (closed- or open-shell)
+                  READ(LUCMD,'(A)') WAFFCD
+                  IMOKW(2) = 1
+               GO TO 100
+    3          CONTINUE
+C&&& CITYPE: Type of CI calculation (FCI, SD, SDTQ, RAS, GAS)
+C&&& CITYPE: Will also now contain cctype calculations added later
+                  READ(LUCMD,'(A)') CALCTP
+                  IMOKW(3) = 1
+               GO TO 100
+    4          CONTINUE
+C&&& NROOTS: Number of eigenvalues
+                  READ(LUCMD,*) NROOTD
+                  IMOKW(4) = 1
+               GO TO 100
+    5          CONTINUE
+C&&& SYMMET: State symmetry
+                  READ(LUCMD,*) ISSYMD
+                  IMOKW(5) = 1
+               GO TO 100
+    6          CONTINUE
+C&&& NACTEL: Number of active electrons
+                  READ(LUCMD,*) NACTED
+                  IMOKW(6) = 1
+               GO TO 100
+    7          CONTINUE
+C&&& MULTIP: State spin multiplicity
+                  READ(LUCMD,*) IMULTD
+                  IMOKW(7) = 1
+               GO TO 100
+    8          CONTINUE
+C&&& PRINTG: Global LUCIA print flag
+                  READ(LUCMD,*) IPRNGD
+                  IMOKW(8) = 1
+               GO TO 100
+    9          CONTINUE
+C&&& PRINTL: Local print flag DIRLUC
+                  READ(LUCMD,*) IPRNLD
+                  IMOKW(9) = 1
+               GO TO 100
+   10          CONTINUE
+C&&& SZCALC: Rough size of calculation
+                  READ(LUCMD,'(A)') SZCALD
+                  IMOKW(10) = 1
+               GO TO 100
+   11          CONTINUE
+C&&& INACTI: Inactive function space
+                  READ(LUCMD,'(A)') CRDINA
+                  IMOKW(11) = 1
+               GO TO 100
+   12          CONTINUE
+C&&& GASSHE: Number of GAS and distribution
+                  READ(LUCMD,*) INGASD
+                  DO IR = 1,INGASD,1
+                    READ(LUCMD,'(A)') CRDGAS(IR)
+                  END DO
+                  IMOKW(12) = 1
+               GO TO 100
+   13          CONTINUE
+C&&& GASSPC: Cumulated max. and min. GAS occupations
+C&&& Changed so several calculations can be performed in one run
+                  READ(LUCMD,*) NSEQCD
+                  DO IR = 1,INGASD*NSEQCD,1
+                    READ(LUCMD,'(A)') CRDGOC(IR)
+                  END DO
+                  IMOKW(13) = 1
+               GO TO 100
+   14          CONTINUE
+C&&& FROORB: Frozen orbital function space
+                  READ(LUCMD,'(A)') CRDFRO
+                  write(6,'(6A,1A72)') 'CRDFRO',CRDFRO
+                  IMOKW(14) = 1
+               GO TO 100
+   15          CONTINUE
+C&&& RAS1  : RAS1 function space
+                  READ(LUCMD,'(A)') CRDRS1
+                  READ(LUCMD,*) MXHL1D
+                  IMOKW(15) = 1
+               GO TO 100
+   16          CONTINUE
+C&&& RAS2  : RAS2 function space
+                  READ(LUCMD,'(A)') CRDRS2
+                  IMOKW(16) = 1
+               GO TO 100
+   17          CONTINUE
+C&&& RAS3  : RAS3 function space
+                  READ(LUCMD,'(A)') CRDRS3
+                  READ(LUCMD,*) MXEL3D
+                  IMOKW(17) = 1
+               GO TO 100
+   18          CONTINUE
+C&&& DENSI : Level of density matrix calculation (1-,1- and 2-particle)
+                  READ(LUCMD,*) IDENSD
+                  IMOKW(18) = 1
+               GO TO 100
+   19          CONTINUE
+C&&& RSTRCI: Restart option from CI vector
+                  READ(LUCMD,*) IRSTLT
+                  IMOKW(19) = 1
+               GO TO 100
+   20          CONTINUE
+C&&& SEQUEN: Needed if NSEQCD > 1 hence if more than one calculation is
+C&&& to be performed. This will always be the case when a cc-calculation
+C&&& is desired
+C&&& Notice the string in calctyp will not be decifered until readin_cc
+C&&& Meaning no preliminary checking of the contents of this.
+                  IUSEQ(1:6) = 'SEQUEN'
+                  IF(IMOKW(13).EQ.1) THEN
+                    NSEQUEN = 0
+                    NTOTCALC = 0
+                    DO IR = 1,NSEQCD
+                      READ(LUCMD,*) NUMCALC
+                      NCALCSEQ(IR) = NUMCALC
+                      IF(NUMCALC.GE.1) THEN
+                        DO IR2 =1,NUMCALC
+                          READ(LUCMD,'(A)') CALCTYP(IR2 + NTOTCALC)
+                        ENDDO 
+                      ELSE
+                        WRITE(6,*) 'The number of different' 
+                        WRITE(6,*) 'calculations in this gasspace'
+                        WRITE(6,*) 'must be specified'
+                        write(6,*) 'check if the number of'
+                        write(6,*) 'calculations in this gasspace'
+                        write(6,*) 'matches',IR
+C Commented out to allow for CC based on CI! Lasse
+C                        CALL ABEND2('QUITTING.')
+                      ENDIF
+                      NTOTCALC = NUMCALC + NTOTCALC 
+                      NSEQUEN = 1 + NSEQUEN
+                    ENDDO 
+                    IMOKW(20) = 1
+                  ELSE
+                    WRITE(6,*) 'NUMBER OF GASSPACES MUST BE SPECIFIED'
+                    WRITE(6,*) 'BEFORE THE NUMBER OF SEQUENCES CAN'
+                    WRITE(6,*) 'HENCE MOVE GASSPC KEYWORDS SO IT IS'
+                    WRITE(6,*) 'BEFORE THE SEQUEN KEYWORD'
+                    CALL ABEND2('QUITTING.')
+                  ENDIF
+               GO TO 100 
+   21          CONTINUE
+C&&& CMB_CC: Use combinations for CC expansion
+                  UCMBCC(1:6) = 'CMB_CC'
+                  IMOKW(21) = 1
+               GO TO 100
+   22          CONTINUE
+C&&& NEWCCV: Use new CC vector function routine
+                  UNEWCCV(1:6) = 'NEWCCV'
+                  IMOKW(22) = 1
+               GO TO 100
+   23          CONTINUE
+C&&& RES_CC: Restart CC calc from CC vector
+                  URES_CC(1:6) = 'RES_CC'
+                  IMOKW(23) = 1
+               GO TO 100
+   24          CONTINUE
+C&&& CCLR  : CC linear response excitation energies
+                  READ(LUCMD,'(A)') CRDCCLR
+                  IMOKW(24) = 1
+               GO TO 100
+C&&& XXXXXX: Free space for additional flag
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in ARDINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in ARDINP.')
             END IF
       END IF
   300 CONTINUE

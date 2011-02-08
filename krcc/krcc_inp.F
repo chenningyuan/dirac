@@ -114,7 +114,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in KRCICA.'
+     *            '" not recognized in KRCCCA.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in KRCICA.')
     1          CONTINUE

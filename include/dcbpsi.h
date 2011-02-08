@@ -15,6 +15,7 @@
 !  DOCOSCI - perform CI calculation with GOSCIP
 !  DOCIM - perform CI calculation with DIRRCI/GOSCIP
 !  DOLUCT- perform CI calculation with LUCITA
+!  DOARDUC- perform CC calculation with ARDUCCA
 !  DOADC - compute ionization spectrum via Green's functions
 !  DOKRCI - perform CI calculation with LUCIAREL/...
 !  DOKRCC - perform coupled-cluster calculation with LUCIAREL
@@ -24,11 +25,11 @@
       LOGICAL                      DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGASCIP
+     &        DOGASCIP, DOARDUC
 
       COMMON /DCLPSI/                                                   &
      &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGASCIP
+     &        DOGASCIP, DOARDUC
 ! --- end of dcbpsi.h ---
