@@ -2040,6 +2040,7 @@ C
       OPEN(LUCIVC,FILE=VECFIL,ACCESS='DIRECT',RECL=LENREC,
      &     STATUS='OLD',ERR=900,IOSTAT=IST)
 !
+! miro: with the g95/ILP64/ownlibs/opt there is a reading hangup !
       READ(LUCIVC,REC=2,ERR=901,IOSTAT=IST) 
      &  NZCONF,(IXDET(I),I=1,NZCONF)
       IF( IPRINT .GE. 20 ) THEN

@@ -1,5 +1,5 @@
 quick   
-cosci.Li2.inp Li2.mol --mw=120
+cosci.Li2.inp Li2.mol --mw=120 --timeout=5m
 
 regular
-cosci.H3.inp  H3.mol  --mw=120
+cosci.H3.inp  H3.mol  --mw=120  --timeout=5m
