@@ -54,7 +54,7 @@ class periodic_table_plus_ext(object):
     def __init__ (self):
         pass
 
-    element_symbols = ['dummy', 'H ','He','Li','Be','B' ,'C' , 'N','O' ,'F' ,'Ne',
+    element_symbols = ['dummy', 'H', 'He','Li','Be','B' ,'C' ,'N' ,'O' ,'F' ,'Ne',
                                 'Na','Mg','Al','Si','P ','S' ,'Cl','Ar','K' ,'Ca',
                                 'Sc','Ti','V', 'Cr','Mn','Fe','Co','Ni','Cu','Zn',
                                 'Ga','Ge','As','Se','Br','Kr','Rb','Sr','Y' ,'Zr',
@@ -66,9 +66,9 @@ class periodic_table_plus_ext(object):
                                 'Pa','U' ,'Np','Pu','Am','Cm','Bk','Cf','Es','Fm',
                                 'Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt','Ds',
                                 'Rg','Cn','Uut','Uuq','Uup','Uuh','Uus','Uuo','X',
-                                'Q ','J ','a ','b ','c ','d ','e ','f ','g ','h ',
-                                'i ','j ','k ','l ','m ','n ','o ','p ','q ','r ',
-                                's ','t ','u ','v ','w ','x ','y ','z ']
+                                'Q','J','a','b','c','d','e','f','g','h',
+                                'i','j','k','l','m','n','o','p','q','r',
+                                's','t','u','v','w','x','y','z']
 
 
     def get_element_number(self,symbol):
@@ -262,15 +262,17 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
             line      = self.mol_lines[start_list[i+1]-j]
             found_end = False
             while not found_end:
+#               print 'line in endmarker search %s' % line
                 j   += 1
                 if self.compare_element_symbols(line.split()[0].lower()):
                     line = self.mol_lines[start_list[i+1]-j]
                 else:
+#                   print 'line found search %s %i' % (line, start_list[i+1]-j)
                     endmarker_list.append(start_list[i+1]-j)
                     found_end = True
             i += 1
         # element # num_fragments
-        endmarker_list.append(start_list[num_fragments]-1)
+        endmarker_list.append(start_list[self.num_frag]-1)
         return endmarker_list
 
     def prepare_Z_and_exponent_list(self, start_list):
@@ -285,6 +287,7 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
             found_Z   = False
             while not found_Z:
                 j   += 1
+#               print 'line in search %s' % line
                 if self.compare_element_symbols(line.split()[0].lower()):
                     line = self.mol_lines[start_list[i]-j]
                 else:
@@ -531,7 +534,7 @@ group.add_option('--mol',
                  help='specifies the molecular input file (support for .xyz files not implemented yet) [default: %default]')
 parser.add_option_group(group)
 
-group = OptionGroup(parser, 'provide own dirac fragment input files (NOT OPERATIONAL YET)')
+group = OptionGroup(parser, 'Dirac fragment input files (NOT OPERATIONAL YET)')
 group.add_option('--user-frag-inp',
                  action='store_true',
                  dest='user_dirac_fragment_inp',
@@ -611,7 +614,6 @@ def main(*args):
     atomic_exponent_list = []
     start_marker                               = mol_orig_info.prepare_startlist()
     end_marker                                 = mol_orig_info.prepare_endmarkerlist(start_marker)
-    (atomic_number_list, atomic_exponent_list) = mol_orig_info.prepare_Z_and_exponent_list(start_marker)
     
     if options.being_verbose:
         print 'num_fragments is %i' % num_fragments
@@ -619,6 +621,10 @@ def main(*args):
         print start_marker
         print 'list of end   markers'
         print end_marker
+
+    (atomic_number_list, atomic_exponent_list) = mol_orig_info.prepare_Z_and_exponent_list(start_marker)
+
+    if options.being_verbose:
         print 'list of atomic numbers for each fragment'
         print atomic_number_list
         print 'list of atomic exponents for each fragment'
@@ -658,7 +664,7 @@ def main(*args):
         fragmol_lines.set_fragment( str(atomic_number_list[i]), atomic_exponent_list[i])
         m.append(fragmol_lines.assemble_basis_set_fragment_input())
 
-#       task list
+#       initialize fragment tasks and store its content in l[]
         l.append(run_frag(cwd, x2c_fragment_scratch_files_path, dirac_input, mol_input))
         i += 1
 
