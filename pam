@@ -564,7 +564,7 @@ class pam_enviroment:
             metavar='INTEGER',
             )
 
-        help_mpirun='set MPI launcher, otherwise taken the first from your $PATH.'
+        help_mpirun='set MPI launcher, otherwise taken the first from your $PATH ('+self.mpirun+').'
         group.add_option(
             '--mpirun',
             type='string',
