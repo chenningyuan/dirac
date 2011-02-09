@@ -1,4 +1,4 @@
 quick
-LiH.dc_ukb.suscp_lao_go=cm.inp LiH.lsym.dir.mol --timeout=50s
-LiH.dc_rkb.suscp_lao_go=cm.inp LiH.lsym.dir.mol --timeout=50s
-LiH.levyle.suscp_lao_go=cm.inp LiH.lsym.dir.mol --timeout=50s
+LiH.dc_ukb.suscp_lao_go=cm.inp LiH.lsym.dir.mol --timeout=2m
+LiH.dc_rkb.suscp_lao_go=cm.inp LiH.lsym.dir.mol --timeout=2m
+LiH.levyle.suscp_lao_go=cm.inp LiH.lsym.dir.mol --timeout=2m
