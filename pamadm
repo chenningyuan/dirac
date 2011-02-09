@@ -649,6 +649,10 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
         for directory in dirac_modules[module].directories:
             directories_with_sources.append(directory)
+# ugly fix to get xcfun, will make it nicer later:
+if dirac_modules['xcfun'].is_included:
+    directories_with_sources.append('xcfun/fortran')
+
 directories_with_sources = set(directories_with_sources)
 
 list_of_c_sources             = []
