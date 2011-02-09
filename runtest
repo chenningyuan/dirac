@@ -7,15 +7,17 @@ report bugs/suggestions to: radovan.bast@uit.no
 philosophy: keep this script as self contained as possible
             do not introduce additional dependencies to DIRAC
             infrastructure (e.g. common.py)
-            because eventually i want to also use it outside DIRAC
+            because it would be nice to be able to use this script
+            also outside DIRAC
 
 menu format: free form
              blank lines are ignored
              lines starting with "#" are ignored
              sections can start with "quick" or "regular" or "benchmark"
              "regular" is default and can be omitted
+             shell commands are triggered with "sh"
 
-how to add new test to "--all":
+how to add new tests to the testset "--all":
              developers: add them to pamadm which generates test/list_of_tests
              users:      add them to test/list_of_tests
 '''
