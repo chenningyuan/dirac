@@ -25,6 +25,10 @@
 #                 2. full support for user-provided Dirac input files.
 #                 3. automatic check for existing X2CMAT."fragment" files which 
 #                    would allow us to skip the atomic x2c run for a given fragment.
+# 
+# following the suggestion from Ulf how to make the basis set read more robust and create a 
+# generic basis set reader will be available soon... :)
+#
 
 import os
 import errno
@@ -460,10 +464,17 @@ def get_original_molfile_content(orig_mol_file):
     mol_file_lines        = []
     (bla, mol_file_strip) = stripped_names('bla', orig_mol_file)
     f = open(mol_file_strip + get_original_molfile_extension(mol_file_strip) , 'r')
+    i       = 0
     for line in f.readlines():
         mol_file_lines.append(line.strip('\n'))
+        i += 1
     f.close()
-    
+
+#   temporary solution; delete any blank line after FINISH...
+    while len(mol_file_lines[i-1].split()) == 0:
+        del mol_file_lines[i-1]
+        i -= 1
+
     return mol_file_lines
 
 def get_original_molfile_extension(mol_file_strip):
