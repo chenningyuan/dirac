@@ -22,6 +22,8 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 	set (CMAKE_CXX_FLAGS "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -fno-rtti -fno-exceptions")
 	set (CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+# radovan: do not use -fast with Intel 11 (possibly 12, to be checked)
+#          -fast causes a miscompile with intel 11
 	set (CMAKE_CXX_FLAGS_RELEASE "-g -O2 -DNDEBUG")
 	set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
 endif ()
