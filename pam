@@ -121,12 +121,14 @@ class pam_enviroment:
         self.nr_proc = 0  # number of processors, default 0-serial run
  
         # depending on the operating_system, we set a default for the MPI launcher
+        from common import find_executable
         if self.operating_system == 'AIX':
         #   IBM
-            self.mpirun = 'poe'
+            self.mpirun = find_executable('poe')
         else:
         #   Linux, Windows, ...
-            self.mpirun = 'mpirun'
+            self.mpirun = find_executable('mpirun')
+           
 
     #   wanted local disks for parallel calculations (set by configure) ?  #
 
@@ -562,7 +564,7 @@ class pam_enviroment:
             metavar='INTEGER',
             )
 
-        help_mpirun='set MPI launcher, otherwise taken from your $PATH.'
+        help_mpirun='set MPI launcher, otherwise taken the first from your $PATH.'
         group.add_option(
             '--mpirun',
             type='string',
