@@ -2646,7 +2646,17 @@ C
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
-      CALL ARDINP(WORD,.TRUE.,WORK,LWORK)
+!
+!     stefan: commented out this call. at present arducca is using the
+!     same common blocks for setting input data as lucita; this is
+!     WRONG!!! and causes all lucita tests to crash. :( :( :(
+!
+!     arducca needs to have its own input common blocks and set the
+!     mandatory lucita data via an interface routine when it is taking advantage of lucita. 
+!     (transfer of important common block variables --> see response module for a template. response is
+!     possible for both HF and MCSCF). 
+!
+!     CALL ARDINP(WORD,.TRUE.,WORK,LWORK)
 
       CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
       CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
