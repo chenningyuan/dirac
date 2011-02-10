@@ -36,7 +36,7 @@
 #            and then long lines are very annoying
 
 import os
-import pwd
+#import pwd # BTW, do we need it ? It's not in windows; 
 import sys
 import string
 import subprocess
@@ -564,7 +564,7 @@ class pam_enviroment:
             metavar='INTEGER',
             )
 
-        help_mpirun='set MPI launcher, otherwise taken the first from your $PATH ('+self.mpirun+').'
+        help_mpirun='set MPI launcher, otherwise taken the first from your $PATH ('+str(self.mpirun)+').'
         group.add_option(
             '--mpirun',
             type='string',

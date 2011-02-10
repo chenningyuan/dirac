@@ -108,10 +108,7 @@ def get_username():
     returns name of the user
     """
     import getpass
-    if is_windows():
-        return win32api.GetUserName()
-    else:
-        return getpass.getuser()
+    return getpass.getuser()
 
 def get_ip():
     """
