@@ -464,8 +464,9 @@ def get_original_molfile_content(orig_mol_file):
     mol_file_lines        = []
     (bla, mol_file_strip) = stripped_names('bla', orig_mol_file)
     f = open(mol_file_strip + get_original_molfile_extension(mol_file_strip) , 'r')
-    for line in f.readlines():
-        mol_file_lines.append(line.strip('\n'))
+
+    [mol_file_lines.append(line.strip('\n')) for line in f.readlines()]
+
     f.close()
 
 #   temporary solution; delete any blank line after FINISH...
