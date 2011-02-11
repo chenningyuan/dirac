@@ -928,6 +928,10 @@ contains
       x2cmod_debug = .true.
     end if
 
+    if (kw_matches(word, '.hdirty')) then
+      x2cmod_h1dirty = .true.
+    end if
+
     call check_whether_kw_found(word, kw_section)
 
   end subroutine
