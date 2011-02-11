@@ -138,11 +138,18 @@ class pam_enviroment:
 
         self.argument_to_pass_scratch_dir_to_slaves = ''
 
+    #   restrict distribution of working files over nodes by own flag/variable
+ 
+        self.distribute = []
+
+    #   basic list of dirac files to be distributed over nodes by default
+        self.core_dirac_files=['dirac.x','MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
+
     # machine file
 
         self.machinefile = ''  # could be enviroment variable (like $PBS_NODEFILE)
 
-    # master name, its IP
+    # master name,IP
 
         self.master = get_hostname()
         self.hostname_ip = get_hostname_ip()
@@ -151,7 +158,7 @@ class pam_enviroment:
 
         self.user_name=get_username()
 
-    # nodes (if any) - list
+    # nodes (if any) - list; filled from self.machinefile
 
         self.nodes = []
 
@@ -614,6 +621,16 @@ class pam_enviroment:
             help='copy files to scratch directory',
             metavar='"file1 file2 ..."',
             )
+
+        group.add_option(
+            '--distribute',
+            type='string',
+            action='store',
+            dest='dest_distribute',
+            help='copy selected files to scratch directories of working nodes in parallel run',
+            metavar='"file1 file2 ..."',
+            )
+
         group.add_option(
             '--get',
             type='string',
@@ -622,6 +639,7 @@ class pam_enviroment:
             help='get files from scratch directory',
             metavar='"file1 file2 ..."',
             )
+
         group.add_option('--incmo', action='store_true',
                          dest='dest_incmo', default=False,
                          help='copy DFCOEF to scratch directory [default: %default]'
@@ -860,6 +878,12 @@ class pam_enviroment:
                 print 'assigned put_files ?', self.put_files \
                     is not None, '...', self.put_files
 
+        if options.dest_distribute:
+            # split entering string into list items which are individual files
+            self.distribute = options.dest_distribute.split()
+            if self.iprint >= 5:
+                print 'extra files for distribution over nodes:',self.distribute
+
         if options.dest_get:
             self.get_files = options.dest_get
             if self.iprint >= 5:
@@ -1024,10 +1048,12 @@ class pam_enviroment:
             else:
                 if self.expert_mode:
                     for stream in [sys.stdout,sys.stderr]:
+                        print >> stream,'happens in input directory:',self.input_directory
                         print  >> stream,'  Warning: file "', file_name, \
                         '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
                     for stream in [sys.stdout,sys.stderr]:
+                        print >> stream,'happens in input directory:',self.input_directory
                         print >> stream,'Error exit: file "', file_name, \
                         '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(11)
@@ -1074,13 +1100,13 @@ class pam_enviroment:
 
     def distribute_scratch_dir(self):
         '''This routine is called when local disks are selected
-    for parallel calculations. The list of machines available to dirac.x'''
+           for parallel calculations.'''
 
         if self.iprint >= 5:
             print 'distribute_scratch_dir'
             print 'assigned machine file=', self.machinefile
 
-    # check if this is an enviromental variable with "$" - than get its content
+    #  The list of machines available to dirac.x check if this is an enviromental variable with "$" - than get its content
 
         if self.machinefile[0] == '$':
             machinefile_temp = self.machinefile[1:len(self.machinefile)]
@@ -1104,22 +1130,25 @@ class pam_enviroment:
             for line in fileinput.input(machinefile_content):
                 line = line[:-1]
                 if line != self.master:  # append only nodes different from master
-                    print '  ...adding node to the list', line
+                    #print '  ...adding node to the list', line
                     self.nodes.append(line)
 
             # make a unique list of nodes - remove all duplicities from the list
             self.nodes=list(set(self.nodes)) 
+            print '  List of slaves (nodes):',self.nodes
 
-    # ... distribute master scratch_dir over different nodes, "copying $master:$file onto $node:$WRK/."
-    # otherwise print message that all cpus are on one machine
+    # ... distribute master scratch_dir selected files over different nodes, "copying $master:$file onto $node:$WRK/."
+    # otherwise print message that all CPUs are on one machine-master
+        
 
         if self.nodes:
-            print '  Copying content of master scratch directory over nodes '
+            files_to_nodes=self.core_dirac_files+self.distribute # list of files to be distributed over nodes
+            print '  Copying selected content of master scratch directory over nodes '
             for node in self.nodes:
-                print '  Copying ', self.master, \
-                    ' scratch directory to the', node,' :'
+                print '  Copying master ', self.master, \
+                    ' scratch directory selected files to the node', node,' :'
 
-                # create scratch directories on the nodes
+                # create scratch directories on the nodes; TODO: find pure python replacement
                 command = self.rsh + ' ' + node + ' "mkdir -p ' \
                     + self.scratch_dir + ' "'
                 if self.iprint >= 4:
@@ -1127,15 +1156,18 @@ class pam_enviroment:
                 os.system(command)
 
                 for this_file in os.listdir(self.scratch_dir):
-                    this_file_full = self.scratch_dir + '/' + this_file
-                    command = self.rcp + ' ' + this_file_full + ' ' \
-                        + node + ':' + this_file_full
-                    if self.iprint >= 0:
-                        print '  ', command
-                    os.system(command)
-                    if self.iprint >= 4:  # control list of directory
-                        os.system(self.rsh + ' ' + node + ' "ls -l '
-                                  + self.scratch_dir + ' "')
+                    # distribute only selected files in the list
+                    if this_file in files_to_nodes:
+                        this_file_full = self.scratch_dir + '/' + this_file
+                        # TODO: replace the shell command by  pure python solution
+                        command = self.rcp + ' ' + this_file_full + ' ' \
+                            + node + ':' + this_file_full
+                        if self.iprint >= 0:
+                            print '  ', command
+                        os.system(command)
+                        if self.iprint >= 4:  # control list of directory
+                            os.system(self.rsh + ' ' + node + ' "ls -l ' \
+                                + self.scratch_dir + ' "')
         else:
             print '  All CPUs are on the master, no distribution of scratch_dir over different nodes.'
 
