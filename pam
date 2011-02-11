@@ -1112,24 +1112,24 @@ class pam_enviroment:
     # otherwise print message that all cpus are on one machine
 
         if self.nodes:
-            print '  Copying content of master scratch_dir over nodes '
+            print '  Copying content of master scratch directory over nodes '
             for node in self.nodes:
-                print 'Copying content of ', self.master, \
-                    ' scratch directory to the', node
+                print '  Copying ', self.master, \
+                    ' scratch directory to the', node,' :'
 
-        # create scratch directories on nodes
-
+                # create scratch directories on the nodes
                 command = self.rsh + ' ' + node + ' "mkdir -p ' \
                     + self.scratch_dir + ' "'
                 if self.iprint >= 4:
                     print 'create scratch dir command:', command
                 os.system(command)
+
                 for this_file in os.listdir(self.scratch_dir):
                     this_file_full = self.scratch_dir + '/' + this_file
                     command = self.rcp + ' ' + this_file_full + ' ' \
                         + node + ':' + this_file_full
                     if self.iprint >= 0:
-                        print 'copying scratch dir command:', command
+                        print '  ', command
                     os.system(command)
                     if self.iprint >= 4:  # control list of directory
                         os.system(self.rsh + ' ' + node + ' "ls -l '
