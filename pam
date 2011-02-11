@@ -1105,11 +1105,14 @@ class pam_enviroment:
                     print 'adding node to the list', line
                     self.nodes.append(line)
 
+            # make a unique list of nodes - remove all duplicities from the list
+            self.nodes=list(set(self.nodes)) 
+
     # ... distribute master scratch_dir over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all cpus are on one machine
 
         if self.nodes:
-            print 'copying content of master scratch_dir over nodes '
+            print '  Copying content of master scratch_dir over nodes '
             for node in self.nodes:
                 print 'Copying content of ', self.master, \
                     ' scratch directory to the', node
