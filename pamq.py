@@ -36,9 +36,9 @@ class PamQVariables:
     self.dirac_home=install_dir
     
     ### ... testscript path 
-    self.testlast_path=self.dirac_home+'/'+'testlast'
+    self.testlast_path=self.dirac_home+'/'+'runtest'
     if not os.path.isfile(self.testlast_path):
-      print 'Error exit ! Dirac testlast file not found :',self.testlast_path
+      print 'Error exit ! Dirac runtest file not found :',self.testlast_path
       sys.exit()
 
     # print level
