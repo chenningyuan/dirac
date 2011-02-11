@@ -1098,11 +1098,11 @@ class pam_enviroment:
     # identify nodes in the file
 
         if os.path.isfile(machinefile_content):
-            print 'machinefile is a true file, reading its content'
+            print '  Machinefile is a true file, reading its content'
             for line in fileinput.input(machinefile_content):
                 line = line[:-1]
                 if line != self.master:  # append only nodes different from master
-                    print 'adding node to the list', line
+                    print '  ...adding node to the list', line
                     self.nodes.append(line)
 
             # make a unique list of nodes - remove all duplicities from the list
