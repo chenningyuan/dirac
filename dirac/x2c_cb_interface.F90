@@ -29,6 +29,7 @@ module x2c_cb_interface
 !          outside this module to keep the interface clean
 !          hide as much as you can for public - it will save us lots of trouble in future
 
+  use x2cmod_cfg
 
   implicit none
 
@@ -39,60 +40,6 @@ module x2c_cb_interface
   public reset_x2c_cb_lin_lwdmat
   public reset_x2c_cb_onefck
   public renew_x2c_cb_orb_shell_dim
-
-
-  save
-
-  integer, parameter, public :: x2c_funit   =  25    ! file unit for X2CMAT
-  integer, parameter, public :: x2c_fscru   =  26    ! file unit for x2cscr
-
-  integer, public :: dim_pshell(2)
-  integer, public :: dim_eshell(2)
-  integer, public :: dim_eshell2(2)
-  integer, public :: dim_e2shell(2)
-  integer, public :: dim_e2shellq(2)
-  integer, public :: dim_oshell(2)
-  integer, public :: dim_o2shellq(2)
-  integer, public :: fullemat_dim
-  integer, public :: fullomat_dim
-  integer, public :: fulleomat_dim
-  integer, public :: nr_quat
-  integer, public :: nr_fsym
-  integer, public :: mfsym
-  integer, public :: nr_ao_total_x2c
-  integer, public :: nr_ao_large_x2c
-  integer, public :: nr_ao_small_x2c
-  integer, public :: n2bastq_dim_x2c
-  integer, public :: nr_ao_all(2)
-  integer, public :: nr_ao_l(2)
-  integer, public :: nr_ao_s(2)
-! integer, public :: nr_mo_lw_all(2)
-! integer, public :: nr_mo_lw_l(2)
-! integer, public :: nr_mo_lw_s(2)
-  integer, public :: ioff_aomat_x(2,2)
-  integer, public :: x2c_cb_pq_to_uq(4, 0:7)
-  integer, public :: x2c_cb_uq_to_pq(4, 0:7)
-  integer, public :: x2c_bs_to_fs(0:7, 2)
-  integer, public :: x2c_is_defining_h1mat
-  integer, public :: x2c_add_amfi
-  integer, public :: x2c_tot_charge_for_mfsum
-  integer, public :: x2c_amfi_order
-  integer, public :: fh_1int_4c
-  integer, public :: all_prp_op
-  integer, public :: num_nuclei
-  integer, public :: x2c_pointer_quat(0:7, 1:2)
-  integer, public :: x2c_bs_irrep_mat(1:4, 0:7)
-  integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4)
-  integer, public :: x2c_pointer_quat_op(0:7)
-  integer, public :: x2c_max_quant_num
-  integer, public :: x2c_prt ! print level
-
-  logical, public :: x2c_linsym
-  logical, public :: x2c_prep_bnccorr
-  logical, public :: x2c_do_spherical
-
-  real(8), public :: x2c_cb_bla(1, 3, 2)
-  real(8), public :: x2c_cspeed
 
   private
 
@@ -140,6 +87,8 @@ contains
 
        if(init_x2c_cb_blocks)then
          x2c_prt               = iprham
+         if(x2cmod_debug)      &
+         x2c_prt               = 3
          nr_quat               = nz
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
@@ -357,8 +306,8 @@ contains
   end subroutine reset_x2c_cb_onefck
 
 !**********************************************************************
-  subroutine renew_x2c_cb_orb_shell_dim(ham_lvl_x2c,       &
-                                        print_lvl)
+  subroutine renew_x2c_cb_orb_shell_dim(ham_lvl_x2c)
+
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -382,7 +331,6 @@ contains
 !
 !**********************************************************************
      integer, intent(in)    :: ham_lvl_x2c
-     integer, intent(in)    :: print_lvl
 !-----------------------------------------------------------------------
      integer                :: i
      integer                :: isym
@@ -422,13 +370,6 @@ contains
 
 !      final hamiltonian level for matrix stored on file X2CMAT
        i2cofk = ham_lvl_x2c
-
-       if(print_lvl >= 0)then
-         print '(/18x,a)', ' ******************************************'
-         print '( 18x,a)', ' *** X2C transformation ended properly. ***'
-         print '( 18x,a)', ' *** continue calculation in 2c mode... ***'
-         print '(18x,a/)', ' ******************************************'
-       end if
 
   end subroutine renew_x2c_cb_orb_shell_dim
 !**********************************************************************

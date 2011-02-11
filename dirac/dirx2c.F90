@@ -96,13 +96,8 @@ module dirx2c
 
   save
 
-  integer, parameter, public :: x2c_Sao_scrF =  88
-  integer, parameter, public :: x2c_famfi    =  77
-  integer, parameter, public :: x2c_dum_asz  =  2
-  real(8), parameter, public :: x2c_d1       =  1.0D0
-  real(8), parameter, public :: x2c_dm1      = -1.0D0
-  real(8), parameter, public :: x2c_d0       =  0.0D0
-  real(8), parameter, public :: x2c_dummy(2) =  0.0D0
+  real(8), parameter :: x2c_d0       =  0.0D0
+  real(8), parameter :: x2c_dummy(2) =  0.0D0
 
 contains
 
@@ -139,8 +134,8 @@ contains
      real(8), allocatable   :: scr1mat(:)
      real(8), allocatable   :: scr2mat(:)
      real(8), allocatable   :: eigvl(:)
-     integer                :: prop_idummy(x2c_dum_asz)
-     character (len=16)     :: prop_cdummy(x2c_dum_asz)
+     integer                :: prop_idummy(2)
+     character (len=16)     :: prop_cdummy(2)
      integer                :: lwrk
      integer                :: is_allocated_dyn
      integer                :: i,j
@@ -225,7 +220,6 @@ contains
 
          call get_Sao_LL_mat(xmat,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
 !                                                       ^ (compute+write if >= 0)
-
 !        ------------------------------------------------------------------------------
 !        step 1.2: get LOWDIN matrix for fragment "is_center_x2c"
 !        ------------------------------------------------------------------------------
@@ -423,9 +417,12 @@ contains
 !      ----------------------------------------------------------------------------------------
 !      step 4: renew dimensions on common blocks, i.e. "remove" references to positronic shells
 !      ----------------------------------------------------------------------------------------
-       call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c,x2c_prt)
+       call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
 
        close(x2c_funit,status="keep")
+
+!      print goodbye 
+       call goodbye_dirx2c()
 
   end subroutine
 
@@ -665,16 +662,6 @@ contains
 
   end subroutine
 
-  subroutine hello_dirx2c()
-!**********************************************************************
-
-    print '(/18x,a)', ' *****************************************************************'
-    print '( 18x,a)', ' *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***'
-    print '( 18x,a)', ' ***          written by Stefan Knecht and Trond Saue,         ***'
-    print '( 18x,a)', ' ***              University of Strasbourg, 2010.              ***'
-    print '(18x,a/)', ' *****************************************************************'
-
-  end subroutine
 !**********************************************************************
 
 end module

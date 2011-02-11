@@ -27,15 +27,64 @@ module x2cmod_cfg
 
 ! parameters
 
+  integer, parameter, public :: x2c_funit    =  25    ! file unit for X2CMAT
+  integer, parameter, public :: x2c_fscru    =  26    ! file unit for x2cscr
+  integer, parameter, public :: x2c_Sao_scrF =  88
+  integer, parameter, public :: x2c_famfi    =  77
+
 ! character block
 
 ! logical block
-  logical, public :: x2cmod_x2c          =  .false.
-  logical, public :: x2cmod_fragment_x2c =  .false.
-  logical, public :: x2cmod_debug        =  .false.
+  logical, public :: x2cmod_x2c             =  .false.
+  logical, public :: x2cmod_fragment_x2c    =  .false.
+  logical, public :: x2cmod_debug           =  .false.
+  logical, public :: x2c_linsym             =  .false.
+  logical, public :: x2c_prep_bnccorr       =  .false.
+  logical, public :: x2c_do_spherical       =  .false.
 
-! double precision block
+! real(8) block
+  real(8), public :: x2c_cspeed
 
 ! integer block
+  integer, public :: x2c_prt                = 0 ! print level
+  integer, public :: dim_pshell(2)
+  integer, public :: dim_eshell(2)
+  integer, public :: dim_eshell2(2)
+  integer, public :: dim_e2shell(2)
+  integer, public :: dim_e2shellq(2)
+  integer, public :: dim_oshell(2)
+  integer, public :: dim_o2shellq(2)
+  integer, public :: fullemat_dim
+  integer, public :: fullomat_dim
+  integer, public :: fulleomat_dim
+  integer, public :: nr_quat
+  integer, public :: nr_fsym
+  integer, public :: mfsym
+  integer, public :: nr_ao_total_x2c
+  integer, public :: nr_ao_large_x2c
+  integer, public :: nr_ao_small_x2c
+  integer, public :: n2bastq_dim_x2c
+  integer, public :: nr_ao_all(2)
+  integer, public :: nr_ao_l(2)
+  integer, public :: nr_ao_s(2)
+! integer, public :: nr_mo_lw_all(2)
+! integer, public :: nr_mo_lw_l(2)
+! integer, public :: nr_mo_lw_s(2)
+  integer, public :: ioff_aomat_x(2,2)
+  integer, public :: x2c_cb_pq_to_uq(4, 0:7)
+  integer, public :: x2c_cb_uq_to_pq(4, 0:7)
+  integer, public :: x2c_bs_to_fs(0:7, 2)
+  integer, public :: x2c_is_defining_h1mat
+  integer, public :: x2c_add_amfi
+  integer, public :: x2c_tot_charge_for_mfsum
+  integer, public :: x2c_amfi_order
+  integer, public :: fh_1int_4c
+  integer, public :: all_prp_op
+  integer, public :: num_nuclei
+  integer, public :: x2c_pointer_quat(0:7, 1:2)
+  integer, public :: x2c_bs_irrep_mat(1:4, 0:7)
+  integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4)
+  integer, public :: x2c_pointer_quat_op(0:7)
+  integer, public :: x2c_max_quant_num
 
 end module

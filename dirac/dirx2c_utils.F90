@@ -46,6 +46,8 @@ module x2c_utils
   public print_x2cmat
   public read_1fock_x2c
   public get_Sao_LL_mat
+  public hello_dirx2c
+  public goodbye_dirx2c
 
   private
 
@@ -109,6 +111,7 @@ contains
      integer                :: nbasL_f
      integer                :: ioff_vmat
      character (len=12)     :: flabel
+     character (len=28)     :: debug_string
 !**********************************************************************
 
 !      initialize offset for matrix
@@ -204,7 +207,10 @@ contains
            call x2c_write(flabel,xmat,nbas1_f*nbasL_f*nz,x2c_file_glb)
 
 !          debug print
-!          call print_x2cmat(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,'x2c - umat_saao',6)
+           if(print_lvl > 2)then
+             write(debug_string,'(a27,i1)') 'x2c - pctmat_saao - fsym = ',i
+             call print_x2cmat(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
+           end if
 
          end if
 
@@ -768,4 +774,28 @@ contains
 
   end subroutine get_Sao_LL_mat
 !**********************************************************************
+
+  subroutine hello_dirx2c()
+!**********************************************************************
+
+    print '(/18x,a)', ' *****************************************************************'
+    print '( 18x,a)', ' *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***'
+    print '( 18x,a)', ' ***          written by Stefan Knecht and Trond Saue,         ***'
+    print '( 18x,a)', ' ***              University of Strasbourg, 2010.              ***'
+    print '(18x,a/)', ' *****************************************************************'
+
+  end subroutine
+!**********************************************************************
+
+  subroutine goodbye_dirx2c()
+!**********************************************************************
+
+    print '(/18x,a)', ' *****************************************************************'
+    print '( 18x,a)', ' ***            X2C transformation ended properly.             ***'
+    print '( 18x,a)', ' ***       Calculation continues in two-component mode.        ***'
+    print '(18x,a/)', ' *****************************************************************'
+
+  end subroutine
+!**********************************************************************
+
 end module x2c_utils

@@ -251,7 +251,9 @@ contains
                                      op_bs_to_fs)
 
 !        debug print
-!        call print_x2cmat(scr_mat2,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - h1_inf_2c-AO',6)
+         if(print_lvl > 1)then
+           call print_x2cmat(scr_mat2,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - h1_inf_2c-AO',6)
+         end if
 
          if(spherical_on)then
 

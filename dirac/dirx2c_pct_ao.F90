@@ -454,12 +454,18 @@ contains
        call reset_x2c_cb_onefck(.false.)
 
        call onefck(scr_mat1,print_lvl,wrk,lwrk)
+
 !      debug print
-!      call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4ch1sbc',6)
+       if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4ch1sbc',6)
+       end if
+
        call bncorr(scr_mat1,wrk,lwrk,print_lvl)
 
 !      debug print
-!      call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4ch1bnc',6)
+       if(print_lvl > 2)then
+         call print_x2cmat(scr_mat1,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4ch1bnc',6)
+       end if
 
 !      reset common block and pointer to WORK array
        call reset_x2c_cb_onefck(.true.)
@@ -482,11 +488,6 @@ contains
        do i = 1, nfsym
          write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment,i
          call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
-       
-!        debug print
-!        call print_x2cmat(pctmat(ioff_pct_mat),naosh_all(i),naosh_L(i),nz,ipq_off_in(1,0),'x2c - pctmat AO l',6)
-!
-!
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
 

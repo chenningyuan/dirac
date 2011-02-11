@@ -924,7 +924,7 @@ contains
       x2cmod_fragment_x2c = .false.
     end if
 
-    if (kw_matches(word, '.PRINT ')) then
+    if (kw_matches(word, '.DEBUG ')) then
       x2cmod_debug = .true.
     end if
 

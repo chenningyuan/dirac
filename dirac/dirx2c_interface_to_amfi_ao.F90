@@ -491,8 +491,11 @@ contains
 
          call x2c_write(flabel,scr1_mat,nr_sph**2  * nz,x2c_file_glb)
        else
+
 !        debug print
-!        call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
+         if(print_lvl > 2)then
+           call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+AMFI',6)
+         end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
        end if

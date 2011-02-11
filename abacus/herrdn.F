@@ -6906,17 +6906,16 @@ C
       WRITE (LUTMP2,'(A)') 'END'
       CALL GPCLOSE(LUTMP2,'KEEP')
 
-      WRITE(LUPRI,'(/,2X,A)')
-     &    'MNF.INP input file (for the AMFI stuff) is ready.'
+      if(ipread .gt. 0)then
+        WRITE(LUPRI,'(/A)')
+     &  '  MNF.INP input file (for the AMFI stuff) is ready.'
+      end if
+
       CALL FLSHFO(LUPRI)
 
-      ENDIF
-C     END of IF master (i.e. if MYTID .eq. MPARID)
+      ENDIF ! MYTID .eq. MPARID
 
-      RETURN
-C     end of SUBROUTINE MNFOUT
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Getsph */
       SUBROUTINE GETSPH(WORK,LWORK,IPRINT)

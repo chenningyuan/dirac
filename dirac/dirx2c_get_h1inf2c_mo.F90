@@ -128,7 +128,9 @@ contains
            ierr_qdiag = 0
 
 !          debug print
-!          call print_x2cmat(xmat(ioff_osh1),norb1_f,norb1_f,nz,ipq_off(1,0),'x2c - h1_4c',6)
+           if(print_lvl > 10)then
+             call print_x2cmat(xmat(ioff_osh1),norb1_f,norb1_f,nz,ipq_off(1,0),'x2c - h1_4c',6)
+           end if
 
            call qdiag90(nz,norb1_f,xmat(ioff_osh1),norb1_f,norb1_f,            &
                         eigvl(ioff_oeig),1,scr1mat(ioff_osh1),norb1_f,norb1_f, & 
@@ -163,7 +165,9 @@ contains
                                    flabel_tag)
 
 !          debug print
-!          call print_x2cmat(scr2mat(ioff_esh2),nesh2_f,n1esh_f,nz,ipq_off(1,0),'x2c - umat_onmo',6)
+           if(print_lvl > 20)then
+             call print_x2cmat(scr2mat(ioff_esh2),nesh2_f,n1esh_f,nz,ipq_off(1,0),'x2c - umat_onmo',6)
+           end if
 
 !          step 3: perform U+ h1_4c_ON U = h1_infinite_2c_ON (if requested)
 !          -------------------------------------------------------
@@ -185,7 +189,9 @@ contains
                                       print_lvl)
 
 !             debug print
-!             call print_x2cmat(xmat(ioff_esh1),n1esh_f,n1esh_f,nz,ipq_off(1,0),'x2c - h1_inf_2c',6)
+              if(print_lvl > 1)then
+                call print_x2cmat(xmat(ioff_esh1),n1esh_f,n1esh_f,nz,ipq_off(1,0),'x2c - h1_inf_2c',6)
+              end if
 
            end if
           
