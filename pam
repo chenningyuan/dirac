@@ -121,6 +121,8 @@ class pam_enviroment:
         self.nr_proc = 0  # number of processors, default 0-serial run
  
         # depending on the operating_system, we set a default for the MPI launcher
+        # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH, therefore
+        # no reading of MPIRUN from Makefile.config
         from common import find_executable
         if self.operating_system == 'AIX':
         #   IBM
