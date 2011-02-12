@@ -195,11 +195,6 @@ C
       COMMON /QSTACK/ LEVELQ, LQTREE
 #include "qnames.h"
 C
-#if defined (SYS_LINUX)
-C aspg, replacing trace with os-provided traceback facilities. linux support for now  
-C 3 = pretty print traceback to stdout...
-      CALL GET_TRACEBACK_INFO (3,BLA,1)
-#else
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
@@ -215,9 +210,13 @@ C 3 = pretty print traceback to stdout...
   100 CONTINUE
       WRITE (LUPRI,'(A/)')
      & ' ==============================================='
+ 9000 CONTINUE
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL TRACE
+#if defined (SYS_LINUX)
+C aspg, replacing trace with os-provided traceback facilities. linux support for now  
+C 3 = pretty print traceback to stdout...
+      CALL GET_TRACEBACK_INFO (3,BLA,1)
 #endif /* SYS_LINUX */
- 9000 CONTINUE
       RETURN
       END
