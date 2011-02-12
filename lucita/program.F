@@ -1678,7 +1678,7 @@ C
          WRITE (NNIN_MPI,'(A7,A1,I3)') IN_MPINN,'.',MYPROC
          IN_MPILL=11
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
       ENDIF
 #else
       NNIN_MPI=IN_MPINN
@@ -5671,8 +5671,8 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck LUCINOD */
-      SUBROUTINE LUCINOD(WRK,LWRK)
+C/* Deck LUCITA_NODE */
+      SUBROUTINE LUCITA_NODE(WRK,LWRK)
 *
 *     LUCITA routine (DIRAC interface) for the slaves
 *
@@ -5738,7 +5738,7 @@ C
          WRITE (LUCIFILN,'(A10,A1,I3)') LUCITABASF,'.',MYPROC
          LUFIL=14
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
       ENDIF
 *
 *     open the local input file and the node specific output file.
@@ -5773,8 +5773,8 @@ C
 *
 *     pointer in DIRAC.INP should now be positioned behind *LUCITA
 *
-      CALL LUCTINP(WORD,.FALSE.,WORK,LWRK)
-      CALL LUCTINP(WORD,.TRUE.,WORK,LWRK)
+      CALL LUCITA_INP(WORD,.FALSE.,WORK,LWRK)
+      CALL LUCITA_INP(WORD,.TRUE.,WORK,LWRK)
 *
 *     now let's call the working routine!
 *
