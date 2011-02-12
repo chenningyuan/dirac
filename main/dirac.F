@@ -947,12 +947,12 @@ C
 C
 C        Enter the LUCITA module
 C
-         CALL LUCINOD(WORK,LWORK)
+         CALL LUCITA_NODE(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
 C
 C        start KRMC-LUCIAREL calculation.
 C
-         CALL LUCINOD_REL(WORK,LWORK)
+         CALL LUCIAREL_NODE(WORK,LWORK)
       ELSE IF (ITASK .EQ. 7) THEN
 C
 C        start KR-MCSCF calculation.
@@ -1067,12 +1067,12 @@ C
 C
 C        Enter the LUCITA module
 C
-         CALL LUCINOD(WORK,LWORK)
+         CALL LUCITA_NODE(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
 C
 C        start KRMC-LUCIAREL calculation.
 C
-         CALL LUCINOD_REL(WORK,LWORK)
+         CALL LUCIAREL_NODE(WORK,LWORK)
       ELSE IF (ITASK .EQ. 7) THEN
 C
 C        start KR-MCSCF calculation.
