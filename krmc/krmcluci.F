@@ -20,8 +20,6 @@
 !dirac_copyright_end
 
 C
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : krmcluci.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1975,7 +1973,7 @@ C
       END
 #if defined (VAR_MPI2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCINOD_REL(WORK,LWORK)
+      SUBROUTINE LUCIAREL_NODE(WORK,LWORK)
 C
 C     KRMC-LUCIAREL driver routine for the slaves
 C
@@ -2036,7 +2034,7 @@ C     file. You don't really want to do this.
          WRITE (LUCIFILN_REL,'(A12,A1,I3)') LUCITABASF_REL,'.',MYPROC
          LUFIL=16
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD_REL MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCIAREL_NODE MODULE")
       ENDIF
 C
 C     open the local input file and the node specific output file.
@@ -2203,14 +2201,14 @@ C
 C       Call LUCIAREL for calculating sigma vector(s).
         CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
      &                  ECORE_KRMC,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF( CIRUN .eq. 'DENS1' .or. CIRUN .eq. 'DENS2' ) THEN 
 C
 C       Call LUCIAREL for calculating density matrix elements.
         CALL KRMC_LUCI2(WORK(KRHO1),WORK(KRHO2),WORK(KFREE),
      &                  LFREE,DUMMY,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF( CIRUN .eq. 'ANALYZ' ) THEN 
 C
@@ -2234,13 +2232,13 @@ C
 C       Call LUCIAREL for integral reordering.
         CALL KRMC_LUCI2(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,
      &                  DUMMY,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
       ELSE IF( CIRUN .eq. 'PROP1 ' ) THEN 
 C
 C       Call LUCIAREL for property calculation.
         CALL KRMC_LUCI2(DUMMY,WORK(KXPRPKRCI),WORK(KFREE),LFREE,
      &                  DUMMY,CIRUN)
-        CALL MEMREL('LUCINOD_RL',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
       END IF
 C
@@ -2266,4 +2264,4 @@ C
 C
       END
 #endif    /* ifdef VAR_MPI2 */
-
+C --- end of krmcluci.F ---

@@ -478,7 +478,7 @@ C  /* Deck gascip_krlist */
       SUBROUTINE GASCIP_KRLIST(NDET,IDET,KRLIST,IPRINT)
 C***********************************************************************
 C
-C     For each determinant find Kramers partner.
+C     For each determinant find its Kramers partner.
 C
 C     Input :
 C        NDET : number of determinants
@@ -529,7 +529,7 @@ C  /* Deck ngascip_nbits */
       INTEGER FUNCTION NGASCIP_NBITS(JDET,IBTAB)
 C***********************************************************************
 C
-C     Find number if bits in integer JDET.
+C     Find number of bits in integer JDET.
 C
 C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : S. Knecht - Nov 17 2007
@@ -541,17 +541,19 @@ C
 #include "dcbgascip.h"
 #include "dcborb.h"
 C
-      DIMENSION IBTAB(0:255)
+      INTEGER   IBTAB(0:255)
 C
 C     17-11-2007-SK: INTEGER*1 is an illegal value on 64-Bit SX machines
 C     Is this solution still working?
 #if defined (SYS_SX64)
-      INTEGER*4 ID1(4)
+!     INTEGER*4 ID1(4)
+      call qenter('NGASCIP_NBITS')
+      call quit('ERROR: INTEGER*1 was not defined on 64-bit SX machines')
 #else
       INTEGER*1 ID1(4)
-#endif /* SYS_SX64 */
       INTEGER*4 ID4
       EQUIVALENCE (ID1(1),ID4)
+#endif /* SYS_SX64 */
 C
 C     Anyone who can find with a faster routine?
 C
@@ -696,7 +698,7 @@ C
       END IF
 C
 C DEBUG DEBUG DEBUG
-c      call dzero(cref,nzconfq)
+c      call dzero(cref,ndetq)
 c      if (nz .eq. 1) then
 c      cref(2,1) = 1.0d0
 c      cref(2,2) = 1.0d0/sqrt(2.0d0)
@@ -877,6 +879,7 @@ C
       CALL FLSHFO(LUPRI)
 C
 C
+      CALL GETTIM(CPU1,WALL1)
       IF (MZ .EQ. 1) THEN
          IJOB = 1
          IORDER = 1
@@ -895,6 +898,9 @@ C
             CALL QUIT('*** ERROR in GASCIP_FULLCI *** QDIAG failed')
          END IF
       END IF
+      CALL GETTIM(CPU2,WALL2)
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &   "CPU and WALL times for diagonalization:",CPU2-CPU1,WALL2-WALL1
 C
 C     Add core energy
 C
@@ -1375,8 +1381,12 @@ C
                IOCCI(IELEC) = IPTB2O(K)
             END IF
          END DO
-         IF (IELEC .NE. NAELEC)
-     &      CALL QUIT('GASCIP_MAKEH: IELEC.ne.NAELEC')
+         IF (IELEC .NE. NAELEC) THEN
+            WRITE(LUPRI,*) 'GASCIP_CI: IELEC.ne.NAELEC',IELEC,NAELEC
+            WRITE(LUPRI,'(A,B64)') 'IDA ',IDA
+            WRITE(LUPRI,'(A,B64)') 'IDB ',IDB
+            CALL QUIT('GASCIP_MAKEH: IELEC.ne.NAELEC')
+         END IF
 C
          IF (HFULL) THEN
             JEND = NDET
@@ -1732,16 +1742,17 @@ C
 C
       CALL QENTER('GASCIP_RCISTD')
 C
-      CALL GETTIM(CPU1,WLL1)
+      CALL GETTIM(CPU1,WALL1)
 C
       IF (NCIROOT .GT. 1) THEN
          CALL QUIT('.CIROOT .gt. 1 has not been implemented yet.')
       END IF
 C
+      MZ = MIN(NZ,2)
+C
 C     ************************************
 C     *** Calculate necesary integrals ***
 C     ************************************
-C
 C
 C     Calculate core Hamiltonian:
 C     ---------------------------
@@ -1749,8 +1760,8 @@ C
 C     The core Hamiltonian is the active-active part of FC,
 C     a.k.a. FCAC.
 C
-      CALL MEMGET('REAL',KFCACM,(2*NASHT)*(2*NASHT)*MIN(NZ,2),
-     $     WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFCACM,(2*NASHT)*(2*NASHT)*MZ,
+     &            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
 C
@@ -1829,16 +1840,16 @@ C     *** Find start trial vectors ***
 C     ********************************
 C
 C
-      NDETQ = NDET*NZ
+      NDETQ = NDET*MZ
       CALL MEMGET('REAL',KHDIAG,NDET,WORK,KFREE,LFREE)
 C
 C     Assume we can have all sigma and trial vectors in memory.
 C     This could get a little expensive for large CI's.
 C
-      MAXR = MAX(50,MAXCIT+4)
+      MAX_HRED = MAX(50,MAXCIT+4)
 C     MAXCIT+4: allocating space for up to 5-double degeneracy in diagonal
-      CALL MEMGET('REAL',KBCVEC,MAXR*NDETQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCVEC,MAXR*NDETQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBCVEC,MAX_HRED*NDETQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCVEC,MAX_HRED*NDETQ,WORK,KFREE,LFREE)
 C
 C     Calculate diagonal of CI matrix:
 C     --------------------------------
@@ -1862,14 +1873,14 @@ C     BCVEC(I) = DELTA(I,II) / HDIAG(II)
 C     add trial vectors for degenerate determinants within 1.0D-5
 C
       HDIAGTST = WORK(KHDIAG-1+II) + 1.0D-5
-      NCSIM = 0
+      N_CSIM = 0
       DO  II = 1, NDET
           IF (WORK(KHDIAG-1+II) .LE. HDIAGTST) THEN
-             JBCVEC = KBCVEC +  NCSIM*NDETQ
+             JBCVEC = KBCVEC +  N_CSIM*NDETQ
              CALL DZERO(WORK(JBCVEC),NDETQ)
              WORK(JBCVEC + (II-1)) = D1
              CALL RCINORM(WORK(JBCVEC),IPRINT)
-             NCSIM = NCSIM + 1
+             N_CSIM = N_CSIM + 1
           END IF
       END DO
 C
@@ -1878,7 +1889,7 @@ C
       MZ = MIN(2,NZ)
 C
       JCRED = 0
-      NCRED = NCSIM
+      N_CRED = N_CSIM
       RTHRCI = 1.0D-5
 c     RTHRCI = 1.0D-12
 c     RTHRCI = 1.0D-6
@@ -1887,25 +1898,25 @@ C     GASCIP screening, a calculation in C2 symmetry showed that
 C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
       THRSCR = RTHRCI**2 * 0.01D0
 C
-      LHRED = MAXR*MAXR*MZ
+      LHRED = MAX_HRED*MAX_HRED*MZ
       CALL MEMGET('REAL',KHRED,LHRED,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVL,MAXR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
-      KHREDI = KHRED + MAXR*MAXR
-      KEIGVCI = KEIGVC + MAXR*MAXR
+      KHREDI = KHRED + MAX_HRED*MAX_HRED
+      KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
 C
       ITMIC = 0
-      ICONV = 0
-      CALL GETTIM(CPU2,WLL2)
- 100  CONTINUE
+      ICONV_TOT = 0
+      CALL GETTIM(CPU2,WALL2)
 C
 C        **********************************
 C        *** Start micro iteration loop ***
 C        **********************************
 C
+ 100  CONTINUE  ! DO WHILE (not converged and no limits reached)
          ITMIC = ITMIC + 1
-         CALL GETTIM(CPU3,WLL3)
+         CALL GETTIM(CPU3,WALL3)
 C
          WRITE(LUPRI,'(//A,I4)')
      &        ' (GASCIP_RCISTD) CI microiteration no.',ITMIC
@@ -1914,7 +1925,7 @@ C
 C        Calculate sigma vector(s)
 C        -------------------------
 C
-         DO I = 1, NCSIM
+         DO I = 1, N_CSIM
             IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
                CALL GASCIP_CISIG_SCREEN(
@@ -1957,12 +1968,12 @@ C
 C        New trial vectors * Old sigma vectors
 C
          DO J = 1, JCRED
-            DO I = JCRED+1, NCRED
-               WORK(KHRED+(I-1)*MAXR+(J-1)) =
+            DO I = JCRED+1, N_CRED
+               WORK(KHRED+(I-1)*MAX_HRED+(J-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &              WORK(KSCVEC+(J-1)*NDETQ),1)
                IF (MZ .GT. 1) THEN
-                  WORK(KHREDI+(I-1)*MAXR+(J-1)) =
+                  WORK(KHREDI+(I-1)*MAX_HRED+(J-1)) =
      &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
      &              WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
      &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
@@ -1973,13 +1984,13 @@ C
 C
 C        Old trial vectors * New sigma vectors
 C
-         DO J = JCRED+1, NCRED
+         DO J = JCRED+1, N_CRED
             DO I = 1, JCRED
-               WORK(KHRED+(I-1)*MAXR+(J-1)) =
+               WORK(KHRED+(I-1)*MAX_HRED+(J-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &              WORK(KSCVEC+(J-1)*NDETQ),1)
                IF (MZ .GT. 1) THEN
-                  WORK(KHREDI+(I-1)*MAXR+(J-1)) =
+                  WORK(KHREDI+(I-1)*MAX_HRED+(J-1)) =
      &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
      &              WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
      &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
@@ -1990,13 +2001,13 @@ C
 C
 C        New trial vectors * New sigma vectors
 C
-         DO J = JCRED+1, NCRED
-            DO I = JCRED+1, NCRED
-               WORK(KHRED+(I-1)*MAXR+(J-1)) =
+         DO J = JCRED+1, N_CRED
+            DO I = JCRED+1, N_CRED
+               WORK(KHRED+(I-1)*MAX_HRED+(J-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &              WORK(KSCVEC+(J-1)*NDETQ),1)
                IF (MZ .GT. 1) THEN
-                  WORK(KHREDI+(I-1)*MAXR+(J-1)) =
+                  WORK(KHREDI+(I-1)*MAX_HRED+(J-1)) =
      &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
      &              WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
      &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
@@ -2010,33 +2021,39 @@ C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
 chj      THRDAS = 1.0D-10
          THRDAS = THRSCR*10.0D0
-         DAS = D0
-         DO I = 1, NCRED
+         DASR = D0
+         DASI = D0
+         DO I = 1, N_CRED
             DO J = 1, I - 1
-               DAS = DAS +
-     &              ABS( WORK(KHRED + (J-1) + (I-1)*MAXR) -
-     &              WORK(KHRED + (I-1) + (J-1)*MAXR) )
-               IF (MZ .GT. 1) DAS = DAS +
-     &              ABS( WORK(KHREDI + (J-1) + (I-1)*MAXR) +
-     &              WORK(KHREDI + (I-1) + (J-1)*MAXR) )
+               DASR = DASR +
+     &            ABS( WORK(KHRED + (J-1) + (I-1)*MAX_HRED) -
+     &                 WORK(KHRED + (I-1) + (J-1)*MAX_HRED) )
+               IF (MZ .GT. 1) DASI = DASI +
+     &            ABS( WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) +
+     &                 WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) )
             END DO
          END DO
+         DAS = DASR + DASI
          IF (IPRINT .GE. 6 .OR. DAS .GT. THRDAS) THEN
             WRITE(LUPRI,'(/A)')
      &           ' (GASCIP_RCISTD) Reduced Hamiltonian, real part'
-            CALL OUTPUT(WORK(KHRED),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+            CALL OUTPUT(WORK(KHRED),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,1,LUPRI)
            IF (MZ .GT. 1) THEN
             WRITE(LUPRI,'(/A)')
      &           ' (GASCIP_RCISTD) Reduced Hamiltonian, imaginary part'
-            CALL OUTPUT(WORK(KHREDI),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+            CALL OUTPUT(WORK(KHREDI),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,1,LUPRI)
            END IF
          END IF
          IF (IPRINT .GE. 5 .OR. DAS .GT. 0.01D0*THRDAS) THEN
-            WRITE(LUPRI,'(A,1P,D10.3)')
+            WRITE(LUPRI,'(A,1P,2D10.3)')
      &      ' (GASCIP_RCISTD) Anti-hermiticity of red. Hamiltonian = ',
-     &      DAS
+     &      DASR, DASI
             IF (DAS .GT. THRDAS) THEN
-               call QUIT('red. Hamiltonian not hermitian')
+               WRITE(LUPRI,'(/A,1P,D10.3)')
+     &          ' FATAL ERROR, this is greater than threshold',THRDAS
+               CALL QUIT('Anti-hermiticity of red. Ham. > threshold')
             END IF
          END IF
 C
@@ -2047,14 +2064,14 @@ C
             IJOB = 1
             IORDER = 1
             IPACK = 0
-            CALL RSJACO(MAXR,NCRED,NCRED,WORK(KHRED),WORK(KEIGVL),
+            CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KHRED),WORK(KEIGVL),
      &        IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
          ELSE
             MATZ = 1
             CALL MEMGET('REAL',KHREDCP,LHRED,WORK,KFREE,LFREE)
             CALL DCOPY(LHRED,WORK(KHRED),1,WORK(KHREDCP),1)
-            CALL QDIAG(2,NCRED,WORK(KHREDCP),MAXR,MAXR,
-     &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAXR,MAXR,
+            CALL QDIAG(2,N_CRED,WORK(KHREDCP),MAX_HRED,MAX_HRED,
+     &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAX_HRED,MAX_HRED,
      &        WORK(KFREE),LFREE,IERR)
             IF (IERR .NE. 0) THEN
                WRITE(LUPRI,'(/2A,I4)')
@@ -2069,16 +2086,18 @@ C
          IF (IPRINT .GE. 5) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian'
-            CALL OUTPUT(WORK(KEIGVL),1,1,1,NCRED,1,MAXR,1,LUPRI)
+            CALL OUTPUT(WORK(KEIGVL),1,1,1,N_CRED,1,MAX_HRED,1,LUPRI)
          END IF
          IF (IPRINT .GE. 6) THEN
             WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD)'//
      &      ' Eigenvectors of reduced Hamiltonian, real part'
-            CALL OUTPUT(WORK(KEIGVC),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+            CALL OUTPUT(WORK(KEIGVC),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,1,LUPRI)
            IF (MZ .GT. 1) THEN
             WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD)'//
      &      ' Eigenvectors of reduced Hamiltonian, imaginary part'
-            CALL OUTPUT(WORK(KEIGVCI),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+            CALL OUTPUT(WORK(KEIGVCI),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,1,LUPRI)
            END IF
          END IF
          ECIOLD = ECI
@@ -2102,8 +2121,8 @@ C          = Hx - Ex
 C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J)
 C
          CALL DZERO(CREF,NDETQ)
-         DO I = 1, NCRED
-            FAC = WORK(KEIGVC+(I-1)+(ISTATE-1)*MAXR)
+         DO I = 1, N_CRED
+            FAC = WORK(KEIGVC+(I-1)+(ISTATE-1)*MAX_HRED)
             CALL DAXPY(NDETQ,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
      &           CREF,1)
             CALL DAXPY(NDETQ,-ECIA*FAC,WORK(KBCVEC+(I-1)*NDETQ),1,
@@ -2123,38 +2142,38 @@ C
          CALL FLSHFO(LUPRI)
 C
          IF (DNRES .LE. RTHRCI) THEN
-            ICONV = 1
+            ICONV_TOT = 1
             GOTO 200
          END IF
          IF (ITMIC .GE. MAXCIT) THEN
-            ICONV = -2
+            ICONV_TOT = -2
             GOTO 200
          END IF
-         IF (NCRED .GE. MAXR) THEN
-            ICONV = -3
+         IF (N_CRED .GE. MAX_HRED) THEN
+            ICONV_TOT = -3
             GOTO 200
          END IF
 C
 C        Construct 1 new trial vector
 C        ----------------------------
 C
-         JCRED = NCRED
-         NCRED = NCRED + 1
-         NCSIM = 1
+         JCRED = N_CRED
+         N_CRED = N_CRED + 1
+         N_CSIM = 1
 C
          DO IZ = 1, MZ
             DO I = 1, NDET
                HD = WORK(KHDIAG+I-1)
                IF (ABS(HD-ECIA) .GT. THRZER) THEN
-                  WORK(KBCVEC+(I-1)+(NCRED-1)*NDETQ + (IZ-1)*NDET) =
+                  WORK(KBCVEC+(I-1)+(N_CRED-1)*NDETQ + (IZ-1)*NDET) =
      &                 - CREF(I,IZ)/(HD - ECIA)
                ELSE
-                  WORK(KBCVEC+(I-1)+(NCRED-1)*NDETQ + (IZ-1)*NDET) =
+                  WORK(KBCVEC+(I-1)+(N_CRED-1)*NDETQ + (IZ-1)*NDET) =
      &                 - CREF(I,IZ)
                END IF
             END DO
          END DO
-         CALL RCINORM(WORK(KBCVEC+(NCRED-1)*NDETQ),IPRINT)
+         CALL RCINORM(WORK(KBCVEC+(N_CRED-1)*NDETQ),IPRINT)
 C
 C        Orthogonalize trial vector(s)
 C        -----------------------------
@@ -2165,14 +2184,14 @@ C
 C
             ITURN = ITURN + 1
 C
-            IF (NCSIM .GT. 1)
+            IF (N_CSIM .GT. 1)
      &           CALL QUIT('*** ERROR in GASCIP_RCISTD ***'//
-     &           ' NCSIM.gt.1 not implemented')
+     &           ' N_CSIM .gt. 1 is not implemented')
 C
 C
 C           Project out all previous trial vectors
 C
-            DNBEF = DNORM2(NDETQ,WORK(KBCVEC+(NCRED-1)*NDETQ),1)
+            DNBEF = DNORM2(NDETQ,WORK(KBCVEC+(N_CRED-1)*NDETQ),1)
             DO I = 1, JCRED
 C
 C              FIXME: loop over new trial vectors
@@ -2181,27 +2200,27 @@ C              Calculate <B(new)|B(old)> / <B(old)|B(old)>
 C              = <B(new)|B(old)>  (as trial vectors are normed to 1)
 C
                OVLP = DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &              WORK(KBCVEC+(NCRED-1)*NDETQ),1)
+     &              WORK(KBCVEC+(N_CRED-1)*NDETQ),1)
 C
 C              Calculate B(new) = B(new) - OVLP * B(old)
 C
                IF (ABS(OVLP) .GT. THRZER) THEN
                   CALL DAXPY(NDETQ,-OVLP,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                 WORK(KBCVEC+(NCRED-1)*NDETQ),1)
+     &                 WORK(KBCVEC+(N_CRED-1)*NDETQ),1)
                END IF
             END DO
 C
-C           FIXME: Orthogonalize new trial vectors against each other
+#warning    FIXME: Orthogonalize new trial vectors against each other
 C
-            DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(NCRED-1)*NDETQ),1)
+            DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(N_CRED-1)*NDETQ),1)
             IF (ABS(DNAFT) .LE. THRZER) THEN
-               ICONV = -1
+               ICONV_TOT = -1
                GO TO 200
             END IF
             IF (DNAFT .LE. 1.0D-4 * DNBEF .AND. ITURN .EQ. 1)
      &           IROUND = IROUND + 1
 C
-            CALL DSCAL(NDETQ,1/DNAFT,WORK(KBCVEC+(NCRED-1)*NDETQ),1)
+            CALL DSCAL(NDETQ,1/DNAFT,WORK(KBCVEC+(N_CRED-1)*NDETQ),1)
 C hj 16-jun-2004 TODO: screen on elements here ...
 C
             IF (IROUND .GT. 0) THEN
@@ -2214,9 +2233,9 @@ C
 C           Print timings
 C
             IF (IPRINT .GE. 2) THEN
-               CALL GETTIM(CPU4,WLL4)
+               CALL GETTIM(CPU4,WALL4)
                CPUTID = SECTID(CPU4-CPU3)
-               WALLTID = SECTID(WLL4-WLL3)
+               WALLTID = SECTID(WALL4-WALL3)
                WRITE(LUPRI,'(/A,I3,5A)')
      &              ' (GASCIP_RCISTD) CPU (Wall) time for iteration ',
      &              ITMIC,': ',CPUTID,' (',WALLTID,')'
@@ -2228,42 +2247,42 @@ C
 C
 C     Print timings
 C
-      CALL GETTIM(CPU4,WLL4)
       IF (IPRINT .GE. 2) THEN
+         CALL GETTIM(CPU4,WALL4)
          CPUTID = SECTID(CPU4-CPU3)
-         WALLTID = SECTID(WLL4-WLL3)
+         WALLTID = SECTID(WALL4-WALL3)
          WRITE(LUPRI,'(/A,I4,5A)')
      &        ' (GASCIP_RCISTD) CPU (Wall) time for iteration',
      &        ITMIC,': ',CPUTID,' (',WALLTID,')'
       END IF
       IF (IPRINT .GE. 0) THEN
          CPUTID = SECTID(CPU4-CPU2)
-         WALLTID = SECTID(WLL4-WLL2)
+         WALLTID = SECTID(WALL4-WALL2)
          WRITE(LUPRI,'(/6A)')
      &        ' (GASCIP_RCISTD) Total CPU (Wall) '//
      &        'time for microiterations: ',
      &        CPUTID,' (',WALLTID,')'
       END IF
 C
-      IF (ICONV .GT. 0) THEN
+      IF (ICONV_TOT .GT. 0) THEN
          WRITE(LUPRI,'(//A)')
      &        ' (GASCIP_RCISTD) Micro iterations converged.'
       ELSE
-         IF (ICONV .EQ. -1) THEN
+         IF (ICONV_TOT .EQ. -1) THEN
             WRITE(LUPRI,'(//A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: linear dependency in trial vectors.'
-         ELSE IF (ICONV .EQ. -2) THEN
+         ELSE IF (ICONV_TOT .EQ. -2) THEN
             WRITE(LUPRI,'(/A,I4,A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: maximum number of micro iterations',
      &           MAXCIT, ' reached.'
-         ELSE IF (ICONV .EQ. -3) THEN
+         ELSE IF (ICONV_TOT .EQ. -3) THEN
             WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
      &           'WARNING: maximum reduced space dimension of',
-     &           MAXR, ' reached.'
+     &           MAX_HRED, ' reached.'
          ELSE
             WRITE(LUPRI,'(//A,I4/A)') ' (GASCIP_RCISTD) '//
      &        'WARNING: micro iterations aborted while not converged.',
-     &        ' ICONV value :',ICONV
+     &        ' ICONV_TOT value :',ICONV_TOT
          END IF
       END IF
 C
@@ -2278,8 +2297,8 @@ C
 C     Construct CREF:
 C
       CALL DZERO(CREF,NDETQ)
-      DO I = 1, NCRED
-         CALL DAXPY(NDETQ,WORK(KEIGVC+(I-1)+(ISTATE-1)*MAXR),
+      DO I = 1, N_CRED
+         CALL DAXPY(NDETQ,WORK(KEIGVC+(I-1)+(ISTATE-1)*MAX_HRED),
      &        WORK(KBCVEC+(I-1)*NDETQ),1,CREF,1)
       END DO
 C
@@ -2292,10 +2311,10 @@ C
          CALL RPRCI(CREF,NDET,NZ,CIPROG, THRPCI,LUPRI)
       END IF
 C
-      CALL GETTIM(CPU2,WLL2)
+      CALL GETTIM(CPU2,WALL2)
       IF (IPRINT .GE. 0) THEN
          CPUTID = SECTID(CPU2-CPU1)
-         WALLTID = SECTID(WLL2-WLL1)
+         WALLTID = SECTID(WALL2-WALL1)
          WRITE(LUPRI,9000) CPUTID,WALLTID
       END IF
  9000 FORMAT(/' (GASCIP_RCISTD) Total CPU (Wall) time for routine: ',
@@ -2649,7 +2668,7 @@ C
 C
 #include "ibtfun.h"
 C
-      CALL GETTIM(CPU1,WLL1)
+      CALL GETTIM(CPU1,WALL1)
 C
 C     Initialization
 C     --------------
@@ -3073,11 +3092,11 @@ C
  10   CONTINUE
 C
       IF (IPRINT .GT. 0) THEN
-        CALL GETTIM(CPU2,WLL2)
-        IF ((WLL2-WLL1)*IPRINT .GT. 5.D0) THEN
+        CALL GETTIM(CPU2,WALL2)
+        IF ((WALL2-WALL1)*IPRINT .GT. 5.D0) THEN
 C        ... do not print all the small numbers
           CPUTID  = SECTID(CPU2-CPU1)
-          WALLTID = SECTID(WLL2-WLL1)
+          WALLTID = SECTID(WALL2-WALL1)
           WRITE(LUPRI,'(/5A)') ' CPU (Wall) time in GASCIP_CI kernel: ',
      &      CPUTID,' (',WALLTID,')'
           IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
@@ -3145,7 +3164,7 @@ C
 C
 #include "ibtfun.h"
 C
-      CALL GETTIM(CPU1,WLL1)
+      CALL GETTIM(CPU1,WALL1)
 C
 C     Initialization
 C     --------------
@@ -3348,11 +3367,11 @@ C        end loop 100 I and end loop 10 MKI
  10   CONTINUE
 C
       IF (IPRINT .GT. 0) THEN
-         CALL GETTIM(CPU2,WLL2)
-       IF ((WLL2-WLL1)*IPRINT .GT. 5.D0) THEN
+         CALL GETTIM(CPU2,WALL2)
+       IF ((WALL2-WALL1)*IPRINT .GT. 5.D0) THEN
 C        ... do not print all the small numbers
          CPUTID  = SECTID(CPU2-CPU1)
-         WALLTID = SECTID(WLL2-WLL1)
+         WALLTID = SECTID(WALL2-WALL1)
          WRITE(LUPRI,'(/5A/A,I10,A,I10)')
      &   ' CPU (Wall) time in GASCIP_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
