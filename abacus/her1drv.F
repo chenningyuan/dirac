@@ -548,7 +548,7 @@ C                                           0  1  1  2
          DODERM = .FALSE.
 C        jth - if it is a LS integral and we have requested PROPTY 
 C              (= derivatives) then calculate the derivatives of
-C              the momentum integral. If DODERM then we don't do
+C              the momentum integral. If DODERM then we do not do
 C              (derivatives) of nuclear attraction and \beta matrix
 C              etc.
          IF ( (ICA.NE.ICB) .AND. PROPTY ) THEN

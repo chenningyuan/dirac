@@ -1286,7 +1286,7 @@ C
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
-     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,QB,1,DSM,
+     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,QB,QB,1,DSM,
      &                 BASREF(1,I,1))
                   NBLCK(I,1) = NBLOCK
 C
@@ -1340,7 +1340,7 @@ C Note that the Variables with T have dimension KPRM instead of KPRIM!
      &                   ALPHAT(1,IBLOCK1),
      &                   CPRIMT(1,1,IBLOCK1),
      &                   CPRIMUT(1,1,IBLOCK1),
-     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRM,Q,1,DSM,
+     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRM,Q,Q,1,DSM,
      &                   BASREFT(1,I,M))
 
                      BASREF(3*(M-1)+4,I,1) = BASREFT(1,I,M)
@@ -1643,7 +1643,7 @@ C
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,J,DSM,
+     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,Q,J,DSM,
      &                  BASREF(1,I,1))
 C
                ELSE
@@ -1837,7 +1837,7 @@ C
      &             ALPHA(1,IBLOCK(ISET),ISET),
      &             CPRIM(1,1,IBLOCK(ISET),ISET),
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
-     &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,1,DSM,
+     &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,Q,1,DSM,
      &             BASREF(1,I,ISET))
               NBLCK(I,ISET) = NBLOCK
 C          write (*,*) 'testing reading of fit sets...0'
@@ -6300,11 +6300,12 @@ C
 C     Add basis set to newly order atomic set
 C
          KAOVEC = KBLOCK + 1 - IBLOCK
+         Q = CHARGE(IATOM-1)
          CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(IBLOCK,1),
      &               NRC(IBLOCK,1),SEG(IBLOCK,1),
      &               ALPHA(1,IBLOCK,1),
      &               CPRIM(1,1,IBLOCK,1),CPRIMU(1,1,IBLOCK,1),
-     &               NBLOCK,ISGEN,KAOVEC,KPRIM,CHARGE(IATOM - 1),J,DSM,
+     &               NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,J,DSM,
      &               BASREF(1,I))
          NBLCK(I,1) = NBLOCK
          IBLOCK = IBLOCK + NBLCK(I,1)

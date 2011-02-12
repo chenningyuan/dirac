@@ -453,7 +453,7 @@
 #endif
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
-     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,1,DSM,                        &
+     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,1,DSM,                      &
      &         BASREF)
           NBLCK = NBLCK + NBLOCK
 #if defined (DIRAC_DENSFIT_DEBUG)
@@ -606,7 +606,7 @@
      &                 ALPHAT(1,IBLOCK1),                               &
      &                 CPRIMT(1,1,IBLOCK1),                             &
      &                 CPRIMUT(1,1,IBLOCK1),                            &
-     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,1,DSM,    &
+     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,Q,1,DSM,  &
      &                 BASREFT(1,M))
           BASREF(3*(M-1)+4) = BASREFT(1,M)
 !

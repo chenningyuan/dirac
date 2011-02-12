@@ -19,18 +19,11 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : hersym.F
+#include <single.h>
 C
-C
-#ifdef UNDEF
+#ifdef OLD_LOG
 ===========================================================================
-/* Comdeck log */
-951116-hjaaj: subroutine sort renamed to SRTATM (sort is very generic)
-950618-kenneth
-Some modification in the routine TRNMOL, in order to make it easier to
-understand for the compiler
 950522-kenneth
 Added solvent in FNDSYM, as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
@@ -40,8 +33,8 @@ SYMADD: Completely new module to determine molecular symmetry, find the
 ===========================================================================
 #endif
 C  /* Deck symadd */
-      SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,
-     &                  KASYM,CLASS,internal_file)
+      SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
+     &                  CLASS,internal_file)
 C*****************************************************************************
 C
 C     This module determines molecular symmetry automatically
@@ -61,7 +54,7 @@ C*****************************************************************************
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER*1 KASYM(3,3), CLASS*15
       LOGICAL :: internal_file
-      IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
+      IF (TOLLRN .LE. 0.0D0) TOLLRN = 5.0D-6
       ZERTOL = 1.0D-12
       MAXAXS = 50
       MAXMIR = 25
@@ -70,6 +63,7 @@ CSK   only MASTER needs to print the information
         CALL HEADER('SYMADD: Requested addition of symmetry',-1)
         WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
       END IF
+
       KCOOR = 1
       KROT = KCOOR + 6 * (MXCENT + 1)
       KIROT = KROT + 6 * (MAXAXS + 1)
@@ -99,7 +93,6 @@ C  /* Deck fndsym */
 #include "mxcent.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "cbirea.h"
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
@@ -203,7 +196,7 @@ CCCC#else
 CCCC         TEXT = 'Centered and Rotated                    '
 CCCC         CALL PRNARR(TEXT , MXCENT, ATMARR)
 CCCC#endif
-         IF (IPREAD .GE. IPRTHR) THEN
+         IF (IPRSYM .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No rotational axes were found.'
             ELSE
@@ -228,7 +221,7 @@ CCCC#endif
             END IF
          END IF
          CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,internal_file)
-         IF (IPREAD .GE. MIN(3,IPRTHR/2)) THEN
+         IF (IPRSYM .GE. MIN(3,IPRTHR/2)) THEN
             TEXT = 'Symmetry Independent Centres            '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF

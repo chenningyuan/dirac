@@ -51,19 +51,19 @@ C
      &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
      &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
      &            '.SP BAS', '.PREOPT', '.VISUAL', '.VRML  ',
-     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG',
+     &            '.SYMTHR', '.TRSTRG', '.VR-BON', '.VR-EIG', !20
      &            '.INITHE', '.INITEV', '.HESFIL', '.REJINI', 
      &            '.STEEPD', '.RANKON', '.PSB   ', '.DFP   ',
      &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
      &            '.HELLMA', '.BAKER ', '.M-BFGS', '.CARTES',
-     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
+     &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD', !40
      &            '.GRDINI', '.DISPLA', '.CONSTR', '.MODHES',
      &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD',
      &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
-     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
+     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL', !60
      &            '.LINDH ', '.NO SKI', '.GRD IN', '.GRD SC',
-     &            '.NOAUX ', '.BFGSR1', '.NUMGRA', '.XXXXXX'/
+     &            '.NOAUX ', '.BFGSR1', '.NUMGRA', '.IPRGRD'/
 C
       DATA FIRST /.TRUE./
 C
@@ -188,6 +188,7 @@ C
 C
 #if defined (PRG_DIRAC)
       CALL INIGRD()
+      IPRGRD = -1
       DOTRCK = .TRUE.
 #endif
 C
@@ -487,7 +488,9 @@ C&&&& : BFGSR1: Use 1st order method with BFGS/rank one combination update
 C&&&& :  NUMGRA: Use numerical gradient
             DONGRD = .TRUE.
             GOTO 100
- 68         CONTINUE
+C&&&& :  IPRGRD: print level for DIRAC mol.grad. evaluation
+ 68         CONTINUE ! DIRAC option
+            READ (LUCMD,*) IPRGRD
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -500,6 +503,8 @@ C&&&& :  NUMGRA: Use numerical gradient
       END IF
  300  CONTINUE
 C
+      IF (IPRGRD.LT.0) IPRGRD = IPRINT
+
       IF ((.NOT. OPTIMI) .AND. (ICHANG .GT. 0)) THEN
          WRITE(LUPRI,'(//A/)')
      &          ' Minimization not requested, *OPTIMI input ignored.'
@@ -524,8 +529,7 @@ C
          WRITE(LUPRI,'(A)') ' Determination of redundant internal '
      &        // 'will be performed.'
          IF (.NOT. VISUAL) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,'(A)') ' *** NOTE! ***'
+            WRITE(LUPRI,'(/A)') ' *** NOTE! ***'
             WRITE(LUPRI,'(A)') ' No minimization will be done, ' //
      &           'other keywords will be ignored!!!!!'
             WRITE(LUPRI,*)
@@ -1240,6 +1244,8 @@ C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
      &        ' * No screening in the calculation of'//
      &        ' two-electron gradient integrals.'
       END IF
+      WRITE(LUPRI,'(A,I5)')
+     &   ' * Print level in molecular gradient evaluation :',IPRGRD
 #endif
       RETURN
       END
