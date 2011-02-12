@@ -2548,7 +2548,7 @@ C
         CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-        CALL LUCTINP(WORD,.FALSE.,WORK,LWORK)
+        CALL LUCITA_INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     5 CONTINUE
         CALL MVOINP(WORD,.FALSE.,WORK,LWORK)
@@ -2645,7 +2645,7 @@ C
       CALL MP2NOINP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
-      CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
+      CALL LUCITA_INP(WORD,.TRUE.,WORK,LWORK)
 !
 !     stefan: commented out this call. at present arducca is using the
 !     same common blocks for setting input data as lucita; this is
@@ -2734,7 +2734,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCTINP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE LUCITA_INP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
 C
 C       Input section for LUCITA module
@@ -2808,7 +2808,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      &            '" not recognized in LUCITA.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in LUCTINP.')
+               CALL QUIT('Illegal keyword in LUCITA_INP.')
 C
 C&&& TITLE : One title line for CI specification
     1          CONTINUE
@@ -2963,9 +2963,9 @@ C&&& MEMFAC     : memory multiplier
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in LUCTINP.'
+     *            '" not recognized in LUCITA_INP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in LUCTINP.')
+               CALL QUIT('Illegal prompt in LUCITA_INP.')
             END IF
       END IF
   300 CONTINUE
