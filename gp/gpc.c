@@ -42,9 +42,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if !defined (SYS_WINDOWS)
 #include <sys/utsname.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
+
 #include <math.h>
 #include "patchlevel.h"
 #include "compinfo.h"
