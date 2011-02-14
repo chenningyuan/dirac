@@ -208,9 +208,9 @@ void compoff_(double *wrk, double *work, fortran_int8_t *k_offset) {
   if ( sizeof(*k_offset) != 8 )
   {
     printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
-    printf( "compoff: wrk=%p work=%p diff=%i\n", wrk, work, wrk-work+1);
+    printf( "compoff: wrk=%p work=%p diff=%li\n", wrk, work, (long)(wrk-work+1));
     printf( "k_offset=%li\n", (long)*k_offset );
-    printf( "int %i long %i short int %i fortran_int8_t %i\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(fortran_int8_t));
+    printf( "int %i long %i short int %i fortran_int8_t %i\n", (int)sizeof(int), (int)sizeof(long), (int)sizeof(short int),(int)sizeof(fortran_int8_t));
     quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
     exit(1);
   }
