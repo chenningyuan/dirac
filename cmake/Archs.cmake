@@ -1,3 +1,6 @@
+
+message("Welcome to the CMake building system, the CMAKE_SYSTEM_NAME variable is: ${CMAKE_SYSTEM_NAME}")
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DSYS_LINUX)
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i686")
@@ -9,3 +12,8 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
 endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+     add_definitions(-DSYS_WINDOWS)
+endif()
+
