@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DARWIN)
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DARWIN) || defined (SYS_WINDOWS)
 
 #define cgendet     cgendet_
 
