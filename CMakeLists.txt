@@ -99,13 +99,14 @@ add_executable(
     ${PROJECT_SOURCE_DIR}/build/gen_fortran_interface_h.c
     )
 
+#miro: for Windows we need python scripts, not bash shells
 add_custom_command(
     OUTPUT
     ${PROJECT_SOURCE_DIR}/gp/compinfo.h
     DEPENDS
-    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.sh
+    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py
     COMMAND
-    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.sh > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
+    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
     )
 
 set(GENERATED_FILES
