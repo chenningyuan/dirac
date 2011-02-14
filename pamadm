@@ -661,16 +661,16 @@ list_of_free_fortran_sources  = []
 list_of_fixed_fortran_sources = []
 for directory in directories_with_sources:
     for source in glob.glob('%s/*.F' % directory):
-        source = string.replace(source, '\\', '/')
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
         list_of_fixed_fortran_sources.append(source)
     for source in glob.glob('%s/*.F90' % directory):
-        source = string.replace(source, '\\', '/')
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
         list_of_free_fortran_sources.append(source)
     for source in glob.glob('%s/*.f90' % directory):
-        source = string.replace(source, '\\', '/')
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
         list_of_free_fortran_sources.append(source)
     for source in glob.glob('%s/*.c' % directory):
-        source = string.replace(source, '\\', '/')
+        source = string.replace(source, '\\', '/')  # fix cmake on Windows
         list_of_c_sources.append(source)
 
 # remove files never compiled (listed in dontbuild)
@@ -697,8 +697,6 @@ s += '\nset(DIRAC_FREE_FORTRAN_SOURCES\n%s    )' % s_free_fortran
 s += '\nset(DIRAC_FIXED_FORTRAN_SOURCES\n%s    )' % s_fixed_fortran
 
 # this is a lazy fix for cmake on windows
-# feel free to implement a better solution
-s = string.replace(s, '\\', '/')
 
 f = open('cmake/Sources.cmake', 'w')
 f.write(s)
