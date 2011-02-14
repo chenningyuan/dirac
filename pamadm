@@ -661,14 +661,19 @@ list_of_free_fortran_sources  = []
 list_of_fixed_fortran_sources = []
 for directory in directories_with_sources:
     for source in glob.glob('%s/*.F' % directory):
+        source = string.replace(source, '\\', '/')
         list_of_fixed_fortran_sources.append(source)
     for source in glob.glob('%s/*.F90' % directory):
+        source = string.replace(source, '\\', '/')
         list_of_free_fortran_sources.append(source)
     for source in glob.glob('%s/*.f90' % directory):
+        source = string.replace(source, '\\', '/')
         list_of_free_fortran_sources.append(source)
     for source in glob.glob('%s/*.c' % directory):
+        source = string.replace(source, '\\', '/')
         list_of_c_sources.append(source)
 
+# remove files never compiled (listed in dontbuild)
 list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))
 list_of_free_fortran_sources = set(list_of_free_fortran_sources)
