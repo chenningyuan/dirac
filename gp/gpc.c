@@ -114,6 +114,7 @@ static void print_time(time_t secs, FILE *dst)
 /* Start timers, or stop and print cpu and wall time*/
 void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 {
+#if !defined (SYS_WINDOWS)
     static struct timeval start_wall;
     if (*start)
     {
@@ -147,11 +148,12 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 	    printf("\n");
 	}
     }
+#endif
 }
 
 void sysinf_(fortran_int_t *parcal)
-
 {
+#if !defined (SYS_WINDOWS)
    struct utsname *un;
 
    un = (struct utsname *) malloc(sizeof(struct utsname));
@@ -188,6 +190,7 @@ void sysinf_(fortran_int_t *parcal)
    printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
    fflush(stdout);
    free(un);
+#endif
 }
 
 #define quit        quit_
