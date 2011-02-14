@@ -155,14 +155,11 @@ void sysinf_(fortran_int_t *parcal)
 {
 #if !defined (SYS_WINDOWS)
    struct utsname *un;
-
    un = (struct utsname *) malloc(sizeof(struct utsname));
-
    if ( un != NULL )
    {
       uname(un);
    }
-
    printf( " Version           : %s %i.%i (patchlevel %i) \n" , \
       VER_STR,MAJOR_REV,MINOR_REV,PATCHLEVEL);
    if ( un != NULL )
@@ -171,6 +168,8 @@ void sysinf_(fortran_int_t *parcal)
       printf( " Operating system  : %s %s\n" , un->sysname, un->release);
       printf( " Machine           : %s\n" , un->machine);
    }
+   free(un);
+#endif   
    if ( ! *parcal )
       printf( " Run               : Sequential\n");
    else
@@ -189,8 +188,6 @@ void sysinf_(fortran_int_t *parcal)
    printf(" SVN URL           : %s \n", DIRAC_SVN_URL);
    printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
    fflush(stdout);
-   free(un);
-#endif
 }
 
 #define quit        quit_
