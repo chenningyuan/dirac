@@ -39,6 +39,11 @@ option(DIRAC_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
 option(DIRAC_ENABLE_MPI            "Use MPI parallelization"   OFF)
 option(DIRAC_ENABLE_XCFUN          "Use XCFun library"         ON)
 option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
+option(DIRAC_ENABLE_TESTS          "Enable make test"          ON)
+
+if(DIRAC_ENABLE_TESTS)
+    enable_testing()
+endif()
 
 add_definitions(-DPRG_DIRAC)
 if(DIRAC_ENABLE_64BIT_INTEGERS)
