@@ -106,7 +106,7 @@ add_custom_command(
     DEPENDS
     ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py
     COMMAND
-    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
+    python ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
     )
 
 set(GENERATED_FILES
