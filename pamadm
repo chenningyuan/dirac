@@ -696,8 +696,6 @@ s += '\nset(DIRAC_C_SOURCES\n%s    )' % s_c
 s += '\nset(DIRAC_FREE_FORTRAN_SOURCES\n%s    )' % s_free_fortran
 s += '\nset(DIRAC_FIXED_FORTRAN_SOURCES\n%s    )' % s_fixed_fortran
 
-# this is a lazy fix for cmake on windows
-
 f = open('cmake/Sources.cmake', 'w')
 f.write(s)
 f.close()
