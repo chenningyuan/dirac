@@ -114,11 +114,8 @@ $lastline2 = "File 2 is empty";
 # read all numbers from file 2
 # ----------------------------
 
-$countline = 0;
 $count1 = 0;
 foreach $line (<FILE2>) {
-  $countline++;
-  if ($countline > 9) {
     chop ($line);
     $lastline2 = $line;
     do GetReal ($line);
@@ -129,7 +126,6 @@ foreach $line (<FILE2>) {
         do GetReal ($line);
         }
       }
-    }
 close (FILE2);
 open (FILE2, "<$s2") || die "Error opening $s2\n";
 
@@ -137,14 +133,11 @@ open (FILE2, "<$s2") || die "Error opening $s2\n";
 # scan, compare and print file 1
 # ------------------------------
 
-$countline = 0;
 $count = 0;
 $linenumber = 0;
 $signcheck = 1;
 foreach $line1 (<FILE1>) {
   $line2 = <FILE2>;
-  $countline++;
-  if ($countline > 9) {
     chop ($line1);
     $lastline1 = $line1;
     $line = $line1;
@@ -217,7 +210,6 @@ foreach $line1 (<FILE1>) {
         print "      $line1\n";
         print "      $line2\n\n";
         }
-    }
     }
 
 close (FILE1);
