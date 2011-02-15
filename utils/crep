@@ -8,11 +8,16 @@
 SCRIPT=/tmp/$$.pl
 cat <<\eor >$SCRIPT
 
-#-----------------------------------------------------------------
-# Make sure that the header including compilation info is read.
-#-----------------------------------------------------------------
-$from2[0] = ' Version           : ';
-$to2[0]   = 7;
+# radovan: i have commented this
+#          i think it is unneccesary
+#          this information is already in the reference output
+#          now if the filter does not match the result is empty
+#          this is then easy to check
+# #-----------------------------------------------------------------
+# # Make sure that the header including compilation info is read.
+# #-----------------------------------------------------------------
+# $from2[0] = ' Version           : ';
+# $to2[0]   = 7;
 
 # ---------------------------------------------------------
 # determine names of file to scan, and file with directives
