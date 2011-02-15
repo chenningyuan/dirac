@@ -128,7 +128,7 @@ contains
            ierr_qdiag = 0
 
 !          debug print
-           if(print_lvl > 10)then
+           if(print_lvl > 1)then
              call print_x2cmat(xmat(ioff_osh1),norb1_f,norb1_f,nz,ipq_off(1,0),'x2c - h1_4c',6)
            end if
 
@@ -165,7 +165,7 @@ contains
                                    flabel_tag)
 
 !          debug print
-           if(print_lvl > 20)then
+           if(print_lvl > 2)then
              call print_x2cmat(scr2mat(ioff_esh2),nesh2_f,n1esh_f,nz,ipq_off(1,0),'x2c - umat_onmo',6)
            end if
 

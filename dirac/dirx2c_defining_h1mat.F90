@@ -33,6 +33,10 @@ module x2c_def_h1_4c
       sel_wrk_x2c,                    &
       desel_wrk_x2c,                  &
       reset_x2c_cb_onefck
+  use x2c_utils, only: print_x2cmat
+  use x2c_import_exportC1
+! temporary debugging for atomic x2c
+  use x2cmod_cfg
 
   implicit none
 
@@ -72,6 +76,7 @@ contains
 !         TODO:(- defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
 !
 !----------------------------------------------------------------------
+!
      real(8), intent(inout) :: h1_onmo_bas(*)
      real(8), intent(inout) :: h1_saao_bas(*)
      real(8), intent(inout) :: tra_mat_4cAOMO(*)
@@ -94,30 +99,62 @@ contains
      integer                :: ioff_h1_saao_mat
      integer                :: i       
      integer                :: norb1_f       
-     integer                :: nbas1_f       
+     integer                :: nbas1_f
+     real(8)                :: mydummy(2)
      character (len=12)     :: flabel
-!----------------------------------------------------------------------
+     logical                :: skip_step1 = .false.
+     logical                :: fndlab12
+     real(8), pointer       :: wrk(:)
+     integer                :: lwrk
+!**********************************************************************
+
+       if(x2cmod_h1dirty)then
+!        open file with 4c-h1
+         open(x2c_fh1dirty,file='x2ch1dirty',status='unknown',form='unformatted',    &
+              access='sequential',action='readwrite',position='rewind')
+         if(fndlab12('h1_4caoNOSYM',x2c_fh1dirty))then
+           call x2c_read('h1_4caoNOSYM',h1_saao_bas,naosh_ls*naosh_ls*4,x2c_fh1dirty)
+           skip_step1 = .true.
+         else
+           call x2c_write('dummy       ',mydummy,-1,x2c_fh1dirty)
+           print *,'dirty fix in'
+         end if
+       end if
 
 !      step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
 !
 !              in : defining_h1mat: integer value: 0 == case a. ; 1 == case b. 2 == case c.
 !              out: 4c h1 matrix in SA-AO basis --> h1_saao_bas
 !      ------------------------------------------------------------------------------
-       call get_h1_4c_saao_basis(h1_saao_bas,            &
-                                 defining_h1mat,         &
-                                 linear_sym,             &
-                                 is_len_wrk,             &
-                                 print_lvl)
+       if(.not.skip_step1)then
+         call get_h1_4c_saao_basis(h1_saao_bas,            &
+                                   defining_h1mat,         &
+                                   linear_sym,             &
+                                   is_len_wrk,             &
+                                   print_lvl)
+
+!        temporary fix for debugging atomic x2c:
+         if(x2cmod_h1dirty)then
+           write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
+!          debug print
+           if(print_lvl > 1)then
+             call print_x2cmat(h1_saao_bas,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-saao',6)
+           end if
+           call x2c_write(flabel,h1_saao_bas,naosh_ls*naosh_ls*nz,x2c_fh1dirty)
+         end if
+
+       end if ! .not.skip_step1
 
 !      step 2: transform h1 to orthonormal MO basis if defining h1 matrix is 
-!              case a. 1-el. bare nucleus Dirac-Hamiltonian 
-!              case b. extended Huckel start guess
+!              case 0. 1-el. bare nucleus Dirac-Hamiltonian 
+!              case 1. extended Huckel start guess
 !
 !              in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
 !              out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
 !      ------------------------------------------------------------------------------
-       if(defining_h1mat < 2)then
+       select case(defining_h1mat)
 
+       case(0, 1)
 
 !        initialize matrix offsets
          ioff_osh1     = 1
@@ -131,6 +168,7 @@ contains
            ioff_h1_saao_mat = ioff_aomx(i,i)
 
            if( norb_dim(i) > 0 )then
+
 
              call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
                                      h1_saao_bas(1+ioff_h1_saao_mat),   &
@@ -153,11 +191,20 @@ contains
            ioff_osh1     = ioff_osh1     + norb1_f**2 * nz
 
          end do
-       else
+
+       case(2)
 
 !        step 2: case c.
          call quit('*** error in x2c_get_h1: def. h1 matrix == 4c-FD not implemented yet in the new X2C module. ***')
          
+       end select
+
+       if(x2cmod_h1dirty)then
+         close(x2c_fh1dirty, status='keep')
+         if(.not.skip_step1)then
+!          export to C1...
+           call x2c_export_mat2C1(h1_saao_bas)
+         end if
        end if
 
   end subroutine x2c_get_h1_defining_mat

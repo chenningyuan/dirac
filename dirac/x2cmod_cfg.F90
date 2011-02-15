@@ -29,6 +29,7 @@ module x2cmod_cfg
 
   integer, parameter, public :: x2c_funit    =  25    ! file unit for X2CMAT
   integer, parameter, public :: x2c_fscru    =  26    ! file unit for x2cscr
+  integer, parameter, public :: x2c_fh1dirty =  98    ! file unit for x2c_h1_dirty
   integer, parameter, public :: x2c_Sao_scrF =  88
   integer, parameter, public :: x2c_famfi    =  77
 
@@ -47,7 +48,9 @@ module x2cmod_cfg
   real(8), public :: x2c_cspeed
 
 ! integer block
-  integer, public :: x2c_prt                = 0 ! print level
+  integer, public :: x2c_prt                =  0 ! print level
+  integer, public :: x2c_is_defining_h1mat  = -1
+  integer, public :: x2c_add_amfi           = -1
   integer, public :: dim_pshell(2)
   integer, public :: dim_eshell(2)
   integer, public :: dim_eshell2(2)
@@ -75,8 +78,6 @@ module x2cmod_cfg
   integer, public :: x2c_cb_pq_to_uq(4, 0:7)
   integer, public :: x2c_cb_uq_to_pq(4, 0:7)
   integer, public :: x2c_bs_to_fs(0:7, 2)
-  integer, public :: x2c_is_defining_h1mat
-  integer, public :: x2c_add_amfi
   integer, public :: x2c_tot_charge_for_mfsum
   integer, public :: x2c_amfi_order
   integer, public :: fh_1int_4c
