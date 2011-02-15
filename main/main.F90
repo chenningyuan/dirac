@@ -130,7 +130,6 @@ program dirprg
   if (mytid == 0) then
      call alloc(memory,memsize, id="work array at main")
      call set_mem_start(memory)
-     !call print_static_alloc
      call printtitle
      call printlogo
      call printsubtitle
