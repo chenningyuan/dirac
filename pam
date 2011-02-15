@@ -36,7 +36,6 @@
 #            and then long lines are very annoying
 
 import os
-#import pwd # BTW, do we need it ? It's not in windows; 
 import sys
 import string
 import subprocess
