@@ -17,6 +17,7 @@ build/gen_fortran_interface_h
 cbuild/*
 cmake/Definitions.cmake
 cmake/Sources.cmake
+cmake/Tests.cmake
 dirac.x
 gp/compinfo.h
 include/fortran_interface.h
@@ -26,3 +27,7 @@ test/*/*out
 test/*/compare
 test/LOGS
 test/list_of_tests
+test/density_at_nuclei/RHC__1F__1
+xcfun/fortran/xcfun_autogen.f90
+xcfun/geninterface
+xcfun/include/xcfun_autogen.h
