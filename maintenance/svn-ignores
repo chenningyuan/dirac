@@ -16,7 +16,9 @@
 *.mod
 *.pyc
 Makefile
-pam
+pam.sh
+test/list_of_tests
+compare
 pam.py
 pamq.py
 Makefile.config
