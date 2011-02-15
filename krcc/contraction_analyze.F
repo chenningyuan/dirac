@@ -743,6 +743,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
         CALL WRT_SPOX_TP_CC_KRCC(IHOP(1,IJ),1)
         ELSE IF(IHM.EQ.2) THEN
 * For the intermediate operators
+        WRITE(6,*) ' Absolute address for op ', IH
         CALL WRT_SPOX_TP_CC_KRCC(IHOP(1,IH),1)
         END IF
         WRITE(6,*) ' Number of possible contractions ',IPOSCON(IH)

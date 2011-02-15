@@ -32,6 +32,7 @@ C#include "wrkspc.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "cecore.inc"
+#include "interm.inc"
       COMMON/CMXCJ/MXCJ
 *. Local scratch 
       INTEGER ISX(2*MXPNGAS*MXPNGAS)
@@ -39,8 +40,12 @@ C#include "wrkspc.inc"
       REAL*8 INPRDD, INPROD
 *
       LBLK = -1
-      NTEST = 00
+      NTEST = 10
       NTEST = MAX(NTEST,IPRCC)
+*
+* Will determine the number of commutators (Of course one one with zero)
+      IONE = 1
+      IZERO = 0
 *         
 * Real or complex algebra
       IF(IRECOM.EQ.1) THEN
@@ -53,6 +58,10 @@ C#include "wrkspc.inc"
         WRITE(6,*) ' CC_VEC_FNC in action '
         WRITE(6,*) ' ====================='
       END IF
+*
+* Hardwire symmetry
+      IHSM = 1
+      ITSM = 1
 *      
 *      May want to allocate some arrays
 *
@@ -110,20 +119,52 @@ C      call set_hop_dbg_cc(4,2)
 *
 * H22 --21--> M01
 *
+
+*
+* H22 --22--> T
+*
 * Starter lige her!!!
 *
-      CALL EMTHET_COM_KRCC(T,ITSM,CC_VEC,NSPOBEX_TP_CC,
-     &     WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
-     &     WORK(KLLSOBEX_CC),
+* Instead of CC_VEC som intermediate vector is just passed down or?
+*
+* CCAMP bliver til T
+*
+*
+* H22 --22--> T
+C    &NH22TOT,KNH22TOT,KNH22TT,KCOMBNH22TOT,KPERMNH22TOT,
+C    &KFACNH22TOT,KCOMBFACNH22TOT,KSNH22TOT,KFNH22TOT,
+*
+      IHM = 1
+*
+      CALL EMTHET_COM_KRCC(CCAMP,ITSM,CC_VEC,IONE,IHM, !Perhaps sym cc_vec?
+     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),
+! Examine next 3 lines!!!      
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),
      &     NOBEX_TP,WORK(KIBSOX_FOR_OX),WORK(KNSOX_FOR_OX),
      &     WORK(KISOX_FOR_OX),
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),IHSM,
-     &     WORK(KLSPOBEX_AC_CC),ILTTWO,I2DIATP,
-C added    
-     &     WORK(KHTPCO),WORK(KCONNH),
-     &     WORK(KHT0CO),WORK(KHT1CO),WORK(KHT2CO),
-     &     WORK(KHT3CO),WORK(KHT4CO),
-     &     NCONN_IN,NCONN_IN2,NCONN_IN3,NCONN_IN4)
+! End examination
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
+     &     ILTTWO,I2DIATP,
+! Add info for contractions
+     &     NH22,WORK(KNH22),
+     &     NH22TOT,WORK(KNH22TOT),WORK(KNH22TT),WORK(KCOMBNH22TOT),
+     &     WORK(KPERMNH22TOT),WORK(KFACNH22TOT),WORK(KCOMBFACNH22TOT),
+     &     WORK(KSNH22TOT),WORK(KFNH22TOT),
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,WORK(KLSOBEX_CC),NSPOBEX_TPE)
+      stop 'enough for now'
+
+
+
+C     CALL CONTRACTION_TESTER(NH22,WORK(KNH22),
+C    &NH22TOT,WORK(KNH22TOT),
+C    &WORK(KNH22TT),WORK(KCOMBNH22TOT),
+C    &WORK(KPERMNH22TOT),
+C    &WORK(KFACNH22TOT),
+C    &WORK(KCOMBFACNH22TOT),
+C    &WORK(KSNH22TOT),WORK(KFNH22TOT),
+C    &WORK(KLSOBEX_CC),NSPOBEX_TPE,
+C    &WORK(KLSOBEX_CC),NSPOBEX_TPE,
+C    &WORK(KLSOBEX),IHM)
 *
 * H21 --20--> M01
 *

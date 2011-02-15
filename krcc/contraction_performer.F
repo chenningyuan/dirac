@@ -7,15 +7,26 @@
 * Lasse 2011                                                           *
 *                                                                      *
 ************************************************************************
-      SUBROUTINE EMTHET_COM_KRCC(T,ITSM,CC_VEC_FNC,NSPOBEX,
-     &           ISPOBEX_TP,IBSPOBEX,LSPOBEX,NOBEX,
+      SUBROUTINE EMTHET_COM_KRCC(T,ITSM,CC_VEC_FNC,NCOMMU,IHM,
+     &           NSPOBEX,ISPOBEX_TP,
+C next two lines needs to be checked
+     &           IBSPOBEX,LSPOBEX,NOBEX,
      &           IBSOX_FOR_OX,NSOX_FOR_OX,ISOX_FOR_OX,
-     &           NHTP,IHTP,IHINDEX,IHSIGN,IHSM,ISPOBEX_AC,
+C end the check
+     &           NHTP,IHTP,IHINDEX,IHSM,
      &           ILTTWO,I2DIATP,
-     &           IHTP_COM,NCONN_H,
-     &           NHT_CONN0,NHT_CONN1,NHT_CONN2,
-     &           NHT_CONN3,NHT_CONN4,
-     &           NCONN_IN,NCONN_IN2,NCONN_IN3,NCONN_IN4)
+! Info on contractions
+     &           NOP,IOP,
+     &           NCONT,IOPRES,
+     &           IOPT,
+     &           IPOSCON,
+     &           IPERM,
+     &           IPREFAC,
+     &           IPOSCONPERM,
+     &           ISTARTOP,IENDOP,
+     &           ITOP,NTOP,
+     &           IRESOP,NRESOP)!,
+C    &           IHOP,IHM)
 *
 * New version by Lasse 2009. Replaces old version by Jeppe
 *
@@ -30,8 +41,6 @@
 *. Info on included spinorbital excitations
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX+1),LSPOBEX(NSPOBEX+1)
       INTEGER IBSPOBEX(NSPOBEX+1)
-*. Are given type of spin-orbital excitation active ?
-      INTEGER ISPOBEX_AC(NSPOBEX)
 *. Orbital excitations to spin-orbital excitations
       INTEGER IBSOX_FOR_OX(*),NSOX_FOR_OX(*),ISOX_FOR_OX(*)
 *. Hamilton operator types
@@ -39,19 +48,16 @@
 *. Input CC vector
       DIMENSION T(*)
 *. New input
-*. Min and Max number of commutators (IHTP_COM), and the number of connection(NCONN_H)
-      INTEGER IHTP_COM(2,NHTP),NCONN_H(5,NHTP)
-*. The actual connections (stored with T-Type number)
-      INTEGER NHT_CONN0(NHTP)
-      INTEGER NHT_CONN1(2,NCONN_IN),NHT_CONN2(3,NCONN_IN2)
-      INTEGER NHT_CONN3(4,NCONN_IN3),NHT_CONN4(5,NCONN_IN4)
+      INTEGER IOP(NOP),IPOSCON(NOP),IPREFAC(4,NOP),IPERM(NOP)
+      INTEGER IPOSCONPERM(4,NOP)
+      INTEGER IOPRES(NCONT),IOPT(NCONT)
+      INTEGER ISTARTOP(NOP),IENDOP(NOP)
+      INTEGER ITOP(4*NGAS,NTOP),IRESOP(4*NGAS,NRESOP)
+C     INTEGER IHOP(4*NGAS,NOP)
 *. Output CC vector function
       DIMENSION CC_VEC_FNC(*)
 *
-      IDUM = 0
-      CALL MEMMAR(IDUM,IDUM,'MARK ',IDUM,'EMTHET')
-*
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.1000) THEN
         WRITE(6,*) ' Information from EMTHET_COM '
         WRITE(6,*) ' ============================='
@@ -72,19 +78,37 @@
       ZERO = 0.0D0
       CALL SETVEC(CC_VEC_FNC,ZERO,N_CC_AMP+1)
 *. New initialization
-      NCOMM0 = 0
-      NCOMM1 = 0
-      NCOMM2 = 0
-      NCOMM3 = 0
-      NCOMM4 = 0
-      ICONN1_INT = 1
-      ICONN2_INT = 1
-      ICONN3_INT = 1
-      ICONN4_INT = 1
 *. Loop over blocks of Hamilton operator
-      DO IHOP = 1, NHTP
+      DO IH = 1, NOP !NHTP
+* First is this a Hamiltonian or an Intermediate operator?
+        IF(IHM.EQ.1) THEN
+* For the Hamiltonian operators
+          IHOP = IOP(IH)
+          IF(NTEST.GE.100) THEN
+            WRITE(6,*) ' Info for Hamiltonian op number ',IHOP
+            WRITE(6,*) ' Absolute address for op ', IHOP
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHOP),1)
+          END IF
+        ELSE IF(IHM.EQ.2) THEN
+* For the intermediate operators
+          IHOP = IH
+          IF(NTEST.GE.100) THEN
+            WRITE(6,*) ' Info for Intermediate op number ',IHOP
+            WRITE(6,*) ' Absolute address for op ', IHOP
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHOP),1)
+          END IF
+        ELSE 
+          WRITE(6,*) ' Lasse forgot to set IHM '
+          WRITE(6,*) ' Please do it for him '
+          STOP ' Check error message in output '
+        END IF
+*
 C Notice ISPIN is passed down via common block to tell that we now shall
 C look for a spin-orbit integral
+C
+C Not sure to keep or if it will only apply for the Hamiltonian
+C operators!
+C
         ISPINORBIT = 0
         IF(IHOP.GE.ILTTWO+1) THEN
            ISPINORBIT = 1
@@ -94,143 +118,71 @@ C look for a spin-orbit integral
            ISPINORBIT = 0
         END IF
 *
-        FACTORH = FLOAT(IHSIGN(IHOP))
 *. About signs : signs are all generated in HTYPE_TO_ED_REL, so p.t
 *
 * But this is causing me problems. So i will try to fix it!
 *
         FACTORH = 1.0D0
-        NTEST = 100
-        IF(NTEST.GE.100) THEN
-          WRITE(6,*) ' Info for Hamiltonian op number ', IHOP
-          WRITE(6,*) ' Operator in CAAB form : '
-          CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,IHOP),1)
-          WRITE(6,*) ' FACTORH = ', FACTORH
+*
+* Zero commutators Still needs fixing!!!!
+*
+        IF(NCOMMU.EQ.0) THEN
+C         IHCTP = NHT_CONN0(IHOP)
+          CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,
+     &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
+     &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
+     &         IONE,IONE,IONE,IONE,IHSM,
+     &         ONE,ONE,ONE,ONE,
+     &         CC_VEC_FNC(IBSPOBEX(IHCTP)),
+     &         FACTORH,LCCFBLK)
         END IF
-        NTEST = 0
-*
-* Loop over minimum to maximum number of commutators for given H-Type
-        DO NCOMMU = IHTP_COM(1,IHOP),IHTP_COM(2,IHOP)
-C        print*,'IHTP_COM(1,IHOP),IHTP_COM(2,IHOP),NCOMMU',
-C     &          IHTP_COM(1,IHOP),IHTP_COM(2,IHOP),NCOMMU
-*
-* Zero commutators
-*
-          IF(NCOMMU.EQ.0) THEN
-            IHCTP = NHT_CONN0(IHOP)
-            CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,
-     &           ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-     &           ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-     &           IONE,IONE,IONE,IONE,IHSM,
-     &           ONE,ONE,ONE,ONE,
-     &           CC_VEC_FNC(IBSPOBEX(IHCTP)),
-     &           1,FACTORH,LCCFBLK)
-          END IF
 *
 * One commutator
 *
-          IF(NCOMMU.EQ.1) THEN
+        IF(NCOMMU.EQ.1) THEN
 * Loop over the number of possible contractions
-            DO ICONN1 = ICONN1_INT,ICONN1_INT+NCONN_H(2,IHOP)-1
-              IT1 = NHT_CONN1(1,ICONN1)
-              IHCTP = NHT_CONN1(2,ICONN1)
-              IT1_B = IBSPOBEX(IT1)
-              LCCFBLK = LSPOBEX(IHCTP)
-C              print*,'IT1,IHCTP,IT1_B,LCCFBLK',IT1,IHCTP,IT1_B,LCCFBLK
+          IF(IPOSCON(IH).GE.1) THEN
+            DO I =1,IPERM(IH)
+              IF(NTEST.GE.100) THEN
+                WRITE(6,*) 'Number of possible contractions ',
+     &          IPOSCONPERM(I,IH),' for contraction number ',I
+                WRITE(6,*) 'Permutation factor for contraction ',
+     &          IPREFAC(I,IH)
+              END IF
+              IF(IPOSCONPERM(I,IH).GE.1) THEN
+                DO J=1,IPOSCONPERM(I,IH)
+                  ICOUNT = ICOUNT + 1
+                  IF(NTEST.GE.100) THEN
+                   WRITE(6,*) ' Operator contracted with ',IOPT(ICOUNT)
+                   CALL WRT_SPOX_TP_CC_KRCC(ITOP(1,IOPT(ICOUNT)),1)
+                   WRITE(6,*) ' Operators contracted to ',IOPRES(ICOUNT)
+                   CALL WRT_SPOX_TP_CC_KRCC(IRESOP(1,IOPRES(ICOUNT)),1)
+                  END IF
+                  IT1 = IOPT(ICOUNT) !operator contracted with
+                  IHCTP = IOPRES(ICOUNT) !resultant operator
+                  IT1_B = IBSPOBEX(IT1)
+                  LCCFBLK = LSPOBEX(IHCTP)
+             print*,'IT1,IHCTP,IT1_B,LCCFBLK',IT1,IHCTP,IT1_B,LCCFBLK
               CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),1,
-     &             ISPOBEX_TP(1,IT1),ISPOBEX_TP(1,IUNIOP),
-     &             ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-     &             ITSM,IONE,IONE,IONE,IHSM,
-     &             T(IT1_B),ONE,ONE,ONE,
+     &             ISPOBEX_TP(1,IT1),
+     &             ITSM,IHSM,
+     &             T(IT1_B),
      &             CC_VEC_FNC(IBSPOBEX(IHCTP)),
-     &             1,FACTORH,LCCFBLK)
+     &             LCCFBLK)
+                END DO
+              END IF
             END DO
-            ICONN1_INT = ICONN1_INT + NCONN_H(2,IHOP)
+          ELSE
+            IF(NTEST.GE.100) THEN
+              WRITE(6,*) ' No possible contractions '
+            END IF
           END IF
+        END IF
 *
-* Two commutators
-*
-          IF(NCOMMU.EQ.2) THEN
-* Loop over the number of possible contractions
-            DO ICONN2 = ICONN2_INT,ICONN2_INT+NCONN_H(3,IHOP)-1
-              IT1 = NHT_CONN2(1,ICONN2)
-              IT2 = NHT_CONN2(2,ICONN2)
-              IHCTP = NHT_CONN2(3,ICONN2)
-              IT1_B = IBSPOBEX(IT1)
-              IT2_B = IBSPOBEX(IT2)
-*. Overall factor
-              XBCH = FAC_IN_BCH(2,IT1,IT2,IDUMMY,IDUMMY)
-              FACTOR = XBCH*FACTORH
-              LCCFBLK = LSPOBEX(IHCTP)
-              CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),2,
-     &             ISPOBEX_TP(1,IT1),ISPOBEX_TP(1,IT2),
-     &             ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-     &             ITSM,ITSM,IONE,IONE,IHSM,
-     &             T(IT1_B),T(IT2_B),ONE,ONE,
-     &             CC_VEC_FNC(IBSPOBEX(IHCTP)),1,FACTOR,LCCFBLK)
-            END DO
-            ICONN2_INT = ICONN2_INT + NCONN_H(3,IHOP)
-          END IF
-*
-* Three commutators
-*
-          IF(NCOMMU.EQ.3) THEN
-            DO ICONN3 = ICONN3_INT,ICONN3_INT+NCONN_H(4,IHOP)-1
-              IT1 = NHT_CONN3(1,ICONN3)
-              IT2 = NHT_CONN3(2,ICONN3)
-              IT3 = NHT_CONN3(3,ICONN3)
-              IHCTP = NHT_CONN3(4,ICONN3)
-              IT1_B = IBSPOBEX(IT1)
-              IT2_B = IBSPOBEX(IT2)
-              IT3_B = IBSPOBEX(IT3)
-*. Overall factor
-              XBCH = FAC_IN_BCH(3,IT1,IT2,IT3,IDUMMY)
-              FACTOR = XBCH*FACTORH
-              LCCFBLK = LSPOBEX(IHCTP)
-              CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),3,
-     &             ISPOBEX_TP(1,IT1),ISPOBEX_TP(1,IT2),
-     &             ISPOBEX_TP(1,IT3),ISPOBEX_TP(1,IUNIOP),
-     &             ITSM,ITSM,ITSM,IONE,IHSM,
-     &             T(IT1_B),T(IT2_B),T(IT3_B),ONE,
-     &             CC_VEC_FNC(IBSPOBEX(IHCTP)),1,FACTOR,LCCFBLK)
-            END DO
-            ICONN3_INT = ICONN3_INT + NCONN_H(4,IHOP)
-          END IF
-*
-* Four commutators
-*
-          IF(NCOMMU.EQ.4) THEN
-            DO ICONN4 = ICONN4_INT,ICONN4_INT+NCONN_H(5,IHOP)-1
-              IT1 = NHT_CONN4(1,ICONN4)
-              IT2 = NHT_CONN4(2,ICONN4)
-              IT3 = NHT_CONN4(3,ICONN4)
-              IT4 = NHT_CONN4(4,ICONN4)
-              IHCTP = NHT_CONN4(5,ICONN4)
-              IT1_B = IBSPOBEX(IT1)
-              IT2_B = IBSPOBEX(IT2)
-              IT3_B = IBSPOBEX(IT3)
-              IT4_B = IBSPOBEX(IT4)
-*. Overall factor
-              XBCH = FAC_IN_BCH(4,IT1,IT2,IT3,IT4)
-              FACTOR = XBCH*FACTORH
-              LCCFBLK = LSPOBEX(IHCTP)
-                   CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),4,
-     &                  ISPOBEX_TP(1,IT1),ISPOBEX_TP(1,IT2),
-     &                  ISPOBEX_TP(1,IT3),ISPOBEX_TP(1,IT4),
-     &                  ITSM,ITSM,ITSM,ITSM,IHSM,
-     &                  T(IT1_B),T(IT2_B),T(IT3_B),T(IT4_B),
-     &                  CC_VEC_FNC(IBSPOBEX(IHCTP)),1,FACTOR,LCCFBLK)
-            END DO
-            ICONN4_INT = ICONN4_INT + NCONN_H(5,IHOP)
-          END IF
-*
-        END DO
-*       ^ End of loop over commutators
       END DO
 *     ^ End of loop over H-operators
 *
-      CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'EMTHET')
-*
+      RETURN
       END
 *
       FUNCTION FAC_IN_BCH(NT,IT1,IT2,IT3,IT4)
@@ -310,14 +262,13 @@ C        FAC = 1.0D0/6.0D0
       RETURN
       END 
 *
-      SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,IT1,IT2,IT3,IT4,
-     &                   IT1SM,IT2SM,IT3SM,IT4SM,IHSM,T1,T2,T3,T4,
-     &                   HT1234,IONLY_CONN,FACX,LHT1234)
+      SUBROUTINE HCT1234_REL(IHCAAB,IHINDEX,NTOP,IT1,
+     &                   IT1SM,IHSM,T1,
+     &                   HT1234,LHT1234)
 * 
 * All possible contractions of a given type of the Hamiltonian 
 * with upto four T-operators of given type. 
 *
-* IONLY_CONN .ne.0 => Only fully connected  terms are included  
 *
 * Jeppe Olsen, April 2003
 *
@@ -333,291 +284,94 @@ C        FAC = 1.0D0/6.0D0
 *.. H-operator in CAAB form
       INTEGER IHCAAB(4*NGAS),IHINDEX(4)
 *.. T-operators : type and coefficients
-      INTEGER IT1(4*NGAS),IT2(4*NGAS),IT3(4*NGAS),IT4(4*NGAS)
-      DIMENSION T1(*), T2(*), T3(*), T4(*), HT1234(*)
+      INTEGER IT1(4*NGAS)!,IT2(4*NGAS),IT3(4*NGAS),IT4(4*NGAS)
+      DIMENSION T1(*)!, T2(*), T3(*), T4(*), HT1234(*)
 *
 *. Local scratch
 **. Assuming that H contains atmost 2 particle operator 
       PARAMETER(MXPCONN = 4*4*4*4)
       INTEGER ICONN(4,MXPCONN)
       INTEGER IHEXP(3,4)
-      INTEGER ID1(4*MXPNGAS),ID2(4*MXPNGAS),ID3(4*MXPNGAS)
-      INTEGER ID4(4*MXPNGAS), IEX(4*MXPNGAS)
+C     INTEGER ID4(4*MXPNGAS),ID2(4*MXPNGAS),ID3(4*MXPNGAS)
+      INTEGER ID1(4*MXPNGAS), IEX(4*MXPNGAS)
       INTEGER IORD(4),IEXD1234(4)
-      INTEGER IT1_REO(4*MXPNGAS),IT2_REO(4*MXPNGAS),IT3_REO(4*MXPNGAS)
-      INTEGER IT4_REO(4*MXPNGAS)
+C     INTEGER IT4_REO(4*MXPNGAS),IT2_REO(4*MXPNGAS),IT3_REO(4*MXPNGAS)
+C     INTEGER IT1_REO(4*MXPNGAS)
 *
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.100) THEN 
-         WRITE(6,*) ' ======================='
-         WRITE(6,*) ' Welcome to HCT1234_REL '
-         WRITE(6,*) ' ======================='
-         WRITE(6,*)
-         WRITE(6,*) ' H-operator in action (CAAB)'
-         CALL WRT_SPOX_TP_CC_KRCC(IHCAAB,1)
-         WRITE(6,*) ' IT1SM, IT2SM, IT3SM, IT4SM ',
-     &                IT1SM, IT2SM, IT3SM, IT4SM
-         IF(NTOP.GE.1) THEN
-           WRITE(6,*) ' T1 operator '
-           CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
-         END IF
-         IF(NTOP.GE.2) THEN
-           WRITE(6,*) ' T2 operator '
-           CALL WRT_SPOX_TP_CC_KRCC(IT2,1)
-         END IF
-         IF(NTOP.GE.3) THEN
-           WRITE(6,*) ' T3 operator '
-           CALL WRT_SPOX_TP_CC_KRCC(IT3,1)
-         END IF
-         IF(NTOP.GE.4) THEN
-           WRITE(6,*) ' T4 operator '
-           CALL WRT_SPOX_TP_CC_KRCC(IT4,1)
-         END IF
-         IF(IONLY_CONN.NE.0) THEN
-           WRITE(6,*) ' Only connected terms are included '
-         END IF
-         IF (NTEST.GE.1000) THEN
-           WRITE(6,*) ' HCT1234 : Input block of CC vector function '
-           CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
-         END IF
+        WRITE(6,*) ' ======================='
+        WRITE(6,*) ' Welcome to HCT1234_REL '
+        WRITE(6,*) ' ======================='
+        WRITE(6,*)
+        WRITE(6,*) ' H-operator in action (CAAB)'
+        CALL WRT_SPOX_TP_CC_KRCC(IHCAAB,1)
+        WRITE(6,*) ' IT1SM ',IT1SM
+        IF(NTOP.GE.1) THEN
+          WRITE(6,*) ' T operator '
+          CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
+        END IF
+        IF (NTEST.GE.1000) THEN
+          WRITE(6,*) ' HCT1234 : Input block of CC vector function '
+          CALL WRTMAT(HT1234,1,LHT1234,1,LHT1234)
+        END IF
       END IF
 *. Reform H operator to expanded form - assumed in CONTR_POS
 C     REFORM_HTYP(IHCAAB,IHOP,NOP,IWAY,NGAS,IDOREO,IREO)
 C     CALL REFORM_HTYP(IHCAAB,IHEXP,NHOP,1,NGAS,1,IHINDEX)
 *. Obtain in CAAB form 
+C May still be used Lasse
       CALL REFORM_HTYP_REL(IHCAAB,IHEXP,NHOP,1,NGAS,0,IHINDEX)
+C      stop 'after REFORM_HTYP_REL'
 *. Find all possible contractions of H operator with the NTOP T operators
-      CALL CONTR_POS_REL(IHEXP,NHOP,NTOP,IT1,IT2,IT3,IT4,
-     &               IONLY_CONN,NCONN,ICONN)
-C     CONTR_POS(IHOP,NHOP,NTOP,IT1,IT2,IT3,IT4,
-C    &                     IONLY_CONN,NCONN,ICONN)
-      DO JCONN = 1, NCONN
+C This is already found on the outside so we know which contraction is
+C supposed be performed so no need to find it! 
+C     CALL CONTR_POS_REL(IHEXP,NHOP,NTOP,IT1,IT2,IT3,IT4,
+C    &               IONLY_CONN,NCONN,ICONN)
+C Will here first for convenience replace ICONN array
+      CALL ISETVC(ICONN(1,1),NTOP,4)
+C No loop needed since it is one well defined contraction comming down.
+C     DO JCONN = 1, NCONN
 *. Obtain contraction order, and the individual deexcitation operators
-        CALL HTYPE_TO_ED_REL(IHCAAB,IHINDEX,NHOP,ICONN(1,JCONN),NTOP,
+* Will keep the sign here! At least for now.
+      CALL HTYPE_TO_ED_REL(IHCAAB,IHINDEX,NHOP,ICONN(1,1),NTOP,
      &                   ID1,ID2,ID3,ID4,IEX,IEXD1234,IORD,ISIGN_DE)
+C     stop 'after HTYPE_TO_ED_REL'
 *. Reorder t-operators so they correspond to new order
 *. I will use 4 operators, as the last (inactive have just been 
 *. defined to be unit operator. This is done as OPCT1234 
 *. currently requires four ops and four symmetries
+* No need to reorder operators since there is only one anyway!
+* And they come in the way they should be contracted!
+*
 C        ISIGN_DE = ISIGN_DE * FACX
 C        print*,'ISIGN_DE * FACX',ISIGN_DE,FACX
-        CALL REO_CAABS_REL(IT1,IT2,IT3,IT4,4,
-     &                 IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                 IT1SM,IT2SM,IT3SM,IT4SM,
-     &                 IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                 IORD, NGAS)
+C     CALL REO_CAABS_REL(IT1,IT2,IT3,IT4,4,
+C    &                 IT1_REO,IT2_REO,IT3_REO,IT4_REO,
+C    &                 IT1SM,IT2SM,IT3SM,IT4SM,
+C    &                 IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
+C    &                 IORD, NGAS)
 *.   And then do the contraction 
 *
 * There are 24 different ways of making the contractions so, I must
 * have 24 cases, and insert the appropriate T-operators, 
 * If I do this without problems, I will give myself a beer ..
+* 
+* No need for beer if you only have one way. Lasse
 *
-C      print*,'JCONN,NCONN',JCONN,NCONN
-C      do i=1,4
-C       print*,'iord,i',iord(i),i
-C      end do
-        IF(IORD(1).EQ.1.AND.IORD(2).EQ.2.AND.IORD(3).EQ.3
-     &  .AND.IORD(4).EQ.4) THEN
-*.1234
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T1,T2,T3,T4,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.1.AND.IORD(2).EQ.2.AND.IORD(3).EQ.4
-     &  .AND.IORD(4).EQ.3)THEN
-*.1243
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T1,T2,T4,T3,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.1.AND.IORD(2).EQ.3.AND.IORD(3).EQ.2
-     &  .AND.IORD(4).EQ.4)THEN
-*. 1324
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T1,T3,T2,T4,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.1.AND.IORD(2).EQ.3.AND.IORD(3).EQ.4.
-     &  AND.IORD(4).EQ.2)THEN
-*. 1342 
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T1,T3,T4,T2,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.1.AND.IORD(2).EQ.4.AND.IORD(3).EQ.2
-     &  .AND.IORD(4).EQ.3)THEN
-*. 1423
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T1,T4,T2,T3,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.1.AND.IORD(2).EQ.4.AND.IORD(3).EQ.3
-     &  .AND.IORD(4).EQ.2)THEN
-*. 1432
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T1,T4,T3,T2,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.2.AND.IORD(2).EQ.1.AND.IORD(3).EQ.3.AND
-     &  .IORD(4).EQ.4)THEN
-*.2134
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T2,T1,T3,T4,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.2.AND.IORD(2).EQ.1.AND.IORD(3).EQ.4.AND
-     &  .IORD(4).EQ.3)THEN
-*.2143
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T2,T1,T4,T3,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.2.AND.IORD(2).EQ.3.AND.IORD(3).EQ.1.AND
-     &  .IORD(4).EQ.4)THEN
-*.2314
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T2,T3,T1,T4,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.2.AND.IORD(2).EQ.3.AND.IORD(3).EQ.4.AND
-     &  .IORD(4).EQ.1)THEN
-*.2341
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T2,T3,T4,T1,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.2.AND.IORD(2).EQ.4.AND.IORD(3).EQ.1.AND
-     &  .IORD(4).EQ.3)THEN
-*.2413
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T2,T4,T1,T3,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.2.AND.IORD(2).EQ.4.AND.IORD(3).EQ.3.AND
-     &  .IORD(4).EQ.1)THEN
-*.2431
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T2,T4,T3,T1,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.3.AND.IORD(2).EQ.1.AND.IORD(3).EQ.2.AND.
-     &  IORD(4).EQ.4)THEN
-*.3124
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T3,T1,T2,T4,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.3.AND.IORD(2).EQ.1.AND.IORD(3).EQ.4.AND.
-     &  IORD(4).EQ.2)THEN
-*.3142
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T3,T1,T4,T2,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.3.AND.IORD(2).EQ.2.AND.IORD(3).EQ.1.AND.
-     &  IORD(4).EQ.4)THEN
-*.3214
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T3,T2,T1,T4,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.3.AND.IORD(2).EQ.2.AND.IORD(3).EQ.4.AND.
-     &  IORD(4).EQ.1)THEN
-*.3241
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T3,T2,T4,T1,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.3.AND.IORD(2).EQ.4.AND.IORD(3).EQ.1.AND.
-     &  IORD(4).EQ.2)THEN
-*.3412
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T3,T4,T1,T2,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.3.AND.IORD(2).EQ.4.AND.IORD(3).EQ.2.AND.
-     &  IORD(4).EQ.1)THEN
-*.3421
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T3,T4,T2,T1,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.4.AND.IORD(2).EQ.1.AND.IORD(3).EQ.2.AND.
-     &  IORD(4).EQ.3)THEN
-*. 4123
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T4,T1,T2,T3,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.4.AND.IORD(2).EQ.1.AND.IORD(3).EQ.3.AND.
-     &  IORD(4).EQ.2)THEN
-*. 4132
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T4,T1,T3,T2,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.4.AND.IORD(2).EQ.2.AND.IORD(3).EQ.1.AND.
-     &  IORD(4).EQ.3)THEN
-*. 4213
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T4,T2,T1,T3,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.4.AND.IORD(2).EQ.2.AND.IORD(3).EQ.3.AND.
-     &  IORD(4).EQ.1)THEN
-*. 4231
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T4,T2,T3,T1,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.4.AND.IORD(2).EQ.3.AND.IORD(3).EQ.1.AND.
-     &  IORD(4).EQ.2)THEN
-*. 4312
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T4,T3,T1,T2,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE IF (IORD(1).EQ.4.AND.IORD(2).EQ.3.AND.IORD(3).EQ.2.AND.
-     &  IORD(4).EQ.1)THEN
-*. 4321
-          CALL OPCT1234M_REL(IEX,ID1,ID2,ID3,ID4,
-     &                   IT1_REO,IT2_REO,IT3_REO,IT4_REO,
-     &                   T4,T3,T2,T1,HT1234,
-     &                   IT1SM_REO,IT2SM_REO,IT3SM_REO,IT4SM_REO,
-     &                   IHSM,IEXD1234,ISIGN_DE,FACX)
-        ELSE 
-          WRITE(6,*) ' Sorry, but jeppe has messed up again ... '
-          WRITE(6,*) ' untested IORD sequence : ', (IORD(I),I=1,4)
-          STOP       ' untested IORD sequence   '
-        END IF
+*.1234 Always keep the same order now!!! 
+* Commented out no longer needed things (good vocabulary today)
+      CALL OPCT1234M_REL(IEX,ID1,!ID2,ID3,ID4,
+     &                   IT1,!IT1_REO!,IT2_REO,IT3_REO,IT4_REO,
+     &                   T1,!T2,T3,T4,
+     &                   HT1234,
+     &                   IT1SM_REO,!IT2SM_REO,IT3SM_REO,IT4SM_REO,
+     &                   IHSM,IEXD1234,ISIGN_DE)
 C     OPCT1234M(IOEX,IO1DX,IO2DX,IO3DX,IO4DX,
 C    &                    IT1,IT2,IT3,IT4,T1,T2,T3,T4,OT1234,
 C    &                    IT1SM,IT2SM,IT3SM,IT4SM,IOPSM,IOPINDX,
 C    &                    ISIGN,FACX)
-      END DO
+C      END DO
 *
       IF(NTEST.GE.1000) THEN
          WRITE(6,*) ' HCT1234 : Output block of CC vector function '
@@ -693,7 +447,7 @@ C    &                    ISIGN,FACX)
        END DO
       END IF
 *
-      NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Reform of Htype '
         IF(IWAY.EQ.1) THEN
@@ -1031,7 +785,7 @@ C      CALL IWRTMA(IEXD1234,1,NHOP,1,NHOP)
       ISIGN_DE = IPERM_PARITY(IEXD1234,NHOP)
 C      CALL IWRTMA(IEXD1234,1,NHOP,1,NHOP)
 *
-      NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================'
@@ -1168,10 +922,12 @@ C      CALL IWRTMA(IEXD1234,1,NHOP,1,NHOP)
       RETURN
       END
 *
-      SUBROUTINE OPCT1234M_REL(IOEX,IO1DX,IO2DX,IO3DX,IO4DX,
-     &                    IT1,IT2,IT3,IT4,T1,T2,T3,T4,OT1234,
-     &                    IT1SM,IT2SM,IT3SM,IT4SM,IOPSM,IOPINDX,
-     &                    ISIGN,FACX)
+      SUBROUTINE OPCT1234M_REL(IOEX,IO1DX,!IO2DX,IO3DX,IO4DX,
+     &                    IT1,!IT2,IT3,IT4,
+     &                    T1,!T2,T3,T4,
+     &                    OT1234,
+     &                    IT1SM,!IT2SM,IT3SM,IT4SM,
+     &                    IOPSM,IOPINDX,ISIGN)
 *
 * Master routine for contracting operator with upto 4 operators
 *
@@ -1244,9 +1000,12 @@ Classe     &               KLTSCR4,KLTSCR5,KLTSCR6,
      &               KLOCK1, KLOCK2, KLOCK3,KLOCK4, 
      &               KLOCL1, KLOCL2, KLOCL3,KLOCL4, KL_IBF, 
      &               KLEXEORD
-      CALL OPCT1234_REL(IOEX,IO1DX,IO2DX,IO3DX,IO4DX,
-     &           IT1,IT2,IT3,IT4,T1,T2,T3,T4,OT1234,
-     &           IT1SM,IT2SM,IT3SM,IT4SM,IOPSM,
+      CALL OPCT1234_REL(IOEX,IO1DX,!IO2DX,IO3DX,IO4DX,
+     &           IT1,!IT2,IT3,IT4,
+     &           T1,!T2,T3,T4,
+     &           OT1234,
+     &           IT1SM,!IT2SM,IT3SM,IT4SM,
+     &           IOPSM,
      &           LCCBD12,LCCB,     
      &    WORK(KIX1_CA),WORK(KSX1_CA),WORK(KIX1_CB),WORK(KSX1_CB),
      &    WORK(KIX1_AA),WORK(KSX1_AA),WORK(KIX1_AB),WORK(KSX1_AB),
@@ -1279,14 +1038,17 @@ Classe     &    WORK(KLTSCR4),WORK(KLTSCR5),WORK(KLTSCR6),
      &    WORK(KLNMEX),WORK(KLNMK1),WORK(KLNML1),
      &    IOPINDX,
      &    WORK(KLZ),WORK(KLZSCR),WORK(KLSTREO),
-     &    ISIGN,FACX,N_TDL_MAX)
+     &    ISIGN,N_TDL_MAX)
 *
       RETURN
       END
 *
-      SUBROUTINE OPCT1234_REL(IOEX,IO1DX,IO2DX,IO3DX,IO4DX,
-     &           IT1,IT2,IT3,IT4,T1,T2,T3,T4,OT1234,
-     &           IT1SM,IT2SM,IT3SM,IT4SM,IOPSM,
+      SUBROUTINE OPCT1234_REL(IOEX,IO1DX,!IO2DX,IO3DX,IO4DX,
+     &           IT1,!IT2,IT3,IT4,
+     &           T1,!T2,T3,T4,
+     &           OT1234,
+     &           IT1SM,!IT2SM,IT3SM,IT4SM,
+     &           IOPSM,
      &           LDB,LB,
      &           IX1_CA,SX1_CA,IX1_CB,SX1_CB,
      &           IX1_AA,SX1_AA,IX1_AB,SX1_AB,
@@ -1316,7 +1078,7 @@ Classe     &           TSCR4,TSCR5,TSCR6,
      &           INM_CAAB_EX,INM_CAAB_K,INM_CAAB_L,
      &           IEXD1234_INDX,
      &           IZ,IZSCR,ISTREO,
-     &           ISIGNG,FACX,N_TDL_MAX)
+     &           ISIGNG,N_TDL_MAX)
 *
 * Contract indeces of Operator O with indeces of 
 * excitation operator T1,T2, T3, T4
@@ -1339,10 +1101,10 @@ Classe     &           TSCR4,TSCR5,TSCR6,
 #include "ctcc.inc"
 #include "symm.inc"
 *. Input   
-      INTEGER IOEX(NGAS,4),IO1DX(NGAS,4),IO2DX(NGAS,4)
-      INTEGER IO3DX(NGAS,4),IO4DX(NGAS,4)
-      INTEGER IT1(NGAS,4),IT2(NGAS,4),IT3(NGAS,4),IT4(NGAS,4)
-      DIMENSION T1(*),T2(*),T3(*),T4(*)
+      INTEGER IOEX(NGAS,4),IO1DX(NGAS,4)
+C     INTEGER IO2DX(NGAS,4),IO3DX(NGAS,4),IO4DX(NGAS,4)
+      INTEGER IT1(NGAS,4)!,IT2(NGAS,4),IT3(NGAS,4),IT4(NGAS,4)
+      DIMENSION T1(*)!,T2(*),T3(*),T4(*)
 *. Map of index EXD1234 operator to original index of Hamiltonian
       INTEGER IEX1234_INDX(4)
 *. Output
@@ -1351,34 +1113,34 @@ Classe     &           TSCR4,TSCR5,TSCR6,
 *. Local scratch
 *
 *. Occupation of conjugated operators
-      INTEGER IO1DX_DAG(4*MXPNGAS),IO2DX_DAG(4*MXPNGAS)
-      INTEGER IO3DX_DAG(4*MXPNGAS),IO4DX_DAG(4*MXPNGAS)
+      INTEGER IO1DX_DAG(4*MXPNGAS)!,IO2DX_DAG(4*MXPNGAS)
+C     INTEGER IO3DX_DAG(4*MXPNGAS),IO4DX_DAG(4*MXPNGAS)
 *. Occupation of OP T1 T2
 C     INTEGER IOC_OT1T2(NGAS,4)
 *
 *. Occupation of gasspaces for various strings 
 *. Number of strings per sym of the various string supergroups
-      INTEGER NOEX(8,4),NO1DX(8,4),NO2DX(8,4),NO3DX(8,4),NO4DX(8,4)
-      INTEGER NT1(8,4), NT2(8,4), NT3(8,4), NT4(8,4)
-      INTEGER NK1(8,4),NK2(8,4),NK3(8,4),NK4(8,4)
-      INTEGER NL1(8,4),NL2(8,4),NL3(8,4),NL4(8,4)
+      INTEGER NOEX(8,4),NO1DX(8,4)!,NO2DX(8,4),NO3DX(8,4),NO4DX(8,4)
+      INTEGER NT1(8,4)!, NT2(8,4), NT3(8,4), NT4(8,4)
+      INTEGER NK1(8,4)!,NK2(8,4),NK3(8,4),NK4(8,4)
+      INTEGER NL1(8,4)!,NL2(8,4),NL3(8,4),NL4(8,4)
 C     INTEGER NOT1T2(8,4)
 *. Offsets of strings with given sym for the strings of various CC ops
-      INTEGER IBOEX(8,4),IBO1DX(8,4),IBO2DX(8,4),IBO3DX(8,4)
-      INTEGER IBO4DX(8,4)
+      INTEGER IBOEX(8,4),IBO1DX(8,4)!,IBO2DX(8,4),IBO3DX(8,4)
+C     INTEGER IBO4DX(8,4)
 *. Offset in operators to strings with given sym
-      INTEGER IBT1_TCC(8,8,8),IBT2_TCC(8,8,8)
-      INTEGER IBT3_TCC(8,8,8),IBT4_TCC(8,8,8)
-      INTEGER IBL1_TCC(8,8,8),IBL2_TCC(8,8,8)
-      INTEGER IBL3_TCC(8,8,8),IBL4_TCC(8,8,8)
+      INTEGER IBT1_TCC(8,8,8)!,IBT2_TCC(8,8,8)
+C     INTEGER IBT3_TCC(8,8,8),IBT4_TCC(8,8,8)
+      INTEGER IBL1_TCC(8,8,8)!,IBL2_TCC(8,8,8)
+C     INTEGER IBL3_TCC(8,8,8),IBL4_TCC(8,8,8)
 C     INTEGER IBOT1T2_TCC(8,8,8)
 *
 C     INTEGER IBOT1T2_TCC(8,8,8)
 *
-      INTEGER IB_D1K1(8,8,4),IB_D2K2(8,8,4) 
-      INTEGER IB_D3K3(8,8,4),IB_D4K4(8,8,4)
-      INTEGER IB_EXK1(8,8,4),IB_L1K2(8,8,4)
-      INTEGER IB_L2K3(8,8,4),IB_L3K4(8,8,4)
+      INTEGER IB_D1K1(8,8,4)!,IB_D2K2(8,8,4) 
+C     INTEGER IB_D3K3(8,8,4),IB_D4K4(8,8,4)
+      INTEGER IB_EXK1(8,8,4)!,IB_L1K2(8,8,4)
+C     INTEGER IB_L2K3(8,8,4),IB_L3K4(8,8,4)
 *
 *
 *. Scratch through parameter list. 
@@ -1409,14 +1171,14 @@ C     INTEGER IBOT1T2_TCC(8,8,8)
       DIMENSION IX8_AA(*),SX8_AA(*),IX8_AB(*),SX8_AB(*)
 *
 *. ISTR_D1, ISTR_K, ISTR_L : for occupations of strings  
-      INTEGER ISTR_D1(*), ISTR_D2(*), ISTR_D3(*), ISTR_D4(*)
+      INTEGER ISTR_D1(*)!, ISTR_D2(*), ISTR_D3(*), ISTR_D4(*)
       INTEGER ISTR_EX(*)
       INTEGER ISTR_K(*), ISTR_L(*) 
 *. For occupation of intermediate strings
-      INTEGER IOC_K1(NGAS,4),IOC_K2(NGAS,4)
-      INTEGER IOC_K3(NGAS,4),IOC_K4(NGAS,4)
-      INTEGER IOC_L1(NGAS,4),IOC_L2(NGAS,4)
-      INTEGER IOC_L3(NGAS,4),IOC_L4(NGAS,4)
+      INTEGER IOC_K1(NGAS,4)!,IOC_K2(NGAS,4)
+C     INTEGER IOC_K3(NGAS,4),IOC_K4(NGAS,4)
+      INTEGER IOC_L1(NGAS,4)!,IOC_L2(NGAS,4)
+C     INTEGER IOC_L3(NGAS,4),IOC_L4(NGAS,4)
 *. For intermediates with both strings batched
 *. Changed from squared to cubed by Lasse
 C      DIMENSION TSCR1(LDB*LDB*LDB),TSCR2(LDB*LDB*LDB)
@@ -1432,9 +1194,9 @@ C      DIMENSION OPSCR(LDB*LDB*LB)
       DIMENSION OPSCR(*)
 *. For part of Hamiltonian
       INTEGER ISM_CAAB_D1(4,*), INM_CAAB_D1(4,*)
-      INTEGER ISM_CAAB_D2(4,*), INM_CAAB_D2(4,*)
-      INTEGER ISM_CAAB_D3(4,*), INM_CAAB_D3(4,*)
-      INTEGER ISM_CAAB_D4(4,*), INM_CAAB_D4(4,*)
+C     INTEGER ISM_CAAB_D2(4,*), INM_CAAB_D2(4,*)
+C     INTEGER ISM_CAAB_D3(4,*), INM_CAAB_D3(4,*)
+C     INTEGER ISM_CAAB_D4(4,*), INM_CAAB_D4(4,*)
       INTEGER ISM_CAAB_EX(4,*), INM_CAAB_EX(4,*)
 *. For CC operators
       INTEGER ISM_CAAB_K(4,*), INM_CAAB_K(4,*)
@@ -1510,12 +1272,12 @@ C      DIMENSION OPSCR(LDB*LDB*LB)
 *
 * - That's all she wrote
 *
-      CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'OPCTT ')
+C     CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'OPCTT ')
 *
       ZERO = 0.0D0
       ONE = 1.0D0
 *
-      NTEST = 00 
+      NTEST = 100 
       IF(NTEST.GE.100 )THEN
         WRITE(6,*) ' OPCT1234_REL entered '
         WRITE(6,*) ' ==================== '
@@ -1523,29 +1285,31 @@ C      DIMENSION OPSCR(LDB*LDB*LB)
         WRITE(6,*)
         CALL WRT_SPOX_TP_CC_KRCC(IOEX,1)
         CALL WRT_SPOX_TP_CC_KRCC(IO1DX,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IO2DX,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IO3DX,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IO4DX,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IO2DX,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IO3DX,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IO4DX,1)
         WRITE(6,*) 
         WRITE(6,*) ' Form of T1 T2 T3 T4'
         CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IT2,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IT3,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IT4,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IT2,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IT3,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IT4,1)
 *
       END IF
       IF(NTEST.GE.100) 
      &WRITE(6,*) ' N_TDL_MAX in OPCT1T2 ', N_TDL_MAX
       SIGNG = DFLOAT(ISIGNG)
 *. Symmetry of final type  
-      IF(NTEST.GE.100) WRITE(6,*) ' IT1SM, IT2SM, IT3SM, IT4SM : ',
-     &             IT1SM, IT2SM, IT3SM, IT4SM
-      IT12SM = IDBGMULT(IT1SM,IT2SM)
-      IT123SM= IDBGMULT(IT12SM,IT3SM)
-      IT1234SM= IDBGMULT(IT123SM,IT4SM)
-      IL4SM= IDBGMULT(IOPSM,IT1234SM)
-      IF(NTEST.GE.100) WRITE(6,*) 'IT12SM,IT123SM,IT1234SM,IL4SM ',
-     &            IT12SM,IT123SM,IT1234SM,IL4SM
+C     IF(NTEST.GE.100) WRITE(6,*) ' IT1SM, IT2SM, IT3SM, IT4SM : ',
+C    &             IT1SM, IT2SM, IT3SM, IT4SM
+      IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM
+C     IT12SM = IDBGMULT(IT1SM,IT2SM)
+C     IT123SM= IDBGMULT(IT12SM,IT3SM)
+C     IT1234SM= IDBGMULT(IT123SM,IT4SM)
+C     IL4SM= IDBGMULT(IOPSM,IT1234SM)
+      IL4SM= IDBGMULT(IOPSM,IT1SM)
+C     IF(NTEST.GE.100) WRITE(6,*) 'IT12SM,IT123SM,IT1234SM,IL4SM ',
+C    &            IT12SM,IT123SM,IT1234SM,IL4SM
       IF(NTEST.GE.100) THEN 
         WRITE(6,*) ' Symmetry of OT1234 = ', IL4SM
       END IF
@@ -1559,30 +1323,30 @@ C      DIMENSION OPSCR(LDB*LDB*LB)
 *. L1 = OEX K1 
       CALL NEW_CAAB_OC(IOC_L1,IOC_K1,IOEX,2,1,NGAS)
 *. K2 = O2DX I2
-      CALL NEW_CAAB_OC(IOC_K2,IT2,IO2DX,1,1,NGAS)
+C     CALL NEW_CAAB_OC(IOC_K2,IT2,IO2DX,1,1,NGAS)
 *. L2 = K2 L1
-      CALL NEW_CAAB_OC(IOC_L2,IOC_K2,IOC_L1,2,1,NGAS)
+C     CALL NEW_CAAB_OC(IOC_L2,IOC_K2,IOC_L1,2,1,NGAS)
 *. K3 = O3DX I3
-      CALL NEW_CAAB_OC(IOC_K3,IT3,IO3DX,1,1,NGAS)
+C     CALL NEW_CAAB_OC(IOC_K3,IT3,IO3DX,1,1,NGAS)
 *. L3 = K3 L2
-      CALL NEW_CAAB_OC(IOC_L3,IOC_K3,IOC_L2,2,1,NGAS)
+C     CALL NEW_CAAB_OC(IOC_L3,IOC_K3,IOC_L2,2,1,NGAS)
 *. K4 = O2DX I2
-      CALL NEW_CAAB_OC(IOC_K4,IT4,IO4DX,1,1,NGAS)
+C     CALL NEW_CAAB_OC(IOC_K4,IT4,IO4DX,1,1,NGAS)
 *. L4 = K4 L3
-      CALL NEW_CAAB_OC(IOC_L4,IOC_K4,IOC_L3,2,1,NGAS)
+C     CALL NEW_CAAB_OC(IOC_L4,IOC_K4,IOC_L3,2,1,NGAS)
 *. (L4 is final type of OT1234)
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Occupation of K1, K2, K3, K4 '
         CALL WRT_SPOX_TP_CC_KRCC(IOC_K1,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IOC_K2,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IOC_K3,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IOC_K4,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IOC_K2,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IOC_K3,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IOC_K4,1)
         WRITE(6,*) ' Occupation of L1, L2, L3, L4 '
         CALL WRT_SPOX_TP_CC_KRCC(IOC_L1,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IOC_L2,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IOC_L3,1)
-        CALL WRT_SPOX_TP_CC_KRCC(IOC_L4,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IOC_L2,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IOC_L3,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(IOC_L4,1)
       END IF
 *
 * =============================================================
@@ -1609,38 +1373,38 @@ C check with nst_spgrp_dbg from sigden.
        CALL NST_SPGP_CC_REL(IO1DX(1,I_CAAB),NO1DX(1,I_CAAB),IUB,ICA)
        CALL ZBASE(NO1DX(1,I_CAAB),IBO1DX(1,I_CAAB),NSMST)
 *. D2
-       CALL NST_SPGP_CC_REL(IO2DX(1,I_CAAB),NO2DX(1,I_CAAB),IUB,ICA)
-       CALL ZBASE(NO2DX(1,I_CAAB),IBO2DX(1,I_CAAB),NSMST)
+C      CALL NST_SPGP_CC_REL(IO2DX(1,I_CAAB),NO2DX(1,I_CAAB),IUB,ICA)
+C      CALL ZBASE(NO2DX(1,I_CAAB),IBO2DX(1,I_CAAB),NSMST)
 *. D3
-       CALL NST_SPGP_CC_REL(IO3DX(1,I_CAAB),NO3DX(1,I_CAAB),IUB,ICA)
-       CALL ZBASE(NO3DX(1,I_CAAB),IBO3DX(1,I_CAAB),NSMST)
+C      CALL NST_SPGP_CC_REL(IO3DX(1,I_CAAB),NO3DX(1,I_CAAB),IUB,ICA)
+C      CALL ZBASE(NO3DX(1,I_CAAB),IBO3DX(1,I_CAAB),NSMST)
 *. D4
-       CALL NST_SPGP_CC_REL(IO4DX(1,I_CAAB),NO4DX(1,I_CAAB),IUB,ICA)
-       CALL ZBASE(NO4DX(1,I_CAAB),IBO4DX(1,I_CAAB),NSMST)
+C      CALL NST_SPGP_CC_REL(IO4DX(1,I_CAAB),NO4DX(1,I_CAAB),IUB,ICA)
+C      CALL ZBASE(NO4DX(1,I_CAAB),IBO4DX(1,I_CAAB),NSMST)
 *. T1
        CALL NST_SPGP_CC_REL(IT1(1,I_CAAB),NT1(1,I_CAAB),IUB,ICA)
 *. T2
-       CALL NST_SPGP_CC_REL(IT2(1,I_CAAB),NT2(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IT2(1,I_CAAB),NT2(1,I_CAAB),IUB,ICA)
 *. T3
-       CALL NST_SPGP_CC_REL(IT3(1,I_CAAB),NT3(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IT3(1,I_CAAB),NT3(1,I_CAAB),IUB,ICA)
 *. T4
-       CALL NST_SPGP_CC_REL(IT4(1,I_CAAB),NT4(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IT4(1,I_CAAB),NT4(1,I_CAAB),IUB,ICA)
 *. K1
        CALL NST_SPGP_CC_REL(IOC_K1(1,I_CAAB),NK1(1,I_CAAB),IUB,ICA)
 *. K2
-       CALL NST_SPGP_CC_REL(IOC_K2(1,I_CAAB),NK2(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IOC_K2(1,I_CAAB),NK2(1,I_CAAB),IUB,ICA)
 *. K3
-       CALL NST_SPGP_CC_REL(IOC_K3(1,I_CAAB),NK3(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IOC_K3(1,I_CAAB),NK3(1,I_CAAB),IUB,ICA)
 *. K4
-       CALL NST_SPGP_CC_REL(IOC_K4(1,I_CAAB),NK4(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IOC_K4(1,I_CAAB),NK4(1,I_CAAB),IUB,ICA)
 *. L1   
        CALL NST_SPGP_CC_REL(IOC_L1(1,I_CAAB),NL1(1,I_CAAB),IUB,ICA)
 *. L2   
-       CALL NST_SPGP_CC_REL(IOC_L2(1,I_CAAB),NL2(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IOC_L2(1,I_CAAB),NL2(1,I_CAAB),IUB,ICA)
 *. L3   
-       CALL NST_SPGP_CC_REL(IOC_L3(1,I_CAAB),NL3(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IOC_L3(1,I_CAAB),NL3(1,I_CAAB),IUB,ICA)
 *. L4   
-       CALL NST_SPGP_CC_REL(IOC_L4(1,I_CAAB),NL4(1,I_CAAB),IUB,ICA)
+C      CALL NST_SPGP_CC_REL(IOC_L4(1,I_CAAB),NL4(1,I_CAAB),IUB,ICA)
 *
       END DO
 *. We now have the various dimensions, so we can write T1,T2,T3,T4 if 
@@ -1649,19 +1413,23 @@ C check with nst_spgrp_dbg from sigden.
         WRITE(6,*) ' Input T1 block '
         CALL WRT_TCC_BLK_CC_REL(T1,IT1SM,NT1(1,1),NT1(1,2),NT1(1,3),
      &                   NT1(1,4),NSMST)
-        WRITE(6,*) ' Input T2 block '
-        CALL WRT_TCC_BLK_CC_REL(T2,IT2SM,NT2(1,1),NT2(1,2),NT2(1,3),
-     &                   NT2(1,4),NSMST)
-        WRITE(6,*) ' Input T3 block '
-        CALL WRT_TCC_BLK_CC_REL(T3,IT3SM,NT3(1,1),NT3(1,2),NT3(1,3),
-     &                   NT3(1,4),NSMST)
-        WRITE(6,*) ' Input T4 block '
-        CALL WRT_TCC_BLK_CC_REL(T4,IT4SM,NT4(1,1),NT4(1,2),NT4(1,3),
-     &                   NT4(1,4),NSMST)
+C       WRITE(6,*) ' Input T2 block '
+C       CALL WRT_TCC_BLK_CC_REL(T2,IT2SM,NT2(1,1),NT2(1,2),NT2(1,3),
+C    &                   NT2(1,4),NSMST)
+C       WRITE(6,*) ' Input T3 block '
+C       CALL WRT_TCC_BLK_CC_REL(T3,IT3SM,NT3(1,1),NT3(1,2),NT3(1,3),
+C    &                   NT3(1,4),NSMST)
+C       WRITE(6,*) ' Input T4 block '
+C       CALL WRT_TCC_BLK_CC_REL(T4,IT4SM,NT4(1,1),NT4(1,2),NT4(1,3),
+C    &                   NT4(1,4),NSMST)
+C       WRITE(6,*) ' Input OT1234 block '
+C       CALL WRT_TCC_BLK_CC_REL(OT1234,IL4SM,NL4(1,1),NL4(1,2),NL4(1,3),
+C    &        NL4(1,4),NSMST)
         WRITE(6,*) ' Input OT1234 block '
-        CALL WRT_TCC_BLK_CC_REL(OT1234,IL4SM,NL4(1,1),NL4(1,2),NL4(1,3),
-     &        NL4(1,4),NSMST)
+        CALL WRT_TCC_BLK_CC_REL(OT1234,IL4SM,NL1(1,1),NL1(1,2),NL1(1,3),
+     &        NL1(1,4),NSMST)
       END IF
+      stop 'for now again'
 *
 *
 * ============================
@@ -1672,14 +1440,14 @@ C check with nst_spgrp_dbg from sigden.
       CALL Z_TCC_OFF2_REL(IBT1_TCC,LEN_T1,NT1(1,1),NT1(1,2),NT1(1,3),
      &                NT1(1,4),IT1SM,NSMST)
 *. T2
-      CALL Z_TCC_OFF2_REL(IBT2_TCC,LEN_T2,NT2(1,1),NT2(1,2),NT2(1,3),
-     &                NT2(1,4),IT2SM,NSMST)
+C     CALL Z_TCC_OFF2_REL(IBT2_TCC,LEN_T2,NT2(1,1),NT2(1,2),NT2(1,3),
+C    &                NT2(1,4),IT2SM,NSMST)
 *. T3
-      CALL Z_TCC_OFF2_REL(IBT3_TCC,LEN_T3,NT3(1,1),NT3(1,2),NT3(1,3),
-     &                NT3(1,4),IT3SM,NSMST)
+C     CALL Z_TCC_OFF2_REL(IBT3_TCC,LEN_T3,NT3(1,1),NT3(1,2),NT3(1,3),
+C    &                NT3(1,4),IT3SM,NSMST)
 *. T4
-      CALL Z_TCC_OFF2_REL(IBT4_TCC,LEN_T4,NT4(1,1),NT4(1,2),NT4(1,3),
-     &                NT4(1,4),IT4SM,NSMST)
+C     CALL Z_TCC_OFF2_REL(IBT4_TCC,LEN_T4,NT4(1,1),NT4(1,2),NT4(1,3),
+C    &                NT4(1,4),IT4SM,NSMST)
 *. The following has been moved as symmetry of L1 - L4 is not known here
 * This is because of the loops over symmetry later. And L1-L4 is a product of these. Lasse
 *. L1
@@ -1719,53 +1487,53 @@ C    &     NL4(1,2),NL4(1,3),NL4(1,4),IL4,NSMST)
 * =========================
 *
 *. Obtain D2{\dagger}
-      CALL CONJ_CAAB(IO2DX,IO2DX_DAG,NGAS,SP_D2K2)
-      CALL T1T2_TO_T12_MAP_REL(IO2DX_DAG,IOC_K2,IT2,
-     &     IX3_CA,SX3_CA,IX3_CB,SX3_CB,IX3_AA,SX3_AA,IX3_AB,SX3_AB,
-     &     IB_D2K2,ISTR_D2,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D2K2)
+C     CALL CONJ_CAAB(IO2DX,IO2DX_DAG,NGAS,SP_D2K2)
+C     CALL T1T2_TO_T12_MAP_REL(IO2DX_DAG,IOC_K2,IT2,
+C    &     IX3_CA,SX3_CA,IX3_CB,SX3_CB,IX3_AA,SX3_AA,IX3_AB,SX3_AB,
+C    &     IB_D2K2,ISTR_D2,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D2K2)
 *
 * ==========
 * L1 K2 => L2
 * ==========
 *
-      CALL T1T2_TO_T12_MAP_REL(IOC_L1,IOC_K2,IOC_L2,
-     &     IX4_CA,SX4_CA,IX4_CB,SX4_CB,IX4_AA,SX4_AA,IX4_AB,SX4_AB,
-     &     IB_L1K2,ISTR_L,ISTR_K,ISTREO,IZ,IZSCR,SIGN_L1K2)
+C     CALL T1T2_TO_T12_MAP_REL(IOC_L1,IOC_K2,IOC_L2,
+C    &     IX4_CA,SX4_CA,IX4_CB,SX4_CB,IX4_AA,SX4_AA,IX4_AB,SX4_AB,
+C    &     IB_L1K2,ISTR_L,ISTR_K,ISTREO,IZ,IZSCR,SIGN_L1K2)
 *
 * ========================
 *.  D3{\dagger} K3  => T3 mapping
 * =========================
 *
 *. Obtain D3{\dagger}
-      CALL CONJ_CAAB(IO3DX,IO3DX_DAG,NGAS,SP_D3K3)
-      CALL T1T2_TO_T12_MAP_REL(IO3DX_DAG,IOC_K3,IT3,
-     &     IX5_CA,SX5_CA,IX5_CB,SX5_CB,IX5_AA,SX5_AA,IX5_AB,SX5_AB,
-     &     IB_D3K3,ISTR_D3,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D3K3)
+C     CALL CONJ_CAAB(IO3DX,IO3DX_DAG,NGAS,SP_D3K3)
+C     CALL T1T2_TO_T12_MAP_REL(IO3DX_DAG,IOC_K3,IT3,
+C    &     IX5_CA,SX5_CA,IX5_CB,SX5_CB,IX5_AA,SX5_AA,IX5_AB,SX5_AB,
+C    &     IB_D3K3,ISTR_D3,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D3K3)
 *
 * ==========
 * L2 K3 => L3
 * ==========
 *
-      CALL T1T2_TO_T12_MAP_REL(IOC_L2,IOC_K3,IOC_L3,
-     &     IX6_CA,SX6_CA,IX6_CB,SX6_CB,IX6_AA,SX6_AA,IX6_AB,SX6_AB,
-     &     IB_L2K3,ISTR_L,ISTR_K,ISTREO,IZ,IZSCR,SIGN_L2K3)
+C     CALL T1T2_TO_T12_MAP_REL(IOC_L2,IOC_K3,IOC_L3,
+C    &     IX6_CA,SX6_CA,IX6_CB,SX6_CB,IX6_AA,SX6_AA,IX6_AB,SX6_AB,
+C    &     IB_L2K3,ISTR_L,ISTR_K,ISTREO,IZ,IZSCR,SIGN_L2K3)
 * ========================
 *.  D4{\dagger} K4  => T4 mapping
 * =========================
 *
 *. Obtain D4{\dagger}
-      CALL CONJ_CAAB(IO4DX,IO4DX_DAG,NGAS,SP_D4K4)
-      CALL T1T2_TO_T12_MAP_REL(IO4DX_DAG,IOC_K4,IT4,
-     &     IX7_CA,SX7_CA,IX7_CB,SX7_CB,IX7_AA,SX7_AA,IX7_AB,SX7_AB,
-     &     IB_D4K4,ISTR_D4,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D4K4)
+C     CALL CONJ_CAAB(IO4DX,IO4DX_DAG,NGAS,SP_D4K4)
+C     CALL T1T2_TO_T12_MAP_REL(IO4DX_DAG,IOC_K4,IT4,
+C    &     IX7_CA,SX7_CA,IX7_CB,SX7_CB,IX7_AA,SX7_AA,IX7_AB,SX7_AB,
+C    &     IB_D4K4,ISTR_D4,ISTR_K,ISTREO,IZ,IZSCR,SIGN_D4K4)
 *
 * ==========
 * L3 K4 => L4
 * ==========
 *
-      CALL T1T2_TO_T12_MAP_REL(IOC_L3,IOC_K4,IOC_L4,
-     &     IX8_CA,SX8_CA,IX8_CB,SX8_CB,IX8_AA,SX8_AA,IX8_AB,SX8_AB,
-     &     IB_L3K4,ISTR_L,ISTR_K,ISTREO,IZ,IZSCR,SIGN_L3K4)
+C     CALL T1T2_TO_T12_MAP_REL(IOC_L3,IOC_K4,IOC_L4,
+C    &     IX8_CA,SX8_CA,IX8_CB,SX8_CB,IX8_AA,SX8_AA,IX8_AB,SX8_AB,
+C    &     IB_L3K4,ISTR_L,ISTR_K,ISTREO,IZ,IZSCR,SIGN_L3K4)
 *
 
 *. And the individual strings : all symmetries constructed
@@ -1773,224 +1541,227 @@ C    &     NL4(1,2),NL4(1,3),NL4(1,4),IL4,NSMST)
 C Check STR_CAAB_REL for bugs
       CALL STR_CAAB_REL(IO1DX,ISTR_D1)
 *. D2 strings 
-      CALL STR_CAAB_REL(IO2DX,ISTR_D2)
+C     CALL STR_CAAB_REL(IO2DX,ISTR_D2)
 *. D3 strings 
-      CALL STR_CAAB_REL(IO3DX,ISTR_D3)
+C     CALL STR_CAAB_REL(IO3DX,ISTR_D3)
 *. D4 strings 
-      CALL STR_CAAB_REL(IO4DX,ISTR_D4)
+C     CALL STR_CAAB_REL(IO4DX,ISTR_D4)
 *. Ex strings 
       CALL STR_CAAB_REL(IOEX,ISTR_EX)
 *. Batch length : Should allow to vary 
       LD1_BAT = LDB
-      LD2_BAT = LDB
-      LD3_BAT = LDB
-      LD4_BAT = LDB
+C     LD2_BAT = LDB
+C     LD3_BAT = LDB
+C     LD4_BAT = LDB
       LEX_BAT = LDB
       LKL_BAT = LDB 
 *. Calculate length of TSCR4, TSCR5 and TSCR6. Memory saving by Lasse
 *. Do not allocate more than what is needed
 *. Assumes at the moment static batching
       NL1_TOT_MAX = 0
-      NL2_TOT_MAX = 0
-      NL3_TOT_MAX = 0
-      ND2_TOT_MAX = 0
-      ND3_TOT_MAX = 0
-      ND4_TOT_MAX = 0
+C     NL2_TOT_MAX = 0
+C     NL3_TOT_MAX = 0
+C     ND2_TOT_MAX = 0
+C     ND3_TOT_MAX = 0
+C     ND4_TOT_MAX = 0
       DO IISYM = 1,NSMST
         NL1_TOT_INT = LEN_TCCBLK_REL(NL1(1,1),NL1(1,2),NL1(1,3),
      &                               NL1(1,4),IISYM,NSMST)
-        NL2_TOT_INT = LEN_TCCBLK_REL(NL2(1,1),NL2(1,2),NL2(1,3),
-     &                               NL2(1,4),IISYM,NSMST)
-        NL3_TOT_INT = LEN_TCCBLK_REL(NL3(1,1),NL3(1,2),NL3(1,3),
-     &                               NL3(1,4),IISYM,NSMST)
+C       NL2_TOT_INT = LEN_TCCBLK_REL(NL2(1,1),NL2(1,2),NL2(1,3),
+C    &                               NL2(1,4),IISYM,NSMST)
+C       NL3_TOT_INT = LEN_TCCBLK_REL(NL3(1,1),NL3(1,2),NL3(1,3),
+C    &                               NL3(1,4),IISYM,NSMST)
         NL1_TOT_MAX = MAX(NL1_TOT_MAX,NL1_TOT_INT)
-        NL2_TOT_MAX = MAX(NL2_TOT_MAX,NL2_TOT_INT)
-        NL3_TOT_MAX = MAX(NL3_TOT_MAX,NL3_TOT_INT)
+C       NL2_TOT_MAX = MAX(NL2_TOT_MAX,NL2_TOT_INT)
+C       NL3_TOT_MAX = MAX(NL3_TOT_MAX,NL3_TOT_INT)
 C        print*,'NL1_TOT_INT,NL2_TOT_INT,NL3_TOT_INT',
 C     &          NL1_TOT_INT,NL2_TOT_INT,NL3_TOT_INT
-        ND2_TOT_INT = LEN_TCCBLK_REL(NO2DX(1,1),NO2DX(1,2),NO2DX(1,3),
-     &                               NO2DX(1,4),IISYM,NSMST)
-        ND3_TOT_INT = LEN_TCCBLK_REL(NO3DX(1,1),NO3DX(1,2),NO3DX(1,3),
-     &                               NO3DX(1,4),IISYM,NSMST)
-        ND4_TOT_INT = LEN_TCCBLK_REL(NO4DX(1,1),NO4DX(1,2),NO4DX(1,3),
-     &                               NO4DX(1,4),IISYM,NSMST)
-        ND2_TOT_MAX = MAX(ND2_TOT_MAX,ND2_TOT_INT)
-        ND3_TOT_MAX = MAX(ND3_TOT_MAX,ND3_TOT_INT)
-        ND4_TOT_MAX = MAX(ND4_TOT_MAX,ND4_TOT_INT)
+C       ND2_TOT_INT = LEN_TCCBLK_REL(NO2DX(1,1),NO2DX(1,2),NO2DX(1,3),
+C    &                               NO2DX(1,4),IISYM,NSMST)
+C       ND3_TOT_INT = LEN_TCCBLK_REL(NO3DX(1,1),NO3DX(1,2),NO3DX(1,3),
+C    &                               NO3DX(1,4),IISYM,NSMST)
+C       ND4_TOT_INT = LEN_TCCBLK_REL(NO4DX(1,1),NO4DX(1,2),NO4DX(1,3),
+C    &                               NO4DX(1,4),IISYM,NSMST)
+C       ND2_TOT_MAX = MAX(ND2_TOT_MAX,ND2_TOT_INT)
+C       ND3_TOT_MAX = MAX(ND3_TOT_MAX,ND3_TOT_INT)
+C       ND4_TOT_MAX = MAX(ND4_TOT_MAX,ND4_TOT_INT)
 C        print*,'ND2_TOT_INT,ND3_TOT_INT,ND4_TOT_INT',
 C     &          ND2_TOT_INT,ND3_TOT_INT,ND4_TOT_INT
       END DO
-C      print*,'NL1_TOT_MAX,NL2_TOT_MAX,NL3_TOT_MAX',
-C     &        NL1_TOT_MAX,NL2_TOT_MAX,NL3_TOT_MAX
-C      print*,'ND2_TOT_MAX,ND3_TOT_MAX,ND4_TOT_MAX',
-C     &        ND2_TOT_MAX,ND3_TOT_MAX,ND4_TOT_MAX
-C      ND2_BAT_MAX = ND2_TOT_MAX/LD2_BAT
-C      IF(ND2_BAT_MAX*LD2_BAT.LT.ND2_TOT_MAX) ND2_BAT_MAX=ND2_BAT_MAX+1
-C      ND3_BAT_MAX = ND3_TOT_MAX/LD3_BAT
-C      IF(ND3_BAT_MAX*LD3_BAT.LT.ND3_TOT_MAX) ND3_BAT_MAX=ND3_BAT_MAX+1
-C      ND4_BAT_MAX = ND4_TOT_MAX/LD4_BAT
-C      IF(ND4_BAT_MAX*LD4_BAT.LT.ND4_TOT_MAX) ND4_BAT_MAX=ND4_BAT_MAX+1
-C      ID2_START_MIN = 1
-C      ID3_START_MIN = 1
-C      ID4_START_MIN = 1
-C      ID2_START_MAX = (ND2_BAT_MAX - 1) * LD2_BAT + 1
-C      ID3_START_MAX = (ND3_BAT_MAX - 1) * LD3_BAT + 1
-C      ID4_START_MAX = (ND4_BAT_MAX - 1) * LD4_BAT + 1
-      IF(ND2_TOT_MAX.GE.LD2_BAT) THEN
-        ID2_BATLEN_MAX = LD2_BAT
-      ELSE
-        ID2_BATLEN_MAX = MAX(1,ND2_TOT_MAX)
-      END IF
-      IF(ND3_TOT_MAX.GE.LD3_BAT) THEN
-        ID3_BATLEN_MAX = LD3_BAT
-      ELSE
-        ID3_BATLEN_MAX = MAX(1,ND3_TOT_MAX)
-      END IF
-      IF(ND4_TOT_MAX.GE.LD4_BAT) THEN
-        ID4_BATLEN_MAX = LD4_BAT
-      ELSE
-        ID4_BATLEN_MAX = MAX(1,ND4_TOT_MAX)
-      END IF
-      LEN4 = NL1_TOT_MAX*ID2_BATLEN_MAX*ID3_BATLEN_MAX*ID4_BATLEN_MAX
-      LEN5 = NL2_TOT_MAX*ID3_BATLEN_MAX*ID4_BATLEN_MAX
-      LEN6 = NL3_TOT_MAX*ID4_BATLEN_MAX
+CC     print*,'NL1_TOT_MAX,NL2_TOT_MAX,NL3_TOT_MAX',
+CC    &        NL1_TOT_MAX,NL2_TOT_MAX,NL3_TOT_MAX
+CC     print*,'ND2_TOT_MAX,ND3_TOT_MAX,ND4_TOT_MAX',
+CC    &        ND2_TOT_MAX,ND3_TOT_MAX,ND4_TOT_MAX
+CC     ND2_BAT_MAX = ND2_TOT_MAX/LD2_BAT
+CC     IF(ND2_BAT_MAX*LD2_BAT.LT.ND2_TOT_MAX) ND2_BAT_MAX=ND2_BAT_MAX+1
+CC     ND3_BAT_MAX = ND3_TOT_MAX/LD3_BAT
+CC     IF(ND3_BAT_MAX*LD3_BAT.LT.ND3_TOT_MAX) ND3_BAT_MAX=ND3_BAT_MAX+1
+CC     ND4_BAT_MAX = ND4_TOT_MAX/LD4_BAT
+CC     IF(ND4_BAT_MAX*LD4_BAT.LT.ND4_TOT_MAX) ND4_BAT_MAX=ND4_BAT_MAX+1
+CC     ID2_START_MIN = 1
+CC     ID3_START_MIN = 1
+CC     ID4_START_MIN = 1
+CC     ID2_START_MAX = (ND2_BAT_MAX - 1) * LD2_BAT + 1
+CC     ID3_START_MAX = (ND3_BAT_MAX - 1) * LD3_BAT + 1
+CC     ID4_START_MAX = (ND4_BAT_MAX - 1) * LD4_BAT + 1
+C     IF(ND2_TOT_MAX.GE.LD2_BAT) THEN
+C       ID2_BATLEN_MAX = LD2_BAT
+C     ELSE
+C       ID2_BATLEN_MAX = MAX(1,ND2_TOT_MAX)
+C     END IF
+C     IF(ND3_TOT_MAX.GE.LD3_BAT) THEN
+C       ID3_BATLEN_MAX = LD3_BAT
+C     ELSE
+C       ID3_BATLEN_MAX = MAX(1,ND3_TOT_MAX)
+C     END IF
+C     IF(ND4_TOT_MAX.GE.LD4_BAT) THEN
+C       ID4_BATLEN_MAX = LD4_BAT
+C     ELSE
+C       ID4_BATLEN_MAX = MAX(1,ND4_TOT_MAX)
+C     END IF
+C     LEN4 = NL1_TOT_MAX*ID2_BATLEN_MAX*ID3_BATLEN_MAX*ID4_BATLEN_MAX
+C     LEN5 = NL2_TOT_MAX*ID3_BATLEN_MAX*ID4_BATLEN_MAX
+C     LEN6 = NL3_TOT_MAX*ID4_BATLEN_MAX
 C      print*,'LEN4,LEN5,LEN6,LDB',LEN4,LEN5,LEN6,LDB
-      CALL MEMMAR(KLTSCR4,LEN4,'ADDL  ',2,'TSCR4 ')
-      CALL MEMMAR(KLTSCR5,LEN5,'ADDL  ',2,'TSCR5 ')
-      CALL MEMMAR(KLTSCR6,LEN6,'ADDL  ',2,'TSCR6 ')
+C     CALL MEMMAR(KLTSCR4,LEN4,'ADDL  ',2,'TSCR4 ')
+C     CALL MEMMAR(KLTSCR5,LEN5,'ADDL  ',2,'TSCR5 ')
+C     CALL MEMMAR(KLTSCR6,LEN6,'ADDL  ',2,'TSCR6 ')
 *. Symmetry of Op T1, Op T1 T2, Op T1 T2 T3, Op T1 T2 T3 T4
 *
 * Check Op for annihilation symmetry
 *
+* IOPT1SM now final symmetry
       IOPT1SM    = IDBGMULT(IOPSM,IT1SM)
-      IOPT12SM   = IDBGMULT(IOPT1SM,IT2SM)
-      IOPT123SM  = IDBGMULT(IOPT12SM,IT3SM)
-      IOPT1234SM = IDBGMULT(IOPT123SM,IT4SM)
+C     IOPT12SM   = IDBGMULT(IOPT1SM,IT2SM)
+C     IOPT123SM  = IDBGMULT(IOPT12SM,IT3SM)
+C     IOPT1234SM = IDBGMULT(IOPT123SM,IT4SM)
+*
+* Needs to be changed Lasse 2011
 *
       NL4_TOT = LEN_TCCBLK_REL(NL4(1,1),NL4(1,2),NL4(1,3),
      &                 NL4(1,4),IOPT1234SM,NSMST)
 *
-      DO ID4SM = 1, NSMST
+C     DO ID4SM = 1, NSMST
 C correct symmetry ? yes
-       K4SM = IDBGMULT(ID4SM,IT4SM)
+C      K4SM = IDBGMULT(ID4SM,IT4SM)
 *. By def L4 = final operator so 
-       L4SM = IOPT1234SM
-       NL4_TOT = LEN_TCCBLK_REL(NL4(1,1),NL4(1,2),NL4(1,3),
-     &                NL4(1,4),L4SM,NSMST)
-       ID4SM_NEW = 1
+C      L4SM = IOPT1234SM
+C      NL4_TOT = LEN_TCCBLK_REL(NL4(1,1),NL4(1,2),NL4(1,3),
+C    &                NL4(1,4),L4SM,NSMST)
+C      ID4SM_NEW = 1
 *. Offsets for L4 with sym L4SM
-       CALL Z_TCC_OFF2_REL(IBL4_TCC,LEN_L4,NL4(1,1),
-     &      NL4(1,2),NL4(1,3),NL4(1,4),L4SM,NSMST)
+C      CALL Z_TCC_OFF2_REL(IBL4_TCC,LEN_L4,NL4(1,1),
+C    &      NL4(1,2),NL4(1,3),NL4(1,4),L4SM,NSMST)
 *. Number of D4 strings with actual symmetry
-       ND4_TOT = LEN_TCCBLK_REL(NO4DX(1,1),NO4DX(1,2),NO4DX(1,3),
-     &               NO4DX(1,4),ID4SM,NSMST)
+C      ND4_TOT = LEN_TCCBLK_REL(NO4DX(1,1),NO4DX(1,2),NO4DX(1,3),
+C    &               NO4DX(1,4),ID4SM,NSMST)
 *. Number of K4 strings with actual symmetry
-       NK4_TOT = LEN_TCCBLK_REL(NK4(1,1),NK4(1,2),NK4(1,3),
-     &                 NK4(1,4),K4SM,NSMST)
+C      NK4_TOT = LEN_TCCBLK_REL(NK4(1,1),NK4(1,2),NK4(1,3),
+C    &                 NK4(1,4),K4SM,NSMST)
 *. Number of D4 batches 
-       ND4_BAT = ND4_TOT/LD4_BAT
-       IF(ND4_BAT*LD4_BAT.LT.ND4_TOT) ND4_BAT=ND4_BAT+1
+C      ND4_BAT = ND4_TOT/LD4_BAT
+C      IF(ND4_BAT*LD4_BAT.LT.ND4_TOT) ND4_BAT=ND4_BAT+1
 *. And loop over batches of D4
-       DO ID4_BAT = 1, ND4_BAT
-        ID4_START = (ID4_BAT-1)*LD4_BAT + 1
-        ID4_STOP  = MIN(ND4_TOT,ID4_START+LD4_BAT-1)
-        ID4_BATLEN = ID4_STOP-ID4_START+1
-        IF(NTEST.GE.100) THEN
-          WRITE(6,*) ' ID4SM, ID4_BAT, ID4_BATLEN = ',
-     &                 ID4SM, ID4_BAT, ID4_BATLEN
-        END IF
+C      DO ID4_BAT = 1, ND4_BAT
+C       ID4_START = (ID4_BAT-1)*LD4_BAT + 1
+C       ID4_STOP  = MIN(ND4_TOT,ID4_START+LD4_BAT-1)
+C       ID4_BATLEN = ID4_STOP-ID4_START+1
+C       IF(NTEST.GE.100) THEN
+C         WRITE(6,*) ' ID4SM, ID4_BAT, ID4_BATLEN = ',
+C    &                 ID4SM, ID4_BAT, ID4_BATLEN
+C       END IF
 *. Generate D4 strings for given sym and batch
-        CALL ISMNM_FOR_TCC_BAT_REL(NO4DX,ISM_CAAB_D4,INM_CAAB_D4,ID4SM,
-     &       ID4_BATLEN,ID4SM_NEW,
-     &       ISM_C1_D4,ISM_CA1_D4,ISM_AA1_D4,
-     &       INM_AB1_D4,INM_AA1_D4,INM_CA1_D4,INM_CB1_D4,
-     &       ISM_CINI_D4,ISM_CAINI_D4,ISM_AAINI_D4,      
-     &       INM_ABINI_D4,INM_AAINI_D4,INM_CAINI_D4,INM_CBINI_D4,0)
-        ID4SM_NEW = 0
+C       CALL ISMNM_FOR_TCC_BAT_REL(NO4DX,ISM_CAAB_D4,INM_CAAB_D4,ID4SM,
+C    &       ID4_BATLEN,ID4SM_NEW,
+C    &       ISM_C1_D4,ISM_CA1_D4,ISM_AA1_D4,
+C    &       INM_AB1_D4,INM_AA1_D4,INM_CA1_D4,INM_CB1_D4,
+C    &       ISM_CINI_D4,ISM_CAINI_D4,ISM_AAINI_D4,      
+C    &       INM_ABINI_D4,INM_AAINI_D4,INM_CAINI_D4,INM_CBINI_D4,0)
+C       ID4SM_NEW = 0
 * The results of this loop is the generation of OT123(d4,l3) in TSCR6
 C
 C Not sure about symmetry
 C
-        L3SM = IDBGMULT(IOPT123SM,IADJSYM(ID4SM))
+C       L3SM = IDBGMULT(IOPT123SM,IADJSYM(ID4SM))
 *. Number of L3 strings with actual symmetry
-        NL3_TOT = LEN_TCCBLK_REL(NL3(1,1),NL3(1,2),NL3(1,3),
-     &                 NL3(1,4),L3SM,NSMST)
+C       NL3_TOT = LEN_TCCBLK_REL(NL3(1,1),NL3(1,2),NL3(1,3),
+C    &                 NL3(1,4),L3SM,NSMST)
 *. Offsets for L3 with sym L3SM
-        CALL Z_TCC_OFF2_REL(IBL3_TCC,LEN_L3,NL3(1,1),
-     &       NL3(1,2),NL3(1,3),NL3(1,4),L3SM,NSMST)
-        LENGTH = ID4_BATLEN*NL3_TOT
-        IF(LENGTH.GT.LEN6) THEN
-           WRITE(6,*) ' N_TDL_MAX too small '
-           WRITE(6,*) ' Current, required = ', LEN6, LENGTH
-           WRITE(6,*) 'ID4_BATLEN,NL3_TOT = ', ID4_BATLEN, NL3_TOT
-           STOP ' N_TDL_MAX too small '
-        END IF
-        CALL SETVEC(WORK(KLTSCR6),ZERO,LENGTH)
+C       CALL Z_TCC_OFF2_REL(IBL3_TCC,LEN_L3,NL3(1,1),
+C    &       NL3(1,2),NL3(1,3),NL3(1,4),L3SM,NSMST)
+C       LENGTH = ID4_BATLEN*NL3_TOT
+C       IF(LENGTH.GT.LEN6) THEN
+C          WRITE(6,*) ' N_TDL_MAX too small '
+C          WRITE(6,*) ' Current, required = ', LEN6, LENGTH
+C          WRITE(6,*) 'ID4_BATLEN,NL3_TOT = ', ID4_BATLEN, NL3_TOT
+C          STOP ' N_TDL_MAX too small '
+C       END IF
+C       CALL SETVEC(WORK(KLTSCR6),ZERO,LENGTH)
 *. Loop over D3
-        DO ID3SM = 1, NSMST
+C       DO ID3SM = 1, NSMST
 C sym ok
-         K3SM = IDBGMULT(ID3SM,IT3SM)
-         IK3SM_NEW = 1
-         ID3SM_NEW = 1
-         IF(NTEST.GE.100)  WRITE(6,*) ' ID3SM,K3SM = ',ID3SM, K3SM
+C        K3SM = IDBGMULT(ID3SM,IT3SM)
+C        IK3SM_NEW = 1
+C        ID3SM_NEW = 1
+C        IF(NTEST.GE.100)  WRITE(6,*) ' ID3SM,K3SM = ',ID3SM, K3SM
 *. Number of D3 strings with actual symmetry
          
-         ND3_TOT = LEN_TCCBLK_REL(NO3DX(1,1),NO3DX(1,2),NO3DX(1,3),
-     &                 NO3DX(1,4),ID3SM,NSMST)
+C        ND3_TOT = LEN_TCCBLK_REL(NO3DX(1,1),NO3DX(1,2),NO3DX(1,3),
+C    &                 NO3DX(1,4),ID3SM,NSMST)
 *. Number of K3 strings with actual symmetry
-         NK3_TOT = LEN_TCCBLK_REL(NK3(1,1),NK3(1,2),NK3(1,3),
-     &                 NK3(1,4),K3SM,NSMST)
+C        NK3_TOT = LEN_TCCBLK_REL(NK3(1,1),NK3(1,2),NK3(1,3),
+C    &                 NK3(1,4),K3SM,NSMST)
 *. Number of D3 batches 
-         IF(NK3_TOT.GT.0 .AND. NL3_TOT.GT.0) THEN
-         ND3_BAT = ND3_TOT/LD3_BAT
-         IF(ND3_BAT*LD3_BAT.LT.ND3_TOT) ND3_BAT=ND3_BAT+1
+C        IF(NK3_TOT.GT.0 .AND. NL3_TOT.GT.0) THEN
+C        ND3_BAT = ND3_TOT/LD3_BAT
+C        IF(ND3_BAT*LD3_BAT.LT.ND3_TOT) ND3_BAT=ND3_BAT+1
 *. And loop over batches of D3
-       IF(NTEST.GE.100) WRITE(6,*) 'ND3_TOT, ND3_BAT ',ND3_TOT,ND3_BAT
-         DO ID3_BAT = 1, ND3_BAT
-          IF(NTEST.GE.100) WRITE(6,*) ' ID3_BAT = ', ID3_BAT
-          ID3_START = (ID3_BAT-1)*LD3_BAT + 1
-          ID3_STOP  = MIN(ND3_TOT,ID3_START+LD3_BAT-1)
-          ID3_BATLEN = ID3_STOP-ID3_START+1
-          IF(NTEST.GE.100) THEN
-            WRITE(6,*) ' ID3SM, ID3_BAT, ID3_BATLEN = ',
-     &                   ID3SM, ID3_BAT, ID3_BATLEN
-          END IF
+C      IF(NTEST.GE.100) WRITE(6,*) 'ND3_TOT, ND3_BAT ',ND3_TOT,ND3_BAT
+C        DO ID3_BAT = 1, ND3_BAT
+C         IF(NTEST.GE.100) WRITE(6,*) ' ID3_BAT = ', ID3_BAT
+C         ID3_START = (ID3_BAT-1)*LD3_BAT + 1
+C         ID3_STOP  = MIN(ND3_TOT,ID3_START+LD3_BAT-1)
+C         ID3_BATLEN = ID3_STOP-ID3_START+1
+C         IF(NTEST.GE.100) THEN
+C           WRITE(6,*) ' ID3SM, ID3_BAT, ID3_BATLEN = ',
+C    &                   ID3SM, ID3_BAT, ID3_BATLEN
+C         END IF
 *. Generate D3 strings for given sym and batch
-          CALL ISMNM_FOR_TCC_BAT_REL(NO3DX,ISM_CAAB_D3,INM_CAAB_D3,
-     &         ID3SM,
-     &         ID3_BATLEN,ID3SM_NEW,
-     &         ISM_C1_D3,ISM_CA1_D3,ISM_AA1_D3,
-     &         INM_AB1_D3,INM_AA1_D3,INM_CA1_D3,INM_CB1_D3,
-     &         ISM_CINI_D3,ISM_CAINI_D3,ISM_AAINI_D3,      
-     &         INM_ABINI_D3,INM_AAINI_D3,INM_CAINI_D3,INM_CBINI_D3,0)
-          ID3SM_NEW = 0
+C         CALL ISMNM_FOR_TCC_BAT_REL(NO3DX,ISM_CAAB_D3,INM_CAAB_D3,
+C    &         ID3SM,
+C    &         ID3_BATLEN,ID3SM_NEW,
+C    &         ISM_C1_D3,ISM_CA1_D3,ISM_AA1_D3,
+C    &         INM_AB1_D3,INM_AA1_D3,INM_CA1_D3,INM_CB1_D3,
+C    &         ISM_CINI_D3,ISM_CAINI_D3,ISM_AAINI_D3,      
+C    &         INM_ABINI_D3,INM_AAINI_D3,INM_CAINI_D3,INM_CBINI_D3,0)
+C         ID3SM_NEW = 0
 *. In the loops inside, we will construct OT1T2(d3,d4,l2) in TSCR5 
 *  by looping over symmetries and batches of D2 and D1. 
 C
 C Again not sure about Lsym
 C
-          ID34SM = IDBGMULT(ID3SM,ID4SM)
-          L2SM   = IDBGMULT(IOPT12SM,IADJSYM(ID34SM))
+C         ID34SM = IDBGMULT(ID3SM,ID4SM)
+C         L2SM   = IDBGMULT(IOPT12SM,IADJSYM(ID34SM))
 *. Number of L2 strings with sym L2SM
-          NL2_TOT = LEN_TCCBLK_REL(NL2(1,1),NL2(1,2),NL2(1,3),
-     &                  NL2(1,4),L2SM,NSMST)
+C         NL2_TOT = LEN_TCCBLK_REL(NL2(1,1),NL2(1,2),NL2(1,3),
+C    &                  NL2(1,4),L2SM,NSMST)
 *. Offsets for L2 with sym L2SM
-          CALL Z_TCC_OFF2_REL(IBL2_TCC,LEN_L2,NL2(1,1),
-     &         NL2(1,2),NL2(1,3),NL2(1,4),L2SM,NSMST)
-          LENNY = ID3_BATLEN*ID4_BATLEN*NL2_TOT
-          IF(NTEST.GE.100) WRITE(6,*) ' L2SM, NL2_TOT ',
-     &                                  L2SM, NL2_TOT
-          IF(LENNY .GT. LEN5 ) THEN
+C         CALL Z_TCC_OFF2_REL(IBL2_TCC,LEN_L2,NL2(1,1),
+C    &         NL2(1,2),NL2(1,3),NL2(1,4),L2SM,NSMST)
+C         LENNY = ID3_BATLEN*ID4_BATLEN*NL2_TOT
+C         IF(NTEST.GE.100) WRITE(6,*) ' L2SM, NL2_TOT ',
+C    &                                  L2SM, NL2_TOT
+C         IF(LENNY .GT. LEN5 ) THEN
 *. Problem, too small length for TSCR5 
-             WRITE(6,*) ' Dimension of TSCR5 too small '
-             WRITE(6,*) ' Required and allocated : ',LENNY, LEN5 
-             WRITE(6,*) 'NL2_TOT, ID3_BATLEN, ID4_BATLEN = ',
-     &                   NL2_TOT, ID3_BATLEN, ID4_BATLEN
-             STOP ' Dimension of TSCR5 too small '
-          END IF
-          CALL SETVEC(WORK(KLTSCR5),ZERO,ID3_BATLEN*ID4_BATLEN*NL2_TOT)
-          DO ID2SM = 1, NSMST
-           K2SM = IDBGMULT(ID2SM,IT2SM)
+C            WRITE(6,*) ' Dimension of TSCR5 too small '
+C            WRITE(6,*) ' Required and allocated : ',LENNY, LEN5 
+C            WRITE(6,*) 'NL2_TOT, ID3_BATLEN, ID4_BATLEN = ',
+C    &                   NL2_TOT, ID3_BATLEN, ID4_BATLEN
+C            STOP ' Dimension of TSCR5 too small '
+C         END IF
+C         CALL SETVEC(WORK(KLTSCR5),ZERO,ID3_BATLEN*ID4_BATLEN*NL2_TOT)
+C         DO ID2SM = 1, NSMST
+C          K2SM = IDBGMULT(ID2SM,IT2SM)
 *. The symmetry of L1 obtained from OT1(l1,d4,d3,d2) has symmetry OPT1SM
 C
 C Again not sure about Lsym
@@ -2038,6 +1809,8 @@ C
      &           ISM_CINI_D2,ISM_CAINI_D2,ISM_AAINI_D2,      
      &           INM_ABINI_D2,INM_AAINI_D2,INM_CAINI_D2,INM_CBINI_D2,0)
             ID2SM_NEW = 0
+*
+* Thinks this should be new start Lasse
 *
 * ==============================================================
 * Part 1 O1(d1,d2,d3,d4,ex) T1(i) => OT1(d2,d3,d4,l1) in TSCR4
@@ -2156,7 +1929,7 @@ C
      &           IO1DX,ID1_BATLEN,INM_CAAB_D1(1,1),ISM_CAAB_D1(1,1),
      &           ISTR_D1,IBO1DX,
      &           IOEX,IEX_BATLEN,INM_CAAB_EX(1,1),ISM_CAAB_EX(1,1),
-     &           ISTR_EX,IBOEX,IEXD1234_INDX,FACX)
+     &           ISTR_EX,IBOEX,IEXD1234_INDX)
 *
               END DO
 *            ^ End of loop over batches of excitation operators OEX
@@ -2210,6 +1983,9 @@ C     /                     SIGNX, SIGNG, SIGN_LK
               CALL WRTMAT(WORK(KLTSCR4),ND432,NL1_TOT,ND432,NL1_TOT)
             END IF
 *
+* Think this should be the end!!!
+*
+*
 * =========================================================
 * Part 2 OT1(d2,d3,d4,l1) T2(i) => OT12(d3,d4,l2) in TSCR5
 * =========================================================
@@ -2217,101 +1993,101 @@ C     /                     SIGNX, SIGNG, SIGN_LK
 *  We have OT1(d4,d3,d2,L1) for d4,d3,d2 in batch and all L1 of given symmetry
 *  Construct OT12(d4,d3,l2) for d4,d3 in batch and all l2
 *
-            LEND34 = ID3_BATLEN*ID4_BATLEN
-            SIGNX = SIGN_D2K2*SP_D2K2
-            SIGNY = 1.0D0
-            SIGNLK = SIGN_L1K2
+C           LEND34 = ID3_BATLEN*ID4_BATLEN
+C           SIGNX = SIGN_D2K2*SP_D2K2
+C           SIGNY = 1.0D0
+C           SIGNLK = SIGN_L1K2
 CM          CALL SETVEC(TSCR5,ZERO,LEND34*NL2_TOT)
-            NTEST = 00
-            IF(NTEST.GE.100) 
-     &      WRITE(6,*) '  OT1(d2,d3,d4,l1) T2(i) => OT12(d3,d4,l2) '
-            NTEST = 00
-            CALL OT_T_REL(WORK(KLTSCR4),T2,WORK(KLTSCR5),LEND34,
-     &       K2SM,L1SM,ID2SM,
-     &       NK2,NL1,NT2,NO2DX,NL2,LB,NK2_TOT,NL1_TOT,LEN_T2,
-     &       ID2_BATLEN,
-     &       ISM_CAAB_K,INM_CAAB_K,ISM_CAAB_L,INM_CAAB_L,
-     &       ISM_CINI_D2,ISM_CAINI_D2,ISM_AAINI_D2,
-     &       INM_ABINI_D2,INM_AAINI_D2,INM_CBINI_D2,INM_CAINI_D2,
-     &       SIGNX,SIGNY,SIGNLK,
-     &       IB_D2K2,IB_L1K2,
-     &       IX3_CA,SX3_CA,IX3_CB,SX3_CB,
-     &       IX3_AA,SX3_AA,IX3_AB,SX3_AB,
-     &       IX4_CA,SX4_CA,IX4_CB,SX4_CB,
-     &       IX4_AA,SX4_AA,IX4_AB,SX4_AB,
-     &       IBT2_TCC,IBL2_TCC,TSCR1,TSCR2,TSCR3)  
+C           NTEST = 00
+C           IF(NTEST.GE.100) 
+C    &      WRITE(6,*) '  OT1(d2,d3,d4,l1) T2(i) => OT12(d3,d4,l2) '
+C           NTEST = 00
+C           CALL OT_T_REL(WORK(KLTSCR4),T2,WORK(KLTSCR5),LEND34,
+C    &       K2SM,L1SM,ID2SM,
+C    &       NK2,NL1,NT2,NO2DX,NL2,LB,NK2_TOT,NL1_TOT,LEN_T2,
+C    &       ID2_BATLEN,
+C    &       ISM_CAAB_K,INM_CAAB_K,ISM_CAAB_L,INM_CAAB_L,
+C    &       ISM_CINI_D2,ISM_CAINI_D2,ISM_AAINI_D2,
+C    &       INM_ABINI_D2,INM_AAINI_D2,INM_CBINI_D2,INM_CAINI_D2,
+C    &       SIGNX,SIGNY,SIGNLK,
+C    &       IB_D2K2,IB_L1K2,
+C    &       IX3_CA,SX3_CA,IX3_CB,SX3_CB,
+C    &       IX3_AA,SX3_AA,IX3_AB,SX3_AB,
+C    &       IX4_CA,SX4_CA,IX4_CB,SX4_CB,
+C    &       IX4_AA,SX4_AA,IX4_AB,SX4_AB,
+C    &       IBT2_TCC,IBL2_TCC,TSCR1,TSCR2,TSCR3)  
            END DO
 *          ^ End of loop over D2 batches
           END IF 
 *         ^ End of NK2_TOT*ND2_TOT .ne. 0
-          END DO
+C         END DO
 *         ^ End of loop over symmetries of D2 batches
-          IF(NTEST.GE.100) THEN 
-            WRITE(6,*) ' OT12(D4D3,L2) matrix '
-            ND43 = ID3_BATLEN*ID4_BATLEN 
-            CALL WRTMAT(WORK(KLTSCR5),ND43,NL2_TOT,ND43,NL2_TOT)
-          END IF
+C         IF(NTEST.GE.100) THEN 
+C           WRITE(6,*) ' OT12(D4D3,L2) matrix '
+C           ND43 = ID3_BATLEN*ID4_BATLEN 
+C           CALL WRTMAT(WORK(KLTSCR5),ND43,NL2_TOT,ND43,NL2_TOT)
+C         END IF
 * We now have OPT12(d3,d4,l2) in TSCR5
 *
 * Part 3 : OPT123(d4,l3) in TSCR6
 *
-          SIGNX = SIGN_D3K3*SP_D3K3
-          SIGNY = 1.0D0
-          SIGNLK = SIGN_L2K3
+C         SIGNX = SIGN_D3K3*SP_D3K3
+C         SIGNY = 1.0D0
+C         SIGNLK = SIGN_L2K3
 C         CALL SETVEC(TSCR6,ZERO,ID4_BATLEN*NL3_TOT)
-            NTEST = 00
-          IF(NTEST.GE.100) 
-     &    WRITE(6,*) '  OT12(d3,d4,l2) T3(i) => OT123(d4,l3) '
-            NTEST = 00
-          CALL OT_T_REL(WORK(KLTSCR5),T3,WORK(KLTSCR6),ID4_BATLEN,
-     &       K3SM,L2SM,ID3SM,
-     &       NK3,NL2,NT3,NO3DX,NL3,LB,NK3_TOT,NL2_TOT,LEN_T3,
-     &       ID3_BATLEN,
-     &       ISM_CAAB_K,INM_CAAB_K,ISM_CAAB_L,INM_CAAB_L,
-     &       ISM_CINI_D3,ISM_CAINI_D3,ISM_AAINI_D3,
-     &       INM_ABINI_D3,INM_AAINI_D3,INM_CBINI_D3,INM_CAINI_D3,
-     &       SIGNX,SIGNY,SIGNLK,
-     &       IB_D3K3,IB_L2K3,
-     &       IX5_CA,SX5_CA,IX5_CB,SX5_CB,
-     &       IX5_AA,SX5_AA,IX5_AB,SX5_AB,
-     &       IX6_CA,SX6_CA,IX6_CB,SX6_CB,
-     &       IX6_AA,SX6_AA,IX6_AB,SX6_AB,
-     &       IBT3_TCC,IBL3_TCC,TSCR1,TSCR2,TSCR3)  
-         END DO
+C           NTEST = 00
+C         IF(NTEST.GE.100) 
+C    &    WRITE(6,*) '  OT12(d3,d4,l2) T3(i) => OT123(d4,l3) '
+C           NTEST = 00
+C         CALL OT_T_REL(WORK(KLTSCR5),T3,WORK(KLTSCR6),ID4_BATLEN,
+C    &       K3SM,L2SM,ID3SM,
+C    &       NK3,NL2,NT3,NO3DX,NL3,LB,NK3_TOT,NL2_TOT,LEN_T3,
+C    &       ID3_BATLEN,
+C    &       ISM_CAAB_K,INM_CAAB_K,ISM_CAAB_L,INM_CAAB_L,
+C    &       ISM_CINI_D3,ISM_CAINI_D3,ISM_AAINI_D3,
+C    &       INM_ABINI_D3,INM_AAINI_D3,INM_CBINI_D3,INM_CAINI_D3,
+C    &       SIGNX,SIGNY,SIGNLK,
+C    &       IB_D3K3,IB_L2K3,
+C    &       IX5_CA,SX5_CA,IX5_CB,SX5_CB,
+C    &       IX5_AA,SX5_AA,IX5_AB,SX5_AB,
+C    &       IX6_CA,SX6_CA,IX6_CB,SX6_CB,
+C    &       IX6_AA,SX6_AA,IX6_AB,SX6_AB,
+C    &       IBT3_TCC,IBL3_TCC,TSCR1,TSCR2,TSCR3)  
+C        END DO
 *        ^ End of loop over D3 batches 
-        END IF
+C       END IF
 *.      ^ End if there are K3 and L3 strings
-        END DO
+C       END DO
 *       ^ End of loop over D3 symmetry
-        IF(NTEST.GE.100) THEN 
-           WRITE(6,*) ' OT123(D4,L3) matrix '
-           ND4 = ID4_BATLEN 
-           CALL WRTMAT(WORK(KLTSCR6),ND4,NL3_TOT,ND4,NL3_TOT)
-         END IF
+C       IF(NTEST.GE.100) THEN 
+C          WRITE(6,*) ' OT123(D4,L3) matrix '
+C          ND4 = ID4_BATLEN 
+C          CALL WRTMAT(WORK(KLTSCR6),ND4,NL3_TOT,ND4,NL3_TOT)
+C        END IF
 *
 * Part 4 : OT123(d4,l3)*T4 => OT1234(I)
-        SIGNX = SIGN_D4K4*SP_D4K4
-        SIGNY = 1.0D0
-        SIGNLK = SIGN_L3K4
-        IF(NTEST.GE.100) 
-     &  WRITE(6,*) '  OT123(d4,l1) T4(i) => OT1234(l4) '
-        CALL OT_T_REL(WORK(KLTSCR6),T4,OT1234,1,
-     &       K4SM,L3SM,ID4SM,
-     &       NK4,NL3,NT4,NO4DX,NL4,LB,NK4_TOT,NL3_TOT,LEN_T4,
-     &       ID4_BATLEN,
-     &       ISM_CAAB_K,INM_CAAB_K,ISM_CAAB_L,INM_CAAB_L,
-     &       ISM_CINI_D4,ISM_CAINI_D4,ISM_AAINI_D4,
-     &       INM_ABINI_D4,INM_AAINI_D4,INM_CBINI_D4,INM_CAINI_D4,
-     &       SIGNX,SIGNY,SIGNLK,
-     &       IB_D4K4,IB_L3K4,
-     &       IX7_CA,SX7_CA,IX7_CB,SX7_CB,
-     &       IX7_AA,SX7_AA,IX7_AB,SX7_AB,
-     &       IX8_CA,SX8_CA,IX8_CB,SX8_CB,
-     &       IX8_AA,SX8_AA,IX8_AB,SX8_AB,
-     &       IBT4_TCC,IBL4_TCC,TSCR1,TSCR2,TSCR3)  
-       END DO
+C       SIGNX = SIGN_D4K4*SP_D4K4
+C       SIGNY = 1.0D0
+C       SIGNLK = SIGN_L3K4
+C       IF(NTEST.GE.100) 
+C    &  WRITE(6,*) '  OT123(d4,l1) T4(i) => OT1234(l4) '
+C       CALL OT_T_REL(WORK(KLTSCR6),T4,OT1234,1,
+C    &       K4SM,L3SM,ID4SM,
+C    &       NK4,NL3,NT4,NO4DX,NL4,LB,NK4_TOT,NL3_TOT,LEN_T4,
+C    &       ID4_BATLEN,
+C    &       ISM_CAAB_K,INM_CAAB_K,ISM_CAAB_L,INM_CAAB_L,
+C    &       ISM_CINI_D4,ISM_CAINI_D4,ISM_AAINI_D4,
+C    &       INM_ABINI_D4,INM_AAINI_D4,INM_CBINI_D4,INM_CAINI_D4,
+C    &       SIGNX,SIGNY,SIGNLK,
+C    &       IB_D4K4,IB_L3K4,
+C    &       IX7_CA,SX7_CA,IX7_CB,SX7_CB,
+C    &       IX7_AA,SX7_AA,IX7_AB,SX7_AB,
+C    &       IX8_CA,SX8_CA,IX8_CB,SX8_CB,
+C    &       IX8_AA,SX8_AA,IX8_AB,SX8_AB,
+C    &       IBT4_TCC,IBL4_TCC,TSCR1,TSCR2,TSCR3)  
+C      END DO
 *      ^ End of D4 batches 
-      END DO
+C     END DO
 *     ^ End of D4 symmetries
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Updated OT1234 block '
@@ -2319,7 +2095,7 @@ C         CALL SETVEC(TSCR6,ZERO,ID4_BATLEN*NL3_TOT)
      &       NL4(1,4),NSMST)
       END IF
 *
-      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'OPCTT ')
+C     CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'OPCTT ')
       RETURN
       END
 *
@@ -4459,7 +4235,7 @@ C     INTEGER JGRP(MXPNGAS)
      &IOD2X,LD2,INM_CAAB_D2,ISM_CAAB_D2,ISTR_D2,IBO2DX,
      &IOD1X,LD1,INM_CAAB_D1,ISM_CAAB_D1,ISTR_D1,IBO1DX,
      &IOEX ,LEX,INM_CAAB_EX,ISM_CAAB_EX,ISTR_EX,IBOEX,
-     &IEXD1234_INDX,FACX)
+     &IEXD1234_INDX)
 *
 * Fetch batch of operator integrals ordered as O(D1,D2,D3,D4,EX) 
 *
@@ -4698,7 +4474,7 @@ C        print*,'in fast version only'
         ELSE
           XOUT = 0.0D0
         END IF
-        OPSCR(INT) = FACX*XOUT
+        OPSCR(INT) = XOUT
         END IF
       NTEST = 00
       IF(NTEST.GE.100) THEN 
