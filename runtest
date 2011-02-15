@@ -264,7 +264,7 @@ class run:
 
          elapsed_str = time.strftime('%Mm%Ss', time.gmtime(elapsed))
 
-         print '%6s %5s %30s %30s %25s %s' % \
+         print '%6s %10s %30s %30s %25s %s' % \
              (progress, result_text, self.get_test_name(),        \
               inp_file_strip, mol_file_strip, elapsed_str)
 
@@ -370,7 +370,7 @@ def main(*args):
     # print screen header
 
     print
-    print '%12s %30s %30s %25s %6s' % ('result', 'test', 'inp', 'mol/xyz', 'time')
+    print '%17s %30s %30s %25s %6s' % ('result', 'test', 'inp', 'mol/xyz', 'time')
     print
 
     # run the tests
@@ -380,6 +380,7 @@ def main(*args):
     nr_crashed       = 0
     nr_failed        = 0
     nr_without_ref   = 0
+    nr_bad_filter    = 0
     global_elapsed   = 0.0
 
     for task in l:
@@ -401,11 +402,17 @@ def main(*args):
                     task.apply_filter() 
                 
                     if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
-                        result_text = 'OK'
-                        nr_ok += 1
+                        # filter does not produce anything
+                        if os.path.getsize('compare/%s.own' % task.get_output_name()) == 0:
+                            result_text = 'BAD FILTER'
+                            nr_bad_filter += 1
+                        else:
+                            result_text = 'OK'
+                            nr_ok += 1
                     else:
                         result_text = 'FAIL'
                         nr_failed += 1
+
                 else:
                     result_text = ' '
                     nr_without_ref += 1
@@ -451,6 +458,8 @@ def main(*args):
          print '         %5i crashed'           % nr_crashed
     if nr_without_ref > 0:
          print '         %5i without reference' % nr_without_ref
+    if nr_bad_filter > 0:
+         print '         %5i with bad filter'   % nr_bad_filter
     print
 
     global_elapsed_str = time.strftime('%Hh%Mm%Ss', time.gmtime(global_elapsed))
