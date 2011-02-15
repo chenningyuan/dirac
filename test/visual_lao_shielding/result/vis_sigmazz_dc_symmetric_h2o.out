@@ -1,5 +1,5 @@
 DIRAC pam run in /home/bast/dirac/git_trunk/test/visual_lao_shielding
--e Size of all static allocations :108.447 MB 
+Size of all static allocations: 116.936 MB 
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -140,10 +140,10 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.35-24-generic
+ Operating system  : Linux 2.6.35-25-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 11:06:44 Jan 26 2011 (by foo@foo:foo)
+ Last compilation  : 19:36:47 Feb 15 2011 (by foo@foo:foo)
  FORTRAN compiler  : foo 
  C compiler        : foo 
  External libraries: foo 
@@ -153,7 +153,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Wed Jan 26 11:39:42 2011
+     Date and time (Linux)  : Tue Feb 15 23:22:51 2011
      Host name              :                                         
 
 
@@ -178,6 +178,8 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  Z
 .SYMMETRIC
 .3D_INTEGRATE
+.SCALE
+ 53.25135    !this is to get integrated nr in ppm
 *END OF
 
 
@@ -550,7 +552,6 @@ Point group: C1
    SL-integrals from iteration    1
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
- LWORK,LFREE    64000000    64000000
 
 
    ***************************************************************************
@@ -632,20 +633,20 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
    Number of grid points in quadrature:     87176 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.04 seconds
+ >>>> Time used in DFTGRD:   0.10 seconds
 
 
       scalar              x-component         y-component         z-component
 
-   -0.9869871300E+01    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+   -0.5255839711E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   7.61 seconds
+ >>>> time used in integration:  51.37 seconds
 
  
-     Date and time (Linux)  : Wed Jan 26 11:39:50 2011
+     Date and time (Linux)  : Tue Feb 15 23:23:43 2011
      Host name              :                                         
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -653,7 +654,7 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        11.35
+  Mean allocation size (Mb) :        10.88
   
   Largest          10  allocations
   
@@ -675,5 +676,5 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
  MEMGET high-water mark:     2.43 MB
 
 *****************************************************
->>>> Node 0, utime: 7, stime: 0, minflt: 136482, majflt: 0, nvcsw: 0, nivcsw: 701, maxrss: 540292
->>>> Total WALL time used in DIRAC: 8s
+>>>> Node 0, utime: 51, stime: 0, minflt: 136579, majflt: 0, nvcsw: 0, nivcsw: 7195, maxrss: 540712
+>>>> Total WALL time used in DIRAC: 52s
