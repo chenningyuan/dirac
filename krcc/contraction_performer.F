@@ -1120,10 +1120,10 @@ C     INTEGER IOC_OT1T2(NGAS,4)
 *
 *. Occupation of gasspaces for various strings 
 *. Number of strings per sym of the various string supergroups
-      INTEGER NOEX(8,4),NO1DX(8,4)!,NO2DX(8,4),NO3DX(8,4),NO4DX(8,4)
-      INTEGER NT1(8,4)!, NT2(8,4), NT3(8,4), NT4(8,4)
-      INTEGER NK1(8,4)!,NK2(8,4),NK3(8,4),NK4(8,4)
-      INTEGER NL1(8,4)!,NL2(8,4),NL3(8,4),NL4(8,4)
+      INTEGER NOEX(8,4),NO1DX(8,4),NO2DX(8,4),NO3DX(8,4),NO4DX(8,4)
+      INTEGER NT1(8,4), NT2(8,4), NT3(8,4), NT4(8,4)
+      INTEGER NK1(8,4),NK2(8,4),NK3(8,4),NK4(8,4)
+      INTEGER NL1(8,4),NL2(8,4),NL3(8,4),NL4(8,4)
 C     INTEGER NOT1T2(8,4)
 *. Offsets of strings with given sym for the strings of various CC ops
       INTEGER IBOEX(8,4),IBO1DX(8,4)!,IBO2DX(8,4),IBO3DX(8,4)
