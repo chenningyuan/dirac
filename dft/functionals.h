@@ -224,6 +224,7 @@ extern Functional KT3Functional;
 extern Functional LDAFunctional;
 extern Functional OLYPFunctional;
 extern Functional PBE0Functional;
+extern Functional PBE38Functional;
 extern Functional PBEFunctional;
 extern Functional RPBEFunctional;
 extern Functional SVWN3Functional;
