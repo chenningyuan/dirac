@@ -57,6 +57,8 @@
 !             cartesian_to_spherical(:)
 !             spherical_address(:)
 
+!radovan: for LAO business we will also need the center of the basis functions
+
 module basis_info_ng
 
    implicit none
