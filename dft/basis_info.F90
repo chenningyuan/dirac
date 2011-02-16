@@ -168,7 +168,6 @@ module basis_info
    logical                 :: file_exists
 
    logical                 :: only_large
-   logical,      parameter :: force_small_ao = .false.
 
    real(8),      parameter :: cell_size          = 2.25d0
 !>                                                 cell_size*0.5d0*sqrt(3.0d0)
@@ -227,6 +226,8 @@ contains
 !> \brief write basis set info to file
    subroutine basis_info_write()
 
+      use visual_cfg
+
 !     --------------------------------------------------------------------------
       integer :: i, j, i_c, i_s, ic
       integer :: ishell, icount, isym, iprim, irep
@@ -276,7 +277,7 @@ contains
       if (mc == 1) then
          only_large = .true.
       end if
-      if (only_large .and. force_small_ao) then
+      if (only_large .and. visual_cfg_force_small_ao) then
          only_large = .false.
       end if
 

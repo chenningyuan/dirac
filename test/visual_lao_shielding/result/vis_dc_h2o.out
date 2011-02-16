@@ -1,5 +1,5 @@
 DIRAC pam run in /home/bast/dirac/git_trunk/test/visual_lao_shielding
-Size of all static allocations: 116.936 MB 
+Size of all static allocations: 116.927 MB 
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -143,7 +143,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  Operating system  : Linux 2.6.35-25-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 19:36:47 Feb 15 2011 (by foo@foo:foo)
+ Last compilation  : 00:02:02 Feb 16 2011 (by foo@foo:foo)
  FORTRAN compiler  : foo 
  C compiler        : foo 
  External libraries: foo 
@@ -153,7 +153,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Tue Feb 15 23:22:51 2011
+     Date and time (Linux)  : Wed Feb 16 00:58:53 2011
      Host name              :                                         
 
 
@@ -305,17 +305,17 @@ Point group: C1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  O           1       8      27      15      L  - [9s4p1d|3s2p1d]                                                
-                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
-  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
-                             19      19      S  - [1s4p1d|1s4p1d]                                                
-  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
-                             19      19      S  - [1s4p1d|1s4p1d]                                                
+  O           1       8      15       5      L  - [6s3p|2s1p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
+  H           1       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  H           1       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
   ----------------------------------------------------------------------
-                             41      25      L  - large components
-                            106     106      S  - small components
+                             21       7      L  - large components
+                             57      57      S  - small components
   ----------------------------------------------------------------------
-  total:      3      10     147     131
+  total:      3      10      78      64
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -328,16 +328,16 @@ Point group: C1
   -----------------------------
 
   Atom type   1   2
-   Elements                             References                                
-   --------                             ----------                                
-   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
-   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
-   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
-   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
-   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
-   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
-   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
-            J. Chem. Phys., 110, 7667 (1999)                                      
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
 
 
   Cartesian Coordinates
@@ -395,94 +395,52 @@ Point group: C1
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   18
-     1  L O     s        2  L O     px       3  L O     py       4  L O     pz       5  L O     dxx      6  L O     dxy 
-     7  L O     dxz      8  L O     dyy      9  L O     dyz     10  L O     dzz     11  L H     s       12  L H     px  
-    13  L H     py      14  L H     pz      15  L H     s       16  L H     px      17  L H     py      18  L H     pz  
-   * Small components:   40
-    19  S O     s       20  S O     px      21  S O     py      22  S O     pz      23  S O     dxx     24  S O     dxy 
-    25  S O     dxz     26  S O     dyy     27  S O     dyz     28  S O     dzz     29  S O     fxxx    30  S O     fxxy
-    31  S O     fxxz    32  S O     fxyy    33  S O     fxyz    34  S O     fxzz    35  S O     fyyy    36  S O     fyyz
-    37  S O     fyzz    38  S O     fzzz    39  S H     s       40  S H     px      41  S H     py      42  S H     pz  
-    43  S H     dxx     44  S H     dxy     45  S H     dxz     46  S H     dyy     47  S H     dyz     48  S H     dzz 
-    49  S H     s       50  S H     px      51  S H     py      52  S H     pz      53  S H     dxx     54  S H     dxy 
-    55  S H     dxz     56  S H     dyy     57  S H     dyz     58  S H     dzz 
+   * Large components:    6
+     1  L O     s        2  L O     px       3  L O     py       4  L O     pz       5  L H     s        6  L H     s   
+   * Small components:   16
+     7  S O     s        8  S O     px       9  S O     py      10  S O     pz      11  S O     dxx     12  S O     dxy 
+    13  S O     dxz     14  S O     dyy     15  S O     dyz     16  S O     dzz     17  S H     px      18  S H     py  
+    19  S H     pz      20  S H     px      21  S H     py      22  S H     pz  
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          131
-  Number of large orbitals in each symmetry:     25
-  Number of small orbitals in each symmetry:    106
+  Number of orbitals in each symmetry:           64
+  Number of large orbitals in each symmetry:      7
+  Number of small orbitals in each symmetry:     57
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
-        3 functions:    O  s   
-        2 functions:    O  px  
-        2 functions:    O  py  
-        2 functions:    O  pz  
-        1 functions:    O  dxx 
-        1 functions:    O  dxy 
-        1 functions:    O  dxz 
-        1 functions:    O  dyy 
-        1 functions:    O  dyz 
-        1 functions:    O  dzz 
-        2 functions:    H  s   
-        1 functions:    H  px  
-        1 functions:    H  py  
-        1 functions:    H  pz  
-        2 functions:    H  s   
-        1 functions:    H  px  
-        1 functions:    H  py  
-        1 functions:    H  pz  
+        2 functions:    O  s   
+        1 functions:    O  px  
+        1 functions:    O  py  
+        1 functions:    O  pz  
+        1 functions:    H  s   
+        1 functions:    H  s   
 
 * Small component functions
 
   Symmetry  A  ( 1)
 
-        4 functions:    O  s   
-       10 functions:    O  px  
-       10 functions:    O  py  
-       10 functions:    O  pz  
-        4 functions:    O  dxx 
-        4 functions:    O  dxy 
-        4 functions:    O  dxz 
-        4 functions:    O  dyy 
-        4 functions:    O  dyz 
-        4 functions:    O  dzz 
-        1 functions:    O  fxxx
-        1 functions:    O  fxxy
-        1 functions:    O  fxxz
-        1 functions:    O  fxyy
-        1 functions:    O  fxyz
-        1 functions:    O  fxzz
-        1 functions:    O  fyyy
-        1 functions:    O  fyyz
-        1 functions:    O  fyzz
-        1 functions:    O  fzzz
-        1 functions:    H  s   
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        1 functions:    H  dxx 
-        1 functions:    H  dxy 
-        1 functions:    H  dxz 
-        1 functions:    H  dyy 
-        1 functions:    H  dyz 
-        1 functions:    H  dzz 
-        1 functions:    H  s   
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        1 functions:    H  dxx 
-        1 functions:    H  dxy 
-        1 functions:    H  dxz 
-        1 functions:    H  dyy 
-        1 functions:    H  dyz 
-        1 functions:    H  dzz 
+        3 functions:    O  s   
+        6 functions:    O  px  
+        6 functions:    O  py  
+        6 functions:    O  pz  
+        3 functions:    O  dxx 
+        3 functions:    O  dxy 
+        3 functions:    O  dxz 
+        3 functions:    O  dyy 
+        3 functions:    O  dyz 
+        3 functions:    O  dzz 
+        3 functions:    H  px  
+        3 functions:    H  py  
+        3 functions:    H  pz  
+        3 functions:    H  px  
+        3 functions:    H  py  
+        3 functions:    H  pz  
 
 
    ***************************************************************************
@@ -575,8 +533,8 @@ Point group: C1
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          1(Proj:          1, Lindep:          0)
-   S   A     * Deleted:          9(Proj:          9, Lindep:          0)
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A     * Deleted:          3(Proj:          3, Lindep:          0)
 
 
                                 Output from MODHAM
@@ -589,9 +547,9 @@ Point group: C1
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    24
-No. of negative energy orbitals (NPSH):    24
-Total no. of orbitals           (NORB):    48
+No. of positive energy orbitals (NESH):     7
+No. of negative energy orbitals (NPSH):     7
+Total no. of orbitals           (NORB):    14
 
   *** Visualisation module ***
   Visualisation : DFCOEF file read
@@ -626,27 +584,27 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
  
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-O       1   0.571E-06   0.856E+01   0.117E+00     124   29156
-H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
-H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+O       1   0.541E-05   0.729E+01   0.123E+00      98   25108
+H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
+H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
 
-   Number of grid points in quadrature:     87176 (100.0%)
+   Number of grid points in quadrature:     76600 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.10 seconds
+ >>>> Time used in DFTGRD:   0.09 seconds
 
 
       scalar              x-component         y-component         z-component
 
-   -0.5255839711E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+   -0.3994256537E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:  51.37 seconds
+ >>>> time used in integration:   6.99 seconds
 
  
-     Date and time (Linux)  : Tue Feb 15 23:23:43 2011
+     Date and time (Linux)  : Wed Feb 16 00:59:00 2011
      Host name              :                                         
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -654,7 +612,7 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        10.88
+  Mean allocation size (Mb) :        10.85
   
   Largest          10  allocations
   
@@ -663,18 +621,18 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
-        0.22 Mb at subroutine                                            for unnamed variable                          
-        0.22 Mb at subroutine                                            for unnamed variable                          
-        0.22 Mb at subroutine                                            for unnamed variable                          
-        0.22 Mb at subroutine                                            for unnamed variable                          
-        0.22 Mb at subroutine                                            for unnamed variable                          
+        0.20 Mb at subroutine                                            for unnamed variable                          
+        0.20 Mb at subroutine                                            for unnamed variable                          
+        0.20 Mb at subroutine                                            for unnamed variable                          
+        0.20 Mb at subroutine                                            for unnamed variable                          
+        0.20 Mb at subroutine                                            for unnamed variable                          
   
   Peak memory usage    (Mb) :       519.00
        reached at subroutine :                                           
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     2.43 MB
+ MEMGET high-water mark:     0.58 MB
 
 *****************************************************
->>>> Node 0, utime: 51, stime: 0, minflt: 136579, majflt: 0, nvcsw: 0, nivcsw: 7195, maxrss: 540712
->>>> Total WALL time used in DIRAC: 52s
+>>>> Node 0, utime: 7, stime: 0, minflt: 135394, majflt: 0, nvcsw: 0, nivcsw: 1118, maxrss: 537724
+>>>> Total WALL time used in DIRAC: 8s

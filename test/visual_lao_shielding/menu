@@ -1,4 +1,4 @@
-dc_symmetric.inp             h2o.mol --outcmo --get="PAMXVC  AOPROPER property_info"  --timeout=5m
-vis_sigmazz_dc_symmetric.inp h2o.mol --incmo  --copy="PAMXVC AOPROPER property_info"  --timeout=3m
+rsp_dc.inp h2o.mol --outcmo --get="PAMXVC  AOPROPER property_info" --timeout=5m
+vis_dc.inp h2o.mol --incmo  --copy="PAMXVC AOPROPER property_info" --timeout=3m
 
 sh rm DFCOEF PAMXVC AOPROPER property_info
