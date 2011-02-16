@@ -143,7 +143,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  Operating system  : Linux 2.6.35-25-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 00:02:02 Feb 16 2011 (by foo@foo:foo)
+ Last compilation  : 14:55:54 Feb 16 2011 (by foo@foo:foo)
  FORTRAN compiler  : foo 
  C compiler        : foo 
  External libraries: foo 
@@ -153,7 +153,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Wed Feb 16 00:58:53 2011
+     Date and time (Linux)  : Wed Feb 16 16:25:24 2011
      Host name              :                                         
 
 
@@ -162,24 +162,21 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *******************************************************************************
 
 **DIRAC
-.ANALYZE
+#.WAVE FUNCTION
 **HAMILTONIAN
-.LVCORR
+.LEVY-LEBLOND
 **WAVE FUNCTION
 .DHF
-**ANALYZE
-.VISUAL
-*VISUAL
+**VISUAL
 .NDIPZ
- 1 PAMXVC 5
-.NDIPZ
- 1 PAMXVC 6
-.LONDON
- Z
-.SYMMETRIC
+ 1 PAMXVC 3
+.NDIPZDIA
+ 1 DFCOEF 0
 .3D_INTEGRATE
 .SCALE
- 53.25135    !this is to get integrated nr in ppm
+ -53.25135    !this is to get integrated nr in ppm
+.GAUGE
+ 0.0 0.0 0.0
 *END OF
 
 
@@ -187,8 +184,6 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
     ********************* DIRAC: No title specified !!! *********************
     *************************************************************************
 
- Jobs in this run:
-   * Analysis
 
 
     **************************************************************************
@@ -448,14 +443,11 @@ Point group: C1
    ***************************************************************************
 
  * Print level:    0
- * Dirac-Coulomb Hamiltonian
- * SS integrals neglected:
-   Interatomic Coulombic SS-contributions modelled by
-   classical repulsion of small component atomic charges
-   using tabulated charges.
+ * Levy-Leblond Hamiltonian
+   - Spin-orbit interactions neglected
  * Default integral flags passed to all modules
    - LL-integrals:     1
-   - LS-integrals:     1
+   - LS-integrals:     0
    - SS-integrals:     0
    - GT-integrals:     0
  * Basis set:
@@ -507,15 +499,9 @@ Point group: C1
  * No quadratic convergent Hartree-Fock
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
-   SL-integrals from iteration    1
+ * NB!!! No e-p rotations in 2nd order optimization.
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
-
-
-   ***************************************************************************
-   ***************************** Analysis module *****************************
-   ***************************************************************************
-
 
 
  ********************************************************************************
@@ -528,6 +514,7 @@ Point group: C1
     ************************ End of input processing ************************
     *************************************************************************
 
+  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
 
 
                        Generating Lowdin canonical matrix:
@@ -540,7 +527,7 @@ Point group: C1
                                 Output from MODHAM
                                 ------------------
 
-* Applied strict kinetic balance !
+* All positronic solutions deleted !
 
 
       **********************************************************************
@@ -548,14 +535,11 @@ Point group: C1
       **********************************************************************
 
 No. of positive energy orbitals (NESH):     7
-No. of negative energy orbitals (NPSH):     7
-Total no. of orbitals           (NORB):    14
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):     7
 
   *** Visualisation module ***
   Visualisation : DFCOEF file read
- symmetric connection is used in visual_london
- read symmetry info for connection matrices
- entering ivector, p_name, len_trim(p_name) =            1 dS/dBZ           6
  >>>> time used in plot:   0.00 seconds
 
 
@@ -584,27 +568,27 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
  
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-O       1   0.541E-05   0.729E+01   0.123E+00      98   25108
-H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
-H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
+O       1   0.541E-05   0.684E+01   0.131E+00      92   23164
+H       1   0.334E-04   0.966E+01   0.142E+00      75   23610
+H       1   0.334E-04   0.966E+01   0.142E+00      75   23610
 
-   Number of grid points in quadrature:     76600 (100.0%)
+   Number of grid points in quadrature:     70384 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.09 seconds
+ >>>> Time used in DFTGRD:   0.10 seconds
 
 
       scalar              x-component         y-component         z-component
 
-   -0.3994256537E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+    0.1609429116E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   6.99 seconds
+ >>>> time used in integration:   0.29 seconds
 
  
-     Date and time (Linux)  : Wed Feb 16 00:59:00 2011
+     Date and time (Linux)  : Wed Feb 16 16:25:25 2011
      Host name              :                                         
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -612,7 +596,7 @@ H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        10.85
+  Mean allocation size (Mb) :        11.84
   
   Largest          10  allocations
   
@@ -621,11 +605,11 @@ H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
-        0.20 Mb at subroutine                                            for unnamed variable                          
-        0.20 Mb at subroutine                                            for unnamed variable                          
-        0.20 Mb at subroutine                                            for unnamed variable                          
-        0.20 Mb at subroutine                                            for unnamed variable                          
-        0.20 Mb at subroutine                                            for unnamed variable                          
+        0.18 Mb at subroutine                                            for unnamed variable                          
+        0.18 Mb at subroutine                                            for unnamed variable                          
+        0.18 Mb at subroutine                                            for unnamed variable                          
+        0.18 Mb at subroutine                                            for unnamed variable                          
+        0.18 Mb at subroutine                                            for unnamed variable                          
   
   Peak memory usage    (Mb) :       519.00
        reached at subroutine :                                           
@@ -634,5 +618,5 @@ H       1   0.334E-04   0.103E+02   0.131E+00      81   25746
  MEMGET high-water mark:     0.58 MB
 
 *****************************************************
->>>> Node 0, utime: 7, stime: 0, minflt: 135394, majflt: 0, nvcsw: 0, nivcsw: 1118, maxrss: 537724
->>>> Total WALL time used in DIRAC: 8s
+>>>> Node 0, utime: 0, stime: 0, minflt: 135242, majflt: 0, nvcsw: 0, nivcsw: 98, maxrss: 537284
+>>>> Total WALL time used in DIRAC: 1s

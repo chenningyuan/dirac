@@ -1,4 +1,13 @@
-rsp_dc.inp h2o.mol --outcmo --get="PAMXVC  AOPROPER property_info" --timeout=5m
-vis_dc.inp h2o.mol --incmo  --copy="PAMXVC AOPROPER property_info" --timeout=3m
+rsp_ll_nolao.inp h2o.mol --get="DFCOEF PAMXVC" --timeout=5m
+vis_ll_nolao.inp h2o.mol --put="DFCOEF PAMXVC" --timeout=3m
+
+rsp_ll_lao.inp h2o.mol --get="DFCOEF PAMXVC AOPROPER property_info" --timeout=5m
+vis_ll_lao.inp h2o.mol --put="DFCOEF PAMXVC AOPROPER property_info" --timeout=3m
+
+rsp_dc_nolao.inp h2o.mol --get="DFCOEF PAMXVC" --timeout=5m
+vis_dc_nolao.inp h2o.mol --put="DFCOEF PAMXVC" --timeout=3m
+
+rsp_dc_lao.inp h2o.mol --get="DFCOEF PAMXVC AOPROPER property_info" --timeout=5m
+vis_dc_lao.inp h2o.mol --put="DFCOEF PAMXVC AOPROPER property_info" --timeout=3m
 
 sh rm DFCOEF PAMXVC AOPROPER property_info

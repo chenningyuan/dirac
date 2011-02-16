@@ -548,6 +548,26 @@ contains
          call read_input_visual_helper2(iq_ndipz)
       end if
 
+      if (kw_matches(word, '.BDIPXD')) then
+         call read_input_visual_helper(iq_bdipxdia)
+      end if
+      if (kw_matches(word, '.BDIPYD')) then
+         call read_input_visual_helper(iq_bdipydia)
+      end if
+      if (kw_matches(word, '.BDIPZD')) then
+         call read_input_visual_helper(iq_bdipzdia)
+      end if
+
+      if (kw_matches(word, '.NDIPXD')) then
+         call read_input_visual_helper2(iq_ndipxdia)
+      end if
+      if (kw_matches(word, '.NDIPYD')) then
+         call read_input_visual_helper2(iq_ndipydia)
+      end if
+      if (kw_matches(word, '.NDIPZD')) then
+         call read_input_visual_helper2(iq_ndipzdia)
+      end if
+
       if (kw_matches(word, '.GAUGE ')) then
          call kw_read(word, visual_cfg_gauge_origin(1), &
                             visual_cfg_gauge_origin(2), &

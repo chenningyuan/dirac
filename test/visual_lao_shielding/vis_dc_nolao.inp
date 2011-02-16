@@ -9,10 +9,9 @@
  1 PAMXVC 5
 .NDIPZ
  1 PAMXVC 6
-.LONDON
- Z
-.SYMMETRIC
 .3D_INTEGRATE
 .SCALE
- 53.25135    !this is to get integrated nr in ppm
+ -53.25135    !this is to get integrated nr in ppm
+.GAUGE
+ 0.0 0.0 0.0
 *END OF

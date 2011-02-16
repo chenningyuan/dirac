@@ -441,6 +441,10 @@ contains
                             vector_a)
 
       f = -1.0d0
+      if (levyle) then
+!        radovan: magic factor, not understood by me
+         f = -4.0d0
+      end if
       call daxpy(3, f, vector_a, 1, jblao, 1)
 
     end if

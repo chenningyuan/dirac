@@ -307,13 +307,25 @@ contains
             if ((visual_cfg_property(imat) == iq_ndipx) .or. &
                 (visual_cfg_property(imat) == iq_ndipy) .or. &
                 (visual_cfg_property(imat) == iq_ndipz)) then
-            
-               call get_j(v,            &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          buffer,       &
-                          ao)
+
+               if (levyle) then
+                  call get_gn(density,      &
+                              v,            &
+                              D(imat)%irep, &
+                              D(imat)%nrow, &
+                              D(imat)%elms, &
+                              buffer,       &
+                              ao,           &
+                              ao(ao_start(1, 0):ao_end(1, 0)))
+                  v = 0.5d0*v
+               else
+                  call get_j(v,            &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london) then
                   call get_jblao(imat,       &
@@ -339,6 +351,48 @@ contains
                   result(0) = result(0) + f*(rz*v(1) - rx*v(3))
                end if
                if (visual_cfg_property(imat) == iq_ndipz) then
+                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
+               end if
+            end if
+            
+!           responding operator is nuclear magnetic dipole
+            if ((visual_cfg_property(imat) == iq_ndipxdia) .or. &
+                (visual_cfg_property(imat) == iq_ndipydia) .or. &
+                (visual_cfg_property(imat) == iq_ndipzdia)) then
+
+               call get_n(density,      &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+            
+               rx = px - visual_cfg_gauge_origin(1)
+               ry = py - visual_cfg_gauge_origin(2)
+               rz = pz - visual_cfg_gauge_origin(3)
+            
+               rx = px - cord(1, visual_cfg_ref_nucleus(imat))
+               ry = py - cord(2, visual_cfg_ref_nucleus(imat))
+               rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
+               
+               f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
+               
+               if (visual_cfg_property(imat) == iq_ndipxdia) then
+                  v(1) =   0.0d0
+                  v(2) = - 0.5d0*rz*density
+                  v(3) =   0.5d0*ry*density
+                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
+               end if
+               if (visual_cfg_property(imat) == iq_ndipydia) then
+                  v(1) =   0.5d0*rz*density
+                  v(2) =   0.0d0
+                  v(3) = - 0.5d0*rx*density
+                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
+               end if
+               if (visual_cfg_property(imat) == iq_ndipzdia) then
+                  v(1) = - 0.5d0*ry*density
+                  v(2) =   0.5d0*rx*density
+                  v(3) =   0.0d0
                   result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if

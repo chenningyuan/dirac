@@ -95,6 +95,22 @@ contains
           ) then
           max_ao_g_order = 1
        end if
+       if (levyle) then
+!         here we obtain the paramagnetic part of the current density
+!         via the nr paramagnetic current density expression
+!         for this we need the cartesian gradient
+          if (                                             &
+              (visual_cfg_property(imat) == iq_j)     .or. &
+              (visual_cfg_property(imat) == iq_ndipx) .or. &
+              (visual_cfg_property(imat) == iq_ndipy) .or. &
+              (visual_cfg_property(imat) == iq_ndipz) .or. &
+              (visual_cfg_property(imat) == iq_bdipx) .or. &
+              (visual_cfg_property(imat) == iq_bdipy) .or. &
+              (visual_cfg_property(imat) == iq_bdipz)      &
+             ) then
+             max_ao_g_order = 1
+          end if
+       end if
     end do
 
     max_ao_m_order = 0
@@ -188,7 +204,11 @@ contains
 !      transform connection matrices to MO basis:
 !      ------------------------------------------
        D_con_mo = dag(C)*(D_con_ao*C)
-       D_con_mo = 0.5d0*D_con_mo
+       if (.not. levyle) then
+!         radovan: magic factor for levyle
+!                  need to find the reason for it
+          D_con_mo = 0.5d0*D_con_mo
+       end if
        
        call copy_matrix_sym(D_con_mo, D_con_ao)
        

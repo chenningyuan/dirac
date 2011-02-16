@@ -35,26 +35,32 @@ module visual_cfg
    integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
    integer,      public            :: visual_cfg_irep_xvector(max_para)
 
-   integer, public :: iq_gamma5  =  1
-   integer, public :: iq_density =  2
-   integer, public :: iq_elf     =  3
-   integer, public :: iq_j       =  4
-   integer, public :: iq_rotj    =  5
-   integer, public :: iq_divj    =  6
-   integer, public :: iq_s       =  7
-   integer, public :: iq_rots    =  8
-   integer, public :: iq_divs    =  9
-   integer, public :: iq_jpara   = 10
-   integer, public :: iq_jdia    = 11
-   integer, public :: iq_edipx   = 12
-   integer, public :: iq_edipy   = 13
-   integer, public :: iq_edipz   = 14
-   integer, public :: iq_bdipx   = 15
-   integer, public :: iq_bdipy   = 16
-   integer, public :: iq_bdipz   = 17
-   integer, public :: iq_ndipx   = 18
-   integer, public :: iq_ndipy   = 19
-   integer, public :: iq_ndipz   = 20
+   integer, public :: iq_gamma5   =  1
+   integer, public :: iq_density  =  2
+   integer, public :: iq_elf      =  3
+   integer, public :: iq_j        =  4
+   integer, public :: iq_rotj     =  5
+   integer, public :: iq_divj     =  6
+   integer, public :: iq_s        =  7
+   integer, public :: iq_rots     =  8
+   integer, public :: iq_divs     =  9
+   integer, public :: iq_jpara    = 10
+   integer, public :: iq_jdia     = 11
+   integer, public :: iq_edipx    = 12
+   integer, public :: iq_edipy    = 13
+   integer, public :: iq_edipz    = 14
+   integer, public :: iq_bdipx    = 15
+   integer, public :: iq_bdipy    = 16
+   integer, public :: iq_bdipz    = 17
+   integer, public :: iq_ndipx    = 18
+   integer, public :: iq_ndipy    = 19
+   integer, public :: iq_ndipz    = 20
+   integer, public :: iq_bdipxdia = 21
+   integer, public :: iq_bdipydia = 22
+   integer, public :: iq_bdipzdia = 23
+   integer, public :: iq_ndipxdia = 24
+   integer, public :: iq_ndipydia = 25
+   integer, public :: iq_ndipzdia = 26
 
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
