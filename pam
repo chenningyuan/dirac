@@ -1385,11 +1385,14 @@ class pam_enviroment:
         # process the dirac.x as the child subprocess
 
                 if self.iprint == 0:
+                    # supress stderr stream, only stdout is present
                     self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True,
                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
                 else:
+                    #  "verbose" output, stderr flows into console  (red color in trac-webpage)
+                    # wanted: stderr both into console and files
                     self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True,
-                            stdin=subprocess.PIPE, stdout=self.f)
+                            stdin=subprocess.PIPE, stdout=self.f, stderr=None)
 
                 if self.iprint >= 0:
                     print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
