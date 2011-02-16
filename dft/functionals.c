@@ -81,6 +81,7 @@ Functional* available_functionals[] = {
     &LDAFunctional,
     &OLYPFunctional,
     &PBE0Functional,
+    &PBE38Functional,
     &PBEFunctional,
     &RPBEFunctional,
     &SVWN3Functional,
