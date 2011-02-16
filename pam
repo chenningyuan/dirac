@@ -1398,9 +1398,9 @@ class pam_enviroment:
                 self.dirac_stderr = self.dirac_p.communicate()[1] 
                 # deal with the error output only if happens
                 if len(self.dirac_stderr) > 0 :
-                    # flush stderr into python stdout (to have in log files)
+                    # inform about dirac stderr in python stdout
                     print >> sys.stdout,\
-                   '  ====  stderr output stream  ====',self.dirac_stderr
+                   '  ====  dirac giving stderr output stream - check the output file ===='
                     # likewise attach stderr to the pam output
                     self.f.write('\n ====  python script additive: stderr output stream  ===='+self.dirac_stderr)
                     # flush out dirac stderr; useful for non-verbose test runs (to have it on the console)
