@@ -350,7 +350,7 @@ def main(*args):
             current_section = 'regular'
             for line in f.readlines():
                 if len(line.split()) > 0:
-                    if line.split()[0] != '#':
+                    if line[0:1] != '#':
                         current_section = get_current_section(line, current_section)
                         if use_this_line(current_section):
                             if line[0:2] == 'sh':
