@@ -367,10 +367,6 @@ contains
                           buffer,       &
                           ao)
             
-               rx = px - visual_cfg_gauge_origin(1)
-               ry = py - visual_cfg_gauge_origin(2)
-               rz = pz - visual_cfg_gauge_origin(3)
-            
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
                ry = py - cord(2, visual_cfg_ref_nucleus(imat))
                rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
@@ -378,21 +374,18 @@ contains
                f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
                
                if (visual_cfg_property(imat) == iq_ndipxdia) then
-                  v(1) =   0.0d0
-                  v(2) = - 0.5d0*rz*density
-                  v(3) =   0.5d0*ry*density
+                  v(2) = -0.5d0*(pz - visual_cfg_gauge_origin(3))*density
+                  v(3) =  0.5d0*(py - visual_cfg_gauge_origin(2))*density
                   result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
                if (visual_cfg_property(imat) == iq_ndipydia) then
-                  v(1) =   0.5d0*rz*density
-                  v(2) =   0.0d0
-                  v(3) = - 0.5d0*rx*density
+                  v(1) =  0.5d0*(pz - visual_cfg_gauge_origin(3))*density
+                  v(3) = -0.5d0*(px - visual_cfg_gauge_origin(1))*density
                   result(0) = result(0) + f*(rz*v(1) - rx*v(3))
                end if
                if (visual_cfg_property(imat) == iq_ndipzdia) then
-                  v(1) = - 0.5d0*ry*density
-                  v(2) =   0.5d0*rx*density
-                  v(3) =   0.0d0
+                  v(1) = -0.5d0*(py - visual_cfg_gauge_origin(2))*density
+                  v(2) =  0.5d0*(px - visual_cfg_gauge_origin(1))*density
                   result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if
