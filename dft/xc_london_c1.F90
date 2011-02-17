@@ -52,6 +52,7 @@ module xc_london_c1
    public xc_london_c1_ks_gga
    public xc_london_c1_lr_lda_densities
    public xc_london_c1_lr_gga_densities
+   public j_dia
 
    private
 
@@ -71,7 +72,7 @@ module xc_london_c1
 #include "dcbham.h"
 
 !                          both ideally calculated only once
-   real(8), allocatable :: p(:, :)
+   real(8), allocatable :: p_k(:, :)
    real(8), allocatable :: r_kl(:, :, :)
 
    logical :: all_set = .false.
@@ -93,7 +94,7 @@ contains
       if (.not. all_set) then
 
          call alloc(r_kl, mat_dim, mat_dim, 3)
-         call alloc(p, mat_dim, 3)
+         call alloc(p_k, mat_dim, 3)
 
          i = 1
          do ishell = 1, kmax
@@ -105,9 +106,9 @@ contains
                   pz = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
 
                   do j = i, i + spherical_deg(ishell) - 1
-                     p(j, 1) = px
-                     p(j, 2) = py
-                     p(j, 3) = pz
+                     p_k(j, 1) = px
+                     p_k(j, 2) = py
+                     p_k(j, 3) = pz
                   end do
 
                   i = i + spherical_deg(ishell)
@@ -118,12 +119,12 @@ contains
          do ixyz = 1, 3
             do l = 1, mat_dim
                do k = 1, mat_dim
-                  r_kl(k, l, ixyz) = p(k, ixyz) - p(l, ixyz)
+                  r_kl(k, l, ixyz) = p_k(k, ixyz) - p_k(l, ixyz)
                end do
             end do
          end do
 
-         call dealloc(p)
+!        call dealloc(p_k)
 
          all_set = .true.
       end if
@@ -355,6 +356,65 @@ contains
 !           gn_b(3, 3)
          end do
       end do
+
+   end subroutine
+
+   subroutine j_dia(j,            &
+                    lao,          &
+                    gauge_origin, &
+                    mat_dim,      &
+                    dmat,         &
+                    ao,           &
+                    r)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(out)   :: j(3, 3)
+      logical, intent(in)    :: lao
+      real(8), intent(in)    :: gauge_origin(3)
+      integer, intent(in)    :: mat_dim
+      real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)    :: ao(mat_dim)
+      real(8), intent(in)    :: r(3)
+!     --------------------------------------------------------------------------
+      integer                :: k, l, ixyz
+      real(8)                :: f
+      real(8)                :: q(3)
+!     --------------------------------------------------------------------------
+
+      q = 0.0d0
+
+      if (lao) then
+         do k = 1, ntbas(1)
+            do l = 1, ntbas(1)
+               f = ao(k)*ao(l)*dmat(l, k, 1)
+               do ixyz = 1, 3
+                  q(ixyz) = q(ixyz) + (r(ixyz) - p_k(l, ixyz))*f
+               end do
+            end do
+         end do
+      else
+         do k = 1, ntbas(1)
+            do l = 1, ntbas(1)
+               f = ao(k)*ao(l)*dmat(l, k, 1)
+               do ixyz = 1, 3
+                  q(ixyz) = q(ixyz) + (r(ixyz) - gauge_origin(ixyz))*f
+               end do
+            end do
+         end do
+      end if
+
+      j = 0.0d0
+
+      j(1, 2) =  q(3) ! d j_x / d B_y
+      j(2, 1) = -q(3) ! d j_y / d B_x
+
+      j(3, 1) =  q(2) ! d j_z / d B_x
+      j(1, 3) = -q(2) ! d j_x / d B_z
+
+      j(2, 3) =  q(1) ! d j_y / d B_z
+      j(3, 2) = -q(1) ! d j_z / d B_y
+
+      j = 0.5d0*j
 
    end subroutine
 

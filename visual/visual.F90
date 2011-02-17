@@ -34,6 +34,7 @@ module visual
 #endif
   use visual_integrate
   use visual_in_point
+  use xc_london_c1
 
   implicit none
 
@@ -406,6 +407,9 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
+    if (visual_cfg_london) then
+       call xc_london_c1_init(ntbas(0))
+    end if
 
 
 !   plot and integrate

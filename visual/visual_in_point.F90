@@ -24,6 +24,7 @@ module visual_in_point
   use memory_allocator
   use visual_cfg
   use visual_london
+  use xc_london_c1
   use codata
   use ao_eval
   use density_eval
@@ -360,12 +361,29 @@ contains
                 (visual_cfg_property(imat) == iq_ndipydia) .or. &
                 (visual_cfg_property(imat) == iq_ndipzdia)) then
 
-               call get_n(density,      &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          buffer,       &
-                          ao)
+               call j_dia(matrix_33,               &
+                          visual_cfg_london,       &
+                          visual_cfg_gauge_origin, &
+                          D(imat)%nrow,            &
+                          D(imat)%elms,            &
+                          ao,                      &
+                          (/px, py, pz/))
+
+               if (visual_cfg_property(imat) == iq_ndipxdia) then
+                  v(1) = matrix_33(1, 1)
+                  v(2) = matrix_33(2, 1)
+                  v(3) = matrix_33(3, 1)
+               end if
+               if (visual_cfg_property(imat) == iq_ndipydia) then
+                  v(1) = matrix_33(1, 2)
+                  v(2) = matrix_33(2, 2)
+                  v(3) = matrix_33(3, 2)
+               end if
+               if (visual_cfg_property(imat) == iq_ndipzdia) then
+                  v(1) = matrix_33(1, 3)
+                  v(2) = matrix_33(2, 3)
+                  v(3) = matrix_33(3, 3)
+               end if
             
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
                ry = py - cord(2, visual_cfg_ref_nucleus(imat))
@@ -374,18 +392,12 @@ contains
                f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
                
                if (visual_cfg_property(imat) == iq_ndipxdia) then
-                  v(2) = -0.5d0*(pz - visual_cfg_gauge_origin(3))*density
-                  v(3) =  0.5d0*(py - visual_cfg_gauge_origin(2))*density
                   result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
                if (visual_cfg_property(imat) == iq_ndipydia) then
-                  v(1) =  0.5d0*(pz - visual_cfg_gauge_origin(3))*density
-                  v(3) = -0.5d0*(px - visual_cfg_gauge_origin(1))*density
                   result(0) = result(0) + f*(rz*v(1) - rx*v(3))
                end if
                if (visual_cfg_property(imat) == iq_ndipzdia) then
-                  v(1) = -0.5d0*(py - visual_cfg_gauge_origin(2))*density
-                  v(2) =  0.5d0*(px - visual_cfg_gauge_origin(1))*density
                   result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if
