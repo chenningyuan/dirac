@@ -197,7 +197,10 @@ class pam_enviroment:
 
     # memory allocation
 
-        self.default_memory_work_master = 64
+        mw = 64
+        self.mw_to_mb = 2*3.81
+        self.default_memory_work_master = mw
+        self.default_memory_work_master_mb = mw*self.mw_to_mb
 
         self.max_memory_work_master = self.default_memory_work_master
         self.max_memory_work_slave  = self.default_memory_work_master
@@ -539,6 +542,17 @@ class pam_enviroment:
                   """,
             metavar='INTEGER',
             )
+        group.add_option(
+            '--mb',
+            type='int',
+            action='store',
+            dest='dest_mb',
+            default=self.default_memory_work_master_mb,
+            help="""set max memory (in MB) for WORK array
+                    for the master [default: %default]
+                  """,
+            metavar='INTEGER',
+            )
         group.add_option(  # default = self.default_memory_work_slave,
             '--nw',
             type='int',
@@ -788,6 +802,8 @@ class pam_enviroment:
         self.output_suffix = options.dest_suffix
 
         self.max_memory_work_master = int(options.dest_mw)
+        if int(options.dest_mb) != self.default_memory_work_master_mb:
+            self.max_memory_work_master = int(options.dest_mb)/self.mw_to_mb
 
     # miro: no read-in default for "--nw", as we need to check whether the parameter was set
     # take the default value from the previously set "self.max_memory_work_master"
