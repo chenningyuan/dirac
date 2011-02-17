@@ -78,7 +78,7 @@ contains
       real(8)              :: buffer(*)
       real(8), intent(out) :: result(0:3)
 !     --------------------------------------------------------------------------
-      integer              :: imat
+      integer              :: imat, i
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
       real(8)              :: elf_chi, tau
@@ -86,7 +86,7 @@ contains
       real(8)              :: density_gradient(3)
       real(8)              :: density_gradient_squared
       real(8)              :: b, f, distance_to_origin
-      real(8)              :: rx, ry, rz
+      real(8)              :: rx, ry, rz, r(3)
 !     --------------------------------------------------------------------------
 
       call get_ao(px, py, pz, ao, buffer)
@@ -369,37 +369,25 @@ contains
                           ao,                      &
                           (/px, py, pz/))
 
-               if (visual_cfg_property(imat) == iq_ndipxdia) then
-                  v(1) = matrix_33(1, 1)
-                  v(2) = matrix_33(2, 1)
-                  v(3) = matrix_33(3, 1)
-               end if
-               if (visual_cfg_property(imat) == iq_ndipydia) then
-                  v(1) = matrix_33(1, 2)
-                  v(2) = matrix_33(2, 2)
-                  v(3) = matrix_33(3, 2)
-               end if
-               if (visual_cfg_property(imat) == iq_ndipzdia) then
-                  v(1) = matrix_33(1, 3)
-                  v(2) = matrix_33(2, 3)
-                  v(3) = matrix_33(3, 3)
-               end if
-            
-               rx = px - cord(1, visual_cfg_ref_nucleus(imat))
-               ry = py - cord(2, visual_cfg_ref_nucleus(imat))
-               rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
+               if (visual_cfg_property(imat) == iq_ndipxdia) i = 1
+               if (visual_cfg_property(imat) == iq_ndipydia) i = 2
+               if (visual_cfg_property(imat) == iq_ndipzdia) i = 3
+
+               v(1) = matrix_33(1, i)
+               v(2) = matrix_33(2, i)
+               v(3) = matrix_33(3, i)
+
+               r(1) = px - cord(1, visual_cfg_ref_nucleus(imat))
+               r(2) = py - cord(2, visual_cfg_ref_nucleus(imat))
+               r(3) = pz - cord(3, visual_cfg_ref_nucleus(imat))
+
+               v2(1) = r(2)*v(3) - r(3)*v(2)
+               v2(2) = r(3)*v(1) - r(1)*v(3)
+               v2(3) = r(1)*v(2) - r(2)*v(1)
                
-               f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
-               
-               if (visual_cfg_property(imat) == iq_ndipxdia) then
-                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
-               end if
-               if (visual_cfg_property(imat) == iq_ndipydia) then
-                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
-               end if
-               if (visual_cfg_property(imat) == iq_ndipzdia) then
-                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
-               end if
+               f = -1.0d0/((r(1)*r(1) + r(2)*r(2) + r(3)*r(3))**1.5d0)
+               result(0) = result(0) + f*v2(i)
+
             end if
 
          end if
