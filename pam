@@ -1405,10 +1405,11 @@ class pam_enviroment:
                     self.f.write('\n ====  python script additive: stderr output stream  ===='+self.dirac_stderr)
                     # flush out dirac stderr; useful for non-verbose test runs (to have it on the console)
                     if self.iprint > 0: 
+                        print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
                         print >> sys.stderr,self.dirac_stderr
                         print >> sys.stderr,'directory:', self.input_directory
                         print >> sys.stderr,'   inputs:', self.input_molecule,\
-                                                  ' &  ', self.input_dirac
+                                            ' & ', self.input_dirac
 
                 self.dirac_p.wait()
                 return_code = self.dirac_p.returncode
