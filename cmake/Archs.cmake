@@ -1,5 +1,5 @@
 
-message("Welcome to the CMake building system, the CMAKE_SYSTEM_NAME variable is: ${CMAKE_SYSTEM_NAME}")
+message("-- DIRAC: the CMAKE_SYSTEM_NAME variable is \"${CMAKE_SYSTEM_NAME}\"")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DSYS_LINUX)
