@@ -169,7 +169,8 @@ target_link_libraries(
     dirac.x
     ${LIBS}
     )
-install(TARGETS dirac.x DESTINATION dirac)
+
+include(cmake/Install.cmake)
 
 if(DIRAC_ENABLE_UTILITIES)
     add_executable(dirac_mointegral_export.x
