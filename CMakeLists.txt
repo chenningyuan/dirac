@@ -42,6 +42,11 @@ option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
 option(DIRAC_ENABLE_TESTS          "Enable make test"          ON)
 
 if(DIRAC_ENABLE_TESTS)
+    SET(BUILDNAME "${BUILDNAME}" 
+            CACHE STRING "Name of build on the dashboard"
+        )
+    message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
+    include(CTest)
     enable_testing()
     if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
         include(cmake/Tests.cmake)
