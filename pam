@@ -1505,8 +1505,8 @@ class pam_enviroment:
             if os.path.isfile(full_file_name):
                 file_name_home = self.input_directory + '/' + file_name
                 if self.iprint > 0:
-                    print 'copying ', file_name, \
-                        ' from scratch_dir to the homedir.'
+                    print '  Copying file', file_name, \
+                          ' from the scratch dir to the input dir.'
 
         # backup file if it's there
 
