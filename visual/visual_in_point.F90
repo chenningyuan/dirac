@@ -329,12 +329,6 @@ contains
                end if
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-                 !call get_jblao(imat,       &
-                 !               D_0,        &
-                 !               ao,         &
-                 !               buffer,     &
-                 !               px, py, pz, &
-                 !               v2)
                   call get_jblao(D_0%elms,                      &
                                  ntbas(0),                      &
                                  ao(ao_start(0,0):ao_end(0,0)), &
