@@ -362,9 +362,8 @@ class pam_enviroment:
         try:
             shutil.copy(src, dest)
             if self.iprint > 0:
-                print '  Copying file ', epf_src.pure_file_name, \
-                ' to the scratch directory (as ', epf_dest.pure_file_name, \
-                ').'
+                print '  Copying file: ', epf_src.pure_file_name, \
+                ' (as ', epf_dest.pure_file_name,').'
             if self.iprint >= 3:
                 print ' src full path:', src
                 print 'dest full path:', dest
