@@ -220,13 +220,15 @@ class run:
          self.mol  = line.split()[1]
          self.kind = kind
          pam_flags = ''
-         #miro: assigned timeouts for quick and regular tests
-         if 'q' in self.kind:
+
+         # timeouts for quick and regular tests
+         if self.kind == 'q':
              pam_flags +=  '--timeout=2m '
-         elif 'r' in self.kind:
+         elif self.kind == 'r':
              pam_flags +=  '--timeout=20m '
          else:
              pam_flags +=  '--timeout=1h '
+
          if len(line.split()) > 2:
              for i in range(2, len(line.split())):
                  pam_flags += line.split()[i] + ' '
