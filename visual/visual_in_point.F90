@@ -156,12 +156,12 @@ contains
                           buffer,       &
                           ao)
 #ifdef MOD_UNRELEASED
-               if (visual_cfg_london) then
-                  call get_jblao(imat,       &
-                                 D_0,        &
-                                 ao,         &
-                                 buffer,     &
-                                 px, py, pz, &
+               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
+                  call get_jblao(D_0%elms,                      &
+                                 ntbas(0),                      &
+                                 ao(ao_start(0,0):ao_end(0,0)), &
+                                 ao(ao_start(0,1):ao_end(0,1)), &
+                                 (/px, py, pz/),                &
                                  v2)
                   v = v - v2
                end if
@@ -328,12 +328,18 @@ contains
                              ao)
                end if
 #ifdef MOD_UNRELEASED
-               if (visual_cfg_london) then
-                  call get_jblao(imat,       &
-                                 D_0,        &
-                                 ao,         &
-                                 buffer,     &
-                                 px, py, pz, &
+               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
+                 !call get_jblao(imat,       &
+                 !               D_0,        &
+                 !               ao,         &
+                 !               buffer,     &
+                 !               px, py, pz, &
+                 !               v2)
+                  call get_jblao(D_0%elms,                      &
+                                 ntbas(0),                      &
+                                 ao(ao_start(0,0):ao_end(0,0)), &
+                                 ao(ao_start(0,1):ao_end(0,1)), &
+                                 (/px, py, pz/),                &
                                  v2)
                   v = v - v2
                end if

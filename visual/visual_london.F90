@@ -399,115 +399,57 @@ contains
 
   end subroutine D_con_symmetry_info
 
+   subroutine get_jblao(D_0, mat_dim, ao, ao_b1, r, j)
 
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: mat_dim
+      real(8), intent(in)    :: D_0(mat_dim, mat_dim, *)
+      real(8), intent(in)    :: ao(mat_dim)
+      real(8), intent(in)    :: ao_b1(mat_dim, *)
+      real(8), intent(in)    :: r(3)
+      real(8), intent(out)   :: j(3)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
+      real(8)                :: f
+!     --------------------------------------------------------------------------
 
-
-  subroutine get_jblao(ixvector,            &
-                       D_0,               &
-                       ao, buffer,          &
-                       px, py, pz,          &
-                       jblao)
-!   --------------------------------------------------------------------
-    type(matrix)             :: D_0
-    real(8), intent(in)      :: ao(*), buffer(*)
-    integer, intent(in)      :: ixvector
-    real(8), intent(in)      :: px, py, pz
-    real(8), intent(out)     :: jblao(3)
-
-    logical :: nodirect, noreorth, norespon, debug_me
-
-    integer :: i, j, ixyz
-    real(8) :: rx, ry, rz, rsq, f
-
-    real(8) :: vector_a(3)
-!   --------------------------------------------------------------------
-
-    jblao = 0.0d0
-
-    debug_me = .false.
-
-!   'direct' contribution
-    if (.not. visual_cfg_london_skip_direct) then
-
-      vector_a = 0.0d0
-
-      call get_jblao_direct(ixvector, &
-                            1, &
-                            D_0%elms, &
-                            ntbas(0), &
-                            ao(ao_start(0,0):ao_end(0,0)), &
-                            ao(ao_start(0,1):ao_end(0,1)), &
-                            (/px, py, pz/), &
-                            vector_a)
-
-      f = -1.0d0
-      if (levyle) then
-!        radovan: magic factor, not understood by me
-         f = -4.0d0
-      end if
-      call daxpy(3, f, vector_a, 1, jblao, 1)
-
-    end if
-
-  end subroutine get_jblao
-
-
-
-  subroutine get_jblao_direct(ivector, isym, D_0, mat_dim, ao, ao_b1, r_co, vector)
-!   ----------------------------------------------------------------------------
-    integer, intent(in)    :: ivector
-    integer, intent(in)    :: isym
-    integer, intent(in)    :: mat_dim
-    real(8), intent(in)    :: D_0(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim, *)
-    real(8), intent(in)    :: r_co(3)
-    real(8), intent(out)   :: vector(3)
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
-    integer                :: b, c, ixyz, iz, ioff
-    real(8)                :: f(3)
-    real(8)                :: vector_a(3)
-!   ----------------------------------------------------------------------------
-
-    vector_a = 0.0d0
-
-    select case (visual_cfg_london_component)
-       case ('X')
-          b = 2
-          c = 3
-       case ('Y')
-          b = 3
-          c = 1
-       case ('Z')
-          b = 1
-          c = 2
-    end select
+      select case (visual_cfg_london_component)
+         case ('X')
+            b = 2
+            c = 3
+         case ('Y')
+            b = 3
+            c = 1
+         case ('Z')
+            b = 1
+            c = 2
+      end select
     
-    do ixyz = 1, 3
-      do iblock = 1, lssl_nr_density_blocks(ixyz, isym - 1)
+      j = 0.0d0
 
-        nr1 = lssl_nr_ao(1, iblock, ixyz, isym - 1)
-        st1 = lssl_st_ao(1, iblock, ixyz, isym - 1)
-        nr2 = lssl_nr_ao(2, iblock, ixyz, isym - 1)
-        st2 = lssl_st_ao(2, iblock, ixyz, isym - 1)
-
-        do ii = st1, st1 + nr1 - 1
-          do jj = st2, st2 + nr2 - 1
-
-            f(ixyz) = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                    - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-            vector_a(ixyz) = vector_a(ixyz) + f(ixyz)*D_0(ii, jj, iq(ixyz))
-
-          end do
-        end do
-
+      do ixyz = 1, 3
+         do iblock = 1, lssl_nr_density_blocks(ixyz, 0)
+            nr1 = lssl_nr_ao(1, iblock, ixyz, 0)
+            st1 = lssl_st_ao(1, iblock, ixyz, 0)
+            nr2 = lssl_nr_ao(2, iblock, ixyz, 0)
+            st2 = lssl_st_ao(2, iblock, ixyz, 0)
+            do k = st1, st1 + nr1 - 1
+               do l = st2, st2 + nr2 - 1
+                  f = (r(c)*ao_b1(l, b) - r(b)*ao_b1(l, c))*ao(k) &
+                    - (r(c)*ao_b1(k, b) - r(b)*ao_b1(k, c))*ao(l)
+                  
+                  j(ixyz) = j(ixyz) + f*D_0(l, k, iq(ixyz))
+               end do
+            end do
+         end do
       end do
-      vector(ixyz) = 0.5d0*cval*vector_a(ixyz)
-    end do
 
-  end subroutine get_jblao_direct
+      j = 0.5d0*cval*j
+      if (levyle) then
+         j = 4.0d0*j
+      end if
+
+   end subroutine
 
 #endif /* #ifdef MOD_UNRELEASED */
 end module
