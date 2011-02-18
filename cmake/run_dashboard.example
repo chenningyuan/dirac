@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# example recipe to build and run tests for CDash
+# Radovan Bast <radovan.bast@uit.no> 2011-02-18
+# you can either run this script interactively with "make Experimental" (to calibrate it)
+# or execute it as a cron job with "make Nightly"
+# make sure cmake is installed before you run it
+
+# create temporary directory
+TMP_DIR=/tmp/dirac
+mkdir -p $TMP_DIR
+
+# checkout the source code
+svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
+
+# pamadm step
+cd $TMP_DIR
+./pamadm -a
+
+# set environment (you may or may not need it for your compiler)
+# export PATH=$PATH':/home/bast/openmpi/bin'
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/lib'
+# source /opt/intel/bin/compilervars.sh ia32
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/ia32'
+
+# configure step
+# ./cconfigure --fc=gfortran --cc=gcc --debug --buildname="linux.gfortran.gcc.debug"
+# ./cconfigure --fc=gfortran --cc=gcc         --buildname="linux.gfortran.gcc.release"
+  ./cconfigure --fc=ifort    --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl.release"
+
+cd $TMP_DIR/cbuild
+cmake ..
+
+# pam expects dirac.x to be in the same directory
+# you cannot copy it because it does not exist yet
+# make below will create it but same step launches pam (via runtest)
+ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
+
+# build and run tests
+# use either Experimental or Nightly
+  make Experimental
+# make Nightly
+
+# clean up temporary directory
+rm -rf $TMP_DIR
+
+exit 0
