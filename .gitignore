@@ -17,7 +17,7 @@ build/gen_fortran_interface_h
 cbuild/*
 cmake/Definitions.cmake
 cmake/Sources.cmake
-#cmake/Tests.cmake
+cmake/Tests.cmake
 dirac.x
 gp/compinfo.h
 include/fortran_interface.h
