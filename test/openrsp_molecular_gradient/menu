@@ -1,15 +1,15 @@
 quick   
 
-hf_ll.inp        h2o2.mol   --timeout=1m
-lda_ll.inp       h2o2.mol   --timeout=2m
-b3lyp_ll.inp     h2o2.mol   --timeout=2m
-blyp_ll.inp      h2o2.mol   --timeout=2m
+hf_ll.inp        h2o2.mol   
+lda_ll.inp       h2o2.mol   
+b3lyp_ll.inp     h2o2.mol   
+blyp_ll.inp      h2o2.mol   
 
 regular 
 
-hf_dc.inp        h2o2.mol  --timeout=5m
-hf_dc_cval=5.inp h2o2.mol  --timeout=5m
+hf_dc.inp        h2o2.mol  
+hf_dc_cval=5.inp h2o2.mol  
 
-hf_ll.inp        c3h6o.mol  --timeout=5m
-hf_dc.inp        c3h6o.mol  --timeout=5m
-hf_dc_cval=5.inp c3h6o.mol  --timeout=5m
+hf_ll.inp        c3h6o.mol  
+hf_dc.inp        c3h6o.mol  
+hf_dc_cval=5.inp c3h6o.mol  

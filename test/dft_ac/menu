@@ -1,5 +1,5 @@
 quick
-PBE0gracLB94.inp    Ne.mol  --timeout=50s
+PBE0gracLB94.inp    Ne.mol  
 
 regular
-GLLBsaopLBalpha.inp Ne.mol  --timeout=50s
+GLLBsaopLBalpha.inp Ne.mol  

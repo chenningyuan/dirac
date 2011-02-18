@@ -1,3 +1,3 @@
-fsccsd.inp              Mg.mol --mw=110 --timeout=200
-bss+mfsso.fsccsd_IH.inp Mg.mol --mw=110 --timeout=200
-fsccsd_IH.inp           Mg.mol --mw=110 --timeout=200
+fsccsd.inp              Mg.mol --mw=110 
+bss+mfsso.fsccsd_IH.inp Mg.mol --mw=110 
+fsccsd_IH.inp           Mg.mol --mw=110 

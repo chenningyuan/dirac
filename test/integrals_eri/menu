@@ -1,4 +1,4 @@
 quick 
 
-NR_direct_eri.inp        H2O2_eri.mol  --timeout=4m
-2C_SF_direct_eri.inp     H2O2_eri.mol  --timeout=4m
+NR_direct_eri.inp        H2O2_eri.mol  
+2C_SF_direct_eri.inp     H2O2_eri.mol  

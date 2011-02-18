@@ -1,5 +1,5 @@
 quick   
-gaunt.inp Ne.C2.mol  --timeout=2m
+gaunt.inp Ne.C2.mol  
 
 regular 
-gaunt.inp CO.aug-cc-pVDZ.mol --timeout=1h40m
+gaunt.inp CO.aug-cc-pVDZ.mol 

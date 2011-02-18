@@ -1,2 +1,2 @@
 quick
-h2.inp H2.mol --timeout=1m
+h2.inp H2.mol 
