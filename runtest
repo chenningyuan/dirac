@@ -221,9 +221,9 @@ class run:
          self.kind = kind
          pam_flags = ''
          #miro: assigned timeouts for quick and regular tests
-         if self.kind.find('q') != -1:
+         if 'q' in self.kind:
              pam_flags +=  '--timeout=2m '
-         elif self.kind.find('r')  != -1:
+         elif 'r' in self.kind:
              pam_flags +=  '--timeout=20m '
          else:
              pam_flags +=  '--timeout=1h '
