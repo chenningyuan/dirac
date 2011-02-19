@@ -1,7 +1,5 @@
-quick     
-Be.inp                         Be.mol         
-
 regular   
+Be.inp                         Be.mol         
 Be.gascip.bss+mfsso.krmc.inp   Be.gascip.mol  
 
 benchmark
