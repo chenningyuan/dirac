@@ -2039,10 +2039,16 @@ C
       END IF
       OPEN(LUCIVC,FILE=VECFIL,ACCESS='DIRECT',RECL=LENREC,
      &     STATUS='OLD',ERR=900,IOSTAT=IST)
-!
-! miro: with the g95/ILP64/ownlibs/opt there is a reading hangup !
+      IF (IST.NE.0) THEN
+        CALL QUIT('Error in opening file with lu=LUCIVC !')
+      ENDIF
+! miro: with the g95/ILP64/ownlibs/opt there is a reading hangup ! Please fix it !
       READ(LUCIVC,REC=2,ERR=901,IOSTAT=IST) 
      &  NZCONF,(IXDET(I),I=1,NZCONF)
+      IF (ITS.NE.0) THEN
+! miro: TODO - fix ERR GOTO 901 
+        CALL QUIT('Error in reading file with lu=LUCIVC !')
+      ENDIF
       IF( IPRINT .GE. 20 ) THEN
         DO I = 1, NZCONF
           WRITE(6,"(I5,2X,B32)") I, IXDET(I)
