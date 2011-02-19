@@ -24,9 +24,9 @@ cd $TMP_DIR
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/ia32'
 
 # configure step
-# ./cconfigure --fc=gfortran --cc=gcc --debug --buildname="linux.gfortran.gcc.debug"
-# ./cconfigure --fc=gfortran --cc=gcc         --buildname="linux.gfortran.gcc.release"
-  ./cconfigure --fc=ifort    --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl.release"
+# ./setup --fc=gfortran --cc=gcc --debug --buildname="linux.gfortran.debug"
+# ./setup --fc=gfortran --cc=gcc         --buildname="linux.gfortran"
+  ./setup --fc=ifort    --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl"
 
 cd $TMP_DIR/cbuild
 cmake ..
