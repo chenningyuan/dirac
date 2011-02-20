@@ -7,8 +7,6 @@ import subprocess
 from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-5]
-print root_directory
-sys.exit()
 
 default_path = root_directory + 'cbuild/'
 
