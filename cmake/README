@@ -1,5 +1,5 @@
 This file describes some typical cmake solutions to everyday problems. It is
-here to help you with cmake and DIRAC and to help me remembering commands
+here to help you with cmake and DIRAC and to help me remembering commands.
 
 
 Configuring DIRAC
@@ -25,6 +25,26 @@ Running tests
 
 You can run the test suite with:
 $ make test
+
+
+Contributing to the DIRAC Dashboard
+-----------------------------------
+
+If you want to contribute to the DIRAC Dashboard
+http://depot.uit.no/CDash/index.php?project=DIRAC
+then let me say that this is an excellent idea.
+
+It is as easy as typing:
+$ make Experimental
+The result of "make Experimental" appears automatically
+on the Dashboard.
+
+Before you experiment with "make Experimental", it is recommended
+to have a look at the cdash example recipes in the maintenance
+directory.
+
+Note that you can set the build name with -DBUILDNAME=foo
+or with setup --buildname.
 
 
 Creating DEB, RPM, and other packages
