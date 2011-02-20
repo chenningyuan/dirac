@@ -1,12 +1,11 @@
 #!/bin/bash
 
 # example recipe to build and run tests for CDash
-# Radovan Bast <radovan.bast@uit.no> 2011-02-18
 # you can either run this script interactively with "make Experimental" (to calibrate it)
 # or execute it as a cron job with "make Nightly"
 # make sure cmake is installed before you run it
 
-#miro: modified to local update&build
+# miro: modified to local update&build
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/g95_gcc_noopt_ownlib_ILP64/adm/trunk
