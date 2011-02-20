@@ -214,10 +214,6 @@ if normal_cmake_termination:
     print '   $ cd ' + build_path
     print '   $ make'
     print
-    print '   to compile DIRAC on multicore machines (here use 4 cores):'
-    print '   $ cd ' + build_path
-    print '   $ make -j 4'
-    print
     print '   to modify configured parameters and then compile DIRAC:'
     print '   $ cd ' + build_path
     print '   $ ccmake ' + root_directory
