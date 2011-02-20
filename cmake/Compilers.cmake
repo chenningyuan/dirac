@@ -1,9 +1,9 @@
+message("-- DIRAC: CMAKE_Fortran_COMPILER_ID is \"${CMAKE_Fortran_COMPILER_ID}\"")
+message("-- DIRAC: CMAKE_C_COMPILER_ID       is \"${CMAKE_C_COMPILER_ID}\"")
 
 # Fortran compilers
 
-# gfortran...
-if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-#if(CMAKE_Fortran_COMPILER_ID MATCHES gfortran)
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         " ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
@@ -25,8 +25,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     endif()
 endif()
 
-# g95
-if(CMAKE_Fortran_COMPILER_ID MATCHES g95)
+if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     add_definitions(-DVAR_G95)
     set(CMAKE_Fortran_FLAGS         " ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
@@ -47,7 +46,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES g95)
             )
     endif()
 endif()
-
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     add_definitions(-DVAR_IFC)
