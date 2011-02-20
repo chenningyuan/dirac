@@ -140,6 +140,9 @@ if not which('cmake'):
     print
     print '   cmake is not found'
     print '   get cmake at http://www.cmake.org/'
+    print '   on many clusters cmake is installed'
+    print '   but you have to load it first:'
+    print '   $ module load cmake'
     # and exit
     sys.exit()
 
