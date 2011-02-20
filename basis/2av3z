@@ -3,9 +3,12 @@ $Basis = 2av3z
 $ Elements supported
 $  Hg Ra Au Ba Cd Rn Xe Pd He H Ne Ar Be Mg Kr Ca Sr Zn 
 $
-$  REFERENCE
-$ Radovan Bast
-$
+$ Reference:
+$  Radovan Bast <radovan.bast@uit.no>
+$  These are doubly-augmented standard Dunning's and Dyall's basis sets.
+$  Automatic augmentation is now implemented in DIRAC and will (= should)
+$  yield exactly these basis sets.
+$  Please do not cite me, cite the original Dunning's and Dyall's basis sets.
 
 $ Hg
 a 80
