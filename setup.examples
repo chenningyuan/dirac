@@ -1,0 +1,22 @@
+Here we can collect successful builds for various clusters and machines.
+
+
+Stallo (linux cluster) 2011-02-20
+---------------------------------
+
+$ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013
+$ ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/global/apps/intel/mkl/10.2.0.013/lib/em64t -lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+$ cd cbuild
+$ make
+$ cmake -DCMAKE_INSTALL_PREFIX=/global/apps/dirac/latest ..
+$ make install
+
+
+Larry (laptop running ubuntu) 2011-02-20
+----------------------------------------
+
+$ ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+$ cd cbuild
+$ make
+$ cd ..
+$ ln -s cbuild/dirac.x
