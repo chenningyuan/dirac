@@ -1,0 +1,39 @@
+This file describes some typical cmake solutions to everyday problems. It is
+here to help you with cmake and DIRAC and to help me remembering commands
+
+
+Configuring DIRAC
+-----------------
+
+When you are new to cmake, first configure DIRAC with the script setup. This
+is not necessary but will help you to get used to cmake commands. Observe how
+setup calls cmake and with which command. Experts can use this command
+directly to do expert things. It is not difficult.
+
+
+Make install
+------------
+
+Make install is very useful to make DIRAC available to other users on the same
+machine:
+$ cmake -DCMAKE_INSTALL_PREFIX=/path /path/to/source
+$ make install
+
+
+Running tests
+-------------
+
+You can run the test suite with:
+$ make test
+
+
+Creating DEB, RPM, and other packages
+-------------------------------------
+
+Configure and build DIRAC, then:
+$ cpack -G DEB
+or
+$ cpack -G RPM
+
+Always use the help that is available:
+$ cpack --help
