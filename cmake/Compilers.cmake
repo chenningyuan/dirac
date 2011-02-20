@@ -1,7 +1,9 @@
 
 # Fortran compilers
 
+# gfortran...
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+#if(CMAKE_Fortran_COMPILER_ID MATCHES gfortran)
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         " ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
@@ -22,6 +24,30 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
             )
     endif()
 endif()
+
+# g95
+if(CMAKE_Fortran_COMPILER_ID MATCHES g95)
+    add_definitions(-DVAR_G95)
+    set(CMAKE_Fortran_FLAGS         " ")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -fsloppy-char")
+    if(DIRAC_ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -i8"
+            )
+    endif()
+    if(DIRAC_ENABLE_BOUNDS_CHECK)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -Wall -fbounds-check"
+            )
+    endif()
+    if(DIRAC_ENABLE_CODE_COVERAGE)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS}"
+            )
+    endif()
+endif()
+
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     add_definitions(-DVAR_IFC)
