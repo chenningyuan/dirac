@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#PBS -S /bin/bash
+#PBS -l nodes=1:ppn=8:ib
+#PBS -l walltime=04:00:00
+#PBS -l pvmem=1900mb
+
+module load mkl intel-compiler/11.1 openmpi/1.4 git cmake
+
+TMP_DIR=/global/work/$USER/$PBS_JOBID
+mkdir -p $TMP_DIR
+
+cd /home/bast/dirac/git-svn-trunk
+git svn rebase
+
+git clone /home/bast/dirac/git-svn-trunk $TMP_DIR
+
+cd $TMP_DIR
+./pamadm -a
+
+# yes | cp $TMP_DIR/cmake/Tests_short.cmake $TMP_DIR/cmake/Tests.cmake
+
+./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/global/apps/intel/mkl/10.2.0.013/lib/em64t -lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread" --buildname="linux.intel11.1.mkl.mpi"
+
+cd $TMP_DIR/cbuild
+cmake -DRUNTEST_NR_PROC=8 ..
+
+ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
+
+make Nightly
+
+rm -rf $TMP_DIR
+
+exit 0
