@@ -31,10 +31,10 @@ module visual
   use dirac_interface
 #ifdef MOD_UNRELEASED
   use visual_london
+  use xc_london_c1
 #endif
   use visual_integrate
   use visual_in_point
-  use xc_london_c1
 
   implicit none
 
@@ -389,13 +389,6 @@ contains
       Csu = 0
     end if
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      D_con_ao = 0
-      D_con_mo = 0
-    end if
-#endif
-
 
 !   initialize ao module
 !   ====================
@@ -407,9 +400,14 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
+
+#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
        call xc_london_c1_init(ntbas(0))
+       D_con_ao = 0
+       D_con_mo = 0
     end if
+#endif
 
 
 !   plot and integrate

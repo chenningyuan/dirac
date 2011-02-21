@@ -24,7 +24,6 @@ module visual_in_point
   use memory_allocator
   use visual_cfg
   use visual_london
-  use xc_london_c1
   use codata
   use ao_eval
   use density_eval
@@ -32,6 +31,7 @@ module visual_in_point
   use matrix_defop
 #ifdef MOD_UNRELEASED
   use visual_london
+  use xc_london_c1
 #endif
 
   implicit none
@@ -361,6 +361,7 @@ contains
                 (visual_cfg_property(imat) == iq_ndipydia) .or. &
                 (visual_cfg_property(imat) == iq_ndipzdia)) then
 
+#ifdef MOD_UNRELEASED
                call j_dia(matrix_33,               &
                           visual_cfg_london,       &
                           visual_cfg_gauge_origin, &
@@ -368,6 +369,7 @@ contains
                           D(imat)%elms,            &
                           ao,                      &
                           (/px, py, pz/))
+#endif
 
                if (visual_cfg_property(imat) == iq_ndipxdia) i = 1
                if (visual_cfg_property(imat) == iq_ndipydia) i = 2
