@@ -42,6 +42,12 @@ option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
 option(DIRAC_ENABLE_TESTS          "Enable make test"          ON)
 
 if(DIRAC_ENABLE_TESTS)
+    set(RUNTEST_NR_CORES "${RUNTEST_NR_CORES}")
+    if(NOT ${RUNTEST_NR_CORES} STREQUAL "")
+        message("-- DIRAC: RUNTEST_NR_CORES set to \"${RUNTEST_NR_CORES}\"")
+        set(RUNTEST_FLAGS "--mpi=${RUNTEST_NR_CORES}")
+        message("-- DIRAC: RUNTEST_FLAGS set to \"${RUNTEST_FLAGS}\"")
+    endif()
     SET(BUILDNAME "${BUILDNAME}" 
             CACHE STRING "Name of build on the dashboard"
         )
