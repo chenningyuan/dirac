@@ -210,15 +210,9 @@ contains
 !                  need to find the reason for it
           D_con_mo = 0.5d0*D_con_mo
        end if
-       
+
        call copy_matrix_sym(D_con_mo, D_con_ao)
-       
-!      create modified density matrices
-!      --------------------------------
-!      *) gosia todo: include ep in options, now it is hardcoded to .true.
-!         ep = .true.  - 'p'-summation over e+p shells
-!              .false. - only over e-shells
-       
+
 !      symmetric connection
        if (visual_cfg_london_symmetric) then
        
