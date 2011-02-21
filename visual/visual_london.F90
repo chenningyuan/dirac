@@ -35,6 +35,7 @@ module visual_london
 
   public setup_fo_conmat_ao
   public get_jblao
+  public get_jblao_ll
 
   save
 
@@ -399,18 +400,18 @@ contains
 
   end subroutine D_con_symmetry_info
 
-   subroutine get_jblao(D_0, mat_dim, ao, ao_b1, r, j)
+   subroutine get_jblao(D_0, mat_dim, ao, ao_b, r, j)
 
 !     --------------------------------------------------------------------------
-      integer, intent(in)    :: mat_dim
-      real(8), intent(in)    :: D_0(mat_dim, mat_dim, *)
-      real(8), intent(in)    :: ao(mat_dim)
-      real(8), intent(in)    :: ao_b1(mat_dim, *)
-      real(8), intent(in)    :: r(3)
-      real(8), intent(out)   :: j(3)
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: D_0(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: ao_b(mat_dim, *)
+      real(8), intent(in)  :: r(3)
+      real(8), intent(out) :: j(3)
 !     --------------------------------------------------------------------------
-      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
-      real(8)                :: f
+      integer              :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
+      real(8)              :: f
 !     --------------------------------------------------------------------------
 
       select case (visual_cfg_london_component)
@@ -435,8 +436,8 @@ contains
             st2 = lssl_st_ao(2, iblock, ixyz, 0)
             do k = st1, st1 + nr1 - 1
                do l = st2, st2 + nr2 - 1
-                  f = (r(c)*ao_b1(l, b) - r(b)*ao_b1(l, c))*ao(k) &
-                    - (r(c)*ao_b1(k, b) - r(b)*ao_b1(k, c))*ao(l)
+                  f = (r(c)*ao_b(l, b) - r(b)*ao_b(l, c))*ao(k) &
+                    - (r(c)*ao_b(k, b) - r(b)*ao_b(k, c))*ao(l)
                   
                   j(ixyz) = j(ixyz) + f*D_0(l, k, iq(ixyz))
                end do
@@ -445,9 +446,66 @@ contains
       end do
 
       j = -0.5d0*cval*j
-      if (levyle) then
-         j = 4.0d0*j
-      end if
+
+   end subroutine
+
+   subroutine get_jblao_ll(D_0,     &
+                           mat_dim, &
+                           ao,      &
+                           ao_b,    &
+                           ao_g,    &
+                           ao_gb,   &
+                           r,       &
+                           j)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: D_0(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: ao_b(mat_dim, 3)
+      real(8), intent(in)  :: ao_g(mat_dim, 3)
+      real(8), intent(in)  :: ao_gb(mat_dim, 3, 3)
+      real(8), intent(in)  :: r(3)
+      real(8), intent(out) :: j(3)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
+      real(8)              :: f
+!     --------------------------------------------------------------------------
+
+      select case (visual_cfg_london_component)
+         case ('X')
+            b = 2
+            c = 3
+         case ('Y')
+            b = 3
+            c = 1
+         case ('Z')
+            b = 1
+            c = 2
+      end select
+    
+      j = 0.0d0
+
+      do iblock = 1, llss_nr_density_blocks(0, 0)
+         nr1 = llss_nr_ao(1, iblock, 0, 0)
+         st1 = llss_st_ao(1, iblock, 0, 0)
+         nr2 = llss_nr_ao(2, iblock, 0, 0)
+         st2 = llss_st_ao(2, iblock, 0, 0)
+         do k = st1, st1 + nr1 - 1
+            do l = st2, st2 + nr2 - 1
+               do ixyz = 1, 3
+                  f = (r(c)*ao_b (l, b      ) - r(b)*ao_b (l, c      ))*ao_g(k, ixyz) &
+                    + (r(c)*ao_b (k, b      ) - r(b)*ao_b (k, c      ))*ao_g(l, ixyz) &
+                    - (r(c)*ao_gb(l, b, ixyz) - r(b)*ao_gb(l, c, ixyz))*ao  (k      ) &
+                    - (r(c)*ao_gb(k, b, ixyz) - r(b)*ao_gb(k, c, ixyz))*ao  (l      )
+                  
+                  j(ixyz) = j(ixyz) + f*D_0(l, k, iq(0))
+               end do
+            end do
+         end do
+      end do
+
+      j = -0.5d0*j
 
    end subroutine
 

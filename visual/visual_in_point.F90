@@ -157,12 +157,23 @@ contains
                           ao)
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-                  call get_jblao(D_0%elms,                      &
-                                 ntbas(0),                      &
-                                 ao(ao_start(0,0):ao_end(0,0)), &
-                                 ao(ao_start(0,1):ao_end(0,1)), &
-                                 (/px, py, pz/),                &
-                                 v2)
+                  if (levyle) then
+                     call get_jblao_ll(D_0%elms,                      &
+                                       ntbas(0),                      &
+                                       ao(ao_start(0,0):ao_end(0,0)), &
+                                       ao(ao_start(0,1):ao_end(0,1)), &
+                                       ao(ao_start(1,0):ao_end(1,0)), &
+                                       ao(ao_start(1,1):ao_end(1,1)), &
+                                       (/px, py, pz/),                &
+                                       v2)
+                  else
+                     call get_jblao(D_0%elms,                      &
+                                    ntbas(0),                      &
+                                    ao(ao_start(0,0):ao_end(0,0)), &
+                                    ao(ao_start(0,1):ao_end(0,1)), &
+                                    (/px, py, pz/),                &
+                                    v2)
+                  end if
                   v = v + v2
                end if
 #endif
@@ -329,12 +340,23 @@ contains
                end if
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-                  call get_jblao(D_0%elms,                      &
-                                 ntbas(0),                      &
-                                 ao(ao_start(0,0):ao_end(0,0)), &
-                                 ao(ao_start(0,1):ao_end(0,1)), &
-                                 (/px, py, pz/),                &
-                                 v2)
+                  if (levyle) then
+                     call get_jblao_ll(D_0%elms,                      &
+                                       ntbas(0),                      &
+                                       ao(ao_start(0,0):ao_end(0,0)), &
+                                       ao(ao_start(0,1):ao_end(0,1)), &
+                                       ao(ao_start(1,0):ao_end(1,0)), &
+                                       ao(ao_start(1,1):ao_end(1,1)), &
+                                       (/px, py, pz/),                &
+                                       v2)
+                  else
+                     call get_jblao(D_0%elms,                      &
+                                    ntbas(0),                      &
+                                    ao(ao_start(0,0):ao_end(0,0)), &
+                                    ao(ao_start(0,1):ao_end(0,1)), &
+                                    (/px, py, pz/),                &
+                                    v2)
+                  end if
                   v = v + v2
                end if
 #endif
