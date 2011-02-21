@@ -5,7 +5,8 @@ message("-- DIRAC: CMAKE_C_COMPILER_ID       is \"${CMAKE_C_COMPILER_ID}\"")
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
-    set(CMAKE_Fortran_FLAGS         " ")
+                                     # this is for VAR_MPI2
+    set(CMAKE_Fortran_FLAGS         "-fcray-pointer")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
