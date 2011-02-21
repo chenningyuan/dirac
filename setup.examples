@@ -38,7 +38,7 @@ $ ln -s build_gfort_seq/dirac.x
 
 ilias@frpd2.utcpd.sk;   2011-02-21
 ----------------------------------------
-$ /setup --fc=g95 --cc=gcc-4.2  --int64  --nomath --buildname="linux.frpd2.g95.gcc.ilp64.ownlibs.opt"
+$ /setup --fc=g95 --cc=gcc-4.2  --int64  --nomath --buildname="linux.frpd2.g95.gcc.ilp64.ownlibs.noopt" --debug
 $ ln -sf dirac.x cbuild/dirac.x
 $ cd cbuild
 $ cmake ..
