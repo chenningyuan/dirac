@@ -444,7 +444,7 @@ contains
          end do
       end do
 
-      j = 0.5d0*cval*j
+      j = -0.5d0*cval*j
       if (levyle) then
          j = 4.0d0*j
       end if

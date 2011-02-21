@@ -163,7 +163,7 @@ contains
                                  ao(ao_start(0,1):ao_end(0,1)), &
                                  (/px, py, pz/),                &
                                  v2)
-                  v = v - v2
+                  v = v + v2
                end if
 #endif
                result(1:3) = result(1:3) + v(1:3)
@@ -335,7 +335,7 @@ contains
                                  ao(ao_start(0,1):ao_end(0,1)), &
                                  (/px, py, pz/),                &
                                  v2)
-                  v = v - v2
+                  v = v + v2
                end if
 #endif
             
