@@ -384,9 +384,9 @@ C
         WRITE(ITAPADC,'(A5)')  NMSPECF         !Name of SPEC
         WRITE(ITAPADC,'(I9)')  IRECL           !IRECL of config
         WRITE(ITAPADC,'(I9)')  DIPITER         !NITER
-        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)    !1h space size
+        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)    !2h space size
         WRITE(ITAPADC,'(I9)')  NBUFS           !NBUFS
-        N=0
+        N=0                                    !NO evecs in dble case
         WRITE(ITAPADC,'(I9)')  N               !NEIGENV
         WRITE(ITAPADC,'(F10.1)') DIPPRNT       !EVLLIM
 
@@ -397,7 +397,19 @@ c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
         CALL DIAGEXE(CC,KFRSAV2,LFREE,ITAPADC,IW)
         CLOSE(ITAPADC,STATUS='DELETE')
-
+c
+c  we do Mulliken-type ADC population analysis after diagonalization
+c  since in this part of the program we have access to all the symmetry
+c  information we need. The hole vectors are written in the diagonalizer
+c  part.
+c
+        IF(DOADCPOP) THEN
+          WRITE(IW,*)
+          WRITE(IW,*) 'ADC two-hole population analysis'
+          WRITE(IW,*) 'not yet available'
+          WRITE(IW,*)
+c         CALL TWOHPOP(IW,ITAPADC,DESREP,NO(DESREP))
+        ENDIF
  300  CONTINUE
 
 C |
