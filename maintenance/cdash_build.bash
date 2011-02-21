@@ -8,14 +8,14 @@
 # miro: modified to local update&build
 
 # the directory where your DIRAC sits
-DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/g95_gcc_noopt_ownlib_ILP64/adm/trunk
+DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_ILP64/adm/trunk
 
 # go to the local DIRAC directory
 cd $DIRAC
 
 # svn update, pamadm 
 svn up 
-./pamadm -a
+./pamadm -a --minus --openrsp
 
 # set environment (you may or may not need it for your compiler)
 # export PATH=$PATH':/home/bast/openmpi/bin'
@@ -29,7 +29,7 @@ source ~/.bashrc
 # ./setup --fc=gfortran --cc=gcc --buildname="linux.gfortran.gcc"
 #  ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl"
 # ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack" --buildname="linux.gfortran.atlas.mpi"
-./setup --fc=/usr/bin/g95 --cc=/usr/bin/gcc  --int64  --nomath --buildname="linux.g95.gcc.ilp64.ownlibs"
+./setup --fc=g95 --cc=gcc-4.2  --int64  --nomath --buildname="linux.g95.gcc.ilp64.ownlibs.noopt" --debug
 
 cd $DIRAC/cbuild
 cmake ..
@@ -37,11 +37,11 @@ cmake ..
 # pam expects dirac.x to be in the same directory
 # you cannot copy it because it does not exist yet
 # make below will create it but same step launches pam (via runtest)
-ln -s $DIRAC/cbuild/dirac.x $DIRAC/dirac.x
+ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 # build and run tests
 # use either Experimental or Nightly
-  make Experimental -j 2
-# make Nightly -j 2
+#  make Experimental -j 2
+ make Nightly -j 3
 
 exit 0
