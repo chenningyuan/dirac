@@ -3913,6 +3913,8 @@ C
          IF(XLAB1.EQ.LAB1.AND.XLAB2.EQ.LAB2.AND.
      &        XTYP1.EQ.TYP1.AND.XTYP2.EQ.TYP2) THEN
             CALL READT(LU,LEN,RSPVEC)
+C...........skip orbital rotations
+            READ(LU)
             WRITE(LUPRI,'(A)') 
      &           '*** Restart on response vector:'
             WRITE(LUPRI,'(A,A16,2X,A2,A,A3,A,I2,A,F7.4)') 
@@ -3926,6 +3928,7 @@ C
             FNDRSP = .TRUE.
             RETURN
          ELSE
+            READ(LU)
             READ(LU)
             GOTO 5
          ENDIF
