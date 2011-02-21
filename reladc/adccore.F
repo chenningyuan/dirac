@@ -433,11 +433,13 @@ C------------- Execution starts -------------------------------------
 C
       NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
-     &                 DOCONST,VCONV
+     &                 DOCONST,DOADCPOP,VCONV
       NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,SIPPRNT,DIPPRNT
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
+c  the ADC population analysis currently only refers to the
+c  two-hole part since this is of major interest!
 c
       OPEN (5,FILE='DIRAC.INP', FORM='FORMATTED')
       ADCLEVEL = 1
@@ -453,15 +455,17 @@ c
       ADCPRINTNM(7)='SIGMA-matrix'
       ADCPRINTNM(8)=' '
 
-      DOSIPS=.FALSE.
-      DODIPS=.FALSE.
+      DOSIPS = .FALSE.
+      DODIPS = .FALSE.
 
       DO IX=1,32
         XREPS(IX)=0
       ENDDO
-      READQKL = .FALSE.
-      DOCONST = .TRUE.
-      VCONV = 1.0D-06
+      READQKL  = .FALSE.
+      DOCONST  = .TRUE.
+      VCONV    = 1.0D-06
+      DOADCPOP = .FALSE.
+
 c     DIAGTYPE = 'LANC'
 c 
 c  next read in actual parameters from ADC input
