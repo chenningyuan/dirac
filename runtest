@@ -147,6 +147,9 @@ if len(sys.argv) == 1:
     print parser.format_help().strip()
     sys.exit()
 
+if options.mpi > 1:
+    print 'running on %i processors' % options.mpi
+
 # get a list of tests to run according to input
 
 list_of_tests_to_run = []
