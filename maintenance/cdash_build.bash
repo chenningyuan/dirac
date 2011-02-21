@@ -6,6 +6,7 @@
 # make sure cmake is installed before you run it
 
 # miro: modified to local update&build
+source ~/.bashrc
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_ILP64/adm/trunk
@@ -17,12 +18,6 @@ cd $DIRAC
 svn up 
 ./pamadm -a --minus --openrsp
 
-# set environment (you may or may not need it for your compiler)
-# export PATH=$PATH':/home/bast/openmpi/bin'
-# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/lib'
-# source /opt/intel/bin/compilervars.sh ia32
-# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/ia32'
-source ~/.bashrc
 
 # configure step
 # ./setup --fc=gfortran --cc=gcc --debug --buildname="linux.gfortran.gcc.debug"
