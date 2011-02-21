@@ -66,7 +66,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(matrix)         :: D_mo, D(max_para)
-    type(matrix)         :: D_con_ao, D_con_mo, D_con, D_0
+    type(matrix)         :: D_con_ao, D_con_mo, D_con, D_0, D_0_full
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable :: eigenvalues(:)
@@ -178,6 +178,7 @@ contains
 
        D_0 = C*(D_mo*dag(C))
        D_0 = 2.0d0*D_0
+       D_0_full = 2.0d0*C*dag(C)
        
 !      if london - reorthonormalization contribution
 !      =============================================
@@ -202,8 +203,7 @@ contains
        call setup_fo_conmat_ao(D_con_ao, 1)
        
        
-!      transform connection matrices to MO basis:
-!      ------------------------------------------
+!      transform connection matrices to MO basis
        D_con_mo = dag(C)*(D_con_ao*C)
        if (.not. levyle) then
 !         radovan: magic factor for levyle
@@ -211,59 +211,29 @@ contains
           D_con_mo = 0.5d0*D_con_mo
        end if
 
-       call copy_matrix_sym(D_con_mo, D_con_ao)
-
-!      symmetric connection
        if (visual_cfg_london_symmetric) then
+!         symmetric connection
        
-!        D_con_mo(iz=1) is antisymmetric
-!        D_con_mo(iz=2,3,4) is symmetric, so:
+          D_con = D_0_full*D_con_ao*D_0 &
+                + D_0*D_con_ao*D_0_full
+          D_con = 0.125d0*D_con
        
-          if (nfsym == 2) then
-             D_con = (C*(D_con_mo*dag(Cig))) &
-                   + (C*(D_con_mo*dag(Ciu))) &
-                   + (Cig*(D_con_mo*dag(C))) &
-                   + (Ciu*(D_con_mo*dag(C)))
-          else
-             D_con = (C*(D_con_mo*dag(Cig))) &
-                   + (Cig*(D_con_mo*dag(C)))
-          end if
-       
-!      natural connection
        else if (visual_cfg_london_natural) then
+!         natural connection
        
-!         D_con_mo is a general matrix
-!         so we do dag(D_con_mo), but dag(A) does only transposition
-!         so the sign is changed by hand -> that is why we have "-"
-          if (nfsym == 2) then
-             D_con = (C*(D_con_mo*dag(Cig))) &
-                   + (C*(D_con_mo*dag(Ciu))) &
-                   - (Cig*(dag(D_con_mo)*dag(C))) &
-                   - (Ciu*(dag(D_con_mo)*dag(C)))
-          else
-             D_con = (C*(D_con_mo*dag(Cig))) &
-                   - (Cig*(dag(D_con_mo)*dag(C)))
-          end if
+          D_con = D_0_full*D_con_ao*D_0 &
+                - D_0*dag(D_con_ao)*D_0_full
+          D_con = 0.125d0*D_con
        
-!      <none> connection
        else if (visual_cfg_london_none) then
+!         none connection
        
-!         'ij' block: overlap
-!         ===================
-!         if <none> connection, we take symmetric connection integrals to D_con_ao
-!         and they equal to -0.5d0*S^B, so:
-          
-!         create modified density matrix
-!         ------------------------------
-          if (nfsym == 2) then
-             D_con = Cig*(D_con_mo*dag(Cig)) &
-                   + Ciu*(D_con_mo*dag(Ciu))
-          else
-             D_con = Cig*(D_con_mo*dag(Cig))
-          end if
+          D_con = D_0*D_con_ao*D_0
+          D_con = 0.25d0*D_con
+       end if
+       if (levyle) then
           D_con = 2.0d0*D_con
        end if
-       call copy_matrix_sym(D_con, D_con_mo)
     end if
 #endif
 
