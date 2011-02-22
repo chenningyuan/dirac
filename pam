@@ -112,6 +112,8 @@ class pam_enviroment:
    
     # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
         self.dirac_p=None
+        # possible children processes
+        self.dirac_children_pid=None
 
     # ... dirac error output (stderr stream), always filled
         self.dirac_stderr=''     
@@ -1409,11 +1411,16 @@ class pam_enviroment:
               #          the dirac job, it matches the shell command that spawns the dirac job
               #          then timeout terminates the command but not the dirac.x run
               #          but we do need shell=True (painful lesson when testing without)
+              # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html  
                 self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
-                               stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
+                           stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
+                from common import children_pid
+                self.dirac_children_pid=children_pid(self.dirac_p.pid)
 
                 if self.iprint > 0:
                     print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
+                    if self.dirac_children_pid:
+                        print '  Warning ! Associated children PIDs:',self.dirac_children_pid
 
                 # get stderr stream to be properly distributed
                 self.dirac_stderr = self.dirac_p.communicate()[1] 
@@ -1455,8 +1462,11 @@ class pam_enviroment:
                 self.dirac_p.pid,').'
 
             # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
-
             os.kill(self.dirac_p.pid, signal.SIGTERM)
+            # miro: - kill child's processes  when they are present
+            if self.dirac_children_pid:
+                for child_pid in self.dirac_children_pid:
+                    os.kill(child_pid, signal.SIGTERM)
             if self.set_timeout_limit:
                for stream in [sys.stdout,sys.stderr]:
                    print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
@@ -1465,7 +1475,7 @@ class pam_enviroment:
                    stream.flush()
             return_code = signal.SIGTERM
 
-    # do the profiling after the execution
+    # do the profiling after the execution if wanted
 
         if self.profile:
             self.profile_dirac()

@@ -154,6 +154,15 @@ def get_hostname_ip():
     this_ip = get_ip()
     return this_ip
 
+def children_pid(pid):
+    """
+    get the list of the children pids of a pid (linux only)
+    """
+    import subprocess as SP
+    proc = SP.Popen('ps -o pid,ppid ax | grep "%d"' % pid, shell=True, stdout=SP.PIPE)
+    pidppid = [x.split() for x in proc.communicate()[0].split("\n") if x]
+    return list(int(p) for p, pp in pidppid if int(pp) == pid)
+
 class disk_space:
     """
     extracts disk space data - capacity, available, used -  in GB
