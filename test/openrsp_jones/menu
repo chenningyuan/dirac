@@ -1,7 +1,3 @@
-nr.inp                 h2o2.mol
 nr.inp                 hf.mol
-nr_shifted.inp         hf.mol
-dc_skipep.inp          hf.mol
 dc_skipep_cval=800.inp hf.mol
-dc.inp                 hf.mol
 dc_shifted.inp         hf.mol
