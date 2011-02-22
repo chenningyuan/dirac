@@ -226,9 +226,9 @@ class run:
 
          # timeouts for quick and regular tests
          if self.kind == 'q':
-             pam_flags +=  '--timeout=2m '
+             pam_flags +=  '--timeout=21m '
          elif self.kind == 'r':
-             pam_flags +=  '--timeout=20m '
+             pam_flags +=  '--timeout=21m '
          else:
              pam_flags +=  '--timeout=1h '
 
