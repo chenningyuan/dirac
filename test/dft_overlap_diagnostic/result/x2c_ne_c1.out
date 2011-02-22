@@ -1,7 +1,10 @@
 DIRAC pam run in /home/bast/dirac/git_trunk/test/dft_overlap_diagnostic
--e Size of all static allocations :108.425 MB 
-DIRAC serial allocating 64000000 words (488 MB) of memory
-DIRAC serial will use at most 0 words (0 MB) of memory in dynamic allocations
+Size of all static allocations: 108.433 MB 
+DIRAC serial starts by allocating 63910761 words (487 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -135,22 +138,22 @@ DIRAC serial will use at most 0 words (0 MB) of memory in dynamic allocations
  *    (see http://dirac.chem.vu.nl).                                          *
  *                                                                            *
  ******************************************************************************
- Version           : Dirac 8.0 (patchlevel 0) 
+ Version           : Dirac 10.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.35-23-generic
+ Operating system  : Linux 2.6.35-25-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 11:32:49 Jan 11 2011 (by bast@larry:/home/bast/dirac/git_trunk)
- FORTRAN compiler  : /opt/intel/Compiler/11.1/073/bin/ia32/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF   
- C compiler        : /opt/intel/Compiler/11.1/073/bin/ia32/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DARCH32BIT -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries: -L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread 
- Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
- ILP data model    : ILP32 
- SVN URL           : 'unknown Subversion URL' 
- SVN Revision      : 'unknown Subversion revision' 
+ Last compilation  : 21:47:13 Feb 22 2011 (by foo@foo:foo)
+ FORTRAN compiler  : foo 
+ C compiler        : foo 
+ External libraries: foo 
+ Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
+ ILP data model    : foo 
+ SVN URL           : foo 
+ SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Tue Jan 11 12:09:11 2011
+     Date and time (Linux)  : Tue Feb 22 22:10:30 2011
      Host name              :                                         
 
 
@@ -166,18 +169,23 @@ DIRAC serial will use at most 0 words (0 MB) of memory in dynamic allocations
 .DFT
  LDA
 *DFT
-.LAMBDA
+.OVLDIAG
 .COARSE
 **INTEGRALS
 *READIN
 .UNCONTRACT
 **WAVE FUNCTION
 .DHF
+*DHFCAL
+.EVCCNV
+ 1.0D-1 1.0
 **PROPERTIES
 *EXCITATIONS
 .EXCITATIONS
  1 6
 .ANALYZE
+.THRESH
+ 1.0D-1
 *END OF
 
 
@@ -463,8 +471,8 @@ Point group: C1
  * Trial vectors read from file DFCOEF
  ***** CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
-   Desired convergence:1.000D-07
-   Allowed convergence:1.000D-06
+   Desired convergence:1.000D-01
+   Allowed convergence:1.000D+00
 
  ***** CONVERGENCE CONTROL *****
  * Fock matrix constructed using differential density matrix
@@ -481,7 +489,6 @@ Point group: C1
  * NB!!! No e-p rotations in 2nd order optimization.
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
- LWORK,LFREE    64000000    64000000
 
 
    ***************************************************************************
@@ -503,7 +510,7 @@ Point group: C1
  * Print level                 :    0
  * Analysis of solution vectors.
  * Maximum number of iterations:   50
- * Threshold for convergence   : 1.00000D-05
+ * Threshold for convergence   : 1.00000D-01
  * Max. size of reduced matrix :  400
  * NB!!! No rotations between electrons and positrons.
  * Include contributions from the following two-electron integrals:
@@ -529,8 +536,6 @@ Point group: C1
 
 
   Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
-
-  MNF.INP input file (for the AMFI stuff) is ready.
 
                    *****************************************************************
                    *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***
@@ -610,7 +615,7 @@ Point group: C1
     6. iteration,  total energy:          -128.625327858980
     7. iteration,  total energy:          -128.625327863540
     8. iteration,  total energy:          -128.625327864559
-    9. iteration,  total energy:          -128.625327865718
+    9. iteration,  total energy:          -128.625327865717
    10. iteration,  total energy:          -128.625327864849
    11. iteration,  total energy:          -128.625327864852
    11. iteration,  total energy:          -128.625327864853
@@ -618,15 +623,13 @@ Point group: C1
         11      -0.1286253279D+03      -0.2575394720D+03       0.1289141442D+03      -0.1997759623D+01
       *** AMFIIN: ADDING nucleus    1 with charge  10 to the BSSn Hamiltonian.
 
-                   ******************************************
-                   *** X2C transformation ended properly. ***
-                   *** continue calculation in 2c mode... ***
-                   ******************************************
+                   *****************************************************************
+                   ***            X2C transformation ended properly.             ***
+                   ***       Calculation continues in two-component mode.        ***
+                   *****************************************************************
 
 
   Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
-
-  MNF.INP input file (for the AMFI stuff) is ready.
 
 
                        Generating Lowdin canonical matrix:
@@ -642,6 +645,7 @@ Point group: C1
 No. of positive energy orbitals (NESH):    26
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    26
+ >>> Time used in PAMSET is   0.11 seconds
 
 
   *****************************************************************************
@@ -653,11 +657,11 @@ Total no. of orbitals           (NORB):    26
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Jan 11 12:09:11 2011
+########## START ITERATION NO.   1 ##########   Tue Feb 22 22:10:30 2011
 
-It.   1    -65.22253715120      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Jan 11
+It.   1    -65.22253715120      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Feb 22
 
-########## START ITERATION NO.   2 ##########   Tue Jan 11 12:09:11 2011
+########## START ITERATION NO.   2 ##########   Tue Feb 22 22:10:30 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -687,25 +691,25 @@ Ne      1   0.215E-05   0.597E+01   0.141E+00      92   18064
    Number of grid points in quadrature:     18064 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.00 seconds
+ >>>> Time used in DFTGRD:   0.03 seconds
 
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -12.1269625371775494
-   number of electrons from numerical integration =         9.9999999458005249
+   DFT exchange-correlation energy:               =       -12.1269625371771426
+   number of electrons from numerical integration =         9.9999999458005089
  
-   time spent in DFT integration                  =   0.00 seconds
+   time spent in DFT integration                  =   0.54 seconds
    number of processors                           =         1
  
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.54999995s
 
-########## END ITERATION NO.   2 ##########   Tue Jan 11 12:09:11 2011
+########## END ITERATION NO.   2 ##########   Tue Feb 22 22:10:30 2011
 
-It.   2    -128.1077206569      6.29D+01  2.32D+00  2.71D+00               0.00000000s   LL             Tue Jan 11
+It.   2    -128.1077206569      6.29D+01  2.32D+00  2.71D+00               0.54999995s   LL             Tue Feb 22
 
-########## START ITERATION NO.   3 ##########   Tue Jan 11 12:09:11 2011
+########## START ITERATION NO.   3 ##########   Tue Feb 22 22:10:31 2011
 
     3 *** Differential density matrix. DCOVLP     = 1.0130
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -713,20 +717,20 @@ SOfock:LL  1.00D-12   45.27%   33.65%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.3952982024061882
-   number of electrons from numerical integration =         9.9999999304372569
+   DFT exchange-correlation energy:               =       -11.3952982024064546
+   number of electrons from numerical integration =         9.9999999304373333
  
-   time spent in DFT integration                  =   1.00 seconds
+   time spent in DFT integration                  =   0.50 seconds
    number of processors                           =         1
  
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.50000012s
 
-########## END ITERATION NO.   3 ##########   Tue Jan 11 12:09:11 2011
+########## END ITERATION NO.   3 ##########   Tue Feb 22 22:10:31 2011
 
-It.   3    -128.1995782657      9.19D-02 -1.21D+00  1.12D+00   DIIS   2    1.00000000s   LL             Tue Jan 11
+It.   3    -128.1995782657      9.19D-02 -1.21D+00  1.12D+00   DIIS   2    0.50000012s   LL             Tue Feb 22
 
-########## START ITERATION NO.   4 ##########   Tue Jan 11 12:09:12 2011
+########## START ITERATION NO.   4 ##########   Tue Feb 22 22:10:31 2011
 
     4 *** Differential density matrix. DCOVLP     = 0.9637
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -734,20 +738,20 @@ SOfock:LL  1.00D-12   45.27%   33.65%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.9900318197595865
-   number of electrons from numerical integration =         9.9999999537218009
+   DFT exchange-correlation energy:               =       -11.9900318197595901
+   number of electrons from numerical integration =         9.9999999537218187
  
-   time spent in DFT integration                  =   0.00 seconds
+   time spent in DFT integration                  =   0.48 seconds
    number of processors                           =         1
  
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.47999978s
 
-########## END ITERATION NO.   4 ##########   Tue Jan 11 12:09:12 2011
+########## END ITERATION NO.   4 ##########   Tue Feb 22 22:10:31 2011
 
-It.   4    -128.2653709357      6.58D-02  9.01D-01  6.11D-01   DIIS   3    0.00000000s   LL             Tue Jan 11
+It.   4    -128.2653709357      6.58D-02  9.01D-01  6.11D-01   DIIS   3    0.47999978s   LL             Tue Feb 22
 
-########## START ITERATION NO.   5 ##########   Tue Jan 11 12:09:12 2011
+########## START ITERATION NO.   5 ##########   Tue Feb 22 22:10:32 2011
 
     5 *** Differential density matrix. DCOVLP     = 0.9987
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -755,89 +759,26 @@ SOfock:LL  1.00D-12   45.27%   33.67%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.7692252977878518
-   number of electrons from numerical integration =         9.9999999451931938
+   DFT exchange-correlation energy:               =       -11.7692252977876226
+   number of electrons from numerical integration =         9.9999999451932098
  
-   time spent in DFT integration                  =   1.00 seconds
-   number of processors                           =         1
- 
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 1.00000000s
-
-########## END ITERATION NO.   5 ##########   Tue Jan 11 12:09:12 2011
-
-It.   5    -128.3011253295      3.58D-02 -3.25D-01  5.47D-03   DIIS   4    1.00000000s   LL             Tue Jan 11
-
-########## START ITERATION NO.   6 ##########   Tue Jan 11 12:09:13 2011
-
-    6 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   45.27%   33.79%    0.00%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.7669009429357398
-   number of electrons from numerical integration =         9.9999999450763006
- 
-   time spent in DFT integration                  =   1.00 seconds
+   time spent in DFT integration                  =   0.49 seconds
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 1.00000000s
+>>> Total CPU-time : 0.49000025s
 
-########## END ITERATION NO.   6 ##########   Tue Jan 11 12:09:13 2011
+########## END ITERATION NO.   5 ##########   Tue Feb 22 22:10:32 2011
 
-It.   6    -128.3011290684      3.74D-06 -3.20D-03  5.64D-04   DIIS   5    1.00000000s   LL             Tue Jan 11
-
-########## START ITERATION NO.   7 ##########   Tue Jan 11 12:09:13 2011
-
-    7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   45.27%   33.89%    0.00%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.7670903349254772
-   number of electrons from numerical integration =         9.9999999450832586
- 
-   time spent in DFT integration                  =   0.00 seconds
-   number of processors                           =         1
- 
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.00000000s
-
-########## END ITERATION NO.   7 ##########   Tue Jan 11 12:09:13 2011
-
-It.   7    -128.3011290962      2.78D-08  2.86D-04  8.20D-06   DIIS   6    0.00000000s   LL             Tue Jan 11
-
-########## START ITERATION NO.   8 ##########   Tue Jan 11 12:09:14 2011
-
-    8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   45.27%   34.58%    0.00%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.7670930033301122
-   number of electrons from numerical integration =         9.9999999450836174
- 
-   time spent in DFT integration                  =   1.00 seconds
-   number of processors                           =         1
- 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 1.00000000s
-
-########## END ITERATION NO.   8 ##########   Tue Jan 11 12:09:14 2011
-
-It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.00000000s   LL             Tue Jan 11
+It.   5    -128.3011253295      3.58D-02 -3.25D-01  5.47D-03   DIIS   3    0.49000025s   LL             Tue Feb 22
 
 
                                    SCF - CYCLE
                                    -----------
 
 * Convergence on norm of error vector (gradient).
-  Desired convergence:1.000D-07
-  Allowed convergence:1.000D-06
+  Desired convergence:1.000D-01
+  Allowed convergence:1.000D+00
 
 * ERGVAL - convergence in total energy
 * FCKVAL - convergence in maximum change in total Fock matrix
@@ -845,31 +786,28 @@ It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.000
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -65.22253715120      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Jan 11
-It.   2    -128.1077206569      6.29D+01  2.32D+00  2.71D+00               0.00000000s   LL             Tue Jan 11
-It.   3    -128.1995782657      9.19D-02 -1.21D+00  1.12D+00   DIIS   2    1.00000000s   LL             Tue Jan 11
-It.   4    -128.2653709357      6.58D-02  9.01D-01  6.11D-01   DIIS   3    0.00000000s   LL             Tue Jan 11
-It.   5    -128.3011253295      3.58D-02 -3.25D-01  5.47D-03   DIIS   4    1.00000000s   LL             Tue Jan 11
-It.   6    -128.3011290684      3.74D-06 -3.20D-03  5.64D-04   DIIS   5    1.00000000s   LL             Tue Jan 11
-It.   7    -128.3011290962      2.78D-08  2.86D-04  8.20D-06   DIIS   6    0.00000000s   LL             Tue Jan 11
-It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.00000000s   LL             Tue Jan 11
+It.   1    -65.22253715120      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Feb 22
+It.   2    -128.1077206569      6.29D+01  2.32D+00  2.71D+00               0.54999995s   LL             Tue Feb 22
+It.   3    -128.1995782657      9.19D-02 -1.21D+00  1.12D+00   DIIS   2    0.50000012s   LL             Tue Feb 22
+It.   4    -128.2653709357      6.58D-02  9.01D-01  6.11D-01   DIIS   3    0.47999978s   LL             Tue Feb 22
+It.   5    -128.3011253295      3.58D-02 -3.25D-01  5.47D-03   DIIS   3    0.49000025s   LL             Tue Feb 22
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    8 iterations.
+* Convergence after    5 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.42857143s
+      LL           :    0.50000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -128.30112909617390
+   Electronic energy                        :    -128.30112532948533
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -128.30112909617390
+   Total energy                             :    -128.30112532948533
 
 
                                    Eigenvalues
@@ -878,17 +816,17 @@ It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.000
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -30.30727255648  ( 2)       -1.29250736896  ( 2)       -0.45794936580  ( 2)       -0.45468166681  ( 4)
+   -30.30904180929  ( 2)       -1.29439450328  ( 2)       -0.45959517544  ( 2)       -0.45632577650  ( 4)
   * Virtual eigenvalues, f = 0.0000
-     1.22181336508  ( 2)        1.22450596954  ( 4)        1.60223143640  ( 2)        4.61907140875  ( 4)        4.62001141069  ( 6)
-     8.48814568579  ( 2)        8.50107977418  ( 4)       18.06774601188  ( 2)       50.93700465173  ( 2)       51.05263715338  ( 4)
-    90.46285908260  ( 2)      343.91054033630  ( 2)     1269.41615677123  ( 2)     4949.54404229738  ( 2)    20990.51318356105  ( 2)
+     1.22114848321  ( 2)        1.22383890492  ( 4)        1.60127858827  ( 2)        4.61686931675  ( 4)        4.61780931869  ( 6)
+     8.48654999513  ( 2)        8.49948442967  ( 4)       18.06609195481  ( 2)       50.93546418106  ( 2)       51.05109681938  ( 4)
+    90.46110660763  ( 2)      343.90841845870  ( 2)     1269.41345187512  ( 2)     4949.54092382878  ( 2)    20990.50992594564  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     1.22181337 au (symmetry E1 )
-  - E(HOMO) :    -0.45468167 au (symmetry E1 )
+    E(LUMO) :     1.22114848 au (symmetry E1 )
+  - E(HOMO) :    -0.45632578 au (symmetry E1 )
   ------------------------------------------
-    gap     :     1.67649503 au
+    gap     :     1.67747426 au
 
 
 
@@ -919,7 +857,7 @@ It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.000
    Joern Thyssen
 
    Additional contributions from:
-   Thomas Enevoldsen
+   Thomas Enevoldsen, Miroslav Ilias (London orbitals)
 
 
 
@@ -935,8 +873,8 @@ It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.000
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    26                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -128.301129096168836
-* Heading :DIRAC: No title specified !!!                     Tue Jan 11 12:09:14 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -128.265370935720256
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 22:10:32 2011
 
 
 
@@ -945,8 +883,8 @@ It.   8    -128.3011290962      5.06D-12  4.09D-06  1.17D-08   DIIS   6    1.000
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast.x2c_ne_c1.21684/DFFCK2                        
-* Heading :DIRAC: No title specified !!!                     Tue Jan 11 12:09:14 2011
+* REAFCK: Fock matrix read from file /scratch/bast.x2c_ne_c1.7997/DFFCK2                         
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 22:10:32 2011
 
 
  ********************************************************************************
@@ -971,30 +909,30 @@ Ne      1   0.215E-05   0.597E+01   0.141E+00      92   18064
    Number of grid points in quadrature:     18064 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.00 seconds
+ >>>> Time used in DFTGRD:   0.03 seconds
 
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   DFT exchange-correlation energy:               =       -11.7670930033301122
-   number of electrons from numerical integration =         9.9999999450836174
+   DFT exchange-correlation energy:               =       -11.7692252977876226
+   number of electrons from numerical integration =         9.9999999451932098
  
-   time spent in DFT integration                  =   0.00 seconds
+   time spent in DFT integration                  =   0.71 seconds
    number of processors                           =         1
  
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast.x2c_ne_c1.21684/DFFCK1                        
-* Heading :DIRAC: No title specified !!!                     Tue Jan 11 12:09:11 2011
+* REAFCK: Fock matrix read from file /scratch/bast.x2c_ne_c1.7997/DFFCK1                         
+* Heading :DIRAC: No title specified !!!                     Tue Feb 22 22:10:30 2011
 
-* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.70D-08
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.70D-04
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.70D+02
 
-########## START MICROITERATION NO.   1 ##########   Tue Jan 11 12:09:15 2011
+########## START MICROITERATION NO.   1 ##########   Tue Feb 22 22:10:33 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.70D-08   59.61%   28.19%    0.00%    0.00%   0.00000000s
+SOfock:LL  3.70D-04   59.61%   30.02%    0.00%    0.00%   0.00000000s
 
 
  ********************************************************************************
@@ -1019,204 +957,76 @@ Ne      1   0.215E-05   0.597E+01   0.141E+00      92   18064
    Number of grid points in quadrature:     18064 (100.0%)
 
 
- >>>> Time used in DFTGRD:   1.00 seconds
+ >>>> Time used in DFTGRD:   0.03 seconds
 
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   number of electrons from numerical integration =         9.9999999450836192
+   number of electrons from numerical integration =         9.9999999451932098
  
-   time spent in DFT integration                  =   4.00 seconds
+   time spent in DFT integration                  =   2.47 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  8  E-:  8
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     1.63791183  1.00E-05  1.07E-01  1.26E-09  1.07E-01
-     1.63791183  1.00E-05  1.07E-01  1.26E-09  1.07E-01
-     1.63791183  1.00E-05  1.07E-01  1.26E-09  1.07E-01
-     1.66063642  1.00E-05  5.95E-02  3.27E-02  4.97E-02
-     1.66063642  1.00E-05  5.95E-02  3.27E-02  4.97E-02
-     1.66063642  1.00E-05  5.95E-02  3.27E-02  4.97E-02
+     1.63745548  1.00E-01  1.06E-01  5.04E-04  1.06E-01
+     1.63745548  1.00E-01  1.06E-01  5.04E-04  1.06E-01
+     1.63745548  1.00E-01  1.06E-01  5.04E-04  1.06E-01
+     1.66016503  1.00E-01  5.94E-02  3.28E-02  4.96E-02
+     1.66016503  1.00E-01  5.94E-02  3.28E-02  4.96E-02
+     1.66025277  1.00E-01  5.94E-02  3.27E-02  4.96E-02
 
-########## START MICROITERATION NO.   2 ##########   Tue Jan 11 12:09:17 2011
+########## START MICROITERATION NO.   2 ##########   Tue Feb 22 22:10:35 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.70D-08   42.40%   39.45%    5.48%    0.00%   0.00000000s
+SOfock:LL  3.70D-04   59.61%   29.99%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =     18064
    number of grid points below density threshold  =       868
-   number of electrons from numerical integration =         9.9999999450836174
+   number of electrons from numerical integration =         9.9999999451932098
  
-   time spent in DFT integration                  =   1.00 seconds
-   number of processors                           =         1
- 
-* Trial vectors in this micro iteration:  E+:  6  E-:  6
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   E- part 
-     1.56085985  1.00E-05  9.17E-02  1.01E-09  9.17E-02
-     1.56085985  1.00E-05  9.17E-02  1.01E-09  9.17E-02
-     1.56085985  1.00E-05  9.17E-02  1.01E-09  9.17E-02
-     1.63414952  1.00E-05  3.95E-02  1.45E-02  3.67E-02
-     1.63414952  1.00E-05  3.95E-02  1.45E-02  3.67E-02
-     1.63414952  1.00E-05  3.95E-02  1.45E-02  3.67E-02
-
-########## START MICROITERATION NO.   3 ##########   Tue Jan 11 12:09:19 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.70D-08   42.40%   38.97%    5.83%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   number of electrons from numerical integration =         9.9999999450836174
- 
-   time spent in DFT integration                  =   2.00 seconds
-   number of processors                           =         1
- 
-* Trial vectors in this micro iteration:  E+:  6  E-:  6
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   E- part 
-     1.55581858  1.00E-05  2.15E-02  4.14E-10  2.15E-02
-     1.55581858  1.00E-05  2.15E-02  3.82E-10  2.15E-02
-     1.55581858  1.00E-05  2.15E-02  3.88E-10  2.15E-02
-     1.63247005  1.00E-05  3.86E-03  1.90E-03  3.36E-03
-     1.63247005  1.00E-05  3.86E-03  1.90E-03  3.36E-03
-     1.63247005  1.00E-05  3.86E-03  1.90E-03  3.36E-03
-
-########## START MICROITERATION NO.   4 ##########   Tue Jan 11 12:09:21 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.70D-08   30.64%   43.89%    6.38%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   number of electrons from numerical integration =         9.9999999450836192
- 
-   time spent in DFT integration                  =   2.00 seconds
-   number of processors                           =         1
- 
-* Trial vectors in this micro iteration:  E+:  6  E-:  6
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   E- part 
-     1.55558503  1.00E-05  1.34E-03  2.77E-10  1.34E-03
-     1.55558503  1.00E-05  1.34E-03  5.90E-10  1.34E-03
-     1.55558503  1.00E-05  1.34E-03  8.25E-10  1.34E-03
-     1.63246771  1.00E-05  5.19E-05  3.95E-05  3.36E-05
-     1.63246771  1.00E-05  5.19E-05  3.95E-05  3.36E-05
-     1.63246771  1.00E-05  5.19E-05  3.95E-05  3.36E-05
-
-########## START MICROITERATION NO.   5 ##########   Tue Jan 11 12:09:22 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.70D-08   30.64%   43.89%    2.02%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   number of electrons from numerical integration =         9.9999999450836174
- 
-   time spent in DFT integration                  =   1.00 seconds
-   number of processors                           =         1
- 
-* Trial vectors in this micro iteration:  E+:  6  E-:  6
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E+ part   E- part 
-     1.55558492  1.00E-05  2.60E-05  1.09E-09  2.60E-05
-     1.55558492  1.00E-05  2.60E-05  1.32E-08  2.60E-05
-     1.55558492  1.00E-05  2.60E-05  1.83E-09  2.60E-05
-     1.63246771  1.00E-05  6.60E-07  2.50E-07  6.10E-07
-     1.63246771  1.00E-05  6.63E-07  2.58E-07  6.11E-07
-     1.63246771  1.00E-05  8.70E-07  6.18E-07  6.12E-07
-
-########## START MICROITERATION NO.   6 ##########   Tue Jan 11 12:09:24 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
- 
-   number of grid points                          =     18064
-   number of grid points below density threshold  =       868
-   number of electrons from numerical integration =         9.9999999450836174
- 
-   time spent in DFT integration                  =   2.00 seconds
+   time spent in DFT integration                  =   1.25 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  3  E-:  3
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     1.55558492  1.00E-05  5.34E-07  1.72E-08  5.34E-07
-     1.55558492  1.00E-05  5.43E-07  8.96E-08  5.36E-07
-     1.55558492  1.00E-05  5.46E-07  1.04E-07  5.36E-07
-     1.63246771  1.00E-05  6.60E-07  2.50E-07  6.10E-07
-     1.63246771  1.00E-05  6.63E-07  2.59E-07  6.11E-07
-     1.63246771  1.00E-05  8.71E-07  6.19E-07  6.13E-07
+     1.56045164  1.00E-01  9.15E-02  4.03E-04  9.15E-02
+     1.56045164  1.00E-01  9.15E-02  4.03E-04  9.15E-02
+     1.56045164  1.00E-01  9.15E-02  4.03E-04  9.15E-02
+     1.66016503  1.00E-01  5.94E-02  3.28E-02  4.96E-02
+     1.66016503  1.00E-01  5.94E-02  3.28E-02  4.96E-02
+     1.66025277  1.00E-01  5.94E-02  3.27E-02  4.96E-02
 
 
                              Final output from XRSCTL
                              ------------------------
 
 
-*** Microiterations converged after  6 microiterations
+*** Microiterations converged after  2 microiterations
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   4.00000000s  (LL       )     [  8]     [  8]
+* It.  1   2.50000024s  (LL       )     [  8]     [  8]
 --------------------------------------------------------
-            1.555585 :   1.07D-01 |   1.26D-09  1.07D-01
-            1.555585 :   1.07D-01 |   1.26D-09  1.07D-01
-            1.555585 :   1.07D-01 |   1.26D-09  1.07D-01
-            1.632468 :   5.95D-02 |   3.27D-02  4.97D-02
-            1.632468 :   5.95D-02 |   3.27D-02  4.97D-02
-            1.632468 :   5.95D-02 |   3.27D-02  4.97D-02
+            1.560452 :   1.06D-01 |   5.04D-04  1.06D-01
+            1.560452 :   1.06D-01 |   5.04D-04  1.06D-01
+            1.560452 :   1.06D-01 |   5.04D-04  1.06D-01
+            1.660165 :   5.95D-02 |   3.28D-02  4.96D-02
+            1.660165 :   5.95D-02 |   3.28D-02  4.96D-02
+            1.660253 :   5.94D-02 |   3.27D-02  4.96D-02
 ========================================================
-* It.  2   1.00000000s  (LL       )     [  6]     [  6]
+* It.  2   1.25999975s  (LL       )     [  3]     [  3]
 --------------------------------------------------------
-            1.555585 :   9.17D-02 |   1.01D-09  9.17D-02
-            1.555585 :   9.17D-02 |   1.01D-09  9.17D-02
-            1.555585 :   9.17D-02 |   1.01D-09  9.17D-02
-            1.632468 :   3.95D-02 |   1.45D-02  3.67D-02
-            1.632468 :   3.95D-02 |   1.45D-02  3.67D-02
-            1.632468 :   3.95D-02 |   1.45D-02  3.67D-02
-========================================================
-* It.  3   2.00000000s  (LL       )     [  6]     [  6]
---------------------------------------------------------
-            1.555585 :   2.15D-02 |   4.14D-10  2.15D-02
-            1.555585 :   2.15D-02 |   3.82D-10  2.15D-02
-            1.555585 :   2.15D-02 |   3.88D-10  2.15D-02
-            1.632468 :   3.86D-03 |   1.90D-03  3.36D-03
-            1.632468 :   3.86D-03 |   1.90D-03  3.36D-03
-            1.632468 :   3.86D-03 |   1.90D-03  3.36D-03
-========================================================
-* It.  4   2.00000000s  (LL       )     [  6]     [  6]
---------------------------------------------------------
-            1.555585 :   1.34D-03 |   2.77D-10  1.34D-03
-            1.555585 :   1.34D-03 |   5.90D-10  1.34D-03
-            1.555585 :   1.34D-03 |   8.25D-10  1.34D-03
-            1.632468 :   5.19D-05 |   3.95D-05  3.36D-05
-            1.632468 :   5.19D-05 |   3.95D-05  3.36D-05
-            1.632468 :   5.19D-05 |   3.95D-05  3.36D-05
-========================================================
-* It.  5   1.00000000s  (LL       )     [  6]     [  6]
---------------------------------------------------------
-            1.555585 :   2.60D-05 |   1.09D-09  2.60D-05
-            1.555585 :   2.60D-05 |   1.32D-08  2.60D-05
-            1.555585 :   2.60D-05 |   1.83D-09  2.60D-05
-            1.632468 :   6.59D-07 |   2.50D-07  6.10D-07
-            1.632468 :   6.63D-07 |   2.58D-07  6.11D-07
-            1.632468 :   8.70D-07 |   6.18D-07  6.12D-07
-========================================================
-* It.  6   2.00000000s  (LL       )     [  3]     [  3]
---------------------------------------------------------
-            1.555585 :   5.34D-07 |   1.72D-08  5.34D-07
-            1.555585 :   5.43D-07 |   8.96D-08  5.36D-07
-            1.555585 :   5.46D-07 |   1.04D-07  5.36D-07
-            1.632468 :   6.59D-07 |   2.50D-07  6.10D-07
-            1.632468 :   6.64D-07 |   2.59D-07  6.11D-07
-            1.632468 :   8.71D-07 |   6.19D-07  6.13D-07
+            1.560452 :   9.15D-02 |   4.03D-04  9.15D-02
+            1.560452 :   9.15D-02 |   4.03D-04  9.15D-02
+            1.560452 :   9.15D-02 |   4.03D-04  9.15D-02
+            1.660165 :   5.95D-02 |   3.28D-02  4.96D-02
+            1.660165 :   5.95D-02 |   3.28D-02  4.96D-02
+            1.660253 :   5.94D-02 |   3.27D-02  4.96D-02
 ========================================================
 
 
@@ -1228,23 +1038,23 @@ SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
  *** Excitations of boson symmetry 1 : A  
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     1.55558492 a.u.    5.34D-07 (converged)
-                                             42.3296 eV
+ Excitation no.   1 excitation energy     1.56045164 a.u.    9.15D-02 (converged)
+                                             42.4620 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     1.55558492 a.u.    5.43D-07 (converged)
-                                             42.3296 eV
+ Excitation no.   2 excitation energy     1.56045164 a.u.    9.15D-02 (converged)
+                                             42.4620 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     1.55558492 a.u.    5.46D-07 (converged)
-                                             42.3296 eV
+ Excitation no.   3 excitation energy     1.56045164 a.u.    9.15D-02 (converged)
+                                             42.4620 eV
 --------------------------------------------------------------------------------
- Excitation no.   4 excitation energy     1.63246771 a.u.    6.60D-07 (converged)
-                                             44.4217 eV
+ Excitation no.   4 excitation energy     1.66016503 a.u.    5.94D-02 (converged)
+                                             45.1754 eV
 --------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     1.63246771 a.u.    6.63D-07 (converged)
-                                             44.4217 eV
+ Excitation no.   5 excitation energy     1.66016503 a.u.    5.94D-02 (converged)
+                                             45.1754 eV
 --------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     1.63246771 a.u.    8.71D-07 (converged)
-                                             44.4217 eV
+ Excitation no.   6 excitation energy     1.66025277 a.u.    5.94D-02 (converged)
+                                             45.1778 eV
 ================================================================================
 
 
@@ -1256,23 +1066,23 @@ SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
  *** Excitations of boson symmetry 1 : A  
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     1.55558492 a.u.    5.34D-07 (converged)
-                                             42.3296 eV
+ Excitation no.   1 excitation energy     1.56045164 a.u.    9.15D-02 (converged)
+                                             42.4620 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     1.55558492 a.u.    5.43D-07 (converged)
-                                             42.3296 eV
+ Excitation no.   2 excitation energy     1.56045164 a.u.    9.15D-02 (converged)
+                                             42.4620 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     1.55558492 a.u.    5.46D-07 (converged)
-                                             42.3296 eV
+ Excitation no.   3 excitation energy     1.56045164 a.u.    9.15D-02 (converged)
+                                             42.4620 eV
 --------------------------------------------------------------------------------
- Excitation no.   4 excitation energy     1.63246771 a.u.    6.60D-07 (converged)
-                                             44.4217 eV
+ Excitation no.   4 excitation energy     1.66016503 a.u.    5.94D-02 (converged)
+                                             45.1754 eV
 --------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     1.63246771 a.u.    6.63D-07 (converged)
-                                             44.4217 eV
+ Excitation no.   5 excitation energy     1.66016503 a.u.    5.94D-02 (converged)
+                                             45.1754 eV
 --------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     1.63246771 a.u.    8.71D-07 (converged)
-                                             44.4217 eV
+ Excitation no.   6 excitation energy     1.66025277 a.u.    5.94D-02 (converged)
+                                             45.1778 eV
 ================================================================================
 
 
@@ -1285,102 +1095,102 @@ SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       1.00000000     0.26710440     0.28655593     0.27861686     0.27497059     0.25295408
-       2       0.00000000     1.00000000     0.97204311     0.94825148     0.93584645     0.73334264
-       3       0.00000000     0.00000000     1.00000000     0.97553018     0.96276851     0.82713315
-       4       0.00000000     0.00000000     0.00000000     1.00000000     0.88182665     0.80736315
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.79680139
+       1       1.00000000     0.26713839     0.28662743     0.27680601     0.27744497     0.25284774
+       2       0.00000000     1.00000000     0.97206184     0.94186981     0.94404409     0.73314420
+       3       0.00000000     0.00000000     1.00000000     0.96894580     0.97118259     0.82685396
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.88451207     0.80164383
+       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.80349441
        6       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
                Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
-       1       0.24618018     0.24434157     0.25086601     0.11075356     0.11065767     0.10937010
-       2       0.71442427     0.70908801     0.81465671     0.91058108     0.90979263     0.89920449
-       3       0.80557602     0.79955889     0.85670416     0.85893669     0.85819296     0.84820531
-       4       0.77064296     0.79409930     0.83623470     0.84779813     0.83459785     0.84758020
-       5       0.79457685     0.75317203     0.82529505     0.81848043     0.82571445     0.79082138
-       6       0.97343676     0.96616581     0.94339096     0.49197353     0.49154755     0.48582692
-       7       1.00000000     0.88373791     0.91818261     0.47549955     0.48085596     0.46056421
-       8       0.00000000     1.00000000     0.91132441     0.48053319     0.47336983     0.48203667
-       9       0.00000000     0.00000000     1.00000000     0.56992836     0.56943487     0.56280782
-      10       0.00000000     0.00000000     0.00000000     1.00000000     0.88458027     0.96959263
-      11       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.89062026
+       1       0.24640238     0.24374507     0.25081631     0.11121949     0.11005834     0.11007079
+       2       0.71517707     0.70746324     0.81455523     0.91445181     0.90490503     0.90501885
+       3       0.80637115     0.79767367     0.85653655     0.86267490     0.85366868     0.85377606
+       4       0.81653688     0.73390367     0.83042841     0.83547922     0.82782736     0.83290145
+       5       0.74813391     0.81754755     0.83234543     0.84256070     0.82229234     0.83061766
+       6       0.97472552     0.96421217     0.94341709     0.49388308     0.48872700     0.48878840
+       7       1.00000000     0.88276170     0.91942420     0.47461883     0.48553623     0.47867499
+       8       0.00000000     1.00000000     0.90950736     0.48884366     0.45913545     0.47020320
+       9       0.00000000     0.00000000     1.00000000     0.57230145     0.56632668     0.56639785
+      10       0.00000000     0.00000000     0.00000000     1.00000000     0.88288601     0.93903227
+      11       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.92359083
       12       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
                Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
-       1       0.10950224     0.11019946     0.50225670     0.48937569     0.48418998     0.59621247
-       2       0.90029250     0.90602554     0.78867007     0.76851816     0.76037541     0.74733992
-       3       0.84923163     0.85463953     0.85865548     0.83677687     0.82791093     0.76995582
-       4       0.80084086     0.84122441     0.83717606     0.79630649     0.82693138     0.75048370
-       5       0.84536767     0.82016994     0.82622417     0.82837549     0.77300846     0.74066539
-       6       0.48641476     0.48951225     0.66543403     0.64845124     0.64158065     0.63786906
-       7       0.49117806     0.47433723     0.64820119     0.66468129     0.58779953     0.62155028
-       8       0.45374485     0.47714236     0.64335957     0.59054695     0.66431854     0.61690780
-       9       0.56348879     0.56707707     0.60430354     0.58890310     0.58266343     0.62104005
-      10       0.91326149     0.91791997     0.70832532     0.67945255     0.69549666     0.60871250
-      11       0.94183780     0.96305254     0.70771200     0.69632624     0.67290323     0.60818544
-      12       0.87695157     0.89085515     0.69947567     0.66052659     0.69390837     0.60110747
-      13       1.00000000     0.89292257     0.70032201     0.70510661     0.65076450     0.60183474
-      14       0.00000000     1.00000000     0.70478165     0.68606350     0.68173531     0.60566718
-      15       0.00000000     0.00000000     1.00000000     0.97465806     0.96433112     0.87835478
-      16       0.00000000     0.00000000     0.00000000     1.00000000     0.88283397     0.85614205
-      17       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.84707082
+       1       0.11042336     0.11012579     0.50226138     0.48882428     0.48503786     0.59621205
+       2       0.90790786     0.90545704     0.78867159     0.76764665     0.76170057     0.74737113
+       3       0.85650150     0.85418941     0.85871174     0.83588116     0.82940656     0.77003666
+       4       0.84522327     0.80739680     0.83158075     0.79804358     0.81115394     0.74549737
+       5       0.81405485     0.84495607     0.83350044     0.82317870     0.79576601     0.74721831
+       6       0.49034879     0.48902513     0.66531054     0.64759424     0.64257808     0.63768930
+       7       0.48362145     0.47140296     0.64893896     0.63474592     0.62100661     0.62219778
+       8       0.47024174     0.47654819     0.64193959     0.61966399     0.62708253     0.61548692
+       9       0.56820596     0.56667217     0.60430492     0.58823536     0.58367896     0.62098704
+      10       0.93029893     0.95142963     0.71128822     0.67338735     0.71028277     0.61127050
+      11       0.95297944     0.92060135     0.70386245     0.70387372     0.65650570     0.60488889
+      12       0.90351811     0.90173620     0.70395071     0.68694520     0.67768956     0.60496468
+      13       1.00000000     0.89592910     0.70619813     0.68291845     0.68099605     0.60689608
+      14       0.00000000     1.00000000     0.70429184     0.69073691     0.68081565     0.60525797
+      15       0.00000000     0.00000000     1.00000000     0.97355086     0.96600989     0.87836070
+      16       0.00000000     0.00000000     0.00000000     1.00000000     0.88367332     0.85517523
+      17       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.84855113
       18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
                Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-       1       0.84347244     0.81272012     0.82285869     0.84157493     0.86416706     0.68502577
-       2       0.49976622     0.48102361     0.48702051     0.47340015     0.31825772     0.21049306
-       3       0.55159369     0.53099629     0.53761469     0.51815243     0.29677515     0.15100676
-       4       0.53717975     0.48825079     0.54779162     0.50459229     0.28885354     0.14693758
-       5       0.53015161     0.54688138     0.48769666     0.49799045     0.28507379     0.14501506
-       6       0.44988775     0.43312095     0.43851951     0.43579622     0.25486195     0.13095168
-       7       0.43809500     0.42540937     0.42419637     0.42445576     0.24812471     0.12745967
-       8       0.43482281     0.41660410     0.42446381     0.42128550     0.24627162     0.12650784
-       9       0.42654186     0.41056907     0.41568783     0.41088254     0.28645271     0.19317873
-      10       0.36674627     0.35223160     0.35873902     0.33542518     0.16515449     0.07794559
-      11       0.36642872     0.35005191     0.35834589     0.33513475     0.16501149     0.07787810
-      12       0.36216440     0.34332318     0.35682667     0.33123458     0.16309133     0.07697191
-      13       0.36260247     0.36063450     0.34288412     0.33163529     0.16328849     0.07706494
-      14       0.36491147     0.34504183     0.36165345     0.33374708     0.16432822     0.07755562
-      15       0.68939147     0.66387306     0.67214837     0.68626201     0.43587880     0.23133559
-      16       0.67188365     0.65540916     0.64871925     0.66891890     0.42469729     0.22534525
-      17       0.66476411     0.63304470     0.65236079     0.66183157     0.42019749     0.22295765
-      18       0.61254718     0.58983050     0.59718602     0.70742507     0.56686182     0.41383744
-      19       1.00000000     0.96325934     0.97527031     0.84331746     0.68797744     0.42953801
-      20       0.00000000     1.00000000     0.88216020     0.81237936     0.66286249     0.41384945
-      21       0.00000000     0.00000000     1.00000000     0.82251029     0.67113274     0.41902033
-      22       0.00000000     0.00000000     0.00000000     1.00000000     0.72369297     0.61095473
-      23       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.73739998
+       1       0.84347104     0.81816841     0.81880388     0.84157268     0.86416865     0.68502869
+       2       0.49980128     0.48427918     0.48465552     0.47343646     0.31828740     0.21051476
+       3       0.55168217     0.53463679     0.53505237     0.51823832     0.29682933     0.15103493
+       4       0.53364037     0.51891704     0.51339049     0.50127034     0.28695677     0.14597337
+       5       0.53487225     0.51519869     0.52362890     0.50242748     0.28761915     0.14631026
+       6       0.44974535     0.43588251     0.43622132     0.43564775     0.25477251     0.13090538
+       7       0.43853613     0.44003373     0.40940797     0.42487286     0.24836597     0.12758327
+       8       0.43380635     0.40325538     0.43946350     0.42029039     0.24568762     0.12620744
+       9       0.42649393     0.41327256     0.41359370     0.41082933     0.28640958     0.19314700
+      10       0.36829099     0.35037668     0.36593875     0.33683882     0.16585081     0.07827421
+      11       0.36444606     0.35864757     0.34501871     0.33332224     0.16411932     0.07745701
+      12       0.36449060     0.35382925     0.35020637     0.33336359     0.16413846     0.07746560
+      13       0.36565530     0.35069720     0.35894215     0.33442824     0.16466374     0.07771392
+      14       0.36466859     0.35629044     0.35148233     0.33352571     0.16421974     0.07750446
+      15       0.68939871     0.66832508     0.66884454     0.68627215     0.43588547     0.23133889
+      16       0.67112742     0.67617561     0.62496199     0.66816885     0.42422130     0.22509244
+      17       0.66592900     0.61791695     0.67541843     0.66299321     0.42093497     0.22334853
+      18       0.61254858     0.59378435     0.59424565     0.70742784     0.56686293     0.41383791
+      19       1.00000000     0.96971272     0.97046627     0.84331780     0.68797849     0.42953849
+      20       0.00000000     1.00000000     0.88458255     0.81782359     0.66730941     0.41663313
+      21       0.00000000     0.00000000     1.00000000     0.81845890     0.66782756     0.41695645
+      22       0.00000000     0.00000000     0.00000000     1.00000000     0.72369209     0.61095383
+      23       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.73739985
       24       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
                Column  25     Column  26
-       1       0.42746119     0.19469886
-       2       0.12269579     0.05429618
-       3       0.06789439     0.02499591
-       4       0.06606020     0.02432100
-       5       0.06519574     0.02400278
-       6       0.05902800     0.02172314
-       7       0.05744962     0.02114241
-       8       0.05702072     0.02098458
-       9       0.11417555     0.05091569
-      10       0.03443084     0.01274677
-      11       0.03440103     0.01273573
-      12       0.03400077     0.01258754
-      13       0.03404185     0.01260275
-      14       0.03425858     0.01268299
-      15       0.10477550     0.03843372
-      16       0.10205255     0.03743477
-      17       0.10097194     0.03703847
-      18       0.25880339     0.11889847
-      19       0.20669317     0.07603208
-      20       0.19913980     0.07325252
-      21       0.20163046     0.07416951
-      22       0.41052163     0.19688881
-      23       0.57229565     0.30104914
-      24       0.74048340     0.46444672
-      25       1.00000000     0.69967209
+       1       0.42746366     0.19470016
+       2       0.12270924     0.05430233
+       3       0.06790705     0.02500055
+       4       0.06562672     0.02416140
+       5       0.06577815     0.02421714
+       6       0.05900712     0.02171547
+       7       0.05750532     0.02116292
+       8       0.05688546     0.02093482
+       9       0.11415605     0.05090684
+      10       0.03457599     0.01280050
+      11       0.03421500     0.01266686
+      12       0.03421874     0.01266824
+      13       0.03432847     0.01270886
+      14       0.03423600     0.01267463
+      15       0.10477692     0.03843424
+      16       0.10193799     0.03739274
+      17       0.10114786     0.03710285
+      18       0.25880375     0.11889869
+      19       0.20669331     0.07603212
+      20       0.20048167     0.07374692
+      21       0.20063710     0.07380407
+      22       0.41052099     0.19688854
+      23       0.57229537     0.30104899
+      24       0.74048335     0.46444667
+      25       1.00000000     0.69967208
       26       0.00000000     1.00000000
- trace (should be nr of orbitals):   26.0000000000249     
- trace/nr of orbitals (should be very close to 1):   1.00000000000096     
+ trace (should be nr of orbitals):   26.0000000000246     
+ trace/nr of orbitals (should be very close to 1):   1.00000000000095     
 
     * Orbital classes:
     Fermion ircop:E1 
@@ -1388,164 +1198,144 @@ SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    26                                          
 ** E solution vectors : PP EXCITATIONA   Irrep: A   Trev:   1 Length:        105
- Freq.:   1.555585 Norm:   0.70771449E+00 Residual norm:   0.53E-06
+ Freq.:   1.560452 Norm:   0.70759248E+00 Residual norm:   0.91E-01
    Dominant inactive orbitals:
-     4(E1 ) 34.20%
-     5(E1 ) 33.74%
-     3(E1 ) 31.80%
+     3(E1 ) 34.32%
+     4(E1 ) 34.13%
+     5(E1 ) 31.52%
    Dominant virtual orbitals:
-     6(E1 ) 34.57%
-     7(E1 ) 32.78%
-     8(E1 ) 32.39%
+     8(E1 ) 34.15%
+     6(E1 ) 33.68%
+     7(E1 ) 32.13%
    Excitation amplitudes larger than threshold   0.69E-01
 
-        4(i:E1 ) --->      6(v:E1 )  0.32435646E+00
-        3(i:E1 ) --->      8(v:E1 )  0.29865618E+00
-        5(i:E1 ) --->      7(v:E1 )  0.26152626E+00
-        3(i:E1 ) --->      7(v:E1 )  0.22743726E+00
-        5(i:E1 ) --->      8(v:E1 )  0.22576311E+00
-        5(i:E1 ) --->      6(v:E1 )  0.22276220E+00
-        4(i:E1 ) --->      7(v:E1 )  0.20990545E+00
-        4(i:E1 ) --->      8(v:E1 )  0.14845598E+00
-        3(i:E1 ) --->      6(v:E1 )  0.13541260E+00
+        4(i:E1 ) --->      6(v:E1 )  0.33376195E+00
+        3(i:E1 ) --->      8(v:E1 )  0.32515913E+00
+        5(i:E1 ) --->      7(v:E1 )  0.26154985E+00
+        3(i:E1 ) --->      7(v:E1 )  0.25711975E+00
+        5(i:E1 ) --->      6(v:E1 )  0.23928777E+00
+        4(i:E1 ) --->      8(v:E1 )  0.18194915E+00
+        5(i:E1 ) --->      8(v:E1 )  0.17929201E+00
+        4(i:E1 ) --->      7(v:E1 )  0.16234663E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.79441
- Freq.:   1.555585 Norm:   0.70771449E+00 Residual norm:   0.54E-06
+     lambda =  0.79166
+ Freq.:   1.560452 Norm:   0.70759248E+00 Residual norm:   0.91E-01
    Dominant inactive orbitals:
-     5(E1 ) 34.24%
-     4(E1 ) 33.70%
-     3(E1 ) 31.80%
+     3(E1 ) 34.32%
+     4(E1 ) 34.05%
+     5(E1 ) 31.59%
    Dominant virtual orbitals:
-     6(E1 ) 34.57%
-     8(E1 ) 33.21%
-     7(E1 ) 31.96%
+     7(E1 ) 35.98%
+     6(E1 ) 33.68%
+     8(E1 ) 30.29%
    Excitation amplitudes larger than threshold   0.69E-01
 
-        3(i:E1 ) --->      7(v:E1 )  0.36024964E+00
-        5(i:E1 ) --->      6(v:E1 )  0.33112621E+00
-        4(i:E1 ) --->      8(v:E1 )  0.31237960E+00
-        5(i:E1 ) --->      8(v:E1 )  0.24000956E+00
-        4(i:E1 ) --->      6(v:E1 )  0.21256892E+00
-        4(i:E1 ) --->      7(v:E1 )  0.16135767E+00
-        3(i:E1 ) --->      6(v:E1 )  0.13541260E+00
-        3(i:E1 ) --->      8(v:E1 )  0.10556240E+00
+        3(i:E1 ) --->      7(v:E1 )  0.37652368E+00
+        4(i:E1 ) --->      6(v:E1 )  0.33149138E+00
+        5(i:E1 ) --->      8(v:E1 )  0.29972726E+00
+        5(i:E1 ) --->      6(v:E1 )  0.24242347E+00
+        4(i:E1 ) --->      8(v:E1 )  0.17826324E+00
+        3(i:E1 ) --->      8(v:E1 )  0.17340400E+00
+        4(i:E1 ) --->      7(v:E1 )  0.16979588E+00
+        5(i:E1 ) --->      7(v:E1 )  0.97831590E-01
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.79432
- Freq.:   1.555585 Norm:   0.70771449E+00 Residual norm:   0.55E-06
+     lambda =  0.80135
+ Freq.:   1.560452 Norm:   0.70759248E+00 Residual norm:   0.91E-01
    Dominant inactive orbitals:
-     5(E1 ) 34.17%
-     4(E1 ) 33.77%
-     3(E1 ) 31.80%
+     5(E1 ) 35.37%
+     3(E1 ) 34.32%
+     4(E1 ) 30.27%
    Dominant virtual orbitals:
-     6(E1 ) 34.57%
-     8(E1 ) 33.19%
-     7(E1 ) 31.97%
+     8(E1 ) 35.00%
+     6(E1 ) 33.68%
+     7(E1 ) 31.28%
    Excitation amplitudes larger than threshold   0.69E-01
 
-        3(i:E1 ) --->      7(v:E1 )  0.35799227E+00
-        5(i:E1 ) --->      6(v:E1 )  0.31873299E+00
-        4(i:E1 ) --->      8(v:E1 )  0.30049195E+00
-        5(i:E1 ) --->      8(v:E1 )  0.25136261E+00
-        4(i:E1 ) --->      6(v:E1 )  0.23073664E+00
-        4(i:E1 ) --->      7(v:E1 )  0.16001252E+00
-        3(i:E1 ) --->      6(v:E1 )  0.13541260E+00
-        3(i:E1 ) --->      8(v:E1 )  0.11298122E+00
-        5(i:E1 ) --->      7(v:E1 )  0.79886528E-01
+        5(i:E1 ) --->      6(v:E1 )  0.37051604E+00
+        3(i:E1 ) --->      8(v:E1 )  0.34996009E+00
+        4(i:E1 ) --->      7(v:E1 )  0.28990519E+00
+        3(i:E1 ) --->      7(v:E1 )  0.22218677E+00
+        4(i:E1 ) --->      8(v:E1 )  0.19014778E+00
+        4(i:E1 ) --->      6(v:E1 )  0.17712578E+00
+        5(i:E1 ) --->      7(v:E1 )  0.15229247E+00
+        5(i:E1 ) --->      8(v:E1 )  0.12892507E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.79404
- Freq.:   1.632468 Norm:   0.70718386E+00 Residual norm:   0.66E-06
+     lambda =  0.79731
+ Freq.:   1.660165 Norm:   0.70713596E+00 Residual norm:   0.59E-01
    Dominant inactive orbitals:
-     3(E1 ) 44.98%
-     5(E1 ) 38.06%
-     4(E1 ) 16.95%
+     5(E1 ) 95.04%
+     4(E1 )  4.96%
    Dominant virtual orbitals:
-     6(E1 ) 55.00%
-     8(E1 ) 27.06%
-     7(E1 ) 17.93%
+     6(E1 )100.00%
    Excitation amplitudes larger than threshold   0.69E-01
 
-        5(i:E1 ) --->      6(v:E1 )  0.43624752E+00
-        3(i:E1 ) --->      8(v:E1 )  0.36785720E+00
-        3(i:E1 ) --->      7(v:E1 )  0.29940176E+00
-        4(i:E1 ) --->      6(v:E1 )  0.29115269E+00
+        5(i:E1 ) --->      6(v:E1 )  0.68938470E+00
+        4(i:E1 ) --->      6(v:E1 )  0.15744839E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.80091
- Freq.:   1.632468 Norm:   0.70718386E+00 Residual norm:   0.66E-06
+     lambda =  0.80340
+ Freq.:   1.660165 Norm:   0.70713596E+00 Residual norm:   0.59E-01
    Dominant inactive orbitals:
-     3(E1 ) 44.98%
-     5(E1 ) 43.44%
-     4(E1 ) 11.57%
+     4(E1 ) 94.97%
+     5(E1 )  5.03%
    Dominant virtual orbitals:
-     6(E1 ) 55.00%
-     8(E1 ) 28.52%
-     7(E1 ) 16.47%
+     6(E1 )100.00%
    Excitation amplitudes larger than threshold   0.69E-01
 
-        5(i:E1 ) --->      6(v:E1 )  0.46608004E+00
-        3(i:E1 ) --->      8(v:E1 )  0.37767003E+00
-        3(i:E1 ) --->      7(v:E1 )  0.28692452E+00
-        4(i:E1 ) --->      6(v:E1 )  0.24052274E+00
+        4(i:E1 ) --->      6(v:E1 )  0.68912020E+00
+        5(i:E1 ) --->      6(v:E1 )  0.15860206E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.80026
- Freq.:   1.632468 Norm:   0.70718386E+00 Residual norm:   0.87E-06
+     lambda =  0.80174
+ Freq.:   1.660253 Norm:   0.70713613E+00 Residual norm:   0.59E-01
    Dominant inactive orbitals:
-     4(E1 ) 48.62%
-     3(E1 ) 44.98%
-     5(E1 )  6.39%
+     5(E1 ) 92.19%
+     4(E1 )  7.81%
    Dominant virtual orbitals:
-     6(E1 ) 55.00%
-     8(E1 ) 37.89%
-     7(E1 )  7.10%
+     6(E1 )100.00%
    Excitation amplitudes larger than threshold   0.69E-01
 
-        4(i:E1 ) --->      6(v:E1 )  0.49309231E+00
-        3(i:E1 ) --->      8(v:E1 )  0.43528615E+00
-        3(i:E1 ) --->      7(v:E1 )  0.18837809E+00
-        5(i:E1 ) --->      6(v:E1 )  0.17872259E+00
+        5(i:E1 ) --->      6(v:E1 )  0.67895800E+00
+        4(i:E1 ) --->      6(v:E1 )  0.19762980E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.80361
+     lambda =  0.80335
 
  
-     Date and time (Linux)  : Tue Jan 11 12:09:25 2011
+     Date and time (Linux)  : Tue Feb 22 22:10:37 2011
      Host name              :                                         
- MEMGET high-water mark:     3.68 MB
- F90 allocated memory not accounted for
-*****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         2.85
+  Mean allocation size (Mb) :         3.04
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine main+0x51                                  for work array at main                        
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
-        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+      487.60 Mb at subroutine                                            for work array at main                        
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
   
-  Peak memory usage    (Mb) :       519.00
-       reached at subroutine : xc_driver_mp_xc_integrator_+0x1eea        
+  Peak memory usage    (Mb) :       518.00
+       reached at subroutine :                                           
               for variable   : unnamed variable                          
   
   Memory possibly left allocated! 
@@ -1560,9 +1350,9 @@ SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
                kind                   :            8
                tot.dim. (<1 if array) :          104
                was allocated at       : 
- unknown                                                                        
+                                                                                
                                                       
-               mem.addr. (as integer) :    284184560
+               mem.addr. (as integer) :    279143400
       >>> (de)allocated data details <<<
           var. name                   : 
  unnamed variable                                                               
@@ -1570,12 +1360,15 @@ SOfock:LL  3.70D-08   30.64%   44.05%    0.00%    0.00%   0.00000000s
                kind                   :            8
                tot.dim. (<1 if array) :          676
                was allocated at       : 
- unknown                                                                        
+                                                                                
                                                       
-               mem.addr. (as integer) :    284214896
+               mem.addr. (as integer) :    279114216
       >>> Done after           2  el.
   
-  There were          208  allocations/           206  deallocations
+  There were          194  allocations/           192  deallocations
       Current memory usage (in Mb) is   0.000000000000000E+000
->>>> Node 0, utime: 15, stime: 1, minflt: 155789, majflt: 0, nvcsw: 99, nivcsw: 2090, maxrss: 550652
->>>> Total WALL time used in DIRAC: 15s
+ MEMGET high-water mark:     3.68 MB
+
+*****************************************************
+>>>> Node 0, utime: 6, stime: 0, minflt: 153587, majflt: 0, nvcsw: 1, nivcsw: 1096, maxrss: 545724
+>>>> Total WALL time used in DIRAC: 8s
