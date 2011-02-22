@@ -156,7 +156,11 @@ def get_hostname_ip():
 
 def children_pid(pid):
     """
-    get the list of the children pids of a pid (linux only)
+    get the list of the children pids of the entering pid (linux only)
+    windows solution: http://mail.python.org/pipermail/python-win32/2005-March/002991.html
+    http://web.archiveorange.com/archive/v/MFLkXe0JXTy7BRtHxfbo    
+    see also:
+    http://www.damonkohler.com/2008/03/how-to-check-if-process-is-still.html
     """
     import subprocess as SP
     proc = SP.Popen('ps -o pid,ppid ax | grep "%d"' % pid, shell=True, stdout=SP.PIPE)
