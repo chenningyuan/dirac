@@ -1420,8 +1420,9 @@ class pam_enviroment:
 
                 if self.iprint > 0:
                     print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
-                    if self.dirac_children_pid:
-                        print ' info: associated children PIDs:',self.dirac_children_pid
+                    if self.dirac_children_pid and self.iprint > 2:
+                        print '  info: associated children PIDs:',\
+                          self.dirac_children_pid
 
                 # get stderr stream to be properly distributed
                 self.dirac_stderr = self.dirac_p.communicate()[1] 
@@ -1468,7 +1469,8 @@ class pam_enviroment:
             if self.dirac_children_pid:
                 for child_pid in self.dirac_children_pid:
                     # TODO: verify existence of the process first ?
-                    os.kill(child_pid, signal.SIGTERM)
+                    #os.kill(child_pid, signal.SIGTERM)
+                    pass
             if self.set_timeout_limit:
                for stream in [sys.stdout,sys.stderr]:
                    print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
