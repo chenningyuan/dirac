@@ -1414,13 +1414,14 @@ class pam_enviroment:
               # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html  
                 self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
+              #  get the list of children's processes
                 from common import children_pid
                 self.dirac_children_pid=children_pid(self.dirac_p.pid)
 
                 if self.iprint > 0:
                     print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
                     if self.dirac_children_pid:
-                        print '  Warning ! Associated children PIDs:',self.dirac_children_pid
+                        print ' info: associated children PIDs:',self.dirac_children_pid
 
                 # get stderr stream to be properly distributed
                 self.dirac_stderr = self.dirac_p.communicate()[1] 
@@ -1463,9 +1464,10 @@ class pam_enviroment:
 
             # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
             os.kill(self.dirac_p.pid, signal.SIGTERM)
-            # miro: - kill child's processes  when they are present
+            # miro: - kill child's processes (if they are present)
             if self.dirac_children_pid:
                 for child_pid in self.dirac_children_pid:
+                    # TODO: verify existence of the process first ?
                     os.kill(child_pid, signal.SIGTERM)
             if self.set_timeout_limit:
                for stream in [sys.stdout,sys.stderr]:

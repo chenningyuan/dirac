@@ -161,6 +161,7 @@ def children_pid(pid):
     http://web.archiveorange.com/archive/v/MFLkXe0JXTy7BRtHxfbo    
     see also:
     http://www.damonkohler.com/2008/03/how-to-check-if-process-is-still.html
+    http://stackoverflow.com/questions/4669754/python-kill-all-processes-owned-by-user
     """
     import subprocess as SP
     proc = SP.Popen('ps -o pid,ppid ax | grep "%d"' % pid, shell=True, stdout=SP.PIPE)
