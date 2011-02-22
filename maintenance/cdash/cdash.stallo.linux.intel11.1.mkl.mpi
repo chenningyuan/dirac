@@ -16,7 +16,7 @@ git svn rebase
 git clone /home/bast/dirac/git-svn-trunk $TMP_DIR
 
 cd $TMP_DIR
-./pamadm -a
+./pamadm -a --xcfun
 
 # yes | cp $TMP_DIR/cmake/Tests_short.cmake $TMP_DIR/cmake/Tests.cmake
 

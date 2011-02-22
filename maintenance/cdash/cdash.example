@@ -15,7 +15,7 @@ svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 
 # pamadm step
 cd $TMP_DIR
-./pamadm -a
+./pamadm -a --xcfun
 
 # set environment (you may or may not need it for your compiler)
 # export PATH=$PATH':/home/bast/openmpi/bin'
