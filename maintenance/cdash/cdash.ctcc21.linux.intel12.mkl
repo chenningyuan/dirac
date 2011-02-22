@@ -21,6 +21,5 @@ ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
 make Nightly
 
 rm -rf $TMP_DIR
-killall -9 dirac.x
 
 exit 0
