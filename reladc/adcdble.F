@@ -361,11 +361,12 @@ c
 
         write(iw,*) 'memchk after build_sat'
 
-C  call generalized configuration generation routine
-C  suitable for single and double ionization!
+C  call 2h/3h1p configuration creator, file handle is available after
+C  call
 C
         LADC = NOOT(DESREP) + LENSATBL
-        CALL WHOLECNF(ITAPADC,NAME3,IRECL,DESREP,EPS,IONIZLEVEL)
+        CALL WCONDAT(ITAPADC,NAME3,IRECL,DESREP,LADC,EPS,IONIZLEVEL)
+        WRITE(IW,*) 'Record length as determined by WCONDAT:',IRECL
 C
 C  write general matrix control file and perform Lanczos diagonalization
 C  for each symmetry immediately.

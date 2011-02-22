@@ -117,7 +117,7 @@ c
       CARITH=.FALSE.
       IF(RCW.EQ.2) CARITH=.TRUE.
 
-      CALL PST('    Matrix attributes for this diagrun:+')
+      CALL PST('    Interfacing iterative diagonalizer+')
 
       WRITE(IW,*)
       WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP):      ',IONIZLEVEL
@@ -180,8 +180,6 @@ C
 
       IF(CARITH.EQV..TRUE.) THEN
 
-        CALL PST('Entering (complex) LANCZOS routine+')
-
         CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
      &          CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
@@ -191,8 +189,6 @@ C
          CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
 
       ELSE
-
-        CALL PST('Entering (real) LANCZOS routine+')
 
         CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
      &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
@@ -370,13 +366,19 @@ c
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
       ENDIF
 
-      WRITE(IW,*) ' Symmetry ',IRREP
-      WRITE(IW,*) ' Matrix dimension:',LADC
-      WRITE(IW,*) ' Band width:      ',NP
-      WRITE(IW,*) ' Number of iterations:',NITER
       IF(CFLAG) THEN
-        WRITE(IW,*) ' Number of requested eigenvectors         ',NEIGENV
-        WRITE(IW,*) ' Long eigenvectors stored in              ',LEVECFN
+        CALL PST('Entering real Lanczos for Eigenvectors+')
+      ELSE
+        CALL PST('Entering real Lanczos for Eigenvalues+')
+      ENDIF
+
+      WRITE(IW,'(A30,I7)') ' Symmetry:',IRREP
+      WRITE(IW,'(A30,I7)') ' Matrix dimension:',LADC
+      WRITE(IW,'(A30,I7)') ' Band width:',NP
+      WRITE(IW,'(A30,I7)') ' Number of iterations:',NITER
+      IF(CFLAG) THEN
+        WRITE(IW,'(A30,I7)') ' Requested eigenvectors:',NEIGENV
+c       WRITE(IW,'(A30,A)') ' Long eigenvectors in:',LEVECFN
       ENDIF
       WRITE(IW,*)
 c
@@ -402,8 +404,8 @@ c
         REWIND(IO_LAN)
         READ(IO_LAN) N1
         READ(IO_LAN) N2
-        WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
-        WRITE(IW,*) 'Reading TMATEVC.'
+        WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
+     &              N2,' on TMATVEC'
         IF(NEIGENV.gt.N1) THEN
           WRITE(*,*) 'More EVCs requested than available.'
           WRITE(*,*) 'Adjusting to the value given above.'
@@ -612,13 +614,19 @@ C
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',IRREP
       ENDIF
 
-      WRITE(IW,*) ' Symmetry ',IRREP
-      WRITE(IW,*) ' Matrix dimension:',LADC
-      WRITE(IW,*) ' Band width:      ',NP
-      WRITE(IW,*) ' Number of iterations:',NITER
       IF(CFLAG) THEN
-        WRITE(IW,*) ' Number of requested eigenvectors         ',NEIGENV
-        WRITE(IW,*) ' Long eigenvectors stored in              ',LEVECFN
+        CALL PST('Entering complex Lanczos for Eigenvectors+')
+      ELSE
+        CALL PST('Entering complex Lanczos for Eigenvalues+')
+      ENDIF
+
+      WRITE(IW,'(A30,I7)') ' Symmetry:',IRREP
+      WRITE(IW,'(A30,I7)') ' Matrix dimension:',LADC
+      WRITE(IW,'(A30,I7)') ' Band width:',NP
+      WRITE(IW,'(A30,I7)') ' Number of iterations:',NITER
+      IF(CFLAG) THEN
+        WRITE(IW,'(A30,I7)') ' Requested eigenvectors:',NEIGENV
+c       WRITE(IW,'(A30,A)') ' Long eigenvectors in:',LEVECFN
       ENDIF
       WRITE(IW,*)
 c
@@ -644,8 +652,8 @@ c
         REWIND(IO_LAN)
         READ(IO_LAN) N1
         READ(IO_LAN) N2
-        WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
-        WRITE(IW,*) 'Reading TMATEVC.'
+        WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
+     &              N2,' on TMATVEC'
         IF(NEIGENV.gt.N1) THEN
           WRITE(*,*) 'More EVCs requested than available.'
           WRITE(*,*) 'Adjusting to the value given above.'
@@ -826,8 +834,6 @@ c  only. in order to use the unmodified code we copy those components
 c  to the short vector array z(2*np,n)
 c
 c  the number N corresponds to the number of L-iterations == NITER
-c
-c  The array a, a1, b and IPIV  are needed for the numerical recipes routines. 
 c
 c  *** attention *** in the analysis some components of z are added
 c  together or multiplied by some scaling factor stemming from the
@@ -1072,7 +1078,7 @@ c
              ththr=z(iths,j)*z(iths,j)
              if(ththr.gt.0.0001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A,A22)')
+               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A,A11)')
      &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'   conf:',field
              endif
            ENDDO
@@ -1176,8 +1182,6 @@ c  to the short vector array z(2*np,n)
 c
 c  the number N corresponds to the number of L-iterations == NITER
 c  the number NEIGENV is the number of desired eigenvectors
-c
-c  The array a, a1, b and IPIV  are needed for the numerical recipes routines. 
 c
 c  *** attention *** in the analysis some components of z are added
 c  together or multiplied by some scaling factor stemming from the
@@ -1978,3 +1982,205 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WCONDAT(LUN,FILENAME,IRECL,DESREP,LENADCM,EPS,IZLEVEL)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Writes explicit irep names and spinor numbers for the various
+C     final state configurations belonging to  symmetry DESREP.
+C     Avoiding too complicated things we fix IRECL in this routine
+c     no matter which value is transferred to this routine. Therefore
+c     IRECL is an OUTPUT parameter.
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*6 FILENAME
+      INTEGER LUN,IRECL,DESREP,LENADCM,IZLEVEL
+      REAL*8  EPS(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER lcount
+      CHARACTER*44 FIELD44
+      INTEGER bl_conf
+      CHARACTER*4 bl_irna
+      
+C
+C---------------Executable code--------------------------------------
+C
+C  Do the hole space configuration analysis for the
+C  SIP and DIP case (determined by IZLEVEL). For this purpose the
+C  1h/2h1p configs are written into the direct access file in the SIP case
+C  and the
+C  2h/3h1p configs for the DIP case 
+C
+c
+c
+C
+c fix record length for the direct access file and set some
+c blank variables. Then open file and initialize configuration
+c counter.
+ 
+      IRECL = 44
+      BL_CONF = 0
+      BL_IRNA = '    '
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+      LCOUNT = 1
+
+C_________________________ SIPS ______________________________
+C|
+C|
+C|
+
+      IF(IZLEVEL.EQ.1) THEN
+
+        WRITE(IW,*) 'Writing SIP configs to ',FILENAME
+        WRITE(IW,*) 'Final state symmetry: ',DESREP
+
+c ** start with 1h configurations
+
+        DO k=1,no(DESREP)
+          koff=io(DESREP)+k
+          WRITE(FIELD44,381) 
+     &            k,repna(DESREP),
+     &            bl_conf,bl_irna,
+     &            bl_conf,bl_irna,
+     &            bl_conf,bl_irna 
+          WRITE(LUN,REC=lcount) FIELD44
+          lcount = lcount + 1
+        ENDDO
+
+c ** continue with 2h1p configurations
+
+        DO 60 KLREP=1,NREP
+          AREP=MULTB(DESREP,KLREP+NREP,2)
+          DO 45 LREP=1,NREP
+           KREP=MULTB(LREP,KLREP+NREP,2)
+           IF(KREP.LT.LREP) GOTO 45
+           DO L=1,NO(LREP)
+             LOFF=IO(LREP)+L
+             KMIN=1
+             IF(KREP.EQ.LREP) KMIN = L + 1
+             DO K=KMIN,NO(KREP)
+               KOFF=IO(KREP)+K
+               DO A=1,NV(AREP)
+                 AOFF=IO(NREP+1)+IV(AREP)+A
+                 WRITE(FIELD44,381) 
+     &             K,REPNA(KREP),
+     &             L,REPNA(LREP),
+     &             A,REPNA(AREP),
+     &             BL_CONF,BL_IRNA
+                 WRITE(LUN,REC=lcount) FIELD44
+                 LCOUNT=LCOUNT+1
+               ENDDO
+             ENDDO
+           ENDDO
+ 45       CONTINUE
+ 60     CONTINUE
+
+C ** file is open only within this subroutine
+
+        CLOSE(LUN)
+
+C ** correct configuration counter
+
+        LCOUNT = LCOUNT - 1
+        IF(LCOUNT.NE.LENADCM) THEN
+          WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,LENADCM
+          CALL QUIT('Error in WCONDAT for single ionizations')
+        ENDIF
+
+c ** SIP part is done. we return from this subroutine
+C|
+C|
+C|____________________________________________________________
+
+      ELSE IF(IZLEVEL.EQ.2) THEN
+
+C_________________________ DIPS ______________________________
+C|
+C|
+C|
+        WRITE(IW,*) 'Writing DIP configs to ',FILENAME
+        WRITE(IW,*) 'Final state symmetry: ',DESREP
+
+        DO 14 JRP = 1, NREP
+          IRP = MULTB(JRP,DESREP+NREP,2)
+          IF (IRP.LT.JRP) GOTO 14
+          DO J = 1, NO(JRP)
+            IMIN = 1
+            IF (IRP.EQ.JRP) IMIN = J + 1
+            DO I = IMIN, NO(IRP)
+c
+              WRITE(FIELD44,381)
+     &           I,REPNA(IRP),
+     &           J,REPNA(JRP),
+     &           BL_CONF,BL_IRNA,
+     &           BL_CONF,BL_IRNA 
+              WRITE(LUN,REC=LCOUNT) FIELD44
+              LCOUNT = LCOUNT + 1
+c
+            ENDDO
+          ENDDO
+  14    CONTINUE
+        IF( (LCOUNT-1).NE.NOOT(DESREP)) THEN
+          WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,NOOT(DESREP)
+          CALL QUIT('Error in WCONDAT for 2h configurations!')
+        ENDIF
+c|
+c| ATT** No 3h1p config information for the DIP case!
+c| This is because we will not calculate long eigenvectors
+c| belonging to the 3h1p case. This is only required for the
+c| SIP case! We therefore comment out original code.
+c|
+c|
+c       DO K=1,MAXOCCSP
+c         KSP = IROOO(K,1)
+c         KRP = IROOO(K,2)
+c         DO J=K+1,MAXOCCSP
+c           JSP = IROOO(J,1)
+c           JRP = IROOO(J,2)
+c           JKRP = MULTB(JRP,KRP,1)
+c           DO I=J+1,MAXOCCSP
+c             ISP = IROOO(I,1)
+c             IRP = IROOO(I,2)
+c             IJKRP = MULTB(IRP,JKRP+NREP,1)
+c             RRP = MULTB(DESREP+NREP,IJKRP,2)
+c             DO RSP = 1,NV(RRP)
+c
+c             WRITE(FIELD44,382) RSP,REPNA(RRP),ISP,REPNA(IRP),
+c    &                         JSP,REPNA(JRP),KSP,REPNA(KRP)
+c             WRITE(LUN,REC=LCOUNT) FIELD44
+c             LCOUNT = LCOUNT + 1
+c
+c             ENDDO
+c           ENDDO
+c         ENDDO
+c       ENDDO
+        CLOSE(LUN)
+C|
+C|
+C|____________________________________________________________
+
+      ELSE
+        CALL QUIT('Illegal tag in WCONDAT')
+      ENDIF
+
+ 381  FORMAT(4(I3,'(',A4,')  '))
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+
+
