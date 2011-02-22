@@ -52,6 +52,8 @@ if(DIRAC_ENABLE_TESTS)
             CACHE STRING "Name of build on the dashboard"
         )
     message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
+#   kill individual tests if they take more than 20 minutes
+    set(DART_TESTING_TIMEOUT 1200)
     include(CTest)
     enable_testing()
     if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
