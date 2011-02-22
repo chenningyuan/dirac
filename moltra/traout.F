@@ -131,7 +131,8 @@ C     This solves the 2Gb problem on Linux.
          ELSEIF (N2EFIL.LT.100) THEN
             WRITE (NEXTFIL,'(A3,I2)') 'MDC',N2EFIL
          ELSE
-            STOP "100 integral files is enough !"
+            CALL QUIT('*** ERROR in MDINTN: exceeding 100 integral'//
+     &                ' files! ***')
          ENDIF
          FNODE = LFNAM(NEXTFIL)
          WRITE (LUMLF2) 0,N2EFIL,0
