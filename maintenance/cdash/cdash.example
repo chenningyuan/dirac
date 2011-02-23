@@ -11,6 +11,8 @@ TMP_DIR=/tmp/dirac
 mkdir -p $TMP_DIR
 
 # checkout the source code
+# it is possible but not a good idea to run Nightly with svn up
+# with svn up you are asking for trouble, use the safe and clean svn co for Nightly
 svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 
 # pamadm step
