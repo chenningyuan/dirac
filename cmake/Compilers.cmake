@@ -52,7 +52,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     add_definitions(-DVAR_IFC)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
