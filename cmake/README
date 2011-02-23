@@ -1,14 +1,60 @@
-This file describes some typical cmake solutions to everyday problems. It is
-here to help you with cmake and DIRAC and to help me remembering commands.
+
+Quick start
+-----------
+
+$ ./pamadm --a [--xcfun]
+$ cd cbuild
+$ cmake ..
+$ make
+
+There is nothing special about cbuild.
+You can do this instead:
+
+$ ./pamadm --a [--xcfun]
+$ mkdir /buildpath
+$ cd /buildpath
+$ cmake /sourcepath
+$ make
 
 
-Configuring DIRAC
------------------
+You managed to compile dirac.x but all tests crash
+--------------------------------------------------
+
+This is because pam expects dirac.x to be in the same directory:
+
+$ cd /sourcepath
+$ ln -s /buildpath/dirac.x
+
+
+Configuring DIRAC with setup
+----------------------------
 
 When you are new to cmake, first configure DIRAC with the script setup. This
 is not necessary but will help you to get used to cmake commands. Observe how
 setup calls cmake and with which command. Experts can use this command
 directly to do expert things. It is not difficult.
+
+
+Configuring DIRAC without setup
+-------------------------------
+
+Setup does nothing more that setting some environment variables (FC, CC, ...)
+and calling cmake with some flags. This means that you can call cmake directly
+if you know how, for example:
+
+$ CC=icc FC=ifort cmake -DDIRAC_ENABLE_MPI=1 ..
+
+
+How to build utilities
+----------------------
+
+$ cd /buildpath
+$ ccmake /sourcepath
+
+Now set DIRAC_ENABLE_UTILITIES to ON, [c]onfigure, then [g]enerate and exit, and finally
+$ make
+
+Now you have the utilities!
 
 
 Make install
