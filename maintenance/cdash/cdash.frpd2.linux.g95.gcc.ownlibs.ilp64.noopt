@@ -9,7 +9,7 @@
 source ~/.bashrc
 
 # the directory where your DIRAC sits
-DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_ILP64/adm/trunk
+DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_ILP64_cdash/adm/trunk
 
 # go to the local DIRAC directory
 cd $DIRAC
@@ -36,7 +36,7 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 # build and run tests
 # use either Experimental or Nightly
-#  make Experimental -j 2
- make Nightly -j 3
+  make Experimental -j 3
+# make Nightly -j 3
 
 exit 0
