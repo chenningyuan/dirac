@@ -1151,13 +1151,13 @@ class pam_enviroment:
             print '  Machinefile is a true file, reading its content'
             for line in fileinput.input(machinefile_content):
                 line = line[:-1]
-                if line != self.master:  # append only nodes different from master
+                if line != self.master:  # append only slaves different from the master
                     #print '  ...adding node to the list', line
                     self.nodes.append(line)
 
             # make a unique list of nodes - remove all duplicities from the list
             self.nodes=list(set(self.nodes)) 
-            print '  List of slaves (nodes):',self.nodes
+            print '  List of unique slaves (nodes):',self.nodes
 
     # ... distribute master scratch_dir selected files over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all CPUs are on one machine-master
@@ -1169,19 +1169,18 @@ class pam_enviroment:
             for node in self.nodes:
                 print '  Copying master ', self.master, \
                     ' scratch directory selected files to the node', node,' :'
-
                 # create scratch directories on the nodes; TODO: find pure python replacement
                 command = self.rsh + ' ' + node + ' "mkdir -p ' \
                     + self.scratch_dir + ' "'
                 if self.iprint >= 4:
                     print 'create scratch dir command:', command
                 os.system(command)
-
+                # copies file after file
                 for this_file in os.listdir(self.scratch_dir):
                     # distribute only selected files in the list
                     if this_file in files_to_nodes:
                         this_file_full = self.scratch_dir + '/' + this_file
-                        # TODO: replace the shell command by  pure python solution
+                        # TODO: replace the shell command by some pure python solution
                         command = self.rcp + ' ' + this_file_full + ' ' \
                             + node + ':' + this_file_full
                         if self.iprint >= 0:
@@ -1352,7 +1351,7 @@ class pam_enviroment:
 
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
         size_command = \
-            r"echo 'Size of all static allocations: \c'; size " \
+            "echo -e 'Size of all static allocations: \c'; size " \
             + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
             + " 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
         p1 = subprocess.Popen(size_command, shell=True,
