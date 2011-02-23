@@ -5,6 +5,7 @@ Quick start
 First install cmake, on ubuntu/debian:
 $ sudo apt-get install cmake
 
+Now:
 $ ./pamadm --a [--xcfun]
 $ cd cbuild
 $ cmake ..
@@ -12,7 +13,6 @@ $ make
 
 There is nothing special about cbuild.
 You can do this instead:
-
 $ ./pamadm --a [--xcfun]
 $ mkdir /buildpath
 $ cd /buildpath
@@ -99,6 +99,11 @@ on the Dashboard.
 Before you experiment with "make Experimental", it is recommended
 to have a look at the cdash example recipes in the maintenance
 directory.
+
+Make Experimental takes a long time (2 hours or more). This is because we have
+many very slow tests. For experimenting with make experimental
+you can cheat and remove many lines in cmake/Tests.cmake (and do not rerun pamadm).
+Later you can regenerate the full cmake/Tests.cmake.
 
 Note that you can set the build name with -DBUILDNAME=foo
 or with setup --buildname.
