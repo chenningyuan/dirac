@@ -3,6 +3,8 @@
  Testing KRMC and KR-CI for Be in Pierloot basis
 .ANALYZE
 .WAVE FUNCTION
+**HAMILTONIAN
+.X2C
 **ANALYZE
 .PRIVEC
 *PRIVEC
