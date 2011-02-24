@@ -1320,7 +1320,8 @@ C     Write directly into the array GMAT
 C
             CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
-            KLGBUF = 1
+            KLGBUF  = KFREE
+            KALGREC = KFREE
          ENDIF
 C
 C     Calculate current distribution
@@ -1337,7 +1338,7 @@ C
 C     De-allocate buffers and allocate GMAT if necessary.
 C
          IF (NPASS.GT.1) THEN
-            CALL MEMREL('TRDRV3.1',WORK,1,KALGBUF,KFREE,LFREE)
+            CALL MEMREL('SHLTRA.1',WORK,1,KALGBUF,KFREE,LFREE)
             CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
          ENDIF
@@ -1351,7 +1352,7 @@ C
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),WORK(KGMAT),NSIZG,WORK(KHMAT)) 
          CALL TIMEC('MS4IN1',TIMSTR,TIMEND) 
          TIM1(2) = TIM1(2) + TIMEND - TIMSTR
-         CALL MEMREL('TRDRV3.2',WORK,1,KGMAT,KFREE,LFREE)
+         CALL MEMREL('SHLTRA.2',WORK,1,KGMAT,KFREE,LFREE)
          IF (NPASS.GT.1) CALL DELGBUF(LGFIL)
 C
 C     3/4 transformation
@@ -2954,6 +2955,8 @@ C
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
+      ELSE
+        KDRIJ = KFREE
       ENDIF
 C
 C     Allocate memory for accumulation of 3/4 transformed integrals
