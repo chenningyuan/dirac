@@ -1034,7 +1034,6 @@ class pam_enviroment:
                 # no suffix, never mind
                 mol_file_stripped = self.input_file_molecule
 
-            # print 'The molecule input file does not contain recommended suffix, never mind...'
             if '.inp' in self.input_file_dirac:
                 inp_file_stripped = self.input_file_dirac.replace('.inp'
                         , '', 1)
@@ -1151,12 +1150,10 @@ class pam_enviroment:
             for line in fileinput.input(machinefile_content):
                 line = line[:-1]
                 if line != self.master:  # append only slaves different from the master
-                    #print '  ...adding node to the list', line
                     self.nodes.append(line)
             print '  Machinefile read, list of nodes obtained.'
             # make a unique list of nodes - remove all duplicities from the list
             self.nodes=list(set(self.nodes)) 
-            #print '  List of unique slaves (nodes):',self.nodes
 
     # ... distribute master scratch_dir selected files over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all CPUs are on one machine-master
@@ -1329,7 +1326,6 @@ class pam_enviroment:
             elif name == 'LOCALDISKS':
                 if value == 'yes':
                     self.localdisks = True
-                    #print 'local disks for parallel calculations'
             elif name == 'MPI_PASS_scratch_ARGUMENT':
                 if self.localdisks:
                     localdisks_pass_scratch_temp = value
@@ -1382,8 +1378,6 @@ class pam_enviroment:
         if len(self.nice_cmd) > 1:
             print '  Lowest process priority set through ', \
                 self.nice_cmd
-        #if self.iprint > 0:
-        #    print '  DIRAC command  : %s' % self.dirac_cmd
 
         basis_set_directory_list = self.basdir.split(':')
         if self.iprint > 0:
