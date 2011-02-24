@@ -1148,27 +1148,26 @@ class pam_enviroment:
     # identify nodes in the file
 
         if os.path.isfile(machinefile_content):
-            print '  Machinefile is a true file, reading its content'
             for line in fileinput.input(machinefile_content):
                 line = line[:-1]
                 if line != self.master:  # append only slaves different from the master
                     #print '  ...adding node to the list', line
                     self.nodes.append(line)
-
+            print '  Machinefile read, list of nodes obtained.'
             # make a unique list of nodes - remove all duplicities from the list
             self.nodes=list(set(self.nodes)) 
-            print '  List of unique slaves (nodes):',self.nodes
+            #print '  List of unique slaves (nodes):',self.nodes
 
     # ... distribute master scratch_dir selected files over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all CPUs are on one machine-master
-        
 
         if self.nodes:
             files_to_nodes=self.core_dirac_files+self.distribute # list of files to be distributed over nodes
-            print '  Copying selected content of master scratch directory over nodes '
+            print '  Copying selected content of master scratch directory to nodes :',self.nodes
             for node in self.nodes:
-                print '  Copying master ', self.master, \
-                    ' scratch directory selected files to the node', node,' :'
+                if self.iprint >= 2:
+                    print '  Copying master ', self.master, \
+                          ' scratch directory selected files to the node', node,' :'
                 # create scratch directories on the nodes; TODO: find pure python replacement
                 command = self.rsh + ' ' + node + ' "mkdir -p ' \
                     + self.scratch_dir + ' "'
@@ -1429,7 +1428,7 @@ class pam_enviroment:
                 if len(self.dirac_stderr) > 0 :
                     # inform about dirac stderr in python stdout
                     print >> sys.stdout,\
-                   '  ====  dirac giving stderr output stream - check the output file ===='
+                    '  ====  dirac stderr stream written to the output file ===='
                     # likewise attach stderr to the pam output
                     self.f.write('\n ====  python script additive: stderr output stream  ===='+self.dirac_stderr)
                     # flush out dirac stderr; useful for non-verbose test runs (to have it on the console)
