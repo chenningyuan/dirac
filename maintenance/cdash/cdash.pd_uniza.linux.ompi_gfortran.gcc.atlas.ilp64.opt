@@ -25,7 +25,7 @@ svn up
 #  ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl"
 # ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack" --buildname="linux.gfortran.atlas.mpi"
 #./setup --fc=g95 --cc=gcc-4.2  --int64  --nomath --buildname="pd_uniza.linux.ompi_gfortran.gcc.ownlibs.ilp64.opt" --debug
- ./setup --fc=mpif90  --cc=mpicc  --debug --buildname="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.noopt"  --mpi  --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas"
+ ./setup --fc=mpif90  --cc=mpicc  --debug --buildname="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.noopt"  --mpi  --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64
 
 cd $DIRAC/cbuild
 cmake ..
