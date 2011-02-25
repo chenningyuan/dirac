@@ -71,7 +71,7 @@ C     integer*8 call failed, try with integer*4
      &        'LIWORK=',liwork
 #endif
          print *,'Cannot continue without a working LAPACK, quitting.'
-         call quit('LAPACK test failed')
+         call quit('LAPACK integer*4/8 test failed')
       endif
       end
 C
