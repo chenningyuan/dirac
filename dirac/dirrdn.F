@@ -4605,7 +4605,6 @@ c DIRAOF->SKLFC1
 
                END IF
                dirac_cfg_dft_calculation = .true.
-               dirac_cfg_scf_calculation = .true.
                SETFUN = .TRUE.
             GO TO 100
 
@@ -4899,7 +4898,6 @@ C    (see MRCON1 of the MOLTRA module)
           call set_xc_fun_xalda(xc_fun_xalda)
           dft_cfg_xcfun             = .true.
           dirac_cfg_dft_calculation = .true.
-          dirac_cfg_scf_calculation = .true.
 #else
           call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
