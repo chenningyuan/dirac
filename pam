@@ -548,7 +548,6 @@ class pam_enviroment:
             type='int',
             action='store',
             dest='dest_mb',
-            default=self.default_memory_work_master_mb,
             help="""set max memory (in MB) for WORK array
                     for the master [default: %default]
                   """,
@@ -803,7 +802,7 @@ class pam_enviroment:
         self.output_suffix = options.dest_suffix
 
         self.max_memory_work_master = int(options.dest_mw)
-        if int(options.dest_mb) != self.default_memory_work_master_mb:
+        if options.dest_mb :
             self.max_memory_work_master = int(options.dest_mb)/self.mw_to_mb
 
     # miro: no read-in default for "--nw", as we need to check whether the parameter was set
@@ -1207,11 +1206,20 @@ class pam_enviroment:
 
     def set_dirac_environment(self):
         """export important variables for DIRAC
-    TODO: implement for WINDOWS"""
+           TODO: implement for WINDOWS"""
         self.basdir = self.input_directory + ':' + self.basdir
         os.putenv('BASDIR', self.basdir)
 
-        os.putenv('DIRWRK', str(self.max_memory_work_master * 1000000))
+        dirwrk_amount=str(int(self.max_memory_work_master * 1000000))
+        try:
+            os.putenv('DIRWRK', dirwrk_amount)
+        except:
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,\
+                'error in DIRWRK variable passing !'
+                print >> stream,'variable value :',dirwrk_amount 
+                sys.exit(17)
+
         os.putenv('DIRMAX', str(self.max_memory_dynamic * 1000000))
 
         if self.parallel_run:
