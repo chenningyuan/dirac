@@ -179,6 +179,10 @@ add_executable(dirac.x
     ${DIRAC_FIXED_FORTRAN_SOURCES}
     ${GENERATED_FILES}
     )
+
+# radovan: Miro, you can add link flags like this:
+# SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "raboof")
+
 target_link_libraries(
     dirac.x
     ${LIBS}
