@@ -221,7 +221,6 @@ class pam_enviroment:
     # valgrind debugging
 
         self.vg_debug = False
-        self.valgrind = ''  # empty, to be read from Makefile.config
         self.valgrind_param = ''  # parameters for valgrind
 
     # input directory (=directory with input files)
@@ -1254,9 +1253,8 @@ class pam_enviroment:
                 self.dirac_cmd = self.dirac_cmd + self.mpiarg + ' '
 
             self.dirac_cmd = self.dirac_cmd + this_dirac_exe
-            if self.vg_debug:  # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
-                self.dirac_cmd = self.dirac_cmd + ' ' + self.valgrind \
-                    + ' --log-fd=1'
+            if self.vg_debug:
+                self.dirac_cmd = 'valgrind --log-fd=1 %s' % self.dirac_cmd
         else:
             # serial run (also in debugger)
             if self.debug:
@@ -1269,7 +1267,7 @@ class pam_enviroment:
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
 
-                self.dirac_cmd = self.valgrind + ' --log-fd=1 ' \
+                self.dirac_cmd = 'valgrind --log-fd=1 ' \
                     + this_dirac_exe + ' | tee ' + self.output_file_full
             else:
             # no debug, plain run
@@ -1285,7 +1283,7 @@ class pam_enviroment:
     def read_makefile_config(self):
         """Read the Makefile.config to get default values of many variables.
         Makefile.config file is the storage place for important variables
-        -  debugger, profiler, valgrind, mpi-launcher... """
+        -  debugger, profiler, mpi-launcher... """
         def namval(line):
             """Return (NAME,VALUE) from lines NAME = VALUE, taking 
             #comments into account. Return ('','') if no match"""
@@ -1319,8 +1317,6 @@ class pam_enviroment:
                 self.debugger = value
             elif name == 'PROFILER':
                 self.profiler = value
-            elif name == 'VALGRIND':
-                self.valgrind = value
             elif name == 'MPIRUN':
                 self.parallel_build = True
             elif name == 'LOCALDISKS':
