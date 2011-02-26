@@ -3,13 +3,13 @@
 #
 # Python replacement of the previous bash-written pam(.sh) script
 #
-# Reads some crucial data from Makefile.config
+# Reads some crucial data from Makefile.config, but pam can be also standalone.
 #
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
 #
 # Contributors:  Rado BAST, Norway
-#                Ulf Ekstrom
+#                Ulf Ekstrom, Sweden
 #                Stefan Knecht, Denmark
 #                Andre Gomes, France
 #
@@ -553,14 +553,13 @@ class pam_enviroment:
                   """,
             metavar='INTEGER',
             )
-        group.add_option(  # default = self.default_memory_work_slave,
+        group.add_option(  # default set later - it's --mw setting
             '--nw',
             type='int',
             action='store',
             dest='dest_nw',
-            default=self.max_memory_work_slave,
             help="""set max memory (in megawords) for WORK array
-                    for the co-workers [default: %default]
+                    for the co-workers [default: --mw set value]
                   """,
             metavar='INTEGER',
             )
@@ -805,12 +804,12 @@ class pam_enviroment:
         if options.dest_mb :
             self.max_memory_work_master = int(options.dest_mb)/self.mw_to_mb
 
-    # miro: no read-in default for "--nw", as we need to check whether the parameter was set
-    # take the default value from the previously set "self.max_memory_work_master"
-
         if options.dest_nw:
-            # user value, use default otherwise
+            # user defined value
             self.max_memory_work_slave = int(options.dest_nw)
+        else:
+            # default is the --mw set value of master max memory
+            self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
 
