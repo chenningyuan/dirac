@@ -1211,6 +1211,7 @@ class pam_enviroment:
 
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
         try:
+            # make sure DIRWRK is integer
             os.putenv('DIRWRK', dirwrk_amount)
         except:
             for stream in [sys.stdout,sys.stderr]:
@@ -1223,6 +1224,7 @@ class pam_enviroment:
 
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
+            # make sure DIRNOD is integer
             os.putenv('DIRNOD', str(int(self.max_memory_work_slave * 1000000)))
 
     # Next line is for IBM only but will not hurt other systems
