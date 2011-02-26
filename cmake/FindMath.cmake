@@ -1,7 +1,9 @@
 
 # radovan: this routine is very primitive
 #          feel free to refactor/generalize
-
+#
+# miro: we need to tell FindMath first to check for the "User set math libraries" !
+#
 macro(Check_Fortran_Libraries LIBRARIES _prefix _list)
     set(${LIBRARIES})
     set(_libraries_work TRUE)
@@ -88,6 +90,7 @@ if(NOT MATH_FOUND)
             blas
             lapack
             )
+        message("-- Set system default math libraries: ${MATH_LIBS} (${LAPACK_lapack_LIBRARY} ${BLAS_f77blas_LIBRARY})")
         set(MATH_FOUND TRUE)
     endif()
 endif()
