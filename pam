@@ -1209,7 +1209,7 @@ class pam_enviroment:
         self.basdir = self.input_directory + ':' + self.basdir
         os.putenv('BASDIR', self.basdir)
 
-        dirwrk_amount=str(int(self.max_memory_work_master * 1000000))
+        dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
         try:
             os.putenv('DIRWRK', dirwrk_amount)
         except:
@@ -1219,11 +1219,11 @@ class pam_enviroment:
                 print >> stream,'variable value :',dirwrk_amount 
                 sys.exit(17)
 
-        os.putenv('DIRMAX', str(self.max_memory_dynamic * 1000000))
+        os.putenv('DIRMAX', str(int(self.max_memory_dynamic * 1000000)))
 
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
-            os.putenv('DIRNOD', str(self.max_memory_work_slave * 1000000))
+            os.putenv('DIRNOD', str(int(self.max_memory_work_slave * 1000000)))
 
     # Next line is for IBM only but will not hurt other systems
 
