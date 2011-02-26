@@ -1348,6 +1348,7 @@ class pam_enviroment:
         """
 
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
+        # radovan: just FYI, the "-e" ends up in my output, not in yours?
         size_command = \
             "echo -e 'Size of all static allocations: \c'; size " \
             + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
