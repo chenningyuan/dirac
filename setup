@@ -16,7 +16,7 @@ usage = '''
   Examples:
     ./%prog --fc=gfortran --debug
     ./%prog --fc=ifort --cc=icc --prefix=/path/to/build/dir/
-    ./%prog --fc=mpif90 --cc=mpicc --mpi --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+    ./%prog --fc=mpif90 --cc=mpicc --mpi --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread" --runtest_mpi=2
     ./%prog --fc=pgf90 --cc=pgcc --nomath
     ./%prog --auto'''
 
@@ -65,6 +65,13 @@ group.add_option('--mpi',
                  dest='mpi',
                  default=False,
                  help='build using MPI parallelization [default: %default]')
+group.add_option('--runtest_mpi',
+                 type='int',
+                 action='store',
+                 dest='runtest_mpi',
+                 default=None,
+                 help='for MPI build number of --mpi=# for the runtest script [default: %default]',
+                 metavar='INT')
 group.add_option('--int64',
                  action='store_true',
                  dest='int64',
@@ -171,6 +178,8 @@ if options.nomath:
     command += ' -DDIRAC_ENABLE_EXTERNAL_MATH=0'
 if options.mpi:
     command += ' -DDIRAC_ENABLE_MPI=1'
+if options.mpi and options.runtest_mpi:
+    command += ' -DRUNTEST_NR_PROC='+str(options.runtest_mpi)
 if options.int64:
     command += ' -DDIRAC_ENABLE_64BIT_INTEGERS=1'
 if options.check:
