@@ -1,4 +1,6 @@
-message("-- DIRAC: CMAKE_INSTALL_PREFIX is \"${CMAKE_INSTALL_PREFIX}\"")
+#miro: this is not the relevant installation directory :(, so I deactivated it 
+# we need true directory where cmake puts executable...
+#message("-- DIRAC: CMAKE_INSTALL_PREFIX is \"${CMAKE_INSTALL_PREFIX}\" ")
 
 install(
     DIRECTORY
