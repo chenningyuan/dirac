@@ -92,7 +92,7 @@ if(MATH_FOUND)
         ${MATH_LIBS}
         )
 else()
-    message("using own math")
+    message("using own DIRAC provided math (blas,lapack)")
     add_definitions(-DUSE_DIRAC_BLAS)
     add_definitions(-DUSE_DIRAC_DLAMCH)
     add_definitions(-DUSE_DIRAC_DLAPACK)
@@ -181,7 +181,8 @@ add_executable(dirac.x
     )
 
 # radovan: Miro, you can add link flags like this:
-# SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "raboof")
+#SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-E")
+# miro: I prefer to set link flags in "Compilers.cmake"
 
 target_link_libraries(
     dirac.x
