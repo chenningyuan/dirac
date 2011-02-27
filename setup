@@ -16,7 +16,7 @@ usage = '''
   Examples:
     ./%prog --fc=gfortran --debug
     ./%prog --fc=ifort --cc=icc --prefix=/path/to/build/dir/
-    ./%prog --fc=mpif90 --cc=mpicc --mpi --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread" --runtest_mpi=2
+    ./%prog --fc=mpif90 --cc=mpicc --mpi --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
     ./%prog --fc=pgf90 --cc=pgcc --nomath
     ./%prog --auto'''
 
