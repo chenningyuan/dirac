@@ -114,7 +114,7 @@ group.add_option('--runtest_mpi',
                  type='int',
                  action='store',
                  dest='runtest_mpi',
-                 default=1,
+                 default=None,
                  help='number of processors [default: %default]',
                  metavar='INTEGER')
 group.add_option('--runtest_timeout',

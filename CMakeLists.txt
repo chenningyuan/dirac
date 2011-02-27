@@ -42,25 +42,24 @@ option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
 option(DIRAC_ENABLE_TESTS          "Enable make test"          ON)
 
 if(DIRAC_ENABLE_TESTS)
-    if(NOT $ENV{RUNTEST_NR_PROC} STREQUAL "1")
-        message("-- DIRAC: RUNTEST_NR_PROC set to $ENV{RUNTEST_NR_PROC}")
-        set(RUNTEST_FLAGS "--mpi=$ENV{RUNTEST_NR_PROC}")
-        message("-- DIRAC: RUNTEST_FLAGS are \"${RUNTEST_FLAGS}\"")
-    endif()
     SET(BUILDNAME "${BUILDNAME}" 
             CACHE STRING "Name of build on the dashboard"
         )
     message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
-#   kill individual tests if they take more than 20 minutes
     if(NOT $ENV{RUNTEST_TIMEOUT} STREQUAL "")
         set(DART_TESTING_TIMEOUT
             $ENV{RUNTEST_TIMEOUT}
             CACHE STRING
-            "Set timeout for make test"
+            "Set timeout in seconds for make test"
             FORCE
             )
     endif()
     message("-- DIRAC: DART_TESTING_TIMEOUT set to $ENV{RUNTEST_TIMEOUT}")
+    if(NOT $ENV{RUNTEST_NR_PROC} STREQUAL "")
+        message("-- DIRAC: RUNTEST_NR_PROC set to $ENV{RUNTEST_NR_PROC}")
+        set(RUNTEST_FLAGS "--mpi=$ENV{RUNTEST_NR_PROC}")
+        message("-- DIRAC: RUNTEST_FLAGS are \"${RUNTEST_FLAGS}\"")
+    endif()
     include(CTest)
     enable_testing()
     if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
