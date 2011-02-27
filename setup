@@ -178,8 +178,8 @@ if options.nomath:
     command += ' -DDIRAC_ENABLE_EXTERNAL_MATH=0'
 if options.mpi:
     command += ' -DDIRAC_ENABLE_MPI=1'
-if options.mpi and options.runtest_mpi:
-    command += ' -DRUNTEST_NR_PROC='+str(options.runtest_mpi)
+    if options.runtest_mpi:
+        command += ' -DRUNTEST_NR_PROC=' + str(options.runtest_mpi)
 if options.int64:
     command += ' -DDIRAC_ENABLE_64BIT_INTEGERS=1'
 if options.check:
