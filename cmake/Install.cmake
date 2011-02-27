@@ -47,4 +47,5 @@ install(
     ${PROJECT_SOURCE_DIR}/basis_dalton
     DESTINATION
     dirac
+    PATTERN .svn EXCLUDE
     )
