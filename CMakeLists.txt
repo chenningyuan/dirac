@@ -53,9 +53,14 @@ if(DIRAC_ENABLE_TESTS)
     message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
 #   kill individual tests if they take more than 20 minutes
     if(NOT $ENV{RUNTEST_TIMEOUT} STREQUAL "")
-        message("-- DIRAC: DART_TESTING_TIMEOUT set to $ENV{RUNTEST_TIMEOUT}")
-        set(DART_TESTING_TIMEOUT $ENV{RUNTEST_TIMEOUT})
+        set(DART_TESTING_TIMEOUT
+            $ENV{RUNTEST_TIMEOUT}
+            CACHE STRING
+            "Set timeout for make test"
+            FORCE
+            )
     endif()
+    message("-- DIRAC: DART_TESTING_TIMEOUT set to $ENV{RUNTEST_TIMEOUT}")
     include(CTest)
     enable_testing()
     if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
