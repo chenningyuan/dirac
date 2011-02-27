@@ -46,19 +46,19 @@ if(DIRAC_ENABLE_TESTS)
             CACHE STRING "Name of build on the dashboard"
         )
     message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
-    if(NOT $ENV{RUNTEST_TIMEOUT} STREQUAL "")
+    if(NOT "${DIRAC_RUNTEST_TIMEOUT}" STREQUAL "")
         set(DART_TESTING_TIMEOUT
-            $ENV{RUNTEST_TIMEOUT}
+            "${DIRAC_RUNTEST_TIMEOUT}"
             CACHE STRING
             "Set timeout in seconds for make test"
             FORCE
             )
+        message("-- DIRAC: DART_TESTING_TIMEOUT set to ${DART_TESTING_TIMEOUT}")
     endif()
-    message("-- DIRAC: DART_TESTING_TIMEOUT set to $ENV{RUNTEST_TIMEOUT}")
-    if(NOT $ENV{RUNTEST_NR_PROC} STREQUAL "")
-        message("-- DIRAC: RUNTEST_NR_PROC set to $ENV{RUNTEST_NR_PROC}")
-        set(RUNTEST_FLAGS "--mpi=$ENV{RUNTEST_NR_PROC}")
-        message("-- DIRAC: RUNTEST_FLAGS are \"${RUNTEST_FLAGS}\"")
+    if(NOT "${DIRAC_RUNTEST_NR_PROC}" STREQUAL "")
+        message("-- DIRAC: DIRAC_RUNTEST_NR_PROC set to ${DIRAC_RUNTEST_NR_PROC}")
+        set(DIRAC_RUNTEST_FLAGS "--mpi=${DIRAC_RUNTEST_NR_PROC}")
+        message("-- DIRAC: RUNTEST_FLAGS are \"${DIRAC_RUNTEST_FLAGS}\"")
     endif()
     include(CTest)
     enable_testing()

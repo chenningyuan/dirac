@@ -121,7 +121,7 @@ group.add_option('--runtest_timeout',
                  type='int',
                  action='store',
                  dest='runtest_timeout',
-                 default=1200,
+                 default=None,
                  help='timeout in seconds [default: %default]',
                  metavar='INTEGER')
 parser.add_option_group(group)
@@ -182,15 +182,17 @@ if not options.auto:
     if options.math:
         command += ' USERDEFINED_LIBS="%s"' % options.math
 
-command += ' RUNTEST_NR_PROC=' + str(options.runtest_mpi)
-command += ' RUNTEST_TIMEOUT=' + str(options.runtest_timeout)
-
 command += ' cmake'
 
 if options.nomath:
     command += ' -DDIRAC_ENABLE_EXTERNAL_MATH=0'
 if options.mpi:
     command += ' -DDIRAC_ENABLE_MPI=1'
+    if options.runtest_mpi:
+        command += ' -DDIRAC_RUNTEST_NR_PROC=' + str(options.runtest_mpi)
+if options.runtest_timeout:
+    command += ' -DDIRAC_RUNTEST_TIMEOUT=' + str(options.runtest_timeout)
+
 if options.int64:
     command += ' -DDIRAC_ENABLE_64BIT_INTEGERS=1'
 if options.check:
