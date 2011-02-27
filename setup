@@ -85,6 +85,13 @@ group.add_option('--prefix',
                  default=default_path,
                  help='set the build path (you can build several binaries with the same source) [default: %default]',
                  metavar='PATH')
+group.add_option('--install',
+                 type='string',
+                 action='store',
+                 dest='install',
+                 default=None,
+                 help='set the install path for make install [default: %default]',
+                 metavar='PATH')
 group.add_option('--debug',
                  action='store_true',
                  dest='debug',
@@ -199,6 +206,9 @@ if options.check:
     command += ' -DDIRAC_ENABLE_BOUNDS_CHECK=1'
 if options.coverage:
     command += ' -DDIRAC_ENABLE_CODE_COVERAGE=1'
+if options.install:
+    command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
+
 if options.debug:
     command += ' -DCMAKE_BUILD_TYPE=Debug'
 else:
