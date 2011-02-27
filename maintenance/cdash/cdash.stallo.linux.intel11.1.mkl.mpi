@@ -23,7 +23,7 @@ ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
 
 cd $TMP_DIR/cbuild
 
-make Experimental
+make Nightly
 
 rm -rf $TMP_DIR
 
