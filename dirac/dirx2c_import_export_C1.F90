@@ -152,6 +152,7 @@ contains
      real(8)                         :: mydummy(2)
      logical                         :: fndlab12
      character (len=12)              :: flabel
+     character (len=23)              :: debug_label
 !**********************************************************************
 
 !      open file with pctmatC1
@@ -164,7 +165,8 @@ contains
        end if
 
 !      initialize dimensions and pointers which might be used outside this module in dirac calls
-       call setdc2(0)
+       call setdc1(2)
+       call setdc2(2)
 
 !      allocate pct-matrix
        call alloc(pctmat,nr_ao_total_x2c*nr_ao_large_x2c*nr_quat, id='pctmat - original')
@@ -186,8 +188,13 @@ contains
 
 !      debug print
        if(x2c_prt > 2)then 
-         call print_x2cmat(pctmat,nr_ao_total_x2c,nr_ao_large_x2c,nr_quat,x2c_cb_pq_to_uq, &
-                           'x2c - pctmat-orig',6)
+         ioff_pct_mat = 1
+         do i = 1, nr_fsym
+           write(debug_label,'(a21,i2)') 'x2c - pctmat-orig -->',i
+           call print_x2cmat(pctmat(ioff_pct_mat),nr_ao_all(i),nr_ao_l(i),nr_quat,x2c_cb_pq_to_uq, &
+                             debug_label,6)
+         end do
+         ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
        end if       
 
 !      a. insert quaternion phase factors
@@ -201,9 +208,14 @@ contains
 
 !      debug print
        if(x2c_prt > 2)then 
-         call print_x2cmat(pctmat,nr_ao_total_x2c,nr_ao_large_x2c,nr_quat,x2c_cb_pq_to_uq, & 
-                           'x2c - pctmat-after-phase-fac-insert',6)
-       end if       
+         ioff_pct_mat = 1
+         do i = 1, nr_fsym
+           write(debug_label,'(a21,i2)') 'x2c - pctmx-phase -->',i
+           call print_x2cmat(pctmat(ioff_pct_mat),nr_ao_all(i),nr_ao_l(i),nr_quat,x2c_cb_pq_to_uq, &
+                             debug_label,6)
+         end do
+         ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
+       end if
 
 !      b. transform pctmat elements from DIRAC-sorted AO to Hermit-sorted AO basis
 !      ---------------------------------------------------------------------------

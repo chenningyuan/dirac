@@ -1,3 +1,4 @@
+#define DEBUG_mat_transform
 !dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -844,20 +845,26 @@ C
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             AN     = D1/FMULT(MULA)
+            print *, 'NA, IA, KSTRT(IA), NHKTA, KHKTA',
+     &                NA, IA, KSTRT(IA), NHKTA, KHKTA
             DO 300 ISYMA = 0, MAXOPR
             IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
                FACA = AN*
      &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
-               ISTRB = 1
+               ISTRB_tmp   = 1
+               icount_S_ao = 0
+               print *,'new INDA --> II',INDA,II
                DO 400 IREPB = 0, MAXREP
-               DO 450 JJ = 1,1
+                DO 450 JJ = 1,1
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  print *, 'ID, IBTXOR(IREPA,IREPB),IREPA,IREPB',
-     &                      ID, IBTXOR(IREPA,IREPB),IREPA,IREPB
+                  print *, 'IREPA,IREPB',
+     &                      IREPA,IREPB
+                  print *, 'component is',
+     &            LCLASS(IBTAND(IBTSHR(IPIND(ISTRB_tmp),16),65535))
                   IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
-                  DO 500 J = ISTRB,ISTRB + NBB - 1
+                  DO 500 J = ISTRB_tmp,ISTRB_tmp + NBB - 1
                      IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
                      NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
                      NHKTB  = NHKT(IB)
@@ -865,6 +872,7 @@ C
                      MULB   = ISTBAO(IB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      BN     = D1/FMULT(MULB)
+                     print *, 'class of a, b = ',LCLASS(ia),lclass(ib)
                      print *, 'NB, IB, KSTRT(IB), NHKTB, KHKTB',
      &                         NB, IB, KSTRT(IB), NHKTB, KHKTB
                      DO 600 ISYMB = 0, MAXOPR
@@ -873,15 +881,38 @@ C
                         FACB = BN*PT(IBTAND(ISYMB,
      &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
                         AAO(INDA,INDB) = AAO(INDA,INDB)
-     &                                 + FACA*FACB*ASO(I,J)
-                        print *, 'ASO(',I,J,') ==> AAO(',INDA,INDB,')',
-     &                            ASO(I,J), AAO(INDA, INDB)
+     &                                 + FACA*FACB*ASO(I,J-icount_S_ao)
+!    &                                 + FACA*FACB*ASO(I,J)
+                        print *, 
+     &                  'ISYMB, ASO(',
+     &                   I,J-icount_S_ao,') ==> AAO(',INDA,INDB,')',
+     &                   ISYMB, ASO(I,J-icount_S_ao)
                      END IF
   600                CONTINUE
   500             CONTINUE
                   END IF
-                  ISTRB = ISTRB + NBB
+                  ISTRB_tmp = ISTRB_tmp + NBB
+                  print *, 'NBB',NBB,'added: --> ISTRB_tmp =',ISTRB_tmp
   450             CONTINUE
+                  ISTRB       = 1
+                  icount_S_ao = 0
+                  do irepb_tmp = 0,IREPB
+                    do ic2_tmp = 1, 2
+                      ISTRB = ISTRB + NCOS(irepb_tmp+1,ic2_tmp)
+                      print '(a,i3,a,i3,a,i4,a,i5)', 
+     &                          ' extra computing for component:',
+     &                          ic2_tmp,' and boson irrep ',irepb_tmp,
+     &                          ' yields with',
+     &                          NCOS(irepb_tmp+1,ic2_tmp),
+     &                          ' basis func. the new offset:',ISTRB
+                      if(ic2_tmp.eq.2) icount_S_ao =
+     &                icount_S_ao + ncos(irepb_tmp+1,ic2_tmp)
+                      print '(a,i4)', 'total # of S-AOs so far:',
+     &                                         icount_S_ao
+                    end do
+                  end do
+                  ISTRB_tmp = ISTRB
+                  print *, 'reset ISTRB_tmp (L+S) --> ',ISTRB_tmp
   400          CONTINUE
             END IF
   300       CONTINUE
@@ -1727,6 +1758,9 @@ C
       integer                :: ndim_mat
 
       call qenter('bstobu_no_work_nonquadmat_LS_L')
+#ifdef DEBUG_mat_transform
+      print *,'bstobu...: dim of buf is',mz*ntbas(0)*ntbas(1)
+#endif
 C
 C     Memory allocation
       call alloc(bufx, mz*ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
