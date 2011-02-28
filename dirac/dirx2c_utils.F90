@@ -648,7 +648,7 @@ contains
 !
          call header(title,-1)
          call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
-                     ipq_off(1,0),prntunit)
+                     ipq_off,prntunit)
 
   end subroutine print_x2cmat
 

@@ -113,7 +113,9 @@ contains
          open(x2c_fh1dirty,file='x2ch1dirty',status='unknown',form='unformatted',    &
               access='sequential',action='readwrite',position='rewind')
          if(fndlab12('h1_4caoNOSYM',x2c_fh1dirty))then
+           print *,' reading h1 matrix from file'
            call x2c_read('h1_4caoNOSYM',h1_saao_bas,naosh_ls*naosh_ls*4,x2c_fh1dirty)
+           print *,' done...'
            skip_step1 = .true.
          else
            call x2c_write('dummy       ',mydummy,-1,x2c_fh1dirty)

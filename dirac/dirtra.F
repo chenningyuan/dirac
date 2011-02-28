@@ -415,9 +415,74 @@ CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
    20   CONTINUE
    10 CONTINUE
 C
-      RETURN
-C
       END
+
+      subroutine q2bphase_nonquadmat_LS_L(typ,im,jfac,amat)
+C***********************************************************************
+C
+C     Quaternion phase insertion in non-quadratic matrices amat(LS,L)
+C       TYP = F:  (e_K1)(e_IM)(e_K2*)   as Fock matrix
+C       TYP = D:  (e_K1*)(e_IM)(e_K2)   as density matrix
+C
+C     based on q2bphase; adaption for non-quadratic matrices by S. Knecht
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DM1 = -1.0D0)
+C
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+C
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dcbqal.h"
+#include "dgroup.h"
+      CHARACTER TYP*1
+      DIMENSION AMAT(*)
+      EXTERNAL BDQALGEBRA
+C
+      do irp1 = 0, nbsym-1
+        do ic1 = 1, 2
+
+          nb1  = nbbas(irp1,ic1)
+          k1   = jqbas(irp1,ic1)
+
+          if(nb1.gt.0) then
+
+            do irp2 = 0, nbsym-1
+
+              nb2 = nbbas(irp2,1)
+              k2  = jqbas(irp2,1)
+
+              if(nb2.gt.0)then
+
+                if     (typ.eq.'F')then
+                  kfac = jfac*iqphase(k1,k2,im)*iqph(k1,1)*iqph(k2,2)
+                else if(typ.eq.'D')then
+                  iq   = iqmult(k1,k2,im)
+                  kfac = jfac*iqphase(k1,k2,iq)*iqph(k1,2)*iqph(k2,1)
+                end if
+
+                if(kfac.eq.-1)then
+                  ioff = i2bbasx(irp1,irp2,ic1,1)
+                  do icol = 1, nb2
+                    call dscal(nb1,dm1,amat(ioff+1),1)
+#ifdef DEBUG_mat_transform
+                   print *, ' scaling w -1 at off, l, COL ,i1,i2,c1,c2',
+     &                        IOFF,NB1,ICOL,IRP1,IRP2,IC1,1
+#endif
+                    ioff = ioff + ntbas(0)
+                  end do
+                endif
+              end if ! NB2 > 0
+            end do ! loop over boson irreps in columns
+          end if ! NB1 > 0
+        end do ! loop over L,S
+      end do ! loop over boson irreps in rows
+C
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rpgen */
       SUBROUTINE RPGEN(IREPA)
@@ -732,6 +797,104 @@ CTOND               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
          CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
+      END
+
+C***********************************************************************
+      SUBROUTINE MTSOAO_nonquadmatL(ASO,AAO,NBAST1,NBAST2,IREPDM,IPRINT)
+
+C
+C     Matrix transform: SO-basis to AO-basis
+C     Based on HERMIT routine DSOTAO (880418  PRT)
+C
+C     Written by T.Saue - Sept 10 1995
+C     Last revision: Sep 10 1995 - tsaue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0)
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+      DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
+      DIMENSION IR(2)
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
+      IF(IPRINT .GE. 10) 
+     &  CALL HEADER('Subroutine MTSOAO_nonquadmatL',-1)
+C
+C     Loop over all irreps in molecule
+C
+      IR(1) = IREPDM
+      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      ISTRA = 1
+      CALL DZERO(AAO,NBAST1*NBAST2)
+      DO 100 IREPA = 0, MAXREP
+         DO 150 II = 1,2
+         NBA   = NCOS(IREPA+1,II)
+         DO 200 I = ISTRA,ISTRA + NBA - 1
+            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
+            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            NHKTA  = NHKT(IA)
+            KHKTA  = KHKT(IA)
+            MULA   = ISTBAO(IA)
+            INDA   = KSTRT(IA) + NA - KHKTA
+            AN     = D1/FMULT(MULA)
+            DO 300 ISYMA = 0, MAXOPR
+            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+               INDA = INDA + KHKTA
+               FACA = AN*
+     &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               ISTRB = 1
+               DO 400 IREPB = 0, MAXREP
+               DO 450 JJ = 1,1
+                  ID    = MOD(II+JJ,2)+1
+                  NBB   = NCOS(IREPB+1,JJ)
+                  print *, 'ID, IBTXOR(IREPA,IREPB),IREPA,IREPB',
+     &                      ID, IBTXOR(IREPA,IREPB),IREPA,IREPB
+                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  DO 500 J = ISTRB,ISTRB + NBB - 1
+                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
+                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     NHKTB  = NHKT(IB)
+                     KHKTB  = KHKT(IB)
+                     MULB   = ISTBAO(IB)
+                     INDB   = KSTRT(IB) + NB - KHKTB
+                     BN     = D1/FMULT(MULB)
+                     print *, 'NB, IB, KSTRT(IB), NHKTB, KHKTB',
+     &                         NB, IB, KSTRT(IB), NHKTB, KHKTB
+                     DO 600 ISYMB = 0, MAXOPR
+                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                        INDB = INDB + KHKTB
+                        FACB = BN*PT(IBTAND(ISYMB,
+     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        AAO(INDA,INDB) = AAO(INDA,INDB)
+     &                                 + FACA*FACB*ASO(I,J)
+                        print *, 'ASO(',I,J,') ==> AAO(',INDA,INDB,')',
+     &                            ASO(I,J), AAO(INDA, INDB)
+                     END IF
+  600                CONTINUE
+  500             CONTINUE
+                  END IF
+                  ISTRB = ISTRB + NBB
+  450             CONTINUE
+  400          CONTINUE
+            END IF
+  300       CONTINUE
+  200    CONTINUE
+         ISTRA = ISTRA + NBA
+  150    CONTINUE
+  100 CONTINUE
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('INPUT: Total matrix in SO basis',-1)
+         CALL OUTPUT(ASO,1,NBAST1,1,NBAST2,NBAST1,NBAST2,-1,LUPRI)
+         CALL HEADER('OUTPUT: Total matrix in AO basis',-1)
+         CALL OUTPUT(AAO,1,NBAST1,1,NBAST2,NBAST1,NBAST2,-1,LUPRI)
+      END IF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtaoso */
@@ -1157,7 +1320,7 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in SO basis',-1)
          CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
-         CALL HEADER('INPUT: Vectors in AO basis',-1)
+         CALL HEADER('OUTPUT: Vectors in AO basis',-1)
          CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
@@ -1477,8 +1640,7 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck bstobu */
+
       SUBROUTINE BSTOBU_no_work(AMAT,MZ)
 C***********************************************************************
 C
@@ -1503,7 +1665,7 @@ C
 C
       DIMENSION AMAT(*)
       real(8), allocatable :: buf(:)
-      CALL QENTER('BSTOBU')
+      CALL QENTER('BSTOBU_no_work')
 C
 C     Memory allocation
 C
@@ -1534,10 +1696,86 @@ C
 C     Memory deallocation
 C
       call dealloc(buf)
-      CALL QEXIT ('BSTOBU')
-      RETURN
-C
+      CALL QEXIT ('BSTOBU_no_work')
       END
+
+      subroutine bstobu_no_work_nonquadmat_LS_L(amat,mz)
+!***********************************************************************
+!
+!     non-quadratic matrix amat transformation 
+!     row dimension   : L+S
+!     column dimension: L
+!     from class/symmetry sorted basis (  "sorted basis" =  Dirac sorted)
+!     to symmetry/class   sorted basis ("unsorted basis" = Hermit sorted)
+!
+!     adaption of bstobu for non-quadratic matrices: S. Knecht, Feb 2011
+!
+!***********************************************************************
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      real(8), intent(inout) :: amat(*)
+      real(8), allocatable   :: bufx(:)
+      integer                :: ndim_mat
+
+      call qenter('bstobu_no_work_nonquadmat_LS_L')
+C
+C     Memory allocation
+      call alloc(bufx, mz*ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
+
+      call dcopy(mz*ntbas(0)*ntbas(1),amat,1,bufx,1)
+      call dzero(amat,mz*ntbas(0)*ntbas(1))
+
+!     IREP+1 for icos because loop indices in herrdn.F run from 
+!     1 --> maxrep+1 for icos!
+
+      izoff = 0
+      do iz = 1,mz
+        do jrep = 0,maxrep
+          do j = 0,nbbas(jrep,1)-1
+            joff = izoff + (ibbas(jrep,1)+j)*ntbas(0)
+!           print *,'joff ==> column in L part', joff
+            do ic = 1, 2
+              do irep = 0,maxrep
+                print *,'IC, IREP', IC, IREP
+                isoff = joff + ibbas(irep  ,ic)
+                iuoff = joff + icos (irep+1,ic)
+                if(nbbas(irep,ic).gt.0)then
+
+                   call dcopy(nbbas(irep,ic),bufx(1+isoff),1,
+     &                                       amat(1+iuoff),1)
+
+#ifdef DEBUG_mat_transform
+                   print *,'copy: NBBAS(IREP,IC) irep',
+     &                            NBBAS(IREP,IC),irep
+                   print *,'2nd   loop: ISOFF, IUOFF',ISOFF, IUOFF
+                   do jjj = 1, NBBAS(IREP,IC)
+                     print *,'copy: AMAT(',IUOFF+1+jjj-1,') = ',
+     &                              AMAT(  IUOFF+1+jjj-1)
+                   end do
+#endif
+                end if
+
+              end do
+            end do
+          end do
+        end do
+        izoff = izoff + ntbas(1)*ntbas(0)
+      end do
+C
+C     Memory deallocation
+      call dealloc(bufx)
+
+      call qexit('bstobu_no_work_nonquadmat_LS_L')
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck butobs */
       SUBROUTINE BUTOBS_no_work(AMAT,MZ)
@@ -1568,7 +1806,7 @@ C
       CALL QENTER('BUTOBS')
 C
 
-      call alloc(buf, mz*n2bbasx)
+      call alloc(buf, mz*n2bbasx, id='buf in butobs')
       CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
       IZOFF = 0
       DO IZ = 1,MZ
@@ -2498,7 +2736,7 @@ C***********************************************************************
 #include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
+      IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
 C
 C     Loop over all irreps in molecule
 C

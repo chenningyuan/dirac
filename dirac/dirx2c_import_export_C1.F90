@@ -34,6 +34,7 @@ module x2c_import_exportC1
   implicit none
 
   public x2c_export_mat2C1
+  public x2c_export_pctmat2C1
 
   private
 
@@ -70,6 +71,11 @@ contains
        write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
        call x2c_read(flabel,h1_saao,nr_ao_total_x2c*nr_ao_total_x2c*nr_quat,x2c_fh1dirty)
 
+!      debug print
+       if(x2c_prt > 2)then
+         call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-DIRAC',6)
+       end if
+
 !      a. insert quaternion phase factors
 !      ----------------------------------
        if(nr_quat < 4)then
@@ -79,9 +85,19 @@ contains
          end do
        end if
 
+!      debug print
+       if(x2c_prt > 2)then
+         call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-DIRAC-phase',6)
+       end if
+
 !      b. transform hamiltonian integral elements from DIRAC-sorted AO to Hermit-sorted AO basis
 !      -----------------------------------------------------------------------------------------
        call bstobu_no_work(h1_saao,nr_quat)
+
+!      debug print
+       if(x2c_prt > 2)then
+         call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-Hermit-sorted',6)
+       end if
 
 !      allocate scratch matrix
        call alloc(scr1_mat,nr_ao_total_x2c*nr_ao_total_x2c*4)
@@ -99,6 +115,7 @@ contains
                      nr_ao_total_x2c,                                          &
                      irepd,                                                    &
                      x2c_prt)
+!                    10)
        end do
       
 !      d. write h4c (nosym) in AO basis to file 
@@ -115,4 +132,120 @@ contains
        close(x2c_fh1dirty, status='keep')
 
   end subroutine x2c_export_mat2C1
+
+!**********************************************************************
+  subroutine x2c_export_pctmat2C1()
+!----------------------------------------------------------------------
+!
+!    purpose: export picture-change transformation matrix U matrix in symmetry (quaternion packed)
+!             AO basis to AO basis in C1* double group symmetry.
+!
+!----------------------------------------------------------------------
+     real(8), allocatable            :: pctmat(:)
+     real(8), allocatable            :: scrmat(:)
+     integer                         :: i
+     integer                         :: iq
+     integer                         :: ipq
+     integer                         :: iz
+     integer                         :: irepd
+     integer                         :: ioff_pct_mat
+     real(8)                         :: mydummy(2)
+     logical                         :: fndlab12
+     character (len=12)              :: flabel
+!**********************************************************************
+
+!      open file with pctmatC1
+       open(x2c_fh1dirty,file='x2cpctmatC1',status='unknown',form='unformatted', &
+            access='sequential',action='readwrite',position='rewind')
+       if(fndlab12('pctmtaoNOSYM',x2c_fh1dirty))then
+          print *,' pctmatC1 present on file'
+       else
+          call x2c_write('dummy       ',mydummy,-1,x2c_fh1dirty)
+       end if
+
+!      initialize dimensions and pointers which might be used outside this module in dirac calls
+       call setdc2(0)
+
+!      allocate pct-matrix
+       call alloc(pctmat,nr_ao_total_x2c*nr_ao_large_x2c*nr_quat, id='pctmat - original')
+       pctmat = 0
+
+!      initialize offset
+       ioff_pct_mat = 1
+
+       do i = 1, nr_fsym
+         write(flabel,'(a7,i4,i1)') 'pctmtAO',0,i
+         call x2c_read(flabel,pctmat(ioff_pct_mat),nr_ao_all(i)*nr_ao_l(i)*nr_quat,x2c_funit)
+         ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
+       end do
+
+!      DEBUG purification!!!
+       do i = 1, nr_ao_total_x2c*nr_ao_large_x2c*nr_quat       
+         if(abs(pctmat(i)).lt.1.0d-14) pctmat(i) = 0.0d0
+       end do
+
+!      debug print
+       if(x2c_prt > 2)then 
+         call print_x2cmat(pctmat,nr_ao_total_x2c,nr_ao_large_x2c,nr_quat,x2c_cb_pq_to_uq, &
+                           'x2c - pctmat-orig',6)
+       end if       
+
+!      a. insert quaternion phase factors
+!      ----------------------------------
+       if(nr_quat < 4)then
+         do iz = 1, nr_quat
+           iq = x2c_cb_pq_to_uq(iz,0)
+           call q2bphase_nonquadmat_LS_L('F',iq,1,pctmat(1+(nr_ao_total_x2c*nr_ao_large_x2c*(iz-1))))
+         end do
+       end if
+
+!      debug print
+       if(x2c_prt > 2)then 
+         call print_x2cmat(pctmat,nr_ao_total_x2c,nr_ao_large_x2c,nr_quat,x2c_cb_pq_to_uq, & 
+                           'x2c - pctmat-after-phase-fac-insert',6)
+       end if       
+
+!      b. transform pctmat elements from DIRAC-sorted AO to Hermit-sorted AO basis
+!      ---------------------------------------------------------------------------
+       call bstobu_no_work_nonquadmat_LS_L(pctmat,nr_quat)
+
+       if(x2c_prt > 2)then 
+         call print_x2cmat(pctmat,nr_ao_total_x2c,nr_ao_large_x2c,nr_quat,x2c_cb_pq_to_uq, & 
+                           'x2c - pctmat-after-bstobu',6)
+       end if       
+
+!      c. transform from SO-AO basis to AO-basis (nosym)
+!      -------------------------------------------------
+       call alloc(scrmat,nr_ao_total_x2c*nr_ao_large_x2c*4,id='scrmat for c1 export')
+       i = x2c_bs_to_fs(0,1)
+       do iz = 1, 4
+         irepd = x2c_bs_irrep_mat(iz,0)
+         iq    = x2c_iqmult_trip_q(1,x2c_pointer_quat(irepd,i),iz)
+         ipq   = x2c_cb_uq_to_pq(iq,0)
+         print *,'ipq-1 and irepd are ',ipq-1, irepd
+
+         call MTSOAO_nonquadmatL(pctmat(1+(nr_ao_total_x2c*nr_ao_large_x2c*(ipq-1))),      &
+                                 scrmat(1+(nr_ao_total_x2c*nr_ao_large_x2c*(iz-1))),       &
+                                 nr_ao_total_x2c,                                          &
+                                 nr_ao_large_x2c,                                          &
+                                 irepd,                                                    &
+                                 10)
+       end do
+!      debug print
+       if(x2c_prt > 2)then 
+         call print_x2cmat(scrmat,nr_ao_total_x2c,nr_ao_large_x2c,4,x2c_cb_pq_to_uq, & 
+                           'x2c - pctmat-in-C1',6)
+       end if       
+
+!      d. write pctmat (nosym) in AO basis to file 
+!      -------------------------------------------
+       call x2c_write('pctmtaoNOSYM',scrmat,nr_ao_total_x2c*nr_ao_large_x2c*4,x2c_fh1dirty)
+
+       call dealloc(scrmat)
+       call dealloc(pctmat)
+
+       close(x2c_fh1dirty, status='keep')
+
+  end subroutine x2c_export_pctmat2C1
+
 end module

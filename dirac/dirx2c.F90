@@ -86,6 +86,7 @@ module dirx2c
   use x2c_fio
   use x2c_utils
   use atomic_x2c
+  use x2c_import_exportC1
 
   implicit none
 
@@ -414,8 +415,15 @@ contains
                                   x2c_prep_bnccorr,    &
                                   x2c_prt)
 
+!      --------------------------------------------------------------------------------------------
+!      step 5: export picture-change transformation matrix to AO basis with nosym (C1 double group)
+!      --------------------------------------------------------------------------------------------
+       if(x2cmod_h1dirty)then
+         call x2c_export_pctmat2C1()
+       end if
+
 !      ----------------------------------------------------------------------------------------
-!      step 4: renew dimensions on common blocks, i.e. "remove" references to positronic shells
+!      step 6: renew dimensions on common blocks, i.e. "remove" references to positronic shells
 !      ----------------------------------------------------------------------------------------
        call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
 

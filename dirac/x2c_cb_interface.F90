@@ -174,15 +174,8 @@ contains
              end do
            end do
 
-           x2c_cb_pq_to_uq = 0
-           x2c_cb_uq_to_pq = 0
-           do i = 1, 4
-             do j = 0, nbsym - 1
-               x2c_cb_pq_to_uq(i, j) = ipqtoq(i, j)
-               x2c_cb_uq_to_pq(i, j) = iqtopq(i, j)
-             end do
-           end do
-
+           x2c_cb_pq_to_uq(1:4, 0:7)        = ipqtoq(1:4, 0:7)
+           x2c_cb_uq_to_pq(1:4, 0:7)        = iqtopq(1:4, 0:7)
            x2c_bs_to_fs(0:7, 1:2)           = jbtof(0:7, 1:2)
            x2c_pointer_quat(0:7, 1:2)       = jqbas(0:7, 1:2)
            x2c_bs_irrep_mat(1:4, 0:7)       = irqmat(1:4, 0:7)
