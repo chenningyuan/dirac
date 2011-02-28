@@ -478,11 +478,9 @@ def main(*args):
 
     f_todo.close()
 
-    # return code (for trac-bitten to get label of the failed test)
-    if   nr_failed > 0 :
-        return 2
-    elif nr_crashed > 0:
-        return 3
+    # return code
+    if (nr_failed + nr_crashed) > 0 :
+        return 1
     else:
         return 0
 

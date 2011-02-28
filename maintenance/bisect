@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Radovan Bast (2011-02-28)
+# example script for autolazy git bisecting
+# run this script from top directory
+
+# adapt this (you may also want to adapt cmake flags below)
+TEST=xyz_input
+BAD_REV=HEAD
+GOOD_REV=8d78fd7736a41ef8e4394c
+
+if [ -d cbuild ]; then
+    echo "running bisect ..."
+else 
+    echo "ERROR: run this script from top directory"
+    exit 1
+fi 
+
+THIS_DIR=$PWD
+BUILD_DIR=$THIS_DIR/cbuild
+TMP_DIR=$BUILD_DIR/delete_me
+mkdir -p $TMP_DIR
+
+cp -r utils pam runtest test basis* $TMP_DIR
+ln -sf $BUILD_DIR/dirac.x $TMP_DIR/dirac.x
+
+git bisect start $BAD_REV $GOOD_REV
+git bisect run sh -c "./pamadm -a; cd $BUILD_DIR; cmake -DCMAKE_BUILD_TYPE=Debug ..; make; cd $THIS_DIR; $TMP_DIR/runtest --tests=$TEST"
+git bisect reset
+
+rm -rf $TMP_DIR
+
+exit 0
