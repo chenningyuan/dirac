@@ -1032,8 +1032,8 @@ contains
                              dmat,                  &
                              dmat_pg_sym,           &
                              dmat_sorted,           &
-                             xmat,           &
-                             0,                     &
+                             xmat,                  &
+                             dmat_pg_sym(1) - 1,    &
                              derv_length,           &
                              derv,                  &
                              max_fun_derv,          &
