@@ -186,13 +186,13 @@ if not options.auto:
         command += ' CC=%s' % options.cc
     if options.cpp:
         command += ' CXX=%s' % options.cpp
-    if options.math:
-        command += ' USERDEFINED_LIBS="%s"' % options.math
 
 command += ' cmake'
 
 if options.nomath:
     command += ' -DDIRAC_ENABLE_EXTERNAL_MATH=0'
+if options.math:
+    command += ' -DDIRAC_USERDEFINED_LIBS="%s"' % options.math
 if options.mpi:
     command += ' -DDIRAC_ENABLE_MPI=1'
     if options.runtest_mpi:

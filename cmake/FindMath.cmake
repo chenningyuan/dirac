@@ -1,9 +1,7 @@
 
 # radovan: this routine is very primitive
 #          feel free to refactor/generalize
-#
-# miro: we need to tell FindMath first to check for the "User set math libraries" !
-#
+
 macro(Check_Fortran_Libraries LIBRARIES _prefix _list)
     set(${LIBRARIES})
     set(_libraries_work TRUE)
@@ -47,11 +45,20 @@ endmacro()
 set(MATH_FOUND FALSE)
 
 # user sets
-if(NOT $ENV{USERDEFINED_LIBS} STREQUAL '')
+set(DIRAC_USERDEFINED_LIBS
+    "${DIRAC_USERDEFINED_LIBS}"
+    CACHE STRING
+    "User set math libraries"
+    FORCE
+    )
+if(NOT "${DIRAC_USERDEFINED_LIBS}" STREQUAL "")
     set(MATH_LIBS
-        $ENV{USERDEFINED_LIBS}
+        "${DIRAC_USERDEFINED_LIBS}"
+        CACHE STRING
+        "User set math libraries"
+        FORCE
         )
-    message("-- User set math libraries: ${MATH_LIBS}")
+    message("-- DIRAC: User set math libraries: ${MATH_LIBS}")
     set(MATH_FOUND TRUE)
 endif()
 
