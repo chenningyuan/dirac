@@ -1,16 +1,27 @@
 #!/bin/bash
 
+# usage:   ./maintenance/bisect test       bad_rev good_rev
+# example: ./maintenance/bisect visual_lao HEAD    b9863fbd44e025b67
+
 # Radovan Bast (2011-02-28)
 # example script for autolazy git bisecting
 # run this script from top directory
 
-# adapt this (you may also want to adapt cmake flags below)
-TEST=xyz_input
-BAD_REV=HEAD
-GOOD_REV=8d78fd7736a41ef8e4394c
+TEST=$1
+BAD_REV=$2
+GOOD_REV=$3
+
+if [ $# -ne 3 ]
+then
+  echo "Usage: ./maintenance/`basename $0` test bad_rev good_rev"
+  exit 1
+fi
 
 if [ -d cbuild ]; then
-    echo "running bisect ..."
+    echo "running bisect with:"
+    echo "test     $TEST"
+    echo "bad_rev  $BAD_REV"
+    echo "good_rev $GOOD_REV"
 else 
     echo "ERROR: run this script from top directory"
     exit 1
@@ -25,7 +36,7 @@ cp -r utils pam runtest test basis* $TMP_DIR
 ln -sf $BUILD_DIR/dirac.x $TMP_DIR/dirac.x
 
 git bisect start $BAD_REV $GOOD_REV
-git bisect run sh -c "./pamadm -a; cd $BUILD_DIR; cmake -DCMAKE_BUILD_TYPE=Debug ..; make; cd $THIS_DIR; $TMP_DIR/runtest --tests=$TEST"
+git bisect run sh -c "./pamadm -a; cd $BUILD_DIR; cmake -DCMAKE_BUILD_TYPE=Debug ..; make; cd $THIS_DIR; $TMP_DIR/runtest --giveup --tests=$TEST"
 git bisect reset
 
 rm -rf $TMP_DIR
