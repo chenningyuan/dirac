@@ -318,6 +318,13 @@ dirac_modules[this_module].add_directory('interest')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
+this_module = 'inxc'
+dirac_modules[this_module] = dirac_module('inxc', 'XC integrator module')
+dirac_modules[this_module].add_cppflag('MOD_INXC')
+dirac_modules[this_module].add_directory('inxc')
+dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
+
 this_module = 'krcc'
 dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
 dirac_modules[this_module].add_cppflag('MOD_KRCC')
