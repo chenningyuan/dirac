@@ -5,12 +5,13 @@
 # or execute it as a cron job with "make Nightly"
 # make sure cmake is installed before you run it
 
+# for crontab&queue system you have to set up enviroment !
 export PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin:$PATH
 export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to DIRAC buildup.."
-echo "PATH=$PATH"
-echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" 
+#echo "PATH=$PATH"
+#echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" 
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_gcc_atlas_ILP64_cdash/adm/trunk
@@ -38,7 +39,7 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 # build and run tests
 # use either Experimental or Nightly
 #  make -j 2
-  make Experimental 
-# make Nightly 
+#  make Experimental 
+make Nightly 
 
 exit 0
