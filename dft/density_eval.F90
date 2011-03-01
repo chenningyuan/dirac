@@ -1339,8 +1339,8 @@ contains
                           block_threshold,       &
                           mat_dim,               &
                           n,                   &
-                          gn_0,                  &
-                          gnn_0,                   &
+                          n_g,                 &
+                          gnn,                   &
                           buffer,                &
                           ao_block,              &
                           bmat,                  &
@@ -1367,7 +1367,7 @@ contains
       real(8), intent(in)    :: block_threshold
       integer, intent(in)    :: mat_dim
       real(8), intent(out)   :: n(mxbllen, 0:1)
-      real(8)                :: gn_0(mxbllen, 3)
+      real(8)                :: n_g(mxbllen, 3, 0:1)
       real(8)                :: buffer(*)
       real(8), intent(in)    :: ao_block(mxbllen, *)
       real(8), allocatable   :: ao_sorted(:, :)
@@ -1384,7 +1384,7 @@ contains
       integer                :: derv_length
       real(8)                :: derv(mxbllen, 0:derv_length)
       integer, intent(in)    :: max_fun_derv
-      real(8)                :: gnn_0(*)
+      real(8)                :: gnn(mxbllen, 0:1, 0:1)
       real(8)                :: w(*)
 !     --------------------------------------------------------------------------
       real(8), allocatable   :: u_n(:)
@@ -1426,8 +1426,13 @@ contains
       if (is_gga) then
          do ixyz = 1, 3
             do k = 1, block_length
-               gn_0(k, ixyz) = 0.0d0
+               n_g(k, ixyz, 0) = 0.0d0
             end do
+            if (do_lr) then
+               do k = 1, block_length
+                  n_g(k, ixyz, 1) = 0.0d0
+               end do
+            end if
          end do
       end if
 
@@ -1510,18 +1515,26 @@ contains
                                     isoff(jblock),              &
                                     iksoff(jblock),             &
                                     n,                          &
-                                    gn_0                        &
+                                    n_g                         &
                                    )
          end if
       end do
 
       if (is_gga) then
          do k = 1, block_length
-            gnn_0(k) = gn_0(k, 1)*gn_0(k, 1) &
-                     + gn_0(k, 2)*gn_0(k, 2) &
-                     + gn_0(k, 3)*gn_0(k, 3)
+            gnn(k, 0, 0) = n_g(k, 1, 0)*n_g(k, 1, 0) &
+                         + n_g(k, 2, 0)*n_g(k, 2, 0) &
+                         + n_g(k, 3, 0)*n_g(k, 3, 0)
 
          end do
+         if (do_lr) then
+            do k = 1, block_length
+               gnn(k, 0, 1) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, 1) &
+                            + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, 1) &
+                            + 2.0d0*n_g(k, 3, 0)*n_g(k, 3, 1)
+           
+            end do
+         end if
       end if
 
       call get_functional_derv(xc_fun,       &
@@ -1529,7 +1542,7 @@ contains
                                block_length, &
                                w,            &
                                n(1, 0),      &
-                               gnn_0,        &
+                               gnn(1, 0, 0), &
                                derv_length,  &
                                derv)
 
@@ -1538,6 +1551,18 @@ contains
          do k = 1, block_length
             u_n(k) = derv(k, d2000000)*n(k, 1)
          end do
+         if (is_gga) then
+            do k = 1, block_length
+               u_n(k) = u_n(k) + derv(k, d1010000)*gnn(k, 0, 1)
+            end do
+            do ixyz = 1, 3
+               do k = 1, block_length
+                  u_gn(k, ixyz) = 2.0d0*n_g(k, ixyz, 0)*n(k, 1)*derv(k, d1010000)      &
+                                + 2.0d0*n_g(k, ixyz, 0)*gnn(k, 0, 1)*derv(k, d0020000) &
+                                + 2.0d0*n_g(k, ixyz, 1)*derv(k, d0010000)
+               end do
+            end do
+         end if
       else
          do k = 1, block_length
             u_n(k) = derv(k, d1000000)
@@ -1545,7 +1570,7 @@ contains
          if (is_gga) then
             do ixyz = 1, 3
                do k = 1, block_length
-                  u_gn(k, ixyz) = 2.0d0*gn_0(k, ixyz)*derv(k, d0010000)
+                  u_gn(k, ixyz) = 2.0d0*n_g(k, ixyz, 0)*derv(k, d0010000)
                end do
             end do
          end if
@@ -1569,7 +1594,7 @@ contains
                                        isoff(jblock),              &
                                        iksoff(jblock),             &
                                        n,                          &
-                                       gn_0,                       &
+                                       n_g,                        &
                                        u_n,                        &
                                        u_gn                        &
                                       )
@@ -1598,7 +1623,7 @@ contains
                                     isoff_r,              &
                                     iksoff_r,             &
                                     n,                    &
-                                    gn_0,                 &
+                                    n_g,                  &
                                     u_n,                  &
                                     u_gn                  &
                                    )
@@ -1618,7 +1643,7 @@ contains
       integer                :: isoff_r
       integer                :: iksoff_r
       real(8)                :: n(mxbllen, 0:1)
-      real(8)                :: gn_0(mxbllen, 3)
+      real(8)                :: n_g(mxbllen, 3, 0:1)
       real(8)                :: u_n(mxbllen)
       real(8)                :: u_gn(mxbllen, 3)
 !     --------------------------------------------------------------------------
@@ -1638,7 +1663,7 @@ contains
          if (is_gga) then
             do ixyz = 1, 3
                do k = 1, block_length
-                  bmat(ikoff + k) = 2.0d0*ao_sorted(iksoff_l + ikoff + k, ixyz)*u_gn(k, ixyz)
+                  bmat(ikoff + k) = bmat(ikoff + k) + 2.0d0*ao_sorted(iksoff_l + ikoff + k, ixyz)*u_gn(k, ixyz)
                end do
             end do
          end if
@@ -1718,7 +1743,7 @@ contains
                                  isoff_r,              &
                                  iksoff_r,             &
                                  n,                    &
-                                 gn_0                  &
+                                 n_g                   &
                                 )
 
       use block_config
@@ -1738,7 +1763,7 @@ contains
       integer, intent(in)    :: isoff_r
       integer, intent(in)    :: iksoff_r
       real(8), intent(inout) :: n(mxbllen, 0:1)
-      real(8), intent(inout) :: gn_0(mxbllen, 3)
+      real(8), intent(inout) :: n_g(mxbllen, 3, 0:1)
 !     --------------------------------------------------------------------------
       integer :: i, ikoff, ixyz, k, jkoff, j, ijoff, is, js
       real(8), allocatable   :: dmat_sorted_0(:)
@@ -1835,7 +1860,7 @@ contains
          if (is_gga) then
             do ixyz = 1, 3
                do k = 1, block_length
-                  gn_0(k, ixyz) = gn_0(k, ixyz) + 2.0d0*xmat(ikoff + k, 0)*ao_sorted(iksoff_l + ikoff + k, ixyz)
+                  n_g(k, ixyz, 0) = n_g(k, ixyz, 0) + 2.0d0*xmat(ikoff + k, 0)*ao_sorted(iksoff_l + ikoff + k, ixyz)
                end do
             end do
          end if
@@ -1846,6 +1871,13 @@ contains
             do k = 1, block_length
                n(k, 1) = n(k, 1) + xmat(ikoff + k, 1)*ao_sorted(iksoff_r + ikoff + k, 0)
             end do
+            if (is_gga) then
+               do ixyz = 1, 3
+                  do k = 1, block_length
+                     n_g(k, ixyz, 1) = n_g(k, ixyz, 1) + 2.0d0*xmat(ikoff + k, 1)*ao_sorted(iksoff_r + ikoff + k, ixyz)
+                  end do
+               end do
+            end if
          end do
       end if
 

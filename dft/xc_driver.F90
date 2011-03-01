@@ -840,7 +840,10 @@ contains
 
 !     density
       real(8) :: n(mxbllen, 0:1)
-
+!     density gradient
+      real(8) :: n_g(mxbllen, 3, 0:1)
+!     density gradient square
+      real(8) :: gnn(mxbllen, 0:1, 0:1)
 
 
       real(8) :: tau
@@ -1022,8 +1025,8 @@ contains
                              block_threshold,       &
                              mat_dim,               &
                              n,                     &
-                             gn_0,                  &
-                             gnn_0,                 &
+                             n_g,                   &
+                             gnn,                   &
                              buffer,                &
                              ao_block,              &
                              bmat,                  &
