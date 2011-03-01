@@ -10,8 +10,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-fcray-pointer -fbacktrace")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
-    # link flags, TODO: adapt ${CMAKE_Fortran_LINK_EXECUTABLE}
-    set(CMAKE_Fortran_LINK_FLAGS    "-Wl, -E")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
