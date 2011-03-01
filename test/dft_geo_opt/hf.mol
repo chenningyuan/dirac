@@ -1,11 +1,11 @@
 INTGRL
 .
 .
-C   2    0
+C   2
        9.     1
-F   0.0 -1.7  0.0
-LARGE BASIS 6-31G
+F   0.0 -2.5  0.0
+LARGE BASIS STO-3G
        1.     1
 H   0.0  0.0  0.0
-LARGE BASIS 6-31G
+LARGE BASIS STO-3G
 FINISH
