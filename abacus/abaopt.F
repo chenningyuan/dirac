@@ -2276,6 +2276,7 @@ C     (by running HERMIT and SIRIUS).
 C
       use dirac_cfg
       use dft_cfg
+      use xc_driver
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2305,11 +2306,6 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
-
-      if (dirac_cfg_dft_calculation) then
-!       get a new grid at new geometry
-        call reset_grid()
-      end if
 
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
@@ -2372,6 +2368,11 @@ ckr#endif
          ENERGY = EMCSCF
       END IF
 #else /* PRG_DIRAC */
+
+      if (dirac_cfg_dft_calculation) then
+!       get a new grid at new geometry
+        call reset_grid()
+      end if
 C
 C     Geometry optimization for Dirac
 C
