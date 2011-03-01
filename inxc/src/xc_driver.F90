@@ -23,11 +23,12 @@ module xc_driver
 
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
+#ifdef MOD_UNRELEASED
   use fde_mod
+#endif
   use dirac_cfg
   use basis_info
   use occupation_info
-  use memory_allocator
   use dft_cfg
   use dft_functional_derv
   use dft_ao_in_mem
@@ -375,20 +376,20 @@ contains
 !     nullify(tmat_1)
 !     nullify(tmat_2)
       if (do_geo_1) then
-         call alloc(tmat_1, mat_dim, mat_dim)
+         allocate(tmat_1(mat_dim, mat_dim))
          tmat_1(:, :) = xc_dmat(:, :, 1, 1)
       end if
 
       if (do_geo_2) then
-         call alloc(tmat_1, mat_dim, mat_dim)
-         call alloc(tmat_2, mat_dim, mat_dim)
+         allocate(tmat_1(mat_dim, mat_dim))
+         allocate(tmat_2(mat_dim, mat_dim))
          tmat_1(:, :) = xc_dmat(:, :, 1, 1)
          tmat_2(:, :) = xc_dmat(:, :, 1, 2)
       end if
 
       nullify(dmat_0)
       if (i_am_coworker) then
-         call alloc(dmat_0_container, mat_dim, mat_dim)
+         allocate(dmat_0_container(mat_dim, mat_dim))
          dmat_0 => dmat_0_container
       else
          dmat_0 => xc_dmat_0
@@ -397,7 +398,7 @@ contains
       nullify(dmat)
       if (nr_dmat > 0) then
          if (i_am_coworker) then
-            call alloc(dmat_container, mat_dim, mat_dim, nz, nr_dmat)
+            allocate(dmat_container(mat_dim, mat_dim, nz, nr_dmat))
             dmat => dmat_container
          else
             if (present(xc_dmat)) then
@@ -409,7 +410,7 @@ contains
       nullify(fmat)
       if (nr_fmat > 0) then
          if (i_am_coworker) then
-            call alloc(fmat_container, mat_dim, mat_dim, nz, nr_fmat)
+            allocate(fmat_container(mat_dim, mat_dim, nz, nr_fmat))
             fmat => fmat_container
          else
             if (present(xc_fmat)) then
@@ -427,12 +428,12 @@ contains
 
       if (i_am_coworker) then
          if (nr_fmat > 0) then
-            call alloc(fmat_pg_sym_container, nr_fmat)
+            allocate(fmat_pg_sym_container(nr_fmat))
             fmat_pg_sym => fmat_pg_sym_container
          end if
          if (nr_dmat > 0) then
-            call alloc(dmat_pg_sym_container, nr_dmat)
-            call alloc(dmat_ih_sym_container, nr_dmat)
+            allocate(dmat_pg_sym_container(nr_dmat))
+            allocate(dmat_ih_sym_container(nr_dmat))
             dmat_pg_sym => dmat_pg_sym_container
             dmat_ih_sym => dmat_ih_sym_container
          end if
@@ -462,7 +463,7 @@ contains
       nullify(property_gradient)
       if (i_am_coworker) then
          if (do_geo) then
-            call alloc(property_gradient_container, nr_atoms*3)
+            allocate(property_gradient_container(nr_atoms*3))
             property_gradient => property_gradient_container
             property_gradient = 0.0d0
          end if
@@ -527,9 +528,9 @@ contains
 !     allocate saop density matrices
       if (dft_cfg_saop) then
          dft_cfg_saop_is_active = .true.
-         call alloc(dmat_saop_outer, mat_dim*mat_dim)
+         allocate(dmat_saop_outer(mat_dim*mat_dim))
          if (dft_cfg_saop_with_response_part) then
-            call alloc(dmat_saop_resp, mat_dim*mat_dim)
+            allocate(dmat_saop_resp(mat_dim*mat_dim))
          end if
 !        only master calculates saop density matrices
          if (i_am_master) then
@@ -644,9 +645,9 @@ contains
 
 !     deallocate saop density matrices
       if (dft_cfg_saop) then
-        call dealloc(dmat_saop_outer)
+        deallocate(dmat_saop_outer)
         if (dft_cfg_saop_with_response_part) then
-          call dealloc(dmat_saop_resp)
+          deallocate(dmat_saop_resp)
         end if
       end if
 
@@ -729,11 +730,11 @@ contains
          nullify(property_gradient)
       end if
       if (do_geo_1) then
-         call dealloc(tmat_1)
+         deallocate(tmat_1)
       end if
       if (do_geo_2) then
-         call dealloc(tmat_1)
-         call dealloc(tmat_2)
+         deallocate(tmat_1)
+         deallocate(tmat_2)
       end if
 !     if (associated(tmat_1)) then
 !        nullify(tmat_1)
@@ -916,15 +917,15 @@ contains
                       max_ao_m_order, &
                       dft_cfg_screening)
 
-    call alloc(ao,     total_ao_vector_length)
-    call alloc(buffer, total_ao_vector_length)
+    allocate(ao      (total_ao_vector_length))
+    allocate(buffer  (total_ao_vector_length))
 
     if (dft_cfg_blocked) then
-       call alloc(ao_block,              mxbllen, total_ao_vector_length)
-       call alloc(buffer_block,          mxbllen, total_ao_vector_length)
+       allocate(ao_block(              mxbllen, total_ao_vector_length))
+       allocate(buffer_block(          mxbllen, total_ao_vector_length))
        allocate(dmat_sorted(mat_dim*mat_dim, 0:1))
        allocate(xmat(mxbllen*mat_dim, 0:1))
-       call alloc(bmat,                  mxbllen*total_ao_vector_length)
+       allocate(bmat(                  mxbllen*total_ao_vector_length))
        block_threshold = get_block_threshold(mat_dim, dmat_0)
     end if
 
@@ -1758,14 +1759,14 @@ contains
 
      deallocate(derv)
 
-    call dealloc(ao)
-    call dealloc(buffer)
+    deallocate(ao)
+    deallocate(buffer)
     if (dft_cfg_blocked) then
-       call dealloc(ao_block)
-       call dealloc(buffer_block)
+       deallocate(ao_block)
+       deallocate(buffer_block)
        deallocate(dmat_sorted)
        deallocate(xmat)
-       call dealloc(bmat)
+       deallocate(bmat)
     end if
 
     deallocate(u%n)
@@ -2055,15 +2056,15 @@ contains
 #endif
 
          if (i_am_master) then
-            call alloc(rx, nr_points)
-            call alloc(ry, nr_points)
-            call alloc(rz, nr_points)
-            call alloc(rw, nr_points)
-         else
-            call alloc(rx, nr_points_process)
-            call alloc(ry, nr_points_process)
-            call alloc(rz, nr_points_process)
-            call alloc(rw, nr_points_process)
+            allocate(rx(nr_points))
+            allocate(ry(nr_points))
+            allocate(rz(nr_points))
+            allocate(rw(nr_points))
+         else           
+            allocate(rx(nr_points_process))
+            allocate(ry(nr_points_process))
+            allocate(rz(nr_points_process))
+            allocate(rw(nr_points_process))
          end if
 
          if (i_am_master) then
@@ -2077,8 +2078,8 @@ contains
                   call quit('fix fde_response mpi')
                end if
 
-               call alloc(fde_froz_n,  nr_points)
-               call alloc(fde_froz_ng, nr_points, 3)
+               allocate(fde_froz_n(nr_points))
+               allocate(fde_froz_ng(nr_points, 3))
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
                do i = 1, nr_points
@@ -2112,7 +2113,7 @@ contains
 #ifdef VAR_MPI
          if (parallel_xc) then
             if (i_am_master) then
-               call alloc(mpi_buffer, nr_points_process)
+               allocate(mpi_buffer(nr_points_process))
                call mpi_scatter(rx, nr_points_process,                                       &
                                 mpi_real8, mpi_buffer, nr_points_process, mpi_real8, mparid, &
                                 mpi_comm_world, ierr)
@@ -2125,7 +2126,7 @@ contains
                call mpi_scatter(rw, nr_points_process,                                       &
                                 mpi_real8, mpi_buffer, nr_points_process, mpi_real8, mparid, &
                                 mpi_comm_world, ierr)
-               call dealloc(mpi_buffer)
+               deallocate(mpi_buffer)
                if (nr_points_rest /= 0) then
                   i = nr_points - nr_points_rest + 1
                   call mpi_send(rx(i), nr_points_rest, &
@@ -2169,15 +2170,15 @@ contains
 
          call integrate()
 
-         call dealloc(rx)
-         call dealloc(ry)
-         call dealloc(rz)
-         call dealloc(rw)
+         deallocate(rx)
+         deallocate(ry)
+         deallocate(rz)
+         deallocate(rw)
 
 #ifdef MOD_UNRELEASED
         if (dirac_cfg_fde_response) then
-           if (allocated(fde_froz_n)) call dealloc(fde_froz_n)
-           if (allocated(fde_froz_ng)) call dealloc(fde_froz_ng)
+           if (allocated(fde_froz_n)) deallocate(fde_froz_n)
+           if (allocated(fde_froz_ng)) deallocate(fde_froz_ng)
 !          don't try to read another batch
            goto 999
         end if
