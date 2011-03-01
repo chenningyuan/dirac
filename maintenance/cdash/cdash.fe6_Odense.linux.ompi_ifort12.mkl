@@ -1,19 +1,40 @@
 #!/bin/bash
 
-timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}
-echo "running dirac cdash buildup at "$timestamp
-
-#PBS -N cdash_buildup.$timestamp
+#PBS -S /bin/bash
+#PBS -N cdash_buildup
 #PBS -l nodes=1
 #PBS -l walltime=6:00:00
 #PBS -j oe
+#PBS -q workq
+##PBS -o cdash_buildup
 
-source ~/.bashrc
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+#PBS -o cdash_buildup_log.$timestamp
+
+# intel fortran/MKL stuff
+export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
+export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
+
+# own (old) gcc-trunk stuff
+export PATH=/people/disk2/ilias/bin/gcc_bin_lib/bin:$PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/bin/gcc_bin_lib/lib64:$LD_LIBRARY_PATH
+
+# OpenMPI stuff
+export PATH=/people/disk2/ilias/bin/openmpi_ifort_gcc_ilp64/bin:$PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_gcc_ilp64/lib:$LD_LIBRARY_PATH
+
+# cmake stuff
+export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
+
+echo "running dirac cdash buildup at "$timestamp
 
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk
-
 cd $DIRAC
-svn up
+
+/people/disk2/ilias/bin/svn up .
 ./pamadm -a --xcfun
 
 ./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.fe6_Odense.ompi_ifort_gcc_mkl" --runtest_mpi=4 --int64 --debug
@@ -21,12 +42,14 @@ svn up
 ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 cd $DIRAC/cbuild
-make clean
 
-#make -j 4
+#make clean
+
+make -j 4
 
 #make Nightly
+#make Experimental
 
-make Experimental
+echo "buildup finished, check it"
 
 exit 0
