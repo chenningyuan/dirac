@@ -23,7 +23,7 @@ option(INXC_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
 option(INXC_ENABLE_MPI            "Use MPI parallelization"   OFF)
 option(INXC_ENABLE_XCFUN          "Use XCFun library"         ON)
 
-add_definitions(-DPRG_DIRAC)
+#add_definitions(-DPRG_DIRAC)
 
 include(cmake/Archs.cmake)
 include(cmake/Compilers.cmake)
@@ -132,6 +132,19 @@ set(INXC_SOURCES
     ${PROJECT_SOURCE_DIR}/../dft/fun-vwn.c
     ${PROJECT_SOURCE_DIR}/../dft/functionals.c
     ${PROJECT_SOURCE_DIR}/../dft/general.c
+    ${PROJECT_SOURCE_DIR}/../gp/memory_allocator.F90        
+    ${PROJECT_SOURCE_DIR}/../gp/memory_control.F90          
+    ${PROJECT_SOURCE_DIR}/../gp/memory_errorhandler.F90     
+    ${PROJECT_SOURCE_DIR}/../gp/memory_internal_ada_1d.F90  
+    ${PROJECT_SOURCE_DIR}/../gp/memory_internal_ada_2d.F90  
+    ${PROJECT_SOURCE_DIR}/../gp/memory_internal_ada_3d.F90  
+    ${PROJECT_SOURCE_DIR}/../gp/memory_internal_ada_4d.F90  
+    ${PROJECT_SOURCE_DIR}/../gp/memory_internal_init.F90    
+    ${PROJECT_SOURCE_DIR}/../gp/memory_parameters.F90       
+    ${PROJECT_SOURCE_DIR}/../gp/memory_track_if.F90         
+    ${PROJECT_SOURCE_DIR}/../gp/memory_tracker.F90          
+    ${PROJECT_SOURCE_DIR}/../gp/tracing.c
+    ${PROJECT_SOURCE_DIR}/../gp/tracker_util.c
     )
 
 add_executable(inxc.x

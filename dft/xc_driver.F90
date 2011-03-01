@@ -23,7 +23,9 @@ module xc_driver
 
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
+#ifdef PRG_DIRAC
   use fde_mod
+#endif
   use dirac_cfg
   use basis_info
   use occupation_info
