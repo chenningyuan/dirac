@@ -136,6 +136,11 @@ group.add_option('--verbose',
                  dest='verbose',
                  default=False,
                  help="verbose output, if, you know, you're not into the whole brevity thing [default: %default]")
+group.add_option('--showdiff',
+                 action='store_true',
+                 dest='showdiff',
+                 default=False,
+                 help="show differences in numbers [default: %default]")
 parser.add_option_group(group)
 
 # process input
@@ -434,6 +439,10 @@ def main(*args):
 
             progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
             task.print_result(progress, result_text, elapsed)
+
+            if options.showdiff:
+                if result_text == 'FAIL':
+                    os.system('more compare/%s.txt' % task.get_output_name())
         
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print
