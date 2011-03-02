@@ -326,24 +326,13 @@ def use_this_line(current_section):
     return False
 
 def get_current_section(line, current_section):
-    if line.split()[0] == 'quick':
-        return 'quick'
-    if line.split()[0] == 'regular':
-        return 'regular'
-    if line.split()[0] == 'benchmark':
-        return 'benchmark'
+    word = line.split()[0]
+    if word in ['quick', 'regular', 'benchmark']:
+        return word
     return current_section
 
 def line_is_keyword(line):
-    if line.split()[0] == 'sh':
-        return True
-    if line.split()[0] == 'quick':
-        return True
-    if line.split()[0] == 'regular':
-        return True
-    if line.split()[0] == 'benchmark':
-        return True
-    return False
+    return line.split()[0] in ['sh', 'quick', 'regular', 'benchmark']
 
 # main function
 def main(*args):
