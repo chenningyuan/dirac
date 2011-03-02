@@ -112,7 +112,7 @@ def get_username():
 
 def get_ip():
     """
-    module for getting the lan ip address of the computer
+    module for getting the LAN IP-address of the computer
     from  http://stackoverflow.com/questions/166506/finding-local-ip-addresses-in-python
     """
     import os
@@ -140,17 +140,18 @@ def get_ip():
 
 def get_hostname():
     """
-    get the hostname (without ip-adress)
+    get the server's hostname using its IP-address
     """
     import socket
-    this_host_name =  socket.gethostname()
+    #this_host_name =  socket.gethostname() # simple solution, deprecated
+    host=socket.gethostbyaddr(get_ip()) # better solution
+    this_host_name=host[0]
     return this_host_name
 
 def get_hostname_ip():
     """
-    get the hostname's ip-adress
+    get the hostname's ip-adress; use function get_ip
     """
-    #import socket
     this_ip = get_ip()
     return this_ip
 
