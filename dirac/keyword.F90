@@ -23,9 +23,7 @@ module keyword
 
 !radovan: please feel free to copy/use/improve this inside DIRAC/Dalton
 !         without asking
-
   use character_processing
-
   implicit none
 
   public reset_available_kw_list
@@ -46,6 +44,7 @@ module keyword
     module procedure kw_read_r2
     module procedure kw_read_r3
     module procedure kw_read_r4
+    module procedure kw_read_ivec
   end interface
 
   integer, parameter         :: max_nr_kw   = 200
@@ -151,10 +150,27 @@ contains
     read(unit_in, *, err=1) r1, r2, r3, r4
     return
 
- 1  call kw_read_error(kw_input)
+1   call kw_read_error(kw_input)
 
-  end subroutine
+   end subroutine
 
+  subroutine kw_read_ivec(kw_input, v, k)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)   :: kw_input
+    integer, dimension(:), intent(out) :: v
+    integer,                intent(in) :: k
+!   ----------------------------------------------------------------------------
+    integer                            :: j
+!   ----------------------------------------------------------------------------
+        read(unit_in, *,err=1) (v(j), j=1,k)
+    return
+
+  1  call kw_read_error(kw_input)
+
+    return
+   end subroutine
+!!
   subroutine kw_read_error(kw_input)
 
 !   ----------------------------------------------------------------------------

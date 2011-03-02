@@ -103,13 +103,25 @@ contains
          
                case ('*OPENRS')
                  call read_input_openrsp(word, kw_section)
+
+               case ('*X2C')
+                 call read_input_x2c(word, kw_section)
          
                case ('**RELCC')
                  call read_input_relcc(word, kw_section)
-         
-               case ('*X2C')
-                 call read_input_x2c(word, kw_section)
-
+     
+               case ('*CCENER')
+                 call read_input_ccener(word, kw_section)
+ 
+               case ('*CCFOPR')
+                 call read_input_ccfopr(word, kw_section)
+             
+               case ('*CCFSPC')
+                 call read_input_ccfspc(word, kw_section)
+     
+               case ('*CCIH  ')
+                 call read_input_ccih(word, kw_section)
+             
                case ('*END OF')
                  go to 1
          
@@ -652,6 +664,7 @@ contains
 
    end subroutine
 
+        
    subroutine read_input_visual_helper2(j)
 
       use visual_cfg
@@ -881,22 +894,42 @@ contains
 
   end subroutine
 
-  subroutine read_input_relcc(word, kw_section)
+
+ subroutine read_input_relcc(word, kw_section)
 
     use relcc_cfg
-
-!   ----------------------------------------------------------------------------
+!
+!!   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
     character(kw_length), intent(in) :: kw_section
 !   ----------------------------------------------------------------------------
-    character(80)                    :: line
-    character(4)                     :: first_4
+    integer                          :: i
 !   ----------------------------------------------------------------------------
 
-    call reset_available_kw_list()
+  call reset_available_kw_list()
+    if (kw_matches(word, '.NELEC ')) then
+       nelec_input = .true.
+       call kw_read(word, relcc_nelec, 2*NFSYM)
+    end if
+
+    if (kw_matches(word, '.NEL_F1')) then
+       call kw_read(word, relcc_nelec_f1, 2*NFSYM)
+    end if
+
+    if (kw_matches(word, '.NEL_F2')) then
+       call kw_read(word, relcc_nelec_f2, 2*NFSYM)
+    end if
+
+    if (kw_matches(word, '.NFROZ ')) then
+       call kw_read(word, relcc_nfroz, 2*NFSYM)
+    end if
 
     if (kw_matches(word, '.DEBUG ')) then
       relcc_debug = .true.
+    end if
+
+    if (kw_matches(word, '.CARITH')) then
+      relcc_carith = .true.
     end if
 
     if (kw_matches(word, '.TIMING')) then
@@ -922,8 +955,283 @@ contains
     if (kw_matches(word, '.PRINT ')) then
       call kw_read(word, relcc_print)
     end if
+   
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+  
+subroutine read_input_ccener(word, kw_section)
+
+    use relcc_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.DOMP2 ')) then
+      relcc_do_mp2 = .true.
+    end if
+
+    if (kw_matches(word, '.NOSING')) then
+      relcc_do_singles = .false.
+    end if
+
+    if (kw_matches(word, '.NODOUB')) then
+      relcc_do_doubles = .false.
+    end if
+
+    if (kw_matches(word, '.NOSD  ')) then
+      relcc_do_ccsd = .false.
+    end if
+
+    if (kw_matches(word, '.NOSDT ')) then
+      relcc_do_ccsd_t = .false.
+    end if
+
+    if (kw_matches(word, '.MAXIT ')) then
+      read(unit_in,'(i5)') relcc_ccener_max_iterations
+    end if
+    
+    if (kw_matches(word, '.MAXDIM')) then
+      read(unit_in,'(i5)') relcc_ccener_max_dimension_diis
+    end if
+    
+    if (kw_matches(word, '.NTOL  ')) then
+      read(unit_in,'(i5)') relcc_ccener_desired_convergence
+    end if
 
     call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+subroutine read_input_ccfopr(word, kw_section)
+
+   use relcc_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+
+    call reset_available_kw_list()
+
+
+    if (kw_matches(word, '.MP2G   ')) then
+      relcc_do_mp2gradient = .true.
+    end if
+
+    if (kw_matches(word, '.MP2G_O')) then
+      relcc_do_oldmp2gradient = .true.
+    end if
+ 
+    if (kw_matches(word, '.CCSDG ')) then
+      relcc_do_ccsdgradient = .true.
+    end if
+
+    if (kw_matches(word, '.CCSDTG')) then 
+      relcc_do_ccsdtgradient = .true.
+    end if
+
+    if (kw_matches(word, '.NATORB')) then
+      relcc_do_naturalorbitals = .true.
+    end if
+
+    if (kw_matches(word, '.NOZG  ')) then
+      relcc_do_zipgrid = .true.
+    end if
+
+    if (kw_matches(word, '.NEOPER')) then
+      read(unit_in,'(i5)') relcc_ne_oper
+    end if
+    
+    if (kw_matches(word, '.MAXIT ')) then
+      read(unit_in,'(i5)') relcc_fopr_max_iterations
+    end if
+    
+    if (kw_matches(word, '.MAXDIM')) then
+      read(unit_in,'(i5)') relcc_fopr_max_dimension_diis
+    end if
+    
+    if (kw_matches(word, '.NTOL  ')) then
+      read(unit_in,'(i5)') relcc_fopr_desired_convergence 
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+subroutine read_input_ccfspc(word, kw_section)
+
+    use relcc_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+    integer                          :: i
+!   ----------------------------------------------------------------------------
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.DOEA  ')) then
+      relcc_fs_do_ea = .true.
+    end if
+
+    if (kw_matches(word, '.DOIE  ')) then
+      relcc_fs_do_ie = .true.
+    end if
+ 
+    if (kw_matches(word, '.DOEA2 ')) then
+      relcc_fs_do_ea2 = .true.
+    end if
+
+    if (kw_matches(word, '.DOIE2 ')) then
+      relcc_fs_do_ie2 = .true.
+    end if
+ 
+    if (kw_matches(word, '.DOEXC ')) then
+      relcc_fs_do_exc = .true.
+    end if
+    
+    if (kw_matches(word, '.FSSECT ')) then
+          read(unit_in,*) (relcc_fs_fssect(i), i=1,6)
+    end if
+
+    if (kw_matches(word, '.DOIH  ')) then
+      relcc_fs_do_ih = .true.
+    end if
+
+    if (kw_matches(word, '.NACTH ')) then
+       call kw_read(word, relcc_fs_nacth, 2*NFSYM)
+    end if
+
+    if (kw_matches(word, '.NACTP ')) then
+       call kw_read(word, relcc_fs_nactp, 2*NFSYM)
+    end if
+
+    if (kw_matches(word, '.MAXIT ')) then
+      read(unit_in,'(i5)') relcc_fs_max_iterations
+    end if
+    
+    if (kw_matches(word, '.MXIT02')) then
+      read(unit_in,'(i5)') relcc_fs_max02_iterations
+    end if
+    
+    if (kw_matches(word, '.MXIT01')) then
+      read(unit_in,'(i5)') relcc_fs_max01_iterations
+    end if
+    
+    if (kw_matches(word, '.MXIT20')) then
+      read(unit_in,'(i5)') relcc_fs_max20_iterations
+    end if
+    
+    if (kw_matches(word, '.MXIT10')) then
+      read(unit_in,'(i5)') relcc_fs_max10_iterations
+    end if
+    
+    if (kw_matches(word, '.MXIT11')) then
+      read(unit_in,'(i5)') relcc_fs_max11_iterations
+    end if
+    
+    if (kw_matches(word, '.MXIT00')) then
+      read(unit_in,'(i5)') relcc_fs_max00_iterations
+    end if
+    
+    if (kw_matches(word, '.MAXDIM')) then
+      read(unit_in,'(i5)') relcc_fs_max_dimension_diis
+    end if
+    
+    if (kw_matches(word, '.NTOL  ')) then
+      read(unit_in,'(i5)') relcc_fs_desired_convergence 
+    end if
+
+    if (kw_matches(word, '.TSHOLD')) then
+      read(unit_in,'(i5)') relcc_fs_tshold  
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+  subroutine read_input_ccih(word, kw_section)
+    use relcc_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+    integer                          :: i 
+!   ----------------------------------------------------------------------------
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.IHSCHE')) then
+      read(unit_in,'(i5)') relcc_ih_scheme
+    end if
+    
+    if (kw_matches(word, '.SH_H11')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_h11
+    end if
+    
+    if (kw_matches(word, '.SH_H12')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_h12
+    end if
+    
+    if (kw_matches(word, '.SH_P11')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_p11
+    end if
+    
+    if (kw_matches(word, '.SH_P12')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_p12
+    end if
+    
+    if (kw_matches(word, '.SH_P2 ')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_p2
+    end if
+    
+    if (kw_matches(word, '.SH_H2 ')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_h2
+    end if
+    
+    if (kw_matches(word, '.SH_HP ')) then
+      read(unit_in,'(f15.8)') relcc_ih_shift_hp
+    end if
+    
+    if (kw_matches(word, '.AIH   ')) then
+      read(unit_in,'(f15.8)') relcc_ih_aih
+    end if
+    
+    if (kw_matches(word, '.EHMIN ')) then
+      read(unit_in,'(f15.8)') relcc_ih_eh_min
+    end if
+    
+    if (kw_matches(word, '.EHMAX ')) then
+      read(unit_in,'(f15.8)') relcc_ih_eh_max
+    end if
+    
+    if (kw_matches(word, '.EPMIN ')) then
+      read(unit_in,'(f15.8)') relcc_ih_ep_min
+    end if
+    
+    if (kw_matches(word, '.EPMAX ')) then
+      read(unit_in,'(f15.8)') relcc_ih_ep_max 
+    end if
+
+    if (kw_matches(word, '.NIH   ')) then
+      read(unit_in,'(i5)') relcc_ih_nih
+    end if
+    
+    if (kw_matches(word, '.NACTHI')) then
+       call kw_read(word, relcc_ih_nacthi, 2*NFSYM)
+    end if
+    
+    if (kw_matches(word, '.NACTPI')) then
+       call kw_read(word, relcc_ih_nactpi, 2*NFSYM)
+    end if
+
+       call check_whether_kw_found(word, kw_section)
 
   end subroutine
 
@@ -934,7 +1242,6 @@ contains
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
     character(kw_length), intent(in) :: kw_section
-!   ----------------------------------------------------------------------------
 !   ----------------------------------------------------------------------------
 
     call reset_available_kw_list()
