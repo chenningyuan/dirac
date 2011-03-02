@@ -32,10 +32,7 @@ def is_windows():
     """
     import distutils
     platform = distutils.util.get_platform()
-    if platform.find("win") == -1:
-        return False
-    else:
-        return True
+    return platform.find("win") == -1
 
 def process_time_string_core(time_string):
     """
@@ -84,8 +81,7 @@ def process_time_string_core(time_string):
     if d_pos > -1:
         days=num[k]; k=k+1 
 
-    return_time_secs = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
-    return return_time_secs
+    return secs + (60*mins) + (60*60*hours) + (60*60*60*days)
 
 def process_time_string(time_string):
     """
@@ -95,8 +91,7 @@ def process_time_string(time_string):
     """
     import sys
     try:
-        return_time_secs=process_time_string_core(time_string)
-        return return_time_secs
+        return process_time_string_core(time_string)
     except:
         for stream in [sys.stdout,sys.stderr]:
             print >> stream,'error, wrong entering time string:',time_string
@@ -145,15 +140,14 @@ def get_hostname():
     import socket
     #this_host_name =  socket.gethostname() # simple solution, deprecated
     host=socket.gethostbyaddr(get_ip()) # better solution
-    this_host_name=host[0]
-    return this_host_name
+    return host[0]
 
 def get_hostname_ip():
     """
     get the hostname's ip-adress; use function get_ip
     """
-    this_ip = get_ip()
-    return this_ip
+    return get_ip()
+
 
 def children_pid(pid):
     """
