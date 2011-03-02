@@ -3,10 +3,10 @@
 #PBS -S /bin/bash
 #PBS -N cdash_buildup
 #PBS -l nodes=1
-#PBS -l walltime=3:00:00
+#PBS -l walltime=6:00:00
 #PBS -j oe
 #PBS -q workq
-#PBS -o cdash_buildup_log
+##PBS -o cdash_buildup_log
 
 # intel fortran/MKL stuff
 export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
