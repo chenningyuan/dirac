@@ -262,16 +262,20 @@ contains
       inquire(file  = file_name, exist = file_exists)
 
       if (file_exists) then
-         close(file_unit, status = 'keep')
-         return
-      else
          open(file_unit,            &
               file   = file_name,   &
-              status = 'new',       &
+              status = 'old',       &
               form   = 'formatted', &
               access = 'sequential')
-         rewind(file_unit)
+         close(file_unit, status = 'delete')
       end if
+
+      open(file_unit,            &
+           file   = file_name,   &
+           status = 'new',       &
+           form   = 'formatted', &
+           access = 'sequential')
+      rewind(file_unit)
 
       only_large = .false.
       if (mc == 1) then

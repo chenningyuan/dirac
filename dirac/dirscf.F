@@ -1046,6 +1046,11 @@ C
 C   Called from PSIDHF
 C
 C*****************************************************************************
+
+      use basis_info
+      use basis_info_ng
+      use occupation_info
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1072,6 +1077,14 @@ C       in ONEFCK ... no need to prepare LUFCK1 !!!!
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
       CLOSE(LUFCK1,STATUS='KEEP')
+
+!     write info to files
+!     this is then used in dft and visualization
+!     if you move this to somewhere else think about
+!     geometry optimization!
+      call basis_info_write()
+      call basis_info_write_ng()
+      call occupation_info_write()
 
       IF(ONESYS) THEN
 C
