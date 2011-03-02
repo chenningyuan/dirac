@@ -140,7 +140,38 @@ contains
 !    purpose: export picture-change transformation matrix U matrix in symmetry (quaternion packed)
 !             AO basis to AO basis in C1* double group symmetry.
 !
-!----------------------------------------------------------------------
+!
+!    note: the structure of U in symmetry-ordered Dirac AO-basis (SO-Dirac-AO) is as follows:
+!
+!    do i = 1, nr_fsym
+!
+!       U( [L+S](i), L(i)) == U( nfbas(i,0), nfbas(i,1))
+!      
+!    end do
+!
+!    in other words:
+!
+!          nfsym = 1   nfsym = 2
+!
+!            L_1         L_2
+!         __                  _ 
+!        |   L_1               |  
+!        |   +           0     |  
+!    U = |   S_1               |  
+!        |               L_2   |  
+!        |   0           +     |  
+!        |               S_2   |  
+!        |_                   _| 
+!
+!    we thus most likely need: 
+!    - to define new AO-basis offset pointers to take properly care of this 
+!      non-quadratic matrix structure.
+!    - "reorder" the matrix elements for NZ > 1 thus that the "array"-order for the matrix elements is: 
+!       first ALL elements for NZ == 1 and then all elements for NZ == 2, ...
+!
+!    ... to be continued with hjj next week.
+!                         
+!-----------------------------------------------------------------------
      real(8), allocatable            :: pctmat(:)
      real(8), allocatable            :: scrmat(:)
      integer                         :: i
@@ -193,9 +224,18 @@ contains
            write(debug_label,'(a21,i2)') 'x2c - pctmat-orig -->',i
            call print_x2cmat(pctmat(ioff_pct_mat),nr_ao_all(i),nr_ao_l(i),nr_quat,x2c_cb_pq_to_uq, &
                              debug_label,6)
+           ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
          end do
-         ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
-       end if       
+       end if
+
+!      0. "expand" pctmat to full dimension (L+S,L) combining nr_fsym 1 and 2 in
+!      the row dimension - this will allow a simpler loop structure in the
+!      following routines ("gug" means gerade-ungerade)
+!      if(nr_fsym > 1)then
+!        do iz = 1, nr_quat
+!          call expand_nonquadmat_LS_L_gug()
+!        end do
+!      end if
 
 !      a. insert quaternion phase factors
 !      ----------------------------------
@@ -213,8 +253,8 @@ contains
            write(debug_label,'(a21,i2)') 'x2c - pctmx-phase -->',i
            call print_x2cmat(pctmat(ioff_pct_mat),nr_ao_all(i),nr_ao_l(i),nr_quat,x2c_cb_pq_to_uq, &
                              debug_label,6)
+           ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
          end do
-         ioff_pct_mat  = ioff_pct_mat + nr_ao_all(i) * nr_ao_l(i)* nr_quat
        end if
 
 !      b. transform pctmat elements from DIRAC-sorted AO to Hermit-sorted AO basis
@@ -224,7 +264,7 @@ contains
        if(x2c_prt > 2)then 
          call print_x2cmat(pctmat,nr_ao_total_x2c,nr_ao_large_x2c,nr_quat,x2c_cb_pq_to_uq, & 
                            'x2c - pctmat-after-bstobu',6)
-       end if       
+       end if
 
 !      c. transform from SO-AO basis to AO-basis (nosym)
 !      -------------------------------------------------

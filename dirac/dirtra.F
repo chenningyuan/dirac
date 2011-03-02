@@ -443,7 +443,11 @@ C
       CHARACTER TYP*1
       DIMENSION AMAT(*)
       EXTERNAL BDQALGEBRA
+#define DEBUG_mat_transform
 C
+#ifdef DEBUG_mat_transform
+      print '(a,i4)', ' phase factor insertion: jfac is',jfac
+#endif
       do irp1 = 0, nbsym-1
         do ic1 = 1, 2
 
@@ -1713,6 +1717,8 @@ C
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
+!                 print *,'copy IREP,IC, in JREP  ,JC: nbbas =',
+!    &                          IREP,IC,JREP  ,JC, NBBAS(IREP,IC)
                   IF(NBBAS(IREP,IC).GT.0)
      &              CALL DCOPY(NBBAS(IREP,IC),buf(1+ISOFF),1,
      &                                        AMAT(IUOFF+1)   ,1)
@@ -1761,6 +1767,20 @@ C
 #ifdef DEBUG_mat_transform
       print *,'bstobu...: dim of buf is',mz*ntbas(0)*ntbas(1)
 #endif
+      ! component L (1) S (2)
+      do i = 1, 2
+        do j = 0, maxrep
+          print '(a,i3,a,i3,a,i5)', 'jbtof(',j,',',i,') =',jbtof(j,i)
+          print '(a,i3,a,i3,a,i5)', 'nbbas(',j,',',i,') =',nbbas(j,i)
+          print '(a,i3,a,i3,a,i5)', 'nfbas(',jbtof(j,i),',',i,') =',
+     &                               nfbas(jbtof(j,i),i)
+        end do
+      end do
+      do i = 1, nfsym
+        print '(a,i3,a,i3,a,i5)', 'nfbas(',i,',',0,') =',
+     &                             nfbas(i,0)
+      end do
+      call flshfo(6)
 C
 C     Memory allocation
       call alloc(bufx, mz*ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
@@ -1771,12 +1791,17 @@ C     Memory allocation
 !     IREP+1 for icos because loop indices in herrdn.F run from 
 !     1 --> maxrep+1 for icos!
 
+
       izoff = 0
       do iz = 1,mz
+#ifdef DEBUG_mat_transform
+        print '(a,i3,a,i6)',' loop over iz =',iz,' starts now with off',
+     &                        izoff
+#endif
         do jrep = 0,maxrep
           do j = 0,nbbas(jrep,1)-1
             joff = izoff + (ibbas(jrep,1)+j)*ntbas(0)
-!           print *,'joff ==> column in L part', joff
+            print *,'joff ==> column in L part', joff
             do ic = 1, 2
               do irep = 0,maxrep
                 print *,'IC, IREP', IC, IREP
