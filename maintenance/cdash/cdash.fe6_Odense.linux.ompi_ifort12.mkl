@@ -27,9 +27,9 @@ export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_gcc_ilp64/lib:$LD_L
 export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
 
 # my own svn stuff
-export PATH=/people/disk2/ilias/bin/subversion/bin:$PATH
-export INCLUDE=/people/disk2/ilias/bin/subversion/bin:$INCLUDE
-export LD_LIBRARY_PATH=/people/disk2/ilias/bin/subversion/lib:$LD_LIBRARY_PATH
+#export PATH=/people/disk2/ilias/bin/subversion/bin:$PATH
+#export INCLUDE=/people/disk2/ilias/bin/subversion/bin:$INCLUDE
+#export LD_LIBRARY_PATH=/people/disk2/ilias/bin/subversion/lib:$LD_LIBRARY_PATH
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "running dirac cdash buildup at "$timestamp
@@ -37,7 +37,8 @@ echo "running dirac cdash buildup at "$timestamp
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk
 cd $DIRAC
 
-/people/disk2/ilias/bin/subversion/bin/svn up .
+#/people/disk2/ilias/bin/subversion/bin/svn up .
+
 ./pamadm -a --xcfun
 
 # setup, no --debug
