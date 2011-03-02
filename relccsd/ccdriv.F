@@ -204,10 +204,11 @@ C
 C     Read number of occupied spinors from input
 C
       REWIND (IN)
-      DO I = 1, 16
-         NFROZ(I) = 0
-         NELEC_F1(I) = 0
-         NELEC_F2(I) = 0
+      DO I= 1, 16
+       if (nelec_input)  NELEC(I)    = relcc_nelec(I)
+       NFROZ(I)    = relcc_nfroz(I)
+       NELEC_F1(I) = relcc_nelec_f1(I)
+       NELEC_F2(I) = relcc_nelec_f2(I)
       ENDDO
       IPRNT   = relcc_print
       DOSORT  = relcc_do_sort
@@ -215,10 +216,10 @@ C
       DOFOPR  = relcc_do_gradient
       DOSOPR  = .FALSE. ! This option is to be removed until we have at least the MP2 Hessian
       DOFSPC  = relcc_do_fspc
-      DOIH  = .FALSE.
-      DEBUG  = relcc_debug
-      TIMING = relcc_timing
-      MWORD = 0
+      DOIH    = relcc_fs_do_ih
+      DEBUG   = relcc_debug
+      TIMING  = relcc_timing
+      MWORD   = relcc_memory_in_mw
 C     
 C     Note that reading this namelist may override the Dirac style input. Leave 
 C     this at the discretion of the user for the moment.
@@ -229,14 +230,14 @@ C     this at the discretion of the user for the moment.
 C
 C     Input for the energy calculation.
 C
-      MAXDIM = 8
-      MAXIT = 30
-      NTOL = 12
-      DOMP2   = .TRUE.
-      DOCCSD  = .TRUE.
-      DOCCSDT = .TRUE.
-      NOCCS  = .FALSE.
-      NOCCD  = .FALSE.
+      MAXDIM  = relcc_ccener_max_dimension_diis    
+      MAXIT   = relcc_ccener_max_iterations        
+      NTOL    = relcc_ccener_desired_convergence     
+      DOMP2   = relcc_do_mp2
+      DOCCSD  = relcc_do_ccsd
+      DOCCSDT = relcc_do_ccsd_t
+      NOCCS   = relcc_do_singles
+      NOCCD   = relcc_do_doubles
       REWIND (IN)
       READ (IN,CCENER,END=4,ERR=3)
       GOTO 4
@@ -250,17 +251,17 @@ C
 C
 C     Input for the gradient calculation.
 C
-      DOMP2G    = .FALSE.
-      DOMP2GOLD = .FALSE.
-      DOCCSDG   = .FALSE.
-      DOCCSDTG  = .FALSE.
-      NOZG      = .FALSE.
-      DONATORB  = .FALSE.
-      NEOPER = 1
-      NAMEE(1) = 'ZDIPLEN '
-      MAXDIM = 8
-      MAXIT = 30
-      NTOL = 12
+      DOMP2G    = relcc_do_mp2gradient
+      DOMP2GOLD = relcc_do_oldmp2gradient 
+      DOCCSDG   = relcc_do_ccsdgradient 
+      DOCCSDTG  = relcc_do_ccsdtgradient
+      NOZG      = relcc_do_zipgrid
+      DONATORB  = relcc_do_naturalorbitals
+      NEOPER    = 1
+      NAMEE(1)  = 'ZDIPLEN '
+      MAXDIM    = relcc_fopr_max_dimension_diis
+      MAXIT     = relcc_fopr_max_iterations
+      NTOL      = relcc_fopr_desired_convergence
       REWIND (IN)
       READ (IN,CCFOPR,END=6,ERR=5)
       GOTO 6
@@ -302,9 +303,9 @@ C
       DO IFREQ = 1, MAXFR
          EFREQ(IFREQ) = D0
       ENDDO
-      MAXDIM = 8
-      MAXIT = 30
-      NTOL = 12
+      MAXDIM =  relcc_max_dimension_diis      
+      MAXIT  =  relcc_max_iterations         
+      NTOL   =  relcc_desired_convergence   
       REWIND (IN)
       READ (IN,CCSOPR,END=8,ERR=7)
       GOTO 8
@@ -319,9 +320,9 @@ C
       DO I = 1, 16
          NEXC(I) = 1
       ENDDO
-      MAXDIM = 8
-      MAXIT = 30
-      NTOL = 12
+      MAXDIM =  relcc_max_dimension_diis      
+      MAXIT  =  relcc_max_iterations         
+      NTOL   =  relcc_desired_convergence   
       REWIND (IN)
       READ (IN,CCEXC,END=10,ERR=9)
       GOTO 10
@@ -333,30 +334,30 @@ C
 C
 C     Input for the Fock-Space CCSD energy calculation.
 C
-      MAXDIM = 8
-      MAXIT = 30
-      NTOL = 12
-      TSHOLD = 0
+      MAXDIM =  relcc_fs_max_dimension_diis      
+      MAXIT  =  relcc_fs_max_iterations         
+      NTOL   =  relcc_fs_desired_convergence   
+      TSHOLD =  relcc_fs_tshold
       DO I = 1, 16
-         NACTH(I) = 0
-         NACTP(I) = 0
+          NACTH(I)     = relcc_fs_nacth(I)
+          NACTP(I)     = relcc_fs_nactp(I)
       ENDDO
-      DOEA = .FALSE.
-      DOIE = .FALSE.
-      DOEXC = .FALSE.
-      DOEA2 = .FALSE.
-      DOIE2 = .FALSE.
-      FSSECT(1) = 1
+      DOEA      = relcc_fs_do_ea
+      DOIE      = relcc_fs_do_ie
+      DOEXC     = relcc_fs_do_exc
+      DOEA2     = relcc_fs_do_ea2
+      DOIE2     = relcc_fs_do_ie2
+      FSSECT(1) = relcc_fs_fssect(1)
       DO ISECT = 2, 6
-         FSSECT(ISECT) = 0
+          FSSECT(ISECT) = relcc_fs_fssect(ISECT)
       ENDDO
 CMI   ...provide with default values
-      MAXIT02=-1
-      MAXIT01=-1
-      MAXIT00=-1
-      MAXIT10=-1
-      MAXIT11=-1
-      MAXIT20=-1
+      MAXIT02=relcc_fs_max02_iterations 
+      MAXIT01=relcc_fs_max01_iterations 
+      MAXIT00=relcc_fs_max00_iterations 
+      MAXIT10=relcc_fs_max10_iterations 
+      MAXIT11=relcc_fs_max11_iterations 
+      MAXIT20=relcc_fs_max20_iterations 
 CMI   ... read input namelist
       REWIND (IN)
       READ (IN,CCFSPC,END=12,ERR=11)
@@ -416,27 +417,27 @@ C
 C
 C     General input for IH procedure
 C
-      EHMIN=1000.D0
-      EHMAX=100.D0
-      EPMIN=-1.D0
-      EPMAX=-1000.D0
+      EHMIN    = relcc_ih_eh_min
+      EHMAX    = relcc_ih_eh_max
+      EPMIN    = relcc_ih_ep_min
+      EPMAX    = relcc_ih_ep_max
       DO I = 1, 16
-         NACTHI(I) = 0 ! it's 0 for (0,2) sector
-         NACTPI(I) = 0
+         NACTH(I)     = relcc_fs_nacth(I)! it's 0 for (0,2) sector
+         NACTP(I)     = relcc_fs_nactp(I) 
       ENDDO
-      IHSCHEME=2
+      IHSCHEME = relcc_ih_scheme
 C
 C     Defaults for scheme 1 that shifts the denominators
 C
-      SHIFTH11 =0.D0
-      SHIFTH12 =0.D0
-      SHIFTP11 =0.D0
-      SHIFTP12 =0.D0
-      SHIFTH2 =0.D0
-      SHIFTP2 =0.D0
-      SHIFTHP =0.D0
-      AIH=0.D0
-      NIH=1
+      SHIFTH11 = relcc_ih_shift_h11
+      SHIFTH12 = relcc_ih_shift_h12
+      SHIFTP11 = relcc_ih_shift_p11
+      SHIFTP12 = relcc_ih_shift_p12
+      SHIFTH2  = relcc_ih_shift_h2
+      SHIFTP2  = relcc_ih_shift_p2
+      SHIFTHP  = relcc_ih_shift_hp
+      AIH      = relcc_ih_aih
+      NIH      = relcc_ih_nih
       REWIND (IN)
       READ (IN,CCIH,END=22,ERR=21)
       GOTO 22
