@@ -107,6 +107,8 @@ svn_object = svn_info() # object of the class
 # these are always exported/released
 
 vital_directories = []
+vital_files = []
+
 vital_directories.append('dirac')
 vital_directories.append('prp')
 vital_directories.append('abacus')
@@ -133,7 +135,6 @@ vital_directories.append('krmc')
 vital_directories.append('luciarel')
 vital_directories.append('embedding')
 
-vital_files = []
 vital_files.append('pam')
 vital_files.append('pam.in')
 vital_files.append('configure')
@@ -145,6 +146,17 @@ vital_files.append('runtest')
 vital_files.append('README')
 vital_files.append('test/README')
 vital_files.append('test/list_of_tests')
+
+# cmake related
+vital_files.append('CMakeLists.txt')
+vital_files.append('COPYING')
+vital_files.append('CTestConfig.cmake')
+vital_files.append('CTestCustom.cmake.in')
+vital_files.append('INSTALL')
+vital_files.append('setup')
+vital_files.append('setup.examples')
+vital_directories.append('cmake')
+vital_directories.append('cbuild')
 
 # these tests are always exported/released
 
