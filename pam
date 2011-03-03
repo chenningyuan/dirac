@@ -72,7 +72,7 @@ class pam_enviroment:
 
     def __init__(self):
         '''Initialize the global set of variables'''
-        from common import get_username, get_hostname, get_hostname_ip
+        from common import get_username, get_hostname, get_full_hostname, get_hostname_ip
 
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
@@ -158,7 +158,8 @@ class pam_enviroment:
 
     # master name,IP
 
-        self.master = get_hostname()
+        self.master = get_hostname()  # short hostname
+        self.master_full = get_full_hostname()  # full hostname
         self.hostname_ip = get_hostname_ip()
 
     #  user login name
@@ -388,8 +389,11 @@ class pam_enviroment:
         self.scratch_dir = scratch_dir_string
 
     def list_scratch_dir(self):
-        '''lists the content of the master scratch directory more here http://www.daniweb.com/code/snippet216798.html'''
-        scratch_id=self.user_name+"@"+self.master+":"+self.scratch_dir
+        ''' 
+        lists the content of the master scratch directory;
+        see  http://www.daniweb.com/code/snippet216798.html
+        '''
+        scratch_id=self.user_name+"@"+self.master_full+":"+self.scratch_dir
         sum_filesize_mb=0
         print
         print '  content of the (master) scratch directory ', scratch_id
@@ -452,20 +456,23 @@ class pam_enviroment:
         print '      Disk info:  used    available   capacity [GB]'
         print '           %10.3f     %10.3f     %10.3f ' % (disk.used,disk.available,disk.capacity)
         print ''
+        sys.stdout.flush()
 
     def remove_scratch_dir(self):
-        ''' remove the scratch directory  '''
-        if self.iprint > 0:
-            self.list_scratch_dir()
-        if not self.keep_scratch:
+        ''' remove the scratch directory (if it exists) '''
+        if os.path.isdir(self.scratch_dir):
             if self.iprint > 0:
-                print '  deleting the scratch directory'
-            sys.stdout.flush()
-            shutil.rmtree(self.scratch_dir)
+                self.list_scratch_dir()
+            if not self.keep_scratch:
+                if self.iprint > 0:
+                    print '  deleting the scratch directory'
+                shutil.rmtree(self.scratch_dir)
+            else:
+                if self.iprint > 0:
+                    print '  keeping the scratch directory'
         else:
-            if self.iprint > 0:
-                print '  keeping the scratch directory'
-            sys.stdout.flush()
+             print '  The scratch directory already does not exist. '
+        sys.stdout.flush()
 
     def exit_function(self, returncode):
         '''prints message on the DIRAC executable exit according to the input parameter'''
@@ -1629,7 +1636,7 @@ class pam_enviroment:
             print '  molecule file  :', self.input_molecule
         else:
             print '  user           :', self.user_name
-            print '  host           :', self.master
+            print '  host           :', self.master,' (',self.master_full,')'
             print '  ip             :', self.hostname_ip
             print '  date and time  :', datetime.datetime.now()
             print '  pam command    :', self.pam_command

@@ -135,16 +135,24 @@ def get_ip():
 
 def get_hostname():
     """
-    get the server's hostname using its IP-address
+    get the server's short hostname 
+    NOTE: short hostnames are used in batch-system  "machinefiles" 
+    only short master's hostname can be compared with slaves hostnames
     """
     import socket
-    #this_host_name =  socket.gethostname() # simple solution, deprecated
-    host=socket.gethostbyaddr(get_ip()) # better solution
+    return socket.gethostname()
+
+def get_full_hostname():
+    """
+    get the server's full hostname using its IP-address
+    """
+    import socket
+    host=socket.gethostbyaddr(get_ip()) 
     return host[0]
 
 def get_hostname_ip():
     """
-    get the hostname's ip-adress; use function get_ip
+    get the hostname's ip-adress; use own function get_ip
     """
     return get_ip()
 
