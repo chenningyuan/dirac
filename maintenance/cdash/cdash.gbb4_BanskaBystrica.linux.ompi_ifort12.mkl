@@ -9,7 +9,7 @@
 # intel fortran/MKL stuff
 export PATH=/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
 export PATH=/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/bin/intel64:$PATH
-export LD_LIBRARY_PATH=/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 :$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
 
@@ -37,7 +37,8 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 cd $DIRAC/cbuild
 
-#make clean
+make clean
+
 make -j 2
 
 #make Nightly
