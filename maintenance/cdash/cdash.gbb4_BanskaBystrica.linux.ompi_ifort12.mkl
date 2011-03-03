@@ -39,10 +39,10 @@ cd $DIRAC/cbuild
 
 make clean
 
-make -j 2
+#make -j 2
 
 #make Nightly
-#make
+make Experimental
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
