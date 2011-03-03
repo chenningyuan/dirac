@@ -7,14 +7,14 @@
 
 # the directory where your DIRAC sits
 #DIRAC=/home/ilias/Work/qch_software/dirac_svn/gfortran_gcc_lib64_i32lp64/trunk
-DIRAC=/media/_scratch/ilias/DIRAC_cdash_buildup
+DIRAC=/media/druhy_disk/DIRAC_cdash_buildup
 mkdir $DIRAC
 
 # go to the local DIRAC directory
 cd $DIRAC
 
 # svn update, pamadm 
-svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $DIRAC
+svn --username ilias --password Soudruh --non-interactive co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $DIRAC
 # ...
 cd $DIRAC
 ./pamadm -a --xcfun 
@@ -28,7 +28,8 @@ cd $DIRAC/cbuild
 # pam expects dirac.x to be in the same directory
 # you cannot copy it because it does not exist yet
 # make below will create it but same step launches pam (via runtest)
-ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
+#ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
+cp $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 # build and run tests
 # use either Experimental or Nightly
