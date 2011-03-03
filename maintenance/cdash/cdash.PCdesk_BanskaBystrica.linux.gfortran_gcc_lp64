@@ -6,36 +6,34 @@
 # make sure cmake is installed before you run it
 
 # the directory where your DIRAC sits
-#DIRAC=/home/ilias/Work/qch_software/dirac_svn/gfortran_gcc_lib64_i32lp64/trunk
-DIRAC=/media/druhy_disk/DIRAC_cdash_buildup
-mkdir $DIRAC
+DIRAC=/home/ilias/Work/qch_software/dirac_svn/gfortran_gcc_lib64_i32lp64/trunk
+
 
 # go to the local DIRAC directory
 cd $DIRAC
 
 # svn update, pamadm 
-svn --username ilias --password Soudruh --non-interactive co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $DIRAC
-# ...
-cd $DIRAC
+svn up .
+
 ./pamadm -a --xcfun 
 
 
 # configure step
-./setup  --fc=gfortran  --cc=gcc  --buildname="linux.gfor_gcc_lib64.i32lp64"  --debug
+./setup  --fc=gfortran  --cc=gcc  --buildname="linux.gfor_gcc_lib64.i32lp64"  
 
 cd $DIRAC/cbuild
 
 # pam expects dirac.x to be in the same directory
 # you cannot copy it because it does not exist yet
 # make below will create it but same step launches pam (via runtest)
-#ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
-cp $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
+ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 # build and run tests
 # use either Experimental or Nightly
-  make Experimental 
+
+#  make Experimental
+  make Nightly
 # make -j 2
 
-/bin/rm -rf $DIRAC
 
 exit 0
