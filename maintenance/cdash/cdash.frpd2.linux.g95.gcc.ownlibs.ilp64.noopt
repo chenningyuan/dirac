@@ -16,18 +16,15 @@ cd $DIRAC
 
 # svn update, pamadm 
 svn up 
-./pamadm -a --minus --openrsp
+# ...
+./pamadm -a --xcfun --minus --openrsp
 
 
 # configure step
-# ./setup --fc=gfortran --cc=gcc --debug --buildname="linux.gfortran.gcc.debug"
-# ./setup --fc=gfortran --cc=gcc --buildname="linux.gfortran.gcc"
-#  ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl"
-# ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack" --buildname="linux.gfortran.atlas.mpi"
-./setup --fc=g95 --cc=gcc-4.2  --int64  --nomath --buildname="linux.g95.gcc.ilp64.ownlibs.noopt" --debug
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  --buildname="linux.g95.gcc.ilp64.ownlibs.noopt"  --debug
 
 cd $DIRAC/cbuild
-cmake ..
+make clean
 
 # pam expects dirac.x to be in the same directory
 # you cannot copy it because it does not exist yet
@@ -36,7 +33,6 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
 # build and run tests
 # use either Experimental or Nightly
-# make Experimental -j 3
-  make Nightly -j 3
+  make Experimental 
 
 exit 0
