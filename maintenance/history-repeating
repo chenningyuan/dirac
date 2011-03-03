@@ -11,8 +11,10 @@ mkdir -p $TMP_DIR
 cp -r Makefile.config utils pam runtest test basis* $TMP_DIR
 ln -sf $BUILD_DIR/dirac.x $TMP_DIR/dirac.x
 
+#               20 steps
 for i in `seq 1 20`; do
     DATE=`git log | head -n 3 | grep Date`
+#                     jump by 200 commits
     git checkout HEAD~200
     ./pamadm -a
     cp $TMP_DIR/Makefile.config $BUILD_DIR
