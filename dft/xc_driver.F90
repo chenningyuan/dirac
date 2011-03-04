@@ -106,8 +106,6 @@ module xc_driver
    real(8), allocatable :: ao_block(:, :)
    real(8), allocatable :: buffer_block(:, :)
    real(8), allocatable :: dmat_sorted(:, :)
-   real(8), allocatable :: xmat(:, :)
-   real(8), allocatable :: bmat(:)
 
    real(8) :: tau_integral
    real(8) :: nr_electrons
@@ -836,16 +834,7 @@ contains
 !     unperturbed density
       real(8) :: n_0(mxbllen)
 !     unperturbed density gradient
-      real(8) :: gn_0(mxbllen, 3)
       real(8) :: gn_0_pointwise(3)
-
-!     density
-      real(8) :: n(mxbllen, 0:1)
-!     density gradient
-      real(8) :: n_g(mxbllen, 3, 0:1)
-!     density gradient square
-      real(8) :: gnn(mxbllen, 0:1, 0:1)
-
 
       real(8) :: tau
       real(8) :: gnn_0(mxbllen)
@@ -921,11 +910,8 @@ contains
     allocate(buffer  (total_ao_vector_length))
 
     if (dft_cfg_blocked) then
-       allocate(ao_block(              mxbllen, total_ao_vector_length))
-       allocate(buffer_block(          mxbllen, total_ao_vector_length))
-       allocate(dmat_sorted(mat_dim*mat_dim, 0:1))
-       allocate(xmat(mxbllen*mat_dim, 0:1))
-       allocate(bmat(                  mxbllen*total_ao_vector_length))
+       allocate(ao_block(mxbllen,     total_ao_vector_length))
+       allocate(buffer_block(mxbllen, total_ao_vector_length))
        block_threshold = get_block_threshold(mat_dim, dmat_0)
     end if
 
@@ -1019,34 +1005,28 @@ contains
             end if
          end do
 
-            call get_n_block( &
-                             use_gga,               &
-                             (response_order_mo == 1),               &
-                             block_length,          &
-                             block_threshold,       &
-                             mat_dim,               &
-                             n,                     &
-                             n_g,                   &
-                             gnn,                   &
-                             buffer,                &
-                             ao_block,              &
-                             bmat,                  &
-                             fmat,                  &
-                             dmat_0,                &
-                             dmat,                  &
-                             dmat_pg_sym,           &
-                             dmat_sorted,           &
-                             xmat,                  &
-                             dmat_pg_sym(1) - 1,    &
-                             derv_length,           &
-                             derv,                  &
-                             max_fun_derv,          &
-                             rw(ipoint))
-
-         do k = 1, block_length
-            nr_electrons = nr_electrons + rw(ipoint + k - 1)*n(k, 0)
-            xc_energy    = xc_energy    + derv(k, d0000000)
-         end do
+         call get_n_block(                          &
+                          use_gga,                  &
+                          (response_order_mo == 1), &
+                          block_length,             &
+                          block_threshold,          &
+                          mat_dim,                  &
+                          nz,                       &
+                          buffer,                   &
+                          ao_block,                 &
+                          nr_fmat,                  &
+                          fmat,                     &
+                          dmat_0,                   &
+                          nr_dmat,                  &
+                          dmat,                     &
+                          dmat_pg_sym,              &
+                          derv_length,              &
+                          derv,                     &
+                          max_fun_derv,             &
+                          rw(ipoint),               &
+                          nr_electrons,             &
+                          xc_energy                 &
+                         )
 
       end do loop_over_points_block
    else
@@ -1764,9 +1744,6 @@ contains
     if (dft_cfg_blocked) then
        deallocate(ao_block)
        deallocate(buffer_block)
-       deallocate(dmat_sorted)
-       deallocate(xmat)
-       deallocate(bmat)
     end if
 
     deallocate(u%n)
