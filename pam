@@ -1364,17 +1364,21 @@ class pam_enviroment:
         p1 = subprocess.Popen(size_command, shell=True,
                               stdin=subprocess.PIPE, stdout=self.f)
 
+
+
     def execute_dirac(self):
-        '''Excecute dirac.x, either in serial or parallel mode'''
+        ''' 
+        Excecute dirac.x, either in serial or parallel mode. Perform debugging, if wanted.
+         '''
 
         def signal_handler(signum, frame):
             '''Controling the time of the execution'''
-
-            print 'DIRAC execution interrupted, because takes longer than the limit of ', \
+            print '  DIRAC execution to be interrupted, because takes longer than the limit of ', \
                 self.timeout, ' seconds.\n'
             sys.stdout.flush()
             raise Error('Takes too long !')
 
+        # go to the scratch directory
         os.chdir(self.scratch_dir)
 
         if not self.nobackup:
@@ -1401,87 +1405,20 @@ class pam_enviroment:
                             % basis_set_directory_list[i]
         try:
             if not self.debug and not self.vg_debug:
-                self.f = open(self.output_file_full, 'w', 0)
-
-        # write something into the output file by pam
-
-                self.write_into_output()
-
-        # process the dirac.x (or mpi-wrapper) as the child subprocess
-
-                # stderr=None means flushing stderr output only into console (red color in trac-webpage)
-
-              # radovan: with shell=True the pid does not necessarily match
-              #          the dirac job, it matches the shell command that spawns the dirac job
-              #          then timeout terminates the command but not the dirac.x run
-              #          but we do need shell=True (painful lesson when testing without)
-              # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html  
-                self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
-                           stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
-              #  get the list of children's processes
-                from common import children_pid
-                self.dirac_children_pid=children_pid(self.dirac_p.pid)
-
-                if self.iprint > 0:
-                    print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
-                    if self.dirac_children_pid and self.iprint > 2:
-                        print '  info: associated children PIDs:',\
-                          self.dirac_children_pid
-
-                # get stderr stream to be properly distributed
-                self.dirac_stderr = self.dirac_p.communicate()[1] 
-                # deal with the error output only if happens
-                if len(self.dirac_stderr) > 0 :
-                    # inform about dirac stderr in python stdout
-                    print >> sys.stdout,\
-                    '  ====  dirac stderr stream written to the output file ===='
-                    # likewise attach stderr to the pam output
-                    self.f.write('\n ====  python script additive: stderr output stream  ===='+self.dirac_stderr)
-                    # flush out dirac stderr; useful for non-verbose test runs (to have it on the console)
-                    if self.iprint > 0: 
-                        print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
-                        print >> sys.stderr,self.dirac_stderr
-                        print >> sys.stderr,'directory:', self.input_directory
-                        print >> sys.stderr,'   inputs:', self.input_molecule,\
-                                            ' & ', self.input_dirac
-
-                self.dirac_p.wait()
-                return_code = self.dirac_p.returncode
-                self.f.close()
-
+                return_code = self.launch_dirac_subprocess()
             elif self.parallel_run == False:
                 print 'debugging dirac in plain serial run...', \
                     self.dirac_cmd
                 return_code = os.system(self.dirac_cmd)
             else:
-                print '''
-...no dirac run ... wrong parallel/debugger combination
-'''
+                print '...no dirac run-wrong parallel/debugger combination'
 
-      # zero signal alarm
-
+            # zero the signal alarm
             signal.alarm(0)
         except:
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream,\
-                'Going to kill (SIGTERM) dirac.x-executable process (PID=',\
-                self.dirac_p.pid,').'
 
-            # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
-            os.kill(self.dirac_p.pid, signal.SIGTERM)
-            # miro: - kill child's processes (if they are present)
-            if self.dirac_children_pid:
-                for child_pid in self.dirac_children_pid:
-                    # TODO: verify existence of the process first ?
-                    #os.kill(child_pid, signal.SIGTERM)
-                    pass
-            if self.set_timeout_limit:
-               for stream in [sys.stdout,sys.stderr]:
-                   print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
-                   print >> stream,'dir:', self.input_directory,\
-                   ' inp:',self.input_file_dirac,' mol:',self.input_file_molecule
-                   stream.flush()
-            return_code = signal.SIGTERM
+            # killing (all) dirac.x-(sub)process(es)
+            return_code = self.kill_dirac_processes()
 
     # do the profiling after the execution if wanted
 
@@ -1489,6 +1426,89 @@ class pam_enviroment:
             self.profile_dirac()
 
         return return_code
+
+    def launch_dirac_subprocess(self):
+        """
+        launch dirac.x subprocess; called from ...
+        """
+
+        # open the outhput file
+        self.f = open(self.output_file_full, 'w', 0)
+
+        # write something into the output file by pam
+        self.write_into_output()
+
+        # process the dirac.x (or mpi-wrapper) as the child subprocess
+
+        # stderr=None means flushing stderr output only into console (red color in trac-webpage)
+
+        # radovan: with shell=True the pid does not necessarily match
+        #          the dirac job, it matches the shell command that spawns the dirac job
+        #          then timeout terminates the command but not the dirac.x run
+        #          but we do need shell=True (painful lesson when testing without)
+        # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html  
+        self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
+                       stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
+
+        if self.iprint > 0:
+            print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
+
+        # get stderr stream to be properly distributed
+        self.dirac_stderr = self.dirac_p.communicate()[1] 
+
+        # deal with the error output only if happens
+        if len(self.dirac_stderr) > 0 :
+            # inform about dirac stderr in python stdout
+            print >> sys.stdout,\
+            '  ====  dirac stderr stream written to the output file ===='
+            # likewise attach stderr to the pam output
+            self.f.write('\n ====  python script additive: stderr output stream  ===='+self.dirac_stderr)
+            # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
+            if self.iprint > 0: 
+                print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
+                print >> sys.stderr,self.dirac_stderr
+                print >> sys.stderr,'directory:', self.input_directory
+                print >> sys.stderr,'   inputs:', self.input_molecule,\
+                                    ' & ', self.input_dirac
+
+        self.dirac_p.wait()
+        self.f.close()
+        return self.dirac_p.returncode
+
+    def kill_dirac_processes(self):
+        """
+        try to kill all dirac (sub)processes
+        """
+
+        #  first, get the list of children's processes
+        from common import children_pid
+        self.dirac_children_pid=children_pid(self.dirac_p.pid)
+
+        if self.dirac_children_pid and self.iprint >= 0:
+            print '  info: associated childrens PIDs:',\
+                   self.dirac_children_pid
+
+        for stream in [sys.stdout,sys.stderr]:
+            print >> stream,\
+            'Going to kill (SIGTERM) dirac.x-executable process (PID=',\
+            self.dirac_p.pid,').'
+
+        # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
+        os.kill(self.dirac_p.pid, signal.SIGTERM)
+
+        # miro: - kill child's processes (if they are present)
+        if self.dirac_children_pid:
+            for child_pid in self.dirac_children_pid:
+                # TODO: verify existence of the process first ?
+                #os.kill(child_pid, signal.SIGTERM)
+                pass
+        if self.set_timeout_limit:
+           for stream in [sys.stdout,sys.stderr]:
+               print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
+               print >> stream,'dir:', self.input_directory,\
+               ' inp:',self.input_file_dirac,' mol:',self.input_file_molecule
+               stream.flush()
+        return signal.SIGTERM
 
     def profile_dirac(self):
         """
