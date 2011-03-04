@@ -53,8 +53,9 @@ function get_environment_integer_i4(name, default)
   if (status==0) then
      read (value,*,iostat=ios) i
      if (ios/=0) then
-        print *,'Warning: Cannot parse environment variable ',name
-        print *,'         Will use the default value:',default
+        print *,'ERROR reading environment variable ',name
+        print *,'ERROR cannot convert to 32 bit integer, value = ',value
+        call quit('Invalid environment variable value')
         get_environment_integer_i4 = default
      else
         get_environment_integer_i4 = i
@@ -84,8 +85,9 @@ function get_environment_integer_i8(name, default)
   if (status==0) then
      read (value,*,iostat=ios) i
      if (ios/=0) then
-        print *,'Warning: Cannot parse environment variable ',name
-        print *,'         Will use the default value:',default
+        print *,'ERROR reading environment variable ',name
+        print *,'ERROR cannot convert to 64 bit integer, value = ',value
+        call quit('Invalid environment variable value')
         get_environment_integer_i8 = default
      else
         get_environment_integer_i8 = i
