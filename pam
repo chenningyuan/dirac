@@ -1525,7 +1525,7 @@ class pam_enviroment:
         dirac_pidof = [int(item) for item in dirac_pidof_str]
 
         print '  All dirac.x pidofs found PIDs:',dirac_pidof
-        if dirac_pidof.sort() == self.dirac_pids.sort():
+        if dirac_pidof.sort() == self.dirac_pids.sort() and len(dirac_pidof) == len(self.dirac_pids):
             print '  OK, PIDS are identical, going to use python kill...'
             return True
         else:
