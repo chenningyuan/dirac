@@ -6,7 +6,7 @@
 # make sure cmake is installed before you run it
 
 # the directory where your DIRAC sits
-DIRAC=/home/ilias/Work/qch_software/dirac_svn/gfortran_gcc_lib64_i32lp64/trunk
+DIRAC=/home/ilias/Work/qch_software/dirac_svn/gfortran_gcc_lib64_i32lp64_cdash/trunk
 
 
 # go to the local DIRAC directory
@@ -19,7 +19,7 @@ svn up .
 
 
 # configure step
-./setup  --fc=gfortran  --cc=gcc  --buildname="linux.gfor_gcc_lib64.i32lp64"  
+./setup  --fc=gfortran  --cc=gcc  --buildname="linux.PCdesk_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64"  
 
 cd $DIRAC/cbuild
 
@@ -34,6 +34,5 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 #  make Experimental
   make Nightly
 # make -j 2
-
 
 exit 0
