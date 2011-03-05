@@ -171,10 +171,22 @@ def children_pid(pid):
     pidppid = [x.split() for x in proc.communicate()[0].split("\n") if x]
     return list(int(p) for p, pp in pidppid if int(pp) == pid)
 
+def get_pid_label(input_pid):
+    """
+    get process identification based on its input_pid
+    TODO: adapt for Windows
+    """
+    import subprocess
+    # Linux solution
+    command="ps -l -F -p "+str(input_pid)
+    return subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE).communicate()[0]
+
 def get_all_children(input_pid):
     """
     get PIDs of all childrens processes of the process "input_pid"
     (http://www.linuxquestions.org/questions/linux-general-1/trying-to-kill-a-process-and-all-of-its-children-and-grandchildren-how-680123/)
+    TODO: adapt for Windows
+    http://mail.python.org/pipermail/python-win32/2005-February/002943.html
     """
     import os
     # get the pid, pgid, ppid of our current processes:

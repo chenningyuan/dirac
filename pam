@@ -107,13 +107,15 @@ class pam_enviroment:
         self.keep_scratch = False   # default - delete the scratch after the job
         self.create_scratch_dir_name = True
 
-    # ... current PID to have unique string for each pam run; TODO: get also short random string ?
+    # ... current PID to have unique string for each pam run
         self.current_pid=os.getpid()
    
     # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
         self.dirac_p=None
         # PIDs of all dirac-processes (list)
-        self.dirac_pids=None
+        self.dirac_pids=[]
+        # PIDs found found pidof...
+        self.dirac_pidof_pids=[]
 
     # ... dirac error output (stderr stream), always filled
         self.dirac_stderr=''     
@@ -1479,58 +1481,84 @@ class pam_enviroment:
         try to kill all dirac (sub)processes
         """
 
-        #  get the list of children's processes
-        from common import children_pid
-        self.dirac_pids=children_pid(self.dirac_p.pid)
-        # get the dirac.x's PID
-        self.dirac_pids.insert(0,self.dirac_p.pid)
+        # first, check if the current PID has not changed
+        if ( self.current_pid != os.getpid() ):
+            for stream in [sys.stdout,sys.stderr]:
+                print  >> stream,'*** change in current pam script process PID ! '
+                print  >> stream,'previous assigned PID:',self.current_pid,' current PID:',os.getpid()
+                print  >> stream,'PID restored to current PID',os.getpid()
+            # restore current PID
+            self.current_pid=os.getpid()
+
+        #  get the list of children's processes; use two different methods
+        from common import get_all_children
+        self.dirac_pids=get_all_children(self.current_pid)
+        self.get_pidof_pids()
 
         if self.iprint >= 0:
-            print '  All dirac.x python found PIDs:',self.dirac_pids
-
-        if self.dirac_pids_right():
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
-                'Going to kill (SIGTERM) dirac.x-executable process (PID=',\
-                self.dirac_p.pid,').'
-               #TODO: Windows list of processes, see http://mail.python.org/pipermail/python-win32/2005-February/002943.html
-            # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
-            os.kill(self.dirac_p.pid, signal.SIGTERM)
-        else:
-           os.system("killall -9 dirac.x")
+                '         dirac.x subprocess PID:',self.dirac_p.pid
+                print >> stream,\
+                '  All dirac.x python found PIDs:',self.dirac_pids
+                print  >> stream,\
+                '   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
 
-        # final message on the timeout kill, if selected 
+        dirac_pidofs_in_pids= set(self.dirac_pidof_pids).issubset(self.dirac_pids)
+        dirac_pid_in_pids= self.dirac_p.pid in self.dirac_pids
+        dirac_pid_in_pidofs=self.dirac_p.pid in self.dirac_pidof_pids
+
+        from common import get_pid_label
+
+        if dirac_pidofs_in_pids and dirac_pid_in_pids and dirac_pid_in_pidofs:
+            print 'All PIDs form proper subsets. Good'
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,\
+                'Going to kill (SIGTERM) only one dirac.x-executable process (PID=',\
+                self.dirac_p.pid,').'
+                print >> stream,get_pid_label(self.dirac_p.pid) 
+            try:
+                 # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
+                 os.kill(self.dirac_p.pid, signal.SIGTERM)
+            except:
+                 print 'did not succeed with killing of the process pid=',self.dirac_p.pid
+        else:
+            print 'Bad PIDs subsets - killing several only pidofs-PIDs'
+            for pid in self.dirac_pidof_pids:
+                for stream in [sys.stdout,sys.stderr]:
+                    print >> stream,\
+                    'Going to kill (SIGTERM) dirac-subprocess with PID=',pid
+                    print >> stream,get_pid_label(pid) 
+                try:
+                    os.kill(pid,signal.SIGTERM)
+                except:
+                    print 'did not succeed with killing of the process pid=',pid
+
+        # final message on the timeout kill (if selected)
         if self.set_timeout_limit:
            for stream in [sys.stdout,sys.stderr]:
-               print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
+               print  >> stream,'     (timeout kill(s), limit of ',self.timeout,' seconds exceeded)' 
                print >> stream,'dir:', self.input_directory,\
                ' inp:',self.input_file_dirac,' mol:',self.input_file_molecule
                stream.flush()
         return signal.SIGTERM
 
-    def dirac_pids_right(self):
+    def get_pidof_pids(self):
         """
-        check if PIDs of dirac.x process(es) are right (corresponding with real PIDs )
-        returns True or False
-        uses "self.dirac_pids", "self.dirac_p.pid"
+        get all dirac subproces PIDs using Linux's pidof command
+        store them in self.dirac_pidof_pids
+        TODO: adapt for Windows
         """
-
-        z = subprocess.Popen("pidof dirac.x",shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        command="pidof dirac.x"
+        z = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
         dirac_pidof_str=list( (z.communicate()[0]).split()  )
+        # get PID of the parallel launcher...
         if self.parallel_run:
             z1=subprocess.Popen("pidof "+self.mpirun,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
             dirac_pidof_parallel=(z1.communicate()[0]).split()
 
         dirac_pidof_str.extend(dirac_pidof_parallel)
-        dirac_pidof = [int(item) for item in dirac_pidof_str]
-
-        print '  All dirac.x pidofs found PIDs:',dirac_pidof
-        if dirac_pidof.sort() == self.dirac_pids.sort() and len(dirac_pidof) == len(self.dirac_pids):
-            print '  OK, PIDS are identical, going to use python kill...'
-            return True
-        else:
-            print '  PIDs are not identical ! Goind to use system hardkill '
-            return False
+        self.dirac_pidof_pids = [int(item) for item in dirac_pidof_str]
 
     def profile_dirac(self):
         """
