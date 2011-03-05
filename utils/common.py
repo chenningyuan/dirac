@@ -165,12 +165,43 @@ def children_pid(pid):
     see also:
     http://www.damonkohler.com/2008/03/how-to-check-if-process-is-still.html
     http://stackoverflow.com/questions/4669754/python-kill-all-processes-owned-by-user
-    http://www.linuxquestions.org/questions/linux-general-1/trying-to-kill-a-process-and-all-of-its-children-and-grandchildren-how-680123/
     """
     import subprocess as SP
     proc = SP.Popen('ps -o pid,ppid ax | grep "%d"' % pid, shell=True, stdout=SP.PIPE)
     pidppid = [x.split() for x in proc.communicate()[0].split("\n") if x]
     return list(int(p) for p, pp in pidppid if int(pp) == pid)
+
+def get_all_children(input_pid):
+    """
+    get PIDs of all childrens processes of the process "input_pid"
+    (http://www.linuxquestions.org/questions/linux-general-1/trying-to-kill-a-process-and-all-of-its-children-and-grandchildren-how-680123/)
+    """
+    import os
+    # get the pid, pgid, ppid of our current processes:
+    command = "ps eo pid,pgid,ppid"
+    psraw = os.popen(command).readlines()
+    psList = []
+    childrenList = []
+    for ps in psraw[1:]: # 1: gets rid of header
+        psList.append(map(int,ps.split()))
+    pgid = 0
+
+    # find the pgid (parent) of the spawned subprocess:
+    for ps in psList:
+        if int(input_pid) in ps:
+            pgid = ps[1]
+            break
+    if pgid == 0:
+        print >>sys.stderr, "Something screwed up trying to find pids. fudge."
+        return
+
+    # get a list of all pids in the pgid except the group owner:
+    for ps in psList:
+        if pgid in ps and pgid != ps[0]:  # check [0] so we don't kill ourselves
+            childrenList.append(ps[0])
+
+    # return the list
+    return childrenList
 
 class disk_space:
     """
