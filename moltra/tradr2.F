@@ -2047,12 +2047,7 @@ C
           IF (NPASS.GT.1) THEN
              CALL DZERO(GMAT,NSIZG)
              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1E',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-CTROND             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
           ENDIF
 C
 C        Calculate the size of the H-matrix for this pass

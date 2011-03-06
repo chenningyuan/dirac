@@ -978,14 +978,9 @@ C        Get the scalar integrals that are processed in this pass
 C        The integral are already in GMAT when NPASS = 1
 C
           IF (NPASS.GT.1) THEN
-              CALL DZERO(GMAT,NSIZG)
-              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-CTROND             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+             CALL DZERO(GMAT,NSIZG)
+             IREC = LGREC(IPASS)
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
           ENDIF
 C
 C        Do first step of index transformation :

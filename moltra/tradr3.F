@@ -804,12 +804,7 @@ C
           IF (NPASS.GT.1) THEN
              CALL DZERO(GMAT,NSIZG)
              IREC = LGREC(IPASS)
-             CALL MEMGET('REAL',KRBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL MEMGET('INTE',KLBUF,NGBFSZ,WORK,KFREE,LFREE)
-             CALL READGBF(LGFIL,IREC,WORK(KRBUF),WORK(KLBUF),NGBFSZ,
-     &                    GMAT)
-             CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
-CTROND             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
+             CALL READGBF(LGFIL,IREC,NGBFSZ,GMAT)
           ENDIF
 C
 C        Calculate the size of the H-matrix for this pass
@@ -848,8 +843,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck READGBF */
-CTROND      SUBROUTINE READGBF(LGFIL,IREC,NGBFSZ,GMAT)
-      SUBROUTINE READGBF(LGFIL,IREC,RBUF,LBUF,NGBFSZ,GMAT)
+      SUBROUTINE READGBF(LGFIL,IREC,NGBFSZ,GMAT)
 C
 C     Read a batch of scalar integrals into memory
 C
@@ -859,10 +853,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION RBUF(NGBFSZ),LBUF(NGBFSZ),GMAT(*)
-CTROND      Real(8) :: RBUF(NGBFSZ),GMAT(*)
-CTROND      Integer :: LBUF(NGBFSZ)
+      Real(8)              :: GMAT(*)
+      Real(8), allocatable :: RBUF(:)
+      Integer, allocatable :: LBUF(:)
       IF (IREC.EQ.0) RETURN
+      Allocate (RBUF(NGBFSZ))
+      Allocate (LBUF(NGBFSZ))
 C
 C     Read a batch and the link to the previous record.
 C
@@ -878,6 +874,8 @@ C
 C     We read in reverse order, if we have the first block we're done
 C
       IF (IREC.NE.0) GOTO 1
+      DeAllocate (RBUF)
+      DeAllocate (LBUF)
 C
       RETURN
       END
