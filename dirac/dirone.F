@@ -1,4 +1,4 @@
-!dirac_copyright_start
+!========================dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -5762,7 +5762,7 @@ C
      &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
              CALL QUIT ("increase max_sub_bl")
            ENDIF
-!        miro: for spin-free avoid MJABS index out-of-bounds
+!        miro: for spin-free ensure the MJABS index not to be out-of-bounds
            IF (MJABS.GT.0) THEN
              ID_SUB_BL(MJABS,I)  = MJ
              NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
@@ -5945,8 +5945,9 @@ C  /* Deck amjmat */
 C*****************************************************************************
 C
 C     Generate one-electron matrix of Jz
+C     IPRINT = IPRHAM
 C
-C     Called from LINSYM
+C     Called from LINSYM 
 C
 C     Written by Luuk Visscher, oct 1999
 C
@@ -6017,7 +6018,7 @@ C
      &         FILE='AOPROPER')
 #endif
 C
-C     Get integrals of component of angular momentum that we want to
+C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.
 C
       FIRST = .TRUE.
@@ -6026,8 +6027,8 @@ C
      &         OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
 C     
-C     Get the spin-z operator
-C     =======================
+C     Get integrals of the spin-z (sigma_z) operator
+C     ===============================================
 C     
       FIRST = .TRUE.
       IOP =  IPSPNMOM
