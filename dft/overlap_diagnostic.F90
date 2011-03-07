@@ -114,7 +114,7 @@ contains
 
    subroutine overlap_diagnostic_init(parallel_xc, i_am_master)
 
-      use dirac_mpi
+      use xc_mpi
 
 !     --------------------------------------------------------------------------
       logical, intent(in) :: parallel_xc, i_am_master
@@ -183,25 +183,25 @@ contains
 
 #ifdef VAR_MPI
       if (parallel_xc) then
-         call dirac_mpi_bcast(nr_qu         )
-         call dirac_mpi_bcast(nr_fermi      )
-         call dirac_mpi_bcast(nr_mo         )
-         call dirac_mpi_bcast(nr_g_mo       )
-         call dirac_mpi_bcast(nr_g_mo_ns    )
-         call dirac_mpi_bcast(nr_g_mo_pi    )
-         call dirac_mpi_bcast(nr_g_mo_ps    )
-         call dirac_mpi_bcast(nr_u_mo       )
-         call dirac_mpi_bcast(nr_u_mo_ns    )
-         call dirac_mpi_bcast(nr_u_mo_pi    )
-         call dirac_mpi_bcast(nr_u_mo_ps    )
-         call dirac_mpi_bcast(nr_g_ao       )
-         call dirac_mpi_bcast(nr_u_ao       )
-         call dirac_mpi_bcast(nr_g_ao_blocks)
-         call dirac_mpi_bcast(nr_u_ao_blocks)
-         call dirac_mpi_bcast(g_ao_start    )
-         call dirac_mpi_bcast(u_ao_start    )
-         call dirac_mpi_bcast(g_ao_end      )
-         call dirac_mpi_bcast(u_ao_end      )
+         call xc_mpi_bcast(nr_qu         )
+         call xc_mpi_bcast(nr_fermi      )
+         call xc_mpi_bcast(nr_mo         )
+         call xc_mpi_bcast(nr_g_mo       )
+         call xc_mpi_bcast(nr_g_mo_ns    )
+         call xc_mpi_bcast(nr_g_mo_pi    )
+         call xc_mpi_bcast(nr_g_mo_ps    )
+         call xc_mpi_bcast(nr_u_mo       )
+         call xc_mpi_bcast(nr_u_mo_ns    )
+         call xc_mpi_bcast(nr_u_mo_pi    )
+         call xc_mpi_bcast(nr_u_mo_ps    )
+         call xc_mpi_bcast(nr_g_ao       )
+         call xc_mpi_bcast(nr_u_ao       )
+         call xc_mpi_bcast(nr_g_ao_blocks)
+         call xc_mpi_bcast(nr_u_ao_blocks)
+         call xc_mpi_bcast(g_ao_start    )
+         call xc_mpi_bcast(u_ao_start    )
+         call xc_mpi_bcast(g_ao_end      )
+         call xc_mpi_bcast(u_ao_end      )
       end if
 #endif
 
@@ -218,7 +218,7 @@ contains
 
 #ifdef VAR_MPI
       if (parallel_xc) then
-         call dirac_mpi_bcast(mo_coef)
+         call xc_mpi_bcast(mo_coef)
       end if
 #endif
 
@@ -226,7 +226,7 @@ contains
 
    subroutine overlap_diagnostic_collect(i_am_master)
 
-      use dirac_mpi
+      use xc_mpi
 
 !     --------------------------------------------------------------------------
       logical, intent(in) :: i_am_master

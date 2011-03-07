@@ -26,7 +26,7 @@ module dft_cfg
 !              sync_dft_cfg (below)
 
 #ifdef VAR_MPI
-   use dirac_mpi
+   use xc_mpi
 #endif
    use block_config
 #ifdef MOD_XCFUN
@@ -129,59 +129,59 @@ contains
       type(functional) :: f
 !     --------------------------------------------------------------------------
 
-      call dirac_mpi_bcast(f%w)
-      call dirac_mpi_bcast(f%id)
+      call xc_mpi_bcast(f%w)
+      call xc_mpi_bcast(f%id)
 #ifdef MOD_XCFUN
-      call dirac_mpi_bcast(f%xcfun_id_is_set)
+      call xc_mpi_bcast(f%xcfun_id_is_set)
 #endif
 
    end subroutine
 
   subroutine sync_dft_cfg()
 
-    call dirac_mpi_bcast(dft_cfg_screening              )
-    call dirac_mpi_bcast(dft_cfg_keep_ao                )
-    call dirac_mpi_bcast(dft_cfg_explicit_potential     )
-    call dirac_mpi_bcast(dft_cfg_no_pruning             )
-    call dirac_mpi_bcast(dft_cfg_estimate_radii         )
+    call xc_mpi_bcast(dft_cfg_screening              )
+    call xc_mpi_bcast(dft_cfg_keep_ao                )
+    call xc_mpi_bcast(dft_cfg_explicit_potential     )
+    call xc_mpi_bcast(dft_cfg_no_pruning             )
+    call xc_mpi_bcast(dft_cfg_estimate_radii         )
 !   only master imports and exports
-!   call dirac_mpi_bcast(dft_cfg_import_grid            )
-!   call dirac_mpi_bcast(dft_cfg_export_grid            )
-    call dirac_mpi_bcast(dft_cfg_multigrid              )
-    call dirac_mpi_bcast(dft_cfg_zipgrid                )
-    call dirac_mpi_bcast(dft_cfg_alda_hs                )
-    call dirac_mpi_bcast(dft_cfg_alda_ha                )
-    call dirac_mpi_bcast(dft_cfg_xalda                  )
-    call dirac_mpi_bcast(dft_cfg_force_4c_grid          )
-    call dirac_mpi_bcast(dft_cfg_no_sdft                )
-    call dirac_mpi_bcast(dft_cfg_sdft_collinear         )
-    call dirac_mpi_bcast(dft_cfg_cdft_vrg               )
-    call dirac_mpi_bcast(dft_cfg_xcfun                  )
-    call dirac_mpi_bcast(dft_cfg_grac                   )
-    call dirac_mpi_bcast(dft_cfg_grac_is_active         )
-    call dirac_mpi_bcast(dft_cfg_saop                   )
-    call dirac_mpi_bcast(dft_cfg_saop_is_active         )
-    call dirac_mpi_bcast(dft_cfg_saop_with_response_part)
-    call dirac_mpi_bcast(dft_cfg_asymptote_is_lb94      )
-    call dirac_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
-    call dirac_mpi_bcast(dft_cfg_betasigma              )
-    call dirac_mpi_bcast(dft_cfg_blocked                )
-    call dirac_mpi_bcast(dft_cfg_radint                 )
-    call dirac_mpi_bcast(dft_cfg_accepted_error         )
-    call dirac_mpi_bcast(dft_cfg_dfthr0                 )
-    call dirac_mpi_bcast(dft_cfg_dfthri                 )
-    call dirac_mpi_bcast(dft_cfg_ac_ip                  )
-    call dirac_mpi_bcast(dft_cfg_ac_threshold           )
-    call dirac_mpi_bcast(dft_cfg_homo_eigenvalue        )
-    call dirac_mpi_bcast(dft_cfg_grac_alpha             )
-    call dirac_mpi_bcast(dft_cfg_grac_beta              )
-    call dirac_mpi_bcast(dft_cfg_angmin                 )
-    call dirac_mpi_bcast(dft_cfg_angint                 )
-    call dirac_mpi_bcast(dft_cfg_ao_mem_limit           )
-    call dirac_mpi_bcast(dft_cfg_print_level            )
-    call dirac_mpi_bcast(dft_cfg_debug_level            )
-    call dirac_mpi_bcast(dft_cfg_integration_check_level)
-    call dirac_mpi_bcast(dft_cfg_alda_order             )
+!   call xc_mpi_bcast(dft_cfg_import_grid            )
+!   call xc_mpi_bcast(dft_cfg_export_grid            )
+    call xc_mpi_bcast(dft_cfg_multigrid              )
+    call xc_mpi_bcast(dft_cfg_zipgrid                )
+    call xc_mpi_bcast(dft_cfg_alda_hs                )
+    call xc_mpi_bcast(dft_cfg_alda_ha                )
+    call xc_mpi_bcast(dft_cfg_xalda                  )
+    call xc_mpi_bcast(dft_cfg_force_4c_grid          )
+    call xc_mpi_bcast(dft_cfg_no_sdft                )
+    call xc_mpi_bcast(dft_cfg_sdft_collinear         )
+    call xc_mpi_bcast(dft_cfg_cdft_vrg               )
+    call xc_mpi_bcast(dft_cfg_xcfun                  )
+    call xc_mpi_bcast(dft_cfg_grac                   )
+    call xc_mpi_bcast(dft_cfg_grac_is_active         )
+    call xc_mpi_bcast(dft_cfg_saop                   )
+    call xc_mpi_bcast(dft_cfg_saop_is_active         )
+    call xc_mpi_bcast(dft_cfg_saop_with_response_part)
+    call xc_mpi_bcast(dft_cfg_asymptote_is_lb94      )
+    call xc_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
+    call xc_mpi_bcast(dft_cfg_betasigma              )
+    call xc_mpi_bcast(dft_cfg_blocked                )
+    call xc_mpi_bcast(dft_cfg_radint                 )
+    call xc_mpi_bcast(dft_cfg_accepted_error         )
+    call xc_mpi_bcast(dft_cfg_dfthr0                 )
+    call xc_mpi_bcast(dft_cfg_dfthri                 )
+    call xc_mpi_bcast(dft_cfg_ac_ip                  )
+    call xc_mpi_bcast(dft_cfg_ac_threshold           )
+    call xc_mpi_bcast(dft_cfg_homo_eigenvalue        )
+    call xc_mpi_bcast(dft_cfg_grac_alpha             )
+    call xc_mpi_bcast(dft_cfg_grac_beta              )
+    call xc_mpi_bcast(dft_cfg_angmin                 )
+    call xc_mpi_bcast(dft_cfg_angint                 )
+    call xc_mpi_bcast(dft_cfg_ao_mem_limit           )
+    call xc_mpi_bcast(dft_cfg_print_level            )
+    call xc_mpi_bcast(dft_cfg_debug_level            )
+    call xc_mpi_bcast(dft_cfg_integration_check_level)
+    call xc_mpi_bcast(dft_cfg_alda_order             )
 
   end subroutine
 #endif /* ifdef VAR_MPI */
