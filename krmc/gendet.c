@@ -126,7 +126,7 @@ cgendet1( long anStr[], long n, long m,
        else {
 	 printf ("*** ERROR in CGENDET1 *** "
 		 "Too many strings: %i! "
-		 "Allocate more memory!\n", *j );
+		 "Allocate more memory!\n", (int)*j );
 	 quit( "*** ERROR in CGENDET1 ***", 26 );
        }
      }
