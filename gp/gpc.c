@@ -140,7 +140,7 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 	    gettimeofday(&end_wall, NULL);
 
 	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld, maxrss: %ld\n",
-		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
+		   (int)*node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
 		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
 
 	    printf(">>>> Total WALL time used in DIRAC: ");
