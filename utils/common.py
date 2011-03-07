@@ -188,7 +188,7 @@ def get_all_children(input_pid):
     TODO: adapt for Windows
     http://mail.python.org/pipermail/python-win32/2005-February/002943.html
     """
-    import os
+    import os, sys
     # get the pid, pgid, ppid of our current processes:
     command = "ps eo pid,pgid,ppid"
     psraw = os.popen(command).readlines()
