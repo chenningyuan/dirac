@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# example recipe to build and run tests for CDash
+# you can either run this script interactively with "make Experimental" (to calibrate it)
+# or execute it as a cron job with "make Nightly"
+# make sure cmake is installed before you run it
+
+# the directory where your DIRAC sits
+DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cdash
+
+
+# go to the local DIRAC directory
+cd $DIRAC
+
+# svn update, pamadm 
+svn up .
+
+./pamadm -a --xcfun 
+
+
+# configure step
+./setup  --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64" --debug
+
+cd $DIRAC/cbuild
+
+# pam expects dirac.x to be in the same directory
+# you cannot copy it because it does not exist yet
+# make below will create it but same step launches pam (via runtest)
+ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
+
+# build and run tests
+# use either Experimental or Nightly
+
+#  make Experimental
+#  make Nightly
+ make -j 2
+
+exit 0
