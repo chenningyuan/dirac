@@ -1519,7 +1519,8 @@ class pam_enviroment:
 
         from common import get_pid_label
 
-        if dirac_pidofs_in_pids and dirac_pid_in_pids and dirac_pid_in_pidofs:
+        if (dirac_pidofs_in_pids and dirac_pid_in_pids and dirac_pid_in_pidofs) or \
+            dirac_pid_in_pids or dirac_pid_in_pidofs :
             print 'All PIDs form proper subsets. Good'
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
@@ -1565,8 +1566,8 @@ class pam_enviroment:
         if self.parallel_run:
             z1=subprocess.Popen("pidof "+self.mpirun,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
             dirac_pidof_parallel=(z1.communicate()[0]).split()
-
-        dirac_pidof_str.extend(dirac_pidof_parallel)
+            dirac_pidof_str.extend(dirac_pidof_parallel)
+        # turn all processes into int
         self.dirac_pidof_pids = [int(item) for item in dirac_pidof_str]
 
     def profile_dirac(self):
