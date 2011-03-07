@@ -153,7 +153,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Fri Mar  4 18:36:48 2011
+     Date and time (Linux)  : Fri Mar  4 20:26:20 2011
      Host name              :                                         
 
 
@@ -172,6 +172,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
 .DEBUG
 .SMALLDENSITY
  1.0D-40
+.NOSDFT
 **WAVE FUNCTION
 .DHF
 **PROPERTIES
@@ -524,8 +525,7 @@ Represented as: D2h
  * DFT thresholds:
    - dfthr0 =  0.10000E-39
    - dfthri =  0.20000E-11
- * Spin density contribution in response calculations:
-   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
+ * No spin density contribution in response calculations.
 
 
     **************************************************************************
@@ -653,7 +653,7 @@ Total no. of orbitals      (NORB):    14       9      23
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   1 ##########   Fri Mar  4 20:26:21 2011
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -663,12 +663,12 @@ Total no. of orbitals      (NORB):    14       9      23
        3 orbitals in Fermion irrep 2
 It.   1    -65.08436732374      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Fri Mar  4
 
-########## START ITERATION NO.   2 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   2 ##########   Fri Mar  4 20:26:21 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00999999s
 
 
  ********************************************************************************
@@ -693,7 +693,7 @@ Ne      1   0.996E-03   0.711E+01   0.356E+00      23     230
    Number of grid points in quadrature:       230 ( 20.0%)
 
 
- >>>> Time used in DFTGRD:   0.04 seconds
+ >>>> Time used in DFTGRD:   0.05 seconds
 
  
    number of grid points                          =       230
@@ -701,17 +701,17 @@ Ne      1   0.996E-03   0.711E+01   0.356E+00      23     230
    DFT exchange-correlation energy:               =       -11.1468238411558982
    number of electrons from numerical integration =         9.9998741563543092
  
-   time spent in DFT integration                  =   0.08 seconds
+   time spent in DFT integration                  =   0.07 seconds
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.09000003s
+>>> Total CPU-time : 0.10000002s
 
-########## END ITERATION NO.   2 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   2 ##########   Fri Mar  4 20:26:21 2011
 
-It.   2    -127.8371134741      6.28D+01 -9.90D-01  1.16D+00               0.09000003s   LL             Fri Mar  4
+It.   2    -127.8371134741      6.28D+01 -9.90D-01  1.16D+00               0.10000002s   LL             Fri Mar  4
 
-########## START ITERATION NO.   3 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   3 ##########   Fri Mar  4 20:26:21 2011
 
     3 *** Differential density matrix. DCOVLP     = 1.0670
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -726,17 +726,17 @@ SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00999999s
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04000002s
+>>> Total CPU-time : 0.03999996s
 
-########## END ITERATION NO.   3 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   3 ##########   Fri Mar  4 20:26:21 2011
 
-It.   3    -127.9463761318      1.09D-01  1.54D+00  1.30D+00   DIIS   2    0.04000002s   LL             Fri Mar  4
+It.   3    -127.9463761318      1.09D-01  1.54D+00  1.30D+00   DIIS   2    0.03999996s   LL             Fri Mar  4
 
-########## START ITERATION NO.   4 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   4 ##########   Fri Mar  4 20:26:21 2011
 
     4 *** Differential density matrix. DCOVLP     = 0.8136
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.01000005s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
@@ -747,13 +747,13 @@ SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00000000s
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02999997s
+>>> Total CPU-time : 0.04000002s
 
-########## END ITERATION NO.   4 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   4 ##########   Fri Mar  4 20:26:21 2011
 
-It.   4    -128.1765354814      2.30D-01 -8.24D-01  4.06D-02   DIIS   3    0.02999997s   LL             Fri Mar  4
+It.   4    -128.1765354814      2.30D-01 -8.24D-01  4.06D-02   DIIS   3    0.04000002s   LL             Fri Mar  4
 
-########## START ITERATION NO.   5 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   5 ##########   Fri Mar  4 20:26:21 2011
 
     5 *** Differential density matrix. DCOVLP     = 1.0015
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -767,14 +767,14 @@ SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00999999s
    time spent in DFT integration                  =   0.02 seconds
    number of processors                           =         1
  
->>> Total wall time: 0.00000000s
+>>> Total wall time: 1.00000000s
 >>> Total CPU-time : 0.02999997s
 
-########## END ITERATION NO.   5 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   5 ##########   Fri Mar  4 20:26:21 2011
 
 It.   5    -128.1771774256      6.42D-04 -2.01D-02  2.76D-03   DIIS   4    0.02999997s   LL             Fri Mar  4
 
-########## START ITERATION NO.   6 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   6 ##########   Fri Mar  4 20:26:22 2011
 
     6 *** Differential density matrix. DCOVLP     = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -785,21 +785,21 @@ SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00999999s
    DFT exchange-correlation energy:               =       -11.7066905984583247
    number of electrons from numerical integration =         9.9998376532510651
  
-   time spent in DFT integration                  =   0.02 seconds
+   time spent in DFT integration                  =   0.03 seconds
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.02999997s
+>>> Total CPU-time : 0.03999996s
 
-########## END ITERATION NO.   6 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   6 ##########   Fri Mar  4 20:26:22 2011
 
-It.   6    -128.1771793529      1.93D-06 -2.00D-03  3.88D-05   DIIS   5    0.02999997s   LL             Fri Mar  4
+It.   6    -128.1771793529      1.93D-06 -2.00D-03  3.88D-05   DIIS   5    0.03999996s   LL             Fri Mar  4
 
-########## START ITERATION NO.   7 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   7 ##########   Fri Mar  4 20:26:22 2011
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00999999s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
@@ -810,13 +810,13 @@ SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00000000s
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.04000008s
+>>> Total CPU-time : 0.05000007s
 
-########## END ITERATION NO.   7 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   7 ##########   Fri Mar  4 20:26:22 2011
 
-It.   7    -128.1771793538      8.32D-10 -1.84D-05  5.38D-06   DIIS   6    0.04000008s   LL             Fri Mar  4
+It.   7    -128.1771793538      8.32D-10 -1.84D-05  5.38D-06   DIIS   6    0.05000007s   LL             Fri Mar  4
 
-########## START ITERATION NO.   8 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   8 ##########   Fri Mar  4 20:26:22 2011
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -831,30 +831,30 @@ SOfock:LL  1.00D-12   71.58%    6.94%    0.00%    0.00%   0.00999999s
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.03999996s
+>>> Total CPU-time : 0.04000008s
 
-########## END ITERATION NO.   8 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   8 ##########   Fri Mar  4 20:26:22 2011
 
-It.   8    -128.1771793538      3.44D-12  3.23D-06  1.20D-07   DIIS   7    0.03999996s   LL             Fri Mar  4
+It.   8    -128.1771793538      3.44D-12  3.23D-06  1.20D-07   DIIS   7    0.04000008s   LL             Fri Mar  4
 
-########## START ITERATION NO.   9 ##########   Fri Mar  4 18:36:48 2011
+########## START ITERATION NO.   9 ##########   Fri Mar  4 20:26:22 2011
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   71.58%    6.99%    0.00%    0.00%   0.00999999s
+SOfock:LL  1.00D-12   71.58%    6.99%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
    DFT exchange-correlation energy:               =       -11.7066755970953924
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.03 seconds
+   time spent in DFT integration                  =   0.04 seconds
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.03999996s
 
-########## END ITERATION NO.   9 ##########   Fri Mar  4 18:36:48 2011
+########## END ITERATION NO.   9 ##########   Fri Mar  4 20:26:22 2011
 
 It.   9    -128.1771793538      2.84D-14  8.32D-08  6.03D-10   DIIS   7    0.03999996s   LL             Fri Mar  4
 
@@ -873,19 +873,19 @@ It.   9    -128.1771793538      2.84D-14  8.32D-08  6.03D-10   DIIS   7    0.039
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
 It.   1    -65.08436732374      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Fri Mar  4
-It.   2    -127.8371134741      6.28D+01 -9.90D-01  1.16D+00               0.09000003s   LL             Fri Mar  4
-It.   3    -127.9463761318      1.09D-01  1.54D+00  1.30D+00   DIIS   2    0.04000002s   LL             Fri Mar  4
-It.   4    -128.1765354814      2.30D-01 -8.24D-01  4.06D-02   DIIS   3    0.02999997s   LL             Fri Mar  4
+It.   2    -127.8371134741      6.28D+01 -9.90D-01  1.16D+00               0.10000002s   LL             Fri Mar  4
+It.   3    -127.9463761318      1.09D-01  1.54D+00  1.30D+00   DIIS   2    0.03999996s   LL             Fri Mar  4
+It.   4    -128.1765354814      2.30D-01 -8.24D-01  4.06D-02   DIIS   3    0.04000002s   LL             Fri Mar  4
 It.   5    -128.1771774256      6.42D-04 -2.01D-02  2.76D-03   DIIS   4    0.02999997s   LL             Fri Mar  4
-It.   6    -128.1771793529      1.93D-06 -2.00D-03  3.88D-05   DIIS   5    0.02999997s   LL             Fri Mar  4
-It.   7    -128.1771793538      8.32D-10 -1.84D-05  5.38D-06   DIIS   6    0.04000008s   LL             Fri Mar  4
-It.   8    -128.1771793538      3.44D-12  3.23D-06  1.20D-07   DIIS   7    0.03999996s   LL             Fri Mar  4
+It.   6    -128.1771793529      1.93D-06 -2.00D-03  3.88D-05   DIIS   5    0.03999996s   LL             Fri Mar  4
+It.   7    -128.1771793538      8.32D-10 -1.84D-05  5.38D-06   DIIS   6    0.05000007s   LL             Fri Mar  4
+It.   8    -128.1771793538      3.44D-12  3.23D-06  1.20D-07   DIIS   7    0.04000008s   LL             Fri Mar  4
 It.   9    -128.1771793538      2.84D-14  8.32D-08  6.03D-10   DIIS   7    0.03999996s   LL             Fri Mar  4
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.00000000s
+      LL           :    0.12500000s
 
 
                                    TOTAL ENERGY
@@ -1023,7 +1023,7 @@ tot.num. of pos.erg shells:    3    3    3    0
     - Secondary orbitals :      4..     9                                          
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -128.177179353757111
-* Heading :DIRAC: No title specified !!!                     Fri Mar  4 18:36:48 2011
+* Heading :DIRAC: No title specified !!!                     Fri Mar  4 20:26:22 2011
 
 
 
@@ -1033,22 +1033,22 @@ X-Dipole length  - Symmetry: B3u  T+
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast.lda_blas2_ne_auto.14514/DFFCK2                
-* Heading :DIRAC: No title specified !!!                     Fri Mar  4 18:36:48 2011
+* REAFCK: Fock matrix read from file /scratch/bast.lda_blas2_ne_auto.25039/DFFCK2                
+* Heading :DIRAC: No title specified !!!                     Fri Mar  4 20:26:22 2011
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
    DFT exchange-correlation energy:               =       -11.7066755970953924
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.02 seconds
+   time spent in DFT integration                  =   0.03 seconds
    number of processors                           =         1
  
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast.lda_blas2_ne_auto.14514/DFFCK1                
-* Heading :DIRAC: No title specified !!!                     Fri Mar  4 18:36:48 2011
+* REAFCK: Fock matrix read from file /scratch/bast.lda_blas2_ne_auto.25039/DFFCK1                
+* Heading :DIRAC: No title specified !!!                     Fri Mar  4 20:26:21 2011
 E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  1.28009D-03
 E(+)-vector no.  3 removed (close to previous accepted vector). Norm :  3.41550D-03
 E(+)-vector no.  4 removed (close to previous accepted vector). Norm :  6.40908D-03
@@ -1061,10 +1061,10 @@ E(-)-vector no.  8 removed (close to previous accepted vector). Norm :  3.17832D
 * Screening threshold in LR solver scaled with norm of property vector:  1.9688D+00
   and changed to:  1.6699D-07
 
-########## START MICROITERATION NO.   1 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   1 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00999999s
+SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
@@ -1084,7 +1084,7 @@ SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00999999s
 E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  6.02676D-04
 E(+)-vector no.  3 removed (close to previous accepted vector). Norm :  1.60386D-03
 
-########## START MICROITERATION NO.   2 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   2 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
@@ -1110,16 +1110,16 @@ E(+)-vector no.  4 removed (close to previous accepted vector). Norm :  1.56376D
 E(-)-vector no.  6 removed (close to previous accepted vector). Norm :  6.37788D-06
 E(-)-vector no.  7 removed (close to previous accepted vector). Norm :  2.55270D-05
 
-########## START MICROITERATION NO.   3 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   3 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00999999s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.03 seconds
+   time spent in DFT integration                  =   0.04 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  1  E-:  2
@@ -1136,16 +1136,16 @@ E(-)-vector no.  6 removed (close to previous accepted vector). Norm :  1.90277D
 E(-)-vector no.  7 removed (close to previous accepted vector). Norm :  7.27572D-09
 E(-)-vector no.  8 removed (close to previous accepted vector). Norm :  1.73837D-08
 
-########## START MICROITERATION NO.   4 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   4 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00999999s
+SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.03 seconds
+   time spent in DFT integration                  =   0.04 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
@@ -1180,14 +1180,14 @@ SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00999999s
             0.030000 :   2.97D-02 |   2.94D-02  4.13D-03
             0.040000 :   3.01D-02 |   2.96D-02  5.55D-03
 ========================================================
-* It.  3   0.02999997s  (LL       )     [  1]     [  2]
+* It.  3   0.05000007s  (LL       )     [  1]     [  2]
 --------------------------------------------------------
             0.010000 :   2.35D-04 |   2.35D-04  5.86D-06
             0.020000 :   2.38D-04 |   2.38D-04  1.17D-05
             0.030000 :   2.43D-04 |   2.42D-04  1.76D-05
             0.040000 :   2.49D-04 |   2.48D-04  2.35D-05
 ========================================================
-* It.  4   0.04000008s  (LL       )     [  2]     [  1]
+* It.  4   0.03999996s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.010000 :   4.76D-08 |   4.76D-08  2.15D-10
             0.020000 :   4.79D-08 |   4.79D-08  2.01D-09
@@ -1212,7 +1212,7 @@ E(-)-vector no.  8 removed (close to previous accepted vector). Norm :  3.17832D
 * Screening threshold in LR solver scaled with norm of property vector:  1.9688D+00
   and changed to:  1.6699D-07
 
-########## START MICROITERATION NO.   1 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   1 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
@@ -1221,7 +1221,7 @@ SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.04 seconds
+   time spent in DFT integration                  =   0.03 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
@@ -1235,10 +1235,10 @@ SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
 E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  6.02676D-04
 E(+)-vector no.  3 removed (close to previous accepted vector). Norm :  1.60386D-03
 
-########## START MICROITERATION NO.   2 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   2 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00999999s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
@@ -1261,7 +1261,7 @@ E(+)-vector no.  4 removed (close to previous accepted vector). Norm :  1.56376D
 E(-)-vector no.  6 removed (close to previous accepted vector). Norm :  6.37788D-06
 E(-)-vector no.  7 removed (close to previous accepted vector). Norm :  2.55270D-05
 
-########## START MICROITERATION NO.   3 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   3 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00999999s
@@ -1287,16 +1287,16 @@ E(-)-vector no.  6 removed (close to previous accepted vector). Norm :  1.90277D
 E(-)-vector no.  7 removed (close to previous accepted vector). Norm :  7.27572D-09
 E(-)-vector no.  8 removed (close to previous accepted vector). Norm :  1.73837D-08
 
-########## START MICROITERATION NO.   4 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   4 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.01000011s
+SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.03 seconds
+   time spent in DFT integration                  =   0.05 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  2  E-:  1
@@ -1317,14 +1317,14 @@ SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.01000011s
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   0.03999996s  (LL       )     [  1]     [  1]
+* It.  1   0.03000009s  (LL       )     [  1]     [  1]
 --------------------------------------------------------
             0.010000 :   2.86D-01 |   2.86D-01  1.88D-12
             0.020000 :   2.86D-01 |   2.86D-01  3.75D-12
             0.030000 :   2.87D-01 |   2.87D-01  5.63D-12
             0.040000 :   2.88D-01 |   2.88D-01  7.51D-12
 ========================================================
-* It.  2   0.02999997s  (LL       )     [  2]     [  0]
+* It.  2   0.03999996s  (LL       )     [  2]     [  0]
 --------------------------------------------------------
             0.010000 :   2.93D-02 |   2.93D-02  1.36D-03
             0.020000 :   2.95D-02 |   2.94D-02  2.74D-03
@@ -1338,7 +1338,7 @@ SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.01000011s
             0.030000 :   2.43D-04 |   2.42D-04  1.76D-05
             0.040000 :   2.49D-04 |   2.48D-04  2.35D-05
 ========================================================
-* It.  4   0.04000008s  (LL       )     [  2]     [  1]
+* It.  4   0.05000007s  (LL       )     [  2]     [  1]
 --------------------------------------------------------
             0.010000 :   4.76D-08 |   4.76D-08  2.15D-10
             0.020000 :   4.79D-08 |   4.79D-08  2.01D-09
@@ -1363,7 +1363,7 @@ E(-)-vector no.  8 removed (close to previous accepted vector). Norm :  3.17832D
 * Screening threshold in LR solver scaled with norm of property vector:  1.9688D+00
   and changed to:  1.6699D-07
 
-########## START MICROITERATION NO.   1 ##########   Fri Mar  4 18:36:48 2011
+########## START MICROITERATION NO.   1 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
@@ -1372,7 +1372,7 @@ SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.04 seconds
+   time spent in DFT integration                  =   0.03 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  1  E-:  1
@@ -1386,7 +1386,7 @@ SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
 E(+)-vector no.  2 removed (close to previous accepted vector). Norm :  6.02676D-04
 E(+)-vector no.  3 removed (close to previous accepted vector). Norm :  1.60386D-03
 
-########## START MICROITERATION NO.   2 ##########   Fri Mar  4 18:36:49 2011
+########## START MICROITERATION NO.   2 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
@@ -1395,7 +1395,7 @@ SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.03 seconds
+   time spent in DFT integration                  =   0.04 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  2  E-:  0
@@ -1412,16 +1412,16 @@ E(+)-vector no.  4 removed (close to previous accepted vector). Norm :  1.56376D
 E(-)-vector no.  6 removed (close to previous accepted vector). Norm :  6.37788D-06
 E(-)-vector no.  7 removed (close to previous accepted vector). Norm :  2.55270D-05
 
-########## START MICROITERATION NO.   3 ##########   Fri Mar  4 18:36:49 2011
+########## START MICROITERATION NO.   3 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00999999s
+SOfock:LL  1.67D-07   60.12%   11.73%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =       230
    number of grid points below density threshold  =         0
    number of electrons from numerical integration =         9.9998376607649320
  
-   time spent in DFT integration                  =   0.02 seconds
+   time spent in DFT integration                  =   0.04 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  1  E-:  2
@@ -1438,7 +1438,7 @@ E(-)-vector no.  6 removed (close to previous accepted vector). Norm :  1.90277D
 E(-)-vector no.  7 removed (close to previous accepted vector). Norm :  7.27572D-09
 E(-)-vector no.  8 removed (close to previous accepted vector). Norm :  1.73837D-08
 
-########## START MICROITERATION NO.   4 ##########   Fri Mar  4 18:36:49 2011
+########## START MICROITERATION NO.   4 ##########   Fri Mar  4 20:26:22 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00999999s
@@ -1475,14 +1475,14 @@ SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00999999s
             0.030000 :   2.87D-01 |   2.87D-01  5.63D-12
             0.040000 :   2.88D-01 |   2.88D-01  7.51D-12
 ========================================================
-* It.  2   0.03000009s  (LL       )     [  2]     [  0]
+* It.  2   0.03999996s  (LL       )     [  2]     [  0]
 --------------------------------------------------------
             0.010000 :   2.93D-02 |   2.93D-02  1.36D-03
             0.020000 :   2.95D-02 |   2.94D-02  2.74D-03
             0.030000 :   2.97D-02 |   2.94D-02  4.13D-03
             0.040000 :   3.01D-02 |   2.96D-02  5.55D-03
 ========================================================
-* It.  3   0.02999997s  (LL       )     [  1]     [  2]
+* It.  3   0.04000008s  (LL       )     [  1]     [  2]
 --------------------------------------------------------
             0.010000 :   2.35D-04 |   2.35D-04  5.86D-06
             0.020000 :   2.38D-04 |   2.38D-04  1.17D-05
@@ -1626,7 +1626,7 @@ SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00999999s
 ----------------------------------------------
 
  
-     Date and time (Linux)  : Fri Mar  4 18:36:49 2011
+     Date and time (Linux)  : Fri Mar  4 20:26:22 2011
      Host name              :                                         
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1656,5 +1656,5 @@ SOfock:LL  1.67D-07   60.12%   12.46%    0.00%    0.00%   0.00999999s
  MEMGET high-water mark:     1.97 MB
 
 *****************************************************
->>>> Node 0, utime: 1, stime: 0, minflt: 134845, majflt: 0, nvcsw: 1, nivcsw: 146, maxrss: 537760
+>>>> Node 0, utime: 1, stime: 0, minflt: 134854, majflt: 0, nvcsw: 1, nivcsw: 321, maxrss: 537796
 >>>> Total WALL time used in DIRAC: 2s

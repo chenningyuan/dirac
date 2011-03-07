@@ -1347,6 +1347,7 @@ contains
                           nr_dmat,         &
                           dmat_p,          &
                           dmat_pg_sym,     &
+                          dmat_ih_sym,     &
                           derv_length,     &
                           derv,            &
                           max_fun_derv,    &
@@ -1374,6 +1375,7 @@ contains
       integer, intent(in)    :: nr_dmat
       real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat)
       integer, intent(in)    :: dmat_pg_sym(nr_dmat)
+      integer, intent(in)    :: dmat_ih_sym(nr_dmat)
       integer                :: derv_length
       real(8)                :: derv(mxbllen, 0:derv_length)
       integer, intent(in)    :: max_fun_derv
@@ -1402,7 +1404,7 @@ contains
       real(8), allocatable   :: p_n(:, :)
       real(8), allocatable   :: p_n_g(:, :, :)
       real(8), allocatable   :: gnn(:, :, :)
-      integer, allocatable   :: jblock_index(:, :)
+      integer, allocatable   :: jblock_index(:)
 !     --------------------------------------------------------------------------
 
       allocate(ao_sort_index(mat_dim))
@@ -1413,7 +1415,7 @@ contains
       allocate(p_n(block_length, maxval((/nr_dmat, 1/))))
       allocate(p_n_g(block_length, 3, maxval((/nr_dmat, 1/))))
       allocate(gnn(block_length, 0:1, 0:nr_dmat))
-      allocate(jblock_index(mat_dim, 0:7))
+      allocate(jblock_index(mat_dim))
 
 !     zero out density and gradient
       do imat = 0, nr_dmat
@@ -1433,9 +1435,15 @@ contains
       iksoff             = 0
       nr_above_threshold = 0
 
-      do iblock = 1, llss_nr_density_blocks(0, 0)
-         st1 = llss_st_ao(1, iblock, 0, 0)
-         nr1 = llss_nr_ao(1, iblock, 0, 0)
+      if (nr_dmat > 0) then
+         irep = dmat_pg_sym(1) - 1
+      else
+         irep = 0
+      end if
+
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
+         nr1 = llss_nr_ao(1, iblock, 0, irep)
 
 !        get buffer for sorting
 !        and get number of functions above block_threshold
@@ -1489,20 +1497,14 @@ contains
          end do
       end do
 
-      if (nr_dmat > 1) then
-         irep = dmat_pg_sym(1) - 1
-      else
-         irep = 0
-      end if
-
       do iblock = 1, llss_nr_density_blocks(0, irep)
          st1 = llss_st_ao(1, iblock, 0, irep)
-         jblock_index(st1, irep) = iblock
+         jblock_index(st1) = iblock
       end do
 
       do iblock = 1, llss_nr_density_blocks(0, irep)
          st2 = llss_st_ao(2, iblock, 0, irep)
-         jblock = jblock_index(st2, irep)
+         jblock = jblock_index(st2)
          if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
             call evaluate_densities(                            &
                                     do_lr,                      &
@@ -1515,6 +1517,7 @@ contains
                                     dmat_0,                     &
                                     nr_dmat,                    &
                                     dmat_p,                     &
+                                    dmat_ih_sym,                &
                                     nr_above_threshold(iblock), &
                                     isoff(iblock),              &
                                     iksoff(iblock),             &
@@ -1528,13 +1531,23 @@ contains
       end do
 
       if (is_gga) then
-         do imat = 0, nr_dmat
+         do k = 1, block_length
+            gnn(k, 0, 0) = n_g(k, 1, 0)*n_g(k, 1, 0) &
+                         + n_g(k, 2, 0)*n_g(k, 2, 0) &
+                         + n_g(k, 3, 0)*n_g(k, 3, 0)
+         
+         end do
+         do imat = 1, nr_dmat
             do k = 1, block_length
-               gnn(k, 0, imat) = n_g(k, 1, imat)*n_g(k, 1, imat) &
-                               + n_g(k, 2, imat)*n_g(k, 2, imat) &
-                               + n_g(k, 3, imat)*n_g(k, 3, imat)
+               gnn(k, 0, imat) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, imat) &
+                               + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, imat) &
+                               + 2.0d0*n_g(k, 3, 0)*n_g(k, 3, imat)
             
             end do
+         end do
+      else
+         do k = 1, block_length
+            gnn(k, 0, 0) = 0.0d0
          end do
       end if
 
@@ -1556,11 +1569,11 @@ contains
       if (nr_dmat > 0) then
          do imat = 1, nr_dmat
             do k = 1, block_length
-               p_n(k, imat) = derv(k, d2000000)*n(k, 1)
+               p_n(k, imat) = derv(k, d2000000)*n(k, imat)
             end do
             if (is_gga) then
                do k = 1, block_length
-                  p_n(k, imat) = p_n(k, imat) + derv(k, d1010000)*gnn(k, 0, 1)
+                  p_n(k, imat) = p_n(k, imat) + derv(k, d1010000)*gnn(k, 0, imat)
                end do
                do ixyz = 1, 3
                   do k = 1, block_length
@@ -1586,7 +1599,7 @@ contains
 
       do iblock = 1, llss_nr_density_blocks(0, irep)
          st2 = llss_st_ao(2, iblock, 0, irep)
-         jblock = jblock_index(st2, irep)
+         jblock = jblock_index(st2)
          if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
             call distribute_prefactors(                            &
                                        is_gga,                     &
@@ -1665,7 +1678,7 @@ contains
       real(8), allocatable   :: tmat(:)
 !     --------------------------------------------------------------------------
 
-      allocate(xmat(mxbllen*mat_dim))
+      allocate(xmat(nr_above_threshold_l*nr_above_threshold_r))
       allocate(tmat(mxbllen*mat_dim))
 
       do imat = 1, nr_fmat
@@ -1755,6 +1768,7 @@ contains
                                  dmat_0,               &
                                  nr_dmat,              &
                                  dmat_p,               &
+                                 dmat_ih_sym,          &
                                  nr_above_threshold_l, &
                                  isoff_l,              &
                                  iksoff_l,             &
@@ -1777,6 +1791,7 @@ contains
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)
       integer, intent(in)    :: nr_dmat
       real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat)
+      integer, intent(in)    :: dmat_ih_sym(nr_dmat)
       integer, intent(in)    :: nr_above_threshold_l
       integer, intent(in)    :: isoff_l
       integer, intent(in)    :: iksoff_l
@@ -1838,6 +1853,8 @@ contains
          allocate(dmat_sorted(nr_above_threshold_l*nr_above_threshold_r))
 
          do imat = 1, nr_dmat
+
+            if (dmat_ih_sym(imat) == -1) cycle
 
             if (iksoff_l == iksoff_r) then !diagonal block
                do i = 1, nr_above_threshold_l

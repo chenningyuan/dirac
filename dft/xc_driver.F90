@@ -1020,6 +1020,7 @@ contains
                           nr_dmat,                  &
                           dmat,                     &
                           dmat_pg_sym,              &
+                          dmat_ih_sym,              &
                           derv_length,              &
                           derv,                     &
                           max_fun_derv,             &
