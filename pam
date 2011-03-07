@@ -371,6 +371,15 @@ class pam_enviroment:
                 print ' src full path:', src
                 print 'dest full path:', dest
         except:
+            if os.path.isfile(src):
+                src_message="...src exists"
+            else:
+                src_message="...src does not exist !"
+            if os.path.isdir(dest):
+                src_message="...dest exists"
+            else:
+                src_message="...dest does not exist !"
+            # ... 
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
                'Copying of files - shutil.copy(src, dest) - failed, error exit !'
