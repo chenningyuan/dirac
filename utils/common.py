@@ -203,9 +203,12 @@ def get_all_children(input_pid):
         if int(input_pid) in ps:
             pgid = ps[1]
             break
+
     if pgid == 0:
-        print >>sys.stderr, "Something screwed up trying to find pids. fudge."
-        return
+        print >>sys.stderr, "Something screwed up trying to find pids. Using other routine."
+        # use different routine, and return
+        childrenList=children_pid(input_pid)
+        return childrenList
 
     # get a list of all pids in the pgid except the group owner:
     for ps in psList:
