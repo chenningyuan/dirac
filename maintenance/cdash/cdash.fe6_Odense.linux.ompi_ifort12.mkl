@@ -49,7 +49,7 @@ make clean
 #make Nightly
 
 # Do the regular build
-DRAC1=/mount/scratch1/ilias/dirac_build
+DRAC1=/people/disk2/ilias/dirac_build
 cd $DIRAC1
 ./pamadm -a --xcfun
 # setup, no --debug
