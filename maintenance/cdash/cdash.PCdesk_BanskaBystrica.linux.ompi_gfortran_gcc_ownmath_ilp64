@@ -5,6 +5,9 @@
 # or execute it as a cron job with "make Nightly"
 # make sure cmake is installed before you run it
 
+# enviroment
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cdash
 
@@ -31,8 +34,8 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 # build and run tests
 # use either Experimental or Nightly
 
-  make Experimental
+#  make Experimental
 #  make Nightly
-# make -j 2
+ make -j 2
 
 exit 0
