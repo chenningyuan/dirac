@@ -2,6 +2,8 @@ Here we can collect successful builds for various clusters and machines. These
 recipes are mostly for own reference but can of course serve as first steps
 for users trying to install DIRAC on similar machines.
 
+ Don't forget to run pamadm first !
+
 stallo (x86_64 linux cluster) 2011-02-20
 ----------------------------------------
 $ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake
@@ -36,10 +38,19 @@ $ make
 $ cd ..
 $ ln -s build_gfort_seq/dirac.x
 
-ilias@frpd2.utcpd.sk (please describe machine) 2011-02-21
----------------------------------------------------------
+ilias@frpd2.utcpd.sk (Lunix x86_64) 2011-02-21
+------------------------------------------------------
 $ ./setup --fc=g95 --cc=gcc-4.2 --int64 --nomath
-$ ln -sf dirac.x cbuild/dirac.x
+$ ln -sf  cbuild/dirac.x dirac.x
 $ cd cbuild
 $ cmake ..
 $ make
+
+ilias@miro.pd.uniza.sk (Lunix x86_64) 2011-03-08
+------------------------------------------------------------------------
+$ ./pamadm -a --xcfun
+$ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --nomath --mpi --runtest_mpi=2 --debug
+$ ln -sf  cbuild/dirac.x .
+$ cd cbuild
+$ make -j 2
+
