@@ -22,7 +22,7 @@ git svn rebase
 
 
 # configure step
-./setup  --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64" --debug
+./setup  --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" 
 
 cd $DIRAC/cbuild
 
@@ -31,11 +31,11 @@ cd $DIRAC/cbuild
 # make below will create it but same step launches pam (via runtest)
 ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 
+make clean
 # build and run tests
 # use either Experimental or Nightly
-
-  make Experimental
-#  make Nightly
+#  make Experimental
+  make Nightly
 # make -j 2
 
 exit 0
