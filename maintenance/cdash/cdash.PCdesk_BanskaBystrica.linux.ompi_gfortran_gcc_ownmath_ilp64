@@ -34,8 +34,8 @@ ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 make clean
 # build and run tests
 # use either Experimental or Nightly
-#  make Experimental
-  make Nightly
+make Experimental
+#  make Nightly
 # make -j 2
 
 exit 0
