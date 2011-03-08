@@ -205,6 +205,9 @@ C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
 C  After the BANDDIA runs the corresponding eigenVECTORS of the
 C  Lanczos matrix are available in ZEV  resp. in CC(WRK_ZEV)
+C  ITAP5 will be provided as a free file handle. 
+C  It is only used locally and reusable after finishing RBANDDIA/ZBANDDIA
+C  This file handle is used for storing the T eigenvector matrix
 C
       N=NITER
       CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC)
@@ -216,11 +219,11 @@ C
       CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC)
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
       ELSE
-        CALL RBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
      &           CC(WRK_ZEV),CC(WRK_RWORK1))
         CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
       ENDIF
@@ -304,9 +307,24 @@ c
       IF(IOLDNEW.EQ.1) CLOSE(ITAP2,STATUS='DELETE')
 
       CALL MEMREL('ADC-memrel',CC,KFRSAV,KFREESAVE,KFREE,LFREE)
+c
+c  from here the file handles itap1 - itap3 are available again and we
+c  can perform the detailed analysis of the long ADC eigenvectors together
+c  with their configurations
+c
+c  All the memory is released and we do the analysis with a F90 routine.
+c  irecl still contains the record length of the configuration file.
+c
+      IF(NEIGENV.GT.0) THEN
+        IF(CARITH) THEN
+          CALL ZADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
+     &                            nocc,irecl,filecnf)
+        ELSE
+          CALL RADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
+     &                            nocc,irecl,filecnf)
+        ENDIF
+      ENDIF
 
-c     write(*,*) 'Memory pointers after diagexe:',
-c    &  KFRSAV,KFREESAVE,KFREE,LFREE
 
       RETURN
       END
@@ -405,7 +423,7 @@ c
         READ(IO_LAN) N1
         READ(IO_LAN) N2
         WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
-     &              N2,' on TMATVEC'
+     &              N2,' on TMATEVC'
         IF(NEIGENV.gt.N1) THEN
           WRITE(*,*) 'More EVCs requested than available.'
           WRITE(*,*) 'Adjusting to the value given above.'
@@ -414,7 +432,7 @@ c
         IF(N2.NE.NITER)
      &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
         DO I=1,NEIGENV
-          READ(IO_LAN) rdummy
+          READ(IO_LAN) CEVL(I)
           READ(IO_LAN) (Z(IX,I),IX=1,N2)
         ENDDO
         CLOSE(IO_LAN,STATUS='DELETE')
@@ -653,7 +671,7 @@ c
         READ(IO_LAN) N1
         READ(IO_LAN) N2
         WRITE(IW,*) 'Found',N1,' Lanczos eigenvectors of length',
-     &              N2,' on TMATVEC'
+     &              N2,' on TMATEVC'
         IF(NEIGENV.gt.N1) THEN
           WRITE(*,*) 'More EVCs requested than available.'
           WRITE(*,*) 'Adjusting to the value given above.'
@@ -661,8 +679,8 @@ c
         ENDIF
         IF(N2.NE.NITER)
      &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
-        DO I=1,N1
-          READ(IO_LAN) rdummy
+        DO I=1,NEIGENV
+          READ(IO_LAN) CEVL(I)
           READ(IO_LAN) (Z(IX,I),IX=1,N2)
         ENDDO
         CLOSE(IO_LAN,STATUS='DELETE')
@@ -751,8 +769,6 @@ c  and will be normalized
 c  form t_i+p,i = |r|, q_i+p,i = r/|r|
 c
         Y = ZDOTC(LADC,R,1,R,1)
-c       Y = ZSQRT(Y)
-c  att: the PGI compiler does not know zsqrt
 c
         Y = SQRT(Y)
         T(NP+1,IL) = Y
@@ -1027,7 +1043,6 @@ C
   36     CONTINUE
   35   Z(I+NP,J) = XM
   30  CONTINUE     
-
 c
 c    * * * * * *     S P E C T R U M     * * * * * * * * * * * *
 c  spectrum is purged and available: all eigenvalues with corresponding
@@ -1139,14 +1154,14 @@ c   not attribute a separate symmetry label to it. This file
 c   is needed only for hole population analysis and the
 c   calculation for the **long** eigenvectors.
 c
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) JND
-      WRITE(IOUNIT) N
-      DO J=1,JND 
-        WRITE(IOUNIT) D(J)
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)
-      ENDDO
-      CLOSE(IOUNIT)
+c     OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+c     WRITE(IOUNIT) JND
+c     WRITE(IOUNIT) N
+c     DO J=1,JND 
+c       WRITE(IOUNIT) D(J)
+c       WRITE(IOUNIT) (Z(IX,J),IX=1,N)
+c     ENDDO
+c     CLOSE(IOUNIT)
 
       RETURN
       END
@@ -1181,7 +1196,6 @@ c  only. in order to use the unmodified code we copy those components
 c  to the short vector array z(2*np,n)
 c
 c  the number N corresponds to the number of L-iterations == NITER
-c  the number NEIGENV is the number of desired eigenvectors
 c
 c  *** attention *** in the analysis some components of z are added
 c  together or multiplied by some scaling factor stemming from the
@@ -1486,30 +1500,25 @@ c
       CLOSE(IOUNIT)
 c
 c   write the hole part of the short eigenvectors either
-c   for the single or double ionization case for all 
-c   remaining unpurged vectors. Since this file is normally
-c   processed immediately after this subroutine call we do
-c   not attribute a separate symmetry label to it. This file
-c   is needed only for hole population analysis and the
-c   calculation for the **long** eigenvectors.
+C   tmatevc is now written out by ZBANDDIA in the *unpurged* form!
 c
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) JND
-      WRITE(IOUNIT) N
-      DO J=1,JND
-        WRITE(IOUNIT) D(J)
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)
-      ENDDO
-      CLOSE(IOUNIT)
+c     OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+c     WRITE(IOUNIT) JND
+c     WRITE(IOUNIT) N
+c     DO J=1,JND
+c       WRITE(IOUNIT) D(J)
+c       WRITE(IOUNIT) (Z(IX,J),IX=1,N)
+c     ENDDO
+c     CLOSE(IOUNIT)
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RBANDDIA(N,NP,LDAB,AB,EVL,Z,RWORK)
+      SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,RWORK)
 C
       IMPLICIT INTEGER (A-Z)
 
-      INTEGER N,NP,LDAB
+      INTEGER IOUNIT,N,NP,LDAB
       REAL*8 AB(LDAB,*),Z(N,*)
       REAL*8 RWORK(6*N),EVL(N)
       
@@ -1523,6 +1532,12 @@ C  arguments.
 C  The Lanczos matrix T from the caller comes in the AB array.
 C     ****  ATTENTION ****  due to the usual programming conventions
 C  of the LAPACK routines the original matrix T is DESTROYED !!!
+C
+C  important: we used to save the eigenvectors of the Lanc matrix
+C  *after* purging. But when one analyzes the rebuilding of the long ADC
+C  vectors inconsistencies may arise. We therefore store *all* evecs of
+C  L and deal with multitudes separately.
+
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1547,21 +1562,15 @@ C the first and last NP components were available and the whole
 C eigenvector was calculated by inverse iteration. We do not pursue this
 C direction due to problems with the inverse interation
 C
+C N is the dimension of the band matrix (not the number of sidebands!)
 
       JOBZ='V'
       UPLO='L'
       LDZ=N
 
-c     CALL PST('Diagonalizing real tridiagonal matrix+')
-
-
-c     WRITE(IW,*) 'Parameters for real band diagonalizer'
-c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
-
-c     WRITE(IW,*) 'Calling ORIGINAL  DSBEV...'
       CALL DSBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           RWORK, INFO)
-c     WRITE(IW,*) 'Code from DSBEV:',INFO
+
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in DSBEV')
       ENDIF
@@ -1585,12 +1594,27 @@ c     WRITE(IW,*) 'Code from DSBEV:',INFO
       ENDDO
 
  111  FORMAT(I5,2x,2F12.6,3x,'mean-res',2x,F10.4)
+c
+c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
+c Since each final state symmetry is treated immediately after
+c calculation, TMATVEC does not get an individual symmetry label.
+c
 
+      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+      DO J=1,N
+        WRITE(IOUNIT) EVL(J) ! eigenvalue
+        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+      ENDDO
+      CLOSE(IOUNIT)
+    
+      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ZBANDDIA(N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
+      SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,AB,EVL,Z,WORK,RWORK)
 C
       IMPLICIT INTEGER (A-Z)
 
@@ -1614,9 +1638,9 @@ C
 C---------------Local variables--------------------------------------
 C
       INTEGER INFO,LDZ
-      CHARACTER JOBZ,UPLO
+      CHARACTER*1 JOBZ,UPLO
       COMPLEX*16 Y
-      DOUBLE PRECISION AUEV
+      REAL*8 AUEV
 
 C
 C---------------Executable code--------------------------------------
@@ -1632,15 +1656,9 @@ C
       UPLO='L'
       LDZ=N
 
-c     CALL PST('Diagonalizing hermitian tridiagonal matrix+')
-
-c     WRITE(IW,*) 'Parameters for complex band diagonalizer'
-c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
-
-c     WRITE(IW,*) 'Calling Alternative ZHBEV...'
       CALL ZHBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           WORK, RWORK, INFO)
-c     WRITE(IW,*) 'Code from ALZHBEV:',INFO
+
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in ZHBEV')
       ENDIF
@@ -1664,6 +1682,22 @@ c     WRITE(IW,*) 'Code from ALZHBEV:',INFO
       ENDDO
 
  111  FORMAT(I5,2x,2F12.6,3x,'mean-res',2x,F10.4)
+c
+c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
+c Since each final state symmetry is treated immediately after
+c calculation, TMATVEC does not get an individual symmetry label.
+c
+
+      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+      WRITE(IOUNIT) N   ! number of computed eigenvectors (all!)
+      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+      DO J=1,N
+        WRITE(IOUNIT) EVL(J) ! eigenvalue
+        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+      ENDDO
+      CLOSE(IOUNIT)
+    
+      WRITE(*,*) 'Complete set of Lanczos eigenvectors saved to TMATEVC'
 
       RETURN
       END

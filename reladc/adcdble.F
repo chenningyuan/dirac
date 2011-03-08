@@ -163,18 +163,11 @@ C |
       WRITE(IW,*)
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '***                  STARTING THE'
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***      RELATIVISTIC DOUBLE IONIZATION ADC(2x)'
       WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '***                     MODULE'
-      WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
-      WRITE(IW,*) '*** '
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*)
@@ -401,16 +394,16 @@ c
 c
 c  we do Mulliken-type ADC population analysis after diagonalization
 c  since in this part of the program we have access to all the symmetry
-c  information we need. The hole vectors are written in the diagonalizer
-c  part.
+c  information we need. Since we need only the 2h part we can make use
+c  of the TMATVEC matrix, the eigenvectors of the Lanczos matrix.
+c  ATT in this F90 routine an include symm.inc does not work!
+c  therefore we have to transfer the relevant arrays to TWOHPOP
+c  especially MULTB(64,64,2), NOOT(*) and NO(*)
 c
         IF(DOADCPOP) THEN
-          WRITE(IW,*)
-          WRITE(IW,*) 'ADC two-hole population analysis'
-          WRITE(IW,*) 'not yet available'
-          WRITE(IW,*)
-c         CALL TWOHPOP(IW,ITAPADC,DESREP,NO(DESREP))
+          CALL TWOHPOP(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
         ENDIF
+        pause
  300  CONTINUE
 
 C |

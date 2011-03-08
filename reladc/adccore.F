@@ -433,7 +433,7 @@ C------------- Execution starts -------------------------------------
 C
       NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
-     &                 DOCONST,DOADCPOP,VCONV
+     &                 DOCONST,DOADCPOP,DOFULL,VCONV
       NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,SIPPRNT,DIPPRNT
 c
 c  set input default values and read ADC input
@@ -465,8 +465,7 @@ c
       DOCONST  = .TRUE.
       VCONV    = 1.0D-06
       DOADCPOP = .FALSE.
-
-c     DIAGTYPE = 'LANC'
+      DOFULL   = .FALSE.
 c 
 c  next read in actual parameters from ADC input
 c
@@ -490,23 +489,6 @@ c  check consistencies
 c
       IF( (ADCLEVEL.LT.1).OR.(ADCLEVEL.GT.3))
      &  CALL QUIT('Illegal ADC level for SIPS in namelist RELADC')
-
-c     IF(DIAGTYPE.NE.'EXTN') THEN
-c      IF(DIAGTYPE.NE.'FULL') THEN
-c       IF(DIAGTYPE.NE.'LANC') THEN
-c        IF(DIAGTYPE.NE.'DAVI') THEN
-c          WRITE(IW,*) '*** Unknown type of requested diagonalization'
-c          WRITE(IW,*) '*** Defaulting to Band-Lanczos.'
-c          DIAGTYPE='LANC'
-c        ENDIF
-c       ENDIF
-c      ENDIF
-c     ENDIF
-c
-c  single reference open-shell issue is not clarified!
-c  we therefore do not allow a non closed-shell reference state for the
-c  moment
-c
 c
 c  set Lanczos defaults and read input from DIRAC.INP
 c  * A minimum of 500 iterations
@@ -1524,6 +1506,23 @@ C
         CLOSE(ITAPADC+4)
         CLOSE(ITAPADC+5)
         CALL MEMCHK('AFTER ADC-MATRIX CONSTRUCTION',CC,KFRSAV)
+c
+c  Do a full diagonalization of the ADC matrix (for debugging
+c  purposes) with eigenvalues and -vectors written to disk.
+c  This is only allowed for matrices with a dimension smaller than
+c  5000. Otherwise this routine is automatically exited.
+c  This feature is especially useful when it comes to eigenvector
+c  analysis. Due to simplicity FULLDIAR is wirtten in F90 and
+c  retrievable in the separate module adcanal.F90 with dynamic
+c  allocation of workspace.
+c
+        IF(DOFULL) THEN
+          IF(CARITH) THEN
+            CALL FULLDIAC(ITAPADC+4, FILEN4, FILEN5, INTBUF, LADC, KREP)
+          ELSE
+            CALL FULLDIAR(ITAPADC+4, FILEN4, FILEN5, INTBUF, LADC, KREP)
+          ENDIF
+        ENDIF
 C
 C  call configuration creator for 1h/2h1p configurations
 C  File handle ITAPADC+2 is available. closed after sub call!
