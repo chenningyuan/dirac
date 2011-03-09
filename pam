@@ -1543,6 +1543,11 @@ class pam_enviroment:
                     os.kill(pid,signal.SIGTERM)
                 except:
                     print 'did not succeed with killing of the process pid=',pid
+ 
+        # command - print all processes
+        print '\n processes left:'
+        command="ps -fu "+self.user_name
+        os.system(command)
 
         # final message on the timeout kill (if selected)
         if self.set_timeout_limit:
