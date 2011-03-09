@@ -210,14 +210,11 @@ and absolute errors otherwise.</p>
 if not os.path.isdir('test/LOGS'):
     os.mkdir('test/LOGS')
 
+global pam_output_file 
 backup('test/LOGS/runtest.htm')
 f = open('test/LOGS/runtest.htm', 'w')
 f.write(html_header)
 f.close()
-
-backup('test/LOGS/runtest.log')
-pam_output_file = open('test/LOGS/runtest.log','w', 0)
-pam_output_file.write(" runtest pam outputs \n\n ") 
 
 class run:
      def __init__(self, test, line, kind):
@@ -226,8 +223,7 @@ class run:
          self.mol  = line.split()[1]
          self.kind = kind
          pam_flags = ''
-
-         # timeouts for quick and regular tests
+         # timeouts for quick, regular and benchmark tests
          if self.kind == 'q':
              pam_flags +=  '--timeout=21m '
          elif self.kind == 'r':
@@ -263,6 +259,8 @@ class run:
                               stdout=subprocess.PIPE)
          
          pam_output = p.communicate()[0]
+         global pam_output_file
+         #print '2. pam_output_file:',pam_output_file
          pam_output_file.write(pam_output) 
          # check whether DIRAC terminated normally
          if 'exit           : normal' in pam_output:
@@ -387,7 +385,20 @@ def main(*args):
     nr_bad_filter    = 0
     global_elapsed   = 0.0
 
+    testname_0=None
     for task in l:
+
+        testname_1=string.split(task.test, '/')[-1]
+        open_new_log_file=(testname_0 != testname_1)
+
+        if open_new_log_file : 
+            global pam_output_file
+            log_file=root_directory+'/test/LOGS/runtest_'+testname_1+'.log'
+            backup(log_file)
+            pam_output_file = open(log_file,'w', 0)
+            pam_output_file.write(" runtest pam outputs \n\n ")
+            #TODO: how to ensure closing of pam_output_file files ?
+
         if task.is_shell_command():
             task.execute()
         else:
@@ -457,6 +468,9 @@ def main(*args):
                     print
                     sys.exit(1)
 
+        #task.pam_output_file.close()
+        testname_0 = testname_1
+
     print
     print 'summary: %5i ok'                % nr_ok
     if nr_failed > 0:
@@ -471,7 +485,6 @@ def main(*args):
 
     global_elapsed_str = time.strftime('%Hh%Mm%Ss', time.gmtime(global_elapsed))
     print 'total time: %s\n' % global_elapsed_str
-    pam_output_file.close()
 
     f_todo.close()
 
