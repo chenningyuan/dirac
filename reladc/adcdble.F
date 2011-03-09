@@ -403,7 +403,6 @@ c
         IF(DOADCPOP) THEN
           CALL TWOHPOP(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
         ENDIF
-        pause
  300  CONTINUE
 
 C |

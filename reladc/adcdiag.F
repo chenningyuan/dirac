@@ -1087,7 +1087,7 @@ c  together with their pole strengths and error estimates are written
 c  to the XSPEC.XX files.
 c
         IF(IONIZLEVEL.EQ.1) THEN
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)')
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)')
      &        d(j)*AUEV,x1,y1,'@'
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
@@ -1101,7 +1101,7 @@ c          write(iounit,'(8x,500I12)')   (ix,ix=1,nholes)
 c          write(iounit,'(8x,500F12.6)') (z(ix,j),ix=1,nholes)
 c          write(iounit,'(8x,500F12.6)') (z(ix,j)*z(ix,j),ix=1,nholes)
         ELSE
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)') 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)') 
      &        d(j)*AUEV,x1,y1,'@'
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
@@ -1438,7 +1438,7 @@ c  together with their pole strengths and error estimates are written
 c  to the XSPEC.XX files.
 c
         IF(IONIZLEVEL.EQ.1) THEN
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)')
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)')
      &        d(j)*AUEV,x1,y1,'@'
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
@@ -1454,7 +1454,7 @@ c          write(iounit,'(8x,500F12.6)') (z(ix,j),ix=1,nholes)
 c          write(iounit,'(8x,500F24.6)')
 c    &           (dble(z(ix,j)*dconjg(z(ix,j))),ix=1,nholes)
         ELSE
-           write(iounit,'(2x,F10.4,4x,2F12.6,4x,A1)')
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)')
      &        d(j)*AUEV,x1,y1,'@'
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
