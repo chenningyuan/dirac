@@ -26,12 +26,12 @@ module xc_driver
 #ifdef PRG_DIRAC
   use fde_mod
 #endif
+!fixme: dirac_cfg should not be used here
   use dirac_cfg
   use basis_info
   use occupation_info
   use dft_cfg
   use dft_functional_derv
-  use dft_ao_in_mem
   use ao_eval
   use density_eval
 #ifdef MOD_UNRELEASED
@@ -103,8 +103,6 @@ module xc_driver
    real(8), allocatable :: fde_prop2(:)
    real(8), allocatable :: ao(:)
    real(8), allocatable :: buffer(:)
-   real(8), allocatable :: ao_block(:, :)
-   real(8), allocatable :: buffer_block(:, :)
    real(8), allocatable :: dmat_sorted(:, :)
 
    real(8) :: tau_integral
@@ -492,9 +490,13 @@ contains
          end if
 
 !        calculate grid
+!fixme: dirac_cfg should not be used here
          if (.not. dirac_cfg_fde_response) then
             if (.not. grid_is_done) then
+#ifdef PRG_DIRAC
+!radovan: grid stuff will be moved outside this module
               call dftgrd(dmat_0, 1)
+#endif
               grid_is_done = .true.
             end if
          else
@@ -874,6 +876,8 @@ contains
       logical :: us_lao_above_threshold
       logical :: ugs_lao_above_threshold
 
+      real(8), allocatable :: ao_block(:, :)
+      real(8), allocatable :: buffer_block(:, :)
 
     type(omega_prefactor) :: u
 
@@ -910,8 +914,6 @@ contains
     allocate(buffer  (total_ao_vector_length))
 
     if (dft_cfg_blocked) then
-       allocate(ao_block(mxbllen,     total_ao_vector_length))
-       allocate(buffer_block(mxbllen, total_ao_vector_length))
        block_threshold = get_block_threshold(mat_dim, dmat_0)
     end if
 
@@ -980,30 +982,15 @@ contains
       loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
          block_length = min(mxbllen, nr_points_process - ipoint + 1)
 
-!        call get_ao(block_length,                     &
-!                    rx(ipoint:ipoint+block_length-1), &
-!                    ry(ipoint:ipoint+block_length-1), &
-!                    rz(ipoint:ipoint+block_length-1), &
-!                    ao_block,                         &
-!                    buffer_block)
+         allocate(ao_block(block_length,     total_ao_vector_length))
+         allocate(buffer_block(block_length, total_ao_vector_length))
 
-         do k = 1, block_length
-            call get_ao(rx(ipoint + k - 1), &
-                        ry(ipoint + k - 1), &
-                        rz(ipoint + k - 1), &
-                        ao,         &
-                        buffer)
-            do i = 1, mat_dim
-               ao_block(k, i) = ao(i)
-            end do
-            if (use_gga) then
-               do i = 1, mat_dim
-                  ao_block(k, i + mat_dim*1) = ao(i + mat_dim*1)
-                  ao_block(k, i + mat_dim*2) = ao(i + mat_dim*2)
-                  ao_block(k, i + mat_dim*3) = ao(i + mat_dim*3)
-               end do
-            end if
-         end do
+         call get_ao(block_length,                     &
+                     rx(ipoint:ipoint+block_length-1), &
+                     ry(ipoint:ipoint+block_length-1), &
+                     rz(ipoint:ipoint+block_length-1), &
+                     ao_block,                         &
+                     buffer_block)
 
          call get_n_block(                          &
                           use_gga,                  &
@@ -1028,6 +1015,9 @@ contains
                           nr_electrons,             &
                           xc_energy                 &
                          )
+
+       deallocate(ao_block)
+       deallocate(buffer_block)
 
       end do loop_over_points_block
    else
@@ -1095,6 +1085,7 @@ contains
             tau_integral = tau_integral + w(1)*tau
          end if
 
+!fixme: dirac_cfg should not be used here
         if ( dirac_cfg_fde_response ) then
            if ( fde_froz_n(ipoint) > dft_cfg_dfthr0 ) then
               n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
@@ -1146,6 +1137,7 @@ contains
 #endif
 #endif
 #ifdef MOD_XCFUN
+!fixme: dirac_cfg should not be used here
            if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
 !             fde_response:
 !             the frozen density has to be passed all the way to here
@@ -1742,10 +1734,6 @@ contains
 
     deallocate(ao)
     deallocate(buffer)
-    if (dft_cfg_blocked) then
-       deallocate(ao_block)
-       deallocate(buffer_block)
-    end if
 
     deallocate(u%n)
     deallocate(u%s)
@@ -1978,6 +1966,7 @@ contains
     real(8), allocatable :: mpi_buffer(:)
 
       if (i_am_master) then
+!fixme: dirac_cfg should not be used here
          if (dirac_cfg_fde_response) then
 !           don't open and rewind anything
 !           data is already stored at this point
@@ -2004,6 +1993,7 @@ contains
             else if (dft_cfg_multigrid) then
                read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
 #ifdef MOD_UNRELEASED
+!fixme: dirac_cfg should not be used here
             else if (dirac_cfg_fde_response) then
                nr_points = fde_grid_np
 #endif
@@ -2045,12 +2035,15 @@ contains
             allocate(rw(nr_points_process))
          end if
 
+#ifdef PRG_DIRAC
+!radovan: grid stuff will be moved outside this module
          if (i_am_master) then
             if (dft_cfg_import_grid) then
                call import_dft_grid(rx, ry, rz, rw, file_unit_grid, nr_points)
             else if (dft_cfg_multigrid) then
                call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
 #ifdef MOD_UNRELEASED
+!fixme: dirac_cfg should not be used here
             else if (dirac_cfg_fde_response) then
                if (parallel_xc) then
                   call quit('fix fde_response mpi')
@@ -2084,6 +2077,7 @@ contains
                call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
          end if
+#endif
 
          ibatch          = ibatch + 1
          nr_points_total = nr_points_total + nr_points
@@ -2154,6 +2148,7 @@ contains
          deallocate(rw)
 
 #ifdef MOD_UNRELEASED
+!fixme: dirac_cfg should not be used here
         if (dirac_cfg_fde_response) then
            if (allocated(fde_froz_n)) deallocate(fde_froz_n)
            if (allocated(fde_froz_ng)) deallocate(fde_froz_ng)

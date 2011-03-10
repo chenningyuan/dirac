@@ -85,7 +85,7 @@ module ao_eval
 
    use basis_info
    use block_config
-   use xyz_power
+   use ao_xyz_power
  
    implicit none
  
@@ -160,8 +160,8 @@ contains
       real(8), intent(in)    :: cx(*)
       real(8), intent(in)    :: cy(*)
       real(8), intent(in)    :: cz(*)
-      real(8), intent(inout) :: ao(mxbllen, *)
-      real(8), intent(inout) :: buffer(mxbllen, *)
+      real(8), intent(inout) :: ao(block_length, *)
+      real(8), intent(inout) :: buffer(block_length, *)
 !     --------------------------------------------------------------------------
 
       call get_ao_block_sub(block_length, &
@@ -364,7 +364,7 @@ contains
       real(8), intent(in)    :: cx(*)
       real(8), intent(in)    :: cy(*)
       real(8), intent(in)    :: cz(*)
-      real(8), intent(inout) :: ao(mxbllen, *)
+      real(8), intent(inout) :: ao(block_length, *)
 !     --------------------------------------------------------------------------
       integer                :: i, ishell, isym, j, k
       real(8)                :: px(mxbllen)
@@ -375,6 +375,7 @@ contains
       real(8)                :: sy
       real(8)                :: sz
       real(8)                :: f1, f2
+    integer             :: ofg, ofm, off_power
 !     --------------------------------------------------------------------------
 
       i = 1
@@ -412,6 +413,8 @@ contains
                   end do
                   if (need_ao_order(1, 0)) then
                      do k = 1, block_length
+                        !fixme, repetitive
+                        f1 = contraction_coef(ishell, j)*dexp(-primitive_exp(ishell, j)*p2(k))
                         f2 = -2.0d0*f1*primitive_exp(ishell, j)
                         g_00_00_00_100(k) = g_00_00_00_100(k) + px(k)*f2
                         g_00_00_00_010(k) = g_00_00_00_010(k) + py(k)*f2
@@ -420,6 +423,7 @@ contains
                   end if
                end do
     
+               off_power = power_offset(l_quantum_nr(ishell))
                if (need_ao_order(1, 0)) then
                   call get_gao1_block(block_length, &
                                       ishell,       &
@@ -429,14 +433,21 @@ contains
                                       ao(1, i + nr_ao*3),     &
                                       px,           &
                                       py,           &
-                                      pz)
+                                      pz,           &
+                                      p2,           &
+                                      x_power(off_power), &
+                                      y_power(off_power), &
+                                      z_power(off_power))
                else
-                  call get_gao_block(block_length, &
-                                     ishell,       &
-                                     ao(1, i),     &
-                                     px,           &
-                                     py,           &
-                                     pz)
+                  call get_gao_block(block_length,       &
+                                     ishell,             &
+                                     ao(1, i),           &
+                                     px,                 &
+                                     py,                 &
+                                     pz,                 &
+                                     x_power(off_power), &
+                                     y_power(off_power), &
+                                     z_power(off_power))
                end if
     
                i = i + spherical_deg(ishell)
@@ -452,21 +463,28 @@ contains
                             ao,           &
                             px,           &
                             py,           &
-                            pz)
+                            pz, &
+                     x_pwr, &
+                     y_pwr, &
+                     z_pwr)
 
       use ao_eval_block
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: block_length
       integer, intent(in)    :: ishell
-      real(8), intent(inout) :: ao(mxbllen, *)
+      real(8), intent(inout) :: ao(block_length, *)
       real(8), intent(in)    :: px(*)
       real(8), intent(in)    :: py(*)
       real(8), intent(in)    :: pz(*)
+      integer, intent(in)    :: x_pwr(*)
+      integer, intent(in)    :: y_pwr(*)
+      integer, intent(in)    :: z_pwr(*)
 !     --------------------------------------------------------------------------
       integer                :: ic, jc, k
 !     --------------------------------------------------------------------------
 
       if (l_quantum_nr(ishell) < 8) then
+!        faster explicit code
          call get_cartesian_ao_g0(block_length,         &
                                   l_quantum_nr(ishell), &
                                   px,                   &
@@ -474,15 +492,14 @@ contains
                                   pz,                   &
                                   ao)
       else
-         call quit('get_gao_block: l too high')
-     !   do ic = 1, cartesian_deg(ishell)
-     !      jc = cartesian_off(ishell) + ic
-     !      do k = 1, block_length
-     !         ao(k, ic) = (px(k)**l_exp(jc)) &
-     !                    *(py(k)**m_exp(jc)) &
-     !                    *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
-     !      end do
-     !   end do
+!        slower general-order code
+         do ic = 1, cartesian_deg(ishell)
+            do k = 1, block_length
+               ao(k, ic) = (px(k)**x_pwr(ic)) &
+                          *(py(k)**y_pwr(ic)) &
+                          *(pz(k)**z_pwr(ic))*g_00_00_00_000(k)
+            end do
+         end do
       end if
 
    end subroutine
@@ -495,24 +512,42 @@ contains
                             aoz,           &
                             px,           &
                             py,           &
-                            pz)
+                            pz, &
+                            p2, &
+                     x_pwr, &
+                     y_pwr, &
+                     z_pwr)
 
       use ao_eval_block
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: block_length
       integer, intent(in)    :: ishell
-      real(8), intent(inout) :: ao(mxbllen, *)
-      real(8), intent(inout) :: aox(mxbllen, *)
-      real(8), intent(inout) :: aoy(mxbllen, *)
-      real(8), intent(inout) :: aoz(mxbllen, *)
+      real(8), intent(inout) :: ao(block_length, *)
+      real(8), intent(inout) :: aox(block_length, *)
+      real(8), intent(inout) :: aoy(block_length, *)
+      real(8), intent(inout) :: aoz(block_length, *)
       real(8), intent(in)    :: px(*)
       real(8), intent(in)    :: py(*)
       real(8), intent(in)    :: pz(*)
+      real(8), intent(in)    :: p2(*)
+      integer, intent(in)    :: x_pwr(*)
+      integer, intent(in)    :: y_pwr(*)
+      integer, intent(in)    :: z_pwr(*)
 !     --------------------------------------------------------------------------
-      integer                :: ic, jc, k
+      real(8)                :: p0
+      real(8)                :: tx
+      real(8)                :: ty
+      real(8)                :: tz
+      real(8)                :: ux
+      real(8)                :: uy
+      real(8)                :: uz
+      real(8)                :: f2
+      integer                :: ic, jc, k, l, m, n, i
+      real(8)                :: p0t
 !     --------------------------------------------------------------------------
 
       if (l_quantum_nr(ishell) < 8) then
+!        faster explicit code
          call get_cartesian_ao_g1(block_length,         &
                                   l_quantum_nr(ishell), &
                                   px,                   &
@@ -523,15 +558,43 @@ contains
                                   aoy,                  &
                                   aoz)
       else
-         call quit('get_gao_block: l too high')
-     !   do ic = 1, cartesian_deg(ishell)
-     !      jc = cartesian_off(ishell) + ic
-     !      do k = 1, block_length
-     !         ao(k, ic) = (px(k)**l_exp(jc)) &
-     !                    *(py(k)**m_exp(jc)) &
-     !                    *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
-     !      end do
-     !   end do
+!        slower general-order code
+         do ic = 1, cartesian_deg(ishell)
+        
+            l = x_pwr(ic)
+            m = y_pwr(ic)
+            n = z_pwr(ic)
+
+            do k = 1, block_length
+               tx = 0.0d0
+               ty = 0.0d0
+               tz = 0.0d0
+               
+               if (l > 0) tx = dfloat(l)*(px(k)**(l-1))*(py(k)**m)*(pz(k)**n)
+               if (m > 0) ty = dfloat(m)*(px(k)**l)*(py(k)**(m-1))*(pz(k)**n)
+               if (n > 0) tz = dfloat(n)*(px(k)**l)*(py(k)**m)*(pz(k)**(n-1))
+               
+               p0 = (px(k)**l)*(py(k)**m)*(pz(k)**n)
+               
+               ao (k, ic) = 0.0d0
+               aox(k, ic) = 0.0d0
+               aoy(k, ic) = 0.0d0
+               aoz(k, ic) = 0.0d0
+               do i = 1, nr_nonzero_contraction_coefs(ishell)
+                  f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2(k))
+               
+                  p0t = -2.0d0*primitive_exp(ishell, i)*p0
+                  ux  = px(k)*p0t + tx
+                  uy  = py(k)*p0t + ty
+                  uz  = pz(k)*p0t + tz
+               
+                  ao (k, ic) = ao (k, ic) + p0*f2
+                  aox(k, ic) = aox(k, ic) + ux*f2
+                  aoy(k, ic) = aoy(k, ic) + uy*f2
+                  aoz(k, ic) = aoz(k, ic) + uz*f2
+               end do
+            end do
+         end do
       end if
 
    end subroutine
@@ -842,8 +905,8 @@ contains
 
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: block_length
-      real(8), intent(inout) :: ao(mxbllen, total_ao_vector_length)
-      real(8), intent(inout) :: buffer(mxbllen, total_ao_vector_length)
+      real(8), intent(inout) :: ao(block_length, total_ao_vector_length)
+      real(8), intent(inout) :: buffer(block_length, total_ao_vector_length)
 !     --------------------------------------------------------------------------
       integer                :: i, k, n, off
 !     --------------------------------------------------------------------------
@@ -888,15 +951,11 @@ contains
       need_ao_order    = .false.
       nr_ao_slices     = 0
 
-!radovan: this does not work, for second g derivatives we calculate only 6 components, not 9
-!         dervs are symmetric
      do g_order = 0, max_ao_g_order
         do m_order = 0, max_ao_m_order
            need_ao_order(g_order, m_order) = .true.
            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
            nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
-!          if order > 1 then nr_ao_slices is reduced due to the symmetry
-!          now tests 61 and "dft*" pass... but i don't know if it is general:
            if (g_order > 1) then
              nr_ao_slices = nr_ao_slices - 3*(g_order - 1)
            end if
@@ -906,64 +965,6 @@ contains
            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
         end do
      end do
-
-
-!gosia: this does not work for m_order > 0, so temporarily i adapted the part above...
-! (test 61 does not pass with this)
-!g      if      (max_ao_m_order == 0) then
-!g            m_order = 0
-!g            g_order = 0
-!g            need_ao_order(g_order, m_order) = .true.
-!g            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-!g            nr_ao_slices = nr_ao_slices + 1
-!g            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-!g         if (max_ao_g_order > 0) then
-!g            g_order = 1
-!g            need_ao_order(g_order, m_order) = .true.
-!g            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-!g            nr_ao_slices = nr_ao_slices + 3
-!g            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-!g         end if
-!g         if (max_ao_g_order > 1) then
-!g            g_order = 2
-!g            need_ao_order(g_order, m_order) = .true.
-!g            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-!g            nr_ao_slices = nr_ao_slices + 6
-!g            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-!g         end if
-!g         if (max_ao_g_order > 2) then
-!g            call quit('problem in ao_eval_init')
-!g         end if
-!g      else if (max_ao_m_order == 1) then
-!g!gosia: nr_ao_slices=0, but we already have ao's (for g_order = 0, m_order = 0)
-!g!so i need this line:
-!g            nr_ao_slices = nr_ao_slices + 1
-!g            m_order = 1
-!g            g_order = 0
-!g            need_ao_order(g_order, m_order) = .true.
-!g            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-!g            nr_ao_slices = nr_ao_slices + 1*3
-!g            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-!g         if (max_ao_g_order > 0) then
-!g            g_order = 1
-!g            need_ao_order(g_order, m_order) = .true.
-!g            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-!g            nr_ao_slices = nr_ao_slices + 3*3
-!g            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-!g         end if
-!g         if (max_ao_g_order > 1) then
-!g            g_order = 2
-!g            need_ao_order(g_order, m_order) = .true.
-!g            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-!g            nr_ao_slices = nr_ao_slices + 6*3
-!g            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-!g         end if
-!g         if (max_ao_g_order > 2) then
-!g            call quit('problem in ao_eval_init')
-!g         end if
-!g      else
-!g         call quit('problem in ao_eval_init')
-!g      end if
 
 !     total_ao_vector_length = nr_ao_slices*nr_ao
 !     radovan: the above can lead to "plus one" or "plus few" out-of-bounds

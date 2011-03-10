@@ -61,7 +61,7 @@ module basis_info
 #ifdef VAR_MPI
    use dirac_mpi
 #endif
-   use xyz_power
+   use ao_xyz_power
    use dft_cfg
 
    implicit none
@@ -219,14 +219,12 @@ contains
       if (allocated(cartesian_to_spherical      )) deallocate(cartesian_to_spherical      )
       if (allocated(spherical_address           )) deallocate(spherical_address           )
 
-      call xyz_power_delete()
+      call ao_xyz_power_delete()
 
    end subroutine
 
 !> \brief write basis set info to file
    subroutine basis_info_write()
-
-      use visual_cfg
 
 !     --------------------------------------------------------------------------
       integer :: i, j, i_c, i_s, ic
@@ -280,9 +278,6 @@ contains
       only_large = .false.
       if (mc == 1) then
          only_large = .true.
-      end if
-      if (only_large .and. visual_cfg_force_small_ao) then
-         only_large = .false.
       end if
 
       nr_shells_all = kmax
@@ -811,7 +806,7 @@ contains
             l_max = l_quantum_nr(ishell)
          end if
       end do
-      call xyz_power_init(l_max)
+      call ao_xyz_power_init(l_max)
 
    end subroutine
 

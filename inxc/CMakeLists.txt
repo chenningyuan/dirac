@@ -74,35 +74,26 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 #    ${PROJECT_SOURCE_DIR}/src/*.F
 #    ${PROJECT_SOURCE_DIR}/../dft/*.c
 #    )
+
 set(INXC_SOURCES
-    ${PROJECT_SOURCE_DIR}/src/main.F90
-    ${PROJECT_SOURCE_DIR}/src/Lebedev-Laikov.F
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_point.F90
+    ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
     ${PROJECT_SOURCE_DIR}/src/basis_info.F90
     ${PROJECT_SOURCE_DIR}/src/basis_info_ng.F90
     ${PROJECT_SOURCE_DIR}/src/block_config.F90
-    ${PROJECT_SOURCE_DIR}/src/character_processing.F90
-    ${PROJECT_SOURCE_DIR}/src/codata.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
-    ${PROJECT_SOURCE_DIR}/src/dft_ao_in_mem.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/dft_functional_derv.F90
     ${PROJECT_SOURCE_DIR}/src/dft_input.F90
     ${PROJECT_SOURCE_DIR}/src/dftac.F
-    ${PROJECT_SOURCE_DIR}/src/dftaux.F
-    ${PROJECT_SOURCE_DIR}/src/dftgrd.F
     ${PROJECT_SOURCE_DIR}/src/dirac_cfg.F90
-    ${PROJECT_SOURCE_DIR}/src/dirac_mpi.F90
-    ${PROJECT_SOURCE_DIR}/src/diraos.F
-    ${PROJECT_SOURCE_DIR}/src/eispack.F
     ${PROJECT_SOURCE_DIR}/src/extra.F
-    ${PROJECT_SOURCE_DIR}/src/grtest.F
+    ${PROJECT_SOURCE_DIR}/src/main.F90
     ${PROJECT_SOURCE_DIR}/src/occupation_info.F90
-    ${PROJECT_SOURCE_DIR}/src/visual_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
-    ${PROJECT_SOURCE_DIR}/src/xyz_power.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/../dft/emb-functional.c
     ${PROJECT_SOURCE_DIR}/../dft/fun-becke.c
     ${PROJECT_SOURCE_DIR}/../dft/fun-cam.c

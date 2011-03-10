@@ -1368,7 +1368,7 @@ contains
       integer, intent(in)    :: mat_dim
       integer, intent(in)    :: nz
       real(8)                :: buffer(*)
-      real(8), intent(in)    :: ao_block(mxbllen, *)
+      real(8), intent(in)    :: ao_block(block_length, *)
       integer, intent(in)    :: nr_fmat
       real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, nr_fmat)
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)

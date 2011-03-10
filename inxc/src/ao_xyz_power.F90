@@ -19,12 +19,12 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-module xyz_power
+module ao_xyz_power
 
    implicit none
 
-   public xyz_power_init
-   public xyz_power_delete
+   public ao_xyz_power_init
+   public ao_xyz_power_delete
 
    private
 
@@ -35,7 +35,7 @@ module xyz_power
 
 contains
 
-   subroutine xyz_power_init(l_max)
+   subroutine ao_xyz_power_init(l_max)
 
 !     --------------------------------------------------------------------------
       integer, intent(in) :: l_max
@@ -45,7 +45,7 @@ contains
 !     --------------------------------------------------------------------------
 
 !>    reset arrays
-      call xyz_power_delete()
+      call ao_xyz_power_delete()
 
 !>    get length of arrays for subsequent allocation
       length = 0
@@ -79,7 +79,7 @@ contains
 
    end subroutine
 
-   subroutine xyz_power_delete()
+   subroutine ao_xyz_power_delete()
 
       if (allocated(x_power     )) deallocate(x_power     )
       if (allocated(y_power     )) deallocate(y_power     )

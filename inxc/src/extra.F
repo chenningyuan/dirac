@@ -791,69 +791,6 @@ C
       RETURN
 C
       END
-      SUBROUTINE POLSVD(ND,NP,A,B,X,Y,W,RV,CHISQ,ISKIP)
-C***********************************************************************
-C
-C     Least square polynomial fit using singular value decomposition
-C     Written by T.Saue
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER(TOL=1.0D-16)
-      DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
-C
-      NORDER = ND-1
-C* Stabilize by subtracting mean from Y-vector:
-      YMEAN = D0
-      DO I = 1,NP
-        YMEAN = YMEAN + Y(I)
-      ENDDO
-      YMEAN = YMEAN/NP
-      DO I = 1,NP
-        Y(I) = Y(I) - YMEAN
-      ENDDO
-C     Set up design matrix A 
-      CALL DCOPY(NP,D1,0,A(1,1),1)
-      CALL DCOPY(NP,X,1,A(1,2),1)
-      DO J = 3,ND
-        DO I = 1,NP
-          A(I,J)=A(I,J-1)*A(I,2)
-        ENDDO
-      ENDDO
-C     Set up response vector B
-      CALL DCOPY(NP,Y,1,B,1)
-C     Perform singular value decomposition
-      CALL MINFIT(NP,NP,ND,A,W,1,B,IERR,RV)
-C     Edit the singular values: Note that this is done to B !!
-      WA = D0
-      DO I = 1,ND
-        IF(W(I).GT.WA) WA=W(I)
-      ENDDO
-      WA = TOL*WA
-      ISKIP = 0
-      DO I = 1,ND
-        IF(W(I).LT.WA) THEN
-          B(I)=D0
-          ISKIP = ISKIP + 1
-        ELSE
-          B(I)=B(I)/W(I)
-        ENDIF
-      ENDDO
-C     Backsubsitution to get parameters      
-      CALL DGEMV('N',ND,ND,D1,A,NP,B,1,D0,W,1)
-      DO I = 1,NP
-        Y(I) = Y(I) + YMEAN
-      ENDDO
-      W(1) = W(1) + YMEAN
-C     Calculate chisquare
-      CHISQ = D0
-      DO I = 1,NP
-        DIFF  = Y(I) - POLVAL(NORDER,W,X(I))
-        CHISQ = CHISQ + DIFF*DIFF
-      ENDDO
-      END
 
       SUBROUTINE REACMO_no_work(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
 C***********************************************************************
@@ -2185,3 +2122,75 @@ C
       RETURN
       END
 
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
+
+      subroutine fortwrt(str, slength)
+
+      implicit none
+
+#include "priunit.h"
+
+#ifdef INT_STAR8
+      integer(8) :: slength
+#else
+      integer    :: slength
+#endif /* ifdef INT_STAR8 */
+      character  :: str(slength)
+
+      write(lupri, *) str
+
+      end subroutine
+
+      SUBROUTINE DFTSETCAM(W,BETA)
+#include "implicit.h"
+#include "dcbham.h"
+      HFXMU = W
+      HFXATT = BETA
+      END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GTDOAV(mat_dim,
+     &                  nz,
+     &                  nr_dmat,
+     &                  dmat,
+     &                  ifac)
+!***********************************************************************
+!
+!     Get average density from open shells; only real part !
+!     Written by T.Saue March 2004
+!
+!***********************************************************************
+      implicit none
+#include"dcbdhf.h"
+      integer :: mat_dim, nz, nr_dmat
+      integer :: ifac, ishell
+      real(8) :: DMAT(mat_dim, mat_dim, nz, nr_dmat)
+      real(8) :: fac
+      IF(AOC) THEN
+        DO ISHELL = 1, NOPEN
+          FAC = IFAC*DF(ISHELL)
+          CALL DAXPY(mat_dim*mat_dim,FAC,
+     &        DMAT(1,1,1,ISHELL+1),1,DMAT,1)
+        ENDDO
+      ENDIF
+!
+      end subroutine

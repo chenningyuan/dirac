@@ -530,7 +530,7 @@ contains
       real(8), intent(in)  :: px(*)
       real(8), intent(in)  :: py(*)
       real(8), intent(in)  :: pz(*)
-      real(8), intent(out) ::   ao(mxbllen, *)
+      real(8), intent(out) ::   ao(block_length, *)
 !     --------------------------------------------------------------------------
       integer              :: k
 !     --------------------------------------------------------------------------
@@ -861,10 +861,10 @@ contains
       real(8), intent(in)  :: px(*)
       real(8), intent(in)  :: py(*)
       real(8), intent(in)  :: pz(*)
-      real(8), intent(out) ::   ao(mxbllen, *)
-      real(8), intent(out) :: ao_x(mxbllen, *)
-      real(8), intent(out) :: ao_y(mxbllen, *)
-      real(8), intent(out) :: ao_z(mxbllen, *)
+      real(8), intent(out) ::   ao(block_length, *)
+      real(8), intent(out) :: ao_x(block_length, *)
+      real(8), intent(out) :: ao_y(block_length, *)
+      real(8), intent(out) :: ao_z(block_length, *)
 !     --------------------------------------------------------------------------
       integer              :: k
 !     --------------------------------------------------------------------------

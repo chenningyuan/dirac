@@ -72,7 +72,7 @@ module dft_functional_derv
 
   private
 
-#include "functionals.h"
+#include "../../dft/functionals.h"
 
   integer, parameter   :: max_dim = 99
 
