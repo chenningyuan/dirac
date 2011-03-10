@@ -26,10 +26,6 @@ module london_reorth_hb
 
   use dirac_cfg
   use dft_cfg
-  use xc_driver
-!  use basis_info
-!  use london_helpers
-
 
   implicit none
 
@@ -244,6 +240,7 @@ contains
 
 
   subroutine get_gtb(fao, tb_dmat, cmo, ibeig)
+    use xc_driver
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
     real(8), intent(in)    :: tb_dmat(*)

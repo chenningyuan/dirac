@@ -4,7 +4,6 @@ module dirac_interface
    use matrix_defop
    use character_processing
    use dirac_cfg
-   use xc_driver
 
    implicit none
 
@@ -124,6 +123,8 @@ contains
 
    subroutine di_get_geomDeriv_molgrad_DFT(g, nr_atoms, D)
 
+      use xc_driver
+
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
       integer,      intent(in)    :: nr_atoms
@@ -144,6 +145,8 @@ contains
    end subroutine
 
    subroutine di_get_geomderiv_fxd_dft(g, nr_atoms, D, T1)
+
+      use xc_driver
 
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
@@ -171,6 +174,8 @@ contains
 
    subroutine di_get_geomderiv_gxd_dft(g, nr_atoms, D, T1, T2)
 
+      use xc_driver
+
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
       integer,      intent(in)    :: nr_atoms
@@ -196,6 +201,8 @@ contains
    end subroutine
 
    subroutine di_get_magderiv_fxd_dft(F, D)
+
+      use xc_driver
 
 !     --------------------------------------------------------------------------
       type(matrix)              :: F(3)
@@ -226,6 +233,8 @@ contains
    end subroutine
 
    subroutine di_get_magderiv_gxd_dft(D, T, F)
+
+      use xc_driver
 
 !     --------------------------------------------------------------------------
       type(matrix), intent(in)  :: D
@@ -542,6 +551,8 @@ contains
   end function
 
   subroutine get_F(D, F)
+
+      use xc_driver
 
     type(matrix), intent(in)    :: D
     type(matrix), intent(inout) :: F

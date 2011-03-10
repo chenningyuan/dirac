@@ -60,7 +60,6 @@ C files "FITXCG" and "FITVXC", respectively, in order to avoid
 C much change to the current function calls.
 C 
         use dft_cfg
-        use xc_driver
 
 #include "implicit.h"
 #include "mxcent.h"

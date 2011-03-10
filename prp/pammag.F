@@ -762,8 +762,6 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
-      use xc_driver
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -926,8 +924,6 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
-      use xc_driver
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -1055,8 +1051,6 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
-      use xc_driver
-      use dft_cfg
 
 #include "implicit.h"
 #include "priunit.h"  

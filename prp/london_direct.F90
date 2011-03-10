@@ -25,9 +25,6 @@ module london_direct_hb
   use memory_allocator 
   use dirac_cfg
   use dft_cfg
-  use xc_driver
-!  use basis_info
-!  use london_helpers
 
   implicit none
 
@@ -504,6 +501,7 @@ contains
 
 
   subroutine xc_contrib_2el_lao(cmo)
+    use xc_driver
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
 

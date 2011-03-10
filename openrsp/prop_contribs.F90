@@ -17,7 +17,6 @@ module prop_contribs
    use openrsp_interface_1el
    use openrsp_interface_2el
    use character_processing
-   use xc_driver
    use memory_allocator
 #elif defined(BUILD_AORSP)
    use dalton_ifc,    &
@@ -2198,6 +2197,7 @@ contains
 
 
    subroutine twofck_ks(n, D, F)
+      use xc_driver
       integer,      intent(in)    :: n
 #ifdef PRG_DIRAC
       type(matrix)                :: D(n+1)
