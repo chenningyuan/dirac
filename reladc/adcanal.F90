@@ -920,7 +920,7 @@
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      FUNCTION DOT_PRODUCTZ(a,n)
+      REAL*8 FUNCTION DOT_PRODUCTZ(a,n)
       real*8 zdot_product
 !
 !  This little function computes the squared norm of the *complex*
