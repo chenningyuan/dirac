@@ -920,8 +920,8 @@
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      REAL*8 FUNCTION DOT_PRODUCTZ(a,n)
-      real*8 zdot_product
+      FUNCTION DOT_PRODUCTZ(a,n)
+      real*8 dot_productz
 !
 !  This little function computes the squared norm of the *complex*
 !  vector a according to
