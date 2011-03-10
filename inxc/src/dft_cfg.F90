@@ -28,14 +28,12 @@ module dft_cfg
 #ifdef VAR_MPI
    use xc_mpi
 #endif
-   use block_config
 #ifdef MOD_XCFUN
    use xcfun
 #endif
 
   implicit none
 
-  public mxbllen
 #ifdef VAR_MPI
   public sync_dft_cfg
   public sync_functional

@@ -31,9 +31,11 @@ module xc_driver
   use basis_info
   use occupation_info
   use dft_cfg
-  use dft_functional_derv
+  use xc_derv
   use ao_eval
   use density_eval
+  use xc_blas3
+  use xc_max_block_length
 #ifdef MOD_UNRELEASED
   use overlap_diagnostic
   use xc_geometric
@@ -834,19 +836,19 @@ contains
 
 !     --------------------------------------------------------------------------
 !     unperturbed density
-      real(8) :: n_0(mxbllen)
+      real(8) :: n_0(max_block_length)
 !     unperturbed density gradient
       real(8) :: gn_0_pointwise(3)
 
       real(8) :: tau
-      real(8) :: gnn_0(mxbllen)
-      real(8) :: n_0_t(mxbllen)
-      real(8) :: gnn_0_t(mxbllen)
-      real(8) :: w(mxbllen)
+      real(8) :: gnn_0(max_block_length)
+      real(8) :: n_0_t(max_block_length)
+      real(8) :: gnn_0_t(max_block_length)
+      real(8) :: w(max_block_length)
 !     --------------------------------------------------------------------------
 !     geometric business
-      real(8) :: r_t1(mxbllen)
-      real(8) :: r_t2(mxbllen)
+      real(8) :: r_t1(max_block_length)
+      real(8) :: r_t2(max_block_length)
 !     --------------------------------------------------------------------------
 !     fde and fde response
       logical :: fde_resp_verbose =.false.
@@ -914,7 +916,7 @@ contains
     allocate(buffer  (total_ao_vector_length))
 
     if (dft_cfg_blocked) then
-       block_threshold = get_block_threshold(mat_dim, dmat_0)
+       block_threshold = get_block_threshold(dft_cfg_dfthr0, mat_dim, dmat_0)
     end if
 
 
@@ -962,12 +964,12 @@ contains
 #ifdef MOD_OPENRSP
     if (response_order_ao > 0) then
       derv_length = xc_output_length(xc_fun%id, response_order_ao)
-      allocate(derv(derv_length, mxbllen))
+      allocate(derv(derv_length, max_block_length))
     else
 #endif
 #endif
       derv_length = nr_nonzero_derv
-      allocate(derv(mxbllen, 0:derv_length))
+      allocate(derv(max_block_length, 0:derv_length))
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     end if
@@ -979,45 +981,47 @@ contains
 
 #ifdef MOD_UNRELEASED
    if (dft_cfg_blocked) then
-      loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
-         block_length = min(mxbllen, nr_points_process - ipoint + 1)
+      loop_over_points_block: do ipoint = 1, nr_points_process, max_block_length
+         block_length = min(max_block_length, nr_points_process - ipoint + 1)
 
          allocate(ao_block(block_length,     total_ao_vector_length))
          allocate(buffer_block(block_length, total_ao_vector_length))
 
-         call get_ao(block_length,                     &
+         call get_ao(                                  &
+                     block_length,                     &
                      rx(ipoint:ipoint+block_length-1), &
                      ry(ipoint:ipoint+block_length-1), &
                      rz(ipoint:ipoint+block_length-1), &
                      ao_block,                         &
-                     buffer_block)
+                     buffer_block                      &
+                    )
 
-         call get_n_block(                          &
-                          use_gga,                  &
-                          (response_order_mo == 1), &
-                          block_length,             &
-                          block_threshold,          &
-                          mat_dim,                  &
-                          nz,                       &
-                          buffer,                   &
-                          ao_block,                 &
-                          nr_fmat,                  &
-                          fmat,                     &
-                          dmat_0,                   &
-                          nr_dmat,                  &
-                          dmat,                     &
-                          dmat_pg_sym,              &
-                          dmat_ih_sym,              &
-                          derv_length,              &
-                          derv,                     &
-                          max_fun_derv,             &
-                          rw(ipoint),               &
-                          nr_electrons,             &
-                          xc_energy                 &
-                         )
+         call xc_contribution_blas3(                          &
+                                    use_gga,                  &
+                                    (response_order_mo == 1), &
+                                    block_length,             &
+                                    block_threshold,          &
+                                    mat_dim,                  &
+                                    nz,                       &
+                                    buffer,                   &
+                                    ao_block,                 &
+                                    nr_fmat,                  &
+                                    fmat,                     &
+                                    dmat_0,                   &
+                                    nr_dmat,                  &
+                                    dmat,                     &
+                                    dmat_pg_sym,              &
+                                    dmat_ih_sym,              &
+                                    derv_length,              &
+                                    derv,                     &
+                                    max_fun_derv,             &
+                                    rw(ipoint),               &
+                                    nr_electrons,             &
+                                    xc_energy                 &
+                                   )
 
-       deallocate(ao_block)
-       deallocate(buffer_block)
+         deallocate(ao_block)
+         deallocate(buffer_block)
 
       end do loop_over_points_block
    else
@@ -2205,7 +2209,7 @@ contains
     logical, intent(in)    :: is_gga_qi
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
-    real(8), intent(in)    :: derv(mxbllen, 0:n)
+    real(8), intent(in)    :: derv(max_block_length, 0:n)
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
 
@@ -2413,7 +2417,7 @@ contains
     logical, intent(in)    :: is_gga_qi
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
-    real(8), intent(in)    :: derv(mxbllen, 0:n)
+    real(8), intent(in)    :: derv(max_block_length, 0:n)
     real(8), intent(in)    :: px, py, pz
 !   ----------------------------------------------------------------------------
     real(8)                ::  s_b_lao(3, 3), gs_b_lao(3, 3, 3)
@@ -2509,7 +2513,7 @@ contains
     integer, intent(in)    :: isym(*)
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
-    real(8), intent(in)    :: derv(mxbllen, 0:n)
+    real(8), intent(in)    :: derv(max_block_length, 0:n)
 !   ----------------------------------------------------------------------------
     real(8)                ::  r_b,     s_b(3)
     real(8)                :: gr_b(3), gs_b(3, 3)
@@ -2626,7 +2630,7 @@ contains
       integer, intent(in) :: block_length
       integer, intent(in)    :: derv_len
       integer, intent(in)    :: mat_dim
-      real(8), intent(in)    :: derv(mxbllen, 0:derv_len)
+      real(8), intent(in)    :: derv(max_block_length, 0:derv_len)
       logical   add_grad, &
      &          no_sdft
      real(8) ::          dtrmat(mat_dim,mat_dim,nz,3)

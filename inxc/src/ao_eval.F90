@@ -84,7 +84,7 @@ module ao_eval
 
 
    use basis_info
-   use block_config
+   use xc_max_block_length
    use ao_xyz_power
  
    implicit none
@@ -367,10 +367,10 @@ contains
       real(8), intent(inout) :: ao(block_length, *)
 !     --------------------------------------------------------------------------
       integer                :: i, ishell, isym, j, k
-      real(8)                :: px(mxbllen)
-      real(8)                :: py(mxbllen)
-      real(8)                :: pz(mxbllen)
-      real(8)                :: p2(mxbllen)
+      real(8)                :: px(max_block_length)
+      real(8)                :: py(max_block_length)
+      real(8)                :: pz(max_block_length)
+      real(8)                :: p2(max_block_length)
       real(8)                :: sx
       real(8)                :: sy
       real(8)                :: sz

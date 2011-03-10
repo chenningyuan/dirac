@@ -19,12 +19,13 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-module dft_functional_derv
+module xc_derv
 
   use dft_cfg
 #ifdef MOD_XCFUN
   use xcfun
 #endif
+  use xc_max_block_length
 
   implicit none
 
@@ -189,13 +190,13 @@ contains
     real(8),          intent(in)  :: r_0(*)
     real(8),          intent(in)  :: z_0(*)
     integer,          intent(in)  :: n
-    real(8),          intent(out) :: derv(mxbllen, 0:n)
+    real(8),          intent(out) :: derv(max_block_length, 0:n)
     logical, optional, intent(in) :: alda_real
     logical, optional, intent(in) :: alda_imag
     real(8), optional, intent(in) :: tau
 !   ----------------------------------------------------------------------------
-    real(8)                       :: t1(max_dim, mxbllen)
-    real(8)                       :: t2(max_dim, mxbllen)
+    real(8)                       :: t1(max_dim, max_block_length)
+    real(8)                       :: t2(max_dim, max_block_length)
     integer                       :: k, l, id
     real(8), external             :: dftenergy
     logical                       :: do_alda_real
@@ -463,10 +464,10 @@ contains
     real(8),          intent(in)  :: r_0_t(*)
     real(8),          intent(in)  :: z_0_t(*)
     integer,          intent(in)  :: n
-    real(8),          intent(out) :: derv(mxbllen, 0:n)
+    real(8),          intent(out) :: derv(max_block_length, 0:n)
       logical,          intent(in)    :: parallel_xc
     logical,          intent(in)  :: debug
-    real(8) :: dervtmp(mxbllen, 0:n)
+    real(8) :: dervtmp(max_block_length, 0:n)
     integer :: i, j
 !   ----------------------------------------------------------------------------
 
@@ -518,7 +519,7 @@ contains
                                   dervtmp)
       endif
 
-      do i = 1, mxbllen
+      do i = 1, max_block_length
         do j = 0, n
            derv(i,j) = derv(i,j) + dervtmp(i,j)
          enddo
@@ -560,7 +561,7 @@ contains
                                     dervtmp)
         endif
 
-        do i = 1, mxbllen
+        do i = 1, max_block_length
           do j = 0, n
            derv(i,j) = derv(i,j) - dervtmp(i,j)
           enddo
@@ -600,7 +601,7 @@ contains
                                   dervtmp)
       endif
 
-      do i = 1, mxbllen
+      do i = 1, max_block_length
         do j = 0, n
            derv(i,j) = derv(i,j) + dervtmp(i,j)
          enddo
@@ -635,7 +636,7 @@ contains
                                   dervtmp)
       endif
 
-      do i = 1, mxbllen
+      do i = 1, max_block_length
         do j = 0, n
            derv(i,j) = derv(i,j) - dervtmp(i,j)
          enddo
@@ -705,8 +706,8 @@ contains
     real(8), intent(in)  :: r_0(*)
     real(8), intent(in)  :: z_0(*)
     integer, intent(in)  :: n
-    real(8), intent(out) :: derv(mxbllen, 0:n)
-    real(8) :: dervtmp(mxbllen, 0:n)
+    real(8), intent(out) :: derv(max_block_length, 0:n)
+    real(8) :: dervtmp(max_block_length, 0:n)
     integer :: i, j
 !   ----------------------------------------------------------------------------
 

@@ -19,12 +19,12 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-module block_config
+module xc_max_block_length
 
    implicit none
 
    private
 
-   integer, parameter, public :: mxbllen = 100
+   integer, parameter, public :: max_block_length = 100
 
 end module

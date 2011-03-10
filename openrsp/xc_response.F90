@@ -5,6 +5,7 @@ module xc_response
   use density_eval
   use openrsp_cfg
   use xcfun
+  use xc_max_block_length
 
   implicit none
 
@@ -94,7 +95,7 @@ contains
     real(8), intent(in)    :: w
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: derv_length
-    real(8)                :: derv(derv_length, mxbllen)
+    real(8)                :: derv(derv_length, max_block_length)
 !   ----------------------------------------------------------------------------
     real(8)                :: u
     real(8)                :: v(3)
@@ -108,7 +109,7 @@ contains
     logical                :: v_above_threshold
 
     real(8), external      :: ddot
-    real(8)                :: xcfun_in(5, mxbllen)
+    real(8)                :: xcfun_in(5, max_block_length)
 !   ----------------------------------------------------------------------------
 
 !   get perturbed densities

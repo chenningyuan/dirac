@@ -43,7 +43,8 @@ C     radovan bast                         last revision: september 2006
 C=======================================================================
 
        use dft_cfg
-       use dft_functional_derv
+       use xc_derv
+       use xc_max_block_length
 
 #include "implicit.h"
 #include "priunit.h"
@@ -56,7 +57,7 @@ C-----------------------------------------------------------------------
 #include "dgroup.h"
 #include "../../dft/functionals.h"
 C
-      real(8) :: derv(mxbllen, 0:99)
+      real(8) :: derv(max_block_length, 0:99)
       DIMENSION VX_BULK(DERVS1),
      &          VX_OUTER(DERVS1),
      &          VX_SLATER(DERVS1),
