@@ -1674,6 +1674,8 @@ contains
 !sdft+lao now separately, later will be moved to u%s and u%gs,
 !now i left it separately for debugging
 
+!radovan: this code does not seem to be covered by any test, is this true?
+
              us_lao_above_threshold = .false.
              if (maxval((/dabs(u%s_lao(1, im)), &
                           dabs(u%s_lao(2, im)), &
