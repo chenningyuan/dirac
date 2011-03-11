@@ -21,7 +21,7 @@ svn up
 
 
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  --buildname="linux.g95.gcc.ilp64.ownlibs.noopt"  --debug
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  --buildname="linux.g95.gcc.ilp64.ownlibs.noopt" 
 
 cd $DIRAC/cbuild
 make clean
