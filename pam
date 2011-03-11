@@ -133,10 +133,10 @@ class pam_enviroment:
         from common import find_executable
         if self.operating_system == 'AIX':
         #   IBM
-            self.mpirun = find_executable('poe')
+            self.mpirun = str(find_executable('poe'))
         else:
         #   Linux, Windows, ...
-            self.mpirun = find_executable('mpirun')
+            self.mpirun = str(find_executable('mpirun'))
            
 
     #   wanted local disks for parallel calculations (set by configure) ?  #
