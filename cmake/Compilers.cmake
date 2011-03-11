@@ -29,9 +29,9 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     add_definitions(-DVAR_G95)
-    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore")
+    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -fsloppy-char")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
