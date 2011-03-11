@@ -3,7 +3,7 @@
 #
 # Python replacement of the previous bash-written pam(.sh) script
 #
-# Reads some crucial data from Makefile.config, but pam can be also standalone.
+# Reads some crucial data from Makefile.config, but pam can also be standalone.
 #
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
@@ -1487,7 +1487,7 @@ class pam_enviroment:
 
     def kill_dirac_processes(self):
         """
-        try to kill all dirac (sub)processes
+        kill (or try to kill) all dirac (sub)processes
         """
 
         # first, check if the current PID has not changed
@@ -1504,6 +1504,12 @@ class pam_enviroment:
         self.dirac_pids=get_all_children(self.current_pid)
         self.get_pidof_pids()
 
+        #dirac_pid=[]
+        #dirac_pid.append(self.dirac_p.pid)
+        #print dirac_pid
+        self.dirac_pids.append(self.dirac_p.pid)
+        all_dirac_pids=set.union( set(self.dirac_pidof_pids),set(self.dirac_pids) )
+
         if self.iprint >= 0:
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
@@ -1512,42 +1518,21 @@ class pam_enviroment:
                 '  All dirac.x python found PIDs:',self.dirac_pids
                 print  >> stream,\
                 '   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
+                print  >> stream,\
+                '   All unified dirac.x PIDs:',all_dirac_pids
 
-        dirac_pidofs_in_pids= set(self.dirac_pidof_pids).issubset(self.dirac_pids)
-        dirac_pid_in_pids= self.dirac_p.pid in self.dirac_pids
-        dirac_pid_in_pidofs=self.dirac_p.pid in self.dirac_pidof_pids
+        if self.parallel_run:
+            self.kill_dirac_pid(self.dirac_p.pid)
 
-        from common import get_pid_label
-
-        if (dirac_pidofs_in_pids and dirac_pid_in_pids and dirac_pid_in_pidofs) or \
-            dirac_pid_in_pids or dirac_pid_in_pidofs :
-            print 'All PIDs form proper subsets. Good'
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream,\
-                'Going to kill (SIGTERM) only one dirac.x-executable process (PID=',\
-                self.dirac_p.pid,').'
-                print >> stream,get_pid_label(self.dirac_p.pid) 
-            try:
-                 # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
-                 os.kill(self.dirac_p.pid, signal.SIGTERM)
-            except:
-                 print 'did not succeed with killing of the process pid=',self.dirac_p.pid
-        else:
-            print 'Bad PIDs subsets - killing several only pidofs-PIDs'
-            for pid in self.dirac_pidof_pids:
-                for stream in [sys.stdout,sys.stderr]:
-                    print >> stream,\
-                    'Going to kill (SIGTERM) dirac-subprocess with PID=',pid
-                    print >> stream,get_pid_label(pid) 
-                try:
-                    os.kill(pid,signal.SIGTERM)
-                except:
-                    print 'did not succeed with killing of the process pid=',pid
+        for pid in all_dirac_pids:
+            self.kill_dirac_pid(pid)
  
+        sys.stdout.flush()
         # command - print all processes
         print '\n processes left:'
         command="ps -fu "+self.user_name
         os.system(command)
+        sys.stdout.flush()
 
         # final message on the timeout kill (if selected)
         if self.set_timeout_limit:
@@ -1557,6 +1542,50 @@ class pam_enviroment:
                ' inp:',self.input_file_dirac,' mol:',self.input_file_molecule
                stream.flush()
         return signal.SIGTERM
+
+    def kill_dirac_pid(self,pid):
+        """
+        kill process with (entering) pid, which is connected to dirac.x calculations
+        repeat until is 'really killed'
+        """
+        from common import get_pid_label
+        i=0
+        while self.dirac_in_pid(pid) and i<=2:
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,\
+                'Going to kill (SIGTERM) dirac related process with PID=',pid
+                print >> stream,get_pid_label(pid) 
+                stream.flush()
+            try:
+                os.kill(pid,signal.SIGTERM)
+            except:
+                print 'did not succeed with killing the process pid=',pid
+            i=i+1
+
+    def dirac_in_pid(self,pid):
+        """
+        check if pid process contains dirac.x/launcher ,i.e. is dirac related
+        TODO: adapt for Windows
+        """
+        command="ps -p "+str(pid)
+        process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
+                       stdout=subprocess.PIPE).communicate()[0]
+        #print process_string
+        # check on presense of substrings
+        if 'dirac.x' in process_string:
+            return True
+        from common import extract_path_file
+        if self.parallel_run:
+            #TODO: fix it here....
+            z=extract_path_file()
+            z.get_path_file(self.mpirun)
+            #print z.extracted,z.pure_file_name,z.pure_file_path
+            #if z.pure_file_name in process_string:
+            if "mpirun" in process_string:
+                return True
+            if "poe" in process_string:
+                return True
+        return False 
 
     def get_pidof_pids(self):
         """
