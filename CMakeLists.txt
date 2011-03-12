@@ -189,6 +189,9 @@ add_executable(dirac.x
     ${GENERATED_FILES}
     )
 
+# radovan: Miro, you can add link flags like this: 
+SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-E")
+
 target_link_libraries(
     dirac.x
     ${LIBS}
