@@ -130,6 +130,3 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
 
-# General link flag (for printing traceback), see the old configure
-set(CMAKE_Fortran_LINK_FLAGS    "-Wl, -E")
-
