@@ -424,6 +424,10 @@ def process_pbs_script():
 
   s += '''\
 #
+# employ already set enviroment variables
+#
+#PBS -V
+#
 # ... print out important PBS variables into standard output
 #
 echo '------------------------------------'
