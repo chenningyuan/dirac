@@ -4492,14 +4492,6 @@ C
       CALL CNTRCT('T','N',NO,NO,NVVOT,A1,VVOO2,VVOO4,A0,VVOO3,NREP)
       CALL XAXPY (LENC,A1,VVOO3(OFFS),1,CKKS,1)
       IF (S4P) CALL XAXPY (LENC,A1,VVOO3(OFFS),1,FKKS,1)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-
-c debug
-c     call xcopy (LENC,A0,0,CKKS(OFFS),1)
-c     write(iw,*) 'matrix control output after part A'
-c     call cmatout(ckks,no(krep),no(krep))
-c debug end
-
 C
 C  ................................................................calculation of C(B)_kk'
 C
@@ -4559,7 +4551,6 @@ C   instead of 'C'
 C  
       CALL CNTRCT('T','N',NO,NO,NVVOT,-A1,VVOO3,VOVO3,A0,VVOO2,NREP)
       CALL XAXPY (LENC,A1,VVOO2(OFFS),1,CKKS,1)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
 C
 C  ............................................................calculation of C(C)_kk'
 C
@@ -4592,8 +4583,7 @@ C
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL HERMCON(NO(KREP),CKKSAUX,CKKSAUX)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-
+C
 C  ............................................................calculation of C(D)_kk'
 C
 C   v_ba,ml (VVOO1) ==> v_bm,al (VOVO1)
@@ -4647,7 +4637,6 @@ C
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
       CALL HERMCON(NO(KREP),CKKSAUX,CKKSAUX)
       CALL ADDARR(NO(KREP),CKKSAUX,CKKSAUX,CKKS,CKKS)
-      CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
 
       RETURN
       END
