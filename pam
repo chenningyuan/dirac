@@ -1265,6 +1265,12 @@ class pam_enviroment:
 
       # stefan: first try of a rudimentary correct passing of -wd/-wdir...
 
+            if self.mpirun == None:
+                # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
+                #          then self.mpirun is None and we have to stop here otherwise pam calls
+                #          None -np N /paht/to(dirac.x
+                sys.exit('pam did not find mpirun, chech your $PATH')
+
             if self.argument_to_pass_scratch_dir_to_slaves:
                 self.dirac_cmd = self.mpirun + ' -np ' \
                     + str(self.nr_proc) + ' -' \
