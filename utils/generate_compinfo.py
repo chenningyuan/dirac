@@ -2,14 +2,20 @@
 
 import sys
 import subprocess
+from optparse import OptionParser
+
+parser = OptionParser()
+
+parser.add_option('--fc',   dest='fc')
+parser.add_option('--cc',   dest='cc')
+parser.add_option('--libs', dest='libs')
+
+(options, args) = parser.parse_args()
 
 print "#define WHO_COMPILED       \"foo\""
 print "#define WHERE_COMPILED     \"foo\""
 print "#define COMPILED_DIRAC_DIR \"foo\""
 print "#define ILP_DATA_MODEL     \"foo\""
-print "#define FCOMP              \"foo\""
-print "#define CCOMP              \"foo\""
-print "#define LIBRARIES          \"foo\""
 print "#define DIRAC_BLAS         \"foo\""
 print "#define DIRAC_LAPACK       \"foo\""
 
@@ -47,5 +53,11 @@ else:
 
 print '#define DIRAC_SVN_URL      "%s"' % revision
 print '#define DIRAC_SVN_REVISION "%s"' % remote
+
+# get compilers and libs
+
+print '#define FCOMP              "%s"' % options.fc
+print '#define CCOMP              "%s"' % options.cc
+print '#define LIBRARIES          "%s"' % options.libs
 
 sys.exit(0)
