@@ -82,7 +82,7 @@ contains
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
       real(8)              :: elf_chi, tau
-      real(8)              :: density
+      real(8)              :: density, esp
       real(8)              :: density_gradient(3)
       real(8)              :: density_gradient_squared
       real(8)              :: b, f, distance_to_origin
@@ -147,6 +147,34 @@ contains
                result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
             end if
             
+!           electrostatic potential
+            if (visual_cfg_property(imat) == iq_esp) then
+               call get_esp(esp,       &
+                          D(imat)%irep,  &
+                          D(imat)%nrow,  &
+                          D(imat)%elms,  &
+                          px,py,pz)
+                         
+               result(0) = result(0) + esp
+            end if
+
+!           electrostatic potential
+            if (visual_cfg_property(imat) == iq_esprho) then
+               call get_esp(esp,       &
+                          D(imat)%irep,  &
+                          D(imat)%nrow,  &
+                          D(imat)%elms,  &
+                          px,py,pz)
+               call get_n(density,       &
+                          D(imat)%irep,  &
+                          D(imat)%nrow,  &
+                          D(imat)%elms,  &
+                          buffer,        &
+                          ao)
+               result(0) = result(0) + density*esp*0.5d0
+
+            end if
+
 !           current density: -ec \psi^\dag \alpha \psi
             if (visual_cfg_property(imat) == iq_j) then
                call get_j(v,            &

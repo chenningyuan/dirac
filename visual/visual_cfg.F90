@@ -61,6 +61,8 @@ module visual_cfg
    integer, public :: iq_ndipxdia = 24
    integer, public :: iq_ndipydia = 25
    integer, public :: iq_ndipzdia = 26
+   integer, public :: iq_esp      = 27
+   integer, public :: iq_esprho   = 28
 
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.

@@ -36,6 +36,7 @@ module visual
   use visual_integrate
   use visual_in_point
 
+
   implicit none
 
   public run_visual

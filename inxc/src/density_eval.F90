@@ -25,6 +25,7 @@ module density_eval
 
    implicit none
 
+
    public mat_lao_sym
    public gga_sym
    public get_n
@@ -47,6 +48,7 @@ module density_eval
    public gga_london_distribute_r
    public get_s_lao
    public get_gs_lao
+   public get_esp
 
    private
 
@@ -1329,5 +1331,34 @@ contains
      end do
 
    end subroutine
+
+   subroutine get_esp(esp,     &
+                      irep,    &
+                      mat_dim, &
+                      dmat,    &
+                      px, py, pz)
+   
+      use vc_grid
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: esp
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: px,py,pz
+!     --------------------------------------------------------------------------
+      real(8)              :: r_p(3,1),work(10000),vc(1)
+      integer              :: iprint
+!     --------------------------------------------------------------------------
+   
+      esp = 0.0d0
+      iprint = 0
+      r_p(1,1) = px
+      r_p(2,1) = py
+      r_p(3,1) = pz
+      CALL EMB_VC(DMAT,r_p,vc,IPRINT,WORK,10000)
+      esp=vc(1)
+   
+   end subroutine
+
 
 end module
