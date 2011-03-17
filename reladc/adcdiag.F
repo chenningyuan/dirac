@@ -1796,11 +1796,11 @@ C---------------Description--------------------------------------------
 C
 C  Perform the real symmetric multiplication of the ADC matrix
 C  with the Krylov vectors. Here *NO* separate diagonal entries are
-C  processed ! They are contained in the packed matrix storage and
+C  processed ! They are contained in the matrix already and
 C  a single multiplication suffices.
 c
 c  att! the required number of buffers is communicated through this
-c  common block.  **AND** the row/column indices are now in packed form!
+c  common block.
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1811,29 +1811,15 @@ C---------------Local variables--------------------------------------
 C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       REAL*8 A
-      INTEGER LONGRC,MASK
-
-#ifdef INT_STAR8
-      DATA MASK/Z'00000000FFFFFFFF'/
-#else
-!radovan: this is just a workaround to get it compiled
-!         the code stops later until a real solution comes up
-!         we have discussed this with Markus
-      DATA MASK/Z'00000000'/
-#endif
 C
 C---------------Executable code--------------------------------------
-
-#ifndef INT_STAR8
-!radovan: temporary "solution"
-      call quit('adcdiag.F only works with 64bit integers')
-#endif
 
 C  for the matrix elements we note that only the lower triangular
 C  part *AND* the diagonal of the ADC-matrix is stored. 
 C  the missing contribution is from the symmetric upper triangular part !
 
 c  the if takes care of not double counting the diagonal.
+c  since the diagonal is now *contained* in the matrix
 c
 c  new vector has to be zeroed!
       DO J = 1, LADC
@@ -1846,11 +1832,11 @@ c  .. read off-diagonal elements and multiply on the fly
       DO IREC = 1,NBUFS
         READ(IO_OFF,ERR=889) (BUF(IXX),IXX=1,INTBUF),
      &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
      &                        NACT,JDUMMY
         DO K = 1, NACT
-          LONGRC = IOI(K)
-          ICOL = IAND(LONGRC,MASK)
-          IROW = ISHFT(LONGRC,-32)
+          IROW = IOI(K)
+          ICOL = IOJ(K)
           A    = BUF(K)
 
           PN(IROW) = PN(IROW) + PO(ICOL) * A
@@ -1947,11 +1933,11 @@ C---------------Description--------------------------------------------
 C
 C  Perform the complex hermitian multiplication of the ADC matrix
 C  with the Krylov vectors. Here *NO* separate diagonal entries are
-C  processed ! They are contained in the packed matrix storage and
+C  processed ! They are contained in the matrix and
 C  a single multiplication suffices.
 c
 c  att! the required number of buffers is communicated through this
-c  common block.  **AND** the row/column indices are now in packed form!
+c  common block.
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1962,23 +1948,8 @@ C---------------Local variables--------------------------------------
 C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       COMPLEX*16 A
-      INTEGER LONGRC,MASK
-
-#ifdef INT_STAR8
-      DATA MASK/Z'00000000FFFFFFFF'/
-#else
-!radovan: this is just a workaround to get it compiled
-!         the code stops later until a real solution comes up
-!         we have discussed this with Markus
-      DATA MASK/Z'00000000'/
-#endif
 C
 C---------------Executable code--------------------------------------
-
-#ifndef INT_STAR8
-!radovan: temporary "solution"
-      call quit('adcdiag.F only works with 64bit integers')
-#endif
 
 C  for the matrix elements we note that only the lower triangular
 C  part *AND* the diagonal of the ADC-matrix is stored. 
@@ -1998,11 +1969,11 @@ c  .. read off-diagonal elements and multiply on the fly
       DO IREC = 1,NBUFS
         READ(IO_OFF,ERR=889) (BUF(IXX),IXX=1,INTBUF),
      &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
      &                        NACT,JDUMMY
         DO K = 1, NACT
-          LONGRC = IOI(K)
-          ICOL = IAND(LONGRC,MASK)
-          IROW = ISHFT(LONGRC,-32)
+          IROW = IOI(K)
+          ICOL = IOJ(K)
           A    = BUF(K)
 
           PN(IROW) = PN(IROW) + PO(ICOL) * A

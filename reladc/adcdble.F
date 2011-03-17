@@ -1431,8 +1431,6 @@ C
       CHARACTER*44 FIELD
 
       REAL*8 SPARS,XNZEL,XTOTEL
-
-      INTEGER LONGRC   ! contains packed row/column indices.
 c
 c  meaning of the file names:
 c  ADC2PC:  control file with the dimensions and file infos
@@ -1556,18 +1554,12 @@ c
 c   !!!
 c
       BUF(IB)=G
-c     IOI(IB)=SATROW
-c     IOJ(IB)=SATCOL
-      LONGRC=SATROW
-      LONGRC=IOR(ISHFT(LONGRC,32),SATCOL)
-      IOI(IB) = LONGRC
+      IOI(IB)=SATROW
+      IOJ(IB)=SATCOL
       IF(IB.EQ.INTBUF) THEN
-c       WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
-c    &               (IOI(IXX),IXX=1,INTBUF),
-c    &               (IOJ(IXX),IXX=1,INTBUF),
-c    &               INTBUF,JDUMMY
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               INTBUF,JDUMMY
         IB = 0
         NBUFS = NBUFS + 1
@@ -1585,11 +1577,7 @@ c
 c  read in diagonal satellite eigenvalues (SATEV)
 c
       READ(ITAP2) (SATEV(IZ),IZ=1,IRCDLEN)
-c     WRITE(IW,*) " ## real energies ##"
-c     WRITE(IW,*) (SATEV(IZ),IZ=1,IRCDLEN)
       CLOSE(ITAP2,STATUS='DELETE')
-c     write(iw,*) 'SAT diagonal energies read in'
-
 c
 c  loop through the columns and check each entry
 c  The index conventions are as in the accomp. material
@@ -1717,16 +1705,13 @@ c
 c   !!!
 c
             BUF(IB)=G
-c           IOI(IB)=SATROW + SATOFF
-c           IOJ(IB)=SATCOL + SATOFF
+            IOI(IB)=SATROW + SATOFF
+            IOJ(IB)=SATCOL + SATOFF
           
-            LONGRC=SATROW + SATOFF
-            LONGRC=IOR(ISHFT(LONGRC,32),SATCOL+SATOFF)
-            IOI(IB) = LONGRC
-
             IF(IB.EQ.INTBUF) THEN
               WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &                     (IOI(IXX),IXX=1,INTBUF),
+     &                     (IOJ(IXX),IXX=1,INTBUF),
      &                     INTBUF,JDUMMY
               IB = 0
               NBUFS = NBUFS + 1
@@ -1737,13 +1722,14 @@ c           IOJ(IB)=SATCOL + SATOFF
  400    CONTINUE
  401  CONTINUE
 c
-c  write out remaining elements of the file buffer
+c  write out *remaining* elements of the file buffer
 c  and count all nonzero elements in the ADC matrix.
 c
       IF(IB.GT.0) THEN
         NBUFS = NBUFS + 1
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               IB,JDUMMY
       ENDIF
       CLOSE(ITAP4)
@@ -1808,8 +1794,6 @@ C
       CHARACTER*44 FIELD
 
       REAL*8 SPARS,XNZEL,XTOTEL
-
-      INTEGER LONGRC   ! contains packed row/column indices.
 c
 c  meaning of the file names:
 c  ADC2PE:  contains the 3h1p/3h1p diagonal energies
@@ -1933,18 +1917,12 @@ c
 c   !!!
 c
       BUF(IB)=G
-c     IOI(IB)=SATROW
-c     IOJ(IB)=SATCOL
-      LONGRC=SATROW
-      LONGRC=IOR(ISHFT(LONGRC,32),SATCOL)
-      IOI(IB) = LONGRC
+      IOI(IB)=SATROW
+      IOJ(IB)=SATCOL
       IF(IB.EQ.INTBUF) THEN
-c       WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
-c    &               (IOI(IXX),IXX=1,INTBUF),
-c    &               (IOJ(IXX),IXX=1,INTBUF),
-c    &               INTBUF,JDUMMY
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               INTBUF,JDUMMY
         IB = 0
         NBUFS = NBUFS + 1
@@ -1962,11 +1940,7 @@ c
 c  read in diagonal satellite eigenvalues (SATEV)
 c
       READ(ITAP2) (SATEV(IZ),IZ=1,IRCDLEN)
-c     WRITE(IW,*) " ## complex energies ##"
-c     WRITE(IW,*) (SATEV(IZ),IZ=1,IRCDLEN)
       CLOSE(ITAP2,STATUS='DELETE')
-c     write(iw,*) 'SAT diagonal energies read in'
-
 c
 c  loop through the columns and check each entry
 c  The index conventions are as in the accomp. material
@@ -2077,7 +2051,6 @@ c
 c
 c check if diagonal entry has to be added
 c
-
           IF(SATROW.EQ.SATCOL) THEN
             G = G + DCMPLX(SATEV(SATROW),0.0D0)
           ENDIF
@@ -2095,16 +2068,13 @@ c
 c   !!!
 c
             BUF(IB)=G
-c           IOI(IB)=SATROW + SATOFF
-c           IOJ(IB)=SATCOL + SATOFF
+            IOI(IB)=SATROW + SATOFF
+            IOJ(IB)=SATCOL + SATOFF
           
-            LONGRC=SATROW + SATOFF
-            LONGRC=IOR(ISHFT(LONGRC,32),SATCOL+SATOFF)
-            IOI(IB) = LONGRC
-
             IF(IB.EQ.INTBUF) THEN
               WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &                     (IOI(IXX),IXX=1,INTBUF),
+     &                     (IOJ(IXX),IXX=1,INTBUF),
      &                     INTBUF,JDUMMY
               IB = 0
               NBUFS = NBUFS + 1
@@ -2115,13 +2085,14 @@ c           IOJ(IB)=SATCOL + SATOFF
  400    CONTINUE
  401  CONTINUE
 c
-c  write out remaining elements of the file buffer
+c  write out *remaining* elements of the file buffer
 c  and count all nonzero elements in the ADC matrix.
 c
       IF(IB.GT.0) THEN
         NBUFS = NBUFS + 1
         WRITE(ITAP4) (BUF(IXX),IXX=1,INTBUF),
      &               (IOI(IXX),IXX=1,INTBUF),
+     &               (IOJ(IXX),IXX=1,INTBUF),
      &               IB,JDUMMY
       ENDIF
       CLOSE(ITAP4)
