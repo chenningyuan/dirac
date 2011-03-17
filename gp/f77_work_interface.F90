@@ -9,7 +9,7 @@ module f77_work_interface
 
 !  use f77_work_interface
 !  ...
-!  call plug_f77_work(work, lwork) !here work and lwork are available
+!  call plug_f77_work(work, lwork) !here work and lwork are available, lwork is used, not set
 !  call routine()
 !  ...
 !  call unplug_f77_work()
@@ -21,10 +21,10 @@ module f77_work_interface
 !     subroutine another_routine() !has no work array
 !        use f77_work_interface
 !        ... 
-!        real(8), pointer     :: work(:)
-!        integer, intent(out) :: lwork
+!        real(8), pointer :: work(:)
+!        integer          :: lwork
 !        ...
-!        call select_f77_work(work, lwork) !lwork is set by select_f77_work
+!        call select_f77_work(work, lwork) !lwork is set, not used
 !        call old_routine(var1, var2, work, lwork)
 !        call unselect_f77_work(work)
 !     end subroutine
