@@ -18,6 +18,7 @@ module module_interest_osr
   integer, public, parameter :: lmx2 = 2*lmx1+1 
   integer, public, parameter :: lmx4 = 4*lmx1+1 
   integer, public, parameter :: ncc(lmx1) = (/1,3,6,10,15,21/)
+  integer, public, parameter :: nsc(lmx1) = (/1,3,5, 7, 9,11/)
   integer, public, parameter :: ncc2 = (lmx2*(lmx2+1)*(lmx2+2))/6 
   real(8), public, parameter :: pi   = 4.0d0*datan(1.0d0)
 
