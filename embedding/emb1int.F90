@@ -28,7 +28,7 @@
       MODULE VC_GRID
 
       PRIVATE
-      PUBLIC EMB_VC
+      PUBLIC EMB_VC, ESP_EL, ESP_NUC
       
 !     Module for calculating the coulomb potential on a grid.
 !     Contains:
@@ -72,23 +72,19 @@
 !     JHS MAKE LATER OPTIONAL
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       
-      TOLS=THRS**2
-      TOLOG=2*LOG(THRS)
-
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
-!     JHS Transform Density matrix to AO basis.
+!     Electrostatic potential: electronic contribution
+      CALL ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
 
-      CALL LOOP_PRIM(DMAT,points,vc,WORK,LWORK,                         &
-     &     IPRINT,TOLOG,TOLS)
+!     Electrostatic potential: nuclear contribution
+      CALL ESP_NUC(points,vc,IPRINT)
 
       END SUBROUTINE
 
-      SUBROUTINE LOOP_PRIM(DMAT,points,vc,WORK,LWORK,IPRINT,TOLOG,      &
-     &                  TOLS)
+      SUBROUTINE ESP_EL(DMAT,points,vc,WORK,LWORK,IPRINT)
 !     Driver routine that loops over the primitive orbitals and
 !     calls VC_PRIM.
-      USE VECTOR_FUN, ONLY: NORM
       IMPLICIT NONE
 
 #include "priunit.h"
@@ -100,6 +96,7 @@
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
+#include "ccom.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -109,7 +106,6 @@
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),NZ)
       REAL(KIND=8) :: WORK(*)
-      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       INTEGER :: LWORK
 
 !     Local Variables
@@ -117,6 +113,7 @@
       INTEGER :: MULTA,MULTB,NHKTAB,KAB,IDENB_TMP
       INTEGER :: ISYM
       INTEGER :: ipoint, i,j,k,l
+      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
 
 !      REAL(KIND=8) :: CORA(3),CORB(3)
       REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
@@ -139,7 +136,8 @@
 
 !     Initialization
       ISOFRA(:)=0
-
+      TOLS=THRS**2
+      TOLOG=2*LOG(THRS)
 
 !     Loop over shells.
       IDENA=0
@@ -256,7 +254,7 @@
          NAHGTF = ISTEPU*ISTEPV
 
          ALLOCATE(ADER(KCKTA,KCKTB,SIZE(points,2)))
-!     Contains ader for one gridpoint in SO basis.
+!        Contains ader for one gridpoint in SO basis.
 
 
          IF (IPRINT>5) WRITE(LUPRI,*) 'JHS SYMMETRY,SYMOP',MAXOPR
@@ -285,8 +283,7 @@
  
             IF (IPRINT>5) WRITE(LUPRI,*) 'JHS CORB',CORBX,CORBY,CORBZ
             
-            CALL VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,           &
-     &      LWORK)
+            CALL VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,LWORK)
             
 !     JHS Transform to SO basis?
 
@@ -317,7 +314,7 @@
      &              DMAT(idena+1:idena+KCKTA,idenb+1:idenb+KCKTB,1)*    &
      &              ADER(1:KCKTA,1:KCKTB,ipoint))
 
-            END DO 
+       END DO 
            
 
 !     JHS Transform back to the original B coordinate.
@@ -333,20 +330,35 @@
        END DO
        IDENA = IDENA + KHKTA*MULTA
       END DO
+
+      END SUBROUTINE
       
+      SUBROUTINE ESP_NUC(points,vc,IPRINT)
+!     Routine for calcuating electrostatic potential from nuclei in points
+!     provided by array points
+      USE VECTOR_FUN, ONLY: NORM
+      IMPLICIT NONE
+#include "priunit.h"
+#include "mxcent.h"
+!     PASSED variables
+      real(kind=8) :: points(:,:),vc(:)
+      INTEGER :: IPRINT
+!     Local Variables
+      INTEGER :: ipoint, i
+      REAL(KIND=8) :: vc_tmp
+
+#include "nuclei.h"
 
       DO ipoint=1,SIZE(vc)
-        vc_tmp=0.0
-        DO j=1,MXCENT          
-          vc_tmp=vc_tmp-CHARGE(j)/(NORM(CORD(:,j)-                      &
+        vc_tmp=0.0D0
+        DO i=1,MXCENT          
+          vc_tmp=vc_tmp-CHARGE(i)/(NORM(CORD(:,i)-                      &
      &          points(1:3,ipoint)))
         END DO
         vc(ipoint)=vc(ipoint)-vc_tmp
       END DO
 
       END SUBROUTINE
-
-
 
 
       SUBROUTINE VC_SHELL(ADER,TOLOG,TOLS,points,IPRINT,WORK,           &

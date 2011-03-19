@@ -1332,7 +1332,7 @@ contains
 
    end subroutine
 
-   subroutine get_esp(esp,     &
+   subroutine get_esp(esp,iopt,&
                       irep,    &
                       mat_dim, &
                       dmat,    &
@@ -1341,13 +1341,14 @@ contains
       use vc_grid
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: esp
-      integer, intent(in)  :: irep
+      integer, intent(in)  :: irep,iopt
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)  :: px,py,pz
 !     --------------------------------------------------------------------------
       real(8)              :: r_p(3,1),work(10000),vc(1)
       integer              :: iprint
+      logical              :: lbit
 !     --------------------------------------------------------------------------
    
       esp = 0.0d0
@@ -1355,7 +1356,8 @@ contains
       r_p(1,1) = px
       r_p(2,1) = py
       r_p(3,1) = pz
-      CALL EMB_VC(DMAT,r_p,vc,IPRINT,WORK,10000)
+      IF(LBIT(IOPT,1))CALL ESP_EL(DMAT,r_p,vc,WORK,10000,IPRINT)
+      IF(LBIT(IOPT,2))CALL ESP_NUC(r_p,vc,IPRINT)
       esp=vc(1)
    
    end subroutine

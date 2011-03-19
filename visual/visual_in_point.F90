@@ -147,9 +147,9 @@ contains
                result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
             end if
             
-!           electrostatic potential
+!           total electrostatic potential
             if (visual_cfg_property(imat) == iq_esp) then
-               call get_esp(esp,       &
+               call get_esp(esp,3,       &
                           D(imat)%irep,  &
                           D(imat)%nrow,  &
                           D(imat)%elms,  &
@@ -158,9 +158,9 @@ contains
                result(0) = result(0) + esp
             end if
 
-!           electrostatic potential
+!           density of Coulomb 2-electron contribution
             if (visual_cfg_property(imat) == iq_esprho) then
-               call get_esp(esp,       &
+               call get_esp(esp,1,       &
                           D(imat)%irep,  &
                           D(imat)%nrow,  &
                           D(imat)%elms,  &
