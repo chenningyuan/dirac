@@ -1218,9 +1218,12 @@ C
      &             'DHFINP: Error in open-shell input reading !')
                   ELSE IF (IPERIOD.GT.0.AND.NFSYM.EQ.1) THEN
                    WRITE(LUPRI,*)
-     &        'DHFINP: Error in open-shell input reading for NFSYM=1 !'
+     &        'DHFINP: Error in open-shell input reading'
                    WRITE(LUPRI,*)
-     &        'for NFSYM=1 is has to be like xx/xx'
+     &        'NFSYM is 1 (only gerade symmetry)'
+                WRITE(LUPRI,'(A,A)') 'you have specified (N/G,U):',LINE
+                WRITE(LUPRI,*)
+     &        'for NFSYM=1 use N/G instead of N/G,U'
                    CALL QUIT(
      &        'DHFINP: Error in open-shell input reading !')
                   ENDIF
