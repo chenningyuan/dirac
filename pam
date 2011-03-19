@@ -48,6 +48,7 @@ import time
 import fileinput
 import datetime
 import platform
+import glob
 
 global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
@@ -910,14 +911,15 @@ class pam_enviroment:
 
         if options.dest_put:
             self.put_files = options.dest_put
-            if self.iprint >= 5:
-                print 'assigned put_files ?', self.put_files \
-                    is not None, '...', self.put_files
+            if self.iprint >= 3:
+                print '\nassigned put_files ?', self.put_files \
+                    is not None, '...these are:', self.put_files
+                print ' wildcards:',glob.glob(self.put_files)
 
         if options.dest_distribute:
             # split entering string into list items which are individual files
             self.distribute = options.dest_distribute.split()
-            if self.iprint >= 5:
+            if self.iprint >= 3:
                 print 'extra files for distribution over nodes:',self.distribute
 
         if options.dest_get:
