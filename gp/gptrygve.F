@@ -308,20 +308,14 @@ C 3 = pretty print traceback to stdout...
 
 CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
 #if defined (NO_SF_QUIT)
-      WRITE (LUPRI,*)
-     & 'Intentionally quitting without a Segmentation Fault'
       CALL FLSHFO(LUPRI)
       STOP 1000
 #else
 CMI ... might be input defined restriction for some reasons
       IF (.NOT.NOSFCRASH) THEN
-        WRITE (LUPRI,*)
-     & 'Intentionally causing a crash with a Segmentation Fault'
         CALL FLSHFO(LUPRI)
         CALL CRASH()
       ELSE
-        WRITE (LUPRI,*)
-     & 'Intentionally quitting without a Segmentation Fault'
         CALL FLSHFO(LUPRI)
         STOP 1001
       ENDIF
