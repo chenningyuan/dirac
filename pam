@@ -1476,10 +1476,7 @@ class pam_enviroment:
 
         # deal with the error output only if happens
         if len(self.dirac_stderr) > 0 :
-            # inform about dirac stderr in python stdout
-            print >> sys.stdout,\
-            '  ====  dirac stderr stream written to the output file ===='
-            # likewise attach stderr to the pam output
+            # attach stderr to the pam output
             self.f.write('\n ====  below this line is the stderr stream  ====' + self.dirac_stderr)
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
             if self.iprint > 0: 
