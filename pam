@@ -1480,7 +1480,7 @@ class pam_enviroment:
             print >> sys.stdout,\
             '  ====  dirac stderr stream written to the output file ===='
             # likewise attach stderr to the pam output
-            self.f.write('\n ====  python script additive: stderr output stream  ===='+self.dirac_stderr)
+            self.f.write('\n ====  below this line is the stderr stream  ====' + self.dirac_stderr)
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
             if self.iprint > 0: 
                 print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
