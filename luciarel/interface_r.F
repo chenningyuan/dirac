@@ -1445,10 +1445,10 @@ C     NOINT_FILE = .TRUE.
             ISMCAEND = NIRR_PN
           end if
 *
-!         if (NTEST.ge.5.and.IRI.eq.1) then
+          if (NTEST.ge.5.and.IRI.eq.1) then
             write(LUWRT,*) 'C  symmetry loop: ',ISMCSTA,ISMCEND
             write(LUWRT,*) 'CA symmetry loop: ',ISMCASTA,ISMCAEND
-!         end if
+          end if
 *
 * Symmetry loops
           do ISM_C=ISMCSTA,ISMCEND,1
@@ -1480,12 +1480,12 @@ C     NOINT_FILE = .TRUE.
 * Loops over strings for the given symmetries and types
 * Loop over T elements as matrix T(I_CA,I_CB,I_AA,I_AB)
 *  Determine possible connections
-                write(LUWRT,*) 'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
-                write(LUWRT,*) 'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
+!               write(LUWRT,*) 'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
+!               write(LUWRT,*) 'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
                 if ((NSTR_CA.ge.1.or.NSTR_CB.ge.1).and.
      &              (NSTR_AA.ge.1.or.NSTR_AB.ge.1)) then
 *
-!               if (NTEST.ge.2000.and.IRI.eq.1) then
+                if (NTEST.ge.2000.and.IRI.eq.1) then
                   write(LUWRT,*) 'Processing type    :',IXTP
                   write(LUWRT,*) 'symmetries of c/a  :'
                   write(LUWRT,*) '-----------------  :'
@@ -1495,7 +1495,7 @@ C     NOINT_FILE = .TRUE.
                   write(LUWRT,*) 'Creator beta  symm.:',ISM_CB
                   write(LUWRT,*) 'Annihi. alpha symm.:',ISM_AA
                   write(LUWRT,*) 'Annihi. beta  symm.:',ISM_AB
-!               end if
+                end if
 
                   do I_AB=1,NSTR_AB,1
                     do I_AA=1,NSTR_AA,1
@@ -1880,8 +1880,8 @@ C FIXME !! Uncommented sign here!!
                               end if
                           end if
                           ICOUNT_I8 = ICOUNT_I8 + 1
-                          print *, 'new offset for type IXTP',
-     &                    ICOUNT_I8,IXTP
+!                         print *, 'new offset for type IXTP',
+!    &                    ICOUNT_I8,IXTP
 *
                         end do
 *                       ^ End loop over alpha creation strings
