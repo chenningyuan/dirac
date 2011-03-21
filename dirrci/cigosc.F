@@ -2026,7 +2026,9 @@ C
 !#    LENREC = LEN * 2 * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
+!radovan: K1WORD is not initialized
       LENR2  = (K1WORD + NDETMX) * KXBYTE
+!radovan: K4WORD is not initialized
       LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q

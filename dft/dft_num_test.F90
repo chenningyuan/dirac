@@ -21,8 +21,8 @@
 
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
 #include "priunit.h"
-!     PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,  &
-!    &           DP3 = D1/D3, ADD = 1.0D-06)
+      PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,  &
+     &           DP3 = D1/D3, ADD = 1.0D-06)
       LOGICAL DODRC,DOVWN,DOLYP,DOBCK
 !
       ADD2 = D2*ADD

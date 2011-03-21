@@ -8133,6 +8133,7 @@ c     logical BREIT
       TRESINT = 1.D-12
       NINT = 0
       KLS = 0
+!radovan: m2 and m1 are not set
       KLF = M2
       MM = M1 * M2
 *
@@ -8676,6 +8677,7 @@ c     IF (BREIT) CLOSE (MDBINT,STATUS='KEEP')
       dimension MOLNIT(NSMBLK),LUCNIT(NSMBLK_L)
 *
       NTESTL = 500
+!radovan: iprint is not set
       NTEST = max(NTESTL,IPRINT)
 *
       if (IGLSUM_M.ne.IGLSUM_L) then

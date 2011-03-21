@@ -37,6 +37,7 @@ C#include "wrkspc.inc"
 #include "strinp.inc"
 *
 *
+!radovan: I_USE_SIMTRH is not set
       IF(I_USE_SIMTRH.EQ.0) THEN
         CALL FIH_KRCC(T,FIMAT,ECC,IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &               NGAS,NGSSH,IHPVGAS_AB,

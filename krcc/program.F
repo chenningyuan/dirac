@@ -657,6 +657,7 @@ C
      &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
 *
 *. Pointers to KVEC1 and KVEC2, transferred through GLBBAS
+!radovan: kvec1 and kvec2 not set
        KVEC1P = KVEC1
        KVEC2P = KVEC2
        WRITE(6,*) ' KVEC3 after GET_3BLKS.. ', KVEC3

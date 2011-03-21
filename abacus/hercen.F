@@ -634,6 +634,7 @@
 ! momentum. in this reordering variable kt is the "final" index of a given block
 !
        IQM = MAXIQM
+!radovan: iblock is not set
        KT = IBLOCK
        DO 466 IQ=1,MAXIQM
        DO 467 IR=1,IBLOCK1 - 1

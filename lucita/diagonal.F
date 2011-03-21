@@ -1079,6 +1079,7 @@ C     REAL * 8  INPROD
       END IF
       IDIA_OFFSET = 0
 *     proper offset
+!radovan: MY_DIA_OFF is not set
       IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF
 *
       IF( NTEST .GE. 20 ) THEN

@@ -3804,7 +3804,9 @@ C
       NKRMCGAS = IGASCIP_NGAS
       NKRMC_MK2REF = IGASCIP_MK2REF
       NKRMC_MK2DEL = IGASCIP_MK2DEL
+!radovan: IGASCIP_MINMK2 is not initialized
       NKRMC_MINMK2 = IGASCIP_MINMK2
+!radovan: IGASCIP_MAXMK2 is not initialized
       NKRMC_MAXMK2 = IGASCIP_MAXMK2
 ccc   CALL IZERO(NKRMC_GSHT,MXMCGAS)
       DO I = 1,NFSYM
@@ -3823,6 +3825,7 @@ C     min and max electrons in each gas space:
          NKRMCGSP(2,J) = IGASCIP_NGSP(2,J)
       END DO
 C
+!radovan: IPRGASCIP is not initialized
       IPRKRMC = IPRGASCIP
       IKRMC_ISTATE = 1
       IKRMC_SYMMETRY = IGASCIP_REP
