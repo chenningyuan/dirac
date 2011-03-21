@@ -15,13 +15,6 @@
 #
 ##########################################################################
 
-# wishlist: 1. it would be very nice to allow wildcards or regex in
-#              --put and --get, example: --get="plot*"
-#           2. it would be very nice to have something in the spirit of 
-#              --put_master 
-#              because otherwise we risk with the current setup to copy 
-#              GBs of data to co-workers which absolutely do NOT need it.
-
 # radovan: suggestions:
 #         1. please use standard indentation of 4 spaces (not 2 spaces, no tabs)
 #         2. please do not use if bar>=5:
@@ -653,8 +646,8 @@ class pam_enviroment:
             type='string',
             action='store',
             dest='dest_put',
-            help='copy files to scratch directory',
-            metavar='"file1 file2 ..."',
+            help='copy files to scratch directory ',
+            metavar='"file1 file2 my_file* ..."',
             )
 
         group.add_option(
@@ -663,7 +656,7 @@ class pam_enviroment:
             action='store',
             dest='dest_distribute',
             help='copy selected files to scratch directories of working nodes in parallel run',
-            metavar='"file1 file2 ..."',
+            metavar='"file1 file2 my_file*..."',
             )
 
         group.add_option(
@@ -672,7 +665,7 @@ class pam_enviroment:
             action='store',
             dest='dest_get',
             help='get files from scratch directory',
-            metavar='"file1 file2 ..."',
+            metavar='"file1 file2 my_file*..."',
             )
 
         group.add_option('--incmo', action='store_true',
@@ -910,15 +903,14 @@ class pam_enviroment:
         self.no_archive = options.dest_noarch
 
         if options.dest_put:
-            self.put_files = options.dest_put
+            self.put_files = glob.glob(options.dest_put)
             if self.iprint >= 3:
                 print '\nassigned put_files ?', self.put_files \
-                    is not None, '...these are:', self.put_files
-                print ' wildcards:',glob.glob(self.put_files)
+                    is not None, '...these are(with wildcards):', self.put_files
 
         if options.dest_distribute:
-            # split entering string into list items which are individual files
-            self.distribute = options.dest_distribute.split()
+            # wildcards...
+            self.distribute = glob.glob(options.dest_distribute)
             if self.iprint >= 3:
                 print 'extra files for distribution over nodes:',self.distribute
 
@@ -1119,11 +1111,9 @@ class pam_enviroment:
             os.system(unpack_command)
 
         if self.put_files is not None:
-            files_to_put = self.put_files.split()
             if self.iprint >= 4:
                 print 'self.put_files=', self.put_files
-                print '  files_to_put=', files_to_put
-            for file_name in files_to_put:
+            for file_name in self.put_files:
                 copy_single_file(file_name)
 
     # copies files to scratch_dir
@@ -1697,11 +1687,9 @@ class pam_enviroment:
     # take care of the rest - get files from scratch_dir to home dir
 
         if self.get_files is not None:
-            files_to_get = self.get_files.split()
             if self.iprint >= 4:
-                print 'self.get_files=', self.get_files
-                print '  files_to_get=', files_to_get
-            for file_name in files_to_get:
+                print 'self.get_files=', glob.glob(self.get_files)
+            for file_name in glob.glob(self.get_files):
                 save_single_file(file_name)
 
         if self.outcmo:
