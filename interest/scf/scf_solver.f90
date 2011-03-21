@@ -72,15 +72,6 @@ MODULE SCF_SOLVER
   type(real_matrix)    :: Lowdin
 
 
-  !> naos(:) - number of atomic orbitals, spherical coordinates
-  !> naoc(:) - number of atomic orbitals, cartesian coordinates 
-  integer :: naos(1:4)
-  integer :: naoc(1:4)
-
-
-  !> fixme: temporary 5 alpha-electrons and 5 beta-electrons
-  integer :: nocc(2) = (/5,5/)
-
   interface diagonalization 
     module procedure diagonalization_1comp 
     module procedure diagonalization_4comp 
@@ -111,8 +102,8 @@ CONTAINS
     real(8) :: TrGP             = 0.0d0
     real(8) :: Enuc             = 0.0d0
     real(8) :: Etotal           = 0.0d0
+    real(8) :: diis_error       = 0.0d0
     real(8) :: Etotal_last      = 0.0d0
-    real(8) :: diis_error(2)    = 0.0d0
     real(8) :: sum_orb_energies = 0.0d0 
     logical :: if_scf_converged = .false.
 
@@ -130,7 +121,7 @@ CONTAINS
 
 
     !> initialize Lowdin matrix used for symmetric AO-orthonormalization 
-       call matrix_allocate( Lowdin, naoc(1) )
+       call matrix_allocate( Lowdin )
        call process_overlap_integrals( S12 = Lowdin )
        !> test association
           !call test_association( Lowdin, 'Lowdin' )
@@ -139,17 +130,17 @@ CONTAINS
 
 
     !> initialize MO expansion coefficients
-       call matrix_allocate( Cmat, naoc(1) )
+       call matrix_allocate( Cmat )
     !> end
 
 
     !> initialize transformed MO coefficients: C'=S^{1/2}*C 
-       call matrix_allocate( CS12, naoc(1) )
+       call matrix_allocate( CS12 )
     !> end
 
 
     !> allocate Fock matrix 
-       call matrix_allocate( Fock, naoc(1) )
+       call matrix_allocate( Fock )
     !> end
 
 
@@ -222,10 +213,11 @@ CONTAINS
 
          !> scf cycle and convergence criteria report 
             Etotal  = sum_orb_energies - 0.5d0*TrGP + Enuc
-            write(6,'(2x,a,i3,f20.10,2(3x,d8.2))') 'Cycle: ',itrscf,Etotal,abs(Etotal-Etotal_last),diis_error(1)
+            write(6,'(2x,a,i3,f20.10,2(3x,d8.2))') 'Cycle: ',itrscf,Etotal,abs(Etotal-Etotal_last),diis_error
+            !write(6,*)
 
             if( itrscf ==  scf%max_scf_iterations )exit
-            if( diis_error(1) <  scf%diis_error_treshold .and. abs(Etotal-Etotal_last)  <  scf%energy_change_treshold )exit
+            if( diis_error <  scf%diis_error_treshold .and. abs(Etotal-Etotal_last)  <  scf%energy_change_treshold )exit
 
             Etotal_last = Etotal
          !> end
@@ -256,135 +248,182 @@ CONTAINS
     !> end
 
     !> output
-       real(8), intent(out) :: diis_error(2) 
+       real(8), intent(out) :: diis_error
     !> end
 
     !> local
-       !> on which scf iteration diis error vector starts to be accumulated
-       integer, parameter :: diis_start_on_itrscf = 2
-       !> a minimal dimension of B-matrix to start diis 
-       integer, parameter :: min_dimension = 2
        !> a maximal dimension of B-matrix
-       integer, parameter :: max_dimension = 20
+       integer, parameter :: max_diis_dimension = 20
 
-       real(8)              :: xmax
+       logical :: do_diis    = .true.
+       logical :: do_damping = .false.
+
        real(8)              :: ddot 
        integer              :: nrow
        integer              :: nshl
        integer              :: info 
-       integer              :: itrdiis = 0
+       integer              :: itrdiis
        integer              :: i, j, k, ij
+       integer              :: record_number 
+       integer              :: record_length
+       integer              :: record_number_old 
        real(8)              :: errvec_product
-       real(8)              :: Bdiis(max_dimension,max_dimension,2) 
-       character*9          :: flfock 
+       real(8)              :: Bdiis(max_diis_dimension,max_diis_dimension) 
        integer, allocatable :: ipi(:)
        real(8), allocatable :: xxx(:)
        real(8), allocatable :: wrk(:)
        real(8), allocatable :: bij(:,:)
+
+       integer              :: iij
+       real(8)              :: BMCOND
+       real(8), allocatable :: grc(:)
     !> end
 
 
-    
-    if( itrscf < diis_start_on_itrscf )return
 
-    nrow = Fock%nrow
-    nshl = size(Fock%elms,2)
 
-    !> set MOs occupation for C' = S^{1/2} * C 
-       call mo_occupation( CS12 )
+    !> first iteration initialization
+       if( itrscf == 1 )then
+         !> initiate damping convergence acceleration
+            if( do_damping )then
+              open ( 16, file='Fock_matrix', form='unformatted' )
+              write( 16 ) Fock%elms(:,:)  
+              close( 16 )
+            endif
+         !> initiate DIIS convergence acceleration
+            if( do_diis )then 
+              Bdiis(1,1) = 0.0d0
+              Bdiis(1,2:max_diis_dimension) = -1.0d0
+            endif
+            return
+       endif
     !> end
 
-    !> calculate density matrix (in the Lowdin basis), P' = C' * dag(C')
-       call matrix_multiplication( A=CS12, opb='c', B=CS12, C=Work )
+    !> damping convergence acceleration
+       if( do_damping )then
+         open ( 16, file='Fock_matrix', form='unformatted' )
+         read ( 16 ) Work%elms(:,:)  
+                     Fock%elms(:,:) = (1.0d0 - scf%damping_factor)*Fock%elms(:,:)
+                     Fock%elms(:,:) = Fock%elms(:,:) + scf%damping_factor*Work%elms(:,:)
+         write( 16 ) Fock%elms(:,:)  
+         close( 16 )
+       endif
     !> end
 
-    !> calculate F' * P' (virtual-occupied block)
-    !> where F' = S^{-1/2} * F^{ao} * S^{-1/2}
-       call matrix_multiplication( A=Fock, B=Work, C=CS12 )
+
+    !> calculate diis error vector = F'*P' - dag(F'*P') and
+    !> report the maximum absolute value within the occupied-virtual block
+
+       nrow =       Fock%nrow
+       nshl = size( Fock%elms, 2 )
+
+       !> set MOs occupation for C' = S^{1/2} * C 
+          call mo_occupation( CS12 )
+       !> end
+       
+       !> calculate the density matrix (in the Lowdin basis), P' = C' * dag(C')
+          call matrix_multiplication( A=CS12, opb='c', B=CS12, C=Work )
+       !> end
+       
+       !> calculate F' * P' (virtual-occupied block)
+       !> where F' = S^{-1/2} * F^{ao} * S^{-1/2}
+          call matrix_multiplication( A=Fock, B=Work, C=CS12 )
+       !> end
+       
+       !> anti-Hermitian matrix
+          diis_error = 0.0d0 
+          do k=1,nshl
+            ij = 0
+            do j=1,nrow 
+              do i=j,nrow
+                ij = ij + 1
+                Work%elms(ij,k) = CS12%elms(index(i,j,nrow),k) - CS12%elms(index(j,i,nrow),k)
+              enddo
+            enddo
+            !> find the maximum element in the error vector 
+               do i=1,ij
+                 if( abs(Work%elms(i,k)) > diis_error ) diis_error = abs(Work%elms(i,k)) 
+               enddo
+            !> end
+          enddo
+       !> end
+    !> end
+ 
+
+    if( .not. do_diis )return
+
+    itrdiis       = min ( itrscf,   max_diis_dimension     ) 
+    record_number = mod ( itrscf-2, max_diis_dimension - 1 ) + 1
+    record_length = nshl*8*nrow*(nrow+1)/2
+
+    open( 17, file='diis_error_vectors_alpha', access='direct', recl=record_length, form='unformatted' )
+    open( 18, file='diis_error_vectors_beta',  access='direct', recl=record_length, form='unformatted' )
+    open( 61, file='diis_fock_matrices_alpha', access='direct', recl=record_length, form='unformatted' )
+    open( 62, file='diis_fock_matrices_beta',  access='direct', recl=record_length, form='unformatted' )
+
+    !> shift the upper triangle of B-matrix in the case of max_diis_dimension
+       if( itrdiis == max_diis_dimension )then
+         do j=3,itrdiis
+           do i=3,j
+             Bdiis(i-1,j-1) = Bdiis(i,j) 
+           enddo
+         enddo
+       endif
     !> end
 
-       itrdiis = itrdiis + 1
-
-    !> calculate diis error vector = F'*P' - dag(F'*P')
-    !> the error vector has components of anti-Hermitian matrix 
+    !> read diis error vectors from disk and calculate upper triangle of B-matrix 
+       Bdiis(2:itrdiis,itrdiis) = 0.0d0
        do k=1,nshl
+         do i=1,(itrdiis-2),1
+           record_number_old = mod( (itrscf-itrdiis-1+i), (max_diis_dimension-1) ) + 1
+           if( k==1 ) read( 17, rec=record_number_old ) CS12%elms(1:ij,k)
+           if( k==2 ) read( 18, rec=record_number_old ) CS12%elms(1:ij,k)
+           Bdiis((i+1),itrdiis) = Bdiis((i+1),itrdiis) + 2.0d0*ddot( ij, Work%elms(:,k), 1, CS12%elms(:,k), 1 ) 
+         enddo
+         Bdiis(itrdiis,itrdiis) = Bdiis(itrdiis,itrdiis) + 2.0d0*ddot( ij, Work%elms(:,k), 1, Work%elms(:,k), 1 ) 
+       enddo 
+    !> end
+
+    !> write the current diis error vector and Fock matrix on disk
+       do k=1,nshl
+         if( k==1 ) write( 17, rec=record_number )Work%elms(1:ij,1)
+         if( k==2 ) write( 18, rec=record_number )Work%elms(1:ij,2)
          ij = 0
          do j=1,nrow 
            do i=j,nrow
              ij = ij + 1
-             Work%elms(ij,k) = CS12%elms(index(i,j,nrow),k) - CS12%elms(index(j,i,nrow),k)
+             Work%elms(ij,k) = Fock%elms(index(i,j,nrow),k)
            enddo
          enddo
-
-         !> find the maximum element in the error vector 
-            diis_error(k) = 0.0d0 
-            do i=1,ij
-              xmax = Work%elms(i,k)
-              xmax = dsqrt(xmax*xmax)
-              if( xmax > diis_error(k) ) diis_error(k) = xmax
-            enddo
-         !> end
-
-         !> write diis error vector on disk
-            write(flfock,'(a7,i2.2)')'FL1DIIS',itrdiis 
-            open(17,file=flfock,form='unformatted')
-            write(17)Work%elms(1:ij,k)
-            close(17,status='keep')
-         !> end
-
-         !> add a new column/row to the upper triangle of B-matrix
-            if( itrdiis == 1 )then
-              Bdiis(1,1,k) = 0.0d0
-              do i=2,max_dimension
-                Bdiis(1,i,k) = -1.0d0
-              enddo
-            else 
-              do i=2,itrdiis
-                write(flfock,'(a7,i2.2)')'FL1DIIS',(i-1)
-                open(17,file=flfock,form='unformatted')
-                read(17)CS12%elms(1:ij,k)
-                close(17,status='keep')
-                errvec_product = 2.0d0*ddot( ij, Work%elms(:,k), 1, CS12%elms(:,k), 1 )
-                Bdiis(i,(itrdiis+1),k) = errvec_product 
-              enddo
-            endif
-            Bdiis((itrdiis+1),(itrdiis+1),k) = 2.0d0*ddot( ij, Work%elms(:,k), 1, Work%elms(:,k), 1 )
-         !> end
-
-         !> write the current Fock matrix on disk 
-            ij = 0
-            do j=1,nrow 
-              do i=j,nrow              !fixme: triangle????
-                ij = ij + 1
-                Work%elms(ij,k) = Fock%elms(index(i,j,nrow),k)
-              enddo
-            enddo
-            write(flfock,'(a7,i2.2)')'FLFOCKA',itrdiis 
-            open(61,file=flfock,form='unformatted')
-            write(61)Work%elms(1:ij,k)
-            close(61,status='keep')
-         !> end
+         if( k==1 ) write( 61, rec=record_number )Work%elms(1:ij,k)
+         if( k==2 ) write( 62, rec=record_number )Work%elms(1:ij,k)
        enddo
     !> end
 
-
-    !> exit if not having enough matrices for DIIS interpolation
-       if( itrdiis < (diis_start_on_itrscf + min_dimension - 1) )return 
+    !> exit if there are not enough matrices for DIIS interpolation
+       if( itrscf < 4 )then
+         close( 17, status='keep' )
+         close( 18, status='keep' )
+         close( 61, status='keep' )
+         close( 62, status='keep' )
+         return
+       endif
     !> end
 
+    !> turn off damping convergence acceleration
+       do_damping = .false.
+    !> end
 
     !> solve the DIIS equation (using Lapack dsysv routine) and construct an diis-averaged Fock matrix
-    !> note that Bdiis is lower-triangle stored
-       itrdiis = itrdiis + 1
+    !> note that Bdiis is upper-triangle stored
        allocate( ipi(itrdiis)         )
        allocate( xxx(itrdiis)         )
        allocate( wrk(itrdiis)         )
        allocate( bij(itrdiis,itrdiis) )
 
-       do k=1,nshl
          xxx(1)         = -1.0d0
          xxx(2:itrdiis) =  0.0d0 
-         bij            =  Bdiis(1:itrdiis,1:itrdiis,k)
+         bij            =  Bdiis(1:itrdiis,1:itrdiis)
          !> xxx = on input B, on output X for A*X = B 
             call dsysv( 'U', itrdiis, 1, bij,itrdiis, & 
                                          ipi,         &
@@ -396,20 +435,19 @@ CONTAINS
                stop 
             end if
          !> end
-
-         !> calculate an averaged Fock matrix
-            Work%elms(1:ij,k) = Work%elms(1:ij,k)*xxx(itrdiis) 
-            do i=2,(itrdiis-1),1
-              write(flfock,'(a7,i2.2)')'FLFOCKA',(i-1)
-              open(61,file=flfock,form='unformatted')
-              read(61)Fock%elms(1:ij,k)
-              close(61,status='keep')
-              Work%elms(1:ij,k) = Work%elms(1:ij,k) + Fock%elms(1:ij,k)*xxx(i)
-            enddo
-         !> end
-       enddo
     !> end
 
+    !> calculate an averaged Fock matrix
+       do k=1,nshl
+         Work%elms(1:ij,k) = Work%elms(1:ij,k)*xxx(itrdiis) 
+         do i=1,(itrdiis-2),1
+           record_number_old = mod( (itrscf-itrdiis-1+i), (max_diis_dimension-1) ) + 1
+           if( k==1 ) read( 61, rec=record_number_old ) Fock%elms(1:ij,k)
+           if( k==2 ) read( 62, rec=record_number_old ) Fock%elms(1:ij,k)
+           Work%elms(1:ij,k) = Work%elms(1:ij,k) + Fock%elms(1:ij,k)*xxx(i+1) 
+         enddo
+       enddo
+    !> end
 
     !> make full Fock matrix 
        do k=1,nshl
@@ -428,12 +466,15 @@ CONTAINS
        enddo
     !> end
 
-
-    itrdiis = itrdiis - 1
     deallocate( ipi )
     deallocate( xxx  )
     deallocate( wrk )
     deallocate( bij  )
+
+    close( 17, status='keep' )
+    close( 18, status='keep' )
+    close( 61, status='keep' )
+    close( 62, status='keep' )
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
@@ -615,7 +656,7 @@ CONTAINS
     !> end
 
     !> test number_of_electrons = Tr(P*S)
-       call matrix_allocate( Smat, naoc(1) )
+       call matrix_allocate( Smat )
        call process_overlap_integrals( S = Smat ) 
        write(6,*) ' Number of electrons = ',matrix_dotproduct( A=Evec, B=Smat )
        call matrix_deallocate( Smat )
@@ -740,121 +781,6 @@ CONTAINS
       !old enddo
     !> end
      
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!> Interface to DIRAC
-  SUBROUTINE module_interface()
-
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
-#include "dcbdhf.h"
-#include "nucdata.h"
-
-    !> initialization of local variables
-    integer :: i
-    integer :: j
-    integer :: ier
-    type( type_gto ) :: tmpgto
-  
-  
-    !> test if the large component basis is uncontracted
-    if( nplrg.ne.nlarge )then
-      write(6,*) ' Error: contracted basis set found => stop!'
-      write(6,*) ' Note:  uncontracted basis sets are only supported for kramers_unrestricted_scf_solver'
-      stop
-    endif
-  
-
-    !> interface scf settings 
-    !scf = type_scf( maxitr, mxdiis, scfcnv(1), scfcnv(1) )
-     scf = type_scf( maxitr, mxdiis, 1.d-9, 1.d-9 )
-
-  
-    !> interface nuclear data
-    do i=1,109 
-      element(i) = type_element( 'not_set', 0.0d0, nucmass(i), nuclabel(i) )
-    enddo
-  
-  
-    !> interface molecular data
-    allocate( atom(nucind), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
-    do i=1,size(atom)
-      atom(i) = type_atom( charge(i), cord(1,i), cord(2,i), cord(3,i), gnuexp(i) )
-    enddo
-  
-  
-    !> interface basis set data
-    allocate( gto(nlrgsh), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: gto(:)'
-    i = 1
-    do while( i <= size(gto) )  
-      do j=1,nrco(i)
-        gto(i)  = type_gto( i, 0, nhkt(i), ncent(i), 0, 0, priccf(i,j), priexp(i), priccf(i,j) )
-        i = i + 1
-      enddo
-    enddo
-
-
-    !> reorder basis functions to the angular momentum 
-    !> ascending order to increase the integral performance
-    do i=1,size(gto)-1
-      do j=(i+1),size(gto)
-        if( gto(j)%lvalue >= gto(i)%lvalue )cycle
-        tmpgto = gto(i)
-        gto(i) = gto(j)
-        gto(j) = tmpgto
-      enddo
-    enddo
-
-
-    !> set some data + AO-vector offsets 
-    naos(1) = 0
-    naoc(1) = 0
-    do i=1,size(gto)
-      gto(i)%offset = naoc(1) 
-      gto(i)%sdegen = 2*gto(i)%lvalue - 1 
-      gto(i)%cdegen = ( gto(i)%lvalue*(gto(i)%lvalue+1) )/2 
-      naos(1) = naos(1) + gto(i)%sdegen 
-      naoc(1) = naoc(1) + gto(i)%cdegen
-    enddo
-    do i=2,4
-      naos(i) = i*naos(1)
-      naoc(i) = i*naoc(1)
-    enddo
-
-
-
-    do i=1,size(gto)
-      write(6,'(1x,5(a,i3,3x),3(a,d15.5,3x))') ' i = ',i,                            &
-                                               ' index  = ',gto(i)%index,            &
-                                               ' offset = ',gto(i)%offset,           &
-                                               ' lvalue = ',gto(i)%lvalue,           &
-                                               ' origin = ',gto(i)%origin,           &
-                                               ' norm = ',  gto(i)%norm(1),          &
-                                               ' exponent = ',gto(i)%exponent(1),    &
-                                               ' coefficient = ',gto(i)%coefficient(1)
-    enddo
-
-  
-!!! write(6,*) 
-!!! write(6,'(2x,a,i5)') 'Basis set informations:'
-!!! write(6,'(2x,a,i5)') '-----------------------'
-!!! write(6,*) 
-!!! write(6,*) 
-!!! write(6,'(2x,a)')    'label    atom   charge   prim   cont   L-basis   RKB     S-basis'
-!!! write(6,'(2x,70a1)') ('-',i=1,70)
-!!!
-!!! write(6,'(2x,70a1)') ('-',i=1,70)
-    write(6,*) 
-    write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
-    write(6,'(2x,a,i5,a)') 'Total number of spherical basis functions:',naos(1),' (used for calculation)' 
-    write(6,'(2x,a,i5  )') 'Total number of cartesian basis functions:',naoc(1)
-    write(6,*) 
-  
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 

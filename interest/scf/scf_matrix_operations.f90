@@ -82,36 +82,34 @@ MODULE SCF_MATRIX_OPERATIONS
 CONTAINS
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE matrix_allocate_1comp( A, n )
+  SUBROUTINE matrix_allocate_1comp( A )
 
-    !> input
-    integer,           intent(in)    :: n
-    type(real_matrix), intent(inout) :: A
+    !> input/output
+       type(real_matrix), intent(inout) :: A
+    !> end
  
     !> local
 
 
     !> if associated then nullify the matrix otherwise perform the allocation
     !> note:  real_matrix has pointer type elements => association check is relevant
-    !> fixme: druha dimenzia nastavena pre open-shells
        if( associated(A%elms) )then
-         A%nrow = n
-         A%ncol = n
+         A%nrow = scf%ndim 
+         A%ncol = scf%ndim
          A%elms = 0.0d0
        else
-         A%nrow = n
-         A%ncol = n
-         allocate( A%elms( n*n, 2 ) ); A%elms = 0.0d0
+         A%nrow = scf%ndim
+         A%ncol = scf%ndim
+         allocate( A%elms( A%nrow * A%ncol, scf%nshl ) ); A%elms = 0.0d0
        endif
     !> end
     
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE matrix_allocate_4comp( A, n )
+  SUBROUTINE matrix_allocate_4comp( A )
 
     !> input
-    integer,              intent(in)    :: n
     type(complex_matrix), intent(inout) :: A
  
     !> local
@@ -121,13 +119,13 @@ CONTAINS
     !> if associated then nullify the matrix otherwise perform the allocation
     !> note: complex_matrix has allocatable type elements => allocated check is relevant
        if( allocated(A%elms) )then
-         A%nrow = n
-         A%ncol = n
+         A%nrow = scf%ndim 
+         A%ncol = scf%ndim
          A%elms = ( 0.0d0, 0.0d0 )
        else
-         A%nrow = n
-         A%ncol = n
-         allocate( A%elms( n*n, 4, 4 ) ); A%elms = ( 0.0d0, 0.0d0 )
+         A%nrow = scf%ndim 
+         A%ncol = scf%ndim
+         allocate( A%elms( A%nrow * A%ncol, 4, 4 ) ); A%elms = ( 0.0d0, 0.0d0 )
        endif
     !> end
     
