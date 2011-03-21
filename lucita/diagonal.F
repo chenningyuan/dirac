@@ -1070,7 +1070,7 @@ C     REAL * 8  INPROD
 *. Output
       DIMENSION DIAG(*)
 *
-      NTEST =  00
+      NTEST =  20
       NTEST = MAX(NTEST,IPRNT)
       IF(PSSIGN.EQ.-1.0D0) THEN
          XADD = 1000000.0
@@ -1079,7 +1079,7 @@ C     REAL * 8  INPROD
       END IF
       IDIA_OFFSET = 0
 *     proper offset
-!radovan: MY_DIA_OFF is not set
+!stefan: MY_DIA_OFF is set on a common block in parluci.h.
       IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF
 *
       IF( NTEST .GE. 20 ) THEN
@@ -1205,9 +1205,11 @@ C     REAL * 8  INPROD
 *       ^ End of loop over betastrings
 *. Yet a RAS block of the diagonal has been constructed
         IF(ICISTR.GE.2) THEN
-          IF(NTEST.GE.100) THEN
-            write(6,*) ' number of diagonal elements to disc ',IDET
-            CALL WRTMAT(DIAG,1,IDET,1,IDET)
+          IF(NTEST.GE.20) THEN
+            if(IDET.gt.0)then 
+              write(6,*) ' number of diagonal elements to disc ',IDET
+              CALL WRTMAT(DIAG,1,IDET,1,IDET)
+            end if
           END IF
 #if defined (VAR_MPI2)
           CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
@@ -1227,7 +1229,7 @@ C         new offset
       IF(NTEST.GE.5) WRITE(LUWRT,*)
      &' Number of diagonal elements generated ',ITDET
 *
-      IF(NTEST .GE.100 .AND.ICISTR.LE.1 ) THEN
+      IF(NTEST .GE.20 .AND.ICISTR.LE.1 ) THEN
         WRITE(LUWRT,*) ' CIDIAGONAL '
         CALL WRTMATMN(DIAG(1),1,IDET,1,IDET,LUWRT)
       END IF

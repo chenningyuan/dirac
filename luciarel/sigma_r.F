@@ -5847,6 +5847,8 @@ CSKoldCALL NEWTYP_REL(ISTRGP,ISTRTP,IACAR,ITPAR,2,KSTRGP,KSTRTP)
       CALL SYMCOM_REL(3,0,ISTRSM,IJSXSM,KSTRSM)
 *. Offset for output strings
 !radovan: kstrtp is not set
+!stefan: thanks; the whole routine will disappear soon so i won't do
+!anything right now.
       KSTROF = IFRMR_REL(WORK,KISTSO(ISTRGP),
      &         (KSTRSM-1)*NOCTYP(ISTRGP)+KSTRTP)
 *

@@ -1318,7 +1318,7 @@ C     NOINT_FILE = .TRUE.
       end if
 !
 !     open ASCII file for checking integral sorting information
-!     ntest = 1
+      ntest = 1
       if (NTEST.ge.1) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
@@ -1445,10 +1445,10 @@ C     NOINT_FILE = .TRUE.
             ISMCAEND = NIRR_PN
           end if
 *
-          if (NTEST.ge.5.and.IRI.eq.1) then
+!         if (NTEST.ge.5.and.IRI.eq.1) then
             write(LUWRT,*) 'C  symmetry loop: ',ISMCSTA,ISMCEND
             write(LUWRT,*) 'CA symmetry loop: ',ISMCASTA,ISMCAEND
-          end if
+!         end if
 *
 * Symmetry loops
           do ISM_C=ISMCSTA,ISMCEND,1
@@ -1457,17 +1457,6 @@ C     NOINT_FILE = .TRUE.
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-                if (NTEST.ge.2000.and.IRI.eq.1) then
-                  write(LUWRT,*)
-                  write(LUWRT,*)
-                  write(LUWRT,*) 'Printing symmetries:'
-                  write(LUWRT,*) 'Creator symm.      :',ISM_C
-                  write(LUWRT,*) 'Annihilator symm.  :',ISM_A
-                  write(LUWRT,*) 'Creator alpha symm.:',ISM_CA
-                  write(LUWRT,*) 'Creator beta symm. :',ISM_CB
-                  write(LUWRT,*) 'Annihi. alpha symm.:',ISM_AA
-                  write(LUWRT,*) 'Annihi. beta symm. :',ISM_AB
-                end if
 *
 *. Generate strings of these symmetries
 *. obtain strings
@@ -1491,9 +1480,23 @@ C     NOINT_FILE = .TRUE.
 * Loops over strings for the given symmetries and types
 * Loop over T elements as matrix T(I_CA,I_CB,I_AA,I_AB)
 *  Determine possible connections
+                write(LUWRT,*) 'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
+                write(LUWRT,*) 'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
                 if ((NSTR_CA.ge.1.or.NSTR_CB.ge.1).and.
      &              (NSTR_AA.ge.1.or.NSTR_AB.ge.1)) then
 *
+!               if (NTEST.ge.2000.and.IRI.eq.1) then
+                  write(LUWRT,*) 'Processing type    :',IXTP
+                  write(LUWRT,*) 'symmetries of c/a  :'
+                  write(LUWRT,*) '-----------------  :'
+                  write(LUWRT,*) 'Creator       symm.:',ISM_C
+                  write(LUWRT,*) 'Annihilator   symm.:',ISM_A
+                  write(LUWRT,*) 'Creator alpha symm.:',ISM_CA
+                  write(LUWRT,*) 'Creator beta  symm.:',ISM_CB
+                  write(LUWRT,*) 'Annihi. alpha symm.:',ISM_AA
+                  write(LUWRT,*) 'Annihi. beta  symm.:',ISM_AB
+!               end if
+
                   do I_AB=1,NSTR_AB,1
                     do I_AA=1,NSTR_AA,1
                       do I_CB=1,NSTR_CB,1
@@ -1512,8 +1515,8 @@ C     NOINT_FILE = .TRUE.
 *  3) In the full spin-dependent formalism, extra classes of
 *     integrals are required. 
 * 
-*. Indices of STRING I_CA are stored in IOCC_CA and first element is 
-*  IOCC_CA(1+NEL_CA*(I_CA-1)) 
+*. Indices of STRING I_CA are stored in ISTR_CA and first element is 
+*  ISTR_CA(1+NEL_CA*(I_CA-1)) 
 *
                           if (NEL_C.eq.1) then
                             IXCH = 0
@@ -1854,6 +1857,10 @@ C FIXME !! Uncommented sign here!!
                                  write(LUWRT,'(A,3F18.14)') 
      &                              'INTEGRALs: YINT,YXINT,YINT-YXINT',
      &                                          YINT,YXINT,YINT-YXINT
+                                 write(LUINGR,'(2x,a,2i5)') 
+     &                           'NSTR_CA, NSTR_CB :',NSTR_CA, NSTR_CB
+                                 write(LUINGR,'(2x,a,2i5)') 
+     &                           'NSTR_AA, NSTR_AB :',NSTR_AA, NSTR_AB
 *                             write integral to file (for debugging):
                                 if (IXCH.eq.0) then
                                   write(LUINGR,'(I4,4X,4I3,1F18.14)') 
@@ -1873,6 +1880,8 @@ C FIXME !! Uncommented sign here!!
                               end if
                           end if
                           ICOUNT_I8 = ICOUNT_I8 + 1
+                          print *, 'new offset for type IXTP',
+     &                    ICOUNT_I8,IXTP
 *
                         end do
 *                       ^ End loop over alpha creation strings
@@ -8678,6 +8687,8 @@ c     IF (BREIT) CLOSE (MDBINT,STATUS='KEEP')
 *
       NTESTL = 500
 !radovan: iprint is not set
+!stefan: thanks; the whole routine will disappear soon so i won't do
+!anything right now.
       NTEST = max(NTESTL,IPRINT)
 *
       if (IGLSUM_M.ne.IGLSUM_L) then
