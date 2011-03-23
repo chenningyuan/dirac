@@ -1,0 +1,2 @@
+- automatically pick toplevel/cbuild/dirac.x if toplevel/dirac.x not present
+- better default for --scratch if no Makefile.config present (what is the default now anyway?)
