@@ -129,6 +129,14 @@ C
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
 C
+C     Input of property module
+C
+      IF(DOPRP) THEN
+         OPEN(LUCMD,FILE = 'DIRAC.INP')
+         CALL PRPINP('**PROPE',WORK,LWORK)
+         CLOSE(LUCMD)
+      ENDIF
+C
 C     Wave function input
 C
 C     Call PSIINP always to get wave function information for
@@ -154,14 +162,6 @@ C
         OPEN(LUCMD,FILE = 'DIRAC.INP')
         CALL ANWINP('**ANALY',WORK,LWORK)
         CLOSE(LUCMD)
-      ENDIF
-C
-C     Input of property module
-C
-      IF(DOPRP) THEN
-         OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL PRPINP('**PROPE',WORK,LWORK)
-         CLOSE(LUCMD)
       ENDIF
 C
 C     Input of transformation module
