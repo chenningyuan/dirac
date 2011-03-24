@@ -6,7 +6,8 @@
 # make sure cmake is installed before you run it
 
 # enviroment
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export PATH=/home/ilias/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:.
+export LD_LIBRARY_PATH=/usr/local/lib
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cdash
