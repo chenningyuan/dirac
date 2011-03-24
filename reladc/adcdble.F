@@ -401,7 +401,12 @@ c  therefore we have to transfer the relevant arrays to TWOHPOP
 c  especially MULTB(64,64,2), NOOT(*) and NO(*)
 c
         IF(DOADCPOP) THEN
-          CALL TWOHPOP(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
+          IF(CARITH) THEN
+c           CALL TWOHPOP_C(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
+            STOP 'Population analysis for complex case is yet to come!'
+          ELSE
+            CALL TWOHPOP_R(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
+          ENDIF
         ENDIF
  300  CONTINUE
 
