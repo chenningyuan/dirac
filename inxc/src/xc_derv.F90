@@ -31,7 +31,6 @@ module xc_derv
 
   public get_functional_derv
 #ifdef MOD_XCFUN
-  public get_general_fun_derv
   public xcfun_set_functional
   public xcfun_is_lda
   public xcfun_is_gga
@@ -171,6 +170,8 @@ contains
 #endif /* ifdef MOD_XCFUN */
 
   subroutine get_functional_derv(f,            &
+                                 f_alda,       &
+                                 f_xalda,      &
                                  order,        &
                                  block_length, &
                                  w,            &
@@ -184,6 +185,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(functional)              :: f
+    type(functional)              :: f_alda, f_xalda
     integer,          intent(in)  :: order
     integer,          intent(in)  :: block_length
     real(8),          intent(in)  :: w(*)
@@ -247,19 +249,19 @@ contains
                    f%output)
 
       if (do_alda_real .or. do_alda_imag) then
-         xc_fun_alda%input = 0.0d0
+         f_alda%input = 0.0d0
          do k = 1, block_length
-            xc_fun_alda%input(1, k) = r_0(k)
+            f_alda%input(1, k) = r_0(k)
          end do
-         id = xc_fun_alda%id
+         id = f_alda%id
          if (dft_cfg_xalda) then
-            id = xc_fun_xalda%id
+            id = f_xalda%id
          end if
          call xc_eval(id,                &
                       order,             &
                       block_length,      &
-                      xc_fun_alda%input, &
-                      xc_fun_alda%output)
+                      f_alda%input, &
+                      f_alda%output)
       end if
 
       do k = 1, block_length
@@ -288,7 +290,7 @@ contains
             case (2)
 !              order 2 - spin unpolarized
                if (do_alda_real) then
-                  derv(k, d2000000) = xc_fun_alda%output(XC_D20, k)
+                  derv(k, d2000000) = f_alda%output(XC_D20, k)
                else
                   if (xcfun_is_lda()) then
                      derv(k, d2000000) = f%output(XC_D20, k)
@@ -312,7 +314,7 @@ contains
                end if
 !              order 2 - spin polarized
                if (do_alda_imag) then
-                  derv(k, d0200000) = xc_fun_alda%output(XC_D02, k)
+                  derv(k, d0200000) = f_alda%output(XC_D02, k)
                else
                   if (xcfun_is_lda()) then
                      derv(k, d0200000) = f%output(XC_D02, k)
@@ -436,300 +438,5 @@ contains
 
   end subroutine
 
-
-
-#ifdef MOD_XCFUN
-  subroutine get_general_fun_derv(f,            &
-                                  order,        &
-                                  block_length, &
-                                  w,            &
-                                  r_0,          &
-                                  r_0_t,        &
-                                  z_0,          &
-                                  z_0_t,        &
-                                  n,            &
-                                  derv,         &
-                                  parallel_xc,  &
-                                  debug)
-   use dirac_cfg
-   use fde_mod
-
-!   ----------------------------------------------------------------------------
-    type(functional), intent(inout)  :: f
-    integer,          intent(in)  :: order
-    integer,          intent(in)  :: block_length
-    real(8),          intent(in)  :: w(*)
-    real(8),          intent(in)  :: r_0(*)
-    real(8),          intent(in)  :: z_0(*)
-    real(8),          intent(in)  :: r_0_t(*)
-    real(8),          intent(in)  :: z_0_t(*)
-    integer,          intent(in)  :: n
-    real(8),          intent(out) :: derv(max_block_length, 0:n)
-      logical,          intent(in)    :: parallel_xc
-    logical,          intent(in)  :: debug
-    real(8) :: dervtmp(max_block_length, 0:n)
-    integer :: i, j
-!   ----------------------------------------------------------------------------
-
-    derv = 0.0d0
-
-    if ( .not.have_frozen_density ) then
-      call get_functional_derv(f,                  &
-                               order,              &
-                               block_length,       &
-                               w,                  &
-                               r_0,                &
-                               z_0,                &
-                               n,                  &
-                               derv)
-
-    if (debug) then
-    write (*,*) ' '
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after nokern first xc'
-    call debug_general_fun(f,               &
-                           order,           &
-                           block_length,    &
-                           w,               &
-                           r_0   ,          &
-                           z_0   ,          &
-                           n,               &
-                           derv, dervtmp)
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) ' '
-    endif
-
-    else if ( dirac_cfg_fde_response.and.have_frozen_density ) then
-
-! aspg, 2010-03-29
-! in case we implement the use different xc for the total and active
-! densities, we have to uncomment the line below, and suitably define
-! tot_xc_fun in fde_mod (or some other place)
-!      call xc_fun_set_functional(order, order, tot_xc_fun)
-! but also replace fun below by tot_xc_fun
-
-      if (.not.skip_xc_contribution) then
-         call get_functional_derv(f,                &
-                                  order,            &
-                                  block_length,     &
-                                  w,                &
-                                  r_0_t,            &
-                                  z_0_t,            &
-                                  n,                &
-                                  dervtmp)
-      endif
-
-      do i = 1, max_block_length
-        do j = 0, n
-           derv(i,j) = derv(i,j) + dervtmp(i,j)
-         enddo
-      enddo
-
-    if (debug) then
-    write (*,*) ' '
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after first xc'
-    call debug_general_fun(f,              &
-                           order,          &
-                           block_length,   &
-                           w,              &
-                           r_0_t  ,        &
-                           z_0_t  ,        &
-                           n,              &
-                           derv, dervtmp)
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) ' '
-    endif
-
-      if ( .not.dirac_cfg_dft_calculation ) then
-! if we are not doing dft, we subtract what would be the xc contribution from
-! the active subsystem from the response.
-
-! aspg, 2010-03-29
-! in case we implement the use of different xc for the total and active
-! densities, we have to uncomment the line below
-!      call xc_fun_set_functional(order, order, fun)
-
-        if (.not.skip_xc_contribution) then
-           call get_functional_derv(f,                 &
-                                    order,             &
-                                    block_length,      &
-                                    w,                 &
-                                    r_0,               &
-                                    z_0,               &
-                                    n,                 &
-                                    dervtmp)
-        endif
-
-        do i = 1, max_block_length
-          do j = 0, n
-           derv(i,j) = derv(i,j) - dervtmp(i,j)
-          enddo
-        enddo
-
-    if (debug) then
-    write (*,*) ' '
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after second xc'
-    call debug_general_fun(f,            &
-                           order,        &
-                           block_length, &
-                           w,            &
-                           r_0  ,        &
-                           z_0  ,        &
-                           n,            &
-                           derv, dervtmp)
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) ' '
-    endif
-
-      endif
-
-! now we construct the contribution from the kinetic energy to the response
-! of the embedding potential.
-! first set functional to the of-kef, do the non-additive ke contribution
-      call xcfun_set_functional(fde_kef, order, parallel_xc)
-
-      if (.not.skip_kin_contribution) then
-         call get_functional_derv(fde_kef,            &
-                                  order,              &
-                                  block_length,       &
-                                  w,                  &
-                                  r_0_t,              &
-                                  z_0_t,              &
-                                  n,                  &
-                                  dervtmp)
-      endif
-
-      do i = 1, max_block_length
-        do j = 0, n
-           derv(i,j) = derv(i,j) + dervtmp(i,j)
-         enddo
-      enddo
-
-    if (debug) then
-    write (*,*) ' '
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after first kinetic'
-    call debug_general_fun(fde_kef,         &
-                           order,           &
-                           block_length,    &
-                           w,               &
-                           r_0_t ,          &
-                           z_0_t ,          &
-                           n,               &
-                           derv, dervtmp)
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) ' '
-    endif
-
-! now subtract the active subsystem's kinetic energy contribution
-
-      if (.not.skip_kin_contribution) then
-         call get_functional_derv(fde_kef,       &
-                                  order,         &
-                                  block_length,  &
-                                  w,             &
-                                  r_0,           &
-                                  z_0,           &
-                                  n,             &
-                                  dervtmp)
-      endif
-
-      do i = 1, max_block_length
-        do j = 0, n
-           derv(i,j) = derv(i,j) - dervtmp(i,j)
-         enddo
-      enddo
-
-    if (debug) then
-    write (*,*) ' '
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after second kinetic'
-    call debug_general_fun(fde_kef,         &
-                           order,           &
-                           block_length,    &
-                           w,               &
-                           r_0 ,            &
-                           z_0 ,            &
-                           n,               &
-                           derv, dervtmp)
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) ' '
-    endif
-
-! and restore the default dft functional, if we are to use it
-! down the line...
-      call xcfun_set_functional(f, order, parallel_xc)
-
-    endif
-
-    if (debug) then
-    write (*,*) ' '
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): at the end'
-    call debug_general_fun(f,               &
-                           order,           &
-                           block_length,    &
-                           w,               &
-                           r_0 ,            &
-                           z_0 ,            &
-                           n,               &
-                           derv, dervtmp)
-    write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) ' '
-    endif
-!   call quit('debugging fde response. stop here.')
-
-  end subroutine get_general_fun_derv
-
-
-
-
-
-  subroutine debug_general_fun(f,            &
-                               order,        &
-                               block_length, &
-                               w,            &
-                               r_0,          &
-                               z_0,          &
-                               n,            &
-                               derv, dervtmp)
-   use dirac_cfg
-   use fde_mod
-
-!   ----------------------------------------------------------------------------
-    type(functional), intent(inout)  :: f
-    integer, intent(in)  :: order
-    integer, intent(in)  :: block_length
-    real(8), intent(in)  :: w(*)
-    real(8), intent(in)  :: r_0(*)
-    real(8), intent(in)  :: z_0(*)
-    integer, intent(in)  :: n
-    real(8), intent(out) :: derv(max_block_length, 0:n)
-    real(8) :: dervtmp(max_block_length, 0:n)
-    integer :: i, j
-!   ----------------------------------------------------------------------------
-
-      write (*,*) ''
-      write (*,*) '   functional definition'
-      do i = 1, XC_NR_PARAMS
-         if (f%w(i) .gt. 0.0d0) then
-            write (*,*) '      functional type :',i
-            write (*,*) '            weight =',f%w(i)
-         endif
-      enddo
-      write (*,*) ' '
-      write (*,*) '   density and functional derivative values'
-      do i = 1, 1
-        write (*,*) '      r =',r_0(i),'  z =',z_0(i),'  w =',w(i)
-        do j = 0, n
-           write (*,*) '      derv(',i,',',j,') =',derv(i,j)
-           write (*,*) '      dtmp(',i,',',j,') =',dervtmp(i,j)
-           write (*,*) '      sum =',(derv(i,j)+dervtmp(i,j)),'  difference =',(derv(i,j)-dervtmp(i,j))
-         enddo
-      enddo
-  end subroutine debug_general_fun
-#endif /* ifdef MOD_XCFUN */
 
 end module

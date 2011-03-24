@@ -4245,7 +4245,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-      USE FDE_MOD, ONLY: FDEINI, FDEINP
+      USE FDE_MOD, ONLY: FDEINI, FDEINP, FDE_setupFDEgrid, update_vemb
       use dft_cfg
       use dft_input
       use input_reader
@@ -5902,6 +5902,8 @@ C
     1 CONTINUE
 
 
+      if ((dirac_cfg_fde.and.update_vemb).or.dirac_cfg_fde_response)        &
+     &   call FDE_setupFDEgrid()
 
 !       work can be easily removed by changing internal memget to alloc
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)

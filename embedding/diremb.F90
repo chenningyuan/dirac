@@ -50,16 +50,18 @@
       PRIVATE
       PUBLIC FDE_ImportStaticPotential_FileOpen, FDE_ImportStaticPotential_FileClose
       public FDE_setupFDEgrid, FDE_testFrozendensity, FDE_cleanupFDEgrid
-      public FDEINI,FDEINP,FDE_GRIDOUT,have_frozen_density
+      public FDEINI,FDEINP,FDE_GRIDOUT,have_frozen_density, update_vemb, import_vemb
       PUBLIC DO_GRID_OUT
       public fde_grid, fde_frozen_prp, fde_grid_np, fde_nprop
       public skip_kin_contribution, skip_xc_contribution
       public get_xml_export_level
+      public get_fde_nadd_fun_derv
 
       LOGICAL,SAVE :: DO_GRID_OUT=.FALSE.
       logical,save :: have_frozen_density = .false.
       logical,save :: import_vemb = .false.
       logical,save :: update_vemb = .false.
+      logical,save :: is_fdersp_alda = .false.
       logical,save :: skip_kin_contribution = .false.
       logical,save :: skip_xc_contribution  = .false.
       INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47, LUFDEFRZDNS=48
@@ -69,12 +71,19 @@
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
 
 #ifdef MOD_UNRELEASED
-      public fde_kef
-      type(Functional) :: fde_kef
+      public fde_kef,       fde_xcf
+      public fde_kef_alda,  fde_xcf_alda
+      public fde_kef_xalda, fde_xcf_xalda
+
+      type(functional), save :: fde_kef,       fde_xcf
+      type(functional), save :: fde_kef_alda,  fde_xcf_alda
+      type(functional), save :: fde_kef_xalda, fde_xcf_xalda
 
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
       character(len=80), save :: kefun_fde='kin_tf'
-      character(len=80), save :: kefun_alda_fde='kin_tf'
+      character(len=80), save :: xcfun_fde='lda'
+
+      logical, save :: fde_set_functionals(20) 
 #endif
       
       CONTAINS
@@ -199,20 +208,57 @@
 #endif /* MOD_UNRELEASED */
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDEINI: performs the initialization in dirac; at the moment, it simply sets the
-!         kinetic energy function to the default value
+! FDEINI: performs the initialization in dirac
 !
       SUBROUTINE FDEINI()
+#include "implicit.h"
+#include "priunit.h"
+         integer :: i
+
 #ifdef MOD_UNRELEASED
 #ifdef MOD_XCFUN
+
+         update_vemb = .true. 
+         have_frozen_density = .true.
+
          reset_hfxfac = .false.
+
          call parse_functional(kefun_fde,fde_kef)
+         call parse_functional(kefun_fde,fde_kef_alda)
+!        call parse_functional(kefun_fde,fde_kef_xalda)
+
+! aspg: in order to be able to set the xc functionals used in the 
+!       non-additive xc potential, we need to first let xcfun set more
+!       than 5 functionals...
+         call parse_functional(xcfun_fde,fde_xcf)
+         call parse_functional(xcfun_fde,fde_xcf_alda)
+         call parse_functional(xcfun_fde,fde_xcf_xalda)
+
+         do i = 1, 20
+            fde_set_functionals(i) = .true.
+         enddo
+
+!        write (*,*) 'debug bla'
+!        call set_kin_fun_alda(fde_kef_alda)
+!        call set_kin_fun_alda(fde_kef_xalda)
+!        call set_xc_fun_alda(fde_xcf_alda)
+!        call set_xc_fun_alda(fde_xcf_xalda)
+!        write (*,*) 'debug bla'
+
          reset_hfxfac = .true.
-!        call xcfun_set_functional(fde_kef)
+
 #else 
          call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
 #endif
+         write (lupri,*) ' '
+         CALL PRSYMB(LUPRI,'=',101,1)
+         write (lupri,*) ' '
+         write(LUPRI,'(1X,A)') &
+            ' Frozen Density Embedding Calculation defaults:'
+         call FDE_setupInfo(lupri)    
+         CALL PRSYMB(LUPRI,'=',101,1)
+         write (lupri,*) ' '
       END SUBROUTINE
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -231,6 +277,9 @@
 !
 #include "memint.h"
 
+      update_vemb = .false.
+      have_frozen_density = .false.
+
       print_fde=0
       ICHANG = 0
       IF (WORD(1:4).eq.'*FDE') THEN
@@ -248,6 +297,7 @@
               CYCLE
             CASE ('.EMBPOT')
               import_vemb = .true.
+              update_vemb = .false.
 !             read filename for the embedding potential
               READ(LUCMD,'(A60)') FDEPOT 
 
@@ -256,11 +306,6 @@
               READ(LUCMD,*) print_fde 
 
 #ifdef MOD_UNRELEASED
-            CASE ('.UPDATE')
-              update_vemb = .true.
-!             read filename for the embedding potential
-              write(*,*) 'Embedding potential will be updated and saved'
-
             CASE ('.SKIPK')
                skip_kin_contribution = .true.
             CASE ('.SKIPX')
@@ -272,11 +317,31 @@
               have_frozen_density = .true.
 
 ! read kinetic energy functional for non-additive term
-            CASE ('.OFKEF')
+            CASE ('.NAXCF')
+#ifdef MOD_XCFUN
+              read(lucmd,'(a80)') xcfun_fde
+              call parse_functional(xcfun_fde,fde_xcf)
+              write(*,*) 'testing ',xcfun_fde
+#else         
+              call quit('XCFun not available in this version')
+#endif /* ifdef MOD_XCFUN */
+
+! read kinetic energy functional for non-additive term
+            CASE ('.NAKEF')
 #ifdef MOD_XCFUN
               read(lucmd,'(a80)') kefun_fde
               call parse_functional(kefun_fde,fde_kef)
 #else         
+              call quit('XCFun not available in this version')
+#endif /* ifdef MOD_XCFUN */
+
+! read kinetic energy functional for non-additive term
+            CASE ('.RSPLDA')
+#ifdef MOD_XCFUN
+              is_fdersp_alda = .true.
+              call set_kin_fun_alda(fde_kef_alda)
+              call set_xc_fun_alda(fde_xcf_alda)
+#else
               call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
 
@@ -314,70 +379,57 @@
       END IF
 
 !     options are echoed
-         IF (Echo_Input) THEN
+         if (Echo_Input) then
            write (lupri,*) ' '
            CALL PRSYMB(LUPRI,'=',101,1)
-
-           WRITE(LUPRI,'(1X,2A,/1X,2A)') &
-           'Frozen Density Embedding to include enviroment effects', &
-           ' using the fixed potential method described in:',        &
-           'A.S.P. Gomes, C. R. Jacob and L. Visscher, ',            &
-           'Phys. Chem. Chem. Phys. 10 (2008) 5353–5362.'
-
+           write (lupri,*) ' '
+           write(LUPRI,'(1X,A)') &
+              ' Frozen Density Embedding Calculation, user-defined setup:'  
+           call FDE_setupInfo(lupri) 
            CALL PRSYMB(LUPRI,'=',101,1)
-
-           WRITE(LUPRI,*)
-           WRITE(LUPRI,'(1X,A)') &
-              ' Frozen Density Embedding Calculation set-up:'  
-           CALL PRSYMB(LUPRI,'-',44,2)
-           WRITE(LUPRI,*)
-           WRITE(LUPRI,'(A,I5)')  ' * Print level               : ',print_fde
-#ifdef MOD_UNRELEASED
-           WRITE(LUPRI,'(A,A20)') ' * Kinetic energy functional : ',kefun_fde
-!          WRITE(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
-#endif
-
-           if (import_vemb) then
-              write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
-#ifdef MOD_UNRELEASED
-           else
-              write(LUPRI,'(A,A60)')  ' * FDE Potential (re)generated internally'
-
-              if (.not.have_frozen_density) then
-                 write(LUPRI,'(A,A60)') &
-                 '   Data from frozen subsystems unavailable!'
-
-                 call quit("Missing datafile FRDENS")
-              endif
-           endif
-
-           if (update_vemb) then 
-              write(LUPRI,'(A,A60)') &
-              ' * FDE Potential will be updated and saved'
-
-              if (.not.have_frozen_density) then
-                 write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
-                 call quit("Missing datafile FRDENS")
-              endif
-           else
-              write(LUPRI,'(A,A60)') ' * Fixed FDE potential will be used' 
-           endif
-
-           if (have_frozen_density) then
-              write(LUPRI,'(A,A60)') &
-           ' * Density (and gradient) from frozen subsystems read from file: ',FDEDNS
-              call FDE_setupFDEgrid()
-           endif
-
-           IF (DO_GRID_OUT) then
-              write(LUPRI,'(2A)') &
-              ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
-#endif
-           endif
-
-         END IF
+           write (lupri,*) ' '
+         endif 
 
       END SUBROUTINE
+
+
+      subroutine FDE_setupInfo(lupri)
+         integer :: lupri 
+
+         CALL PRSYMB(LUPRI,'-',44,2)
+         write(LUPRI,*)
+         write(LUPRI,'(A,I5)')  ' * Print level                : ',print_fde
+#ifdef MOD_UNRELEASED
+         write(LUPRI,'(A,A20)') ' * Non-additive KE functional : ',kefun_fde
+         write(LUPRI,'(A,A20)') ' * Non-additive XC functional : ',xcfun_fde
+!        write(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
+#endif
+         if (import_vemb) then
+            write(LUPRI,'(A,A60)')  ' * FDE Potential to be read from file: ',FDEPOT
+            write(LUPRI,*)
+            write(LUPRI,'(1X,2A,/1X,2A)') &
+            'Frozen Density Embedding to include enviroment effects', &
+            ' using the fixed potential method described in:',        &
+            'A.S.P. Gomes, C. R. Jacob and L. Visscher, ',            &
+            'Phys. Chem. Chem. Phys. 10 (2008) 5353â5362.'
+#ifdef MOD_UNRELEASED
+         else
+            write(LUPRI,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
+            update_vemb = .true.
+            have_frozen_density = .true.
+         endif
+
+         if (have_frozen_density) then
+            write(LUPRI,'(A,A60)') &
+                ' * Density (and gradient) from frozen subsystems read from file: ',FDEDNS
+         endif
+
+         IF (DO_GRID_OUT) then
+            write(LUPRI,'(2A)') &
+            ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
+#endif
+         endif
+      end subroutine FDE_setupInfo
 
 #ifdef MOD_UNRELEASED
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -684,5 +736,165 @@
 #endif
 
 #endif /* MOD_UNRELEASED */
+
+
+#ifdef  MOD_XCFUN
+
+  subroutine get_fde_nadd_fun_derv(f,           &
+                                   f_alda,      &
+                                   f_xalda, &
+!
+! subroutine get_fde_nadd_fun_derv(order,        &
+                                   order,        &
+                                   block_length, &
+                                   w,            &
+                                   r_0,          &
+                                   r_0_t,        &
+                                   z_0,          &
+                                   z_0_t,        &
+                                   n,            &
+                                   derv,         &
+                                   parallel_xc)
+
+   use dirac_cfg
+   use xc_derv
+   use xc_max_block_length
+
+!   ----------------------------------------------------------------------------
+    type(functional), intent(inout)  :: f, f_alda, f_xalda
+    integer,          intent(in)  :: order
+    integer,          intent(in)  :: block_length
+    real(8),          intent(in)  :: w(*)
+    real(8),          intent(in)  :: r_0(*)
+    real(8),          intent(in)  :: z_0(*)
+    real(8),          intent(in)  :: r_0_t(*)
+    real(8),          intent(in)  :: z_0_t(*)
+    integer,          intent(in)  :: n
+    real(8),          intent(out) :: derv(max_block_length, 0:n)
+    logical,          intent(in)  :: parallel_xc
+    real(8)                       :: dervtmp(max_block_length, 0:n)
+    integer :: i, j
+!   ----------------------------------------------------------------------------
+
+    derv = 0.0d0
+
+    if (fde_set_functionals(order)) then
+!      call xcfun_set_functional(fde_xcf     , order, parallel_xc) 
+!      call xcfun_set_functional(fde_xcf_alda, order, parallel_xc) 
+!      call xcfun_set_functional(fde_xcf_xalda,order, parallel_xc) 
+       call xcfun_set_functional(fde_kef,      order, parallel_xc)
+       call xcfun_set_functional(fde_kef_alda, order, parallel_xc)
+!      call xcfun_set_functional(fde_kef_xalda,order, parallel_xc)
+       fde_set_functionals(order) = .false.
+   endif
+
+    if (.not.skip_xc_contribution) then
+
+!      call get_functional_derv(fde_xcf,       &
+!                               fde_xcf_alda,  &
+!                               fde_xcf_xalda, &
+       call get_functional_derv(f,       &
+                                f_alda,  &
+                                f_xalda, &
+                                order,         &
+                                block_length,  &
+                                w,             &
+                                r_0_t,         &
+                                z_0_t,         &
+                                n,             &
+                                dervtmp,       &
+                                alda_real=is_fdersp_alda, &
+                                alda_imag=is_fdersp_alda)
+
+       do i = 1, max_block_length
+          do j = 0, n
+             derv(i,j) = derv(i,j) + dervtmp(i,j)
+          enddo
+       enddo
+
+!      call get_functional_derv(fde_xcf,       &
+!                               fde_xcf_alda,  &
+!                               fde_xcf_xalda, &
+       call get_functional_derv(f,       &
+                                f_alda,  &
+                                f_xalda, &
+                                order,         &
+                                block_length,  &
+                                w,             &
+                                r_0,           &
+                                z_0,           &
+                                n,             &
+                                dervtmp,       &
+                                alda_real=is_fdersp_alda, &
+                                alda_imag=is_fdersp_alda)
+
+       do i = 1, max_block_length
+          do j = 0, n
+             derv(i,j) = derv(i,j) - dervtmp(i,j)
+          enddo
+       enddo
+
+    endif
+
+! now we construct the contribution from the kinetic energy to the response
+! of the embedding potential.
+! first set functional to the of-kef, do the non-additive ke contribution
+
+    if (.not.skip_kin_contribution) then
+
+       call get_functional_derv(fde_kef,       &
+                                fde_kef_alda,  &
+                                fde_kef_alda,  &
+                                order,         &
+                                block_length,  &
+                                w,             &
+                                r_0_t,         &
+                                z_0_t,         &
+                                n,             &
+                                dervtmp,       &
+                                alda_real=is_fdersp_alda, &
+                                alda_imag=is_fdersp_alda)
+
+       do i = 1, max_block_length
+          do j = 0, n
+             derv(i,j) = derv(i,j) + dervtmp(i,j)
+          enddo
+       enddo
+
+! now subtract the active subsystem's kinetic energy contribution
+
+       call get_functional_derv(fde_kef,       &
+                                fde_kef_alda,  &
+                                fde_kef_alda,  &
+                                order,         &
+                                block_length,  &
+                                w,             &
+                                r_0,           &
+                                z_0,           &
+                                n,             &
+                                dervtmp,       &
+                                alda_real=is_fdersp_alda, &
+                                alda_imag=is_fdersp_alda)
+
+       do i = 1, max_block_length
+          do j = 0, n
+             derv(i,j) = derv(i,j) - dervtmp(i,j)
+          enddo
+       enddo
+
+    endif
+
+! ! and restore the default dft functional, if we are to use it
+! ! down the line...
+!     call xcfun_set_functional(f, order, parallel_xc)
+!     call xcfun_set_functional(f_alda, order, parallel_xc)
+!     call xcfun_set_functional(f_xalda, order, parallel_xc)
+
+  end subroutine get_fde_nadd_fun_derv
+
+#endif /* ifdef MOD_XCFUN */
+
+
+
 
       END MODULE FDE_MOD

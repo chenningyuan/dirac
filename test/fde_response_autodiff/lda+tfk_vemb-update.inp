@@ -4,22 +4,13 @@ electric properties for frozen density embedding
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
+.PRINT
+ 1
 .LEVY-LEBLOND
 .DFTAUTO
 lda
 .FDE
 .FDERSP
-*DFT
-.4CGRID !here only to reproduce the reference outputs
-##.IMPORT
-##EMBGRD
-*FDE
-.EMBPOT
-EMBPOT
-.FRDENS
-FRZDNS
-.OFKEF
-kin_tf
 **INTEGRALS
 .NUCMOD
 1
@@ -33,9 +24,11 @@ kin_tf
 .POLARIZABILITY
 *LINEAR RESPONSE
 .B FREQ
- 3
+ 5
  0.000
+ 0.025
+ 0.050
+ 0.075
  0.100
- 0.200
 *END OF
 

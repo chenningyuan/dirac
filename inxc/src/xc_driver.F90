@@ -176,6 +176,7 @@ module xc_driver
 #ifdef MOD_UNRELEASED
    real(8), allocatable :: fde_froz_n(:)
    real(8), allocatable :: fde_froz_ng(:,:)
+   real(8), allocatable :: fde_elpot(:)
 #endif
 
    logical                      :: do_potential
@@ -493,7 +494,7 @@ contains
 
 !        calculate grid
 !fixme: dirac_cfg should not be used here
-         if (.not. dirac_cfg_fde_response) then
+        if (.not.(dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb))) then
             if (.not. grid_is_done) then
 #ifdef PRG_DIRAC
 !radovan: grid stuff will be moved outside this module
@@ -855,6 +856,7 @@ contains
       real(8) :: z0tt(3)
 !     --------------------------------------------------------------------------
       integer :: id, m
+      integer :: ii, ji
       real(8) :: temp
       real(8) :: block_threshold
       real(8) :: rho13, rho_outer, rho_resp, f
@@ -863,7 +865,9 @@ contains
       real(8) :: VT(3)
     integer              :: derv_length, im, i
     real(8), allocatable :: derv(:, :)
+    real(8), allocatable :: derv_nadd(:, :)
 
+    logical :: print_data_at_point 
 
     real(8) :: n_b(3)
     real(8) :: gnn_b(3)
@@ -965,11 +969,13 @@ contains
     if (response_order_ao > 0) then
       derv_length = xc_output_length(xc_fun%id, response_order_ao)
       allocate(derv(derv_length, max_block_length))
+      allocate(derv_nadd(derv_length, max_block_length))
     else
 #endif
 #endif
       derv_length = nr_nonzero_derv
       allocate(derv(max_block_length, 0:derv_length))
+      allocate(derv_nadd(max_block_length, 0:derv_length))
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     end if
@@ -1027,6 +1033,7 @@ contains
    else
 #endif /* ifdef MOD_UNRELEASED */
 
+   print_data_at_point = .true.
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -1090,22 +1097,13 @@ contains
          end if
 
 !fixme: dirac_cfg should not be used here
-        if ( dirac_cfg_fde_response ) then
-           if ( fde_froz_n(ipoint) > dft_cfg_dfthr0 ) then
+        if ( dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb) ) then
+           if ( fde_froz_n(ipoint) > (dft_cfg_dfthr0/10000) ) then
               n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
 
               z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1)
               z0tt(2)  = gn_0_pointwise(2) + fde_froz_ng(ipoint,2)
               z0tt(3)  = gn_0_pointwise(3) + fde_froz_ng(ipoint,3)
-
-              if (.false.) then
-! aspg: debugging the use of imported gradient
-!                n_0_t(1) = n_0(1)
-                 n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
-                 z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1) * .50
-                 z0tt(2)  = gn_0_pointwise(2) + fde_froz_ng(ipoint,2) * .50
-                 z0tt(3)  = gn_0_pointwise(3) + fde_froz_ng(ipoint,3) * .50
-              endif
 
               gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
@@ -1113,19 +1111,6 @@ contains
               n_0_t(1) = n_0(1)
               gnn_0_t(1) = gnn_0(1)
            endif
-        else
-!        if ( dirac_cfg_fde_response.and.((ipoint.eq.5000).or.(ipoint.eq.8000)) )  then
-!           write (*,*) ' '
-!           write (*,*) ' debug: at point',ipoint
-!           write (*,*) ' debug: gn_0_pointwise(1,2,3)  ',gn_0_pointwise(1),gn_0_pointwise(2),gn_0_pointwise(3)
-!           write (*,*) ' debug: frz(1,2,3)  ',fde_froz_ng(ipoint,1), &
-!                         fde_froz_ng(ipoint,2),fde_froz_ng(ipoint,3)
-!           write (*,*) ' debug: z0tt(1,2,3) ',z0tt(1),z0tt(2),z0tt(3)
-!           write (*,*) ' n_0, n_0_t, gnn_0, gnn_0_t ',n_0(1),n_0_t(1),gnn_0(1),gnn_0_t(1)
-!           fde_resp_verbose = .true.
-!        else
-!           fde_resp_verbose = .false.
-!        endif
       endif
 #endif /* ifdef MOD_UNRELEASED */
 
@@ -1140,43 +1125,66 @@ contains
         if (response_order_ao == 0) then
 #endif
 #endif
+          call get_functional_derv(xc_fun,       &
+                                   xc_fun_alda,  &
+                                   xc_fun_alda,  &
+                                   max_fun_derv, &
+                                   bllen,        &
+                                   w,            &
+                                   n_0,          &
+                                   gnn_0,          &
+                                   derv_length,  &
+                                   derv,         &
+                                   alda_real=dft_cfg_alda_hs, &
+                                   alda_imag=dft_cfg_alda_ha, &
+                                   tau=tau)
+
 #ifdef MOD_XCFUN
-!fixme: dirac_cfg should not be used here
-           if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
-!             fde_response:
-!             the frozen density has to be passed all the way to here
-!             and then the derivatives (of xc and kinetic energy functionals)
-!             have to be evaluated twice once with normal density, once with the
-!             total density (=frozen plus normal). then this kinetic+xc
-!             contribution (=total - normal) is added to the usual xc contrubition
-              call get_general_fun_derv(xc_fun,       &
-                                        max_fun_derv, &
-                                        bllen,        &
-                                        w,            &
-                                        n_0,          &
-                                        n_0_t,        &
-                                        gnn_0,          &
-                                        gnn_0_t,        &
-                                        derv_length,  &
-                                        derv,         &
-                                        parallel_xc,  &  
-                                        fde_resp_verbose)
-           else
-#endif 
-              call get_functional_derv(xc_fun,       &
-                                       max_fun_derv, &
-                                       bllen,        &
-                                       w,            &
-                                       n_0,          &
-                                       gnn_0,          &
-                                       derv_length,  &
-                                       derv,         &
-                                       alda_real=dft_cfg_alda_hs, &
-                                       alda_imag=dft_cfg_alda_ha, &
-                                       tau=tau)
-#ifdef MOD_XCFUN
-           end if
-#endif 
+           if (dirac_cfg_fde_response .or. (dirac_cfg_fde.and.update_vemb) ) then
+! 
+! aspg: this way we are forcing the same xc functional for the active and non-additive
+!       contributions. this is not desired, but we have to overcome xcfun's limitation
+!       on using only up to 5 functionals...
+!
+              call get_fde_nadd_fun_derv(xc_fun,       &
+                                         xc_fun_alda,  &
+                                         xc_fun_alda,  &
+                                         max_fun_derv, &
+                                         bllen,        &
+                                         w,            &
+                                         n_0,          &
+                                         n_0_t,        &
+                                         gnn_0,        &
+                                         gnn_0_t,      &
+                                         derv_length,  &
+                                         derv_nadd,    &
+                                         parallel_xc)
+
+!      if (print_data_at_point) then
+!        write (*,*) 'debug: at grid point ',ipoint
+!        write (*,*) '       for embedding potential, response construction'
+!        write (*,*) '       n_0:',n_0(1),'  n_0_t:',n_0_t(1),"   w:",w(1)
+!        write (*,*) '       ep :',fde_elpot(ipoint)
+!        ii = 1
+!         do ji = 0, derv_length
+!           write (*,*) 'ss(',ii,',',ji,'):',derv(ii,ji),'    nadd(',ii,',',ji,'):',derv_nadd(ii,ji)
+!         enddo
+!        print_data_at_point = .false.
+!      endif
+
+              do ii = 1, max_block_length
+                do ji = 0, derv_length
+                  if (ji >  1 ) &
+      &             derv(ii,ji) = derv(ii,ji) + derv_nadd(ii,ji)
+! we add the electrostatic potential from the frozen subsystem(s) to the derivative
+                  if (ji == 1 .and. update_vemb) &
+      &             derv(ii,ji) = derv(ii,ji) + derv_nadd(ii,ji) + w(1)*fde_elpot(ipoint)
+                enddo
+              enddo
+           endif
+#endif /*  MOD_XCFUN */
+
+
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
         end if
@@ -1737,6 +1745,7 @@ contains
 #endif /* ifdef MOD_UNRELEASED */
 
      deallocate(derv)
+     deallocate(derv_nadd)
 
     deallocate(ao)
     deallocate(buffer)
@@ -1973,7 +1982,7 @@ contains
 
       if (i_am_master) then
 !fixme: dirac_cfg should not be used here
-         if (dirac_cfg_fde_response) then
+         if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
 !           don't open and rewind anything
 !           data is already stored at this point
          else
@@ -2000,7 +2009,7 @@ contains
                read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
 #ifdef MOD_UNRELEASED
 !fixme: dirac_cfg should not be used here
-            else if (dirac_cfg_fde_response) then
+            else if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
                nr_points = fde_grid_np
 #endif
             else
@@ -2050,12 +2059,13 @@ contains
                call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
 #ifdef MOD_UNRELEASED
 !fixme: dirac_cfg should not be used here
-            else if (dirac_cfg_fde_response) then
+            else if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
                if (parallel_xc) then
                   call quit('fix fde_response mpi')
                end if
 
                allocate(fde_froz_n(nr_points))
+               allocate(fde_elpot(nr_points))
                allocate(fde_froz_ng(nr_points, 3))
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
@@ -2066,6 +2076,7 @@ contains
                   rw(i) = fde_grid(4,i)
 
                   fde_froz_n(i) = fde_frozen_prp(3,i)
+                  fde_elpot(i)  = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
 
                   if (fde_nprop.eq.6) then
                      fde_froz_ng(i,1) = fde_frozen_prp(4,i)
@@ -2155,8 +2166,9 @@ contains
 
 #ifdef MOD_UNRELEASED
 !fixme: dirac_cfg should not be used here
-        if (dirac_cfg_fde_response) then
+        if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
            if (allocated(fde_froz_n)) deallocate(fde_froz_n)
+           if (allocated(fde_elpot)) deallocate(fde_elpot)
            if (allocated(fde_froz_ng)) deallocate(fde_froz_ng)
 !          don't try to read another batch
            goto 999
