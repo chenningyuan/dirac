@@ -860,46 +860,33 @@
           write(lupri,'(40F10.5)') (xmna(i,j),j=1,no_sum)
         enddo
 
-!  contract x_ml and x*_nl  
-!  accompanying script.
+!  contract x_ml and x*_nl. XGEMM can be used because all irrelevant entries are
+!  filled with zeros and will not contribute to the matrix product.
+!  Second call: contract x_lm and x_ln. Transpose the first matrix.
 
-        xmn2 = xmna  ! duplicate xmna and form xml * xnl* over l
-
-        CALL XGEMM ('N','T',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
+        xmn2 = transpose(xmna)  ! form x_ln from x_nl. 
+        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
                     xmn2,no_sum,A0,xmnc,no_sum)
-        write(lupri,*) 'part3:'
-        do i=1,no_sum
-          write(lupri,'(40F10.5)') (xmnc(i,j),j=1,no_sum)
-        enddo
-
-!       CALL CNTRCT('T','N',NO,NO,NO,A1,xmna,xmn2,A0,xmnc,NREP)
-        CALL XGEMM ('T','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
+        xmn2 = xmna 
+        xmna = transpose(xmna)  ! form x_ml from x_lm. 
+        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
                     xmn2,no_sum,A0,xmnd,no_sum)
-        write(lupri,*) 'part4:'
+        xmn2 = xmnc + xmnd
+        write(lupri,*) 'Contributions from sum2 and sum3:'
         do i=1,no_sum
-          write(lupri,'(40F10.5)') (xmnd(i,j),j=1,no_sum)
+          write(lupri,'(40F10.5)') (xmn2(i,j),j=1,no_sum)
         enddo
 
 !  now form Delta_mn matrix. Part 1 is just one on the diagonal,
-!  part 2 is just minus the pole strength on the dagonal. See eq. (4) 
-!  in the accompanying script! The sum of squares over all nonvanishing X-kl
-!  entries IS the pole str. No recalculation necessary!
-!  part 1 + 2:
+!  part 2 is just minus the pole strength on the dagonal.
         
         dmn = 0.0d0
         DO i=1,no_sum
           dmn(i,i) = a1 - polestr(ivcount)
         ENDDO
-        write(lupri,*) 'part1+2:'
-        do i=1,no_sum
-          write(lupri,'(40F10.5)') (dmn(i,j),j=1,no_sum)
-        enddo
+        dmn = dmn + xmn2
 
-!  now sum all parts
-        
-        dmn = dmn + xmnc + xmnd
-
-        write(lupri,*) 'all parts:'
+        write(lupri,*) 'Delta_mn:'
         do i=1,no_sum
           write(lupri,'(40F10.5)') (dmn(i,j),j=1,no_sum)
         enddo
