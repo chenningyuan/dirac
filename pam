@@ -1758,6 +1758,13 @@ class pam_enviroment:
                 ' seconds. Killing afterwards.'
         print
 
+        if self.parallel_run and self.mpirun==None:
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream, '\n No MPI launcher found for the parallel run !'
+                print >> stream, ' Check the PATH variable: ',os.environ['PATH']
+                sys.exit(20)
+                stream.flush()
+
         sys.stdout.flush()
     
 class pam_run(pam_enviroment):
