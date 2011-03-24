@@ -705,8 +705,11 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine TWOHPOP(lupri,io_lan,ibeta,nrep,multb,no,noot)
-
+      subroutine TWOHPOP_R(lupri,io_lan,ibeta,nrep,multb,no,noot)
+!
+!  this routine performs the 2H-Mulliken analysis for
+!  *REAL* cases, where the expansion coefficients are real.
+!
       implicit none
       integer lupri    ! file handle for printing to stdout
       integer io_lan   ! file handle start
@@ -714,7 +717,7 @@
       integer nrep     ! number of ireps in the overall run
       integer multb(64,64,2)     ! fixed dimension multiplication table
       integer no(nrep)    ! number of occupied orbitals in each irep
-      integer noot(nrep)  ! number of OO-combinations in each symmetry
+      integer noot(nrep)  ! number of OO-combinations in each irep
 !
 !  local variables
 !
@@ -823,6 +826,9 @@
         write(lupri,*)
 
         ipoint = 0
+!
+!  found a vector, construct Delta_mn
+!
         DO 14 JRP = 1, NREP
           IRP = MULTB(JRP,ibeta+NREP,2)
           IF (IRP.LT.JRP) GOTO 14
@@ -854,7 +860,7 @@
           write(lupri,'(40F10.5)') (xmna(i,j),j=1,no_sum)
         enddo
 
-!  contract x_ml and x*_nl  according to part 3+4 of equation (4) in the
+!  contract x_ml and x*_nl  
 !  accompanying script.
 
         xmn2 = xmna  ! duplicate xmna and form xml * xnl* over l
