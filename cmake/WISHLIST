@@ -1,6 +1,7 @@
-- automatically pick toplevel/cbuild/dirac.x if toplevel/dirac.x not present
-- better default for --scratch if no Makefile.config present (what is the default now anyway?)
-- stop running tests if there is a compilation error and no dirac.x is produced
 - enable *.i.*.opt,*.s,*.p objects buildup also for Fortran/C++ source-files 
 - explore cmake-makefile targets ('make help') to learn how to perform partial buildup-steps
+- stop running tests if there is a compilation error and no dirac.x is produced
 
+things that i (radovan) will take care of:
+- automatically pick toplevel/cbuild/dirac.x if toplevel/dirac.x not present
+- cmake asks user about --scratch directory which is saved in Makefile.config
