@@ -47,10 +47,11 @@ cd $DIRAC
 
 ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 cd $DIRAC/cbuild
-make clean
 #make -j 4
 #make Nightly
-make Experimental
+make Experimental VERBOSE=1 -j 4
+
+make clean
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
