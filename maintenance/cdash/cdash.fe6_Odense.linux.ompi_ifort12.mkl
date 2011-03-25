@@ -41,17 +41,19 @@ cd $DIRAC
 
 ./pamadm -a --xcfun
 
+cd $DIRAC/cbuild
+make clean
+
+cd $DIRAC
+
 # setup, no --debug
 #./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.fe6_Odense.ompi_ifort_gcc_mkl" --runtest_mpi=8 --int64 --runtest_timeout=1200
 ./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.fe6_Odense.ompi_ifort_gcc_mkl" --runtest_mpi=8 --int64 
 
 ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
 cd $DIRAC/cbuild
-#make -j 4
-#make Nightly
-make Experimental VERBOSE=1 -j 4
 
-make clean
+make Experimental VERBOSE=1 -j 4
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
