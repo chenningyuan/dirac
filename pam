@@ -1551,10 +1551,17 @@ class pam_enviroment:
                 'Going to kill (SIGTERM) dirac related process with PID=',pid
                 print >> stream,get_pid_label(pid) 
                 stream.flush()
+
             try:
                 os.kill(pid,signal.SIGTERM)
+                killedpid, stat = os.waitpid(pid, os.WNOHANG)
+                if killedpid == 0:
+                    print >> sys.stderr, "ACK! PROCESS NOT KILLED?"
+                    i=i-1
+                else:
+                    print  >> sys.stderr, "Finally ! Process killed !"
             except:
-                print 'did not succeed with killing the process pid=',pid
+                print 'some error'
             i=i+1
 
     def dirac_in_pid(self,pid):
