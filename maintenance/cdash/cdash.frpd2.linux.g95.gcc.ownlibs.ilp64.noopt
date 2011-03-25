@@ -19,12 +19,14 @@ svn up
 # ...
 ./pamadm -a --xcfun --minus --openrsp
 
+cd $DIRAC/cbuild
+make clean
+cd $DIRAC
 
 # configure step
 ./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  --buildname="linux.g95.gcc.ilp64.ownlibs.noopt" 
 
 cd $DIRAC/cbuild
-make clean
 
 # pam expects dirac.x to be in the same directory
 # you cannot copy it because it does not exist yet
