@@ -1558,6 +1558,10 @@ class pam_enviroment:
                 if killedpid == 0:
                     print >> sys.stderr, "ACK! PROCESS NOT KILLED, going to repeat"
                     i=i-1
+                    print 'but first applying ',kill_command
+                    kill_command="kill -9 "+str(pid)
+                    os.system(kill_command)
+                    #TODO: generalize kill command for Linux/Windows
                 else:
                     print  >> sys.stderr, "Finally ! Process killed !"
             except:
