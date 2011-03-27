@@ -234,14 +234,14 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
     
     def prepare_startlist(self):
 
-        line_count   = 0
-        start_list   = []
+        line_count = 0
+        _s         = []
         finish_found = False
         for line in self.mol_lines:
             if line.split()[0].lower() == 'large':
-                start_list.append(int(line_count))
+                _s.append(int(line_count))
             elif line.split()[0].lower() == 'finish':
-                start_list.append(int(line_count))
+                _s.append(int(line_count))
                 finish_found = True
             line_count += 1
 
@@ -249,17 +249,17 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
             print ' *** error in reading the molecular basis set input: no end marker found (FINISH) in the .mol file.'
             sys.exit()
 
-        if len(start_list)-1 != self.num_frag:
+        if len(_s)-1 != self.num_frag:
             print ' *** error in reading the molecular basis set input: basis set for at least one unique element missing.'
             print '     number of basis set found: %i <--> number of unique elements specified in .mol input: %i'\
-                        % (len(start_list)-1, self.num_frag)
+                        % (len(_s)-1, self.num_frag)
             sys.exit()
-        return start_list
+        return _s
 
     def prepare_endmarkerlist(self, start_list):
 
-        endmarker_list = []
-        i              = 0
+        i  = 0
+        _e = []
         # elements # 1 -- num_fragments-1
         while i < self.num_frag - 1:
             j         = 1
@@ -272,40 +272,35 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
                     line = self.mol_lines[start_list[i+1]-j]
                 else:
 #                   print 'line found search %s %i' % (line, start_list[i+1]-j)
-                    endmarker_list.append(start_list[i+1]-j)
+                    _e.append(start_list[i+1]-j)
                     found_end = True
             i += 1
         # element # num_fragments
-        endmarker_list.append(start_list[self.num_frag]-1)
-        return endmarker_list
+        _e.append(start_list[self.num_frag]-1)
+        return _e
 
     def prepare_Z_and_exponent_list(self, start_list):
 
-        atomic_number_list   = []
-        atomic_exponent_list = []
-        i                    = 0
-
+        i    = 0
+        _z   = []
+        _exp = []
         while i < self.num_frag:
             j         = 1
             line      = self.mol_lines[start_list[i]-j]
             found_Z   = False
             while not found_Z:
                 j   += 1
-#               print 'line in search %s' % line
                 if self.compare_element_symbols(line.split()[0].lower()):
                     line = self.mol_lines[start_list[i]-j]
                 else:
                     found_Z = True
-                    atomic_number_list.append(int(float((line.split()[0]))))
+                    a       = ''
+                    _z.append(int(float((line.split()[0]))))
                     if len(line.split()) > 2:
-                        exponent = line.split()[2]
-                    else:
-                        exponent = ''
-                    atomic_exponent_list.append(exponent)
-            
+                        a = line.split()[2]
+                    _exp.append(a)
             i += 1
-
-        return atomic_number_list, atomic_exponent_list
+        return _z, _exp
 
 class run_frag:
      def __init__(self, invoke_path, scratch_path, dirac_input, mol_input):
@@ -422,12 +417,12 @@ class run_frag:
          return self.fra_X2C_pam_flags() + string
 
      def x2cmat_list(self, num_frag, symbols):
-         list = []
-         i = 0
+         i  = 0
+         _p = []
          while i < num_frag:
-            list.append('X2CMAT.' + symbols[i])
+            _p.append('X2CMAT.' + symbols[i])
             i += 1
-         return list
+         return _p
 
      def fra_X2C_pam_flags(self):
          return self.pam_flags + '--get=\"X2CMAT\" '
@@ -461,12 +456,9 @@ class run_frag:
 # function definitions
 def get_original_molfile_content(orig_mol_file):
 
-    mol_file_lines        = []
     (bla, mol_file_strip) = stripped_names('bla', orig_mol_file)
-    f = open(mol_file_strip + get_original_molfile_extension(mol_file_strip) , 'r')
-
-    [mol_file_lines.append(line.strip('\n')) for line in f.readlines()]
-
+    f                     = open(mol_file_strip + get_original_molfile_extension(mol_file_strip) , 'r')
+    mol_file_lines        = [line.strip('\n') for line in f.readlines()]
     f.close()
 
 #   temporary solution; delete any blank line after FINISH...
@@ -496,7 +488,6 @@ def check_original_molfile_content_and_get_num_fragments(mol_file_lines):
         print '     the first character in line 4 is %s rather than C'\
                     % mol_file_lines[3].split()[0]
         sys.exit()
-    num_fragments = 0
     num_fragments = int(mol_file_lines[3].split()[1])
     return num_fragments
 
@@ -595,11 +586,9 @@ pam_output_file = open(cwd + '/fragmentX2C.log','w',0)
 pam_output_file.write(" fragment-X2C pam output data\n\n")
 
 # read original molecular input
-mol_file_lines = []
 mol_file_lines = get_original_molfile_content(options.original_molecular_input)
 
 # determine number of num_fragments (read from line 4 in .mol input)
-num_fragments = 0
 num_fragments = check_original_molfile_content_and_get_num_fragments(mol_file_lines)
 
 # print header
@@ -610,19 +599,13 @@ print
 print '%10s %12s %32s %16s' % ('progress', 'status', 'atom/molecular-fragment', 'time')
 print '  -----------------------------------------------------------------------'
 
-
 # main function
 def main(*args):
 
 #   initialize marker list, atomic numbers and exponents for each fragment
     mol_orig_info = prepare_lists_for_x2c_fragment_mol(mol_file_lines, num_fragments)
-
-    start_marker         = []
-    end_marker           = []
-    atomic_number_list   = []
-    atomic_exponent_list = []
-    start_marker                               = mol_orig_info.prepare_startlist()
-    end_marker                                 = mol_orig_info.prepare_endmarkerlist(start_marker)
+    start_marker  = mol_orig_info.prepare_startlist()
+    end_marker    = mol_orig_info.prepare_endmarkerlist(start_marker)
     
     if options.being_verbose:
         print 'num_fragments is %i' % num_fragments
@@ -640,17 +623,16 @@ def main(*args):
         print atomic_exponent_list
 
 #   create a list of fragment tasks and prepare fragment inputs
-
-    l             = []
-    m             = []
-    n             = []
-    s             = []
-    i             = 0
     lookup_symbol = periodic_table_plus_ext()
     fraginp_lines = x2c_fragment_dirac_input()
     fragmol_lines = x2c_fragment_basis_set_input()
     fragmol_lines.set_coordinates('')
     fragmol_lines.set_symmetry('')
+    i = 0
+    s = []
+    l = []
+    m = []
+    n = []
 
     while i < num_fragments:
         dirac_input   = ''
