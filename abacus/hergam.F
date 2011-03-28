@@ -19,10 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
 C FILE    : hergam.F
-C
 C
 C  /* Deck gamfun */
       SUBROUTINE GAMFUN
@@ -36,56 +33,49 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "pi.h"
-      PARAMETER (D1 = 1.D0,  D2 = 2.D0, D3 = 3.D0, D6 = 6.D0,
-     &           D10 = 10.D0, D24 = 24.D0, D120 = 120.D0,
-     &           D720 = 720.D0,
-     &           HALF = D1/D2, TENTH = .1D0, TEN6 = 1.0D6)
-      PARAMETER (COEF2 = D1/D2,  COEF3 = - D1/D6,
-     &           COEF4 = D1/D24, COEF5 = - D1/D120,
-     &           COEF6 = D1/D720)
+      PARAMETER (D1 = 1.D0,  D2 = 2.D0, D10 = 10.D0,
+     &           HALF = 0.5D0, TENTH = 0.1D0, TEN6 = 1.0D6)
+      PARAMETER (SQRPIH = SQRTPI/D2)
+      PARAMETER (COEF2 = HALF,  COEF3 = - D1/6.0D0,
+     &           COEF4 = D1/24.D0, COEF5 = - D1/120.0D0,
+     &           COEF6 = D1/720.D0)
       PARAMETER (GFAC30 =  .4999489092 D0,
-     *           GFAC31 = -.2473631686 D0,
-     *           GFAC32 =  .321180909  D0,
-     *           GFAC33 = -.3811559346 D0,
-     *           GFAC20 =  .4998436875 D0,
-     *           GFAC21 = -.24249438   D0,
-     *           GFAC22 =  .24642845   D0,
-     *           GFAC10 =  .499093162  D0,
-     *           GFAC11 = -.2152832    D0,
-     *           GFAC00 =  .490        D0)
+     &           GFAC31 = -.2473631686 D0,
+     &           GFAC32 =  .321180909  D0,
+     &           GFAC33 = -.3811559346 D0,
+     &           GFAC20 =  .4998436875 D0,
+     &           GFAC21 = -.24249438   D0,
+     &           GFAC22 =  .24642845   D0,
+     &           GFAC10 =  .499093162  D0,
+     &           GFAC11 = -.2152832    D0,
+     &           GFAC00 =  .490        D0)
 C
 #include "gamcom.h"
 C
       SAVE MAXJ0
       DATA MAXJ0 /-1/
 C
-#include "sdpre.h"
-      IPOINT = NINT(D10*MIN(WVAL,TEN6))
-      DPOINT = DINT(D10*MIN(WVAL,TEN6))
-
-CMI ... watch the integer value (shown on CygWin/gfortran, 32-bit)
-      IF (IPOINT.LT.0) THEN
-CMI ... inserted this printout to have some statistics on NINT performance
-        WRITE(LUPRI,*) 'GAMFUN: NINT integer overflow !' 
-        WRITE(LUPRI,*) 'IPOINT = NINT(D10*MIN(WVAL,TEN6))=',IPOINT 
-        WRITE(LUPRI,*) 'DPOINT = DINT(D10*MIN(WVAL,TEN6))=',DPOINT
-        IPOINT = INT(DPOINT)
-        WRITE(LUPRI,*) 'fix: IPOINT=INT(DPOINT)=',IPOINT
-      ENDIF
-
-      IF (IPOINT .LT. 120) THEN
+      IPOINT = D10*MIN(WVAL,TEN6) + HALF
+!     have seen problems with NINT intrinsic function here (rarely)
+!     therefore the "+ HALF" before integer truncation
+      IF (IPOINT .LT. 0) THEN
+         write (luerr,*) 'GAMFUN warning, ipoint=',ipoint
+         write (luerr,*) 'd10,wval, ten6',d10,wval,ten6
+         write (luerr,*) d10*min(wval,ten6)
+         call quit('Fatal error in gamfun')
+      ELSE IF (IPOINT .LT. 120) THEN
          ISTART = 1 + 121*JMAX0 + IPOINT
-         WDIF = WVAL - TENTH*SDPRE(IPOINT)
-         FJW(JMAX0) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
-     *                   + COEF5*TABFJW(ISTART + 605))*WDIF
-     *                    + COEF4*TABFJW(ISTART + 484))*WDIF
-     *                     + COEF3*TABFJW(ISTART + 363))*WDIF
-     *                      + COEF2*TABFJW(ISTART + 242))*WDIF
-     *                       - TABFJW(ISTART + 121))*WDIF
-     *                        + TABFJW(ISTART)
+         WDIF = WVAL - TENTH*IPOINT
+         FJW(JMAX0) = (((((COEF6*TABFJW(ISTART + 726)*WDIF     ! 726 = 6*121
+     &                   + COEF5*TABFJW(ISTART + 605))*WDIF
+     &                    + COEF4*TABFJW(ISTART + 484))*WDIF
+     &                     + COEF3*TABFJW(ISTART + 363))*WDIF
+     &                      + COEF2*TABFJW(ISTART + 242))*WDIF
+     &                       - TABFJW(ISTART + 121))*WDIF
+     &                        + TABFJW(ISTART)
          D2WAL = D2*WVAL
          REXPW = EXP(-WVAL)
-         DENOM = SDPRE(2*JMAX0 + 1)
+         DENOM = 2.0D0*JMAX0 + 1.0D0
          DO 100 J = JMAX0, 1, -1
             DENOM = DENOM - D2
             FJW(J - 1) = (D2WAL*FJW(J) + REXPW)/DENOM
@@ -94,7 +84,7 @@ CMI ... inserted this printout to have some statistics on NINT performance
          RWVAL = D1/WVAL
          REXPW = EXP(-WVAL)
          GVAL = GFAC30 + RWVAL*(GFAC31 + RWVAL*(GFAC32 + RWVAL*GFAC33))
-         FJW(0) = HALF*SQRTPI*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+         FJW(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
          FACTOR = HALF*RWVAL
          TERM = FACTOR*REXPW
          DO 200 J = 1, JMAX0
@@ -103,7 +93,7 @@ CMI ... inserted this printout to have some statistics on NINT performance
   200    CONTINUE
       ELSE
          RWVAL  = D1/WVAL
-         FJW(0) = HALF*SQRTPI*SQRT(RWVAL)
+         FJW(0) = SQRPIH*SQRT(RWVAL)
          FACTOR = HALF*RWVAL
          DO 300 J = 1, JMAX0
             FJW(J) = FACTOR*FJW(J-1)
@@ -125,7 +115,9 @@ C
 C
       IF (JMX .GT. MAXJ) THEN
          WRITE (LUPRI,'(//A,I5,A,I3)')
-     *      ' GAMTAB ERROR: JMX =',JMX,', which is greater than',MAXJ
+     &      ' GAMTAB ERROR: JMX =',JMX,', which is greater than',MAXJ
+         WRITE (LUERR,'(//A,I5,A,I3)')
+     &      ' GAMTAB ERROR: JMX =',JMX,', which is greater than',MAXJ
          CALL QUIT('GAMTAB ERROR: JMX greater than limit.')
       END IF
       JMAX = JMX + 6
@@ -144,16 +136,16 @@ C
 C     WVAL = 0.1, 0.2, 0.3,... 12.0
 C
       IADR = IADR - 121
-      D2MAX1 = SDPRE(JMAX + JMAX + 1)
+      D2MAX1 = 2.0D0*JMAX + 1.0D0
       R2MAX1 = D1/D2MAX1
       DO 800 IPOINT = 1,120
-         WVAL = TENTH*SDPRE(IPOINT)
+         WVAL = TENTH*IPOINT
          D2WAL = WVAL + WVAL
          IADR = IADR + 1
          TERM = R2MAX1
          SUM = TERM
          DENOM = D2MAX1
-         DO 810 IORDER = 2,200
+         DO 810 IORDER = 2, 200
             DENOM = DENOM + D2
             TERM = TERM*D2WAL/DENOM
             SUM = SUM + TERM
@@ -248,3 +240,4 @@ C
   100 CONTINUE
       RETURN
       END
+C -- end of hergam.F --
