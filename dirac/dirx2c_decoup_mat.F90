@@ -61,7 +61,8 @@ contains
                                 nz,             &
                                 ipq_off_in,     &
                                 funit,          &
-                                mat_id)
+                                mat_id,         &
+                                print_lvl)
 !**********************************************************************
 !
 !    purpose: driver routine for obtaining the unitary transformation matrix 
@@ -94,6 +95,8 @@ contains
 !    unique matrix/array ID on file funit
      integer, intent(in)    :: funit
      character (len=5)      :: mat_id
+!    debug print level
+     integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
      integer                :: j
      character (len=12)     :: flabel
@@ -122,7 +125,8 @@ contains
                        eigvl(ioff_eeig),                  &
                        n1esh_f,                           &
                        nz,                                &
-                       ipq_off_in)
+                       ipq_off_in,                        &
+                       print_lvl) 
 
 
 !
@@ -242,7 +246,8 @@ contains
                         h1eig,        &
                         ndim_ab,      &
                         nz,           &
-                        ipq_off)
+                        ipq_off,      &
+                        print_lvl)
 !**********************************************************************
 ! 
 !    purpose: solve the 'R' equation using Cholesky decomposition
@@ -264,6 +269,7 @@ contains
      integer, intent(in)    :: ndim_ab
      integer, intent(in)    :: nz
      integer, intent(in)    :: ipq_off(*)
+     integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
      integer, allocatable   :: temp_mat1(:)
      real(8), allocatable   :: temp_mat2(:)
@@ -299,8 +305,7 @@ contains
                    rmat,ndim_ab,ndim_ab,                             &
                    job_task,temp_mat1,temp_mat2)
 
-!           if(print_lvl > 1)then
-           if(.true.)then
+           if(print_lvl > 2)then
              call print_x2cmtx(rmat,ndim_ab,ndim_ab,nz,ipq_off,'x2c - rmat',6)
            end if
 

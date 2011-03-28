@@ -163,7 +163,8 @@ contains
                                    nz,             &
                                    ipq_off(1,0),   &
                                    x2c_file_scr,   &
-                                   flabel_tag)
+                                   flabel_tag,     &
+                                   print_lvl)
 
 !          debug print
            if(print_lvl > 2)then
