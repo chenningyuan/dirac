@@ -4,12 +4,11 @@
 *     
 #include "implicit.inc"
 *. General input 
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
 #include "wrkspc.inc"
-C     COMMON/CTCC/KLSOBEX,NSPOBEX_TP,KLLSOBEX,KLIBSOBEX,LEN_T_VEC,
-C    &             MX_ST_TSOSO,MX_ST_TSOSO_BLK
 
       CHARACTER*6 CCTYPE
       DIMENSION CC(*) 

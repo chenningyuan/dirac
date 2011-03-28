@@ -1093,6 +1093,7 @@ Classe     &           TSCR4,TSCR5,TSCR6,
 *                        and even November 2004
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "wrkspc.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2889,6 +2890,7 @@ C
 * Jeppe Olsen, May 2000
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "ctcc.inc"

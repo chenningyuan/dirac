@@ -4870,10 +4870,10 @@ C     END DO
 * Routine for sorting all operators according to N,Mk,Mub
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
-#include "ipoist8.inc"
 *
        DIMENSION WORK(*)
 *
@@ -5055,11 +5055,11 @@ C     END DO
 * HTYPE
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
-#include "ipoist8.inc"
       DIMENSION WORK(*)
 *
 * Initialize

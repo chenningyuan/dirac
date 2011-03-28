@@ -13,6 +13,7 @@
 *.Input
 * =====
 *
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "strbas.inc"

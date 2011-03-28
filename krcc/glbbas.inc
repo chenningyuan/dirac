@@ -1,4 +1,4 @@
-      COMMON/GLBBASR/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
+      COMMON/KRCC_GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
      &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,
      &              KSBIA,KSBIB,KVEC3,KPNIJ,KIJKK,KFI,KINH1,
      &              KMOAOIN,KMOAOUT,KRHO2,KLOCCLS,
@@ -10,7 +10,7 @@
      &              KDIONEE,KDITWOE,KKR,KIOFF12,KINDK,KINDL,
      &              KINVREO,KNUMINT,KT_CC,KBOSYM,KISREO,
      &              KINDEX,KMDIASV,KPOSDIA,
-     &              IMOFFSET,KLOOK,
+     &              IMOFFSET, i_glbbas_fill1, KLOOK,
      &              KFI_AL,KFI_BE,KFI_AL_IM,KFI_BE_IM,
      &              KFDIA_AL,KFDIA_BE,KFDIA_AL_IM,KFDIA_BE_IM,
      &              KCC1,KCC2,KCC3,KCC4,KCC5,KDIA,KVEC1P,KVEC2P,
@@ -27,3 +27,6 @@
      &              KINT1_SIMTRH_A,KINT1_SIMTRH_B,
      &              KINT2_SIMTRH_AA,KINT2_SIMTRH_BB,KINT2_SIMTRH_AB,
      &              KPINT2_SIMTRH_AB
+!
+! I do not understand why, but the i_glbbas_fill1 variable was needed
+! to avoid padding by gfortran compiler.  / Feb 2011, hjaaj

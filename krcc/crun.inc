@@ -1,7 +1,11 @@
 */CRUN/ : Defines RUN 
-* NOTE : Differs from OCT9 versiob of CRUN
-      logical KRASYM
-      COMMON/CRUNR/THRES_E,XLAMBDA,E_THRE,C_THRE,E_CONV,C_CONV,E0READ,
+* NOTE : Differs from OCT9 version of CRUN
+      COMMON/KRCC_CRUN/
+     &            THRES_E,XLAMBDA,E_THRE,C_THRE,E_CONV,C_CONV,E0READ,
+     &            RESP_W(20),RESP_OP(2,20),AVE_OP(20),CCCONV    ! added by lasse for gen_cc
+
+* !!! NOTE : only integers in next section !!! ( real*8 above, logicals at bottom)
+      COMMON/KRCC_CRUNI/
      &            MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,
      &            ICISTR,NOCSF,IDIAG,NOINT,IDMPIN,MXINKA,MXINKA_CC,
      &            ICJKAIB,MXCCV,NTOTORB,
@@ -23,16 +27,14 @@
      &            ITRANS,ISPEXP_INI,
      &            NATITER,INATIT,ISYM_T,
      &            IDCOMH,IFOCKEX,NORB_F(MXPIRR),
-     &            KRASYM,ISIMTRH,
+     &            ISIMTRH,
 * more
      &            MXSPOX,IAAEXC_TYP,
 * added by lasse for gen_cc
-     &            RESP_W(20), 
      &            ITRAPRP,NEXCSTATE,IEXCSYM,IRESPONS,NRESP,
-     &            RESP_OP(2,20),MAXORD_OP(2,20),
-     &            MXITLE,AVE_OP(20),N_AVE_OP, IROOTHOMING,
-     &            IUSE_PH,
-     &            PADDY, IADVICE,ITRACI,ITRACI_CR,ITRACI_CN,
+     &            MAXORD_OP(2,20),
+     &            MXITLE,  N_AVE_OP, IROOTHOMING,
+     &            IUSE_PH, IADVICE,ITRACI,ITRACI_CR,ITRACI_CN,
      &            IUSE_PA,IPTFOCK,NSXE,NDXEE,N_CC_AMP,
      &            I_RESTRT_CC,LAST_CC_SPC,LAST_CC_RUN,ITRA_FI,
      &            ITRA_IN,MULSPC,LPAT,IPAT(100),IFMULSPC, IRELAX,
@@ -42,7 +44,7 @@
      &            IUSEH0P, I_DO_MCSCF, MX_EXC_LEVEL,
      &            IMAXKRFLIP,IMUBMAX,
      &            I_DO_LZ2, ICCSOLVE,I_DO_CCN, I_DO_SBSPJA,
-     &            IDUM1,CCCONV, N_HOLE_ORBSPACEX, I_DO_CC3,
+     &            IDUM1, N_HOLE_ORBSPACEX, I_DO_CC3,
      &            I_DO_CI_TO_CC,LCCBD12,LCCB,
      &            I_DO_CC_EXC_E, NEXC_PER_SYM(8),IRES_EXC,
      &            IFRZ_CC, NFRZ_CC,IFRZ_CC_AR(100),
@@ -54,11 +56,14 @@
      &            I_DO_REO_ORB,NSWITCH,IREO_ORB(3,MXPORB), I_DO_CC,
      &            ICEXC_RANK_MIN,ICEXC_RANK_MAX,ICEXC_INT,
      &            I_DO_CMPCCI, I_DO_CC_TO_CI,
-* for real/complex algebra
-     &            IRECOM,
-* to control ISIMSYM_LOC
-     &            I_EXPT_REF,
-     &            CSEQCI(MXPICI,MXCMBSPCK),CCFORM
+     &            IRECOM,    ! for real/complex algebra
+     &            I_EXPT_REF ! to control ISIMSYM_LOC
+* !!! and now all logicals:
+      logical KRASYM
+      COMMON/KRCC_CRUNL/
+     &            KRASYM
+
       character*72 ENVIRO
       CHARACTER*6 PROPER,SIGDEN_ROUTE,CSEQCI,CCFORM
-      COMMON/CRUNCR/ENVIRO,SIGDEN_ROUTE,PROPER(20)
+      COMMON/KRCC_CRUNC/ENVIRO,SIGDEN_ROUTE,PROPER(20),CCFORM,
+     &            CSEQCI(MXPICI,MXCMBSPCK)

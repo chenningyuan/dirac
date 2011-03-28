@@ -6,7 +6,7 @@
      &          LUSGI1,LUSGI2,LUSGI3,LUSGI4
       character*6 FNONEAO,FNIPH,FNONEMO,DIRACTWO
       character*7 DIRACONE
-      COMMON/CLUNITR/LUIN,LUOUT,LUCIVI,LU1INT,LU1SO,LU2INT,
+      COMMON/KRCC_CLUNIT/LUIN,LUOUT,LUCIVI,LU1INT,LU1SO,LU2INT,
      &              LUPRP,
      &              LUDIA,LUC,LUHC,
      &              LUSC1,LUSC2,LUSC3,
@@ -22,7 +22,7 @@
      &              LU_CCVEC,LU_CCVECT,LU_CCAMP,
      &              LU_CCVECF,LU_CCVECL,LU_CCVECFL,LU_CC_FROM_CI,
      &              LU_CCEXC_OP
-      COMMON/CLNAMER/FNONEAO,
+      COMMON/KRCC_CLNAME/FNONEAO,
      &              FNIPH,FNONEMO,DIRACONE,DIRACTWO
 *
 *   Logical units are: See diskun.f for information

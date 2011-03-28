@@ -1,4 +1,4 @@
-      COMMON/CTCCR/KLSOBEX,KLLSOBEX,KLIBSOBEX,KLSPOBEX_FRZ,
+      COMMON/KRCC_CTCC/KLSOBEX,KLLSOBEX,KLIBSOBEX,KLSPOBEX_FRZ,
      &             KLOBEX,KLSOX_TO_OX,KLSPOBEX_AC,
      &             KLIHIND,KSIGNNHX,KLABEXTP,KLOP_REO,KSIOPREO,
      &             MX_ST_TSOSO_MX,MX_ST_TSOSO_BLK_MX,MX_TBLK_MX,
@@ -12,7 +12,7 @@
      &             NHOL_SPC, ILTTWO, NAOBEX_TP,NBOBEX_TP,
 ! NOTICE DIFFERENCE BETWEEN NSPOBEX_TP and NSPOBEX_TP_CC and other _CC
      &             NSPOBEX_TP_CC,KLSOBEX_CC,KLIBSOBEX_CC,LEN_T_VEC_CC,
-     &             KLLSOBEX_CC,KLSPOBEX_AC_CC,
+     &             KLLSOBEX_CC,KLSPOBEX_AC_CC, i_ctcc_fill1,
      &             KLSPOBEX_AB, KIBSOX_FOR_OCCLS,KNSOX_FOR_OCCLS,
      &             KISOX_FOR_OCCLS,NTOCCLS,KSPOBEX_LEV,
      &             KZC(MXPSTT),KZA(MXPSTT),KCOC(MXPSTT),
@@ -25,19 +25,22 @@
      &             KHTPCO,KCONNH,
      &             KHT0CO,KHT1CO,KHT2CO,KHT3CO,KHT4CO,
      &             NCONN_IN,NCONN_IN2,NCONN_IN3,NCONN_IN4,
-     &             KFCACM,KH2AC,KINC_HX,
+     &             i_ctcc_fill2, KFCACM,KH2AC,KINC_HX,
 ! New ones for intermediates Lasse
      &             KLAOBEX_KRCC,KLBOBEX_KRCC,
      &             LENA_KRCC,LENB_KRCC,
-     &             KINTM10,KINTM01,KINTM11,
-     &             KINTM02,KINTM20,KINTM12,
+     &             KINTM10 ,KINTM01 ,KINTM11,
+     &             KINTM02 ,KINTM20 ,KINTM12,
      &             NINTER10,NINTER01,NINTER11,
      &             NINTER02,NINTER20,NINTER12,
      &             KNH22,KNH21,KNH12,KNH20,
      &             KNH11,KNH02,KNH10,KNH01,KNH00,
      &             NH22,NH21,NH12,NH20,
      &             NH11,NH02,NH10,NH01,NH00,
-     &             KT_IDXS,KT_IDXF,
+     &             KT_IDXS,KT_IDXF, i_ctcc_fill3,
      &             KINT01_IDXS,KINT01_IDXF,KINT10_IDXS,KINT10_IDXF,
      &             KINT11_IDXS,KINT11_IDXF,KINT02_IDXS,KINT02_IDXF,
      &             KINT20_IDXS,KINT20_IDXF,KINT12_IDXS,KINT12_IDXF
+!
+! I do not understand why, but the i_ctcc_fill* variables were needed
+! to avoid padding by gfortran compiler.  / Feb 2011, hjaaj

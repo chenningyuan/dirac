@@ -506,7 +506,7 @@ C
 #include "consts.h"
 #include "thrzer.h"
 C
-C#include "mx2orb.h"
+#include "ipoist8.inc"
 #include "maxorb.h"
 !hope we don't need it
 #include "../krmc/dcbnrt.h"
@@ -522,7 +522,6 @@ C#include "inforb.h"
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
-#include "ipoist8.inc"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE, EX
       CHARACTER SZTRA(2,4)*80

@@ -33,6 +33,7 @@
       REAL*8 INPROD
       CHARACTER*6 CCTYPE
 #include "mxpdim.inc"
+#include "ipoist8.inc"
 C#include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"

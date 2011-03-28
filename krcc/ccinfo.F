@@ -4890,6 +4890,7 @@ C#include "wrkspc.inc"
 * Lasse 2010
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"

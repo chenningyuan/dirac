@@ -18,7 +18,8 @@
       DIMENSION CC_VEC(*)
 *
       DIMENSION WORK(*)
-*.        
+*.
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
