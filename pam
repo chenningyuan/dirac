@@ -1482,6 +1482,31 @@ class pam_enviroment:
 
     def kill_dirac_processes(self):
         """
+        kill (or try to kill) dirac process(es)
+        TODO: check if it works for ALL dirac.x subprocesses
+        """
+        from common import get_pid_label
+        for stream in [sys.stdout,sys.stderr]:
+            print >> stream,\
+            'Going to kill (SIGTERM) dirac related process with PID=',self.dirac_p.pid
+            print >> stream,get_pid_label(self.dirac_p.pid) 
+            stream.flush()
+
+        while True:
+            os.kill(self.dirac_p.pid,signal.SIGTERM) # or signal.SIGKILL
+            killedpid, stat = os.waitpid(self.dirac_p.pid, os.WNOHANG)
+            if killedpid == 0:
+                for stream in [sys.stdout,sys.stderr]:
+                    print >> stream, "dirac.x process(es),PID=",self.dirac_p.pid,\
+                             ", not killed, going to repeat shoot after 3 seconds"
+                time.sleep(3)
+            else:
+                for stream in [sys.stdout,sys.stderr]:
+                    print  >> stream, " Finally ! Process dirac.x killed !"
+                break # leave the while cycle...
+
+    def kill_dirac_processesX(self):
+        """
         kill (or try to kill) all dirac (sub)processes
         """
 
