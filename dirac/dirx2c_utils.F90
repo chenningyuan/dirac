@@ -44,6 +44,7 @@ module x2c_utils
 ! public x2c_lowd2c
   public pick_LL_block_saao_bas
   public print_x2cmat
+  public print_x2cmtx
   public read_1fock_x2c
   public get_Sao_LL_mat
   public hello_dirx2c
@@ -210,6 +211,8 @@ contains
            if(print_lvl > 2)then
              write(debug_string,'(a27,i1)') 'x2c - pctmat_saao - fsym = ',i
              call print_x2cmat(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
+             write(debug_string,'(a27,i1)') 'x2c - mtxpctmat_saao - fsym = ',i
+             call print_x2cmtx(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,debug_string,6)
            end if
 
          end if
@@ -652,6 +655,38 @@ contains
 
   end subroutine print_x2cmat
 
+!***********************************************************************
+  subroutine print_x2cmtx(xmat,        &
+                          ndim_x,      &
+                          ndim_y,      &
+                          nz,          &
+                          ipq_off,     &
+                          title,       &
+                          prntunit)
+!**********************************************************************
+!
+!    purpose: print a matrix
+!
+!**********************************************************************
+     real(8), intent(in)      :: xmat(ndim_x,ndim_y)
+     integer, intent(in)      :: ndim_x
+     integer, intent(in)      :: ndim_y
+     integer, intent(in)      :: nz
+     integer, intent(in)      :: ipq_off(4,0:7)
+     integer, intent(in)      :: prntunit
+     character(*), intent(in) :: title
+!-----------------------------------------------------------------------
+     integer                  :: irow, icol
+!**********************************************************************
+!
+         call header(title,-1)
+         do icol= 1,ndim_y
+           do irow=1,ndim_x
+             write(prntunit,*) irow, icol, xmat(irow,icol)
+           enddo
+         enddo  
+
+  end subroutine print_x2cmtx
 !**********************************************************************
   subroutine read_1fock_x2c(xmat,      &
                             ndim_tot,  &

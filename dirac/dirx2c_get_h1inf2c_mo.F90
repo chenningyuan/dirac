@@ -117,6 +117,7 @@ contains
          n1esh_f  = nesh_dim(i)
          n2esh_f  = nesh_dim(i)**2
          nesh2_f  = 2 * nesh_dim(i)
+         print *,'norb1_f, n1esh_f',norb1_f, n1esh_f
 
          if( norb_dim(i) > 0 )then
 

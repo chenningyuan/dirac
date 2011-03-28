@@ -30,6 +30,7 @@ module x2c_decoupling_mat
 
   use memory_allocator
   use x2c_fio
+  use x2c_utils
 
   implicit none
 
@@ -120,7 +121,9 @@ contains
                        scr2mat(ioff_esh1),                &
                        eigvl(ioff_eeig),                  &
                        n1esh_f,                           &
-                       nz)
+                       nz,                                &
+                       ipq_off_in)
+
 
 !
 !      INCLUDE HERE A SAVEPOINT FOR the 'R' matrix...???
@@ -238,7 +241,8 @@ contains
                         bmat,         &
                         h1eig,        &
                         ndim_ab,      &
-                        nz)
+                        nz,           &
+                        ipq_off)
 !**********************************************************************
 ! 
 !    purpose: solve the 'R' equation using Cholesky decomposition
@@ -259,6 +263,7 @@ contains
      real(8), intent(inout) :: h1eig(*)
      integer, intent(in)    :: ndim_ab
      integer, intent(in)    :: nz
+     integer, intent(in)    :: ipq_off(*)
 !----------------------------------------------------------------------
      integer, allocatable   :: temp_mat1(:)
      real(8), allocatable   :: temp_mat2(:)
@@ -293,6 +298,11 @@ contains
                    bmat,ndim_ab,ndim_ab,                             &
                    rmat,ndim_ab,ndim_ab,                             &
                    job_task,temp_mat1,temp_mat2)
+
+!           if(print_lvl > 1)then
+           if(.true.)then
+             call print_x2cmtx(rmat,ndim_ab,ndim_ab,nz,ipq_off,'x2c - rmat',6)
+           end if
 
        call dealloc(temp_mat2)
        call dealloc(temp_mat1)
