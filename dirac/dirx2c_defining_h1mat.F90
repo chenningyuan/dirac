@@ -250,6 +250,11 @@ contains
 !        HUCKEL start guess...
        else if(defining_h1mat == 2)then
 !        4c-Fock-Dirac Hamiltonian...
+       else if(defining_h1mat == 3)then
+!        Free-particle matrix
+         call reset_x2c_cb_onefck(.false.)
+         call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
+         call reset_x2c_cb_onefck(.true.)
        end if
 
 !      reset pointer to WORK array
