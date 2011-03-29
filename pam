@@ -110,6 +110,8 @@ class pam_enviroment:
         self.dirac_pids=[]
         # PIDs found found pidof...
         self.dirac_pidof_pids=[]
+        # all PID's
+        self.all_dirac_pids=[]
 
     # ... dirac error output (stderr stream), always filled
         self.dirac_stderr=''     
@@ -1480,7 +1482,60 @@ class pam_enviroment:
         self.f.close()
         return self.dirac_p.returncode
 
+    def kill_single_process(self,pid):
+        """
+        kill (or try to kill) single process
+        """
+        from common import get_pid_label
+      
+        while True:
+            try:
+                for stream in [sys.stdout,sys.stderr]:
+                    print >> stream,\
+                    'Going to kill (SIGTERM) dirac related process with PID=',pid
+                    print >> stream,get_pid_label(pid) 
+                    stream.flush()
+
+                while True:
+                    os.kill(pid,signal.SIGTERM) # or signal.SIGKILL
+                    killedpid, stat = os.waitpid(pid, os.WNOHANG)
+                    if killedpid == 0:
+                        for stream in [sys.stdout,sys.stderr]:
+                            print >> stream, "dirac.x process(es),PID=",pid,\
+                             ", not killed, going to repeat shoot after 3 seconds"
+                        time.sleep(3)
+                    else:
+                        for stream in [sys.stdout,sys.stderr]:
+                            print  >> stream, " Finally ! Process dirac.x killed !"
+                    break # leave the while cycle...
+            except:
+                break
+
     def kill_dirac_processes(self):
+        """
+        kill all dirac processes...
+        """
+        self.get_dirac_pids()
+        was_killed=True
+        while was_killed==True:
+            was_killed=False
+            if self.parallel_run:
+                if self.dirac_in_pid(self.dirac_p.pid):
+                    self.kill_single_process(self.dirac_p.pid)
+                    was_killed=True
+
+            for pid in self.all_dirac_pids:
+                if self.dirac_in_pid(pid):
+                    self.kill_single_process(pid)
+                    was_killed=True
+
+            self.get_dirac_pids()
+
+        self.print_all_processes()
+        self.print_timeout_message()
+        return signal.SIGTERM
+
+    def kill_dirac_processesXX(self):
         """
         kill (or try to kill) dirac process(es)
         TODO: check if it works for ALL dirac.x subprocesses
@@ -1505,11 +1560,10 @@ class pam_enviroment:
                     print  >> stream, " Finally ! Process dirac.x killed !"
                 break # leave the while cycle...
 
-    def kill_dirac_processesX(self):
+    def get_dirac_pids(self):
         """
-        kill (or try to kill) all dirac (sub)processes
+        get all dirac PIDs
         """
-
         # first, check if the current PID has not changed
         if ( self.current_pid != os.getpid() ):
             for stream in [sys.stdout,sys.stderr]:
@@ -1528,8 +1582,9 @@ class pam_enviroment:
         #dirac_pid.append(self.dirac_p.pid)
         #print dirac_pid
         self.dirac_pids.append(self.dirac_p.pid)
-        all_dirac_pids=set.union( set(self.dirac_pidof_pids),set(self.dirac_pids) )
+        self.all_dirac_pids=set.union( set(self.dirac_pidof_pids),set(self.dirac_pids) )
 
+        # print
         if self.iprint >= 0:
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
@@ -1539,7 +1594,14 @@ class pam_enviroment:
                 print  >> stream,\
                 '   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
                 print  >> stream,\
-                '   All unified dirac.x PIDs:',all_dirac_pids
+                '   All unified dirac.x PIDs:',self.all_dirac_pids
+
+    def kill_dirac_processesX(self):
+        """
+        kill (or try to kill) all dirac (sub)processes
+        """
+
+        self.get_dirac_pids()
 
         if self.parallel_run:
             self.kill_dirac_pid(self.dirac_p.pid)
@@ -1547,6 +1609,14 @@ class pam_enviroment:
         for pid in all_dirac_pids:
             self.kill_dirac_pid(pid)
  
+        # final message on the timeout kill (if selected)
+       
+        return signal.SIGTERM
+
+    def print_all_processes(self):
+        """
+        print all remaining processes
+        """
         sys.stdout.flush()
         # command - print all processes
         print '\n processes left:'
@@ -1554,15 +1624,17 @@ class pam_enviroment:
         os.system(command)
         sys.stdout.flush()
 
-        # final message on the timeout kill (if selected)
+    def print_timeout_message(self):
+        """
+        print final timeout message
+        """
         if self.set_timeout_limit:
            for stream in [sys.stdout,sys.stderr]:
                print  >> stream,'     (timeout kill(s), limit of ',self.timeout,' seconds exceeded)' 
                print >> stream,'dir:', self.input_directory,\
                ' inp:',self.input_file_dirac,' mol:',self.input_file_molecule
                stream.flush()
-        return signal.SIGTERM
-
+       
     def kill_dirac_pid(self,pid):
         """
         kill process with the entering pid, which is connected to dirac.x calculations
