@@ -1517,19 +1517,24 @@ class pam_enviroment:
         """
         self.get_dirac_pids()
         was_killed=True
-        while was_killed==True:
+      
+        i=0
+        while was_killed==True or i<=2:
             was_killed=False
             if self.parallel_run:
                 if self.dirac_in_pid(self.dirac_p.pid):
                     self.kill_single_process(self.dirac_p.pid)
                     was_killed=True
+                    i=0
 
             for pid in self.all_dirac_pids:
                 if self.dirac_in_pid(pid):
                     self.kill_single_process(pid)
                     was_killed=True
-
+                    i=0
+            # get fresh load of dirac processes
             self.get_dirac_pids()
+            i=i+1
 
         self.print_all_processes()
         self.print_timeout_message()
