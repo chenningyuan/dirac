@@ -69,7 +69,7 @@ contains
 !    return_h1_inf_2c controls whether the Hamiltonian h1 is returned 
 !    (in xmat) in its infinite-order two-component form
 !----------------------------------------------------------------------
-     real(8), intent(inout) :: xmat(*)
+     real(8), intent(inout) :: xmat(*)           ! IN: 4c-h1 , OUT: 2c-h1, (orthonormal basis)
      real(8), intent(inout) :: scr1mat(*)
      real(8), intent(inout) :: scr2mat(*)
      real(8), intent(inout) :: eigvl(*)
