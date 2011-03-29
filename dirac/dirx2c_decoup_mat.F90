@@ -160,6 +160,10 @@ contains
                           n1esh_f,                        &
                           nz,                             &
                           ipq_off_in)
+! For testing purposes you can replace the above w2 matrix with the unit matrix here:
+!          call dunit2(scr1mat(ioff_esh1),                  &
+!                      n1esh_f,                             &
+!                      n1esh_f,n1esh_f,nz)
 
  
 !        INCLUDE HERE A READPOINT FOR the 'R' matrix?
