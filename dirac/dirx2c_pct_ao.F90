@@ -141,26 +141,26 @@ contains
 
 !      default for all 1e property operator: write in "op_2c^++" format on file
        op_2c_ll = .true.
-       call pctrafo_prp_op_4cto2c_saao_bas(prop_op_dgsym,       &
-                                           prop_op_trsym,       &
-                                           prop_op_name,        &
-                                           naosh_ls,            &
-                                           nr_ao_L,             &
-                                           naosh_all,           &
-                                           naosh_L,             &
-                                           nfsym,               &
-                                           nz,                  &
-                                           ipq_off_in,          &
-                                           ioff_aomx,           &
-                                           is_fragment_tot,     &
-                                           x2c_file_glb,        &
-                                           int1_4c_file,        &
-                                           op_bs_to_fs,         &
-                                           num_prp_op,          &
-                                           is_len_wrk,          &
-                                           op_2c_ll,            &
-                                           spherical_on,        &
-                                           print_lvl)   
+       call pctrafo_op_4cto2c_saao_bas(prop_op_dgsym,       &
+                                       prop_op_trsym,       &
+                                       prop_op_name,        &
+                                       naosh_ls,            &
+                                       nr_ao_L,             &
+                                       naosh_all,           &
+                                       naosh_L,             &
+                                       nfsym,               &
+                                       nz,                  &
+                                       ipq_off_in,          &
+                                       ioff_aomx,           &
+                                       is_fragment_tot,     &
+                                       x2c_file_glb,        &
+                                       int1_4c_file,        &
+                                       op_bs_to_fs,         &
+                                       num_prp_op,          &
+                                       is_len_wrk,          &
+                                       op_2c_ll,            &
+                                       spherical_on,        &
+                                       print_lvl)   
 
        call dealloc(prop_op_dgsym)
        call dealloc(prop_op_trsym)
@@ -169,26 +169,26 @@ contains
   end subroutine pctrafo_all_op_driver
 
 !**********************************************************************
-  subroutine pctrafo_prp_op_4cto2c_saao_bas(prop_op_dgsym,       &
-                                            prop_op_trsym,       &
-                                            prop_op_name,        &
-                                            naosh_ls,            &
-                                            nr_ao_L,             &
-                                            naosh_all,           &
-                                            naosh_L,             &
-                                            nfsym,               &
-                                            nz,                  &
-                                            ipq_off_in,          &
-                                            ioff_aomx,           &
-                                            is_fragment,         &
-                                            x2c_file_glb,        &
-                                            int1_4c_file,        &
-                                            op_bs_to_fs,         &
-                                            num_prp_op,          &
-                                            is_len_wrk,          &
-                                            op_2c_ll,            &
-                                            spherical_on,        &
-                                            print_lvl)   
+  subroutine pctrafo_op_4cto2c_saao_bas(prop_op_dgsym,       &
+                                        prop_op_trsym,       &
+                                        prop_op_name,        &
+                                        naosh_ls,            &
+                                        nr_ao_L,             &
+                                        naosh_all,           &
+                                        naosh_L,             &
+                                        nfsym,               &
+                                        nz,                  &
+                                        ipq_off_in,          &
+                                        ioff_aomx,           &
+                                        is_fragment,         &
+                                        x2c_file_glb,        &
+                                        int1_4c_file,        &
+                                        op_bs_to_fs,         &
+                                        num_prp_op,          &
+                                        is_len_wrk,          &
+                                        op_2c_ll,            &
+                                        spherical_on,        &
+                                        print_lvl)   
 !**********************************************************************
 !
 !    purpose: picture-change transform all 1e property operator f_4c listed 
@@ -387,7 +387,7 @@ contains
 
        close(int1_4c_file,status='keep')
 
-  end subroutine pctrafo_prp_op_4cto2c_saao_bas
+  end subroutine pctrafo_op_4cto2c_saao_bas
 
 !**********************************************************************
   subroutine pctrafo_h1bnccorr_4cto2c_saao_bas(naosh_ls,             &

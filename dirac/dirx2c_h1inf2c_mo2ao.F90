@@ -79,7 +79,7 @@ contains
                                     print_lvl)
 !**********************************************************************
 !
-!    purpose: construct the (defining) 1e h1 matrix in DIRAC-sorted SA-AO basis (h1_infinite_2c_saao) 
+!    purpose: construct the (basic) 2c-h1 matrix in DIRAC-sorted SA-AO basis (h1_infinite_2c_saao) 
 !             starting from the operator in matrix form in 2c orthonormal MO basis. 
 !
 !             save the final h1 matrix in DIRAC-sorted SA-AO basis either 

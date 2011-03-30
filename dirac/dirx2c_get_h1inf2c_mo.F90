@@ -123,47 +123,57 @@ contains
 !          set unique last part of the file ID
            write(flabel_tag,'(i4,i1)') is_fragment,i
 
-!          step 1: diagonalize the 4c matrix h1 in orthonormal basis
-!          ------------------------------------------------------------------------
-           ierr_qdiag = 0
+!          step 1: construct the decoupling matrix R in orthonormal MO basis
+!                  this step includes:
+!                  ==> diagonalization of the defining h1_4c matrix
+!                  ==> setup of the "A" and "B" equations
+!                  ==> solving the "A" and "B" equations to obtain the decoupling "R" matrix
+!          ---------------------------------------------------------------------------------
+!          in : defining 4c-h1 -> scr1mat
+!          out: R -> scr1mat
+!               on file under the label Rmat_ON
 
-!          debug print
-           if(print_lvl > 1)then
-             call print_x2cmat(xmat(ioff_osh1),norb1_f,norb1_f,nz,ipq_off(1,0),'x2c - h1_4c',6)
-           end if
-
-           call qdiag90(nz,norb1_f,xmat(ioff_osh1),norb1_f,norb1_f,            &
-                        eigvl(ioff_oeig),1,scr1mat(ioff_osh1),norb1_f,norb1_f, & 
-                        ierr_qdiag)
- 
-           if( ierr_qdiag /= 0 )                                               &
-             call quit(' *** error in get_decoupling_mat: qdiag returned with error code. ***')
+           call construct_r_onmo_bas(xmat,           &
+                                     scr1mat,        &
+                                     scr2mat,        &
+                                     eigvl,          &
+                                     ioff_osh1,      &
+                                     ioff_esh1,      &
+                                     ioff_oeig,      &
+                                     ioff_eeig,      &
+                                     norb1_f,        &
+                                     n1psh_f,        &
+                                     n1esh_f,        &
+                                     nz,             &
+                                     ipq_off(1,0),   &
+                                     x2c_file_scr,   &
+                                     flabel_tag,     &
+                                     print_lvl)
 
 !          step 2: a. calculate the unitary transformation matrix U = w1.w2:
-!                     - also known as picture change transformation matrix 
+!                     - also known as picture change transformation matrix (in orthonormal MO basis)
 !                     - stored on file under the label Umat_ON
-!                  b. calculate the 'R'-matrix and store on on file under the label Rmat_ON
 !
-!                  in : eigvec(h1_4c) -> scr1mat; eigval(h1_4c) -> eigvl
+!                  in : R matrix in orthonormal basis --> scr1mat
 !                  out: U -> scr2mat
 !          -----------------------------------------------------------------
-           call get_decoupling_mat(xmat,           &
-                                   scr1mat,        &
-                                   scr2mat,        &
-                                   eigvl,          &
-                                   ioff_osh1,      &
-                                   ioff_esh1,      &
-                                   ioff_esh2,      &
-                                   ioff_eeig,      &
-                                   norb1_f,        &
-                                   n1psh_f,        &
-                                   n1esh_f,        &
-                                   nesh2_f,        &
-                                   nz,             &
-                                   ipq_off(1,0),   &
-                                   x2c_file_scr,   &
-                                   flabel_tag,     &
-                                   print_lvl)
+           call construct_pctmat_onmo_bas(xmat,           &
+                                          scr1mat,        &
+                                          scr2mat,        &
+                                          eigvl,          &
+                                          ioff_osh1,      &
+                                          ioff_esh1,      &
+                                          ioff_esh2,      &
+                                          ioff_eeig,      &
+                                          norb1_f,        &
+                                          n1psh_f,        &
+                                          n1esh_f,        &
+                                          nesh2_f,        &
+                                          nz,             &
+                                          ipq_off(1,0),   &
+                                          x2c_file_scr,   &
+                                          flabel_tag,     &
+                                          print_lvl)
 
 !          debug print
            if(print_lvl > 2)then
@@ -179,14 +189,14 @@ contains
 
 !          in : h1_4c_ON -> scr1mat; U  -> scr2mat 
 !          out: h1_infinite_2c_ON -> xmat
-           call perform_pct_mo_bas(xmat(ioff_esh1),    &
-                                   scr1mat(ioff_osh1), &
-                                   scr2mat(ioff_esh2), &
-                                   n1esh_f,            &
-                                   nesh2_f,            &
-                                   nz,                 &
-                                   ipq_off(1,0),       &
-                                   print_lvl)
+           call pctrafo_op_4cto2c_onmo_bas(xmat(ioff_esh1),    &
+                                           scr1mat(ioff_osh1), &
+                                           scr2mat(ioff_esh2), &
+                                           n1esh_f,            &
+                                           nesh2_f,            &
+                                           nz,                 &
+                                           ipq_off(1,0),       &
+                                           print_lvl)
 
 !          debug print
            if(print_lvl > 1)then
@@ -208,14 +218,14 @@ contains
   end subroutine get_h1_inf_2c_mo_bas
 
 !**********************************************************************
-  subroutine perform_pct_mo_bas(op_inf_2c,               &
-                                op_4c,                   &
-                                umat,                    &
-                                ndim_o2c,                &
-                                ndim_o4c,                &
-                                nz,                      &
-                                ipq_off_in,              &
-                                print_lvl)
+  subroutine pctrafo_op_4cto2c_onmo_bas(op_inf_2c,               &
+                                        op_4c,                   &
+                                        umat,                    &
+                                        ndim_o2c,                &
+                                        ndim_o4c,                &
+                                        nz,                      &
+                                        ipq_off_in,              &
+                                        print_lvl)
 !**********************************************************************
 !
 !    purpose: perform the decoupling U+ * 4c-op * U = op_infinite_2c^++ (orthonormal MO basis) 
@@ -262,7 +272,7 @@ contains
                      ipq_off_in,               &
                      print_lvl)
 
-  end subroutine perform_pct_mo_bas
+  end subroutine pctrafo_op_4cto2c_onmo_bas
 
 !**********************************************************************
 
