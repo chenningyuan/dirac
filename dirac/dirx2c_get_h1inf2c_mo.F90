@@ -35,7 +35,7 @@ module x2c_get_h1inf2c_mo
 
   implicit none
 
-  public get_h1_inf_2c_mo_bas
+  public get_h1_2c_onmo_bas
 
   private
 
@@ -46,20 +46,20 @@ module x2c_get_h1inf2c_mo
 contains
 
 !**********************************************************************
-  subroutine get_h1_inf_2c_mo_bas(xmat,                     &
-                                  scr1mat,                  &
-                                  scr2mat,                  &
-                                  eigvl,                    &
-                                  norb_dim,                 &  
-                                  nesh_dim,                 &
-                                  npsh_dim,                 &
-                                  nfsym,                    &
-                                  nz,                       &
-                                  ipq_off,                  &
-                                  is_fragment,              &
-                                  x2c_file_scr,             &
-                                  defining_h1mat,           &
-                                  print_lvl)
+  subroutine get_h1_2c_onmo_bas(xmat,                     &
+                                scr1mat,                  &
+                                scr2mat,                  &
+                                eigvl,                    &
+                                norb_dim,                 &  
+                                nesh_dim,                 &
+                                npsh_dim,                 &
+                                nfsym,                    &
+                                nz,                       &
+                                ipq_off,                  &
+                                is_fragment,              &
+                                x2c_file_scr,             &
+                                defining_h1mat,           &
+                                print_lvl)
 !**********************************************************************
 !
 !    purpose: driver routine for obtaining the two-component infinite
@@ -215,7 +215,7 @@ contains
 
        end do
 
-  end subroutine get_h1_inf_2c_mo_bas
+  end subroutine get_h1_2c_onmo_bas
 
 !**********************************************************************
   subroutine pctrafo_op_4cto2c_onmo_bas(op_inf_2c,               &

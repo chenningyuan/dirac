@@ -42,14 +42,16 @@ module dirx2c
 !
 !           --> x2c_tra: for each molecular/atomic fragments:
 !    
-!               --> a. set up defining matrix h1 in orthonormal MO basis
+!               --> a. set up a defining matrix 4c-h1 in orthonormal MO basis
 ! 
 !               --> b. get decoupling matrix "R" in orthonormal MO basis
 !                   +  get picture-change transformation matrix U in orthonormal MO basis   
 !
 !               --> c. construct picture-change transformation matrix U in DIRAC-sorted SA-AO basis
 ! 
-!               --> d. construct picture-change transformed defining matrix h1 in DIRAC-sorted SA-AO basis
+!               --> d. picture-change transform the "basic" 4c-h1 matrix in DIRAC-sorted SA-AO basis
+!                      note: the defining matrix 4c-h1 and the "basic" 4c-h1 matrix 
+!                            may or may not be identical.
 !
 !               --> e. (add AMFI contributions to the bare-nucleus 1e Dirac-Hamiltonian in case 
 !                      h1 == bare-nucleus 1e Dirac-Hamiltonian (or extended Huckel guess) .and. AMFI is desired)
@@ -468,7 +470,7 @@ contains
 !    purpose: X2C transformation driver routine
 !
 !             requires: 4c-Lowdin matrix; 
-!                       value of "defining_h1mat" determines the defining matrix
+!                       value of "defining_h1mat" determines the defining 4c-h1 matrix
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
@@ -476,8 +478,11 @@ contains
 !                                      == 2: converged 4c-Fock-Dirac operator (not implemented yet)
 !
 !             delivers: a. decoupling matrix "R" in orthonormal MO basis
-!                       b. picture-change transformation matrix in Dirac-sorted SA-AO basis
+!                       b. picture-change transformation matrix "U" in orthonormal MO basis and Dirac-sorted SA-AO basis
 !                       c. h1_2c_inf in Dirac-sorted SA-AO basis
+!
+!    for more information see also the equation (9), (10), (23) and (24) in the
+!    reference: M. Ilias and T. Saue, J. Chem. Phys., 126, 064102 (2007)
 !
 !**********************************************************************
      real(8), intent(inout) :: xmat(*)
@@ -606,20 +611,20 @@ contains
 !              out: the basic 2c-h1 in orthonormal basis -> xmat
 !                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix for nuclei is_fragment
 !      ------------------------------------------------------------------------------
-       call get_h1_inf_2c_mo_bas(xmat,                      &
-                                 scr1mat,                   &
-                                 scr2mat,                   &
-                                 eigvl,                     &
-                                 norb_dim,                  &
-                                 nesh_dim,                  &
-                                 npsh_dim,                  &
-                                 nfsym,                     &
-                                 nz,                        &
-                                 ipq_off,                   &
-                                 is_fragment,               &
-                                 x2c_file_scr,              &
-                                 defining_h1mat,            &
-                                 print_lvl)
+       call get_h1_2c_onmo_bas(xmat,                      &
+                               scr1mat,                   &
+                               scr2mat,                   &
+                               eigvl,                     &
+                               norb_dim,                  &
+                               nesh_dim,                  &
+                               npsh_dim,                  &
+                               nfsym,                     &
+                               nz,                        &
+                               ipq_off,                   &
+                               is_fragment,               &
+                               x2c_file_scr,              &
+                               defining_h1mat,            &
+                               print_lvl)
 
 !      step 5: get the transformed operator "h1_infinite_2c" in SA-AO basis
 !
