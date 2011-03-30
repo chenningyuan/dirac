@@ -186,7 +186,13 @@ class pam_enviroment:
 
     # dirac-executable position (could be reset by after flag reading)
 
-        self.dirac_exe = install_dir_default + '/dirac.x'
+        if os.path.isfile(install_dir_default + '/dirac.x'):
+            self.dirac_exe = install_dir_default + '/dirac.x'
+        else:
+            # does not exist, try cbuild directory
+            if os.path.isfile(install_dir_default + '/cbuild/dirac.x'):
+                # assign cbuild/dirac.x
+                self.dirac_exe = install_dir_default + '/cbuild/dirac.x'
 
     # nice command - priority (nice/npri)
 

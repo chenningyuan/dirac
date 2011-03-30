@@ -3,5 +3,4 @@
 - stop running tests if there is a compilation error and no dirac.x is produced
 
 things that i (radovan) will take care of:
-- automatically pick toplevel/cbuild/dirac.x if toplevel/dirac.x not present
 - cmake asks user about --scratch directory which is saved in Makefile.config
