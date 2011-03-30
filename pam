@@ -911,7 +911,9 @@ class pam_enviroment:
         self.no_archive = options.dest_noarch
 
         if options.dest_put:
-            self.put_files = glob.glob(options.dest_put)
+           #self.put_files = glob.glob(options.dest_put)
+           #radovan: try test acmoin before reintroducing glob solution
+            self.put_files = options.dest_put.split()
             if self.iprint >= 3:
                 print '\nassigned put_files ?', self.put_files \
                     is not None, '...these are(with wildcards):', self.put_files
