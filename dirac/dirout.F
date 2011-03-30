@@ -354,7 +354,6 @@ C
 C     Print vectors in AO-basis
 C     =========================
 C
-      print*,'ILABDF : ',ILABDF
       IF(ILABDF.EQ.1) THEN
         DO I = 1,NVEC
           IF(I.GT.NPVEC) THEN
