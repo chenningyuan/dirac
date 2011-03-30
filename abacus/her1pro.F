@@ -4229,4 +4229,37 @@ C
       CALL NTYPTS(NOPTYP)
       RETURN
       END
+C  /* Deck effdentyp */
+      SUBROUTINE EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(9*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = NATOM
+      CALL NTYPTS(NOPTYP)
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'ED '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  INTREP(ITYP) = IREP
+               END IF
+            END IF
+  200    CONTINUE
+  100 CONTINUE
 
+      RETURN
+      END

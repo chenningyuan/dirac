@@ -87,7 +87,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -142,6 +142,7 @@ C
       BXLAO       = .FALSE.
       BYLAO       = .FALSE.
       BZLAO       = .FALSE.
+      EFFDEN       = .FALSE.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -413,7 +414,9 @@ C&&&& BZLAO
             london = .true.
             GO TO 100
   138    CONTINUE
-C&&&& XXXXXX
+C&&&& EFFDEN; calculate effective electronic densities at the nuclei
+            DOEXP  = .TRUE.
+            EFFDEN = .TRUE. 
             GO TO 100
   139    CONTINUE
 C&&&& XXXXXX
@@ -1644,6 +1647,9 @@ C
       ELSEIF(PLABEL(1:3).EQ.'EDM') THEN
         CLASLB = 'EDM    '
         IORDER   = 0
+      ELSEIF(PLABEL(1:2).EQ.'ED') THEN
+        CLASLB = 'EFFDEN '
+        IORDER   = 0
       ELSE
         CALL GETCLS(PLABEL,CLASLB,IORDER,IPRINT)
         IF(CLASLB.EQ.'Unknown') THEN
@@ -2154,6 +2160,12 @@ C
         SQUARE    = .FALSE.
         ANTI      = .FALSE.
         CALL SMTYP(IORDER,NOPTYP,INTREP,LABINT)
+      ELSEIF(CLASLB .EQ. 'EFFDEN ') THEN
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        CALL SETATM(DOATOM,NATOM,-99)
+        CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
       ELSE
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.

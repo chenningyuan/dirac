@@ -90,6 +90,11 @@ C          ... zero SS integrals
         END IF
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
+C     Effective electronic density on nuclei 
+C
+      ELSEIF (CLSINT(I).EQ.'EFFDEN ') THEN
+        CALL EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
+C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
@@ -150,6 +155,133 @@ C
       CALL QEXIT('ONEGEN')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Generates integrals used for the calculation of the effective electronic
+C density at nuclei.  
+C
+C Called from: ONEGEN
+C 
+C Written by Robert van Meer, Sept. 2010, last edited Mar. 2011 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbihr1.h"
+#include "cbiher.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcbprl.h"
+#include "dcbcls.h"
+#include "dcbxpr.h"
+C     GEXPEFFDEN contains nuclear gaussian exponents related to size change
+C     EXPPLC = Exponent placeholder
+      REAL*8 GEXPEFFDEN, EXPPLC, PREFACTOR 
+      CHARACTER RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4, 
+     &          LABINT(15*MXCENT)*8
+      LOGICAl DOINT(4), DOATOM(NUCIND)
+      INTEGER ITYP
+      DIMENSION WORK(LWORK), GEXPEFFDEN(4), INTREP(9*MXCENT)
+#include "memint.h"
+      CALL QENTER('EFFECTIVE_DENS_NUC')
+
+C     Memory allocation
+      CALL MEMGET('REAL',KONEIN,4*NNBBASX,WORK,KFREE,LFREE)
+
+      IF (BSS.OR.x2C.OR.ZORA.OR.LEVYLE) THEN
+        WRITE(LUPRI,*) 'EFFECTIVE_DENS_NUC: BSS, x2C, ZORA and LEVY'//
+     &  '-LEBLOND modes not supported'
+        CALL QUIT('EFFECTIVE_DENS_NUC: not supported for current'//
+     &  ' Hamiltonian')
+      END IF
+
+      READ(COMB,'(4L1)',ERR=1000) (DOINT(I),I=1,4)
+      OMITVNUC(1) = 'FFFF'
+      OMITVNUC(2) = 'FFFF'
+C     Fetch and set labels/variables (-99 is used to turn on .SELECT)
+      CALL SETATM(DOATOM,NATOM,-99)
+      CALL EFFDENTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      RTNLBL(2)(1:2) = 'SY'
+      WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      RTNLBL(2)(5:8) = COMB
+      ITYP = 0
+
+C     Get the integrals, exponent is changed for a single nucleus 
+C     and reset to the original value after each calculation  
+      DO K = 1,NUCIND
+        IF (DOATOM(K)) THEN
+C         Generate nuclear exponents for nuclear size displacments and prefactor 
+          CALL EFF_DEN_NUC_EXP(GEXPEFFDEN, K, PREFACTOR)
+          EXPPLC = GNUEXP(K)
+C         Calculate property matrices for nuclear displacements
+          DO L = 1, 4 
+            GNUEXP(K) = GEXPEFFDEN(L)
+C           Calculate the integrals  
+            CALL NUCAT1(WORK(KONEIN+(L-1)*NNBBASX),WORK(KFREE),LFREE,
+     &                  DOINT,OMITVNUC,IPRINT)
+          ENDDO
+          GNUEXP(K) = EXPPLC
+C         Create total property matrix with correct prefactor
+          WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
+     &    (
+     &            WORK(KONEIN          :KONEIN+  NNBBASX-1) 
+     &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
+     &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
+     &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
+     &    )
+C         Store matrix in AOproper file 
+          ITYP = ITYP + 1
+          CALL WRTPRO(WORK(KONEIN),NNBBASX,LABINT(ITYP),RTNLBL,IPRINT)
+        ENDIF
+      ENDDO
+
+C     Memory deallocation
+      CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      CALL QEXIT('EFFECTIVE_DENS_NUC')
+      RETURN
+      
+ 1000 CONTINUE
+C     Not able to read DOINT information from COMB
+      WRITE(LUPRI,'(A,A)') 'EFFECTIVE_DENS_NUC: Not able to read COMB ='
+     & ,COMB
+      CALL QUIT('EFFECTIVE_DENS_NUC: Not able to read COMB')
+      RETURN
+      END 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EFF_DEN_NUC_EXP(GEXPEFFDEN, NUCLEUS, PREFACTOR)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Fills Mossbauer exponent array with exponent values
+C  
+C Called from: MOSSBAUER_ISOMER
+C 
+C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "pi.h"
+      REAL*8 GEXPEFFDEN, RADIUS
+      DIMENSION GEXPEFFDEN(4)
+C     Generate nuclear radius from the gaussian exponent    
+      RADIUS = SQRT(3D0 / (2D0 * GNUEXP(NUCLEUS)) )
+C     Generate new gaussian parameters dR=0.005R
+      GEXPEFFDEN(1) = 3D0 / (2D0 * 0.990D0 * 0.990D0 * RADIUS * RADIUS) 
+      GEXPEFFDEN(2) = 3D0 / (2D0 * 0.995D0 * 0.995D0 * RADIUS * RADIUS)
+      GEXPEFFDEN(3) = 3D0 / (2D0 * 1.005D0 * 1.005D0 * RADIUS * RADIUS)
+      GEXPEFFDEN(4) = 3D0 / (2D0 * 1.010D0 * 1.010D0 * RADIUS * RADIUS)  
+C     Prefactor = 3 / (48*Z*Pi*R*dR) 
+      PREFACTOR = 12.5D0 / (RADIUS * RADIUS * CHARGE(NUCLEUS) * PI)
+      RETURN
+      END 
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NOSSNUCATT

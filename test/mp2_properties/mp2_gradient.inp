@@ -18,6 +18,7 @@ Analytical first-order MP2 properties
 .DIPOLE
 .EFN
 .NQCC
+.EFFDEN
 **MOLTRA
 .SCHEME
 6
