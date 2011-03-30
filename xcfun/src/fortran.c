@@ -24,7 +24,7 @@
 #define FCSYM(name)
 #endif
 
-#define MAX_FORTRAN_FUNCTIONALS 5
+#define MAX_FORTRAN_FUNCTIONALS 7
 
 static xc_functional fortran_functionals[MAX_FORTRAN_FUNCTIONALS] = {0};
 
