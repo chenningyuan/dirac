@@ -121,14 +121,16 @@ contains
            call quit('*** error in init_x2c_cb: def. h1 matrix == 4c-FD not implemented (yet) in the new X2C module. ***')
          else
 !
-!          TODO: after merge with Huckel branch activate and program this option!
-!          if(dohuckel)then
+           if(x2c_free_part_mtx_defh1)then
+!            free-particle matrix as defining h1 matrix wrt which the pct-mtx will be derived
+             x2c_is_defining_h1mat  = 3
+!          else if(dohuckel)then
 !            (extended) Huckel start guess
 !            x2c_is_defining_h1mat  = 1
-!          else 
-!            default: bare-nucleus one-electron Dirac-Hamiltonian
+           else
+!            default: bare-nucleus one-electron Dirac-Hamiltonian as defining h1 matrix wrt which the pct-mtx will be derived
              x2c_is_defining_h1mat  = 0
-!          end if
+           end if
          end if
 ! 
          if(atom_by_atom_x2c)then

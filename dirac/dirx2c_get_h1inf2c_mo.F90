@@ -58,7 +58,7 @@ contains
                                   ipq_off,                  &
                                   is_fragment,              &
                                   x2c_file_scr,             &
-                                  return_h1_inf_2c,         &
+                                  defining_h1mat,           &
                                   print_lvl)
 !**********************************************************************
 !
@@ -66,10 +66,9 @@ contains
 !    order one-electron Hamiltonian h1_infinite_2c in 
 !    orthonormal restricted-kinetic balance basis
 !
-!    return_h1_inf_2c controls whether the Hamiltonian h1 is returned 
-!    (in xmat) in its infinite-order two-component form
+!    the bare-nucleus Hamiltonian h1 is returned (in xmat) in its infinite-order two-component form
 !----------------------------------------------------------------------
-     real(8), intent(inout) :: xmat(*)           ! IN: 4c-h1 , OUT: 2c-h1, (orthonormal basis)
+     real(8), intent(inout) :: xmat(*)           ! IN: defining 4c-h1 , OUT: bare-nucleus 2c-h1, (orthonormal basis)
      real(8), intent(inout) :: scr1mat(*)
      real(8), intent(inout) :: scr2mat(*)
      real(8), intent(inout) :: eigvl(*)
@@ -81,8 +80,8 @@ contains
      integer, intent(in)    :: ipq_off(4,0:7)
      integer, intent(in)    :: is_fragment
      integer, intent(in)    :: x2c_file_scr
+     integer, intent(in)    :: defining_h1mat
      integer, intent(in)    :: print_lvl
-     logical, intent(in)    :: return_h1_inf_2c
 !----------------------------------------------------------------------
      integer                :: ioff_osh1
      integer                :: ioff_oeig
@@ -171,30 +170,27 @@ contains
              call print_x2cmat(scr2mat(ioff_esh2),nesh2_f,n1esh_f,nz,ipq_off(1,0),'x2c - umat_onmo',6)
            end if
 
-!          step 3: perform U+ h1_4c_ON U = h1_infinite_2c_ON (if requested)
-!          -------------------------------------------------------
-           if( return_h1_inf_2c )then
+!          step 3: perform U+ h1_4c_ON U = h1_infinite_2c_ON
+!          -------------------------------------------------
 
-!             read op_4c
-              write(flabel,'(a7,a5)') 'h1_4cON',flabel_tag
-              call x2c_read(flabel,scr1mat(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
+!          read op_4c
+           write(flabel,'(a7,a5)') 'h1_4cON',flabel_tag
+           call x2c_read(flabel,scr1mat(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
 
-!             in : h1_4c_ON -> scr1mat; U  -> scr2mat 
-!             out: h1_infinite_2c_ON -> xmat
-              call perform_pct_mo_bas(xmat(ioff_esh1),    &
-                                      scr1mat(ioff_osh1), &
-                                      scr2mat(ioff_esh2), &
-                                      n1esh_f,            &
-                                      nesh2_f,            &
-                                      nz,                 &
-                                      ipq_off(1,0),       &
-                                      print_lvl)
+!          in : h1_4c_ON -> scr1mat; U  -> scr2mat 
+!          out: h1_infinite_2c_ON -> xmat
+           call perform_pct_mo_bas(xmat(ioff_esh1),    &
+                                   scr1mat(ioff_osh1), &
+                                   scr2mat(ioff_esh2), &
+                                   n1esh_f,            &
+                                   nesh2_f,            &
+                                   nz,                 &
+                                   ipq_off(1,0),       &
+                                   print_lvl)
 
-!             debug print
-              if(print_lvl > 1)then
-                call print_x2cmat(xmat(ioff_esh1),n1esh_f,n1esh_f,nz,ipq_off(1,0),'x2c - h1_inf_2c',6)
-              end if
-
+!          debug print
+           if(print_lvl > 1)then
+             call print_x2cmat(xmat(ioff_esh1),n1esh_f,n1esh_f,nz,ipq_off(1,0),'x2c - h1_inf_2c',6)
            end if
           
          end if

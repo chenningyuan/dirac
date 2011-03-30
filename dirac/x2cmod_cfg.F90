@@ -36,13 +36,14 @@ module x2cmod_cfg
 ! character block
 
 ! logical block
-  logical, public :: x2cmod_x2c             =  .false.
-  logical, public :: x2cmod_fragment_x2c    =  .false.
-  logical, public :: x2cmod_debug           =  .false.
-  logical, public :: x2cmod_h1dirty         =  .false.
-  logical, public :: x2c_linsym             =  .false.
-  logical, public :: x2c_prep_bnccorr       =  .false.
-  logical, public :: x2c_do_spherical       =  .false.
+  logical, public :: x2cmod_x2c              =  .false.
+  logical, public :: x2cmod_fragment_x2c     =  .false.
+  logical, public :: x2cmod_debug            =  .false.
+  logical, public :: x2cmod_h1dirty          =  .false.
+  logical, public :: x2c_linsym              =  .false.
+  logical, public :: x2c_prep_bnccorr        =  .false.
+  logical, public :: x2c_do_spherical        =  .false.
+  logical, public :: x2c_free_part_mtx_defh1 =  .false.
 
 ! real(8) block
   real(8), public :: x2c_cspeed

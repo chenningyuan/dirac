@@ -364,7 +364,7 @@ C ============================================================
 !     defining h1 matrix control variable (in the X2C module) - 
 !     set here for consistency to the maximum value (the true value 
 !     needs to be checked though)
-      is_defining_h1mat = 3
+      is_defining_h1mat = 4
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
      &            LINAD,is_defining_h1mat,WORK(KFREE),LFREE)
 C.....set variables needed in DFDIAG (N2TMT etc.)

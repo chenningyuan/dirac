@@ -86,6 +86,7 @@ module dirx2c
   use x2c_fio
   use x2c_utils
   use atomic_x2c
+  use x2c_h1mat_base
   use x2c_import_exportC1
 
   implicit none
@@ -241,9 +242,6 @@ contains
          lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.(x2c_linsym .eqv. .true.))
 
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
-!        1st try:
-!        before modham: size for scr1mat could be reduced to n2bastq_dim_x2c
-!        after  modham: back to nr_ao_total_x2c**2 * nr_quat
 
          j = nr_ao_total_x2c**2 * nr_quat
          if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
@@ -517,6 +515,7 @@ contains
      integer                :: i,j
      integer                :: lwrk
      integer                :: is_fragment_pctmat
+     integer                :: basic_h1mat        ! defining parameter for the basic 4c-h1 which will be transformed to 2c-h1
      character (len=12)     :: flabel             ! label for matrices on file
 !**********************************************************************
 !
@@ -545,11 +544,36 @@ contains
                                       x2c_file_scr,        &
                                       linear_sym)
 
-!      step 2: get defining matrix (== "h1" in orthonormal MO basis) h1_4cON
-!
+!      step 2: store the hamiltonian for which the 4c-->2c transformation 
+!              should be done on file (== basic "h1_4c" in orthonormal MO basis) h1_4cON
+!              out: - (nothing in matrices)
+!                   on file x2cscr: basic 4c-h1 in orthonormal basis under label "h1_4cON"
+!      ------------------------------------------------------------------------------
+!      for the time being, the basic "h1_4c" will always be the bare-nucleus h1 hamiltonian except 
+!      for the "4c-Dirac-Fock operator as basis" option which is not activated yet within
+!      this module. sknecht+tsaue: march 2011
+       basic_h1mat = 0
+       if(defining_h1mat == 2) basic_h1mat = 2
+       call x2c_get_h1_mat_base(xmat,                  &
+                                scr1mat,               &
+                                scr2mat,               &
+                                naosh_ls,              &
+                                naosh_all,             &
+                                norb_dim,              &
+                                ioff_aomx,             &
+                                nfsym,                 &
+                                nz,                    &
+                                ipq_off,               &
+                                basic_h1mat,           &
+                                lwrk,                  &
+                                is_fragment,           &
+                                x2c_file_scr,          &
+                                linear_sym,            &
+                                print_lvl)
+       
+!      step 3: get defining matrix (== "h1-defining" in orthonormal MO basis)
 !              in : ["SL resorted"] matrix -> scr2mat
-!              out: 4c-h1 in orthonormal basis -> xmat
-!                   on file x2cscr: 4c-h1 in orthonormal basis under label "h1_4cON"
+!              out: defining 4c-h1 in orthonormal basis -> xmat
 !      ------------------------------------------------------------------------------
        call x2c_get_h1_defining_mat(xmat,                  &
                                     scr1mat,               &
@@ -575,11 +599,12 @@ contains
 !      set new maximum allowed length of wrk array allocations
        lwrk = lwrk - max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c)
 
-!      step 3: get the transformed operator h1_infinite_2c in orthonormal basis
+!      step 4: get the transformed basic operator "h1_4c" --> "h1_infinite_2c" in orthonormal basis
 !
-!              in : 4c-h1 in orthonormal basis -> xmat
-!              out: 2c-h1 in orthonormal basis -> xmat
-!                   on file x2cscr in orthonormal MO basis: pct-matrix U, "R"-matrix for nuclei is_fragment
+!              in : defining  4c-h1 in orthonormal basis -> xmat
+!                   on file x2cscr in orthonormal basis: the basic operator "h1_4c" (label == h1_4cON)
+!              out: the basic 2c-h1 in orthonormal basis -> xmat
+!                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix for nuclei is_fragment
 !      ------------------------------------------------------------------------------
        call get_h1_inf_2c_mo_bas(xmat,                      &
                                  scr1mat,                   &
@@ -593,10 +618,10 @@ contains
                                  ipq_off,                   &
                                  is_fragment,               &
                                  x2c_file_scr,              &
-                                 return_h1_inf_2c,          &
+                                 defining_h1mat,            &
                                  print_lvl)
 
-!      step 4: get the transformed operator h1_infinite_2c in SA-AO basis
+!      step 5: get the transformed operator "h1_infinite_2c" in SA-AO basis
 !
 !              in : 2c-h1 in orthonormal MO basis -> xmat
 !              out: 2c-h1 in SA-AO basis -> xmat + *
@@ -633,7 +658,7 @@ contains
                                    fragment_x2c,            &
                                    print_lvl)
 
-!      step 5: construct the picture-change transformation matrix in SA-AO basis
+!      step 6: construct the picture-change transformation matrix in SA-AO basis
 !
 !              in : -
 !              out: -                         

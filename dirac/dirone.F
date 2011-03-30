@@ -2681,7 +2681,7 @@ C     -------------------------------------------------------------------
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value (the true value
 !       needs to be checked though)
-        is_defining_h1mat = 3
+        is_defining_h1mat = 4
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &             .FALSE.,.FALSE.,is_defining_h1mat,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
@@ -2873,7 +2873,7 @@ CMI  ... check of keywords..
       IF (SLGROUP.AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
      &  CALL QUIT('MODHAM: SLGROUP does not correspond with'//
      &  ' VEXTPJ/FREEPJ/LEVYLE flags!')
-      
+!
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
 C
@@ -2961,7 +2961,7 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
 !       is_defining_h1mat is the control variable for the defining h1
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
-        if(is_defining_h1mat .gt. 0)then
+        if(is_defining_h1mat .gt. 3)then
           CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
 CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
@@ -2974,7 +2974,7 @@ CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
 
 CMI   ... adaptation for the linear symmetry 
 !     lsymad is only relevant if the defining h1 matrix for the X2C/BSS
-!     module is NOT the bare-nucleus h1 matrix - SK Aug 2010
+!     module will be the 4c-Dirac-Fock matrix - s. knecht march 2011
       IF(LSYMAD)THEN
         ISIZE = NFBAS(1,0)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
@@ -3030,7 +3030,7 @@ C ...   always return non-linear symmetry adapted transformation matrix :
         CALL MEMREL('SLGROU1',WORK,KBUF1,KBUF1,KFREE,LFREE)
       ENDIF
 
-      IF(SLGROUP.and.(is_defining_h1mat .gt. 0))THEN
+      IF(SLGROUP.and.(is_defining_h1mat .gt. 3))THEN
 C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
         CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
         IF(IPRHAM.GE.5) THEN
@@ -3050,7 +3050,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
         ENDIF
         CALL MEMREL('SLGROU2',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
-
+ 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MODHAM')
       RETURN

@@ -1265,6 +1265,11 @@ subroutine read_input_ccfspc(word, kw_section)
       x2cmod_h1dirty = .true.
     end if
 
+!   free-particle matrix as defining h1 hamiltonian
+    if (kw_matches(word, '.freeh1')) then
+      x2c_free_part_mtx_defh1 = .true.
+    end if
+
     call check_whether_kw_found(word, kw_section)
 
   end subroutine

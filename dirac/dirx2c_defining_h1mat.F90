@@ -41,6 +41,8 @@ module x2c_def_h1_4c
   implicit none
 
   public x2c_get_h1_defining_mat
+  public get_h1_4c_saao_basis
+  public get_h1_4c_on_basis
 
   private
 
@@ -74,6 +76,7 @@ contains
 !               - defining_h1mat == 0: case a. bare-nucleus 1-el Dirac-Hamiltonian
 !         TODO:(- defining_h1mat == 1: case b. (extended) Huckel-start guess)
 !         TODO:(- defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
+!               - defining_h1mat == 3: case d. free-particle matrix
 !
 !----------------------------------------------------------------------
 !
@@ -123,40 +126,45 @@ contains
          end if
        end if
 
-!      step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
-!
-!              in : defining_h1mat: integer value: 0 == case a. ; 1 == case b. 2 == case c.
-!              out: 4c h1 matrix in SA-AO basis --> h1_saao_bas
-!      ------------------------------------------------------------------------------
-       if(.not.skip_step1)then
-         call get_h1_4c_saao_basis(h1_saao_bas,            &
-                                   defining_h1mat,         &
-                                   linear_sym,             &
-                                   is_len_wrk,             &
-                                   print_lvl)
-
-!        temporary fix for debugging atomic x2c:
-         if(x2cmod_h1dirty)then
-           write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
-!          debug print
-           if(print_lvl > 1)then
-             call print_x2cmat(h1_saao_bas,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-saao',6)
-           end if
-           call x2c_write(flabel,h1_saao_bas,naosh_ls*naosh_ls*nz,x2c_fh1dirty)
-         end if
-
-       end if ! .not.skip_step1
-
-!      step 2: transform h1 to orthonormal MO basis if defining h1 matrix is 
-!              case 0. 1-el. bare nucleus Dirac-Hamiltonian 
-!              case 1. extended Huckel start guess
-!
-!              in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
-!              out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
-!      ------------------------------------------------------------------------------
        select case(defining_h1mat)
 
-       case(0, 1)
+       case(0, 1, 3)
+!        step 1: get h1 ('defining matrix') in SA-AO basis according to value for defining_h1mat
+!
+!                in : defining_h1mat as integer value: 
+!                     0 == case a.; bare-nucleus 4c-h1 
+!                     1 == case b.; not defined yet
+!                     2 == case c.; not defined yet --> could be 4c-Dirac-Fock matrix
+!                     3 == case d.; free-particle matrix
+!                out: 4c h1 matrix in SA-AO basis --> h1_saao_bas
+!        ------------------------------------------------------------------------------
+         if(.not.skip_step1)then
+           call get_h1_4c_saao_basis(h1_saao_bas,            &
+                                     defining_h1mat,         &
+                                     linear_sym,             &
+                                     is_len_wrk,             &
+                                     print_lvl)
+
+!          temporary fix for debugging atomic x2c:
+           if(x2cmod_h1dirty)then
+             write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
+!            debug print
+             if(print_lvl > 1)then
+               call print_x2cmat(h1_saao_bas,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-def-saao',6)
+             end if
+             call x2c_write(flabel,h1_saao_bas,naosh_ls*naosh_ls*nz,x2c_fh1dirty)
+           end if
+
+         end if ! .not.skip_step1
+
+!        step 2: transform h1 to orthonormal MO basis if defining h1 matrix is 
+!                case 0. 1-el. bare nucleus Dirac-Hamiltonian 
+!                case 1. extended Huckel start guess
+!                case 3. free-particle matrix
+!
+!                in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
+!                out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
+!        ------------------------------------------------------------------------------
 
 !        initialize matrix offsets
          ioff_osh1     = 1
@@ -184,15 +192,19 @@ contains
 
            end if
 
-!          store defining h1_4cON matrix on file
-           write(flabel,'(a7,i4,i1)') 'h1_4cON',is_fragment,i
-           call x2c_write(flabel,h1_onmo_bas(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
-
 !          update offsets for matrices
            ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
            ioff_osh1     = ioff_osh1     + norb1_f**2 * nz
 
          end do
+
+         if(x2cmod_h1dirty)then
+           close(x2c_fh1dirty, status='keep')
+           if(.not.skip_step1)then
+!            export to C1...
+             call x2c_export_mat2C1(h1_saao_bas)
+           end if
+         end if
 
        case(2)
 
@@ -201,13 +213,6 @@ contains
          
        end select
 
-       if(x2cmod_h1dirty)then
-         close(x2c_fh1dirty, status='keep')
-         if(.not.skip_step1)then
-!          export to C1...
-           call x2c_export_mat2C1(h1_saao_bas)
-         end if
-       end if
 
   end subroutine x2c_get_h1_defining_mat
 
@@ -224,6 +229,7 @@ contains
 !               - defining_h1mat == 0: bare-nucleus 1-el Dirac-Hamiltonian
 !         TODO:(- defining_h1mat == 1: (extended) Huckel-start guess)
 !         TODO:(- defining_h1mat == 2: 4c-Fock-Dirac operator matrix)
+!               - defining_h1mat == 3: free-particle matrix
 !
 !----------------------------------------------------------------------
      real(8), intent(inout) :: h1_saao_bas(*)
