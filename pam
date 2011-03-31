@@ -147,7 +147,7 @@ class pam_enviroment:
  
         self.distribute = []
 
-    #   basic list of dirac files to be distributed over nodes by default
+    #   list of basic (core) DIRAC files to be distributed over nodes by default
         self.core_dirac_files=['dirac.x','MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
 
     # machine file
@@ -184,7 +184,7 @@ class pam_enviroment:
 
         self.dirac_cmd = ''
 
-    # dirac-executable position (could be reset by after flag reading)
+    # dirac-executable position (could be reset after flag reading)
 
         if os.path.isfile(install_dir_default + '/dirac.x'):
             self.dirac_exe = install_dir_default + '/dirac.x'
