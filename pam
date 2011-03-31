@@ -1810,11 +1810,9 @@ class pam_enviroment:
     # take care of the rest - get files from scratch_dir to home dir
 
         if self.get_files is not None:
-           #for file_name in glob.glob(self.get_files):
-           #radovan: sorry this does not work, try: --get="DFFOCK DFCOEF"
-           #         restored to non-glob
-            for file_name in self.get_files.split():
-                save_single_file(file_name)
+            for p in self.get_files.split():
+                for f in glob.glob(p):
+                    save_single_file(f)
 
         if self.outcmo:
             file_name = 'DFCOEF'
