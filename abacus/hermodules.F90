@@ -1248,7 +1248,7 @@
      &             ALPHA(1,IBLOCK(1),1),                                &
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
      &             NBLOCK,ISGEN(IBLOCK(1)),                             &
-     &             KAOVEC,KPRIM,mol%charge,                             &
+     &             KAOVEC,KPRIM,mol%charge,mol%charge,                  &
      &             1,DSM,BASREF(1,basindex,1))                         
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
