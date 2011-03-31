@@ -71,9 +71,9 @@
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
 
 #ifdef MOD_UNRELEASED
-      public fde_kef,       fde_xcf
-      public fde_kef_alda,  fde_xcf_alda
-      public fde_kef_xalda, fde_xcf_xalda
+!     public fde_kef,       fde_xcf
+!     public fde_kef_alda,  fde_xcf_alda
+!     public fde_kef_xalda, fde_xcf_xalda
 
       type(functional), save :: fde_kef,       fde_xcf
       type(functional), save :: fde_kef_alda,  fde_xcf_alda
@@ -225,25 +225,12 @@
 
          call parse_functional(kefun_fde,fde_kef)
          call parse_functional(kefun_fde,fde_kef_alda)
-!        call parse_functional(kefun_fde,fde_kef_xalda)
-
-! aspg: in order to be able to set the xc functionals used in the 
-!       non-additive xc potential, we need to first let xcfun set more
-!       than 5 functionals...
          call parse_functional(xcfun_fde,fde_xcf)
          call parse_functional(xcfun_fde,fde_xcf_alda)
-         call parse_functional(xcfun_fde,fde_xcf_xalda)
 
          do i = 1, 20
             fde_set_functionals(i) = .true.
          enddo
-
-!        write (*,*) 'debug bla'
-!        call set_kin_fun_alda(fde_kef_alda)
-!        call set_kin_fun_alda(fde_kef_xalda)
-!        call set_xc_fun_alda(fde_xcf_alda)
-!        call set_xc_fun_alda(fde_xcf_xalda)
-!        write (*,*) 'debug bla'
 
          reset_hfxfac = .true.
 
@@ -740,12 +727,7 @@
 
 #ifdef  MOD_XCFUN
 
-  subroutine get_fde_nadd_fun_derv(f,           &
-                                   f_alda,      &
-                                   f_xalda, &
-!
-! subroutine get_fde_nadd_fun_derv(order,        &
-                                   order,        &
+   subroutine get_fde_nadd_fun_derv(order,        &
                                    block_length, &
                                    w,            &
                                    r_0,          &
@@ -761,7 +743,6 @@
    use xc_max_block_length
 
 !   ----------------------------------------------------------------------------
-    type(functional), intent(inout)  :: f, f_alda, f_xalda
     integer,          intent(in)  :: order
     integer,          intent(in)  :: block_length
     real(8),          intent(in)  :: w(*)
@@ -779,23 +760,18 @@
     derv = 0.0d0
 
     if (fde_set_functionals(order)) then
-!      call xcfun_set_functional(fde_xcf     , order, parallel_xc) 
-!      call xcfun_set_functional(fde_xcf_alda, order, parallel_xc) 
-!      call xcfun_set_functional(fde_xcf_xalda,order, parallel_xc) 
+       call xcfun_set_functional(fde_xcf     , order, parallel_xc) 
+       call xcfun_set_functional(fde_xcf_alda, order, parallel_xc) 
        call xcfun_set_functional(fde_kef,      order, parallel_xc)
        call xcfun_set_functional(fde_kef_alda, order, parallel_xc)
-!      call xcfun_set_functional(fde_kef_xalda,order, parallel_xc)
        fde_set_functionals(order) = .false.
    endif
 
     if (.not.skip_xc_contribution) then
 
-!      call get_functional_derv(fde_xcf,       &
-!                               fde_xcf_alda,  &
-!                               fde_xcf_xalda, &
-       call get_functional_derv(f,       &
-                                f_alda,  &
-                                f_xalda, &
+       call get_functional_derv(fde_xcf,       &
+                                fde_xcf_alda,  &
+                                fde_xcf_alda,  &
                                 order,         &
                                 block_length,  &
                                 w,             &
@@ -812,12 +788,9 @@
           enddo
        enddo
 
-!      call get_functional_derv(fde_xcf,       &
-!                               fde_xcf_alda,  &
-!                               fde_xcf_xalda, &
-       call get_functional_derv(f,       &
-                                f_alda,  &
-                                f_xalda, &
+       call get_functional_derv(fde_xcf,       &
+                                fde_xcf_alda,  &
+                                fde_xcf_alda,  &
                                 order,         &
                                 block_length,  &
                                 w,             &

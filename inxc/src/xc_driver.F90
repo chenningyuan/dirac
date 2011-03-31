@@ -1148,10 +1148,7 @@ contains
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
 !       on using only up to 5 functionals...
 !
-              call get_fde_nadd_fun_derv(xc_fun,       &
-                                         xc_fun_alda,  &
-                                         xc_fun_alda,  &
-                                         max_fun_derv, &
+              call get_fde_nadd_fun_derv(max_fun_derv, &
                                          bllen,        &
                                          w,            &
                                          n_0,          &
