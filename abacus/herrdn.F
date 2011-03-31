@@ -29,7 +29,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxsymm.h"
-      PARAMETER ( NTABLE = 11, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 12, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbirea.h"
@@ -40,7 +40,7 @@ Caspg
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
      *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.MOLPRI', '.UNCONT', '.NORTSD'/
+     *            '.MOLPRI', '.UNCONT', '.NORTSD', '.CONTRA'/
 C
       NEWDEF = (WORD .EQ. '*READIN')
       ICHANG = 0
@@ -55,7 +55,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -119,6 +119,9 @@ Caspg
 C setting NOMOVE to true disables redefinition of coordinates for automatically
 C determined symmetry
                   NOMOVE = .TRUE.
+               GO TO 100
+ 12            CONTINUE
+                  UNCONT = .FALSE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -239,7 +242,7 @@ C
       IF (MYTID.EQ.MPARID) THEN
 C        This is the master, initialize as usual
 C        Slaves are already initialized before coming here.
-         UNCONT = .FALSE.
+         UNCONT = .TRUE.
          MAXPRI = MAXPRD
       ENDIF
       RETURN
