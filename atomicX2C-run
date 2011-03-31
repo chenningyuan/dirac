@@ -454,6 +454,25 @@ class run_frag:
 # end of class definitions
 
 # function definitions
+def runtype_header():
+    if get_diracruntype() > 0:
+        if get_diracruntype() == 1:
+            header = 'atomic start guess Dirac calculation'
+        else:
+            header = '   fragment X2C Dirac calculation   '
+    else:
+        print 'no header found.'
+        sys.exit(-1)
+    return header
+
+def get_diracruntype():
+    _i = 0
+    while _i < run_tasks:
+        if dirac_run_list[_i] > 0:
+           break
+        _i += 1
+    return dirac_run_list[_i]
+
 def get_original_molfile_content(orig_mol_file):
 
     (bla, mol_file_strip) = stripped_names('bla', orig_mol_file)
@@ -560,6 +579,22 @@ group.add_option('--verbose',
                  help='produces more verbose output [default: %default]')
 parser.add_option_group(group)
 
+group = OptionGroup(parser, 'atomic start')
+group.add_option('--atomic-start',
+                 action='store_true',
+                 dest='run_atomic_start',
+                 default=False,
+                 help='run atomic calculations to create a molecular start guess [default: %default]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'atomic X2C')
+group.add_option('--atomic-x2c',
+                 action='store_true',
+                 dest='run_atomic_x2c',
+                 default=False,
+                 help='run atomic X2c calculations to approximate a molecular X2C picture-change matrix [default: %default]')
+parser.add_option_group(group)
+
 # process input
 
 (options, args) = parser.parse_args()
@@ -578,12 +613,10 @@ root_directory = os.path.realpath(__file__)[:-14]
 cwd = os.getcwd()
 
 # set path to directory which will contain fragment-input/output files
-x2c_fragment_scratch_files_path = cwd + '/fragment-x2c-scratch-files'
+x2c_fragment_scratch_files_path = cwd + '/fragment-scratch-files'
 
-# open atomicX2C-run logfile
-
-pam_output_file = open(cwd + '/fragmentX2C.log','w',0)
-pam_output_file.write(" fragment-X2C pam output data\n\n")
+#   open logfile
+pam_output_file = open(cwd + '/fragment.log','w',0)
 
 # read original molecular input
 mol_file_lines = get_original_molfile_content(options.original_molecular_input)
@@ -591,16 +624,46 @@ mol_file_lines = get_original_molfile_content(options.original_molecular_input)
 # determine number of num_fragments (read from line 4 in .mol input)
 num_fragments = check_original_molfile_content_and_get_num_fragments(mol_file_lines)
 
-# print header
-print
-print '%53s' % ('fragment X2C Dirac calculation')
-print '  -----------------------------------------------------------------------'
-print
-print '%10s %12s %32s %16s' % ('progress', 'status', 'atom/molecular-fragment', 'time')
-print '  -----------------------------------------------------------------------'
+
+# prepare dirac runtypes
+run_tasks = 0
+dirac_run_list = []
+
+if options.run_atomic_start:
+    dirac_run_list.append(1)
+    run_tasks += 1
+if options.run_atomic_x2c:
+    dirac_run_list.append(2)
+    run_tasks += 1
 
 # main function
 def main(*args):
+    
+#   call dirac for each runtype
+    i = 0
+    while i < run_tasks:
+        run_dirac(*args)
+        dirac_run_list[i] = -1
+        i += 1
+        
+    pam_output_file.close()
+
+
+# dirac-run function
+def run_dirac(*args):
+
+#   find the current runtype
+    blabla = get_diracruntype()
+    print 'my runtype is %i' %(blabla)
+#   print header (log file + screen)
+    pam_output_file.write(" fragment-run output data from pam\n\n")
+    header = runtype_header()
+    print
+    print '%58s' % (header)
+    print '  -----------------------------------------------------------------------'
+    print
+    print '%10s %12s %32s %16s' % ('progress', 'status', 'atom/molecular-fragment', 'time')
+    print '  -----------------------------------------------------------------------'
 
 #   initialize marker list, atomic numbers and exponents for each fragment
     mol_orig_info = prepare_lists_for_x2c_fragment_mol(mol_file_lines, num_fragments)
@@ -704,7 +767,6 @@ def main(*args):
             print 'check the Dirac output %s for more information.' % task.get_output_name()
             sys.exit(1)
 
-    pam_output_file.close()
 
     if nr_crashed > 0:
         return 3
