@@ -911,8 +911,6 @@ class pam_enviroment:
         self.no_archive = options.dest_noarch
 
         if options.dest_put:
-           #self.put_files = glob.glob(options.dest_put)
-           #radovan: try test acmoin before reintroducing glob solution
             self.put_files = options.dest_put.split()
             if self.iprint >= 3:
                 print '\nassigned put_files ?', self.put_files \
@@ -1124,7 +1122,8 @@ class pam_enviroment:
             if self.iprint >= 4:
                 print 'self.put_files=', self.put_files
             for file_name in self.put_files:
-                copy_single_file(file_name)
+                for f in glob.glob(file_name):
+                    copy_single_file(f)
 
     # copies files to scratch_dir
 
