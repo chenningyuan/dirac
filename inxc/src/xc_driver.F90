@@ -30,6 +30,7 @@ module xc_driver
   use dirac_cfg
   use basis_info
   use occupation_info
+  use memory_allocator
   use dft_cfg
   use xc_derv
   use ao_eval
@@ -916,8 +917,9 @@ contains
                       max_ao_m_order, &
                       dft_cfg_screening)
 
-    allocate(ao      (total_ao_vector_length))
-    allocate(buffer  (total_ao_vector_length))
+!when you remove this test and debug dft_overlap_diagnostic
+    call alloc(ao    , total_ao_vector_length)
+    call alloc(buffer, total_ao_vector_length)
 
     if (dft_cfg_blocked) then
        block_threshold = get_block_threshold(dft_cfg_dfthr0, mat_dim, dmat_0)
@@ -1747,8 +1749,8 @@ contains
      deallocate(derv)
      deallocate(derv_nadd)
 
-    deallocate(ao)
-    deallocate(buffer)
+    call dealloc(ao)
+    call dealloc(buffer)
 
     deallocate(u%n)
     deallocate(u%s)
