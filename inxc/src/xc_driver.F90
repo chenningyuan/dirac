@@ -1129,7 +1129,7 @@ contains
 #endif
           call get_functional_derv(xc_fun,       &
                                    xc_fun_alda,  &
-                                   xc_fun_alda,  &
+                                   xc_fun_xalda, &
                                    max_fun_derv, &
                                    bllen,        &
                                    w,            &

@@ -9,6 +9,9 @@
 .XALDA-
 .ZIPGRID
 .DEBUG          !very coarse grid
+**INTEGRALS
+*READIN
+.CONTRACTED
 **WAVE FUNCTION
 .DHF
 *DHFCAL
