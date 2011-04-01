@@ -7,6 +7,8 @@ Fragment C
 *TWOINT
 .SCREEN
 1.0D-11
+*READIN
+.CONTRACT
 **HAMILTONIAN
 .LVCORR
 ! We add a small electric field to split degeneracy
