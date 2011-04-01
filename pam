@@ -347,7 +347,9 @@ class pam_enviroment:
          create the scratch directory if it not exist
         """
         if not os.path.isdir(self.scratch_dir):
-            os.mkdir(self.scratch_dir)
+#           os.mkdir(self.scratch_dir)
+#           radovan: we need to create it with parent
+            os.system('mkdir -p ' + self.scratch_dir)
         else:
             print '  The scratch directory already exists.'
 
