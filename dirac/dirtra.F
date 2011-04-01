@@ -443,7 +443,6 @@ C
       CHARACTER TYP*1
       DIMENSION AMAT(*)
       EXTERNAL BDQALGEBRA
-#define DEBUG_mat_transform
 C
 #ifdef DEBUG_mat_transform
       print '(a,i4)', ' phase factor insertion: jfac is',jfac
