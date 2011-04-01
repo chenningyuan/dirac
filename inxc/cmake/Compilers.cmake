@@ -1,13 +1,11 @@
 message("-- DIRAC: Fortran compiler is  \"${CMAKE_Fortran_COMPILER}\" (\"${CMAKE_Fortran_COMPILER_ID}\") ")
 message("-- DIRAC:       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_ID}\") ") 
-message("-- DIRAC:     CXX compiler is  \"${CMAKE_CXX_COMPILER}\" (\"${CMAKE_CXX_COMPILER_ID}\") ") 
 
 # Fortran compilers
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    add_definitions(-DVAR_GFORTRAN)
-                                     # this is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS         "-fcray-pointer -fbacktrace")
+                                   # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
@@ -29,9 +27,9 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     add_definitions(-DVAR_G95)
-    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore")
+    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -fsloppy-char")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -50,7 +48,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    add_definitions(-DVAR_IFC)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
@@ -129,3 +126,4 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_DEBUG   " ")
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
+

@@ -4,9 +4,8 @@ message("-- DIRAC:       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COM
 # Fortran compilers
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    add_definitions(-DVAR_GFORTRAN)
-                                     # this is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS         "-fcray-pointer -fbacktrace")
+                                   # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
@@ -49,7 +48,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    add_definitions(-DVAR_IFC)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
