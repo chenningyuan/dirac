@@ -31,11 +31,6 @@ cd $TMP_DIR
   ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl"
 # ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack" --buildname="linux.gfortran.atlas.mpi"
 
-# pam expects dirac.x to be in the same directory
-# you cannot copy it because it does not exist yet
-# make below will create it but same step launches pam (via runtest)
-ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
-
 cd $TMP_DIR/cbuild
 # build and run tests
 # use either Experimental or Nightly

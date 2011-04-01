@@ -13,8 +13,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/ia32'
 
 ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl.debug" --debug
 
-ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
-
 cd $TMP_DIR/cbuild
 make Nightly
 
