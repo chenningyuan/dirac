@@ -174,11 +174,14 @@ class x2c_fragment_dirac_input(object):
 
     def set_dirac_init_section(self) :
         text  = "**DIRAC\n"
+        text += ".TITLE\n"
+        text += " automatized dirac fragment run.\n"
         return text
 
-    def set_dirac_title_section(self) :
-        text  = ".TITLE\n"
-        text += " automatized dirac fragment run.\n"
+    def set_dirac_wavefunction_input(self) :
+        text = '#\n'
+        if self._rtype == 'atomic-start':
+            text = ".WAVE F\n"
         return text
 
     def set_dirac_integral_section(self) :
@@ -195,20 +198,26 @@ class x2c_fragment_dirac_input(object):
             for line in _hamtext:
                 text += line
                 i += 1
-        else:
+        elif self._rtype == 'atomic-x2c':
             text += ".X2C\n"
             text += ".NOAMFI\n"
-        return text
-
-    def set_dirac_x2c_section(self) :
-        text  = "*X2C\n"
-        text += ".FGMx2c\n"
+            text += "*X2C\n"
+            text += ".FGMx2c\n"
         return text
 
     def set_dirac_wavefunction_section(self) :
         text  = "**WAVE FUNCTIONS\n"
+        if self._rtype == 'atomic-start':
+            text += ".DHF\n"
         text += "*DHFCAL\n"
         text += ".FOCC\n"
+        return text
+
+    def set_dirac_general_section(self) :
+        text  = "#\n"
+        if self._rtype == 'atomic-start':
+            text  = "**GENERAL\n"
+            text += ".ACMOUT\n"
         return text
 
     def set_dirac_end_section(self) :
@@ -217,10 +226,10 @@ class x2c_fragment_dirac_input(object):
 
     def assemble_dirac_fragment_input(self) :
         dirac_fragment_input  = self.set_dirac_init_section()
-        dirac_fragment_input += self.set_dirac_title_section()
+        dirac_fragment_input += self.set_dirac_wavefunction_input()
         dirac_fragment_input += self.set_dirac_integral_section()
+        dirac_fragment_input += self.set_dirac_general_section()
         dirac_fragment_input += self.set_dirac_hamiltonian_section()
-        dirac_fragment_input += self.set_dirac_x2c_section()
         dirac_fragment_input += self.set_dirac_wavefunction_section()
         dirac_fragment_input += self.set_dirac_end_section()
 
@@ -311,7 +320,8 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
         return _z, _exp
 
 class run_frag:
-     def __init__(self, invoke_path, scratch_path, dirac_input, mol_input):
+     def __init__(self, runtype, invoke_path, scratch_path, dirac_input, mol_input):
+         self._runtype       = runtype
          self.root_calc_path = invoke_path
          self.path_frag      = scratch_path
          self.inp            = dirac_input
@@ -362,20 +372,33 @@ class run_frag:
          print '%10s %12s %32s %s' % \
                (progress.rjust(10), result_text.rjust(12), self.get_fragment_name().rjust(32), elapsed_str.rjust(16))
 
-     def copy_X2C_outputfiles(self):
-         if os.path.isfile(self.path_frag      + '/' + 'X2CMAT'):
+     def coefficient_file(self):
+         _xxx = 'XX'
+         if len(self.get_fragment_name()) < 2:
+             _xxx += 'X'
+         return "DF"+ self.get_fragment_name() + _xxx
 
-             shutil.copy(self.path_frag      + '/' + 'X2CMAT',\
-                         self.root_calc_path + '/' + 'X2CMAT.'\
-                       + self.get_fragment_name())
-         else:
-             print ' *** cannot copy fragment X2CMAT; file does not exist.'
+     def copy_outputfiles(self):
+         if self._runtype == 'atomic-x2c':
+             if os.path.isfile(self.path_frag      + '/' + 'X2CMAT'):
+                 shutil.copy(self.path_frag      + '/' + 'X2CMAT',\
+                             self.root_calc_path + '/' + 'X2CMAT.'\
+                           + self.get_fragment_name())
+             else:
+                 print ' *** cannot copy fragment X2CMAT; file does not exist.'
+         elif self._runtype == 'atomic-start':
+             if os.path.isfile(self.path_frag      + '/' + 'DFACMO'):
+                 shutil.copy(self.path_frag      + '/' + 'DFACMO',\
+                             self.root_calc_path + '/' + self.coefficient_file())
+             else:
+                 print ' *** cannot copy fragment coefficient file; file does not exist.'
+
          if os.path.isfile(self.path_frag      + '/' + self.get_output_name()):
              shutil.copy(self.path_frag      + '/' +\
                          self.get_output_name(),\
                          self.root_calc_path + '/')
          else:
-             print ' *** cannot copy fragment X2C output; file %s does not exist.' % self.get_output_name()
+             print ' *** cannot copy fragment output; file %s does not exist.' % self.get_output_name()
 
      def copy_X2C_inputfiles(self, num_frag, symbols):
 
@@ -422,18 +445,28 @@ class run_frag:
             string += list[i] + ' '
             i += 1
          string += '\" '
-         return self.fra_X2C_pam_flags() + string
+         return self.fragment_pam_flags() + string
 
      def x2cmat_list(self, num_frag, symbols):
          i  = 0
          _p = []
          while i < num_frag:
+            if self._runtype == 'atomic-start':
+                _xxx = 'XX'
+                if len(symbols[i]) < 2:
+                    _xxx += 'X'
+                    _xxx
+                _p.append('DF' + symbols[i] + _xxx)
+
             _p.append('X2CMAT.' + symbols[i])
             i += 1
          return _p
 
-     def fra_X2C_pam_flags(self):
-         return self.pam_flags + '--get=\"X2CMAT\" '
+     def fragment_pam_flags(self):
+         if self._runtype == 'atomic-start':
+             return self.pam_flags + '--get=\"X2CMAT DFACMO\" '
+         else:
+             return self.pam_flags + '--get=\"X2CMAT\" '
                          
      def clean_fragment_scratch_dir(self):
          os.chdir(self.root_calc_path)
@@ -564,9 +597,11 @@ def scan_hamiltonian_section_in_dirac_input(inp_lines):
 # define example usage
 
 usage = '''
-  typically ./%prog --inp=[.inp] --mol=[.mol]
-         or ./%prog --inp=[.inp] --mol=[.mol] [--pam_options="additional pam options"]
-         or ./%prog --inp=[.inp] --mol=[.mol] [--pam_options="additional pam options"] --verbose'''
+  typically ./%prog --inp=[.inp] --mol=[.mol] --atomic-start
+         or ./%prog --inp=[.inp] --mol=[.mol] --atomic-x2c
+         or ./%prog --inp=[.inp] --mol=[.mol] --atomic-start --atomic-x2c
+         or ./%prog --inp=[.inp] --mol=[.mol] --atomic-start --atomic-x2c [--pam_options="additional pam options"]
+         or ./%prog --inp=[.inp] --mol=[.mol] --atomic-start --atomic-x2c --verbose'''
 
 # initialize parser
 
@@ -768,13 +803,13 @@ def run_dirac(*args):
         m.append(fragmol_lines.assemble_basis_set_fragment_input())
 
 #       initialize fragment tasks and store its content in l[]
-        l.append(run_frag(cwd, x2c_fragment_scratch_files_path, dirac_input, mol_input))
+        l.append(run_frag(current_runtype, cwd, x2c_fragment_scratch_files_path, dirac_input, mol_input))
         i += 1
 
     # define the molecular run task list
     (dirac_input, mol_input) = stripped_names(options.original_dirac_input,\
                                               options.original_molecular_input)
-    l.append(run_frag(cwd, x2c_fragment_scratch_files_path, dirac_input, mol_input))
+    l.append(run_frag(current_runtype, cwd, x2c_fragment_scratch_files_path, dirac_input, mol_input))
 
     # get total number of individual x2c calculations
     total_nr_of_x2c_runs = 0
@@ -791,7 +826,7 @@ def run_dirac(*args):
         nr_of_x2c_runs_done += 1
         if nr_of_x2c_runs_done <= num_fragments:
             task.write_fragment_inputs(n[nr_of_x2c_runs_done-1], m[nr_of_x2c_runs_done-1])
-            full_pam_flags = task.fra_X2C_pam_flags()
+            full_pam_flags = task.fragment_pam_flags()
         else:
             task.copy_X2C_inputfiles( num_fragments, s)
             full_pam_flags = task.mol_X2C_pam_flags( num_fragments, s)
@@ -807,7 +842,7 @@ def run_dirac(*args):
         progress = '[%3i%s]' % (100.0*float(nr_of_x2c_runs_done)/float(total_nr_of_x2c_runs), r'%')
         task.print_result(progress, result_text, elapsed)
 
-        task.copy_X2C_outputfiles()
+        task.copy_outputfiles()
         task.clean_fragment_scratch_dir()
 
         if nr_crashed > 0:
