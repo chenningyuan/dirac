@@ -115,7 +115,7 @@ contains
          lux2c = x2c_funit
 
 !        set defining matrix for decoupling step
-         if(do4c2c)then
+         if(x2c_4c_fock_mtx_defh1)then
 !          extract decoupling matrix from the converged 4c-Fock-Dirac operator
            x2c_is_defining_h1mat  = 2
            call quit('*** error in init_x2c_cb: def. h1 matrix == 4c-FD not implemented (yet) in the new X2C module. ***')

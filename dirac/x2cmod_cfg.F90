@@ -44,6 +44,8 @@ module x2cmod_cfg
   logical, public :: x2c_prep_bnccorr        =  .false.
   logical, public :: x2c_do_spherical        =  .false.
   logical, public :: x2c_free_part_mtx_defh1 =  .false.
+  logical, public :: x2c_4c_fock_mtx_defh1   =  .false.
+  logical, public :: x2c_4to2c_continue_scf  =  .false.
 
 ! real(8) block
   real(8), public :: x2c_cspeed

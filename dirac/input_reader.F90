@@ -1270,6 +1270,17 @@ subroutine read_input_ccfspc(word, kw_section)
       x2c_free_part_mtx_defh1 = .true.
     end if
 
+!   (converged) 4c-Fock operator matrix as defining h1 hamiltonian
+    if (kw_matches(word, '.4cdfh1')) then
+      x2c_4c_fock_mtx_defh1 = .true.
+    end if
+
+!   continue scf procedure to full convergence after the X2C transformation
+!   based on the 4c-Fock operator matrix as defining h1
+    if (kw_matches(word, '.2ccycl')) then
+      x2c_4to2c_continue_scf = .true.
+    end if
+
     call check_whether_kw_found(word, kw_section)
 
   end subroutine
