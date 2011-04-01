@@ -81,7 +81,32 @@ set(DIRAC_WORK_MEM_WORDS
     "64000000"
     CACHE STRING
     "DIRAC work memory in words"
+    FORCE
     )
+
+# find a good default scratch base directory
+# first try scratch/, then work/, then tmp/
+if(EXISTS "/scratch/")
+    set(DEFAULT_SCRATCH_BASE_DIR "/scratch")
+else()
+    if(EXISTS "/work/")
+        set(DEFAULT_SCRATCH_BASE_DIR "/work")
+    else()
+        set(DEFAULT_SCRATCH_BASE_DIR "/tmp")
+    endif()
+endif()
+
+# set scratch directory
+set(DIRAC_SCRATCH_DIR
+    "${DEFAULT_SCRATCH_BASE_DIR}/DIRAC_scratch_$ENV{USER}"
+    CACHE STRING
+    "DIRAC scratch directory"
+    FORCE
+    )
+message("-- DIRAC: DIRAC_SCRATCH_DIR is \"${DIRAC_SCRATCH_DIR}\"")
+file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${DIRAC_SCRATCH_DIR}")
+
+
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
 include(cmake/Archs.cmake)
