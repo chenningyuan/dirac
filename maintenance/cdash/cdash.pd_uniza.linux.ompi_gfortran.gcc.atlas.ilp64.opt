@@ -28,7 +28,7 @@ cd $DIRAC
 
 # configure step, without --debug
 #./setup --fc=mpif90  --cc=mpicc --cpp=mpiCC --buildname="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt"  --mpi  --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 --runtest_mpi=2 --runtest_timeout=1100
-./setup --fc=mpif90  --cc=mpicc --cpp=mpiCC --buildname="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt"  --mpi  --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 --runtest_mpi=2 
+./setup --fc=mpif90  --cc=mpicc --cpp=mpiCC --buildname="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt"  --mpi  --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 --runtest_mpi=2  --runtest_timeout=1500
 
 cd $DIRAC/cbuild
 
