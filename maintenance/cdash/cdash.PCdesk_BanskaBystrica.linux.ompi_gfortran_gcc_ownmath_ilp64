@@ -27,12 +27,8 @@ git svn rebase
 
 cd $DIRAC/cbuild
 
-# pam expects dirac.x to be in the same directory
-# you cannot copy it because it does not exist yet
-# make below will create it but same step launches pam (via runtest)
-ln -sf $DIRAC/cbuild/dirac.x  $DIRAC/dirac.x
-
 make clean
+
 # build and run tests
 # use either Experimental or Nightly
 make Experimental
