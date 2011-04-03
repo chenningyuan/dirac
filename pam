@@ -1590,7 +1590,9 @@ class pam_enviroment:
         #  get the list of children's processes; use two different methods
         from common import get_all_children
         self.dirac_pids=get_all_children(self.current_pid)
-        self.get_pidof_pids()
+
+        # miro: rather remove ....
+        #self.get_pidof_pids()
 
         #dirac_pid=[]
         #dirac_pid.append(self.dirac_p.pid)
@@ -1605,8 +1607,8 @@ class pam_enviroment:
                 '         dirac.x subprocess PID:',self.dirac_p.pid
                 print >> stream,\
                 '  All dirac.x python found PIDs:',self.dirac_pids
-                print  >> stream,\
-                '   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
+                #print  >> stream,\
+                #'   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
                 print  >> stream,\
                 '   All unified dirac.x PIDs:',self.all_dirac_pids
 
@@ -1629,14 +1631,19 @@ class pam_enviroment:
 
     def print_all_processes(self):
         """
-        print all remaining processes
+        print all remaining processes using system command "ps"
+        TODO: adapt for Windows
         """
         sys.stdout.flush()
+        sys.stderr.flush()
         # command - print all processes
-        print '\n processes left:'
         command="ps -fu "+self.user_name
-        os.system(command)
-        sys.stdout.flush()
+        process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
+                       stdout=subprocess.PIPE).communicate()[0]
+        for stream in [sys.stdout,sys.stderr]:
+           print >> stream,'\n current processes left: \n--------------------------- \n'
+           print >> stream,process_string
+           stream.flush()
 
     def print_timeout_message(self):
         """
