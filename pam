@@ -1532,12 +1532,14 @@ class pam_enviroment:
             was_killed=False
             if self.parallel_run:
                 if self.dirac_in_pid(self.dirac_p.pid):
+                    time.sleep(3)
                     self.kill_single_process(self.dirac_p.pid)
                     was_killed=True
                     i=0
 
             for pid in self.all_dirac_pids:
                 if self.dirac_in_pid(pid):
+                    time.sleep(3)
                     self.kill_single_process(pid)
                     was_killed=True
                     i=0
@@ -1591,12 +1593,9 @@ class pam_enviroment:
         from common import get_all_children
         self.dirac_pids=get_all_children(self.current_pid)
 
-        # miro: rather remove ....
-        #self.get_pidof_pids()
+        # miro: keep it ...
+        self.get_pidof_pids()
 
-        #dirac_pid=[]
-        #dirac_pid.append(self.dirac_p.pid)
-        #print dirac_pid
         self.dirac_pids.append(self.dirac_p.pid)
         self.all_dirac_pids=set.union( set(self.dirac_pidof_pids),set(self.dirac_pids) )
 
@@ -1607,10 +1606,10 @@ class pam_enviroment:
                 '         dirac.x subprocess PID:',self.dirac_p.pid
                 print >> stream,\
                 '  All dirac.x python found PIDs:',self.dirac_pids
-                #print  >> stream,\
-                #'   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
                 print  >> stream,\
-                '   All unified dirac.x PIDs:',self.all_dirac_pids
+                '   All dirac.x pidof found PIDs:',self.dirac_pidof_pids
+                print  >> stream,\
+                '       All unified dirac.x PIDs:',self.all_dirac_pids
 
     def kill_dirac_processesX(self):
         """
@@ -1668,10 +1667,12 @@ class pam_enviroment:
             try:
                 for stream in [sys.stdout,sys.stderr]:
                     print >> stream,\
-                    'Going to kill (SIGTERM) dirac related process with PID=',pid
+                    'Going to shoot (SIGTERM) dirac.x related process with PID=',pid
                     print >> stream,get_pid_label(pid) 
                     stream.flush()
                 os.kill(pid,signal.SIGTERM)
+                # wait  and verify
+                time.sleep(4)
                 killedpid, stat = os.waitpid(pid, os.WNOHANG)
                 if killedpid == 0:
                     print >> sys.stderr, "ACK! PROCESS NOT KILLED, going to repeat"
@@ -1681,11 +1682,13 @@ class pam_enviroment:
                     os.system(kill_command)
                     #TODO: generalize kill command for Linux/Windows
                 else:
-                    print  >> sys.stderr, "Finally ! Process killed !"
+                    print  >> sys.stderr, "Yes ! Process was killed !"
             except:
+                time.sleep(3)
                 kill_command="kill -9 "+str(pid)
-                print 'no os.kill, applying ',kill_command
+                print 'no os.kill, applying the ',kill_command
                 os.system(kill_command)
+                time.sleep(3)
             i=i+1
 
     def dirac_in_pid(self,pid):
@@ -1716,7 +1719,7 @@ class pam_enviroment:
     def get_pidof_pids(self):
         """
         get all dirac subproces PIDs using Linux's pidof command
-        store them in self.dirac_pidof_pids
+        store them in the "self.dirac_pidof_pids" list
         TODO: adapt for Windows
         """
         command="pidof dirac.x"
