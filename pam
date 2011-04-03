@@ -1345,9 +1345,9 @@ class pam_enviroment:
             elif name == 'SCRATCH_DIR':
                 self.scratch_path = value
                 if not os.path.isdir(self.scratch_path):
-                    print 'NB: the scratch_path ', self.scratch_path, \
+                    print >> sys.stderr,'NB: the scratch_path ', self.scratch_path, \
                         ' does not exist on this machine.'
-                    print 'Running on your own risk (might not create scratch_dir).'
+                    print >> sys.stderr,'Running on your own risk (might not create scratch_dir).'
             elif name == 'DEBUGGER':
                 self.debugger = value
             elif name == 'PROFILER':
