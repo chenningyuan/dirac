@@ -12,8 +12,8 @@ HF calculations with Jengine+LinK+density fitting in non-relativistic two-compon
  1
 *TWOINT
 .AOFOCK
-#*READIN
-#.UNCONTRACTED
+*READIN
+.CONTRACTED
 **WAVE FUNCTIONS
 .DHF
 *END OF
