@@ -9,3 +9,5 @@ pbe+pw91k_vemb-update.inp water.sto6g.c2v.mol --put="FRZDNS"
 
 sh bzip2 -9 FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym
 sh bzip2 -9 ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym
+
+sh rm -f EMBPOT FRZDNS
