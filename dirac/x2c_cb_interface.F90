@@ -92,16 +92,10 @@ contains
          nr_quat               = nz
          nr_fsym               = nfsym
          mfsym                 = min(nfsym,2)
-         x2c_is_defining_h1mat = - 1
-         x2c_add_amfi          = - 1
 
 !        set value for amfi module (if at all)
-         if(.not. noamfi)then
-!          if(new_amfi)then
-!            x2c_add_amfi = 2
-!          else
-             x2c_add_amfi = 1
-!          end if
+         if(noamfi)then
+           x2c_add_amfi = -1
          end if
 
 !        common block variables for AMFI(old +new(?))

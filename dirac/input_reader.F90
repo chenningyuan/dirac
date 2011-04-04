@@ -1276,9 +1276,16 @@ subroutine read_input_ccfspc(word, kw_section)
     end if
 
 !   continue scf procedure to full convergence after the X2C transformation
-!   based on the 4c-Fock operator matrix as defining h1
+!   based on the 4c-Fock operator matrix as defining h1 
+!   (full keyword: .2ccycle_scf)
     if (kw_matches(word, '.2ccycl')) then
       x2c_4to2c_continue_scf = .true.
+    end if
+
+!   use DIRACs in-house AMFI 
+!   (full keyword: .diramfi)
+    if (kw_matches(word, '.diramf')) then
+      x2c_add_amfi = 2
     end if
 
     call check_whether_kw_found(word, kw_section)

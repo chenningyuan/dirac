@@ -52,8 +52,9 @@ module x2cmod_cfg
 
 ! integer block
   integer, public :: x2c_prt                =  0 ! print level
-  integer, public :: x2c_is_defining_h1mat  = -1
-  integer, public :: x2c_add_amfi           = -1
+  integer, public :: x2c_is_defining_h1mat  = -1 ! no defining h1 hamiltonian: decision is made within the program
+  integer, public :: x2c_add_amfi           =  1 ! current default: use the 'old' AMFI by B. Schimmelpfennig
+  integer, public :: x2c_amfi_order         =  2 ! default (if AMFI is turned on): spin-same orbit contributions
   integer, public :: dim_pshell(2)
   integer, public :: dim_eshell(2)
   integer, public :: dim_eshell2(2)
@@ -82,7 +83,6 @@ module x2cmod_cfg
   integer, public :: x2c_cb_uq_to_pq(4, 0:7)
   integer, public :: x2c_bs_to_fs(0:7, 2)
   integer, public :: x2c_tot_charge_for_mfsum
-  integer, public :: x2c_amfi_order
   integer, public :: fh_1int_4c
   integer, public :: all_prp_op
   integer, public :: num_nuclei
