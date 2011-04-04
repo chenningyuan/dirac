@@ -92,6 +92,13 @@ group.add_option('--install',
                  default=None,
                  help='set the install path for make install [default: %default]',
                  metavar='PATH')
+group.add_option('--scratch',
+                 type='string',
+                 action='store',
+                 dest='scratch',
+                 default='/scratch',
+                 help='set the scratch directory [default: %default]',
+                 metavar='PATH')
 group.add_option('--debug',
                  action='store_true',
                  dest='debug',
@@ -208,6 +215,8 @@ if options.coverage:
     command += ' -DDIRAC_ENABLE_CODE_COVERAGE=1'
 if options.install:
     command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
+if options.scratch:
+    command += ' -DDIRAC_SCRATCH_DIR=' + options.scratch
 
 if options.debug:
     command += ' -DCMAKE_BUILD_TYPE=Debug'

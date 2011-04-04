@@ -93,16 +93,24 @@ else()
     endif()
 endif()
 
+if(NOT DIRAC_SCRATCH_DIR)
+    # use default
+    set(DIRAC_SCRATCH_DIR "${DEFAULT_SCRATCH_BASE_DIR}/DIRAC_scratch_$ENV{USER}")
+else()
+    # use the one chosen by user
+    set(DIRAC_SCRATCH_DIR "${DIRAC_SCRATCH_DIR}")
+endif()
+
 # set scratch directory
 set(DIRAC_SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/DIRAC_scratch_$ENV{USER}"
+    "${DIRAC_SCRATCH_DIR}"
     CACHE STRING
     "DIRAC scratch directory"
     FORCE
     )
+
 message("-- DIRAC: DIRAC_SCRATCH_DIR is \"${DIRAC_SCRATCH_DIR}\"")
 file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${DIRAC_SCRATCH_DIR}")
-
 
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
