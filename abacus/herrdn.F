@@ -242,7 +242,7 @@ C
       IF (MYTID.EQ.MPARID) THEN
 C        This is the master, initialize as usual
 C        Slaves are already initialized before coming here.
-         UNCONT = .TRUE.
+         UNCONT = .FALSE.
          MAXPRI = MAXPRD
       ENDIF
       RETURN
