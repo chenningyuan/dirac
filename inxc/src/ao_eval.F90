@@ -193,17 +193,14 @@ contains
     real(8), intent(in) :: cz
     real(8)             :: ao(*)
 !   ----------------------------------------------------------------------------
-    integer             :: i, iend, ishell, isym, ioff, j
+    integer             :: i, ishell, isym, ioff, j, n, i1, i2
     real(8)             :: px, py, pz, p2, f1, f2
     integer             :: ofg, ofm, off_power
 
 !   ----------------------------------------------------------------------------
 
-    iend = nr_shells
-
-
     i = 1
-    do ishell = 1, iend
+    do ishell = 1, nr_shells
       do isym = 0, nr_boson_sym - 1
         if (iand(isym, shell_stabilizer(ishell)) == 0) then
 
@@ -255,13 +252,15 @@ contains
             else if (need_ao_order(1, 0)) then
               ! ao_start(1, 0) indicate the place in ao where
               ! geom derivs should start
-              ofg = ao_start(1, 0) + i - 1
+             !ofg = ao_start(1, 0) + i - 1
+             !radovan: cheating, need to shift to the right, later shifting back
+              ofg = ao_start(1, 0) + i - 1 + nr_ao_cartesian - nr_ao
               off_power = power_offset(l_quantum_nr(ishell))
               call get_gao1(ishell,             &
                             ao(i),              &
                             ao(ofg),            &
-                            ao(ofg + nr_ao),    &
-                            ao(ofg + 2*nr_ao),  &
+                            ao(ofg + nr_ao_cartesian),    &
+                            ao(ofg + 2*nr_ao_cartesian),  &
                             px,                 &
                             py,                 &
                             pz,                 &
@@ -272,15 +271,18 @@ contains
             end if
 
             if (need_ao_order(2, 0)) then
+                if (nr_ao_cartesian /= nr_ao) then
+                    call quit('fix second AO derivatives for spherical AO')
+                end if
                ofg = ao_start(2, 0) + i - 1
                off_power = power_offset(l_quantum_nr(ishell))
                call get_gao2(ishell,             &
                              ao(ofg          ),  &
-                             ao(ofg + 1*nr_ao),  &
-                             ao(ofg + 2*nr_ao),  &
-                             ao(ofg + 3*nr_ao),  &
-                             ao(ofg + 4*nr_ao),  &
-                             ao(ofg + 5*nr_ao),  &
+                             ao(ofg + 1*nr_ao_cartesian),  &
+                             ao(ofg + 2*nr_ao_cartesian),  &
+                             ao(ofg + 3*nr_ao_cartesian),  &
+                             ao(ofg + 4*nr_ao_cartesian),  &
+                             ao(ofg + 5*nr_ao_cartesian),  &
                              px,                 &
                              py,                 &
                              pz,                 &
@@ -291,6 +293,9 @@ contains
             end if
 
             if (need_ao_order(0, 1)) then
+                if (nr_ao_cartesian /= nr_ao) then
+                    call quit('implement LAO with spherical AO')
+                end if
               ! ao_start(0, 1) indicate the place in ao where
               ! magn dervs should start
               ofm = ao_start(0, 1) + i - 1
@@ -298,8 +303,8 @@ contains
                              ishell,             &
                              ao(i),           &
                              ao(ofm),         &
-                             ao(ofm + nr_ao),  &
-                             ao(ofm + 2*nr_ao))
+                             ao(ofm + nr_ao_cartesian),  &
+                             ao(ofm + 2*nr_ao_cartesian))
               if (need_ao_order(1, 1)) then
                 ofm = ao_start(1, 1) + i - 1
                 ofg = ao_start(1, 0) + i - 1
@@ -307,24 +312,24 @@ contains
                                ishell,                 &
                                ao(ofg),           &
                                ao(ofm),         &
-                               ao(ofm + nr_ao),  &
-                               ao(ofm + 2*nr_ao))
-                ofm = ofm + nr_ao*3
-                ofg = ofg + nr_ao
+                               ao(ofm + nr_ao_cartesian),  &
+                               ao(ofm + 2*nr_ao_cartesian))
+                ofm = ofm + nr_ao_cartesian*3
+                ofg = ofg + nr_ao_cartesian
                 call get_ao_b1(px, py, pz,         &
                                ishell,                 &
                                ao(ofg),           &
                                ao(ofm),         &
-                               ao(ofm + nr_ao),  &
-                               ao(ofm + 2*nr_ao))
-                ofm = ofm + nr_ao*3
-                ofg = ofg + nr_ao
+                               ao(ofm + nr_ao_cartesian),  &
+                               ao(ofm + 2*nr_ao_cartesian))
+                ofm = ofm + nr_ao_cartesian*3
+                ofg = ofg + nr_ao_cartesian
                 call get_ao_b1(px, py, pz,         &
                                ishell,                 &
                                ao(ofg),           &
                                ao(ofm),         &
-                               ao(ofm + nr_ao),  &
-                               ao(ofm + 2*nr_ao))
+                               ao(ofm + nr_ao_cartesian),  &
+                               ao(ofm + 2*nr_ao_cartesian))
               end if
             end if
 
@@ -334,10 +339,12 @@ contains
             if (shell_is_spherical(ishell) .and. (l_quantum_nr(ishell) > 2)) then
                call transform_c_to_s(ishell, ao(i))
                if (need_ao_order(1, 0)) then
-                  ioff = ao_start(1, 0) + i - 1
+                 !ioff = ao_start(1, 0) + i - 1
+                 !radovan: cheating, need to shift to the right, later shifting back
+                  ioff = ao_start(1, 0) + i - 1 + nr_ao_cartesian - nr_ao
                   call transform_c_to_s(ishell, ao(ioff          ))
-                  call transform_c_to_s(ishell, ao(ioff +   nr_ao))
-                  call transform_c_to_s(ishell, ao(ioff + 2*nr_ao))
+                  call transform_c_to_s(ishell, ao(ioff +   nr_ao_cartesian))
+                  call transform_c_to_s(ishell, ao(ioff + 2*nr_ao_cartesian))
                end if
             end if
 
@@ -348,6 +355,21 @@ contains
       end do
     end do
 
+    if (nr_ao_cartesian /= nr_ao) then
+        if (nr_ao_slices > 1) then
+!          we have a spherical basis and need to shift the slices "to the left" by the differences
+           i1 = nr_ao
+           i2 = nr_ao_cartesian
+           do n = 2, nr_ao_slices
+               do i = 1, nr_ao
+                  i1 = i1 + 1
+                  i2 = i2 + 1
+                  ao(i1) = ao(i2)
+               end do
+               i2 = i2 + nr_ao_cartesian - nr_ao
+           end do
+        end if
+    end if
 
   end subroutine
 
