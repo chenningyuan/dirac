@@ -278,6 +278,7 @@ contains
 !   insert half phases
     if (nz < 4) then
        do iz = 1, nz
+         ioff = ntbas(0)*ntbas(0)*(iz - 1)
          if (visual_cfg_london) then
             iq   = ipqtoq(iz, D_0%irep)
             call q2bphase('D', iq, 1, D_0%elms(1 + ioff))
@@ -285,7 +286,6 @@ contains
             call q2bphase('D', iq, 1, D_con%elms(1 + ioff))
          end if
          do imat = 1, visual_cfg_nr_dmat
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
             iq   = ipqtoq(iz, D(imat)%irep)
             call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
          end do
