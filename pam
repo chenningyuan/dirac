@@ -1507,21 +1507,22 @@ class pam_enviroment:
       
         while True:
             try:
-                print_std_out_err("Going to kill (SIGTERM) dirac.x related process with PID="+str(pid))
-                print_std_out_err(get_pid_label(pid))
 
                 while True:
+                    print_std_out_err("Going to kill (SIGTERM) dirac.x related process with PID="+str(pid))
+                    print_std_out_err(get_pid_label(pid))
                     time.sleep(3)
                     os.kill(pid,signal.SIGTERM) # or signal.SIGKILL
                     # waint and verify
                     time.sleep(4)
                     killedpid, stat = os.waitpid(pid, os.WNOHANG)
+                    print_std_out_err("killedpid,stat:"+killedpid+" "+stat)
                     if killedpid == 0:
                         print_std_out_err("dirac.x process(es),PID="+str(pid)+\
                         ", not killed, going to repeat shoot after few seconds")
                         time.sleep(3)
                     else:
-                        print_std_out_err(" Yes ! Process was killed !")
+                        print_std_out_err(" Yes ! This process was killed !")
                     break # leave the while cycle...
             except:
                 break
@@ -1618,42 +1619,6 @@ class pam_enviroment:
                ' inp:',self.input_file_dirac,' mol:',self.input_file_molecule
                stream.flush()
        
-    def kill_dirac_pid(self,pid):
-        """
-        kill process with the entering pid, which is connected to dirac.x calculations
-        repeat until it is 'really killed'
-        """
-        from common import get_pid_label
-        i=0
-        while self.dirac_in_pid(pid) and i<=2:
-        #while i<=2:
-            try:
-                for stream in [sys.stdout,sys.stderr]:
-                    print >> stream,\
-                    'Going to shoot (SIGTERM) dirac.x related process with PID=',pid
-                    print >> stream,get_pid_label(pid) 
-                    stream.flush()
-                os.kill(pid,signal.SIGTERM)
-                # wait  and verify
-                time.sleep(4)
-                killedpid, stat = os.waitpid(pid, os.WNOHANG)
-                if killedpid == 0:
-                    print >> sys.stderr, "ACK! PROCESS NOT KILLED, going to repeat"
-                    i=i-1
-                    print 'but first applying ',kill_command
-                    kill_command="kill -9 "+str(pid)
-                    os.system(kill_command)
-                    #TODO: generalize kill command for Linux/Windows
-                else:
-                    print  >> sys.stderr, "Yes ! Process was killed !"
-            except:
-                time.sleep(3)
-                kill_command="kill -9 "+str(pid)
-                print 'no os.kill, applying the ',kill_command
-                os.system(kill_command)
-                time.sleep(3)
-            i=i+1
-
     def dirac_in_pid(self,pid):
         """
         checks if pid process contains dirac.x/launcher ,i.e. is dirac related (returns True), or not (returns False)
