@@ -60,6 +60,14 @@ def append_dirac_py_modules(dirac_install_dir):
         sys.exit('wrong directory !')
     sys.path.append(modules_directory)
 
+def print_std_out_err(s):
+    """
+    print the entering string "s" into both stdout/stderr streams
+    """
+    for stream in [sys.stdout,sys.stderr]:
+        print  >> stream,s
+        stream.flush()
+
 class pam_enviroment:
 
     global install_dir
@@ -1499,11 +1507,8 @@ class pam_enviroment:
       
         while True:
             try:
-                for stream in [sys.stdout,sys.stderr]:
-                    print >> stream,\
-                    'Going to kill (SIGTERM) dirac.x related process with PID=',pid
-                    print >> stream,get_pid_label(pid) 
-                    stream.flush()
+                print_std_out_err("Going to kill (SIGTERM) dirac.x related process with PID="+str(pid))
+                print_std_out_err(get_pid_label(pid))
 
                 while True:
                     time.sleep(3)
@@ -1512,15 +1517,11 @@ class pam_enviroment:
                     time.sleep(4)
                     killedpid, stat = os.waitpid(pid, os.WNOHANG)
                     if killedpid == 0:
-                        for stream in [sys.stdout,sys.stderr]:
-                            print >> stream, "dirac.x process(es),PID=",pid,\
-                             ", not killed, going to repeat shoot after few seconds"
-                            stream.flush()
+                        print_std_out_err("dirac.x process(es),PID="+str(pid)+\
+                        ", not killed, going to repeat shoot after few seconds")
                         time.sleep(3)
                     else:
-                        for stream in [sys.stdout,sys.stderr]:
-                            print  >> stream, " Yes ! Process was killed !"
-                            stream.flush()
+                        print_std_out_err(" Yes ! Process was killed !")
                     break # leave the while cycle...
             except:
                 break
@@ -1535,6 +1536,7 @@ class pam_enviroment:
         i=0
         while was_killed==True or i<=2:
             was_killed=False
+
             if self.parallel_run:
                 if self.dirac_in_pid(self.dirac_p.pid):
                     self.kill_single_process(self.dirac_p.pid)
@@ -1549,6 +1551,7 @@ class pam_enviroment:
             # get fresh load of dirac processes
             self.get_dirac_pids()
             i=i+1
+            print 'i=',i
 
         self.print_all_processes()
         self.print_timeout_message()
@@ -1602,10 +1605,7 @@ class pam_enviroment:
         command="ps -fu "+self.user_name
         process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
-        for stream in [sys.stdout,sys.stderr]:
-           print >> stream,'\n current processes left: \n--------------------------- \n'
-           print >> stream,process_string
-           stream.flush()
+        print_std_out_err("\n current processes left: \n--------------------------- \n"+process_string)
 
     def print_timeout_message(self):
         """
