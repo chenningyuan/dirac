@@ -17,14 +17,14 @@ DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cd
 cd $DIRAC
 
 # svn update, pamadm 
-git stash
+#git stash
 git svn rebase
 
 ./pamadm -a --xcfun 
 
 
 # configure step
-./setup --mpi --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2  --runtest_timeout=1800
+./setup --mpi --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2  --runtest_timeout=1800 --scratch="/tmp"
 
 cd $DIRAC/cbuild
 
