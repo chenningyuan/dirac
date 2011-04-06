@@ -121,7 +121,7 @@ C
 !     consistency check for fragment X2C and the proper X2C module
       if(x2cmod_fragment_x2c.and..not.x2cmod_x2c)then
         write(lupri,'(/a,a)') 
-     &  '  *** PAMINP reports and error after readin *X2C input:',
+     &  '  *** PAMINP reports an error after readin *X2C input:',
      &  '  a fragment X2C calculation requires the X2C module'//
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
@@ -426,15 +426,15 @@ C
       ENDIF
 
       IF (TWOCOMP) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &  '* Running in pure two-component mode (with LL integrals only)'
+        WRITE(LUPRI,'(A)')
+     &  ' * running in two-component mode'
         INTGEN = 1
         ISLDIR = 0
         ISSDIR = 0
         IGTDIR = 0
       ELSE
-        WRITE(LUPRI,'(1X,A)')
-     &  '* Running in the four-component mode'
+        WRITE(LUPRI,'(A)')
+     &  ' * running in four-component mode'
       ENDIF
 
       IF (ECPCALC) THEN
@@ -780,6 +780,7 @@ C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
        use dirac_cfg
+       use x2cmod_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2049,18 +2050,16 @@ CMI =====================================================================
       IF (DO4C2C) THEN
        BSS=.FALSE.
        WRITE(LUPRI,'(A)')
-     &  ' ** After four-component DC-SCF switch to the two-component'//
-     &  ' framwork (BSS) **'
-       WRITE(LUPRI,'(3X,A,I2,A)') 'with restaring code I2CHAM=',I2CHAM,
-     &  ' WHAT means...'
-       IF (USEDF) THEN
+     &  ' * after the four-component SCF step switch to'// 
+     &  ' the two-component framwork (X2C/BSS)'
+       IF (USEDF.or.x2cmod_x2c)THEN
          WRITE(LUPRI,'(2X,A)')
-     &   '...using the Fock-Dirac matrix for the infinite'//
-     &   ' order transformation (not Dirac bare nucleus, h_D(1)).'
+     &   '...using the Fock-Dirac matrix as the defining h1'//
+     &   ' Hamiltonian matrix for the X2C transformation.'
        ELSE
          WRITE(LUPRI,'(2X,A)')
-     &   '...using the Dirac bare nucleus, h_D(1), for '//
-     &   'the infinite-order transformation.'
+     &   '...using the Dirac bare nucleus, h_D(1), matrix as the'//
+     &   ' defining h1 Hamiltonian matrix for the X2C transformation.'
        ENDIF
        IF (CONT2C) THEN
          WRITE(LUPRI,'(2X,A)')
@@ -2071,7 +2070,6 @@ CMI =====================================================================
      &   '...do only 1 SCF iteration (get non-canonical orbitals)'//
      &   '.'
        ENDIF
-       WRITE(LUPRI,*)
       ENDIF
 C
       WRITE(LUPRI,'(A)') ' ***** OUTPUT CONTROL *****'
@@ -4230,10 +4228,8 @@ C
       CALL FCK3INI
 #endif
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck haminp */
       SUBROUTINE HAMINP(WORK,LWORK)
 C***********************************************************************
 C
@@ -4278,7 +4274,7 @@ C
 #endif
 C
       LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
-     &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE
+     &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -4416,10 +4412,8 @@ C ... get integral flags in advance
       ISLINT    = IBTAND(INTGEN/2,1)
       ISSINT    = IBTAND(INTGEN/4,1)
       IGTINT    = IBTAND(INTGEN/8,1)
-CMI ... this routine is beeing called after HAMINP, in PAMINP
-CMI   CALL OP1INI(WORK,LWORK)
-      NOINPUT = .FALSE.
 
+      NOINPUT   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -4689,9 +4683,9 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
   126     CONTINUE
 C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
 C       transformed relativistic Hamiltonian
-             BSS = .TRUE.
+             BSS        = .TRUE.
              TWOCOMPBSS = .TRUE.
-             TWOCOMP = .TRUE.
+             TWOCOMP    = .TRUE.
 C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
@@ -4702,8 +4696,8 @@ C        ... read 3-digit number
      &         'HAMINP: Error in reading of .BSS/IBSS')
              ENDIF
 C
-C    Check that we have not defined operators yet,
-C      as they need to be modified within BSS transformations
+C            Check that we have not defined operators yet,
+C            as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
      &        'HAMINP:give .BSS option before .OPERAT !')
@@ -4769,12 +4763,18 @@ C&&&& VACPOL: vacuum polarization included
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
 !                                   ^     ^^^ ^
 !             obtained by Miro's old BSS/X2C module
-            IOTC = .TRUE.
-            BSS = .TRUE.
-            NOPRTR = .TRUE.
-            IBSS = 2999
+            IOTC       = .TRUE.
+            BSS        = .TRUE.
+            NOPRTR     = .TRUE.
+            IBSS       = 2999
             TWOCOMPBSS = .TRUE.
-            TWOCOMP = .TRUE.
+            TWOCOMP    = .TRUE.
+C           Check that we have not defined operators yet,
+C           as they need to be modified within BSS transformations
+            IF (I_FINFIELD.GT.0) THEN
+              CALL QUIT(
+     &       'HAMINP: specify the .X2COLD option before .OPERAT !')
+            ENDIF
             GO TO 100
   137     CONTINUE
 C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
@@ -4782,6 +4782,12 @@ C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
              NOPRTR     = .true.
              x2c        = .true.
              x2cmod_x2c = .true.
+C            Check that we have not defined operators yet,
+C            as they need to be modified within BSS transformations
+             IF (I_FINFIELD.GT.0) THEN
+               CALL QUIT(
+     &        'HAMINP: specify the .X2C option before .OPERAT !')
+             ENDIF
              GO TO 100
   138     CONTINUE
 C&&& MIXVAC: Alternative definition of vacuum polarisation
@@ -5014,10 +5020,17 @@ C
         CALL QUIT('Conflicting options : .DO2C4C and .DO4C2C !')
       ENDIF
 
+!     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
+      if(find_keyword('*X2C').and.find_keyword('.4cdfh1'))then
+        do4c2c = .true.
+        if(find_keyword('.2ccycle')) cont2c = .true.
+      end if
+      if(find_keyword('**HAMIL')) call move_to_next_star(word)
+
 CMI   ... take care of 2c-4c/4c-2c transitions !
-      IF (DO2C4C.OR.DO4C2C) THEN
-          TWOCOMP=TWOCOMP_SAVE
-          TWOCOMPBSS=TWOCOMPBSS_SAVE 
+      IF(DO2C4C.OR.DO4C2C) THEN
+         TWOCOMP    = TWOCOMP_SAVE
+         TWOCOMPBSS = TWOCOMPBSS_SAVE 
       ENDIF
 
 !     quit if user wants .LEVY-LEBLOND and .LVCORR
@@ -5038,9 +5051,9 @@ CMI     Remove inconsistencies for the TWOCOMP option
      &  ' (see the code here) !')
       ENDIF
 C
-C     Remove inconsistencies for the BSS option
+C     Remove inconsistencies for the BSS/X2C option
 C     =====================================================
-      IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.BSS) THEN
+      IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.(BSS.or.x2c)) THEN
           CALL QUIT(
      &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
       ENDIF
@@ -5085,14 +5098,16 @@ CMI  ... todo: more precise specification needed
 
 CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1.AND..NOT.CONT2C) THEN
-         IF (USEDF) THEN
-           I2CHAM = 3 ! use Fock-Dirac matrix for 2c transformation
-         ELSE
-           I2CHAM = 4 ! use Dirac bare nucleus for 2c transformation
-         ENDIF
+          if(.not.x2c)then
+            IF (USEDF) THEN
+              I2CHAM = 3 ! use Fock-Dirac matrix for 2c transformation
+            ELSE
+              I2CHAM = 4 ! use Dirac bare nucleus for 2c transformation
+            ENDIF
+          end if
         ENDIF
 
-        IF (CONT2C) THEN
+        IF (CONT2C.and.BSS) THEN
          IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.
      &       I2CHAM.NE.5.AND.I2CHAM.NE.6) THEN
            write(lupri,*) 'HAMINP: wrong value of I2CHAM=',I2CHAM
@@ -5237,15 +5252,17 @@ C         .... two-step method of Barysz
 
         IF (DO4C2C) THEN 
          IF (CONT2C) THEN
-           WRITE(LUPRI,'(1X,A,I3)')
-     & '* after 4comp. SCF procedure '//
-     & ' perform BSS/IOTC transformation of the 4c Fock operator'//
-     & ' and continue SCF at the 2comp. level;  code I2CHAM= ',I2CHAM
+           WRITE(LUPRI,'(A,/A)')
+     & ' * after the four-component SCF procedure'//
+     & ' perform a X2C/BSS/IOTC transformation',
+     & '   of the 4c Fock operator'//
+     & ' and continue the SCF step at the two-component level.'
          ELSE
-           WRITE(LUPRI,'(1X,A,I3)')
-     & '* after 4comp. SCF procedure '//
-     & ' perform BSS/IOTC transformation of the 4c Fock operator'//
-     & ' DO NOT continue SCF at the 2comp. level; code I2CHAM= ',I2CHAM
+           WRITE(LUPRI,'(A,/A)')
+     & ' * after the four-component SCF procedure'//
+     & ' perform a X2C/BSS/IOTC transformation',
+     & '   of the 4c Fock operator'//
+     & ' but DO NOT continue the SCF step at the two-component level.'
          ENDIF
          IF (TRMO4C2C) THEN
            WRITE(LUPRI,'(1X,A)')
@@ -5260,9 +5277,9 @@ C         .... two-step method of Barysz
         ENDIF
 
         IF (TWOCOMP) THEN
-          WRITE(LUPRI,'(A)') ' * running in 2-component modus'
+          WRITE(LUPRI,'(A)') ' * running in two-component mode'
         ELSE
-          WRITE(LUPRI,'(A)') ' * running in 4-component modus'
+          WRITE(LUPRI,'(A)') ' * running in four-component mode'
         ENDIF
 
 C       ... take care of AMFI contribution
@@ -7284,7 +7301,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Hamscan */
       SUBROUTINE HAMSCAN
 C***********************************************************************
 C
@@ -7304,6 +7320,7 @@ C
 #include "cbirea.h"
       CHARACTER WORD*7,PROMPT*1
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
+      LOGICAL find_keyword
 
       ISDO2C4C=.FALSE.
       ISDO4C2C=.FALSE.
@@ -7341,14 +7358,11 @@ C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
      &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD') THEN
-           if(.not.x2c)then
 C............active 2-component modus
-             TWOCOMP=.TRUE. 
+           TWOCOMP=.TRUE. 
 C............variable telling that this is a 2-component relativistic calculation
-             TWOCOMPBSS=.TRUE.
-           end if
+           TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
-           ! write(LUPRI,*) "HAMSCAN detected BSS..."
          ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
@@ -7357,7 +7371,6 @@ C............variable telling that this is a 2-component relativistic calculatio
          ENDIF
          IF (WORD.EQ.'.DO4C2C') THEN
             ISDO4C2C =.TRUE.
-            !write(LUPRI,*) "HAMSCAN detected DO4C2C..."
          ENDIF
          GOTO 930
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -7365,24 +7378,20 @@ C............variable telling that this is a 2-component relativistic calculatio
       ELSE
         GOTO 930
       END IF
-!radovan: this command is unreachable
-      REWIND (LUCMD,IOSTAT=IOS)
 
  940  CONTINUE
 
-      IF (ISDO2C4C) THEN
-           TWOCOMP=TWOCOMP_SAVE
-           TWOCOMPBSS=TWOCOMPBSS_SAVE
-           CNTMAT=CNTMAT_SAVE
-      ENDIF
+!     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
+      if(find_keyword('*X2C').and.find_keyword('.4cdfh1'))then
+        isdo4c2c = .true.
+      end if
 
-      IF (ISDO4C2C) THEN
-         TWOCOMP=TWOCOMP_SAVE
-         TWOCOMPBSS=TWOCOMPBSS_SAVE
-         CNTMAT=CNTMAT_SAVE
+      IF(ISDO2C4C.or.ISDO4C2C)THEN
+        TWOCOMP    = TWOCOMP_SAVE
+        TWOCOMPBSS = TWOCOMPBSS_SAVE
+        CNTMAT     = CNTMAT_SAVE
       ENDIF
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck keyword_scan */

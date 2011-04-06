@@ -2615,6 +2615,7 @@ C     ---------------------------------------------------
       IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run)) THEN
 C
 C
+        print *, 'gmotra: branch taken: Case 1'
         NZT = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
@@ -2636,6 +2637,7 @@ C
 !     Case 2: relativistic 2-component Hamiltonian
 !     --------------------------------------------
       ELSE IF (is_2c_rel_run)THEN
+        print *, 'gmotra: branch taken: Case 2'
 !
         CALL TIMER('START ',TIMSTR,TIMEND)
 
@@ -2757,9 +2759,11 @@ C         2) do picture change transformation of integrals on AOPROPER
 !       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       ------------------------------------------------------------------------------
         if(.not.(twocompbss.or.x2c))then
+        print *, 'gmotra: branch taken: Case 2.2b1'
 !         WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
           KTMAT = KVMAT
         else
+        print *, 'gmotra: branch taken: Case 2.2b2'
 C
           if(.not.x2c)
      &    CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2806,6 +2810,7 @@ C
 C     Case 3: Transformation matrix with modified Dirac equation embedded
 C     -------------------------------------------------------------------
       ELSE
+        print *, 'gmotra: branch taken: Case 3'
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
