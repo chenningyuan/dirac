@@ -143,7 +143,7 @@ class pam_enviroment:
             self.mpirun = str(find_executable('mpirun'))
            
 
-    #   wanted local disks for parallel calculations (set by configure) ?  #
+    #   wanted local disks for parallel calculations (read from Makefile.config)  #
 
         self.localdisks = False
 
@@ -160,7 +160,7 @@ class pam_enviroment:
 
     # machine file
 
-        self.machinefile = ''  # could be enviroment variable (like $PBS_NODEFILE)
+        self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
 
     # master name,IP
 
@@ -178,8 +178,8 @@ class pam_enviroment:
 
     # rcp, rsh for parallel, multinodes calculations
 
-        self.rcp = ''  # default taken from Makefile.config
-        self.rsh = ''
+        self.rcp = None  # default taken from Makefile.config
+        self.rsh = None 
 
     # dirac profiling
 
@@ -641,7 +641,7 @@ class pam_enviroment:
         help_machfile="""specify a machinefile for a parallel run 
                          [default: %default]
                   """
-        if len(self.machinefile)>0:
+        if self.machinefile != None:
             help_machfile_note=''+self.machinefile+''
         else:
             help_machfile_note='None'
