@@ -54,10 +54,10 @@ if(DIRAC_ENABLE_TESTS)
         set(DART_TESTING_TIMEOUT
             "${DIRAC_RUNTEST_TIMEOUT}"
             CACHE STRING
-            "Set timeout in seconds for make test"
+            "Set timeout in seconds for every single test."
             FORCE
             )
-        message("-- DIRAC: DART_TESTING_TIMEOUT set to ${DART_TESTING_TIMEOUT}")
+        message("-- DIRAC: DART_TESTING_TIMEOUT (time limit for single test) set to ${DART_TESTING_TIMEOUT}")
     endif()
     if(NOT "${DIRAC_RUNTEST_NR_PROC}" STREQUAL "")
         message("-- DIRAC: DIRAC_RUNTEST_NR_PROC set to ${DIRAC_RUNTEST_NR_PROC}")
