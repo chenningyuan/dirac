@@ -49,8 +49,9 @@ cd $DIRAC
 cd $DIRAC/cbuild
 
 make clean
-make install
+make dirac.x
 make test
+make ExperimentalSubmit
 
 #make Experimental 
 
