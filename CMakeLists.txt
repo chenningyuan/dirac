@@ -20,6 +20,10 @@ if(NOT CMAKE_BUILD_TYPE)
         )
 endif()
 
+# do not rebuild if rules (compiler flags) change
+# this has advantages and disadvantages
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake")
     include(cmake/Sources.cmake)
 else()
