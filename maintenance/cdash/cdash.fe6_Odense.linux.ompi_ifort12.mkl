@@ -37,12 +37,8 @@ echo "running dirac cdash buildup at "$timestamp
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk
 cd $DIRAC
 
-#/people/disk2/ilias/bin/subversion/bin/svn up .
-
 ./pamadm -a --xcfun
 
-cd $DIRAC/cbuild
-make clean
 
 cd $DIRAC
 
@@ -52,7 +48,11 @@ cd $DIRAC
 
 cd $DIRAC/cbuild
 
-make Experimental 
+make clean
+make install
+make test
+
+#make Experimental 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
