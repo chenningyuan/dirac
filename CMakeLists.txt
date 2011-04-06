@@ -116,6 +116,23 @@ set(DIRAC_SCRATCH_DIR
 message("-- DIRAC: DIRAC_SCRATCH_DIR is \"${DIRAC_SCRATCH_DIR}\"")
 file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${DIRAC_SCRATCH_DIR}")
 
+find_program(VALGRIND_EXECUTABLE valgrind)
+if(VALGRIND_EXECUTABLE)
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nVALGRIND=${VALGRIND_EXECUTABLE}")
+endif()
+find_program(RCP_EXECUTABLE rcp)
+if(RCP_EXECUTABLE)
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nRCP=${RCP_EXECUTABLE}")
+endif()
+find_program(RSH_EXECUTABLE rcp)
+if(RSH_EXECUTABLE)
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nRSH=${RSH_EXECUTABLE}")
+endif()
+find_program(PROFILER gprof)
+if(PROFILER)
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nPROFILER=${PROFILER}")
+endif()
+
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
 include(cmake/Archs.cmake)
