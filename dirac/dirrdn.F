@@ -43,6 +43,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #include "cbirea.h"
       DIMENSION WORK(*)
@@ -119,7 +120,7 @@ C
         call report_after_dft_input()
       end if
 !     consistency check for fragment X2C and the proper X2C module
-      if(x2cmod_fragment_x2c.and..not.x2cmod_x2c)then
+      if(x2cmod_fragment_x2c.and..not.x2c)then
         write(lupri,'(/a,a)') 
      &  '  *** PAMINP reports an error after readin *X2C input:',
      &  '  a fragment X2C calculation requires the X2C module'//
@@ -2048,11 +2049,18 @@ CMI =====================================================================
 
 !     ... descend to the two-component level     
       IF (DO4C2C) THEN
-       BSS=.FALSE.
+!      reset the X2C/BSS module flag 
+       if(bss) bss = .false.
+       if(x2c)then 
+         x2c        = .false.
+!        keep the x2cmod_x2c value in order to identify to which module
+!        to switch in dirscf.F --> subroutine PSIDHF
+!        x2cmod_x2c = .false.
+       end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'// 
      &  ' the two-component framwork (X2C/BSS)'
-       IF (USEDF.or.x2cmod_x2c)THEN
+       IF (USEDF)THEN
          WRITE(LUPRI,'(2X,A)')
      &   '...using the Fock-Dirac matrix as the defining h1'//
      &   ' Hamiltonian matrix for the X2C transformation.'
@@ -5023,6 +5031,8 @@ C
 !     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
       if(find_keyword('*X2C').and.find_keyword('.4cdfh1'))then
         do4c2c = .true.
+!       present default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
+        usedf  = .true.
         if(find_keyword('.2ccycle')) cont2c = .true.
       end if
       if(find_keyword('**HAMIL')) call move_to_next_star(word)

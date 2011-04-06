@@ -35,6 +35,7 @@ C                     2005/6 MI to make BSS2DC/DC2BSS available
 C
 C***********************************************************************
          use dirac_cfg
+         use x2cmod_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -259,17 +260,27 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
       IF (DO4C2C) THEN
         write(lupri,'(/,4X,A)')
      &  '*** PSIDHF: Descending to two-component'// 
-     &  ' mode after previous four-component HF cycles.'
-        CALL TITLER('Two-component BSS/DKH Kohn-Sham calculations',
-     &      '*',125)
-        BSS     = .TRUE.
+     &  ' mode after previous four-component SCF cycles. ***'
+        if(x2cmod_x2c)then
+          x2c      = .true.
+          call quit('bla bla... :)')
+        else 
+          BSS      = .TRUE.
+          ! needs this flag for preparing transformed data
+          CMPEIG   = .TRUE. 
+        end if
         TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
-        TWOCOMP = .FALSE.
-
-        ! needs this flag for preparing transformed data
-        CMPEIG = .TRUE. 
+        TWOCOMP    = .FALSE.
 
         START2C = .FALSE.
+        if(bss)then
+          CALL TITLER('Two-component BSS/DKH SCF calculation',
+     &       '*',125)
+        else
+          CALL TITLER('X2C SCF calculation','*',125)
+        end if
+!
+!       call the x2c/bss transformation module (branch 2 inside gmotra)
         CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
 
 CMI      ... DO NOT continue with SCF iterations !!!

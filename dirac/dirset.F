@@ -71,7 +71,8 @@ C
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
-      IF (TWOCOMPBSS .or. x2cmod_x2c) THEN
+      print *,'PAMSET reports: TWOCOMPBSS',TWOCOMPBSS
+      IF (TWOCOMPBSS .or. x2c) THEN
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
