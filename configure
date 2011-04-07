@@ -2807,7 +2807,7 @@ RCP=$rcp
 RSH=$rsh
 LOCALDISKS=$localdisks
 # in case we have local disks we need to pass the work directory to the slaves as well...
-MPI_PASS_WRKDIR_ARGUMENT=$mpi_wrkdir_arg
+MPI_PASS_SCRATCH_ARGUMENT=$mpi_wrkdir_arg
 # default machine file - either for mpirun or for copying files onto local disks or for both
 MACH_FILE=$mach_file
 #  valgrind debugging and checking tool - check it according to your machine installation

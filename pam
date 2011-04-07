@@ -1364,7 +1364,7 @@ class pam_enviroment:
             elif name == 'LOCALDISKS':
                 if value == 'yes':
                     self.localdisks = True
-            elif name == 'MPI_PASS_scratch_ARGUMENT':
+            elif name == 'MPI_PASS_SCRATCH_ARGUMENT':
                 if self.localdisks:
                     localdisks_pass_scratch_temp = value
                     self.argument_to_pass_scratch_dir_to_slaves = \
