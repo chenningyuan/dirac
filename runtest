@@ -223,7 +223,7 @@ class run:
          self.mol  = line.split()[1]
          self.kind = kind
          pam_flags = ''
-         # timeouts for quick, regular and benchmark tests
+         # default timeouts for quick, regular and benchmark tests
          if self.kind == 'q':
              pam_flags +=  '--timeout=21m '
          elif self.kind == 'r':
@@ -463,9 +463,11 @@ def main(*args):
 
             if options.timeout:
                 if global_elapsed > timeout:  
-                    print
-                    print 'Giving up. Time exceeded !'
-                    print
+                    # miro: we need the stderr output to see this message on the CDash board
+                    for stream in [sys.stdout,sys.stderr]:
+                        print >> stream,'\n Giving up runtest. Total allowed time of ',\
+                                 timeout ,' seconds exceeded !\n'
+                        stream.flush()
                     sys.exit(1)
 
         #task.pam_output_file.close()
