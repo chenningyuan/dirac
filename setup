@@ -221,7 +221,7 @@ if options.check:
 if options.coverage:
     command += ' -DDIRAC_ENABLE_CODE_COVERAGE=1'
 if options.runtest_timeout_flag:
-    command += ' -DDIRAC_RUNTEST_TIMEOUT_FLAG=' + str(options.runtest_timeout_flag)
+    command += ' -DDIRAC_RUNTEST_OWN_TIMEOUT_FLAG=' + str(options.runtest_timeout_flag)
 if options.install:
     command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 if options.scratch:
