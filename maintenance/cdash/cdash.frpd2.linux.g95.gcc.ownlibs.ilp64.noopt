@@ -19,10 +19,6 @@ svn up
 # ...
 ./pamadm -a --xcfun --minus --openrsp
 
-cd $DIRAC/cbuild
-make clean
-cd $DIRAC
-
 # configure step
 ./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  --buildname="linux.g95.gcc.ilp64.ownlibs.noopt" --scratch="/var/tmp"
 
@@ -30,6 +26,7 @@ cd $DIRAC/cbuild
 
 # build and run tests
 # use either Experimental or Nightly
+  make clean
   make Experimental 
 
 exit 0
