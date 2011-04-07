@@ -142,11 +142,9 @@ class pam_enviroment:
         #   Linux, Windows, ...
             self.mpirun = str(find_executable('mpirun'))
            
-
-    #   by default use local disks for parallel calculations
     #   this variable will decide whether files are distributed over local disks
     #   this variable is also read from Makefile.config and perhaps changed
-        self.localdisks = True
+        self.localdisks = False
 
     #   command to pass the location of the scratch directory to the slaves (to be set by configure)
 

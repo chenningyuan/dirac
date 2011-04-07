@@ -44,6 +44,7 @@ option(DIRAC_ENABLE_MPI            "Use MPI parallelization"   OFF)
 option(DIRAC_ENABLE_XCFUN          "Use XCFun library"         ON)
 option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
 option(DIRAC_ENABLE_TESTS          "Enable make test"          ON)
+option(USE_LOCAL_DISKS             "Use local disks"           ON)
 
 if(DIRAC_ENABLE_TESTS)
     SET(BUILDNAME "${BUILDNAME}" 
@@ -135,6 +136,13 @@ endif()
 find_program(PROFILER gprof)
 if(PROFILER)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nPROFILER=${PROFILER}")
+endif()
+
+if(USE_LOCAL_DISKS)
+    add_definitions(-DSYS_LOCALDISKS)
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=yes")
+else()
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=no")
 endif()
 
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
