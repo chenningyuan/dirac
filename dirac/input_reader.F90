@@ -502,10 +502,6 @@ contains
          call read_input_visual_helper(iq_jdia)
       end if
 
-      if (kw_matches(word, '.JPARA ')) then
-         call read_input_visual_helper(iq_jpara)
-      end if
-
       if (kw_matches(word, '.J     ')) then
          call read_input_visual_helper(iq_j)
       end if

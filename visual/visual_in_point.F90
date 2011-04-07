@@ -177,12 +177,24 @@ contains
 
 !           current density: -ec \psi^\dag \alpha \psi
             if (visual_cfg_property(imat) == iq_j) then
-               call get_j(v,            &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          buffer,       &
-                          ao)
+               if (levyle) then
+                  call get_gn(density,      &
+                              v,            &
+                              D(imat)%irep, &
+                              D(imat)%nrow, &
+                              D(imat)%elms, &
+                              buffer,       &
+                              ao,           &
+                              ao(ao_start(1, 0):ao_end(1, 0)))
+                  v = 0.5d0*v
+               else
+                  call get_j(v,            &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
@@ -259,19 +271,6 @@ contains
                   result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
                   result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
                end if
-            end if
-            
-!           nonrel paramagnetic current density (orbital part)
-            if (visual_cfg_property(imat) == iq_jpara) then
-               call get_gn(density,      &
-                           v,            &
-                           D(imat)%irep, &
-                           D(imat)%nrow, &
-                           D(imat)%elms, &
-                           buffer,       &
-                           ao,           &
-                           ao(ao_start(1, 0):ao_end(1, 0)))
-               result(1:3) = result(1:3) + 0.5d0*v(1:3)
             end if
             
 !           nonrel diamagnetic current density (hardcoded for B along z)

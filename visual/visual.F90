@@ -89,7 +89,6 @@ contains
     do imat = 1, visual_cfg_nr_dmat
        if (                                             &
            (visual_cfg_property(imat) == iq_elf)   .or. &
-           (visual_cfg_property(imat) == iq_jpara) .or. &
            (visual_cfg_property(imat) == iq_divs)  .or. &
            (visual_cfg_property(imat) == iq_rots)  .or. &
            (visual_cfg_property(imat) == iq_divj)  .or. &
