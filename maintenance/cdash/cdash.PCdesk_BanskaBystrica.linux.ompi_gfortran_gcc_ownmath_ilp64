@@ -24,7 +24,7 @@ git svn rebase
 
 
 # configure step
-./setup --mpi --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2  --runtest_timeout=99999 --scratch="/tmp"
+./setup --mpi --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2  --runtest_timeout=99999 --scratch="/tmp" --runtest_timeout_flag="00:18:00"
 
 cd $DIRAC/cbuild
 
