@@ -143,9 +143,11 @@ class pam_enviroment:
             self.mpirun = str(find_executable('mpirun'))
            
 
-    #   wanted local disks for parallel calculations (read from Makefile.config)  #
-    #   miro: default-true, so ensure the distribution of files over multiple nodes
-        self.localdisks = True
+    #   some machines are using local disks for parallel calculations
+    #   this variable will decide whether files are distributed over local disks
+    #   this variable is read from Makefile.config
+    #   the default is False
+        self.localdisks = False
 
     #   command to pass the location of the scratch directory to the slaves (to be set by configure)
 
