@@ -3441,15 +3441,10 @@ C
 !     radovan: the check below is skipped if fndocc is called from visual
 !              this is to avoid modification of occupation if converged homo-lumo gap
 !              is very small
-      logical, optional, intent(in) :: skip_check_for_sym_broken_occ
-      logical                       :: skip_check
+      logical, intent(in) :: skip_check_for_sym_broken_occ
+      logical             :: skip_check = .false.
 
-      if (present(skip_check_for_sym_broken_occ)) then
-         skip_check = skip_check_for_sym_broken_occ
-      else
-         skip_check = .false.
-      end if
-
+      skip_check = skip_check_for_sym_broken_occ
 
 !     (re-)set NELECT_DHF as it might have changed from last time 
 !     because of the detection of symmetry broken solution...
@@ -4373,7 +4368,7 @@ C
 C
 C     Determine new occupation
 C
-      CALL FNDOCC(EIG)
+      CALL FNDOCC(EIG, .false.)
 C
       TEST = .FALSE.
       DO IFRP = 1,NFSYM
