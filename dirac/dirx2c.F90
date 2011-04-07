@@ -241,7 +241,7 @@ contains
 !              out: AOtoMO transformation matrices -> xmat, scr1mat
 !                                                   + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
 !        ------------------------------------------------------------------------------
-         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.(x2c_linsym .eqv. .true.))
+         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.x2c_linsym)
 
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
 
@@ -558,7 +558,10 @@ contains
 !      for the "4c-Dirac-Fock operator as basis" option which is not activated yet within
 !      this module. sknecht+tsaue: march 2011
        basic_h1mat = 0
-       if(defining_h1mat == 2) basic_h1mat = 2
+       if(defining_h1mat == 2) then 
+         basic_h1mat = 2
+         call quit('bla bla... :)')
+       end if
        call x2c_get_h1_mat_base(xmat,                  &
                                 scr1mat,               &
                                 scr2mat,               &

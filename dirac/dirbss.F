@@ -526,7 +526,6 @@ C   ... release the rest of allocated memmory ...
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck set_tmt */
       SUBROUTINE SET_TMT(IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -552,16 +551,16 @@ C .. NZT is in dcbbas.h, and after MODHAM for RKB is equal to NZ !
       DO IFRP = 1,NFSYM
         NISHMF(IFRP) = NISH(IFRP)
         NOCCMF(IFRP) = NOCC(IFRP)
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
+        I2TMT(IFRP)  = N2TMT
+        N2TMT        = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
         I2TMOT(IFRP) = N2TMOTQ
-        N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
-        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
-        IORB(IFRP)  = NORBT
+        N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
+        IORB(IFRP)   = NORBT
 C       ...  Count total number of orbitals  ...
-        NORBT    = NORBT  + NORB(IFRP)
-        I2ORBT(IFRP)= N2ORBT*NZ
-        N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
+        NORBT        = NORBT  + NORB(IFRP)
+        I2ORBT(IFRP) = N2ORBT*NZ
+        N2ORBT       = N2ORBT + NORB(IFRP)*NORB(IFRP)
       ENDDO
 
       IF (IPRINT.GE.5) THEN
@@ -577,7 +576,6 @@ C       ...  Count total number of orbitals  ...
        write(lupri,'(4X,A,I3)') 'N2TMT=',N2TMT
       ENDIF
 
-      RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
@@ -677,49 +675,6 @@ C      ... save the 'SL' resorted transformation matrix
         ENDIF
       ENDIF
 
-C    ... one-step approach and NOT the linear symmetry 
-      IF (.NOT.FPB.AND.LINAD) THEN
-        IVMAT = 1
-        IBUF = 1
-        IMAT = 1
-        DO I = 1, NFSYM
-        IF(NORB(I).GT.0) THEN
-C     ... construct original AO->RKB_MO basis:
-C         VMAT(IVMAT) = WORK(IMAT) . WORK(IBUF)^+
-          CALL QGEMM(NFBAS(I,0),NORB(I),NORB(I),D1,
-     &      'N','N',IPQTOQ(1,0),TMAT(IMAT),
-     &      NFBAS(I,0),NORB(I),NZ,
-     &      'H','N',IPQTOQ(1,0),
-     &      TBUF(IBUF),NORB(I),NORB(I),1,
-     &      D0,IPQTOQ(1,0),VMAT(IVMAT),
-     &      NFBAS(I,0),NORB(I),NZ)
-
-          IF (IPRINT.GE.5) THEN
-            CALL HEADER(
-     & 'HANDLE_RKB: NONLINSYM RKB transformation matrix 4c AO->MO ',-1)
-            WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM                          
-            CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NORB(I),              
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)        
-          ENDIF
-
-         IBUF  = IBUF  + NORB(I)*NORB(I)
-         IMAT  = IMAT  + NFBAS(I,0)*NORB(I)*NZ                         
-         IVMAT = IVMAT + NFBAS(I,0)*NORB(I)*NZ  
-
-       ENDIF
-       ENDDO
-
-C    save
-       CALL W2BSSMAT(4,.TRUE.,'TMAT4C_1','HANDLE_RKB',
-     &               VMAT,N2TMT,LUBSS,IPRINT)
-       IF (IPRINT.GE.2) THEN
-        write(lupri,*)
-     & 'HANDLE_RKB: TMAT4C_1 (VMAT) was written into the BSSMAT !'
-       ENDIF
-
-      ENDIF
-
 C       ... dummy vars
       CALL W2BSSMAT(6,.TRUE.,'XXXXXXXX','HANDLE_RKB',
      &               VMAT,N2TMT,LUBSS,IPRINT)
@@ -730,7 +685,6 @@ C       ... dummy vars
       ENDIF
 
       CALL QEXIT('HANDLE_RKB')
-      RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*

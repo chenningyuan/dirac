@@ -3436,13 +3436,12 @@ C
          write(lupri,'(2X,A)')
      &  'TWOC=.false. => Used four-component mode'
        ENDIF
-       IF (TWOCOMPBSS.AND.BSS) THEN
+       IF (TWOCOMPBSS.AND.(BSS.or.x2c)) THEN
         WRITE(LUPRI,'(2X,A)') 
-     &  'IOTC in is pure two-component mode!' 
-       ELSE IF (.NOT.TWOCOMPBSS.AND.BSS) THEN
+     &  'X2C/IOTC in two-component mode!' 
+       ELSE IF (.NOT.TWOCOMPBSS.AND.(BSS.or.x2c)) THEN
         WRITE(LUPRI,'(2X,A)') 
-     &  'IOTC in pure four-component mode'//
-     &  '(full 4comp matrixes, but wasting memory space)!' 
+     &  'X2C/IOTC in four-component mode!'
        ENDIF
       ENDIF
       
@@ -3469,6 +3468,7 @@ C
 C     Get AO overlap matrix
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
+!     SSMTRC is 1.0d0 when doing 4c-->2c for h1 == 4c-fock operator
       CALL GTOVLX(WORK(KSAO),SSMTRC)
 C
       IOFF = 1

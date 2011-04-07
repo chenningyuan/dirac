@@ -263,7 +263,6 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
      &  ' mode after previous four-component SCF cycles. ***'
         if(x2cmod_x2c)then
           x2c      = .true.
-          call quit('bla bla... :)')
         else 
           BSS      = .TRUE.
           ! needs this flag for preparing transformed data

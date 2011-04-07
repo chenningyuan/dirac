@@ -353,6 +353,8 @@ contains
 !         3. in initial implementation TMAT_LSY: 
 !            if(4c Dirac-Fock--> 2c .and. linear == .true.) [non-linear --> linear symmetry] {ID == "l"}
 !
+!       re-initialize orbital common blocks in dcbdhf.h if (4c Dirac-Fock--> 2c)
+!
 !----------------------------------------------------------------------
      real(8), intent(in)    :: mat1(*)
      real(8), intent(in)    :: mat2(*)
@@ -381,7 +383,7 @@ contains
          write(flabel,'(a7,i4,i1)') '4cAOMOr',is_fragment,i
          call x2c_write(flabel,mat1(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
 
-         if(defining_h1mat > 0)then
+         if(defining_h1mat == 2)then
 
            write(flabel,'(a7,i4,i1)') '4cAOMOo',is_fragment,i
            call x2c_write(flabel,mat2(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
@@ -396,6 +398,10 @@ contains
          ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nz
          ioff_momo = ioff_momo + norb_dim(i) *  norb_dim(i)*nz
        end do
+
+       if(defining_h1mat == 2)then
+        call set_tmt(5)
+       end if
 
 !      redirect ["SL resorted"] matrix to mat3 for later reuse in
 !      x2c_get_h1_defining_mat (module x2c_def_h1_4c)
