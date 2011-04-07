@@ -4,8 +4,6 @@ electric properties for frozen density embedding
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
-.PRINT
- 1
 .LEVY-LEBLOND
 .DFTAUTO
 pbex=1.0 pbec=1.0
@@ -16,26 +14,18 @@ pbex=1.0 pbec=1.0
 kin_pw91
 .NAXCF
 pbex=1.0 pbec=1.0
-**INTEGRALS
-.NUCMOD
-1
-*READIN
-.CONTRACTED
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
-.PRINT
- 1
+.EVCCNV
+ 1.0D-2
 **PROPERTIES
 .DIPOLE
-.POLARIZABILITY
 *LINEAR RESPONSE
+.OPERATOR
+ YDIPLEN
 .B FREQ
- 5
+ 2
  0.000
- 0.025
- 0.050
- 0.075
  0.100
 *END OF
-
