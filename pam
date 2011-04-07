@@ -144,8 +144,8 @@ class pam_enviroment:
            
 
     #   wanted local disks for parallel calculations (read from Makefile.config)  #
-
-        self.localdisks = False
+    #   miro: default-true, so ensure the distribution of files over multiple nodes
+        self.localdisks = True
 
     #   command to pass the location of the scratch directory to the slaves (to be set by configure)
 
