@@ -49,11 +49,12 @@ cd $DIRAC
 cd $DIRAC/cbuild
 
 make clean
-make dirac.x
-make test
-make ExperimentalSubmit
 
-#make Experimental 
+#make dirac.x
+#make test
+#make ExperimentalSubmit
+
+make Experimental 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
