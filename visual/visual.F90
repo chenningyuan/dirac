@@ -232,6 +232,11 @@ contains
           do m = 1, norbt
              D_mo%elms((m - 1)*norbt + m) = occupation(m)
           end do
+
+          D_mo%ih_sym = 1
+          D_mo%tr_sym = 1
+          D_mo%irep   = 0
+
           D(imat) = C*(D_mo*dag(C))
           if (debug_me) then
              call print_mat(D_mo,    label = 'debug MO D matrix')
