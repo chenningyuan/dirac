@@ -286,9 +286,9 @@ contains
                ry = py - visual_cfg_gauge_origin(2)
                rz = pz - visual_cfg_gauge_origin(3)
             
-               result(1) = result(1) - 0.5d0*ry*density
-               result(2) = result(2) + 0.5d0*rx*density
-               result(3) = result(3) + 0.0d0
+               result(1) = result(1) + 0.5d0*ry*density
+               result(2) = result(2) - 0.5d0*rx*density
+               result(3) = result(3) - 0.0d0
             end if
             
 !           responding operator is electric dipole
