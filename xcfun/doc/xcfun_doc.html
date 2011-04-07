@@ -21,8 +21,8 @@ generate a library file <tt>lib/libxcfun.a</tt> which can be
 statically linked to your application. Include files listing all
 available functionals will be generated during the compilation of
 XCFun. These files are <tt>include/xcfun_autogen.h</tt> (for the C
-interface), and <tt>fortran/xcfun_autogen.f90</tt> for the Fortran
-module. C or C++ programs that uses XCFun should include the <tt>xcfun.h</tt> header file, while Fortran programs should use the <tt>xcfun</tt> module defined in <tt>fortran/xcfun_module.f90</tt>.
+interface), and <tt>fortran/xcfun_autogen.F90</tt> for the Fortran
+module. C or C++ programs that uses XCFun should include the <tt>xcfun.h</tt> header file, while Fortran programs should use the <tt>xcfun</tt> module defined in <tt>fortran/xcfun_module.F90</tt>.
 
 <p> See also <a href="#Compile Time Options">Compile Time Options</a> below. </p>
 
@@ -103,7 +103,7 @@ E<sub>&sigma;<sub>&beta;&beta;</sub>&sigma;<sub>&beta;&beta;</sub></sub>. See th
 The library is written in C++, but can also be directly used in a C
 project or Fortran project. The C interface is described
 in <tt>include/xcfun.h</tt>, while the Fortran interface is described
-in the module file <tt>fortran/xcfun_module.f90</tt>. This
+in the module file <tt>fortran/xcfun_module.F90</tt>. This
 documentation tries to describe both the C and Fortran API at the same
 time, even though small differences may exist between the two
 interfaces.
@@ -153,7 +153,7 @@ number of variables used by the functional.
 parameter <tt>param</tt> in <tt>functional</tt> to some double
 precision <tt>value</tt>. <tt>Param</tt> is one of the named constants
 listed in <tt>include/xcfun_autogen.h</tt>
-(or <tt>fortran/xcfun_autogen.f90</tt>). The parameters can be the
+(or <tt>fortran/xcfun_autogen.F90</tt>). The parameters can be the
 weight of different functionals, or some other parameter in the
 functional definition. Example of parameters are <tt>XC_VWN5C</tt>,
 the amount of VWN5 LDA correlation, and <tt>XC_RANGESEP_MU</tt>, the

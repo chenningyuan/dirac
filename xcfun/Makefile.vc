@@ -11,7 +11,7 @@ CFLAGS=-Za -O2 -DNDEBUG -DFTN_UPPERCASE
 CXX=cl
 CXXFLAGS=$(CFLAGS)
 
-# Fortran compiler and flags (used for fortran/example.f90)
+# Fortran compiler and flags (used for fortran/example.F90)
 FC=ifort
 FFLAGS=-unix -nologo -O3
 

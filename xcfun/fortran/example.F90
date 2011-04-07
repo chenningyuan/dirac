@@ -1,6 +1,6 @@
 program xc_example
 
-!  this example contains all f90 interface routines
+!  this example contains all F90 interface routines
 !  that are needed to "talk to" the xcfun library
 !  and demonstrates how to use them
 

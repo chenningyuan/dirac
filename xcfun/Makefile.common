@@ -11,7 +11,7 @@ FUN_OBJ:=$(patsubst %.cpp,%.o,$(wildcard src/functionals/*.cpp))
 
 lib: lib/libxcfun.a
 
-lib/libxcfun.a: $(BASE_OBJ) $(FUN_OBJ) include/xcfun_autogen.h fortran/xcfun_autogen.f90
+lib/libxcfun.a: $(BASE_OBJ) $(FUN_OBJ) include/xcfun_autogen.h fortran/xcfun_autogen.F90
 	ar -r $@ $(BASE_OBJ) $(FUN_OBJ)
 
 src/parameters.o: src/parameters.cpp src/parameters.h src/functionals/list_of_parameters.h
@@ -24,7 +24,7 @@ geninterface: src/geninterface.cpp
 include/xcfun_autogen.h: geninterface src/functionals/list_of_parameters.h
 	./geninterface
 
-fortran/xcfun_autogen.f90: geninterface src/functionals/list_of_parameters.h
+fortran/xcfun_autogen.F90: geninterface src/functionals/list_of_parameters.h
 	./geninterface
 
 funeval: test/funeval.c lib/libxcfun.a
@@ -37,9 +37,9 @@ example_fortran: fortran/xcfun_autogen.o fortran/xcfun_module.o fortran/example.
 	$(FC) $(FFLAGS) $(LIBS) -o $@ $^ -lxcfun -lm
 
 clean:
-	rm -f `find . -name '*.o' -o -name '*~'` testall funeval lib/libxcfun.a include/xcfun_autogen.h fortran/xcfun_autogen.f90 example_fortran_
+	rm -f `find . -name '*.o' -o -name '*~'` testall funeval lib/libxcfun.a include/xcfun_autogen.h fortran/xcfun_autogen.F90 example_fortran_
 
-.SUFFIXES: .f90
+.SUFFIXES: .F90
 
-.f90.o:
-	$(FC) $(FFLAGS) -c -o $*.o $*.f90
+.F90.o:
+	$(FC) $(FFLAGS) -c -o $*.o $*.F90

@@ -9,7 +9,7 @@ CFLAGS=-g -fastsse
 CXX=pgcpp
 CXXFLAGS=$(CFLAGS) --no_warnings
 
-# Fortran compiler and flags (used for fortran/example.f90)
+# Fortran compiler and flags (used for fortran/example.F90)
 FC=pgf90
 FFLAGS=-g -fastsse
 

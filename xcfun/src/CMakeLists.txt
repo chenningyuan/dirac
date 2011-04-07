@@ -16,7 +16,7 @@ set (BASE_LIB_SRCS
 file (GLOB FUNCTIONAL_SRCS functionals/*.cpp) 
 set (GENERATED_FILES 
 	${CMAKE_CURRENT_BINARY_DIR}/include/xcfun_autogen.h
-	${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.f90
+	${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.F90
 	)
 
 add_library(xcfun ${BASE_LIB_SRCS}
@@ -28,13 +28,13 @@ add_executable(geninterface geninterface.cpp)
 add_custom_target(interfaces ALL 
 	DEPENDS 
 	${CMAKE_CURRENT_BINARY_DIR}/include/xcfun_autogen.h
-	${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.f90
+	${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.F90
 )
 
 add_custom_command (
 	OUTPUT 
 		${CMAKE_CURRENT_BINARY_DIR}/include/xcfun_autogen.h
-		${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.f90
+		${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.F90
 	DEPENDS 
 		${CMAKE_CURRENT_BINARY_DIR}/include
 		${CMAKE_CURRENT_BINARY_DIR}/fortran
