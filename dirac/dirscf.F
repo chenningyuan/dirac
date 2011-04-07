@@ -3418,7 +3418,7 @@ C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck fndocc */
-      SUBROUTINE FNDOCC(EIG)
+      subroutine fndocc(eig, skip_check_for_sym_broken_occ)
 C***********************************************************************
 C
 C     Find DHF occupation based on eigenvalues
@@ -3438,7 +3438,20 @@ C
       logical   symmetry_broken
       integer, save :: icharge       = 0
       integer       :: total_num_e
-!
+
+!     radovan: the check below is skipped if fndocc is called from visual
+!              this is to avoid modification of occupation if converged homo-lumo gap
+!              is very small
+      logical, optional, intent(in) :: skip_check_for_sym_broken_occ
+      logical                       :: skip_check
+
+      if (present(skip_check_for_sym_broken_occ)) then
+         skip_check = skip_check_for_sym_broken_occ
+      else
+         skip_check = .false.
+      end if
+
+
 !     (re-)set NELECT_DHF as it might have changed from last time 
 !     because of the detection of symmetry broken solution...
 !     -----------------------------------------------------------
@@ -3517,10 +3530,12 @@ C
 !     principle and correct it.
 !     stop if "fractional occupation" is not in use?
       symmetry_broken = .false.
-      if(.not.aoc)then
-        call check_for_symmetry_broken_occupations(eig,nish,nash,
-     &                          norb,norbt,ieigsym,nfsym,ieigmin,
-     &                          total_num_e,symmetry_broken)
+      if (.not. skip_check) then
+         if (.not. aoc) then
+           call check_for_symmetry_broken_occupations(eig,nish,nash,
+     &                             norb,norbt,ieigsym,nfsym,ieigmin,
+     &                             total_num_e,symmetry_broken)
+         end if
       end if
 !
       NASHMFT = 0

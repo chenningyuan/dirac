@@ -135,7 +135,7 @@ contains
     close(file_unit, status = 'keep')
     write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
 
-    call fndocc(eigenvalues)
+    call fndocc(eigenvalues, .true.)
     call dealloc(eigenvalues)
 
 
