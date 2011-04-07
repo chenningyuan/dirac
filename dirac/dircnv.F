@@ -720,6 +720,7 @@ C
 #include "dcbdhf.h"
       DIMENSION BMAT(MXDIIS*MXDIIS),EVEC(*),FOCK(*),EBUF(*),CVEC(*),
      &          WORK(*)
+      logical exists
 
       IPRINT = IPRSCF
 C
@@ -759,7 +760,18 @@ C
         WRITE (LUDIIS) ITDIIS,MXDIIS,NELMBM,BMAT
       ELSEIF(IBSTAT.EQ.1) THEN
          IF (.NOT.(START2C.AND..NOT.DO4C2C)) THEN
-           CLOSE(LUDIIS,STATUS='DELETE')
+           inquire(LUDIIS,exist=exists)
+           if(DO4C2C)then
+!            stefan: if we delete the file here, the program crashes
+!            (because the file does not exist on disc) when 
+!            we restart the 2c-SCF after we have done a 4c-SCF +
+!            transformation of the 4c-Fock operator.
+!            @ miro: did this ever work after your change 2007? 
+!            i tried it also with older trunk versions and it did not...
+             if(exists) CLOSE(LUDIIS)
+           else
+             if(exists) CLOSE(LUDIIS,STATUS='DELETE')
+           end if
          ENDIF
       ENDIF
 C
