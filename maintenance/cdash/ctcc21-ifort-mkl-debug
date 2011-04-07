@@ -1,6 +1,7 @@
 #!/bin/bash
 
 TMP_DIR=/tmp/dirac
+SCRATCH_DIR=/home/bast/cdash/scratch
 mkdir -p $TMP_DIR
 
 svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
@@ -11,11 +12,11 @@ cd $TMP_DIR
 source /opt/intel/bin/compilervars.sh ia32
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/ia32'
 
-./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux-intel12.0.2-mkl"
+./setup --fc=ifort --cc=icc --debug --scratch=$SCRATCH_DIR --buildname="linux-ifort-mkl-debug" --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread"
 
 cd $TMP_DIR/cbuild
 make Nightly
 
-rm -rf $TMP_DIR
+rm -rf $TMP_DIR $SCRATCH_DIR
 
 exit 0

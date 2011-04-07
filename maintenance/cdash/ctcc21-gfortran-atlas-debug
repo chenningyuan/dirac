@@ -1,0 +1,18 @@
+#!/bin/bash
+
+TMP_DIR=/tmp/dirac
+SCRATCH_DIR=/home/bast/cdash/scratch
+mkdir -p $TMP_DIR
+
+svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
+
+cd $TMP_DIR
+./pamadm -a --xcfun
+./setup --fc=gfortran --cc=gcc --debug --scratch=$SCRATCH_DIR --buildname="linux-gfortran-atlas-debug" --debug
+
+cd $TMP_DIR/cbuild
+make Nightly
+
+rm -rf $TMP_DIR $SCRATCH_DIR
+
+exit 0
