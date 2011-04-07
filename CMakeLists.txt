@@ -158,6 +158,12 @@ else()
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=no")
 endif()
 
+find_program(PBS_ENVIRONMENT pbsnodes)
+if(PBS_ENVIRONMENT)
+    # this is a PBS batch system
+    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nMACH_FILE=$PBS_NODEFILE")
+endif()
+
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
 include(cmake/Archs.cmake)
