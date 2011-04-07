@@ -5928,9 +5928,10 @@ CMI  ... reading input routine for AMFI+RELSCF
 C
     1 CONTINUE
 
-
+#ifdef MOD_UNRELEASED
       if ((dirac_cfg_fde.and.update_vemb).or.dirac_cfg_fde_response)        &
      &   call FDE_setupFDEgrid()
+#endif
 
 !       work can be easily removed by changing internal memget to alloc
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
