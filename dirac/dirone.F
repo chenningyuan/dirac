@@ -223,7 +223,9 @@ C         Calculate property matrices for nuclear displacements
             GNUEXP(K) = GEXPEFFDEN(L)
 C           Calculate the integrals  
             CALL NUCAT1(WORK(KONEIN+(L-1)*NNBBASX),WORK(KFREE),LFREE,
-     &                  DOINT,OMITVNUC,IPRINT)
+     &                  DOINT,OMITVNUC,IPRHAM)
+!                                      iprint is not defined - stefan april 2011
+!    &                  DOINT,OMITVNUC,IPRINT)
           ENDDO
           GNUEXP(K) = EXPPLC
 C         Create total property matrix with correct prefactor
