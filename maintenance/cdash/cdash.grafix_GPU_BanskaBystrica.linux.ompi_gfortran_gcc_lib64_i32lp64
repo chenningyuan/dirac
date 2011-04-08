@@ -7,7 +7,7 @@
 
 # set  enviroment
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda/bin:/home/milias/bin/openmpi_i32lp64/bin
-export LD_LIBRARY_PATH=/usr/local/lib:home/milias/bin/openmpi_i32lp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64
+export LD_LIBRARY_PATH=/usr/local/lib:/home/milias/bin/openmpi_i32lp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64
 
 # the directory where your DIRAC sits
 DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_lib64_I32LP64
