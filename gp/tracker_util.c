@@ -82,7 +82,7 @@ void get_memory_address_(void *variable, fortran_int8_t *address)
    snprintf (bufvar,(BUFFERSIZE-1), FORTRAN_INT4_CONVERSION ,variable);
    *address = FORTRAN_STR_TO_INT4(bufvar); 
 #else
-   snprintf (bufvar,(BUFFERSIZE-1), FORTRAN_INT8_CONVERSION ,variable);
+   snprintf (bufvar,(BUFFERSIZE-1), FORTRAN_INT8_CONVERSION , (long int) variable);
    *address = FORTRAN_STR_TO_INT8(bufvar); 
 #endif
 }
@@ -193,9 +193,6 @@ void get_maximum_mwords_(size_t *maxmw, size_t *verbose)
 */
 #endif /* LINUX_IFACE_MEMORY */
 }
-
-
-
 
 void catfile_(void)
 {
