@@ -5,6 +5,9 @@
 # or execute it as a cron job with "make Nightly"
 # make sure cmake is installed before you run it
 
+#   crontab inscription:
+# 05 18 * * 1,2,3,4,5,6,7 timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_lib64_I32LP64/maintenance/cdash; $DIRAC/cdash.grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_lib64_i32lp64 > $DIRAC/cdash_buildup_log_$timestamp
+
 # set  enviroment
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda/bin:/home/milias/bin/openmpi_i32lp64/bin
 export LD_LIBRARY_PATH=/usr/local/lib:/home/milias/bin/openmpi_i32lp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64
