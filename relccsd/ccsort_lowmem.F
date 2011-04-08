@@ -135,9 +135,9 @@ C     The maximum necessary size is
 C
       if (srtall) then
          NVT = MAX(NV5,NV6)
-         NVT = MAX(NVT,NV4)
-         NVT = MAX(NVT,JOOOO(2))
-         NVT = MAX(NVT,JVOOO(2))
+         NVT = MAX(NVT,INT(NV4,8))
+         NVT = MAX(NVT,INT(JOOOO(2),8))
+         NVT = MAX(NVT,INT(JVOOO(2),8))
 C
 C     now we get what is the maximum allocatable dimension
          call allocator_get_maxsize(freemem,kind(a_ints))
@@ -167,7 +167,7 @@ C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
-      NVTMIN = MAX(NVT,NV4)
+      NVTMIN = MAX(NVT,INT(NV4,8))
       NVTMIN = MAX(NVTMIN,JOOOO(2))
       NVTMIN = MAX(NVTMIN,JVOOO(2))
       NVTMIN = NVTMIN + MINBUF 

@@ -1942,9 +1942,9 @@ C
 C     The maximum necessary size is
 C
       NVT = MAX(NV5,NV6)
-      NVT = MAX(NVT,NV4)
-      NVT = MAX(NVT,JOOOO(2))
-      NVT = MAX(NVT,JVOOO(2))
+      NVT = MAX(NVT,INT(NV4,8))
+      NVT = MAX(NVT,INT(JOOOO(2),8))
+      NVT = MAX(NVT,INT(JVOOO(2),8))
 C
 C     The remaining space is
 C
@@ -1968,7 +1968,7 @@ C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
-      NVTMIN = MAX(NVT,NV4)
+      NVTMIN = MAX(NVT,INT(NV4,8))
       NVTMIN = MAX(NVTMIN,JOOOO(2))
       NVTMIN = MAX(NVTMIN,JVOOO(2))
 C
@@ -2107,12 +2107,12 @@ C
          NV5IRP = 1
          NV6IRP = 1
          DO IRP = 1, NREP
-            NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
-            NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
+            NV5IRP = MAX(NV5IRP,INT(NVO (IRP),8)*INT(NVVT(IRP),8))
+            NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
          ENDDO
 C
          NVIRP = MAX(NV5IRP,NV6IRP)
-         NBUF3 = MIN(NVIRP,NBUF3)
+         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
 C
 C        Check the minimum size for the general use of this array
 C
@@ -2994,12 +2994,12 @@ C
       NV5IRP = 1
       NV6IRP = 1
       DO IRP = 1, NREP
-         NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
-         NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
+         NV5IRP = MAX(NV5IRP,INT(NVO(IRP),8)*INT(NVVT(IRP),8))
+         NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
       ENDDO
 C
       NVIRP = MAX(NV5IRP,NV6IRP)
-      NBUF3 = MIN(NVIRP,NBUF3)
+      NBUF3 = MIN(NVIRP,INT(NBUF3,8))
 C
 C     Check the minimum size for the general use of this array
 C
