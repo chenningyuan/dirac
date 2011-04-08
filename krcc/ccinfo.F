@@ -5562,7 +5562,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
      &                  IHOLEAIDENT,IHOLEBIDENT,
      &                  IALLOWIDENT)
           ELSE
-            STOP 'HOW DID YOU MANAGE TO GET HERE???'
+            STOP "HOW DID YOU MANAGE TO GET HERE??? "
           END IF
         END DO
       END DO
