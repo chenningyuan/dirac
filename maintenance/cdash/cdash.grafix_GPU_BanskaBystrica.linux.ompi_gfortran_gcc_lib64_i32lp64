@@ -17,7 +17,7 @@ cd $DIRAC
 
 # svn update, pamadm 
 #git stash
-#git svn rebase
+git svn rebase
 
 ./pamadm -a --xcfun 
 
@@ -27,7 +27,7 @@ OMPI=/home/milias/bin/openmpi_i32lp64/bin
 
 cd $DIRAC/cbuild
 
-#make clean
+make clean
 
 # build and run tests
 # use either Experimental or Nightly
