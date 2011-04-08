@@ -5,9 +5,9 @@
 # or execute it as a cron job with "make Nightly"
 # make sure cmake is installed before you run it
 
-# enviroment
-#export PATH=/home/ilias/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:.
-#export LD_LIBRARY_PATH=/usr/local/lib
+# enviroment variables ...
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda/bin:/home/milias/bin/openmpi_ilp64/bin
+export LD_LIBRARY_PATH=/usr/local/lib:/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64
 
 # the directory where your DIRAC sits
 DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
@@ -16,10 +16,9 @@ DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
 # go to the local DIRAC directory
 cd $DIRAC
 
-# svn update, pamadm 
+#  update, pamadm 
 #git stash
-#git svn rebase
-
+git svn rebase
 ./pamadm -a --xcfun 
 
 OMPI=/home/milias/bin/openmpi_ilp64/bin
@@ -28,12 +27,8 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 
 cd $DIRAC/cbuild
 
-#make clean
-
-# build and run tests
-# use either Experimental or Nightly
+make clean
 make Experimental
 #  make Nightly
-# make -j 2
 
 exit 0
