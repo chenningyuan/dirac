@@ -19,16 +19,10 @@ git svn rebase
 
 
 # configure step
-./setup  --fc=gfortran  --cc=gcc  --buildname="linux.GPU_grafix_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64" 
+./setup  --fc=gfortran  --cc=gcc  --buildname="linux.GPU_grafix_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64" --scratch="/tmp" 
 
 cd $DIRAC/cbuild
 
-# build and run tests
-# use either Experimental or Nightly
-
-  make Experimental
-
-#  make Nightly
-# make -j 2
+make Experimental
 
 exit 0
