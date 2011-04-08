@@ -2210,7 +2210,7 @@ C
                END IF
             END DO
 C
-#warning    FIXME: Orthogonalize new trial vectors against each other
+Cwarning    FIXME: Orthogonalize new trial vectors against each other
 C
             DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(N_CRED-1)*NDETQ),1)
             IF (ABS(DNAFT) .LE. THRZER) THEN
