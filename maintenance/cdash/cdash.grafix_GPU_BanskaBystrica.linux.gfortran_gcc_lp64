@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# example recipe to build and run tests for CDash
+# you can either run this script interactively with "make Experimental" (to calibrate it)
+# or execute it as a cron job with "make Nightly"
+# make sure cmake is installed before you run it
+
+# the directory where your DIRAC sits
+DIRAC=/home/milias/work/qch/dirac_git/gfortran_gcc_lib64_i32lp64_cdash
+
+
+# go to the local DIRAC directory
+cd $DIRAC
+
+# git svn update, pamadm 
+git svn rebase
+
+./pamadm -a --xcfun 
+
+
+# configure step
+./setup  --fc=gfortran  --cc=gcc  --buildname="linux.GPU_grafix_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64" 
+
+cd $DIRAC/cbuild
+
+# build and run tests
+# use either Experimental or Nightly
+
+  make Experimental
+
+#  make Nightly
+# make -j 2
+
+exit 0
