@@ -260,7 +260,7 @@ C---------------Executable code--------------------------------------
 C
       DONE = .FALSE.
       MTOT = NVO(IREP)     ! one (VV)_ij batch has length NVO
-      ISTART = MAX(ISTART,IDIST(1,2,IREP))
+      IF (IDIST(1,2,IREP).GT.ISTART) ISTART=IDIST(1,2,IREP)
       NTOT = IDIST(2,2,IREP)     ! local # of VO batches in this IRREP
       NINT = MIN0(MINT,NTOT-ISTART)  ! # of batches which will actually be read
       JSTART = IDIST(5,2,IREP)      ! compute relative local offset
@@ -329,7 +329,7 @@ C     nodes for parallel runs. Take only the part that is on our node
 C
       DONE = .FALSE.
       MTOT = NVVT(IREP)
-      ISTART = MAX(ISTART,IDIST(1,1,IREP))
+      IF (IDIST(1,1,IREP).GT.ISTART) ISTART=IDIST(1,1,IREP)
       NTOT = IDIST(2,1,IREP)
       NINT = MIN0(MINT,NTOT-ISTART)
       JSTART = IDIST(5,1,IREP)
