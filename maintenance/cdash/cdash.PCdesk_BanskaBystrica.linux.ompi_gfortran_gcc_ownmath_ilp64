@@ -5,6 +5,10 @@
 # or execute it as a cron job with "make Nightly"
 # make sure cmake is installed before you run it
 
+#crontab inscription:
+#00 21 * * 1,2,3,4,5,6,7  timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cdash/maintenance/cdash; $DIRAC/cdash.PCdesk_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64 > $DIRAC/cdash_buildup_log_$timestamp
+
+
 # enviroment
 export PATH=/home/ilias/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:.
 export LD_LIBRARY_PATH=/usr/local/lib
