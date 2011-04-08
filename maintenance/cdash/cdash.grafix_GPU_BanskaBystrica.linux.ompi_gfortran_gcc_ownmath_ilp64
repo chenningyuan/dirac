@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# example recipe to build and run tests for CDash
+# you can either run this script interactively with "make Experimental" (to calibrate it)
+# or execute it as a cron job with "make Nightly"
+# make sure cmake is installed before you run it
+
+# enviroment
+#export PATH=/home/ilias/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:.
+#export LD_LIBRARY_PATH=/usr/local/lib
+
+# the directory where your DIRAC sits
+DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
+
+
+# go to the local DIRAC directory
+cd $DIRAC
+
+# svn update, pamadm 
+#git stash
+git svn rebase
+
+./pamadm -a --xcfun 
+
+
+# configure step
+./setup --mpi --fc=mpif90  --cc=mpicc  --cpp=mpiCC  --int64  --nomath  --buildname="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2   --scratch="/tmp" --runtest_timeout_flag="00:18:00"
+
+cd $DIRAC/cbuild
+
+#make clean
+
+# build and run tests
+# use either Experimental or Nightly
+make Experimental
+#  make Nightly
+# make -j 2
+
+exit 0
