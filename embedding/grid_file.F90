@@ -64,6 +64,7 @@ CONTAINS
     call allocp(points,4,npoints,id="grid_points")
     
     if (present(vc)) then
+       nullify(vc)
        call allocp(vc,npoints,id="potential")
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
