@@ -128,13 +128,16 @@ C
 *
         IF(NCOMMU.EQ.0) THEN
 C         IHCTP = NHT_CONN0(IHOP)
-          CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,
-     &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-     &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
-     &         IONE,IONE,IONE,IONE,IHSM,
-     &         ONE,ONE,ONE,ONE,
-     &         CC_VEC_FNC(IBSPOBEX(IHCTP)),
-     &         FACTORH,LCCFBLK)
+          stop "Entered buggy region of code"
+
+* LV: commented out the call because the number of parameters does not match the subroutine definition, must be wrong
+c         CALL HCT1234_REL(IHTP(1,IHOP),IHINDEX(1,IHOP),0,
+c    &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
+c    &         ISPOBEX_TP(1,IUNIOP),ISPOBEX_TP(1,IUNIOP),
+c    &         IONE,IONE,IONE,IONE,IHSM,
+c    &         ONE,ONE,ONE,ONE,
+c    &         CC_VEC_FNC(IBSPOBEX(IHCTP)),
+c    &         FACTORH,LCCFBLK)
         END IF
 *
 * One commutator
