@@ -23,9 +23,8 @@ module xc_driver
 
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
-#ifdef PRG_DIRAC
+
   use fde_mod
-#endif
 !fixme: dirac_cfg should not be used here
   use dirac_cfg
   use basis_info
@@ -497,10 +496,8 @@ contains
 !fixme: dirac_cfg should not be used here
         if (.not.(dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb))) then
             if (.not. grid_is_done) then
-#ifdef PRG_DIRAC
 !radovan: grid stuff will be moved outside this module
               call dftgrd(dmat_0, 1)
-#endif
               grid_is_done = .true.
             end if
          else
@@ -2049,7 +2046,6 @@ contains
             allocate(rw(nr_points_process))
          end if
 
-#ifdef PRG_DIRAC
 !radovan: grid stuff will be moved outside this module
          if (i_am_master) then
             if (dft_cfg_import_grid) then
@@ -2093,7 +2089,6 @@ contains
                call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
          end if
-#endif
 
          ibatch          = ibatch + 1
          nr_points_total = nr_points_total + nr_points
