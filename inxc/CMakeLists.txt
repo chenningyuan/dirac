@@ -82,17 +82,19 @@ set(INXC_SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
     ${PROJECT_SOURCE_DIR}/src/basis_info.F90
     ${PROJECT_SOURCE_DIR}/src/basis_info_ng.F90
-    ${PROJECT_SOURCE_DIR}/src/block_config.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
-    ${PROJECT_SOURCE_DIR}/src/dft_functional_derv.F90
     ${PROJECT_SOURCE_DIR}/src/dft_input.F90
     ${PROJECT_SOURCE_DIR}/src/dftac.F
     ${PROJECT_SOURCE_DIR}/src/dirac_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/extra.F
     ${PROJECT_SOURCE_DIR}/src/main.F90
+    ${PROJECT_SOURCE_DIR}/src/num_grid_io.F90
     ${PROJECT_SOURCE_DIR}/src/occupation_info.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
     ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
+    ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/../dft/emb-functional.c
     ${PROJECT_SOURCE_DIR}/../dft/fun-becke.c
