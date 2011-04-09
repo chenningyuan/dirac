@@ -22,6 +22,7 @@
 module visual_in_point
 
   use memory_allocator
+  use vc_grid
   use visual_cfg
   use visual_london
   use codata

@@ -28,7 +28,11 @@
       MODULE VC_GRID
 
       PRIVATE
-      PUBLIC EMB_VC, ESP_EL, ESP_NUC
+
+      public emb_vc
+      public esp_el
+      public esp_nuc
+      public get_esp
       
 !     Module for calculating the coulomb potential on a grid.
 !     Contains:
@@ -50,6 +54,35 @@
 !
 
       CONTAINS
+
+      subroutine get_esp(esp,iopt, &
+                         irep,     &
+                         mat_dim,  &
+                         dmat,     &
+                         px, py, pz)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: esp
+      integer, intent(in)  :: irep,iopt
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: px,py,pz
+!     --------------------------------------------------------------------------
+      real(8)              :: r_p(3,1),work(10000),vc(1)
+      integer              :: iprint
+      logical              :: lbit
+!     --------------------------------------------------------------------------
+
+      esp = 0.0d0
+      iprint = 0
+      r_p(1,1) = px
+      r_p(2,1) = py
+      r_p(3,1) = pz
+      IF(LBIT(IOPT,1))CALL ESP_EL(DMAT,r_p,vc,WORK,10000,IPRINT)
+      IF(LBIT(IOPT,2))CALL ESP_NUC(r_p,vc,IPRINT)
+      esp=vc(1)
+
+      end subroutine
 
       SUBROUTINE EMB_VC(DMAT,points,vc,IPRINT,WORK,LWORK)
 !     Interface for the user. Calles LOOP_PRIM
