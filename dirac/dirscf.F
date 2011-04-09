@@ -373,6 +373,7 @@ C*****************************************************************************
       use dirac_cfg
       use xc_driver
       use dft_cfg
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -567,7 +568,11 @@ C
      &                        xc_nr_dmat      = 0,
      &                        xc_nr_fmat      = 1,
      &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.)
+     &                        xc_do_potential = .true.,
+     &                        xc_do_fde_update_vemb =
+     &                                (dirac_cfg_fde .and. update_vemb),
+     &                        xc_do_fde_response    =
+     &                                           dirac_cfg_fde_response)
            call xc_mpi_release_coworkers()
            
            tdxc = second() - tdxc
@@ -1174,6 +1179,7 @@ C*****************************************************************************
       use dirac_cfg
       use dft_cfg
       use xc_driver
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1363,7 +1369,11 @@ C
      &                        xc_nr_dmat      = 0,
      &                        xc_nr_fmat      = 1,
      &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.)
+     &                        xc_do_potential = .true.,
+     &                        xc_do_fde_update_vemb =
+     &                                (dirac_cfg_fde .and. update_vemb),
+     &                        xc_do_fde_response    =
+     &                                           dirac_cfg_fde_response)
            call xc_mpi_release_coworkers()
            
            tdxc = second() - tdxc

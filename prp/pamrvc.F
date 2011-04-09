@@ -3510,6 +3510,7 @@ C***********************************************************************
         use dirac_cfg
         use dft_cfg
         use xc_driver
+        use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3592,23 +3593,27 @@ C
           call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
           call genden(work(kbuf), cmo, 1, iprxrs)
 
-!                           buf holds the unperturbed density matrix
+!                     buf holds the unperturbed density matrix
 !                     fmo is actually the perturbed ao density matrix
 !                     fao is really fao (confusing naming reuses memory)
 
-         call xc_mpi_wake_up_coworkers()
-         call xc_integrator(xc_mat_dim           = ntbas(0),
-     &                      xc_nz                = nz,
-     &                      xc_dmat_0            = work(kbuf),
-     &                      xc_nr_dmat           = ndmat,
-     &                      xc_nr_fmat           = ndmat,
-     &                      xc_dmat              = fmo,
-     &                      xc_fmat              = fao,
-     &                      xc_fmat_pg_sym       = isymop,
-     &                      xc_dmat_pg_sym       = isymop,
-     &                      xc_dmat_ih_sym       = ihrmop,
-     &                      xc_response_order_mo = 1)
-         call xc_mpi_release_coworkers()
+          call xc_mpi_wake_up_coworkers()
+          call xc_integrator(xc_mat_dim            = ntbas(0),
+     &                       xc_nz                 = nz,
+     &                       xc_dmat_0             = work(kbuf),
+     &                       xc_nr_dmat            = ndmat,
+     &                       xc_nr_fmat            = ndmat,
+     &                       xc_dmat               = fmo,
+     &                       xc_fmat               = fao,
+     &                       xc_fmat_pg_sym        = isymop,
+     &                       xc_dmat_pg_sym        = isymop,
+     &                       xc_dmat_ih_sym        = ihrmop,
+     &                       xc_do_fde_update_vemb =
+     &                                (dirac_cfg_fde .and. update_vemb),
+     &                       xc_do_fde_response    = 
+     &                                           dirac_cfg_fde_response,
+     &                       xc_response_order_mo = 1)
+          call xc_mpi_release_coworkers()
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 

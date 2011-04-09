@@ -21,32 +21,30 @@
 
 module xc_driver
 
-!   written by T. Helgaker
-!   DIRAC adaption by T. Saue
+!  written by T. Helgaker
+!  DIRAC adaption by T. Saue
 
-  use fde_mod
-!fixme: dirac_cfg should not be used here
-  use dirac_cfg
-  use basis_info
-  use occupation_info
-  use memory_allocator
-  use dft_cfg
-  use xc_derv
-  use ao_eval
-  use density_eval
-  use xc_blas3
-  use xc_max_block_length
+   use fde_mod
+   use basis_info
+   use occupation_info
+   use memory_allocator
+   use dft_cfg
+   use xc_derv
+   use ao_eval
+   use density_eval
+   use xc_blas3
+   use xc_max_block_length
 #ifdef MOD_UNRELEASED
-  use overlap_diagnostic
-  use xc_geometric
-  use xc_london_c1
+   use overlap_diagnostic
+   use xc_geometric
+   use xc_london_c1
 #endif
 #ifdef MOD_OPENRSP
-  use xc_response
+   use xc_response
 #endif
-  use xc_mpi
+   use xc_mpi
 #ifdef MOD_XCFUN
-  use xcfun
+   use xcfun
 #endif
 
    implicit none
@@ -84,11 +82,11 @@ module xc_driver
 #include "dcborb.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-  dimension     istat(mpi_status_size)
+   dimension     istat(mpi_status_size)
 #endif /* ifdef VAR_MPI */
 
-  integer, parameter :: bllen = 1 !later more, now slowdft
-  integer            :: block_length
+   integer, parameter :: bllen = 1 !later more, now slowdft
+   integer            :: block_length
 
    save
 
@@ -179,18 +177,20 @@ module xc_driver
    real(8), allocatable :: fde_elpot(:)
 #endif
 
-   logical                      :: do_potential
-   integer                      :: response_order_mo
-   integer                      :: response_order_ao
-   logical                      :: do_london_rhs_direct
-   logical                      :: do_london_rhs_ro
-   logical                      :: do_geo
-   logical                      :: do_geo_0
-   logical                      :: do_geo_1
-   logical                      :: do_geo_2
-   logical                      :: do_london_ks
-   logical                      :: do_london_lr
-   logical                      :: do_overlap_diagnostic
+   logical :: do_potential
+   integer :: response_order_mo
+   integer :: response_order_ao
+   logical :: do_london_rhs_direct
+   logical :: do_london_rhs_ro
+   logical :: do_geo
+   logical :: do_geo_0
+   logical :: do_geo_1
+   logical :: do_geo_2
+   logical :: do_london_ks
+   logical :: do_london_lr
+   logical :: do_overlap_diagnostic
+   logical :: do_fde_update_vemb
+   logical :: do_fde_response
 
 contains
 
@@ -215,6 +215,8 @@ contains
                             xc_do_london_ks,          &
                             xc_do_london_lr,          &
                             xc_do_overlap_diagnostic, &
+                            xc_do_fde_update_vemb,    &
+                            xc_do_fde_response,       &
                             xc_response_order_mo,     &
                             xc_response_order_ao)
 
@@ -254,6 +256,8 @@ contains
       logical, optional,         intent(in)    :: xc_do_london_ks
       logical, optional,         intent(in)    :: xc_do_london_lr
       logical, optional,         intent(in)    :: xc_do_overlap_diagnostic
+      logical, optional,         intent(in)    :: xc_do_fde_update_vemb
+      logical, optional,         intent(in)    :: xc_do_fde_response
 
       integer, optional,         intent(in)    :: xc_response_order_mo
       integer, optional,         intent(in)    :: xc_response_order_ao
@@ -332,6 +336,8 @@ contains
       do_london_ks          = .false.
       do_london_lr          = .false.
       do_overlap_diagnostic = .false.
+      do_fde_update_vemb    = .false.
+      do_fde_response       = .false.
       nr_atoms              = 0
 
       if (i_am_master) then
@@ -348,6 +354,8 @@ contains
          if (present(xc_do_london_lr))          do_london_lr          = xc_do_london_lr
          if (present(xc_nr_atoms))              nr_atoms              = xc_nr_atoms
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
+         if (present(xc_do_fde_update_vemb))    do_fde_update_vemb    = xc_do_fde_update_vemb
+         if (present(xc_do_fde_response))       do_fde_response       = xc_do_fde_response
       end if
 
 #ifdef VAR_MPI
@@ -369,6 +377,8 @@ contains
          call xc_mpi_bcast(do_london_ks)
          call xc_mpi_bcast(do_london_lr)
          call xc_mpi_bcast(do_overlap_diagnostic)
+         call xc_mpi_bcast(do_fde_update_vemb)
+         call xc_mpi_bcast(do_fde_response)
       end if
 #endif
 
@@ -492,19 +502,18 @@ contains
             grid_is_done    = .false.
          end if
 
-!        calculate grid
-!fixme: dirac_cfg should not be used here
-        if (.not.(dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb))) then
-            if (.not. grid_is_done) then
-!radovan: grid stuff will be moved outside this module
-              call dftgrd(dmat_0, 1)
-              grid_is_done = .true.
-            end if
-         else
+         if (do_fde_update_vemb .or. do_fde_response) then
             write (*,*) ' '
             write (*,*) '   FDE info: requested FDE response. Grid generation will'
             write (*,*) '             be skipped, and impoted grid will be used.'
             write (*,*) ' '
+         else
+            if (.not. grid_is_done) then
+!radovan: grid stuff will be moved outside this module
+!             calculate grid
+              call dftgrd(dmat_0, 1)
+              grid_is_done = .true.
+            end if
          end if
       end if
 
@@ -1095,8 +1104,7 @@ contains
             tau_integral = tau_integral + w(1)*tau
          end if
 
-!fixme: dirac_cfg should not be used here
-        if ( dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb) ) then
+        if (do_fde_update_vemb .or. do_fde_response) then
            if ( fde_froz_n(ipoint) > (dft_cfg_dfthr0/10000) ) then
               n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
 
@@ -1139,7 +1147,7 @@ contains
                                    tau=tau)
 
 #ifdef MOD_XCFUN
-           if (dirac_cfg_fde_response .or. (dirac_cfg_fde.and.update_vemb) ) then
+           if (do_fde_update_vemb .or. do_fde_response) then
 ! 
 ! aspg: this way we are forcing the same xc functional for the active and non-additive
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
@@ -1977,8 +1985,7 @@ contains
     real(8), allocatable :: mpi_buffer(:)
 
       if (i_am_master) then
-!fixme: dirac_cfg should not be used here
-         if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
+         if (do_fde_update_vemb .or. do_fde_response) then
 !           don't open and rewind anything
 !           data is already stored at this point
          else
@@ -2004,8 +2011,7 @@ contains
             else if (dft_cfg_multigrid) then
                read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
 #ifdef MOD_UNRELEASED
-!fixme: dirac_cfg should not be used here
-            else if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
+            else if (do_fde_update_vemb .or. do_fde_response) then
                nr_points = fde_grid_np
 #endif
             else
@@ -2053,8 +2059,7 @@ contains
             else if (dft_cfg_multigrid) then
                call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
 #ifdef MOD_UNRELEASED
-!fixme: dirac_cfg should not be used here
-            else if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
+            else if (do_fde_update_vemb .or. do_fde_response) then
                if (parallel_xc) then
                   call quit('fix fde_response mpi')
                end if
@@ -2159,10 +2164,9 @@ contains
          deallocate(rw)
 
 #ifdef MOD_UNRELEASED
-!fixme: dirac_cfg should not be used here
-        if (dirac_cfg_fde_response.or.(dirac_cfg_fde.and.update_vemb)) then
-           if (allocated(fde_froz_n)) deallocate(fde_froz_n)
-           if (allocated(fde_elpot)) deallocate(fde_elpot)
+        if (do_fde_update_vemb .or. do_fde_response) then
+           if (allocated(fde_froz_n))  deallocate(fde_froz_n)
+           if (allocated(fde_elpot))   deallocate(fde_elpot)
            if (allocated(fde_froz_ng)) deallocate(fde_froz_ng)
 !          don't try to read another batch
            goto 999
