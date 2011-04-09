@@ -590,6 +590,14 @@
 
       write(lupri,*) 'Number of gridpoints:', size(points,2)
 
+!     radovan: intel 12 stops below and complains about allocating something
+!              that is already allocated
+!              i think this is some strange bug - this is a workaround
+      if (allocated(rho))      call dealloc(rho)
+      if (allocated(grad_rho)) call dealloc(grad_rho)
+      if (allocated(hes_rho))  call dealloc(hes_rho)
+      if (allocated(vc))       call dealloc(vc)
+
       call alloc(rho,     1,SIZE(points,2))
       call alloc(grad_rho,3,SIZE(points,2))
       call alloc(hes_rho, 6,SIZE(points,2))
