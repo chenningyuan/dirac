@@ -672,6 +672,7 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       use dirac_cfg
       use xc_driver
       use dft_cfg
+      use num_grid_gen
 
       implicit none
 !
@@ -716,6 +717,7 @@ C
 !     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
 !    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
       END DO
+      call generate_num_grid(dmat0)
       call xc_mpi_wake_up_coworkers()
       if (dft_cfg_no_sdft) then
          call xc_integrator(xc_mat_dim           = ntbas(0),

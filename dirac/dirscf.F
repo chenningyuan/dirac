@@ -374,6 +374,7 @@ C*****************************************************************************
       use xc_driver
       use dft_cfg
       use fde_mod
+      use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -561,6 +562,7 @@ C
 
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           call generate_num_grid(dmat)
            call xc_mpi_wake_up_coworkers()
            call xc_integrator(xc_mat_dim      = ntbas(0),
      &                        xc_nz           = nz,
@@ -1180,6 +1182,7 @@ C*****************************************************************************
       use dft_cfg
       use xc_driver
       use fde_mod
+      use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1362,6 +1365,7 @@ C
 
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+           call generate_num_grid(dmat)
            call xc_mpi_wake_up_coworkers()
            call xc_integrator(xc_mat_dim      = ntbas(0),
      &                        xc_nz           = nz,

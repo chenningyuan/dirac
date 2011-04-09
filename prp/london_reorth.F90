@@ -23,9 +23,9 @@ module london_reorth_hb
 
   use london_prp_cfg
   use memory_allocator 
-
   use dirac_cfg
   use dft_cfg
+  use num_grid_gen
 
   implicit none
 
@@ -324,6 +324,7 @@ contains
       call alloc(dmat, p_n2bbasxq)
       call genden(dmat, cmo, 1, prp_iprint)
 
+      call generate_num_grid(dmat)
       call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = nr_ao_total,   &
                          xc_nz                = nr_qu,         &

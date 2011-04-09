@@ -2289,6 +2289,7 @@ C*****************************************************************************
       use dirac_cfg
       use dft_cfg
       use xc_driver
+      use num_grid_gen
 
 
 #include "implicit.h"
@@ -2372,19 +2373,20 @@ C
 
       if (dirac_cfg_dft_calculation) then
 
-!       get unperturbed density matrix
-        call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)
-        call genden(work(kdmat), cmo, 1, iprxqr)
+!        get unperturbed density matrix
+         call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)
+         call genden(work(kdmat), cmo, 1, iprxqr)
+        
+!        radovan:
+!        this is necessary iff
+!        (hybrid functional .and. gradient dependence .and. nonzero frequency)
+!        otherwise the symmetrization inside xc_integrator messes up the KS matrix
+!        we could check here whether we have this situation and not allocate
+!        otherwise but now we just play it safe and simply allocate it
+         call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
+         call dzero(work(kxc), 3*n2bbasxq)
 
-!       radovan:
-!       this is necessary iff
-!       (hybrid functional .and. gradient dependence .and. nonzero frequency)
-!       otherwise the symmetrization inside xc_integrator messes up the KS matrix
-!       we could check here whether we have this situation and not allocate
-!       otherwise but now we just play it safe and simply allocate it
-        call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
-        call dzero(work(kxc), 3*n2bbasxq)
-
+         call generate_num_grid(work(kdmat))
          call xc_mpi_wake_up_coworkers()
          call xc_integrator(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,

@@ -2276,7 +2276,7 @@ C     (by running HERMIT and SIRIUS).
 C
       use dirac_cfg
       use dft_cfg
-      use xc_driver
+      use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2370,8 +2370,8 @@ ckr#endif
 #else /* PRG_DIRAC */
 
       if (dirac_cfg_dft_calculation) then
-!       get a new grid at new geometry
-        call reset_grid()
+!        get a new grid at new geometry
+         call reset_num_grid()
       end if
 C
 C     Geometry optimization for Dirac

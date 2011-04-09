@@ -3511,6 +3511,7 @@ C***********************************************************************
         use dft_cfg
         use xc_driver
         use fde_mod
+        use num_grid_gen
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3597,6 +3598,7 @@ C
 !                     fmo is actually the perturbed ao density matrix
 !                     fao is really fao (confusing naming reuses memory)
 
+          call generate_num_grid(work(kbuf))
           call xc_mpi_wake_up_coworkers()
           call xc_integrator(xc_mat_dim            = ntbas(0),
      &                       xc_nz                 = nz,

@@ -2198,6 +2198,7 @@ contains
 
    subroutine twofck_ks(n, D, F)
       use xc_driver
+      use num_grid_gen
       integer,      intent(in)    :: n
 #ifdef PRG_DIRAC
       type(matrix)                :: D(n+1)
@@ -2340,6 +2341,7 @@ contains
 !           are incorrect with conventional derivatives, correct with xcfun
 !           (this is due to handling of options inside xc_driver)
             
+            call generate_num_grid(D(1)%elms)
             call xc_mpi_wake_up_coworkers()
             call xc_integrator(xc_mat_dim      = A%nrow,                              &
                                xc_nz           = nz,                                  &

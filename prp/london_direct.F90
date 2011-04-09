@@ -25,6 +25,7 @@ module london_direct_hb
   use memory_allocator 
   use dirac_cfg
   use dft_cfg
+  use num_grid_gen
 
   implicit none
 
@@ -526,6 +527,7 @@ contains
 !   of these contributions (for instance for VISUAL), then routines in density_eval
 !   need to be adapted...
 
+    call generate_num_grid(dmat)
     call xc_mpi_wake_up_coworkers()
     if (dft_cfg_no_sdft) then
       call xc_integrator(xc_mat_dim              = mat_dim_ao,   &

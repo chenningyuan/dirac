@@ -543,6 +543,7 @@ C***********************************************************************
        use dft_cfg
        use xc_driver
        use fde_mod
+       use num_grid_gen
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -663,7 +664,15 @@ C          Hermitian operator
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-           
+
+           if (dirac_cfg_overlap_diagnostic) then    
+              call reset_num_grid()
+              call stash_zipgrid(dft_cfg_zipgrid)       
+           end if
+           call generate_num_grid(fao)
+           if (dirac_cfg_overlap_diagnostic) then    
+              call unstash_zipgrid(dft_cfg_zipgrid)       
+           end if
            call xc_mpi_wake_up_coworkers()
            call xc_integrator(xc_mat_dim               = ntbas(0),
      &                        xc_nz                    = nz,

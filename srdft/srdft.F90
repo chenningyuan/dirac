@@ -54,6 +54,7 @@ module srdft
 !
   use memory_allocator
   use xc_driver 
+  use num_grid_gen
 ! x2c modules
 ! use x2c_fio, only:      &
 !     x2c_read (name of the subroutine)
@@ -181,6 +182,7 @@ contains
 
 
 !      compute the srXC potential 
+       call generate_num_grid(dvao)
        call xc_integrator(xc_mat_dim          = nao,  &
                               xc_nz           = nz,   &
                               xc_dmat_0       = dvao, &! contains the TOTAL density matrix

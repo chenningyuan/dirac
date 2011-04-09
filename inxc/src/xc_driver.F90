@@ -54,7 +54,6 @@ module xc_driver
    public xc_mpi_release_coworkers
    public get_xc_energy
    public get_xc_mat_energy
-   public reset_grid
 
    private
 
@@ -109,8 +108,6 @@ module xc_driver
    real(8) :: nr_electrons
    real(8) :: xc_energy
    real(8) :: xc_mat_energy
-   logical :: grid_is_done     = .false.
-   logical :: remember_zipgrid = .false.
 
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
@@ -495,26 +492,6 @@ contains
          call scale_density_matrices(2.0d0)
 
          call insert_half_phases()
-
-         if (do_overlap_diagnostic) then
-            remember_zipgrid = dft_cfg_zipgrid
-            dft_cfg_zipgrid = .false.
-            grid_is_done    = .false.
-         end if
-
-         if (do_fde_update_vemb .or. do_fde_response) then
-            write (*,*) ' '
-            write (*,*) '   FDE info: requested FDE response. Grid generation will'
-            write (*,*) '             be skipped, and impoted grid will be used.'
-            write (*,*) ' '
-         else
-            if (.not. grid_is_done) then
-!radovan: grid stuff will be moved outside this module
-!             calculate grid
-              call dftgrd(dmat_0, 1)
-              grid_is_done = .true.
-            end if
-         end if
       end if
 
 #ifdef VAR_MPI
@@ -642,8 +619,6 @@ contains
          if (i_am_master) then
             call o_matrix_to_disc()
          end if
-         dft_cfg_zipgrid = remember_zipgrid
-         grid_is_done    = .false.
       end if
 #endif
 
@@ -1969,12 +1944,6 @@ contains
       get_xc_mat_energy = xc_mat_energy
 
    end function
-
-   subroutine reset_grid()
-
-      grid_is_done = .false.
-
-   end subroutine
 
    subroutine loop_over_batches()
       integer :: ierr

@@ -4,6 +4,7 @@ module dirac_interface
    use matrix_defop
    use character_processing
    use dirac_cfg
+   use num_grid_gen
 
    implicit none
 
@@ -131,6 +132,7 @@ contains
       type(matrix), intent(in)    :: D
 !     --------------------------------------------------------------------------
 
+      call generate_num_grid(D%elms)
       call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = ntbas(0), &
                          xc_nz                = nz,       &
@@ -158,6 +160,7 @@ contains
          return
       end if
 
+      call generate_num_grid(D%elms)
       call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = ntbas(0),    &
                          xc_nz                = nz,          &
@@ -186,6 +189,7 @@ contains
          return
       end if
 
+      call generate_num_grid(D%elms)
       call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = ntbas(0),             &
                          xc_nz                = nz,                   &
@@ -214,6 +218,7 @@ contains
       call alloc(mat, ntbas(0), ntbas(0), nz, 3)
       mat = 0.0d0
 
+      call generate_num_grid(D%elms)
       call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
@@ -247,6 +252,7 @@ contains
       call alloc(mat, ntbas(0), ntbas(0), nz, 3)
       mat = 0.0d0
 
+      call generate_num_grid(D%elms)
       call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
@@ -583,6 +589,7 @@ contains
 
 !   xc contribution to ks matrix
     if (dirac_cfg_dft_calculation) then
+        call generate_num_grid(D%elms)
         call xc_mpi_wake_up_coworkers()
         call xc_integrator(xc_mat_dim      = ntbas(0), &
                            xc_nz           = nz,       &
