@@ -30,6 +30,7 @@ module xc_driver
    use memory_allocator
    use dft_cfg
    use xc_derv
+   use num_grid_io
    use ao_eval
    use density_eval
    use xc_blas3
@@ -2024,9 +2025,9 @@ contains
 !radovan: grid stuff will be moved outside this module
          if (i_am_master) then
             if (dft_cfg_import_grid) then
-               call import_dft_grid(rx, ry, rz, rw, file_unit_grid, nr_points)
+               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points)
             else if (dft_cfg_multigrid) then
-               call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
+               call num_grid_read(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
 #ifdef MOD_UNRELEASED
             else if (do_fde_update_vemb .or. do_fde_response) then
                if (parallel_xc) then
@@ -2060,7 +2061,7 @@ contains
 
 #endif
             else
-               call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
+               call num_grid_read_unformatted(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
          end if
 

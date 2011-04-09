@@ -236,6 +236,7 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use dft_cfg
+       use num_grid_io
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -550,7 +551,7 @@ C
          lunit_grid = 44
          CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NTHIS)
          if (dft_cfg_export_grid) then
-           call export_dft_grid(x8, y8, z8, wt8, 
+           call num_grid_write(x8, y8, z8, wt8, 
      &                          lunit_grid+1, nthis)
          end if
 
@@ -566,7 +567,7 @@ C
       NLAST = -1
       CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NLAST)
       if (dft_cfg_export_grid) then
-        call export_dft_grid(x8, y8, z8, wt8, 
+        call num_grid_write(x8, y8, z8, wt8, 
      &                       lunit_grid+1, nlast)
       end if
 
@@ -639,54 +640,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       RETURN
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine export_dft_grid(x, y, z, w, lunit, nr_points)
-!=======================================================================
-!     export dft grid
-!-----------------------------------------------------------------------
-!                                              radovan bast
-!                                              last revision: 2008-08-26
-!=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      dimension x(nr_points),
-     &          y(nr_points),
-     &          z(nr_points),
-     &          w(nr_points)
-
-      write(lunit, *) nr_points
-
-      if (nr_points .gt. 0) then
-        do i = 1, nr_points
-          write(lunit, '(4d20.12)') x(i), y(i), z(i), w(i)
-        enddo
-      end if
-
-      end
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine import_dft_grid(x, y, z, w, lunit, nr_points)
-!=======================================================================
-!     import dft grid
-!-----------------------------------------------------------------------
-!                                              radovan bast
-!                                              last revision: 2008-08-26
-!=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      dimension x(nr_points),
-     &          y(nr_points),
-     &          z(nr_points),
-     &          w(nr_points)
-
-      do i = 1, nr_points
-        read(lunit, *) x(i), y(i), z(i), w(i)
-      enddo
-
-      end
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck nleb */                                                     C
@@ -1776,10 +1729,3 @@ C=======================================================================
 
       RETURN
       END
-
-      SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
-      real(8) :: X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
-      integer :: luquad
-      integer :: npoint
-      READ(LUQUAD) X,Y,Z,WT
-      end subroutine

@@ -26,6 +26,7 @@ module visual_integrate
    use memory_allocator
    use visual_cfg
    use visual_in_point
+   use num_grid_io
 #ifdef MOD_UNRELEASED
    use visual_london
 #endif
@@ -82,18 +83,16 @@ contains
         call alloc(z, nr_points)
         call alloc(w, nr_points)
 
-        call reaqua(x, y, z, w, lunit, nr_points)
+        call num_grid_read_unformatted(x, y, z, w, lunit, nr_points)
 
-
-          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-                                  D_0, &
-                                  AO, &
-                                  x, y, z, &
-                                  buffer, &
-                                  QUANTITY_INTEGRAL, &
-                                  w, &
-                                  NR_POINTS)
-
+        call integrate_quantity(nr_dmat, d,        &
+                                d_0,               &
+                                ao,                &
+                                x, y, z,           &
+                                buffer,            &
+                                quantity_integral, &
+                                w,                 &
+                                nr_points)
 
         call dealloc(x)
         call dealloc(y)
@@ -164,7 +163,7 @@ contains
          call alloc(z, nr_points)
          call alloc(w, nr_points)
 
-         call reaqua(x, y, z, w, lunit, nr_points)
+         call num_grid_read_unformatted(x, y, z, w, lunit, nr_points)
 
          quantity_integral = 0.0d0
 
