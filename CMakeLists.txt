@@ -225,6 +225,7 @@ set(DIRAC_INTERFACES_LIST
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_BINARY_DIR}/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -261,7 +262,12 @@ add_executable(dirac.x
     )
 
 # radovan: Miro, you can add link flags like this: 
-SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-E")
+# SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-E")
+# radovan: i have commented it - does not work on AIX, do we really need it?
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+    SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
+endif()
 
 target_link_libraries(
     dirac.x

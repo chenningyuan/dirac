@@ -86,7 +86,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set(CMAKE_Fortran_FLAGS         "-qzerosize")
+    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
 

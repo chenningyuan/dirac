@@ -10,6 +10,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+    add_definitions(-DSYS_AIX)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
