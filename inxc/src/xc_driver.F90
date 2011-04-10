@@ -27,7 +27,6 @@ module xc_driver
 #ifdef PRG_DIRAC
 !  these dependencies should be removed
    use fde_mod
-   use memory_allocator
 #endif
    use basis_info
    use occupation_info
@@ -903,14 +902,10 @@ contains
                       max_ao_m_order, &
                       dft_cfg_screening)
 
-#ifdef PRG_DIRAC
-!   when you remove this test and debug dft_overlap_diagnostic
-    call alloc(ao    , total_ao_vector_length)
-    call alloc(buffer, total_ao_vector_length)
-#else
     allocate(ao    (total_ao_vector_length))
+    ao = 0.0d0
     allocate(buffer(total_ao_vector_length))
-#endif
+    buffer = 0.0d0
 
     if (dft_cfg_blocked) then
        block_threshold = get_block_threshold(dft_cfg_dfthr0, mat_dim, dmat_0)
@@ -1736,13 +1731,8 @@ contains
     deallocate(derv)
     deallocate(derv_nadd)
 
-#ifdef PRG_DIRAC
-    call dealloc(ao)
-    call dealloc(buffer)
-#else
     deallocate(ao)
     deallocate(buffer)
-#endif
 
     deallocate(u%n)
     deallocate(u%s)
