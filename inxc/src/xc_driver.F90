@@ -79,13 +79,8 @@ module xc_driver
 
 #include "../../dft/functionals.h"
 
-#include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-   dimension     istat(mpi_status_size)
-#endif /* ifdef VAR_MPI */
 
    integer, parameter :: bllen = 1 !later more, now slowdft
    integer            :: block_length
@@ -118,19 +113,22 @@ module xc_driver
 
    logical :: is_tau_mgga = .false.
 
-   logical :: i_am_master
-   logical :: i_am_coworker
    logical :: parallel_xc
    logical :: coworkers_are_awake = .false.
 
-   integer :: nr_points_process
-   integer :: nr_points_part
-   integer :: nr_processes
-   integer :: nr_points_looped_over
-   integer :: nr_points_used
+!             number of points in current batch
+   integer :: nr_points_batch
+
+!             number of points currently looped over on this processor
+   integer :: nr_points_on_this_proc
+
+!             total nr of points (sum of nr_points_batch)
    integer :: nr_points_total
-   integer :: nr_points
-   integer :: nr_points_rest
+
+!             total nr of points that were actually used
+!             we skip points with very small density
+!             typically smaller than nr_points_total
+   integer :: nr_points_used
 
    integer :: max_ao_g_order
    integer :: max_ao_m_order
@@ -284,10 +282,7 @@ contains
       xc_energy    = 0.0d0
       tau_integral = 0.0d0
 
-      i_am_master   = .true.
-      i_am_coworker = .false.
       parallel_xc   = .false.
-
 #ifdef VAR_MPI
       if (parcal) then
          call xc_mpi_bcast(coworkers_are_awake)
@@ -299,17 +294,10 @@ contains
 !           try to integrate in parallel
             parallel_xc = .true.
          end if
-         if (mytid == mparid) then
-            i_am_master   = .true.
-            i_am_coworker = .false.
-         else
-            i_am_master   = .false.
-            i_am_coworker = .true.
-         end if
       end if
 #endif
 
-      call basis_info_read(i_am_master, parallel_xc)
+      call basis_info_read(xc_mpi_is_master(), parallel_xc)
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -317,7 +305,7 @@ contains
       end if
 #endif
 
-      if (i_am_master) then
+      if (xc_mpi_is_master()) then
          mat_dim = xc_mat_dim
          nz      = xc_nz
          nr_dmat = xc_nr_dmat
@@ -340,7 +328,7 @@ contains
       do_fde_response       = .false.
       nr_atoms              = 0
 
-      if (i_am_master) then
+      if (xc_mpi_is_master()) then
 !        change defaults
          if (present(xc_do_potential))          do_potential          = xc_do_potential
          if (present(xc_response_order_mo))     response_order_mo     = xc_response_order_mo
@@ -397,7 +385,7 @@ contains
       end if
 
       nullify(dmat_0)
-      if (i_am_coworker) then
+      if (.not. xc_mpi_is_master()) then
          allocate(dmat_0_container(mat_dim, mat_dim))
          dmat_0 => dmat_0_container
       else
@@ -406,7 +394,7 @@ contains
 
       nullify(dmat)
       if (nr_dmat > 0) then
-         if (i_am_coworker) then
+         if (.not. xc_mpi_is_master()) then
             allocate(dmat_container(mat_dim, mat_dim, nz, nr_dmat))
             dmat => dmat_container
          else
@@ -418,7 +406,7 @@ contains
 
       nullify(fmat)
       if (nr_fmat > 0) then
-         if (i_am_coworker) then
+         if (.not. xc_mpi_is_master()) then
             allocate(fmat_container(mat_dim, mat_dim, nz, nr_fmat))
             fmat_container = 0.0d0
             fmat => fmat_container
@@ -436,7 +424,7 @@ contains
       nullify(dmat_pg_sym)
       nullify(dmat_ih_sym)
 
-      if (i_am_coworker) then
+      if (.not. xc_mpi_is_master()) then
          if (nr_fmat > 0) then
             allocate(fmat_pg_sym_container(nr_fmat))
             fmat_pg_sym => fmat_pg_sym_container
@@ -471,7 +459,7 @@ contains
       end if
 
       nullify(property_gradient)
-      if (i_am_coworker) then
+      if (.not. xc_mpi_is_master()) then
          if (do_geo) then
             allocate(property_gradient_container(nr_atoms*3))
             property_gradient => property_gradient_container
@@ -484,7 +472,7 @@ contains
          end if
       end if
 
-      if (i_am_master) then
+      if (xc_mpi_is_master()) then
 !        initial expectation value of the two-electron matrix
          if (do_potential) then
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
@@ -524,7 +512,7 @@ contains
             allocate(dmat_saop_resp(mat_dim*mat_dim))
          end if
 !        only master calculates saop density matrices
-         if (i_am_master) then
+         if (xc_mpi_is_master()) then
             call dftac_saop_get_dmats(dmat_saop_outer, &
                                       dmat_saop_resp)
          end if
@@ -548,7 +536,7 @@ contains
 #endif
 #ifdef VAR_MPI
       if (parallel_xc) then
-         call dftsyncfunc(i_am_master)
+         call dftsyncfunc(xc_mpi_is_master())
       end if
 #endif
 #ifdef MOD_XCFUN
@@ -607,7 +595,7 @@ contains
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
-         call overlap_diagnostic_init(parallel_xc, i_am_master)
+         call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
       end if
 #endif
 
@@ -617,10 +605,10 @@ contains
       if (do_overlap_diagnostic) then
 #ifdef VAR_MPI
          if (parallel_xc) then
-            call overlap_diagnostic_collect(i_am_master)
+            call overlap_diagnostic_collect(xc_mpi_is_master())
          end if
 #endif
-         if (i_am_master) then
+         if (xc_mpi_is_master()) then
             call o_matrix_to_disc()
          end if
       end if
@@ -628,7 +616,18 @@ contains
 
 #ifdef VAR_MPI
       if (parallel_xc) then
-         call dft_collect()
+!        collect results from processors
+         call xc_mpi_reduce(nr_electrons)
+         call xc_mpi_reduce(nr_points_used)
+         if (do_potential) then
+            call xc_mpi_reduce(xc_energy)
+         end if
+         if (nr_fmat > 0) then
+            call xc_mpi_reduce(fmat)
+         end if
+         if (do_geo) then
+            call xc_mpi_reduce(property_gradient)
+         end if
       end if
 #endif
 
@@ -640,7 +639,7 @@ contains
         end if
       end if
 
-      if (i_am_master) then
+      if (xc_mpi_is_master()) then
          call scale_density_matrices(0.5d0)
 
 !        get average density from open shells
@@ -732,7 +731,7 @@ contains
 !        nullify(tmat_2)
 !     end if
 
-      if (i_am_coworker) then
+      if (.not. xc_mpi_is_master()) then
          if (allocated(dmat_container)) then
             deallocate(dmat_container)
          end if
@@ -975,8 +974,8 @@ contains
 
 #ifdef MOD_UNRELEASED
    if (dft_cfg_blocked) then
-      loop_over_points_block: do ipoint = 1, nr_points_process, max_block_length
-         block_length = min(max_block_length, nr_points_process - ipoint + 1)
+      loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
+         block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
 
          allocate(ao_block(block_length,     total_ao_vector_length))
          allocate(buffer_block(block_length, total_ao_vector_length))
@@ -1026,8 +1025,7 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
-   do ipoint = 1, nr_points_process
-      nr_points_looped_over = nr_points_looped_over + 1
+   do ipoint = 1, nr_points_on_this_proc
 
       time_ao_start = second()
       call get_ao(rx(ipoint), &
@@ -1723,7 +1721,7 @@ contains
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
       end if !if (n_0(1) > dft_cfg_dfthr0) then
-    end do !do ipoint = 1, nr_points_process
+    end do !do ipoint = 1, nr_points_on_this_proc
 #ifdef MOD_UNRELEASED
    end if !if (dft_cfg_blocked) then
 #endif /* ifdef MOD_UNRELEASED */
@@ -1754,13 +1752,6 @@ contains
                           - nr_electrons_total
 
       write(file_unit, *)
-
-!     verify that the number of points we have actually looped
-!     over indeed matches the expected total number of points
-!     if not something went wrong in the distribution
-!     if ((nr_points_total - nr_points_looped_over) /= 0) then
-!        call quit('parallel dft: error in distribution of points')
-!     end if
 
       write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
@@ -1813,7 +1804,7 @@ contains
      !            time_derv, file_unit)
       write(file_unit, '(3x, a, i9)')                           &
             'number of processors                           = ', &
-            nr_processes
+            xc_mpi_get_nr_proc()
 
       write(file_unit, *)
 
@@ -1822,113 +1813,6 @@ contains
 
 
 
-#ifdef VAR_MPI
-   subroutine dft_collect()
-      integer :: ierr
-      real(8) :: sum_r
-      real(8) :: dummy
-      integer :: sum_i
-
-      call mpi_reduce(nr_electrons,         &
-                      sum_r,                &
-                      1,                    &
-                      mpi_double_precision, &
-                      mpi_sum,              &
-                      0,                    &
-                      mpi_comm_world,       &
-                      ierr)
-      if (i_am_master) then
-         nr_electrons = sum_r
-      end if
-
-      call mpi_reduce(nr_points_looped_over, &
-                      sum_i,                 &
-                      1,                     &
-                      mpi_integer,           &
-                      mpi_sum,               &
-                      0,                     &
-                      mpi_comm_world,        &
-                      ierr)
-      if (i_am_master) then
-         nr_points_looped_over = sum_i
-      end if
-
-      call mpi_reduce(nr_points_used,        &
-                      sum_i,                 &
-                      1,                     &
-                      mpi_integer,           &
-                      mpi_sum,               &
-                      0,                     &
-                      mpi_comm_world,        &
-                      ierr)
-      if (i_am_master) then
-         nr_points_used = sum_i
-      end if
-
-      if (do_potential) then
-         call mpi_reduce(xc_energy,            &
-                         sum_r,                &
-                         1,                    &
-                         mpi_double_precision, &
-                         mpi_sum,              &
-                         0,                    &
-                         mpi_comm_world,       &
-                         ierr)
-         if (i_am_master) then
-            xc_energy = sum_r
-         end if
-      end if
-
-      if (nr_fmat > 0) then
-!        suggestion for Radovan (no dcopy + no extra alloc needed) - 
-!        a simple test with this code piece works fine for me.
-         if (i_am_master) then
-           call mpi_reduce(MPI_IN_PLACE,               &
-                           fmat,                       &
-                           mat_dim*mat_dim*nz*nr_fmat, &
-                           mpi_double_precision,       &
-                           mpi_sum,                    &
-                           0,                          &
-                           mpi_comm_world,             &
-                           ierr)
-         else
-!          declare dummy as --> real(8) :: dummy
-!          alternatively pass MPI_IN_PLACE instead of dummy for the recvbuf.
-           call mpi_reduce(fmat,                       &
-                           dummy,                      &
-                           mat_dim*mat_dim*nz*nr_fmat, &
-                           mpi_double_precision,       &
-                           mpi_sum,                    &
-                           0,                          &
-                           mpi_comm_world,             &
-                           ierr)
-         end if
-      end if
-
-      if (do_geo) then
-         if (i_am_master) then
-           call mpi_reduce(MPI_IN_PLACE,               &
-                           property_gradient,          &
-                           nr_atoms*3,                 &
-                           mpi_double_precision,       &
-                           mpi_sum,                    &
-                           0,                          &
-                           mpi_comm_world,             &
-                           ierr)
-         else
-           call mpi_reduce(property_gradient,          &
-                           dummy,                      &
-                           nr_atoms*3,                 &
-                           mpi_double_precision,       &
-                           mpi_sum,                    &
-                           0,                          &
-                           mpi_comm_world,             &
-                           ierr)
-         end if
-      end if
-
-   end subroutine
-#endif /* ifdef VAR_MPI */
 
    function get_xc_energy()
 
@@ -1951,14 +1835,13 @@ contains
    end function
 
    subroutine loop_over_batches()
-      integer :: ierr
     real(8) :: dummy
     integer :: idummy
     integer             :: ibatch
     integer             :: i
     real(8), allocatable :: mpi_buffer(:)
 
-      if (i_am_master) then
+      if (xc_mpi_is_master()) then
          if (do_fde_update_vemb .or. do_fde_response) then
 !           don't open and rewind anything
 !           data is already stored at this point
@@ -1972,78 +1855,56 @@ contains
 
       ibatch                = 0
       nr_points_total       = 0
-      nr_points_looped_over = 0
       nr_points_used        = 0
 
 !     loop over batches
       do
 
 !        get number of points in this batch
-         if (i_am_master) then
+         if (xc_mpi_is_master()) then
             if (dft_cfg_import_grid) then
-               read(file_unit_grid, *) nr_points
+               read(file_unit_grid, *) nr_points_batch
             else if (dft_cfg_multigrid) then
-               read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
+               read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points_batch
 #ifdef MOD_UNRELEASED
             else if (do_fde_update_vemb .or. do_fde_response) then
-               nr_points = fde_grid_np
+               nr_points_batch = fde_grid_np
 #endif
             else
-               read(file_unit_grid) nr_points
+               read(file_unit_grid) nr_points_batch
             end if
          end if
 
 #ifdef VAR_MPI
          if (parallel_xc) then
-            call xc_mpi_bcast(nr_points)
+            call xc_mpi_bcast(nr_points_batch)
          end if
 #endif
-         if (nr_points < 0) exit
+         if (nr_points_batch < 0) exit
 
-         nr_points_process = nr_points
-         nr_processes      = 1
-#ifdef VAR_MPI
-         if (parallel_xc) then
-             nr_processes      = nodes + 1
-             nr_points_part    = nr_points/nr_processes
-             nr_points_rest    = mod(nr_points, nr_processes)
-             nr_points_process = nr_points_part
-!            the last process gets the rest - these points are usually
-!            the most diffuse ones and therefore the most screened ones
-             if (mytid == nodes) nr_points_process = nr_points_part + nr_points_rest
-         end if
-#endif
-
-         if (i_am_master) then
-            allocate(rx(nr_points))
-            allocate(ry(nr_points))
-            allocate(rz(nr_points))
-            allocate(rw(nr_points))
-         else           
-            allocate(rx(nr_points_process))
-            allocate(ry(nr_points_process))
-            allocate(rz(nr_points_process))
-            allocate(rw(nr_points_process))
-         end if
+         allocate(rx(nr_points_batch))
+         allocate(ry(nr_points_batch))
+         allocate(rz(nr_points_batch))
+         allocate(rw(nr_points_batch))
 
 !radovan: grid stuff will be moved outside this module
-         if (i_am_master) then
+         if (xc_mpi_is_master()) then
             if (dft_cfg_import_grid) then
-               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points)
+               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
             else if (dft_cfg_multigrid) then
-               call num_grid_read(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
+               call num_grid_read(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points_batch)
 #ifdef MOD_UNRELEASED
             else if (do_fde_update_vemb .or. do_fde_response) then
                if (parallel_xc) then
                   call quit('fix fde_response mpi')
                end if
 
-               allocate(fde_froz_n(nr_points))
-               allocate(fde_elpot(nr_points))
-               allocate(fde_froz_ng(nr_points, 3))
+               allocate(fde_froz_n(nr_points_batch))
+               allocate(fde_elpot(nr_points_batch))
+               allocate(fde_froz_ng(nr_points_batch, 3))
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
-               do i = 1, nr_points
+               do i = 1, nr_points_batch
                   rx(i) = fde_grid(1,i)
                   ry(i) = fde_grid(2,i)
                   rz(i) = fde_grid(3,i)
@@ -2065,68 +1926,18 @@ contains
 
 #endif
             else
-               call num_grid_read_unformatted(rx, ry, rz, rw, file_unit_grid, nr_points)
+               call num_grid_read_unformatted(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
             end if
          end if
 
          ibatch          = ibatch + 1
-         nr_points_total = nr_points_total + nr_points
+         nr_points_total = nr_points_total + nr_points_batch
 
+         nr_points_on_this_proc = nr_points_batch
 #ifdef VAR_MPI
          if (parallel_xc) then
-            if (i_am_master) then
-               allocate(mpi_buffer(nr_points_process))
-               call mpi_scatter(rx, nr_points_process,                                       &
-                                mpi_real8, mpi_buffer, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               call mpi_scatter(ry, nr_points_process,                                       &
-                                mpi_real8, mpi_buffer, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               call mpi_scatter(rz, nr_points_process,                                       &
-                                mpi_real8, mpi_buffer, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               call mpi_scatter(rw, nr_points_process,                                       &
-                                mpi_real8, mpi_buffer, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               deallocate(mpi_buffer)
-               if (nr_points_rest /= 0) then
-                  i = nr_points - nr_points_rest + 1
-                  call mpi_send(rx(i), nr_points_rest, &
-                                mpi_real8, nodes, 90, mpi_comm_world, ierr)
-                  call mpi_send(ry(i), nr_points_rest, &
-                                mpi_real8, nodes, 91, mpi_comm_world, ierr)
-                  call mpi_send(rz(i), nr_points_rest, &
-                                mpi_real8, nodes, 92, mpi_comm_world, ierr)
-                  call mpi_send(rw(i), nr_points_rest, &
-                                mpi_real8, nodes, 93, mpi_comm_world, ierr)
-               end if
-            end if
-
-            if (i_am_coworker) then
-               call mpi_scatter(dummy, idummy,                                       &
-                                mpi_real8, rx, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               call mpi_scatter(dummy, idummy,                                       &
-                                mpi_real8, ry, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               call mpi_scatter(dummy, idummy,                                       &
-                                mpi_real8, rz, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               call mpi_scatter(dummy, idummy,                                       &
-                                mpi_real8, rw, nr_points_process, mpi_real8, mparid, &
-                                mpi_comm_world, ierr)
-               if ((nr_points_rest /= 0) .and. (mytid == nodes)) then
-                  i = nr_points_part + 1
-                  call mpi_recv(rx(i), nr_points_rest, &
-                                mpi_real8, mparid, 90, mpi_comm_world, istat, ierr)
-                  call mpi_recv(ry(i), nr_points_rest, &
-                                mpi_real8, mparid, 91, mpi_comm_world, istat, ierr)
-                  call mpi_recv(rz(i), nr_points_rest, &
-                                mpi_real8, mparid, 92, mpi_comm_world, istat, ierr)
-                  call mpi_recv(rw(i), nr_points_rest, &
-                                mpi_real8, mparid, 93, mpi_comm_world, istat, ierr)
-               end if
-            end if
+!           redefines nr_points_on_this_proc
+            call xc_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc)
          end if
 #endif
 
