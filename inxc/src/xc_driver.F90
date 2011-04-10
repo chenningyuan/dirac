@@ -421,6 +421,7 @@ contains
       if (nr_fmat > 0) then
          if (i_am_coworker) then
             allocate(fmat_container(mat_dim, mat_dim, nz, nr_fmat))
+            fmat_container = 0.0d0
             fmat => fmat_container
          else
             if (present(xc_fmat)) then
