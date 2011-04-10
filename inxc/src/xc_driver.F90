@@ -968,6 +968,11 @@ contains
     end if
 #endif
 #endif
+
+!       better safe than sorry
+        derv      = 0.0d0
+        derv_nadd = 0.0d0
+
 !       set it to zero, otherwise it is undefined with lda
         gnn_0 = 0.0d0
 
@@ -978,7 +983,9 @@ contains
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
 
          allocate(ao_block(block_length,     total_ao_vector_length))
+         ao_block = 0.0d0
          allocate(buffer_block(block_length, total_ao_vector_length))
+         buffer_block = 0.0d0
 
          call get_ao(                                  &
                      block_length,                     &
@@ -1900,8 +1907,11 @@ contains
                end if
 
                allocate(fde_froz_n(nr_points_batch))
+               fde_froz_n = 0.0d0
                allocate(fde_elpot(nr_points_batch))
+               fde_elpot = 0.0d0
                allocate(fde_froz_ng(nr_points_batch, 3))
+               fde_froz_ng = 0.0d0
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
                do i = 1, nr_points_batch
