@@ -133,7 +133,9 @@ contains
 !     --------------------------------------------------------------------------
 
       call generate_num_grid(D%elms)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
       call xc_integrator(xc_mat_dim           = ntbas(0), &
                          xc_nz                = nz,       &
                          xc_dmat_0            = D%elms,   &
@@ -142,7 +144,6 @@ contains
                          xc_nr_atoms          = nr_atoms, &
                          xc_property_gradient = g,        &
                          xc_do_geo_0          = .true.)
-      call xc_mpi_release_coworkers()
 
    end subroutine
 
@@ -161,7 +162,9 @@ contains
       end if
 
       call generate_num_grid(D%elms)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
       call xc_integrator(xc_mat_dim           = ntbas(0),    &
                          xc_nz                = nz,          &
                          xc_dmat_0            = D%elms,      &
@@ -171,7 +174,6 @@ contains
                          xc_nr_atoms          = nr_atoms,    &
                          xc_property_gradient = g,           &
                          xc_do_geo_1          = .true.)
-      call xc_mpi_release_coworkers()
 
    end subroutine
 
@@ -190,7 +192,9 @@ contains
       end if
 
       call generate_num_grid(D%elms)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
       call xc_integrator(xc_mat_dim           = ntbas(0),             &
                          xc_nz                = nz,                   &
                          xc_dmat_0            = D%elms,               &
@@ -200,7 +204,6 @@ contains
                          xc_nr_atoms          = nr_atoms,             &
                          xc_property_gradient = g,                    &
                          xc_do_geo_2          = .true.)
-      call xc_mpi_release_coworkers()
 
    end subroutine
 
@@ -219,7 +222,9 @@ contains
       mat = 0.0d0
 
       call generate_num_grid(D%elms)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
       call xc_integrator(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
@@ -228,7 +233,6 @@ contains
                          xc_fmat         = mat,         &
                          xc_fmat_pg_sym  = (/1, 1, 1/), &
                          xc_do_london_ks = .true.)
-      call xc_mpi_release_coworkers()
 
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
@@ -253,7 +257,9 @@ contains
       mat = 0.0d0
 
       call generate_num_grid(D%elms)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
       call xc_integrator(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
@@ -264,7 +270,6 @@ contains
                          xc_fmat         = mat,         &
                          xc_fmat_pg_sym  = (/1, 1, 1/), &
                          xc_do_london_lr = .true.)
-      call xc_mpi_release_coworkers()
 
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
@@ -590,7 +595,9 @@ contains
 !   xc contribution to ks matrix
     if (dirac_cfg_dft_calculation) then
         call generate_num_grid(D%elms)
-        call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(4)
+#endif
         call xc_integrator(xc_mat_dim      = ntbas(0), &
                            xc_nz           = nz,       &
                            xc_dmat_0       = D%elms,   &
@@ -598,7 +605,6 @@ contains
                  	    xc_nr_fmat      = 1,        &
                            xc_fmat         = F%elms,   &
                            xc_do_potential = .true.)
-        call xc_mpi_release_coworkers()
     end if
 
   end subroutine

@@ -1,7 +1,7 @@
 module xc_response
 
 #ifdef MOD_XCFUN
-  use dft_cfg
+  use xc_derv
   use density_eval
   use openrsp_cfg
   use xcfun

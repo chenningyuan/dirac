@@ -2213,6 +2213,7 @@ contains
       real(8)              :: sum_norm
       real(8), allocatable :: container(:, :, :, :)
       integer              :: ones(200), nr_dmat, nz, order
+#include "dcbgen.h"
 #endif
 
       if (.not. do_dft()) then
@@ -2342,7 +2343,9 @@ contains
 !           (this is due to handling of options inside xc_driver)
             
             call generate_num_grid(D(1)%elms)
-            call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
             call xc_integrator(xc_mat_dim      = A%nrow,                              &
                                xc_nz           = nz,                                  &
                                xc_dmat_0       = D(1)%elms,                           &
@@ -2353,7 +2356,6 @@ contains
                                xc_dmat_pg_sym  = (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
                                xc_fmat_pg_sym  = (/A%irep + 1/),                      &
                                xc_response_order_ao = order)
-            call xc_mpi_release_coworkers()
             
             F = F + A
             call dealloc(container)

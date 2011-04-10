@@ -53,14 +53,10 @@ module xc_driver
    implicit none
 
    public xc_integrator
-   public xc_mpi_wake_up_coworkers
-   public xc_mpi_release_coworkers
    public get_xc_energy
    public get_xc_mat_energy
 
    private
-
-
 
    type omega_prefactor
       real(8), allocatable :: n(:)
@@ -73,14 +69,6 @@ module xc_driver
       real(8), allocatable :: s_lao(:, :)
       real(8), allocatable :: gs_lao(:, :, :)
    end type
-
-
-
-
-#include "../../dft/functionals.h"
-
-#include "dcbgen.h"
-#include "dcborb.h"
 
    integer, parameter :: bllen = 1 !later more, now slowdft
    integer            :: block_length
@@ -111,10 +99,7 @@ module xc_driver
    logical :: use_gga_qi = .false. !quaternion imaginary
    logical :: use_gga    = .false.
 
-   logical :: is_tau_mgga = .false.
-
    logical :: parallel_xc
-   logical :: coworkers_are_awake = .false.
 
 !             number of points in current batch
    integer :: nr_points_batch
@@ -282,26 +267,14 @@ contains
       xc_energy    = 0.0d0
       tau_integral = 0.0d0
 
-      parallel_xc   = .false.
-#ifdef VAR_MPI
-      if (parcal) then
-         call xc_mpi_bcast(coworkers_are_awake)
-         if (coworkers_are_awake) then
-!           parallel_xc makes it possible to run
-!           instances of xc_integrator in sequential
-!           while rest of the program runs in parallel
-!           if coworkers are not ready then do not
-!           try to integrate in parallel
-            parallel_xc = .true.
-         end if
-      end if
-#endif
+      parallel_xc = (xc_mpi_get_nr_proc() > 1)
 
       call basis_info_read(xc_mpi_is_master(), parallel_xc)
 
 #ifdef VAR_MPI
       if (parallel_xc) then
          call sync_dft_cfg()
+         call xc_mpi_bcast(fun_is_automatic)
       end if
 #endif
 
@@ -528,7 +501,7 @@ contains
 
 !     set and sync functional
 #ifdef MOD_XCFUN
-      if (dft_cfg_xcfun) then
+      if (fun_is_automatic) then
          call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
          call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
          call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
@@ -544,18 +517,8 @@ contains
 #endif
 
 !     check whether gga code structure will be used
-#ifdef MOD_XCFUN
-      if (dft_cfg_xcfun) then
-         use_gga_qr  = (xcfun_is_gga() .or. xcfun_is_tau_mgga())
-         use_gga_qi  = (xcfun_is_gga() .or. xcfun_is_tau_mgga())
-         is_tau_mgga = xcfun_is_tau_mgga()
-      else
-#endif
-         use_gga_qr = dftisgga()
-         use_gga_qi = dftisgga()
-#ifdef MOD_XCFUN
-      end if
-#endif
+      use_gga_qr = (fun_is_gga() .or. fun_is_tau_mgga())
+      use_gga_qi = (fun_is_gga() .or. fun_is_tau_mgga())
       if (response_order_mo > 0) then
          if (dft_cfg_alda_hs) use_gga_qr = .false.
          if (dft_cfg_alda_ha) use_gga_qi = .false.
@@ -563,19 +526,19 @@ contains
       if (use_gga_qr .or. use_gga_qi) then
          use_gga = .true.
       end if
-!     in QR it is not so easy to separate H+ and H-
+!     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
-!     therefore i quit here if the user wants QR
-!     and not the full ALDA or XALDA
+!     therefore i quit here if the user wants qr
+!     and not the full alda or xalda
 !     it is really unfair to quit as late as here
 !     this can be checked earlier
 !     but this is anyway an exotic option
       if (response_order_mo > 1) then
          if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
-            call quit('QR and partial ALDA is not implemented')
+            call quit('qr and partial alda is not implemented')
          end if
          if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
-            call quit('QR and partial ALDA is not implemented')
+            call quit('qr and partial alda is not implemented')
          end if
       end if
 
@@ -660,7 +623,7 @@ contains
             end if
          end if
 
-! gosia: later i will join it with what is done above (now it is not working if i just 
+! gosia: later i will join it with what is done above (now it is not working if i just
 ! add another if)
          if (do_london_rhs_direct) then
            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
@@ -757,23 +720,6 @@ contains
 
    end subroutine
 
-   subroutine xc_mpi_wake_up_coworkers()
-
-#ifdef VAR_MPI
-      if (parcal) then
-         coworkers_are_awake = .true.
-         call dirac_parctl(4)
-      end if
-#endif /* ifdef VAR_MPI */
-
-   end subroutine
-
-   subroutine xc_mpi_release_coworkers()
-
-      coworkers_are_awake = .false.
-
-   end subroutine
-
    subroutine scale_density_matrices(f)
 
 !     --------------------------------------------------------------------------
@@ -852,7 +798,7 @@ contains
     real(8), allocatable :: derv(:, :)
     real(8), allocatable :: derv_nadd(:, :)
 
-    logical :: print_data_at_point 
+    logical :: print_data_at_point
 
     real(8) :: n_b(3)
     real(8) :: gnn_b(3)
@@ -1079,7 +1025,7 @@ contains
          w(1) = rw(ipoint)
 
 #ifdef MOD_UNRELEASED
-         if (is_tau_mgga) then
+         if (fun_is_tau_mgga()) then
             call get_tau(tau,     &
                          0,       &
                          mat_dim, &
@@ -1133,7 +1079,7 @@ contains
 
 #ifdef MOD_XCFUN
            if (do_fde_update_vemb .or. do_fde_response) then
-! 
+!
 ! aspg: this way we are forcing the same xc functional for the active and non-additive
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
 !       on using only up to 5 functionals...
@@ -1177,8 +1123,8 @@ contains
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
         end if
-#endif 
-#endif 
+#endif
+#endif
         time_derv = time_derv + second() - time_derv_start
 
         time_matrix_dist_start = second()
@@ -1223,7 +1169,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
 #ifdef MOD_UNRELEASED
-         if (is_tau_mgga) then
+         if (fun_is_tau_mgga()) then
             u%tn(1) = derv(1, d0000010)
          end if
 #endif
@@ -1522,7 +1468,7 @@ contains
 
 !         distribute over fock matrices
 !         =============================
-       
+
           do im = 1, nr_fmat
 
              un_above_threshold = .false.
@@ -1538,9 +1484,9 @@ contains
              end if
 
              if (ugn_above_threshold) then
-!               F_pq +=   u%n    \chi_p* \chi_q 
+!               F_pq +=   u%n    \chi_p* \chi_q
 !                     + 2 u%gn_i \chi_p* \nabla_i \chi_q
-                call nabla_omega_real(fmat,                &              
+                call nabla_omega_real(fmat,                &
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
                                       mat_dim,             &
@@ -1552,7 +1498,7 @@ contains
              else
                 if (un_above_threshold) then
 !                  F_pq += u%n \chi_p* \chi_q
-                   call omega_real(fmat,                &              
+                   call omega_real(fmat,                &
                                    im,                  &
                                    fmat_pg_sym(im) - 1, &
                                    mat_dim,             &
@@ -1561,14 +1507,14 @@ contains
                                    ao)
                 end if
              end if
-       
+
              us_above_threshold = .false.
              if (maxval((/dabs(u%s(1, im)), &
                           dabs(u%s(2, im)), &
                           dabs(u%s(3, im))/)) > tiny(0.0d0)) then
                 us_above_threshold = .true.
              end if
-       
+
              ugs_above_threshold = .false.
              if (maxval((/dabs(u%gs(1, 1, im)), &
                           dabs(u%gs(1, 2, im)), &
@@ -1583,9 +1529,9 @@ contains
              end if
 
              if (ugs_above_threshold) then
-!               F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q 
+!               F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
 !                     + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
-                call nabla_omega_imag(fmat,                &              
+                call nabla_omega_imag(fmat,                &
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
                                       mat_dim,             &
@@ -1597,7 +1543,7 @@ contains
              else
                 if (us_above_threshold) then
 !                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
-                   call omega_imag(fmat,                &              
+                   call omega_imag(fmat,                &
                                    im,                  &
                                    fmat_pg_sym(im) - 1, &
                                    mat_dim,             &
@@ -1606,7 +1552,7 @@ contains
                                    ao)
                 end if
              end if
-       
+
 #ifdef MOD_UNRELEASED
              utn_above_threshold = .false.
              if (dabs(u%tn(im)) > tiny(0.0d0)) then
@@ -1615,21 +1561,21 @@ contains
 
              if (utn_above_threshold) then
 !               F_pq += 0.5 u%tn (\nabla_i \chi_p*) (\nabla_i \chi_q)
-                call omega_real(fmat,                &              
+                call omega_real(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 0.5d0*u%tn(im),      &
                                 ao(ao_start(1, 0)))
-                call omega_real(fmat,                &              
+                call omega_real(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 0.5d0*u%tn(im),      &
                                 ao(ao_start(1, 0) + mat_dim))
-                call omega_real(fmat,                &              
+                call omega_real(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
@@ -1648,21 +1594,21 @@ contains
              if (uts_above_threshold) then
 !               F_pq += 0.5 u%ts_j (\nabla_i \chi_p*) \Sigma_j (\nabla_i \chi_q)
                 u%ts(:, im) = 0.5d0*u%ts(:, im)
-                call omega_imag(fmat,                &              
+                call omega_imag(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 u%ts(1, im),         &
                                 ao(ao_start(1, 0)))
-                call omega_imag(fmat,                &              
+                call omega_imag(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 u%ts(1, im),         &
                                 ao(ao_start(1, 0) + mat_dim))
-                call omega_imag(fmat,                &              
+                call omega_imag(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
@@ -1671,7 +1617,7 @@ contains
                                 ao(ao_start(1, 0) + mat_dim*2))
              end if
 
-!gosia: 
+!gosia:
 !sdft+lao now separately, later will be moved to u%s and u%gs,
 !now i left it separately for debugging
 
@@ -1683,7 +1629,7 @@ contains
                           dabs(u%s_lao(3, im))/)) > tiny(0.0d0)) then
                 us_lao_above_threshold = .true.
              end if
-       
+
              ugs_lao_above_threshold = .false.
              if (maxval((/dabs(u%gs_lao(1, 1, im)), &
                           dabs(u%gs_lao(1, 2, im)), &
@@ -1698,7 +1644,7 @@ contains
              end if
 
              if (ugs_lao_above_threshold) then
-                call nabla_omega_imag(fmat,                &              
+                call nabla_omega_imag(fmat,                &
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
                                       mat_dim,             &
@@ -1710,7 +1656,7 @@ contains
              else
                 if (us_lao_above_threshold) then
 !                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
-                   call omega_imag(fmat,                &              
+                   call omega_imag(fmat,                &
                                    im,                  &
                                    fmat_pg_sym(im) - 1, &
                                    mat_dim,             &
@@ -1720,7 +1666,7 @@ contains
                 end if
              end if
 !end gosia
- 
+
 #endif /* ifdef MOD_UNRELEASED */
 
           end do
@@ -2056,7 +2002,7 @@ contains
       if (calculate_qr) then
 
 #ifdef MOD_UNRELEASED
-         if (is_tau_mgga) then
+         if (fun_is_tau_mgga()) then
             call get_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
@@ -2096,21 +2042,21 @@ contains
          end if
 
         u%n(im) = u%n(im) + derv(1, d2000000)*r_b
-        
+
         if (is_gga_qr) then
            z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
                       + gn_0_pointwise(2)*gr_b(2) &
                       + gn_0_pointwise(3)*gr_b(3))
-          
+
            u%n(im) = u%n(im) + derv(1, d1010000)*z_b
-          
+
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b*derv(1, d1010000) &
                                          + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
                                          + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
 #ifdef MOD_UNRELEASED
-        if (is_tau_mgga) then
+        if (fun_is_tau_mgga()) then
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
@@ -2124,7 +2070,7 @@ contains
 !     antihermitian contribution (qi = quaternion imaginary)
       if (calculate_qi) then
 
-        
+
         if (is_gga_qi) then
           if (allow_nonhermitian) then
             call get_gs_nonhermitian(s_b,                       &
@@ -2154,7 +2100,7 @@ contains
                    ao_p)
         end if
 #ifdef MOD_UNRELEASED
-        if (is_tau_mgga) then
+        if (fun_is_tau_mgga()) then
            call get_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
@@ -2166,20 +2112,20 @@ contains
 
         do k = k_start, 3
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
-           
+
            if (is_gga_qi) then
               y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
                       + gn_0_pointwise(2)*gs_b(2, k) &
                       + gn_0_pointwise(3)*gs_b(3, k)
-           
+
               u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
-           
+
               u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
                                                   +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
 #ifdef MOD_UNRELEASED
-           if (is_tau_mgga) then
+           if (fun_is_tau_mgga()) then
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
@@ -2267,14 +2213,14 @@ contains
         do k = k_start, 3
 
            u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0200000)*s_b_lao(k, im)
-           
+
            if (is_gga_qi) then
               y_b(k, im)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
                           + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
                           + gn_0_pointwise(3)*gs_b_lao(3, k, im)
-           
+
               u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k, im)
-           
+
               u%gs_lao(1:3, k, im) = u%gs_lao(1:3, k, im)                               &
                                    +(gn_0_pointwise(1)*s_b_lao(1, k)                    &
                                    + gn_0_pointwise(2)*s_b_lao(2, k)                    &
@@ -2363,9 +2309,9 @@ contains
 !          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
 !                     + gn_0_pointwise(2)*gr_b(2) &
 !                     + gn_0_pointwise(3)*gr_b(3))
-!         
+!
 !          u%n(im) = u%n(im) + derv(1, d1010000)*z_b
-!         
+!
 !          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b*derv(1, d1010000) &
 !                                        + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
 !                                        + 2.0d0*gr_b(1:3)*derv(1, d0010000)
@@ -2399,14 +2345,14 @@ contains
                 y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
                         + gn_0_pointwise(2)*gs_b(2, k) &
                         + gn_0_pointwise(3)*gs_b(3, k)
-             
+
                 u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
-             
+
                 u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
                                                     +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
                                                     + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
              end if
-          end do 
+          end do
 
       end if
     end do
@@ -2516,7 +2462,7 @@ contains
      &                            dtrmat(1, 1, 1, 1), &
      &                            buf, &
      &                            gao, &
-     &                            gao1) 
+     &                            gao1)
          call get_gn_nonhermitian(r_c, &
      &                            gr_c, &
      &                            isymop(2) - 1, &
@@ -2534,7 +2480,7 @@ contains
      &              gao)
          call get_n(r_c, &
      &              isymop(2) - 1, &
-     &              mat_dim,         &   
+     &              mat_dim,         &
      &              dtrmat(1, 1, 1, 2), &
      &              buf, &
      &              gao)
@@ -2585,8 +2531,8 @@ contains
         z_bc = gr_b(1)*gr_c(1) &
              + gr_b(2)*gr_c(2) &
              + gr_b(3)*gr_c(3)
-        z_b  = 2.0d0*z_b 
-        z_c  = 2.0d0*z_c 
+        z_b  = 2.0d0*z_b
+        z_c  = 2.0d0*z_c
         z_bc = 2.0d0*z_bc
       end if
 

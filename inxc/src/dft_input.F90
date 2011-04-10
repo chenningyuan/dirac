@@ -22,6 +22,7 @@
 module dft_input
 
   use dft_cfg
+  use xc_derv
 #ifdef MOD_XCFUN
   use xcfun
 #endif

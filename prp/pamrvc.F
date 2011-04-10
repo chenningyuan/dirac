@@ -3524,6 +3524,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #ifdef MOD_DNF
 #include "densfit.h"
 #endif
@@ -3599,7 +3600,9 @@ C
 !                     fao is really fao (confusing naming reuses memory)
 
           call generate_num_grid(work(kbuf))
-          call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
           call xc_integrator(xc_mat_dim            = ntbas(0),
      &                       xc_nz                 = nz,
      &                       xc_dmat_0             = work(kbuf),
@@ -3615,7 +3618,6 @@ C
      &                       xc_do_fde_response    = 
      &                                           dirac_cfg_fde_response,
      &                       xc_response_order_mo = 1)
-          call xc_mpi_release_coworkers()
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 

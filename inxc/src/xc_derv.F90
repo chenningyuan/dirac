@@ -21,96 +21,121 @@
 
 module xc_derv
 
-  use dft_cfg
+   use xc_max_block_length
+   use xc_mpi
 #ifdef MOD_XCFUN
-  use xcfun
+   use xcfun
 #endif
-  use xc_max_block_length
-
-  implicit none
-
-  public get_functional_derv
+ 
+   implicit none
+ 
+   public get_functional_derv
+   public fun_is_lda
+   public fun_is_gga
+   public fun_is_tau_mgga
 #ifdef MOD_XCFUN
-  public xcfun_set_functional
-  public xcfun_is_lda
-  public xcfun_is_gga
-  public xcfun_is_tau_mgga
+   public xcfun_set_functional
 #endif
 
-  integer, parameter, public :: d0000000 =  0
-  integer, parameter, public :: d1000000 =  1
-  integer, parameter, public :: d0010000 =  2
-  integer, parameter, public :: d0000100 =  3
-  integer, parameter, public :: d2000000 =  4
-  integer, parameter, public :: d0200000 =  5
-  integer, parameter, public :: d0020000 =  6
-  integer, parameter, public :: d0002000 =  7
-  integer, parameter, public :: d1010000 =  8
-  integer, parameter, public :: d0101000 =  9
-  integer, parameter, public :: d1000100 = 10
-  integer, parameter, public :: d0010100 = 11
-  integer, parameter, public :: d3000000 = 12
-  integer, parameter, public :: d0030000 = 13
-  integer, parameter, public :: d1200000 = 14
-  integer, parameter, public :: d1020000 = 15
-  integer, parameter, public :: d1002000 = 16
-  integer, parameter, public :: d2010000 = 17
-  integer, parameter, public :: d0210000 = 18
-  integer, parameter, public :: d1101000 = 19
-  integer, parameter, public :: d0111000 = 20
-  integer, parameter, public :: d0012000 = 21
+   public functional
+   type functional
+#ifdef MOD_XCFUN
+      real(8)              :: w(XC_NR_PARAMS)
+#else                      
+      real(8)              :: w(1)
+#endif                     
+      integer              :: id
+      logical              :: xcfun_id_is_set
+      real(8), allocatable :: input(:, :)
+      real(8), allocatable :: output(:, :)
+   end type
 
-  integer, parameter, public :: d0000010 = 22
-  integer, parameter, public :: d0000020 = 23
-  integer, parameter, public :: d1000010 = 24
-  integer, parameter, public :: d0010010 = 25
-  integer, parameter, public :: d0100001 = 26
-  integer, parameter, public :: d0001001 = 27
-  integer, parameter, public :: d0000002 = 28
+   logical, public :: fun_is_automatic
 
-  integer, parameter, public :: nr_nonzero_derv = 28
+   type(functional), public :: xc_fun
+   type(functional), public :: xc_fun_alda
+   type(functional), public :: xc_fun_xalda
+   type(functional), public :: kin_fun
+   type(functional), public :: kin_fun_alda
 
-  private
+   integer, parameter, public :: d0000000 =  0
+   integer, parameter, public :: d1000000 =  1
+   integer, parameter, public :: d0010000 =  2
+   integer, parameter, public :: d0000100 =  3
+   integer, parameter, public :: d2000000 =  4
+   integer, parameter, public :: d0200000 =  5
+   integer, parameter, public :: d0020000 =  6
+   integer, parameter, public :: d0002000 =  7
+   integer, parameter, public :: d1010000 =  8
+   integer, parameter, public :: d0101000 =  9
+   integer, parameter, public :: d1000100 = 10
+   integer, parameter, public :: d0010100 = 11
+   integer, parameter, public :: d3000000 = 12
+   integer, parameter, public :: d0030000 = 13
+   integer, parameter, public :: d1200000 = 14
+   integer, parameter, public :: d1020000 = 15
+   integer, parameter, public :: d1002000 = 16
+   integer, parameter, public :: d2010000 = 17
+   integer, parameter, public :: d0210000 = 18
+   integer, parameter, public :: d1101000 = 19
+   integer, parameter, public :: d0111000 = 20
+   integer, parameter, public :: d0012000 = 21
+   
+   integer, parameter, public :: d0000010 = 22
+   integer, parameter, public :: d0000020 = 23
+   integer, parameter, public :: d1000010 = 24
+   integer, parameter, public :: d0010010 = 25
+   integer, parameter, public :: d0100001 = 26
+   integer, parameter, public :: d0001001 = 27
+   integer, parameter, public :: d0000002 = 28
+   
+   integer, parameter, public :: nr_nonzero_derv = 28
+   
+   private
 
 #include "../../dft/functionals.h"
 
-  integer, parameter   :: max_dim = 99
+   integer, parameter :: max_dim = 99
 
 contains
 
+   function fun_is_lda()
+      logical :: fun_is_lda
+
+      if (fun_is_automatic) then
 #ifdef MOD_XCFUN
-
-   function xcfun_is_lda()
-      logical :: xcfun_is_lda
-
-      xcfun_is_lda = .false.
-      if (xc_get_type(xc_fun%id) == 0) then
-         xcfun_is_lda = .true.
+         fun_is_lda = (xc_get_type(xc_fun%id) == 0)
+#endif
+      else
+         fun_is_lda = (.not. dftisgga())
       end if
    end function
 
-   function xcfun_is_gga()
-      logical :: xcfun_is_gga
+   function fun_is_gga()
+      logical :: fun_is_gga
 
-      xcfun_is_gga = .false.
-      if (xc_get_type(xc_fun%id) == 1) then
-         xcfun_is_gga = .true.
+      if (fun_is_automatic) then
+#ifdef MOD_XCFUN
+         fun_is_gga = (xc_get_type(xc_fun%id) == 1)
+#endif
+      else
+         fun_is_gga = dftisgga()
       end if
    end function
 
-   function xcfun_is_tau_mgga()
-      logical :: xcfun_is_tau_mgga
+   function fun_is_tau_mgga()
+      logical :: fun_is_tau_mgga
 
-      xcfun_is_tau_mgga = .false.
-      if (xc_get_type(xc_fun%id) == 2) then
-         xcfun_is_tau_mgga = .true.
+      if (fun_is_automatic) then
+#ifdef MOD_XCFUN
+         fun_is_tau_mgga = (xc_get_type(xc_fun%id) == 2)
+#endif
+      else
+         fun_is_tau_mgga = .false.
       end if
    end function
 
-
-
-
-
+#ifdef MOD_XCFUN
    subroutine xcfun_set_functional(f,              &
                                    response_order, &
                                    parallel_xc)
@@ -126,7 +151,9 @@ contains
       if (.not. f%xcfun_id_is_set) then
 #ifdef VAR_MPI
          if (parallel_xc) then
-            call sync_functional(f)
+            call xc_mpi_bcast(f%w)
+            call xc_mpi_bcast(f%id)
+            call xc_mpi_bcast(f%xcfun_id_is_set)
          end if
 #endif
          f%id = xc_new_functional()
@@ -179,8 +206,9 @@ contains
                                  z_0,          &
                                  n,            &
                                  derv,         &
-                                 alda_real, &
-                                 alda_imag, &
+                                 alda_real,    &
+                                 alda_imag,    &
+                                 xalda,        &
                                  tau)
 
 !   ----------------------------------------------------------------------------
@@ -195,6 +223,7 @@ contains
     real(8),          intent(out) :: derv(max_block_length, 0:n)
     logical, optional, intent(in) :: alda_real
     logical, optional, intent(in) :: alda_imag
+    logical, optional, intent(in) :: xalda
     real(8), optional, intent(in) :: tau
 !   ----------------------------------------------------------------------------
     real(8)                       :: t1(max_dim, max_block_length)
@@ -203,13 +232,16 @@ contains
     real(8), external             :: dftenergy
     logical                       :: do_alda_real
     logical                       :: do_alda_imag
+    logical                       :: do_xalda
 !   ----------------------------------------------------------------------------
 
     do_alda_real = .false.
     do_alda_imag = .false.
+    do_xalda     = .false.
 
     if (present(alda_real)) do_alda_real = alda_real
     if (present(alda_imag)) do_alda_imag = alda_imag
+    if (present(xalda))     do_xalda     = xalda
 
 !   if less then linear response ignore alda
     if (order < 2) then
@@ -222,18 +254,18 @@ contains
     t2   = 0.0d0
 
 #ifdef MOD_XCFUN
-    if (dft_cfg_xcfun) then
+    if (fun_is_automatic) then
 
       f%input = 0.0d0
       do k = 1, block_length
          f%input(1, k) = r_0(k)
       end do
-      if (xcfun_is_gga()) then
+      if (fun_is_gga()) then
          do k = 1, block_length
             f%input(3, k) = z_0(k)
          end do
       end if
-      if (xcfun_is_tau_mgga()) then
+      if (fun_is_tau_mgga()) then
          do k = 1, block_length
             f%input(3, k) = z_0(k)
          end do
@@ -254,12 +286,12 @@ contains
             f_alda%input(1, k) = r_0(k)
          end do
          id = f_alda%id
-         if (dft_cfg_xalda) then
+         if (do_xalda) then
             id = f_xalda%id
          end if
-         call xc_eval(id,                &
-                      order,             &
-                      block_length,      &
+         call xc_eval(id,           &
+                      order,        &
+                      block_length, &
                       f_alda%input, &
                       f_alda%output)
       end if
@@ -274,12 +306,12 @@ contains
                call quit('get_functional_derv: order 0; probably programming error')
 
             case (1)
-               if (xcfun_is_lda()) then
+               if (fun_is_lda()) then
                   derv(k, d1000000) = f%output(XC_D10, k)
-               else if (xcfun_is_gga()) then
+               else if (fun_is_gga()) then
                   derv(k, d1000000) = f%output(XC_D10000, k)
                   derv(k, d0010000) = f%output(XC_D00100, k)
-               else if (xcfun_is_tau_mgga()) then
+               else if (fun_is_tau_mgga()) then
                   derv(k, d1000000) = f%output(XC_D1000000, k)
                   derv(k, d0010000) = f%output(XC_D0010000, k)
                   derv(k, d0000010) = f%output(XC_D0000010, k)
@@ -292,14 +324,14 @@ contains
                if (do_alda_real) then
                   derv(k, d2000000) = f_alda%output(XC_D20, k)
                else
-                  if (xcfun_is_lda()) then
+                  if (fun_is_lda()) then
                      derv(k, d2000000) = f%output(XC_D20, k)
-                  else if (xcfun_is_gga()) then
+                  else if (fun_is_gga()) then
                      derv(k, d2000000) = f%output(XC_D20000, k)
                      derv(k, d1010000) = f%output(XC_D10100, k)
                      derv(k, d0020000) = f%output(XC_D00200, k)
                      derv(k, d0010000) = f%output(XC_D00100, k)
-                  else if (xcfun_is_tau_mgga()) then
+                  else if (fun_is_tau_mgga()) then
                      derv(k, d0010000) = f%output(XC_D0010000, k)
                      derv(k, d2000000) = f%output(XC_D2000000, k)
                      derv(k, d1010000) = f%output(XC_D1010000, k)
@@ -316,14 +348,14 @@ contains
                if (do_alda_imag) then
                   derv(k, d0200000) = f_alda%output(XC_D02, k)
                else
-                  if (xcfun_is_lda()) then
+                  if (fun_is_lda()) then
                      derv(k, d0200000) = f%output(XC_D02, k)
-                  else if (xcfun_is_gga()) then
+                  else if (fun_is_gga()) then
                      derv(k, d0200000) = f%output(XC_D02000, k)
                      derv(k, d0101000) = f%output(XC_D01010, k)
                      derv(k, d0002000) = f%output(XC_D00020, k)
                      derv(k, d0000100) = f%output(XC_D00001, k)
-                  else if (xcfun_is_tau_mgga()) then
+                  else if (fun_is_tau_mgga()) then
                      derv(k, d0000100) = f%output(XC_D0000100, k)
                      derv(k, d0200000) = f%output(XC_D0200000, k)
                      derv(k, d0101000) = f%output(XC_D0101000, k)
@@ -341,12 +373,12 @@ contains
                if (do_alda_real .or. do_alda_imag) then
                   call quit('get_functional_derv: xcfun alda qr not implemented')
                end if
-               if (xcfun_is_lda()) then
+               if (fun_is_lda()) then
                   derv(k, d2000000) = f%output(XC_D20, k)
                   derv(k, d0200000) = f%output(XC_D02, k)
                   derv(k, d1200000) = f%output(XC_D12, k)
                   derv(k, d3000000) = f%output(XC_D30, k)
-               else if (xcfun_is_gga()) then
+               else if (fun_is_gga()) then
                   derv(k, d0010000) = f%output(XC_D00100, k)
                   derv(k, d0000100) = f%output(XC_D00001, k)
                   derv(k, d2000000) = f%output(XC_D20000, k)
@@ -367,7 +399,7 @@ contains
                   derv(k, d0111000) = f%output(XC_D01110, k)
                   derv(k, d0030000) = f%output(XC_D00300, k)
                   derv(k, d0012000) = f%output(XC_D00120, k)
-               else if (xcfun_is_tau_mgga()) then
+               else if (fun_is_tau_mgga()) then
                   call quit('get_functional_derv: tau mgga qr not implemented')
                else
                   call quit('get_functional_derv: unknown fun type')

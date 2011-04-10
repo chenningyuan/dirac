@@ -4251,6 +4251,7 @@ C***********************************************************************
       use dirac_cfg
       USE FDE_MOD, ONLY: FDEINI, FDEINP, FDE_setupFDEgrid, update_vemb
       use dft_cfg
+      use xc_derv
       use dft_input
       use input_reader
       use x2cmod_cfg
@@ -4913,7 +4914,7 @@ C    (see MRCON1 of the MOLTRA module)
           call parse_functional(line, xc_fun)
           call set_xc_fun_alda(xc_fun_alda)
           call set_xc_fun_xalda(xc_fun_xalda)
-          dft_cfg_xcfun             = .true.
+          fun_is_automatic = .true.
           dirac_cfg_dft_calculation = .true.
 #else
           call quit('XCFun not available in this version')
@@ -5396,7 +5397,7 @@ CMI    ... quantum dots
       if (dirac_cfg_dft_calculation) then
 
 #ifdef MOD_XCFUN
-        if (.not. dft_cfg_xcfun) then
+        if (.not. fun_is_automatic) then
 #endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda

@@ -563,7 +563,9 @@ C
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
            call generate_num_grid(dmat)
-           call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+           if (parcal) call dirac_parctl(4)
+#endif
            call xc_integrator(xc_mat_dim      = ntbas(0),
      &                        xc_nz           = nz,
      &                        xc_dmat_0       = dmat,
@@ -575,7 +577,6 @@ C
      &                                (dirac_cfg_fde .and. update_vemb),
      &                        xc_do_fde_response    =
      &                                           dirac_cfg_fde_response)
-           call xc_mpi_release_coworkers()
            
            tdxc = second() - tdxc
         end if
@@ -1366,7 +1367,9 @@ C
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
            call generate_num_grid(dmat)
-           call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+           if (parcal) call dirac_parctl(4)
+#endif
            call xc_integrator(xc_mat_dim      = ntbas(0),
      &                        xc_nz           = nz,
      &                        xc_dmat_0       = dmat,
@@ -1378,7 +1381,6 @@ C
      &                                (dirac_cfg_fde .and. update_vemb),
      &                        xc_do_fde_response    =
      &                                           dirac_cfg_fde_response)
-           call xc_mpi_release_coworkers()
            
            tdxc = second() - tdxc
         end if

@@ -262,6 +262,7 @@ contains
 
     logical :: debug_me
 !-----------------------------------------------------------------------
+#include "dcbgen.h"
 
 !   set for twofck:
     do icomp = 1, nr_xyz_comp
@@ -325,7 +326,9 @@ contains
       call genden(dmat, cmo, 1, prp_iprint)
 
       call generate_num_grid(dmat)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
       call xc_integrator(xc_mat_dim           = nr_ao_total,   &
                          xc_nz                = nr_qu,         &
                          xc_dmat_0            = dmat,          &
@@ -338,8 +341,6 @@ contains
                          xc_dmat_ih_sym       = ihrmop,        &
                          xc_response_order_mo = 1,             &
                          xc_do_london_rhs_ro  = .true.)       
-
-      call xc_mpi_release_coworkers()
 
       call dealloc(dmat)
 

@@ -25,32 +25,14 @@ module dft_cfg
 !              don't forget to update
 !              sync_dft_cfg (below)
 
-#ifdef VAR_MPI
    use xc_mpi
-#endif
 #ifdef MOD_XCFUN
    use xcfun
 #endif
 
   implicit none
 
-#ifdef VAR_MPI
   public sync_dft_cfg
-  public sync_functional
-#endif
-
-  public functional
-  type functional
-#ifdef MOD_XCFUN
-     real(8) :: w(XC_NR_PARAMS)
-#else
-     real(8) :: w(1)
-#endif
-     integer :: id
-     logical :: xcfun_id_is_set
-     real(8), allocatable :: input(:, :)
-     real(8), allocatable :: output(:, :)
-  end type
 
   character(30), public :: dft_cfg_gridfile
 
@@ -74,7 +56,6 @@ module dft_cfg
   logical, public :: dft_cfg_no_sdft                 = .false.
   logical, public :: dft_cfg_sdft_collinear          = .false.
   logical, public :: dft_cfg_cdft_vrg                = .false.
-  logical, public :: dft_cfg_xcfun                   = .false.
   logical, public :: dft_cfg_grac                    = .false.
   logical, public :: dft_cfg_grac_is_active          = .false.
   logical, public :: dft_cfg_saop                    = .false.
@@ -110,33 +91,13 @@ module dft_cfg
   integer, public :: dft_cfg_integration_check_level = 0
   integer, public :: dft_cfg_alda_order              = 99
 
-  type(functional), public :: xc_fun
-  type(functional), public :: xc_fun_alda
-  type(functional), public :: xc_fun_xalda
-  type(functional), public :: kin_fun
-  type(functional), public :: kin_fun_alda
-
   private
 
-#ifdef VAR_MPI
 contains
-
-   subroutine sync_functional(f)
-
-!     --------------------------------------------------------------------------
-      type(functional) :: f
-!     --------------------------------------------------------------------------
-
-      call xc_mpi_bcast(f%w)
-      call xc_mpi_bcast(f%id)
-#ifdef MOD_XCFUN
-      call xc_mpi_bcast(f%xcfun_id_is_set)
-#endif
-
-   end subroutine
 
   subroutine sync_dft_cfg()
 
+#ifdef VAR_MPI
     call xc_mpi_bcast(dft_cfg_screening              )
     call xc_mpi_bcast(dft_cfg_keep_ao                )
     call xc_mpi_bcast(dft_cfg_explicit_potential     )
@@ -154,7 +115,6 @@ contains
     call xc_mpi_bcast(dft_cfg_no_sdft                )
     call xc_mpi_bcast(dft_cfg_sdft_collinear         )
     call xc_mpi_bcast(dft_cfg_cdft_vrg               )
-    call xc_mpi_bcast(dft_cfg_xcfun                  )
     call xc_mpi_bcast(dft_cfg_grac                   )
     call xc_mpi_bcast(dft_cfg_grac_is_active         )
     call xc_mpi_bcast(dft_cfg_saop                   )
@@ -180,8 +140,8 @@ contains
     call xc_mpi_bcast(dft_cfg_debug_level            )
     call xc_mpi_bcast(dft_cfg_integration_check_level)
     call xc_mpi_bcast(dft_cfg_alda_order             )
+#endif /* ifdef VAR_MPI */
 
   end subroutine
-#endif /* ifdef VAR_MPI */
 
 end module

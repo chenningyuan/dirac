@@ -718,7 +718,9 @@ C
 !    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
       END DO
       call generate_num_grid(dmat0)
-      call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
       if (dft_cfg_no_sdft) then
          call xc_integrator(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
@@ -739,7 +741,6 @@ C
      &            xc_response_order_mo = 1,
      &            xc_do_london_rhs_direct = .true.)
       end if
-      call xc_mpi_release_coworkers()
 
       endif
       call qexit('add_dft_to_twolon')

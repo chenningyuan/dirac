@@ -40,7 +40,7 @@
       use xcfun
 #endif
       use dft_input
-      use dft_cfg
+      use xc_derv
 
 #ifdef PRG_DIRAC
 !miro: introduced in order to fix g95 integer*8 problem

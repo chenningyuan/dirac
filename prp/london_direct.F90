@@ -528,7 +528,9 @@ contains
 !   need to be adapted...
 
     call generate_num_grid(dmat)
-    call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
     if (dft_cfg_no_sdft) then
       call xc_integrator(xc_mat_dim              = mat_dim_ao,   &
                          xc_nz                   = nr_qu,        &
@@ -549,7 +551,6 @@ contains
                          xc_do_london_rhs_direct = .true.,       &
                          xc_response_order_mo    = 1)
     end if
-    call xc_mpi_release_coworkers()
 
     if (debug_me) then
       do icomp = 1, max_nr_xyz_comp

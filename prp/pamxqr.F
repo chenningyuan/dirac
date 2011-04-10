@@ -2299,6 +2299,7 @@ C*****************************************************************************
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
+#include "dcbgen.h"
 C
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
@@ -2387,7 +2388,9 @@ C
          call dzero(work(kxc), 3*n2bbasxq)
 
          call generate_num_grid(work(kdmat))
-         call xc_mpi_wake_up_coworkers()
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(4)
+#endif
          call xc_integrator(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
      &                      xc_dmat_0            = work(kdmat),
@@ -2399,7 +2402,6 @@ C
      &                      xc_dmat_pg_sym       = isymop,
      &                      xc_dmat_ih_sym       = ihrmop,
      &                      xc_response_order_mo = 2)
-         call xc_mpi_release_coworkers()
 
 !       add the (symmetrized) XC contribution on top of work(kf1ao)
         call daxpy(3*n2bbasxq, 1.0d0, work(kxc), 1, work(kf1ao), 1)
