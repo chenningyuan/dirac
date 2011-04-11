@@ -1800,7 +1800,7 @@ C     Positronic part
       NC = MIN(NP1,NP2)
       NR = NP1-NP2
       IF(NR.GT.0) THEN
-        CALL IZERO(IBO1(IV1),NR)
+        ibo1(iv1:iv1+nr) = 0
         IV1 = IV1 + NR
       ELSE
         IV2 = 1-NR
@@ -1814,28 +1814,12 @@ C     Electronic part
       CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)
       IF(NR.GT.0) THEN
         IV1 = IV1 + NC
-        CALL IZERO(IBO1(IV1),NR)
+        ibo1(iv1:iv1+nr) = 0
       ENDIF
 C
       RETURN
       END
 
-      SUBROUTINE IZERO(INTI,LENGTH)
-C...................................................................
-C Written 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine IZERO sets an integer array of length *LENGTH*
-C   to zero.
-C...................................................................
-      INTEGER INTI(*),LENGTH
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH
-  100    INTI(I) = 0
-C
-      RETURN
-      END
 
       SUBROUTINE ICOPY(N,IX,INCX,IY,INCY)
 C
@@ -1925,8 +1909,7 @@ C
 C
 C     Initialize
 C
-      NDIM = 2*NHTYP*NUCIND
-      CALL IZERO(NUCORB,NDIM)
+      NUCORB = 0
 C
       JCENT = 0
       JPRIM = -1
