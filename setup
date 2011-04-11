@@ -65,6 +65,11 @@ group.add_option('--mpi',
                  dest='mpi',
                  default=False,
                  help='build using MPI parallelization [default: %default]')
+group.add_option('--rsh',
+                 action='store_true',
+                 dest='rsh',
+                 default=False,
+                 help='use rsh/rcp for distribution over nodes [default: %default]')
 group.add_option('--int64',
                  action='store_true',
                  dest='int64',
@@ -211,6 +216,8 @@ if options.mpi:
     command += ' -DDIRAC_ENABLE_MPI=1'
     if options.runtest_mpi:
         command += ' -DDIRAC_RUNTEST_NR_PROC=' + str(options.runtest_mpi)
+if options.rsh:
+    command += ' -DDIRAC_ENABLE_RSH=1'
 if options.runtest_timeout:
     command += ' -DDIRAC_RUNTEST_TIMEOUT=' + str(options.runtest_timeout)
 
