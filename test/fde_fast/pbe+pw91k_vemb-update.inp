@@ -1,0 +1,31 @@
+**DIRAC
+.TITLE
+electric properties for frozen density embedding
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.LEVY-LEBLOND
+.DFTAUTO
+pbex=1.0 pbec=1.0
+.FDE
+.FDERSP
+*FDE
+.NAKEF
+kin_pw91
+.NAXCF
+pbex=1.0 pbec=1.0
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.EVCCNV
+ 1.0D-2
+**PROPERTIES
+.DIPOLE
+*LINEAR RESPONSE
+.B FREQ
+ 2
+ 0.000
+ 0.100
+.OPERATOR
+ YDIPLEN
+*END OF
