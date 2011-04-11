@@ -55,7 +55,7 @@ C-----------------------------------------------------------------------
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "../../dft/functionals.h"
+#include "../../cfun/functionals.h"
 C
       real(8) :: derv(max_block_length, 0:99)
       DIMENSION VX_BULK(DERVS1),
@@ -225,7 +225,7 @@ C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #include "dcborb.h"
 #include "nuclei.h"
 #include "dgroup.h"
-#include "../../dft/functionals.h"
+#include "../../cfun/functionals.h"
 C- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       LOGICAL   FILE_IS_THERE,
      &          FILE_IS_OPENED

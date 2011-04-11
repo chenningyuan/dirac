@@ -93,7 +93,7 @@ module xc_derv
    
    private
 
-#include "../../dft/functionals.h"
+#include "../../cfun/functionals.h"
 
    integer, parameter :: max_dim = 99
 
