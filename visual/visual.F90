@@ -845,17 +845,12 @@ contains
 
 !     errors
 
-      IF(visual_cfg_dmat_file_record(IXVECTOR) .GT. NR_VECTORS) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
-
-      IF(visual_cfg_dmat_file_record(IXVECTOR) .LT. 1) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .LT. 1'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
+      if ((visual_cfg_dmat_file_record(ixvector) > nr_vectors) &
+          .or. (visual_cfg_dmat_file_record(ixvector) < 1)) then
+         write(lupri,'(a)') 'error in visual:'
+         write(lupri,'(a)') 'you try to read an invalid record number from file '//visual_cfg_dmat_file(ixvector)
+         call quit('error in visual')
+      end if
 
 !     move to the right record
 
