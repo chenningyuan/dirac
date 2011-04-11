@@ -119,16 +119,9 @@ group.add_option('--coverage',
                  dest='coverage',
                  default=False,
                  help='enable code coverage [default: %default]')
-group.add_option('--runtest_timeout_flag',
-                 action='store',
-                 type='string',
-                 dest='runtest_timeout_flag',
-                 default=None,
-                 metavar='STRING',
-                 help='own runtest timeout [default: %default]')
 parser.add_option_group(group)
 
-group = OptionGroup(parser, 'Options for make test and Nightly tests')
+group = OptionGroup(parser, 'Options for nightly tests')
 group.add_option('--buildname',
                  type='string',
                  action='store',
@@ -150,6 +143,15 @@ group.add_option('--runtest_timeout',
                  default=None,
                  help='CTest timeout in seconds [default: %default]',
                  metavar='INTEGER')
+#radovan: why do we need two flags to control timeout?
+#         please reduce to one or convince me that we need two
+group.add_option('--runtest_timeout_flag',
+                 action='store',
+                 type='string',
+                 dest='runtest_timeout_flag',
+                 default=None,
+                 metavar='STRING',
+                 help='own runtest timeout [default: %default]')
 parser.add_option_group(group)
 
 # process input
