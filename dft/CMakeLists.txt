@@ -69,12 +69,6 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-#file(GLOB INXC_SOURCES
-#    ${PROJECT_SOURCE_DIR}/src/*.F90
-#    ${PROJECT_SOURCE_DIR}/src/*.F
-#    ${PROJECT_SOURCE_DIR}/../dft/*.c
-#    )
-
 set(INXC_SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
@@ -96,35 +90,35 @@ set(INXC_SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
-    ${PROJECT_SOURCE_DIR}/../dft/emb-functional.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-becke.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-cam.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-gga.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-gllb_hole.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-hjsx.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-kin_pw91k.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-kin_tf.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-kin_vw.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-kt.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-lb94.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-lbalpha.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-lyp.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-optx.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-p86c.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-pbec.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-pbex.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-pw86x.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-pw91c.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-pw91x.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-pz81.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-revpbex.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-rpbex.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-slater.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-srpbec.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-srvwn5.c
-    ${PROJECT_SOURCE_DIR}/../dft/fun-vwn.c
-    ${PROJECT_SOURCE_DIR}/../dft/functionals.c
-    ${PROJECT_SOURCE_DIR}/../dft/general.c
+    ${PROJECT_SOURCE_DIR}/../cfun/emb-functional.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-becke.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-cam.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-gga.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-gllb_hole.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-hjsx.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-kin_pw91k.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-kin_tf.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-kin_vw.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-kt.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-lb94.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-lbalpha.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-lyp.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-optx.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-p86c.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-pbec.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-pbex.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-pw86x.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-pw91c.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-pw91x.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-pz81.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-revpbex.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-rpbex.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-slater.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-srpbec.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-srvwn5.c
+    ${PROJECT_SOURCE_DIR}/../cfun/fun-vwn.c
+    ${PROJECT_SOURCE_DIR}/../cfun/functionals.c
+    ${PROJECT_SOURCE_DIR}/../cfun/general.c
     )
 
 add_executable(inxc.x
