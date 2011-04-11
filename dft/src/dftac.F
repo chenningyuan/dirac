@@ -266,7 +266,11 @@ C
         REWIND LUSAOP
       ELSE
         LUSAOP = 42
-        CALL OPNFIL(LUSAOP,'DFCOEF','UNKNOWN','SAOP')
+        open(lusaop,            
+     &       file   = 'DFCOEF', 
+     &       status = 'unknown',       
+     &       access = 'sequential',
+     &       form   = 'unformatted')
       ENDIF
 C
       KSAOPCMO = 0.0d0
