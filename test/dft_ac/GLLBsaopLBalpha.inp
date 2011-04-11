@@ -9,6 +9,7 @@
  GLLBhole
 *DFT
 .SAOP!
+**GRID
 .ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **INTEGRALS

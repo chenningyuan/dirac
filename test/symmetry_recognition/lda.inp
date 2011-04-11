@@ -4,7 +4,7 @@
 .LEVY-LEBLOND
 .DFT
  LDA
-*DFT
+**GRID
 .COARSE         !for the test we use a coarse grid
 **INTEGRALS
 *READIN

@@ -9,9 +9,10 @@
 .DFT
  LDA
 *DFT
+.BETASIGMA
+**GRID
 .ZIPGRID
 .DEBUG          !very coarse grid
-.BETASIGMA
 **INTEGRALS
 .NUCMOD
  1

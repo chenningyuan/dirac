@@ -6,7 +6,7 @@
 .DFTAUTO
  B3LYP
 !slater=0.8 vwn=0.19 becke=0.72 lyp=0.81 hfx=0.2
-*DFT
+**GRID
 .DEBUG          !very coarse grid
 .ZIPGRID
 **INTEGRALS

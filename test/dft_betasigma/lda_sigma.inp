@@ -8,7 +8,7 @@
 .LVCORR
 .DFT
  LDA
-*DFT
+**GRID
 .ZIPGRID
 .DEBUG          !very coarse grid
 **INTEGRALS

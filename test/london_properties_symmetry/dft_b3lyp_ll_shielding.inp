@@ -12,6 +12,7 @@
  B3LYP
 *DFT
 .NOSDFT
+**GRID
 .DEBUG                          ! very coarse grid
 **WAVE FUNCTION
 .DHF

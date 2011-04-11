@@ -6,9 +6,10 @@
 .DFT
  LDA
 *DFT
+.NOSDFT
+**GRID
 .ZIPGRID
 .DEBUG          !very coarse grid
-.NOSDFT
 **INTEGRALS
 .NUCMOD
  1

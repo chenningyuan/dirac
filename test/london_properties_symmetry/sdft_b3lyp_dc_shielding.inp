@@ -11,7 +11,7 @@
 .URKBAL
 .DFT
  B3LYP
-*DFT
+**GRID
 .DEBUG                          ! very coarse grid
 **WAVE FUNCTION
 .DHF

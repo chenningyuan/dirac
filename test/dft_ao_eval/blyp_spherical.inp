@@ -4,7 +4,7 @@
 .NONREL
 .DFT
  BLYP
-*DFT
+**GRID
 .ZIPGRID
 .COARSE         !for the test we use a coarse grid
 **INTEGRALS

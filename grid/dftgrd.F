@@ -29,7 +29,7 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-        use dft_cfg
+        use num_grid_cfg
         use memory_allocator
 
 #include "implicit.h"
@@ -86,9 +86,9 @@ C     DFTWRK
 C     ======
 C
       RNDMAX  = 20.0D0
-      RADERR  = dft_cfg_RADINT
-      NSCHEME = dft_cfg_ANGINT
-      LEBMIN  = dft_cfg_ANGMIN
+      RADERR  = num_grid_cfg_RADINT
+      NSCHEME = num_grid_cfg_ANGINT
+      LEBMIN  = num_grid_cfg_ANGMIN
 
 C
 C     *******************************************
@@ -130,12 +130,12 @@ C     Open unit
 C     ================
 C
       lunit_grid = 44
-      IF(dft_cfg_import_grid) THEN
+      IF(num_grid_cfg_import_grid) THEN
         OPEN(lunit_grid,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  dft_cfg_gridfile)
+     &       FILE   =  num_grid_cfg_gridfile)
       ELSE
         OPEN(lunit_grid,
      &       FORM   = 'UNFORMATTED',
@@ -145,28 +145,14 @@ C
       ENDIF
       REWIND lunit_grid
 
-      if (dft_cfg_multigrid) then
-        iunit = lunit_grid
-        do i = 0, dft_cfg_multigrid_max
-          iunit = iunit + 1
-          dft_cfg_multigrid_file_unit(i) = iunit
-          open(dft_cfg_multigrid_file_unit(i),
-     &         form   = 'formatted',
-     &         status = 'unknown',
-     &         access = 'sequential',
-     &         file   =  dft_cfg_multigrid_file(i))
-          rewind dft_cfg_multigrid_file_unit(i)
-        end do
-      end if
+      if (num_grid_cfg_import_grid) go to 999
 
-      if (dft_cfg_import_grid .or. dft_cfg_multigrid) go to 999
-
-      if (dft_cfg_export_grid) then
+      if (num_grid_cfg_export_grid) then
         OPEN(lunit_grid+1,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  dft_cfg_gridfile)
+     &       FILE   =  num_grid_cfg_gridfile)
         rewind lunit_grid+1
       end if
 
@@ -185,7 +171,7 @@ C
 
 
 !     check accuracy of numerical integration
-      if (dft_cfg_integration_check_level > 0) then
+      if (num_grid_cfg_integration_check_level > 0) then
         call grtest()
       end if
 
@@ -235,7 +221,7 @@ C      Adapted for Dalton by T. Helgaker                               C
 C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-       use dft_cfg
+       use num_grid_cfg
        use num_grid_io
 
 #include "implicit.h" 
@@ -296,7 +282,7 @@ C
 C     Get density-based atomic radii if requested AND coefficients 
 C     exist.
 C
-      IF(dft_cfg_estimate_radii) THEN
+      IF(num_grid_cfg_estimate_radii) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
          CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT)
          CALL HEADER('Density based relative atomic sizes',-1)
@@ -396,7 +382,7 @@ C        Grid spacing....
 !          radovan:
 !          if Levy-Leblond or X2C, ignore small component
 !          unless user forces 4-c grid
-           if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
+           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
              nbas = nbas + nucorb(ll, 2, iatom)
            end if
 
@@ -416,7 +402,7 @@ C...     Inner grid point
 !        radovan:
 !        if Levy-Leblond or X2C, ignore small component
 !        unless user forces 4-c grid
-         if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
+         if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
            ah = max(ah, aa(1, 1, 2, iatom))
          end if
          ah = d2*ah
@@ -434,7 +420,7 @@ C...     Outer point
 !          radovan:
 !          if Levy-Leblond or X2C, ignore small component
 !          unless user forces 4-c grid
-           if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
+           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
              IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
            end if
 
@@ -537,7 +523,7 @@ C          Scale weights with multiplicity of center
 
 
 !        drop points that are redundant and rescale
-         if (dft_cfg_zipgrid) then
+         if (num_grid_cfg_zipgrid) then
            if (maxrep > 0) then
              call zip_grid(iatom, x8, y8, z8, wt8, nthis)
            end if
@@ -550,7 +536,7 @@ C        ====================
 C
          lunit_grid = 44
          CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NTHIS)
-         if (dft_cfg_export_grid) then
+         if (num_grid_cfg_export_grid) then
            call num_grid_write(x8, y8, z8, wt8, 
      &                          lunit_grid+1, nthis)
          end if
@@ -566,7 +552,7 @@ C
 
       NLAST = -1
       CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NLAST)
-      if (dft_cfg_export_grid) then
+      if (num_grid_cfg_export_grid) then
         call num_grid_write(x8, y8, z8, wt8, 
      &                       lunit_grid+1, nlast)
       end if
@@ -727,7 +713,7 @@ C  /* Deck sleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-       use dft_cfg
+       use num_grid_cfg
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -747,10 +733,10 @@ C
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
-      lebmin = dft_cfg_angmin
+      lebmin = num_grid_cfg_angmin
       NOLD=NSCHEME
       IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND.
-     &    .NOT.dft_cfg_no_pruning) THEN
+     &    .NOT.num_grid_cfg_no_pruning) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
          NTOT=MIN(NTOT,IANG)
          NSCHEME=NLEBSET(NTOT)

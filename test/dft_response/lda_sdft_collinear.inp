@@ -6,9 +6,10 @@
 .DFT
  LDA
 *DFT
+.COLLINEAR
+**GRID
 .ZIPGRID
 .DEBUG          !very coarse grid
-.COLLINEAR
 **INTEGRALS
 .NUCMOD
  1

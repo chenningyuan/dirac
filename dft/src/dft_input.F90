@@ -429,49 +429,6 @@ contains
 
     write(*, *) ' ===== Kohn-Sham calculation set-up ====='
 
-!   print level
-
-    write(u, '(a, i5)')      ' * Print level: ', dft_cfg_print_level
-
-!   integration grid
-
-    write(u, '(a)')          ' * Numerical integration grid:'
-
-    if (dft_cfg_import_grid) then
-
-      write(u, '(a)')        '   - integration grid imported from file '//dft_cfg_gridfile
-
-    else
-
-      write(u, '(a)')        '   - radial quadrature according to '// &
-                             'R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi'
-      write(u, '(a, e12.5)') '     precision of radial quadrature set to: ', dft_cfg_radint
-      write(u, '(a, i2)')    '   - angular quadrature using the Lebedev scheme, '// &
-                             'exact up to order L = ', dft_cfg_angint
-
-      if (dft_cfg_no_pruning) then
-        write(u, '(a)')      '   - pruning of angular grid turned off'
-      end if
-
-      if (dft_cfg_integration_check_level > 0) then
-        write(u, '(a)')      '   - numerical integration will be tested'
-      end if
-
-      write(u, '(a, e12.5)') '   - accepted error in integrated number '// &
-                             'of electrons: ', dft_cfg_accepted_error
-
-      if (dft_cfg_estimate_radii) then
-        write(u, '(a)')      '   - estimate relative atomic sizes for use in the Becke'
-        write(u, '(a)')      '     partitioning scheme from atomic contributions '// &
-                             'to the density'
-      end if
-
-    end if !if (dft_cfg_import_grid)
-
-    if (dft_cfg_export_grid) then
-      write(u, '(a)')        '   - integration grid exported to file'
-    end if
-
 !   thresholds
 
     write(u, '(a)')          ' * DFT thresholds:'

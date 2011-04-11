@@ -5,7 +5,7 @@
 .LEVY-LEBLOND
 .DFT
  B3LYP
-*DFT
+**GRID
 .ZIPGRID
 .DEBUG          !very coarse grid
 **INTEGRALS

@@ -7,6 +7,7 @@
  PBE0
 *DFT
 .ALDA
+**GRID
 .ZIPGRID
 .DEBUG          !very coarse grid
 **INTEGRALS

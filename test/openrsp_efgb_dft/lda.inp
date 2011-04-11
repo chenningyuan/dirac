@@ -7,6 +7,7 @@
  lda
 *DFT
 .NOSDFT
+**GRID
 .DEBUG
 **INTEGRALS
 .NUCMOD

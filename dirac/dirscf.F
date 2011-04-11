@@ -3233,7 +3233,7 @@ C
 C     Last modification: MI, July 2005 for BSSpostDC-SCF calculation
 C
 C***********************************************************************
-      use dft_cfg
+      use num_grid_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3317,7 +3317,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
      &    "estimate of the electronic screening (Slater's rules)."
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
-          dft_cfg_estimate_radii = .false.
+          num_grid_cfg_estimate_radii = .false.
         ENDIF
       ENDIF
 C

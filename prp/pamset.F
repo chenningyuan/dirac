@@ -544,6 +544,7 @@ C***********************************************************************
        use xc_driver
        use fde_mod
        use num_grid_gen
+       use num_grid_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -667,11 +668,11 @@ C          Hermitian operator
 
            if (dirac_cfg_overlap_diagnostic) then    
               call reset_num_grid()
-              call stash_zipgrid(dft_cfg_zipgrid)       
+              call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
            call generate_num_grid(fao)
            if (dirac_cfg_overlap_diagnostic) then    
-              call unstash_zipgrid(dft_cfg_zipgrid)       
+              call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)

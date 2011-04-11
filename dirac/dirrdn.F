@@ -36,6 +36,7 @@ C
 C***********************************************************************
 
       use dirac_cfg
+      use num_grid_cfg
       use input_reader
       use dft_input
       use x2cmod_cfg
@@ -118,6 +119,8 @@ C
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
         call report_after_dft_input()
+!       fixme num grid report should be independent of DFT
+        call report_num_grid()
       end if
 !     consistency check for fragment X2C and the proper X2C module
       if(x2cmod_fragment_x2c.and..not.x2c)then
