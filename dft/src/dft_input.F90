@@ -427,7 +427,7 @@ contains
 
     u = get_lupri()
 
-    call header('Kohn-Sham calculation set-up', 2)
+    write(*, *) ' ===== Kohn-Sham calculation set-up ====='
 
 !   print level
 

@@ -3,19 +3,6 @@
       stop
       end subroutine
 
-      SUBROUTINE HEADER(HEAD,IN)
-      CHARACTER HEAD*(*)
-      LHEAD = LNBLNK(HEAD)
-      IF (IN .GE. 0) THEN
-         INDENT = IN + 1
-      ELSE
-         INDENT = MAX(1,(80 - LHEAD)/2 + 1)
-      END IF
-      WRITE (6, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
-      WRITE (6, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
-      WRITE (6, '()')
-      RETURN
-      END
 
       SUBROUTINE MXMA(A,ICA,IRA,B,ICB,IRB,C,ICC,IRC,NROW,NSUM,NCOL)
 #include "implicit.h"
@@ -145,49 +132,6 @@ C
       RETURN
       END
 
-      SUBROUTINE TITLER(HEAD,A,IN)
-#include "priunit.h"
-      CHARACTER HEAD*(*), A*(*)
-C
-      LHEAD  = LNBLNK(HEAD)
-      LENGTH = LHEAD
-      IF (IN .EQ. 200) THEN
-         LENGTH = LENGTH + 2
-      ELSE IF (IN .GE. 100) THEN
-         MARG = (80 - LENGTH)/2 - 1
-         MARG = MIN(MARG, IN - 100)
-         IF (MARG .GT. 0) MARG = MARG + 1
-         LENGTH = LENGTH + 2*MARG
-      END IF
-      IF (IN .GE. 0 .AND. IN .LT. 100) THEN
-         INDENT = IN + 1
-      ELSE
-         INDENT = MAX(1,(80 - LENGTH)/2 + 1)
-      END IF
-      IF (IN .EQ. 200) THEN
-         WRITE (LUPRI, '(//150A)')
-     *      (' ',I=1,INDENT),'.', ('-',I=1,LENGTH),'.'
-         WRITE (LUPRI, '(150A)')
-     &      (' ',I=1,INDENT),'| ', HEAD(1:LHEAD), ' |'
-         WRITE (LUPRI, '(150A)')
-     *      (' ',I=1,INDENT),'`', ('-',I=1,LENGTH),"'"
-      ELSE IF (IN .EQ. 100) THEN
-         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
-         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-      ELSE IF (IN .GT. 100) THEN
-         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT),
-     *      (A,I=1,MARG-1), ' ', HEAD(1:LHEAD), ' ', (A,I=1,MARG-1)
-         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-      ELSE
-         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
-         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-      END IF
-      WRITE (LUPRI, '()')
-!     CALL FLSHFO(LUPRI)
-      RETURN
-      END
 
 C  /* Deck spdcar */
       FUNCTION SPDCAR(IORDER)
@@ -291,205 +235,6 @@ CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
    30     CONTINUE
    20   CONTINUE
    10 CONTINUE
-C
-      END
-
-      SUBROUTINE WTAOSO(AAO,ASO,NBAST,NVEC,IPRINT)
-C***********************************************************************
-C
-C     Vector Transform:  AO-basis to SO-basis
-C     VTAOSO/WTAOSO are covariant/contarvariant versions
-C       VTAOSO is good for vectors and WTAOSO for functions
-C     This routine is based on HERMIT routine DAOTSO (880418  PRT)
-C
-C     Written by T.Saue - Sept 10 1995
-C     Last revision: Sept 10 1995
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-      DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "shells.h"
-#include "pincom.h"
-#include "symmet.h"
-#include "pgroup.h"
-#include "ibtfun.h"
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
-C
-C     Loop over all irreps in molecule
-C
-      ISTRA = 1
-      CALL DZERO(ASO,NBAST*NVEC)
-      DO 100 IREPA = 0, MAXREP
-        NORBA = NAOS(IREPA+1)
-        DO 200 I = ISTRA,ISTRA + NORBA - 1
-          IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-          NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-          NHKTA  = NHKT(IA)
-          KHKTA  = KHKT(IA)
-          MULA   = ISTBAO(IA)
-          INDA   = KSTRT(IA) + NA - KHKTA
-C
-C         Loop over symmetry dependent centers
-C
-          DO 300 ISYMA = 0, MAXOPR
-          IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
-            INDA = INDA + KHKTA
-            FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
-            CALL DAXPY(NVEC,FAC,AAO(INDA,1),NBAST,ASO(I,1),NBAST)
-          ENDIF
-  300     CONTINUE
-  200   CONTINUE
-        ISTRA = ISTRA + NORBA
-  100 CONTINUE
-      IF (IPRINT .GE. 10) THEN
-         CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
-         CALL HEADER('OUTPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
-      END IF
-      RETURN
-      END
-
-      SUBROUTINE OUTPUT (AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
-     *                   NCTL,LUPRI)
-C.......................................................................
-C Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
-C         16-Jun-1986 hjaaj ( removed Hollerith )
-C
-C OUTPUT PRINTS A REAL MATRIX IN FORMATTED FORM WITH NUMBERED ROWS
-C AND COLUMNS.  THE INPUT IS AS FOLLOWS;
-C
-C        AMATRX(',').........MATRIX TO BE OUTPUT
-C
-C        ROWLOW..............ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
-C
-C        ROWHI...............ROW NUMBER AT WHICH OUTPUT IS TO END
-C
-C        COLLOW..............COLUMN NUMBER AT WHICH OUTPUT IS TO BEGIN
-C
-C        COLHI...............COLUMN NUMBER AT WHICH OUTPUT IS TO END
-C
-C        ROWDIM..............ROW DIMENSION OF AMATRX(',')
-C
-C        COLDIM..............COLUMN DIMENSION OF AMATRX(',')
-C
-C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
-C                                                   2 FOR DOUBLE SPACE
-C                                                   3 FOR TRIPLE SPACE
-C
-C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
-C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
-C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
-C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
-C OF COLUMNS.
-C
-C AUTHOR;  NELSON H.F. BEEBE, QUANTUM THEORY PROJECT, UNIVERSITY OF
-C          FLORIDA, GAINESVILLE
-C REVISED; FEBRUARY 26, 1971
-C
-C.......................................................................
-C
-#include <implicit.h>
-      INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
-      DIMENSION AMATRX(ROWDIM,COLDIM)
-      CHARACTER*1 ASA(3), BLANK, CTL
-      CHARACTER   PFMT*20, COLUMN*8
-      PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
-      DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
-C
-      IF (ROWHI.LT.ROWLOW) GO TO 3
-      IF (COLHI.LT.COLLOW) GO TO 3
-C
-      AMAX = ZERO
-      DO 10 J = COLLOW,COLHI
-         DO 10 I = ROWLOW,ROWHI
-            AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
-   10 CONTINUE
-      IF (AMAX .EQ. ZERO) THEN
-         WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
-         GO TO 3
-      END IF
-      IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
-C        use F output format
-         PFMT = '(A1,I7,2X,8F15.8)'
-      ELSE
-C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,8D15.6)'
-      END IF
-C
-      IF (NCTL .LT. 0) THEN
-         KCOL = KCOLN
-      ELSE
-         KCOL = KCOLP
-      END IF
-      MCTL = ABS(NCTL)
-      IF ((MCTL.LE.3).AND.(MCTL.GT.0)) THEN
-         CTL = ASA(MCTL)
-      ELSE
-         CTL = BLANK
-      END IF
-C
-      LAST = MIN(COLHI,COLLOW+KCOL-1)
-      DO 2 BEGIN = COLLOW,COLHI,KCOL
-         WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
-         DO 1 K = ROWLOW,ROWHI
-            DO 4 I = BEGIN,LAST
-               IF (AMATRX(K,I).NE.ZERO) GO TO 5
-    4       CONTINUE
-         GO TO 1
-    5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
-    1    CONTINUE
-    2 LAST = MIN(LAST+KCOL,COLHI)
-    3 RETURN
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
-C2000 FORMAT (A1,I7,2X,1P,8D15.6)
-      END
-      SUBROUTINE VTBUBS(VBU,VBS,NVEC)
-C***********************************************************************
-C
-C     Vector transform:  from unsorted basis to sorted basis
-C
-C     Written by T.Saue Mar 2 1995
-C     Last revision : Jan 7 1998 - jth LINUX
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-C
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "symmet.h"
-C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBU(NBAST,NVEC),VBS(NBAST,NVEC)
-#else
-      DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
-#endif
-C
-      DO J = 1,NVEC
-        DO IC = 1,2
-          DO IREP = 0,MAXREP
-            IUOFF = ICOS (IREP+1,IC)
-            ISOFF = IBBAS(IREP  ,IC)
-            IF(NBBAS(IREP,IC).GT.0)
-     &        CALL DCOPY(NBBAS(IREP,IC),VBU(IUOFF+1,J),1,
-     &                                  VBS(ISOFF+1,J),1)
-          ENDDO
-        ENDDO
-      ENDDO
-C
-      RETURN
 C
       END
 
@@ -641,17 +386,6 @@ C
       RETURN
       END
 
-      FUNCTION POLVAL(NORDER,B,XVAL)
-#include "implicit.h"
-      DIMENSION B(NORDER+1)
-      POLVAL = B(1)
-      XBUF = 1
-      DO 10 I = 2,(NORDER+1)
-        XBUF = XBUF*XVAL
-        POLVAL = POLVAL + XBUF*B(I)
-   10 CONTINUE
-      END
-
       SUBROUTINE DTSOAO(ASO,AAO,NBAST,IREPDM,IPRINT)
 C***********************************************************************
 C
@@ -675,7 +409,6 @@ C***********************************************************************
 #include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
 C
 C     Loop over all irreps in molecule
 C
@@ -731,12 +464,6 @@ C
          ISTRA = ISTRA + NBA
   150    CONTINUE
   100 CONTINUE
-      IF (IPRINT .GE. 10) THEN
-         CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-         CALL HEADER('OUTPUT:Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-      END IF
       RETURN
       END
 
@@ -817,7 +544,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST
-      CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
+      CHARACTER TEXT*74,CMOFIL*6,FMT*6
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
       real(8), allocatable :: kc(:)
@@ -862,8 +589,7 @@ C     File info
 C     =========
 C
       IF(LBIT(IOPT,1)) THEN
-        FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(/3A,'//FMT//')')
+        WRITE(LUPRI,*)
      &   '* REACMO: Coefficients read from file ',CMOFIL,
      &   ' - Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
@@ -940,7 +666,7 @@ C
       IF(LBIT(IOPT,4)) THEN
         IF(TEST) THEN
           allocate(ki(no))
-          CALL READI(IUNIT,NO,ki)
+          read(iunit) ki
           CALL ADAIBP(IBEIG,ki,IDIM)
           deallocate(ki)
         ELSE
@@ -1141,14 +867,6 @@ C
 C
 C     Add the results on to the contents of the MO matrix ?
 C
-#ifdef DEBUG
-      print*, 'QTRANS: The AO matrix'
-      CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM1'
-      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM2'
-      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
-#endif
 C
 C     Time reversal symmetry of F-matrix
 C
@@ -1183,23 +901,6 @@ C
      &   '                   current work space ',LBUF
           ENDIF
          
-          IF (IPRINT.GE.IPRLIM) THEN
-            CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
-
-            WRITE(LUPRI,'(2X,A,4I2)')
-     &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
-            CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-
-            WRITE(LUPRI,'(/2X,A,4I2)')
-     &      'QTRANS: The transformation matrix TM1; IQTM1=',
-     &      (IQTM1(IZ),IZ=1,NZTM1)
-            CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-
-            WRITE(LUPRI,'(/2X,A,4I2)')
-     &      'QTRANS: The transformation matrix TM2; IQTM2=',
-     &      (IQTM2(IZ),IZ=1,NZTM2)
-            CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
-          ENDIF
 C
 C         First part of transformation: W = FC
 C         ------------------------------------
@@ -1209,12 +910,6 @@ C
      &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &               D0,IQW,BUF,NRAO,NCMO,NZW)
 
-          IF (IPRINT.GE.IPRLIM) THEN
-            WRITE(LUPRI,'(/2X,A,4I2)')
-     &      'QTRANS: First part transformation matrix W, W=FC;'//
-     &      ' IQW=',(IQW(IZ),IZ=1,NZW)
-            CALL PRQMAT(BUF,NRAO,NCMO,NRAO,NCMO,NZW,IQW,LUPRI)
-          ENDIF
 C
 C         Second part of transformation: H = (C+)W
 C         ----------------------------------------
@@ -1224,12 +919,6 @@ C
      &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
      &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
 
-          IF (IPRINT.GE.IPRLIM) THEN
-            WRITE(LUPRI,'(/2X,A,4I2)')
-     &     'QTRANS: Second part of transformation H,H=(C+).W; '//
-     &     'IQMO=',(IQMO(IZ),IZ=1,NZMO)
-            CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
-          ENDIF
 
         ELSE
 C
@@ -1262,10 +951,6 @@ C
      &       'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
-        ENDIF
-        IF(IPRINT.GE.5) THEN
-          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
-          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
 C
 C     *******************************************************
@@ -1321,10 +1006,6 @@ C
      &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
-        ENDIF
-       IF(IPRINT.GE.5) THEN
-          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
-          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
         ENDIF
       ELSE
         CALL QUIT('FTRANS: Unknown keyword TYP '//TYP)
@@ -1610,21 +1291,6 @@ C
       RETURN
 C
       END
-      SUBROUTINE PRQMAT(QMAT,NROW,NCOL,LRQ,LCQ,NZ,IQP,IUNIT)
-#include "implicit.h"
-      DIMENSION QMAT(LRQ,LCQ,NZ),IQP(*)
-      CHARACTER M(4)*6
-      M(1) = 'A real'
-      M(2) = 'A imag'
-      M(3) = 'B real'
-      M(4) = 'B imag'
-      DO 10 IZ = 1,NZ
-        IQ = IQP(IZ)
-        WRITE(IUNIT,'(/A,A6,A,4I4/)')
-     &  '*** ',M(IQ),' part ***; NROW,NCOL,LRQ,LCQ:',NROW,NCOL,LRQ,LCQ
-        CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,-1,IUNIT)
-   10 CONTINUE
-      END
       SUBROUTINE OPNFIL(IUNIT,NAME,STATUS,SUB)
 C***********************************************************************
 C
@@ -1805,13 +1471,13 @@ C     Positronic part
       ELSE
         IV2 = 1-NR
       ENDIF
-      CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)
+      ibo1(iv1:iv1+nc) = ibo2(iv2:iv2+nc)
 C     Electronic part
       IV1 = NP1 + 1
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2
-      CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)
+      ibo1(iv1:iv1+nc) = ibo2(iv2:iv2+nc)
       IF(NR.GT.0) THEN
         IV1 = IV1 + NC
         ibo1(iv1:iv1+nr) = 0
@@ -1819,312 +1485,6 @@ C     Electronic part
 C
       RETURN
       END
-
-
-      SUBROUTINE ICOPY(N,IX,INCX,IY,INCY)
-C
-C     COPY integer IX TO integer IY.
-C     FOR I = 0 TO N-1, COPY IX(LX+I*INCX) TO IY(LY+I*INCY),
-C     WHERE LX = 1 IF INCX .GE. 0, ELSE LX = (-INCX)*N, AND LY IS
-C     DEFINED IN A SIMILAR WAY USING INCY.
-C
-C     (860516 - hjaaj - based on BLAS DCOPY)
-C
-      INTEGER IX(*),IY(*)
-      IF(N.LE.0)RETURN
-      IF(INCX.EQ.INCY) IF(INCX-1) 5,20,60
-    5 CONTINUE
-C
-C        CODE FOR UNEQUAL OR NONPOSITIVE INCREMENTS.
-C
-      JX = 1
-      JY = 1
-      IF(INCX.LT.0)JX = (-N+1)*INCX + 1
-      IF(INCY.LT.0)JY = (-N+1)*INCY + 1
-      DO 10 I = 1,N
-        IY(JY) = IX(JX)
-        JX = JX + INCX
-        JY = JY + INCY
-   10 CONTINUE
-      RETURN
-C
-C        CODE FOR BOTH INCREMENTS EQUAL TO 1
-C
-C
-C        CLEAN-UP LOOP SO REMAINING VECTOR LENGTH IS A MULTIPLE OF 7.
-C
-   20 M = MOD(N,7)
-      IF( M .EQ. 0 ) GO TO 40
-      DO 30 I = 1,M
-        IY(I) = IX(I)
-   30 CONTINUE
-      IF( N .LT. 7 ) RETURN
-   40 MP1 = M + 1
-      DO 50 I = MP1,N,7
-        IY(I) = IX(I)
-        IY(I + 1) = IX(I + 1)
-        IY(I + 2) = IX(I + 2)
-        IY(I + 3) = IX(I + 3)
-        IY(I + 4) = IX(I + 4)
-        IY(I + 5) = IX(I + 5)
-        IY(I + 6) = IX(I + 6)
-   50 CONTINUE
-      RETURN
-C
-C        CODE FOR EQUAL, POSITIVE, NONUNIT INCREMENTS.
-C
-   60 CONTINUE
-      NS=N*INCX
-          DO 70 I=1,NS,INCX
-          IY(I) = IX(I)
-   70     CONTINUE
-      RETURN
-      END
-
-C/* Deck Nucbas */
-      SUBROUTINE NUCBAS(NUCORB,AA,IPRINT)
-C***********************************************************************
-C
-C     Extract basis information for all centers
-C
-C     Written by T.Saue March 12 2001
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
-C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "dummy.h"
-C
-#include "nuclei.h"
-#include "ccom.h"
-#include "shells.h"
-#include "primit.h"
-      CHARACTER SPDCAR*1
-      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
-C
-C     Initialize
-C
-      NUCORB = 0
-C
-      JCENT = 0
-      JPRIM = -1
-      JC = -1
-      DO ISHELL = 1,KMAX
-        ICENT = NCENT(ISHELL)
-        IF(ICENT.NE.JCENT) THEN
-          JCENT = ICENT
-          JLVAL = 0
-        ENDIF
-        IC = LCLASS(ISHELL)
-        IF(IC.NE.JC) THEN
-          JC    = IC
-          JLVAL = 0
-        ENDIF
-        ILVAL = NHKT(ISHELL)
-        IF(ILVAL.NE.JLVAL) THEN
-          JLVAL = ILVAL
-          NUCORB(ILVAL,IC,ICENT) = 0
-          AA(1,ILVAL,IC,ICENT)=D0
-          AA(2,ILVAL,IC,ICENT)=DUMMY
-        ENDIF
-        NUCORB(ILVAL,IC,ICENT)=NUCORB(ILVAL,IC,ICENT)+1
-        IPRIM = JSTRT(ISHELL)
-        IF(IPRIM.NE.JPRIM) THEN
-          JPRIM = IPRIM
-          NPRIM = NUCO(ISHELL)
-          DO IEXP = 1,NPRIM
-            A=PRIEXP(IPRIM+IEXP)
-            AA(1,ILVAL,IC,ICENT)=MAX(AA(1,ILVAL,IC,ICENT),A)
-            AA(2,ILVAL,IC,ICENT)=MIN(AA(2,ILVAL,IC,ICENT),A)
-          ENDDO
-        ENDIF
-      ENDDO
-C
-      IF(IPRINT.GE.2) THEN
-         CALL HEADER('NUCORB:Basis set information:',-1)
-        DO I = 1,NUCIND
-          WRITE(LUPRI,'(/A,A4,A/)') '*** Center: ',NAMN(I),' ***'
-          WRITE(LUPRI,'(2X,A)') '* Large components:'
-          IC = 1
-          DO LL = 1,NHTYP
-          IF(NUCORB(LL,IC,I).GT.0) THEN
-            L=LL-1
-            WRITE(LUPRI,'(3X,A1,A,I6,2(3X,A,E12.5))')
-     &      SPDCAR(L),'-orbitals:',NUCORB(LL,IC,I),
-     &      'Alpha_H :',AA(1,LL,IC,I),
-     &      'Alpha_L :',AA(2,LL,IC,I)
-          ENDIF
-          ENDDO
-          WRITE(LUPRI,'(2X,A)') '* Small components:'
-          IC = 2
-          DO LL = 1,NHTYP
-          IF(NUCORB(LL,IC,I).GT.0) THEN
-            L=LL-1
-            WRITE(LUPRI,'(3X,A1,A,I6,2(3X,A,E12.5))')
-     &      SPDCAR(L),'-orbitals:',NUCORB(LL,IC,I),
-     &      'Alpha_H: ',AA(1,LL,IC,I),
-     &      'Alpha_L: ',AA(2,LL,IC,I)
-          ENDIF
-          ENDDO
-        ENDDO
-      ENDIF
-C
-      RETURN
-      END
-
-      SUBROUTINE READI (IT,N,INTX)
-C
-C (30-Jan-1984) hjaaj
-C
-      DIMENSION INTX(N)
-      READ (IT) INTX
-      RETURN
-      END
-
-      SUBROUTINE LSQMA1(ICLAB)
-C***********************************************************************
-C
-C     ... Make list of type (L or S) that maps each basis function
-C     to a nuclei.
-C
-C     Written by Jesper K. Pedersen sep. 2001
-C     
-C***********************************************************************
-
-#include <implicit.h>
-#include <priunit.h>
-C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <frame.h>
-C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
-      DIMENSION ICLAB(*)
-#include <dcbibt.h>
-C
-C     Get array ICLAB which maps AO basis functions (large and small)
-C     onto atomic centers.
-C
-      DO 100 I = 1, NTBAS(0)
-         ITEMP = IATTR(IPLAB(I,1),1)
-         ICENT = JGET(ITEMP)
-         IDEG  = KGET(ITEMP)
-         IF (IDEG .EQ. 1) THEN
-            ICLAB(I) = NUCNUM(ICENT,1)
-         ELSE
-            JDEG = 0
-            DO J = 0, MAXREP
-               IF (NUCNUM(ICENT,J+1) .NE. 0) THEN
-                  JDEG = JDEG + 1
-                  IF (JDEG .EQ. IDEG) THEN
-                     ICLAB(I) = NUCNUM(ICENT,J+1)
-                     GO TO 100
-                  END IF
-               END IF
-            END DO
-         END IF
-  100 CONTINUE
-C
-      RETURN
-C      
-      END
-
-      FUNCTION MXFORM(X,NDIG)
-C***********************************************************************
-C
-C       Find the format that gives optimum precision for real
-C       variable X
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
-C
-      CHARACTER MXFORM*6
-C
-      MXFORM = '      '
-      IF(X.EQ.D0) THEN
-        NDEC = NDIG
-      ELSE
-        NDEC = INT(LOG10(ABS(X)))
-      ENDIF
-      IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
-        MXFORM(1:1) = 'D'
-        NDEC = NDIG - 7
-      ELSE
-        MXFORM(1:1) = 'F'
-        NDEC = NDIG - NDEC - 3
-      ENDIF
-      IF(NDEC.LE.0) THEN
-        WRITE(LUPRI,*) 'MXFORM out of boundaries...'
-        WRITE(LUPRI,*) 'X=',X
-        WRITE(LUPRI,*) 'NDEC,NDIG',NDEC,NDIG
-        CALL QUIT('MXFORM: NDEC.LE.0')
-      ENDIF
-      IF(NDIG.LT.10) THEN
-        IDIG = ICHAR('0') + NDIG
-        MXFORM(2:2) = CHAR(IDIG)
-        IOFF= 0
-      ELSE
-        IDIG = ICHAR('0') + INT(NDIG/10)
-        MXFORM(2:2) = CHAR(IDIG)
-        IDIG = ICHAR('0') + MOD(NDIG,10)
-        MXFORM(3:3) = CHAR(IDIG)
-        IOFF = 1
-      ENDIF
-      IND = 3+IOFF
-      MXFORM(IND:IND) = '.'
-      IF(NDEC.LT.10) THEN
-        IDIG = ICHAR('0') + NDEC
-        IND  = 4+IOFF
-        MXFORM(IND:IND) = CHAR(IDIG)
-        IOFF = IOFF+ 0
-      ELSE
-        IDIG = ICHAR('0') + 1
-        IND = 4 + IOFF
-        MXFORM(IND:IND) = CHAR(IDIG)
-        IND = IND + 1
-        IDIG = ICHAR('0') + MOD(NDEC,10)
-        MXFORM(IND:IND) = CHAR(IDIG)
-        IOFF = IOFF + 1
-      ENDIF
-      RETURN
-      END
-
-!dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
       subroutine fortwrt(str, slength)
 
