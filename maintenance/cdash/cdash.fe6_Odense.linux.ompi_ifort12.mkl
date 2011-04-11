@@ -44,15 +44,11 @@ cd $DIRAC
 
 # setup, no --debug
 #./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.fe6_Odense.ompi_ifort_gcc_mkl" --runtest_mpi=8 --int64 --runtest_timeout=1200
-./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.fe6_Odense.ompi_ifort_gcc_mkl" --runtest_mpi=8 --int64 
+./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.fe6_Odense.ompi_ifort_gcc_mkl" --runtest_mpi=8 --int64 --rsh
 
 cd $DIRAC/cbuild
 
 make clean
-
-#make dirac.x
-#make test
-#make ExperimentalSubmit
 
 make Experimental 
 
