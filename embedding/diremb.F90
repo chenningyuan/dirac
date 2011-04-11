@@ -471,8 +471,8 @@
       use memory_allocator
       USE VC_GRID
       use xml_parser
-!     use conversion
-!      IMPLICIT NONE
+
+      implicit none
 
 #include "priunit.h"
 #include "dcbbas.h"
@@ -485,6 +485,9 @@
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
+#include "dcborb.h"
+#include "mxcent.h"
+#include "nuclei.h"
 !     Passed variables
       REAL(KIND=8) :: WORK(*)
       INTEGER :: LWORK
@@ -494,12 +497,12 @@
 !     Local variables
       character(len=132) :: csizept1, csizept2
       character(len=132) :: csizegrdrho1, csizehesrho1
-      REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),4)
-      REAL(KIND=8) :: CMO(NTBAS(0),NTBAS(0),4)
+      real(kind=8), allocatable :: dmat(:)
+      real(kind=8), allocatable :: cmo(:)
       real(kind=8) :: test_int_density
       REAL(kind=8), pointer :: points(:,:)
-      REAL(kind=8), allocatable, target :: grad_rho(:,:)
-      REAL(kind=8), allocatable, target :: hes_rho(:,:),vc(:),rho(:,:)
+
+      real(8), allocatable :: grad_rho(:, :), hes_rho(:, :), vc(:), rho(:, :)
 
       INTEGER ::i,ierr
       INTEGER :: NDIMENSION
@@ -538,14 +541,11 @@
       BUF  = 0.0
       NCNT = 0.0
       GAB1 = 0.0
-      DMAT = 0.0
 
-
-!     JHS Construct the density matrix.
-!     
-!     For the case of the SCF density:
-!     Get CMO from file.
-      CMO(:,:,:)=0.0
+      call alloc(dmat, n2bbasxq)
+      dmat = 0.0d0
+      call alloc(cmo, ncmotq)
+      cmo = 0.0d0
 
       select case(xmlexport_dens_level)
       case('MP2')
@@ -559,19 +559,25 @@
 !     HF density used
          write(lupri,*) 'Reading DFCOEF'
          CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1, &
-              LWORK)
+         call reacmo_no_work(lucoef,    &
+                             'DFCOEF',  &
+                             cmo,       &
+                             (/0.0d0/), &
+                             (/0/),     &
+                             dummy,     &
+                             2)
          if (print_fde.gt.20) then
             WRITE(LUPRI,*) 'CMO', CMO
             WRITE(LUPRI,*) 'DMAT OLD', DMAT
          end if
 !     SCF construct density matrix
-         CALL DENMAT(DMAT,CMO,print_fde)
+      CALL DENMAT(DMAT,CMO,print_fde)
+      call dealloc(cmo)
 
 !     TMP scaling
       end select
 !     Correct DMAT for occupationnumbers, both for scf and mp2...
-      DMAT(:,:,:)=2*DMAT(:,:,:)
+      dmat = 2.0d0*dmat
 
 !     GET an id for LUGRIDOUT.
       LUGRIDOUT=OPEN_FILE(GRIDOUT_NAME)
@@ -584,19 +590,12 @@
            //GRIDOUT_NAME)
 
       WRITE(LUPRI,*) 'Reading grid.'
+      nullify(points)
       CALL READ_GRID(LUGRIDOUT,points)
       CLOSE(LUGRIDOUT)
       WRITE(LUPRI,*) 'Grid read from file.'
 
       write(lupri,*) 'Number of gridpoints:', size(points,2)
-
-!     radovan: intel 12 stops below and complains about allocating something
-!              that is already allocated
-!              i think this is some strange bug - this is a workaround
-      if (allocated(rho))      call dealloc(rho)
-      if (allocated(grad_rho)) call dealloc(grad_rho)
-      if (allocated(hes_rho))  call dealloc(hes_rho)
-      if (allocated(vc))       call dealloc(vc)
 
       call alloc(rho,     1,SIZE(points,2))
       call alloc(grad_rho,3,SIZE(points,2))
@@ -638,6 +637,7 @@
       WRITE(LUPRI,*) & 
           'Calculating the coulomb potential and its derivatives.'
       CALL EMB_VC(DMAT,points,vc,print_fde, WORK,LWORK)
+      call dealloc(dmat)
 
       WRITE(LUPRI,*) 'Writing data to xml_file:', GRIDOUT_NAME
 
