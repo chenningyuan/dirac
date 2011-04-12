@@ -80,6 +80,11 @@ group.add_option('--auto',
                  dest='auto',
                  default=False,
                  help='try to configure --fc, --cc, --cpp, and --math automatically [default: %default]')
+group.add_option('--show',
+                 action='store_true',
+                 dest='show',
+                 default=False,
+                 help='show cmake command and exit [default: %default]')
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'Advanced options')
@@ -244,14 +249,16 @@ else:
 command += ' -DBUILDNAME=' + options.buildname
 command += ' %s' % root_directory
 
+print '   CMake command: %s\n' % command
+if options.show:
+    sys.exit()
+
 build_path = options.prefix
 
 if not os.path.isdir(build_path):
     # if you change this to proper python make it mkdir *with parent*
     os.system('mkdir -p %s' % build_path)
 os.chdir(build_path)
-
-print '   CMake command: %s\n' % command
 
 p = subprocess.Popen(command,
                      shell=True,
