@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(INXC Fortran C)
+project(DFT Fortran C)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -16,35 +16,32 @@ if(NOT CMAKE_BUILD_TYPE)
         )
 endif()
 
-option(INXC_ENABLE_PROFILING      "Enable profiling"          OFF)
-option(INXC_ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
-option(INXC_ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
-option(INXC_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
-option(INXC_ENABLE_MPI            "Use MPI parallelization"   OFF)
-option(INXC_ENABLE_XCFUN          "Use XCFun library"         ON)
-
-#add_definitions(-DPRG_DIRAC)
+option(DFT_ENABLE_PROFILING      "Enable profiling"          OFF)
+option(DFT_ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
+option(DFT_ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
+option(DFT_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
+option(DFT_ENABLE_MPI            "Use MPI parallelization"   OFF)
+option(DFT_ENABLE_XCFUN          "Use XCFun library"         ON)
 
 include(cmake/Archs.cmake)
 include(cmake/Compilers.cmake)
 
 set(LIBS)
 
-if(INXC_ENABLE_EXTERNAL_MATH)
-    find_package(Math)
-else()
-    set(MATH_FOUND FALSE)
+if(DFT_ENABLE_EXTERNAL_MATH)
+    set(BLAS_LANG "Fortran")
+    find_package(BLAS)
+    if(BLAS_FOUND)
+        set(LIBS ${LIBS} ${BLAS_LIBRARIES})
+    endif()
+    set(LAPACK_LANG "Fortran")
+    find_package(LAPACK)
+    if(LAPACK_FOUND)
+        set(LIBS ${LIBS} ${LAPACK_LIBRARIES})
+    endif()
 endif()
 
-if(MATH_FOUND)
-    set(LIBS
-        ${LIBS}
-        ${MATH_LIBS}
-        )
-else()
-endif()
-
-if(INXC_ENABLE_MPI)
+if(DFT_ENABLE_MPI)
     find_package(MPI)
     if(MPI_FOUND)
         add_definitions(-DVAR_MPI)
@@ -69,7 +66,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-set(INXC_SOURCES
+set(DFT_SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_point.F90
@@ -119,13 +116,14 @@ set(INXC_SOURCES
     ${PROJECT_SOURCE_DIR}/../cfun/fun-vwn.c
     ${PROJECT_SOURCE_DIR}/../cfun/functionals.c
     ${PROJECT_SOURCE_DIR}/../cfun/general.c
+    ${PROJECT_SOURCE_DIR}/../grid/num_grid_cfg.F90
     )
 
-add_executable(inxc.x
-    ${INXC_SOURCES}
+add_executable(dft.x
+    ${DFT_SOURCES}
     )
 
 target_link_libraries(
-    inxc.x
+    dft.x
     ${LIBS}
     )
