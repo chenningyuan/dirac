@@ -39,51 +39,51 @@ $(INSTALL_DIR)/labread.x: utils/labread.o
 	$(LD) -o $@ utils/labread.o
 
 $(INSTALL_DIR)/twofit.x: utils/twofit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a 
 	$(LD) -o $@ utils/twofit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
                     gp/gpc.o $(LIBS)
 
 $(INSTALL_DIR)/cfread.x: utils/cfread.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a
 	$(LD) -o $@ utils/cfread.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
                     gp/gpc.o $(LIBS)
 
 $(INSTALL_DIR)/vibcal.x: utils/vibcal.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a
 	$(LD) -o $@ utils/vibcal.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
                     gp/gpc.o $(LIBS)
 
 $(INSTALL_DIR)/polfit.x: utils/polfit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a 
 	$(LD) -o $@ utils/polfit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
                     gp/gpc.o $(LIBS)
 
 $(INSTALL_DIR)/mx2fit.x: utils/mx2fit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a 
 	$(LD) -o $@ utils/mx2fit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
                     gp/gpc.o $(LIBS)
