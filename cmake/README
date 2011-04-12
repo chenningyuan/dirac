@@ -20,15 +20,6 @@ $ cmake /sourcepath
 $ make
 
 
-You managed to compile dirac.x but all tests crash
---------------------------------------------------
-
-This is because pam expects dirac.x to be in the same directory:
-
-$ cd /sourcepath
-$ ln -s /buildpath/dirac.x
-
-
 Configuring DIRAC with setup
 ----------------------------
 
@@ -47,6 +38,8 @@ if you know how, for example:
 
 $ CC=icc FC=ifort cmake -DDIRAC_ENABLE_MPI=1 ..
 
+If you don't remember the cmake command, run setup with --show to see it.
+
 
 How to build utilities
 ----------------------
@@ -56,7 +49,6 @@ $ ccmake /sourcepath
 
 Now set DIRAC_ENABLE_UTILITIES to ON, [c]onfigure, then [g]enerate and exit, and finally
 $ make
-
 Now you have the utilities!
 
 
@@ -88,7 +80,7 @@ Contributing to the DIRAC Dashboard
 -----------------------------------
 
 If you want to contribute to the DIRAC Dashboard
-http://depot.uit.no/CDash/index.php?project=DIRAC
+http://repo.ctcc.no/CDash/index.php?project=DIRAC
 then let me say that this is an excellent idea.
 
 You don't need to install anything extra - it is as easy as typing:
