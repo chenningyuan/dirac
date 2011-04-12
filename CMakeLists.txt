@@ -185,24 +185,7 @@ include(cmake/Compilers.cmake)
 
 set(LIBS)
 
-if(DIRAC_ENABLE_EXTERNAL_MATH)
-    find_package(Math)
-else()
-    set(MATH_FOUND FALSE)
-endif()
-
-if(MATH_FOUND)
-    set(LIBS
-        ${LIBS}
-        ${MATH_LIBS}
-        )
-else()
-    message("using own DIRAC provided math (blas,lapack)")
-    add_definitions(-DUSE_DIRAC_BLAS)
-    add_definitions(-DUSE_DIRAC_DLAMCH)
-    add_definitions(-DUSE_DIRAC_DLAPACK)
-    add_definitions(-DUSE_DIRAC_ZLAPACK)
-endif()
+include(cmake/Math.cmake)
 
 if(DIRAC_ENABLE_MPI)
     find_package(MPI)
@@ -234,7 +217,7 @@ add_custom_command(
     DEPENDS
     ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py
     COMMAND
-    python ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py --fc=${CMAKE_Fortran_COMPILER} --cc=${CMAKE_C_COMPILER} --libs=${LIBS} > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
+    python ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py --fc=${CMAKE_Fortran_COMPILER} --cc=${CMAKE_C_COMPILER} --libs="${LIBS}" > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
     )
 
 set(GENERATED_FILES

@@ -1,20 +1,19 @@
-# - Find a BLAS library 
+# - Find a LAPACK library
 #
-# This module will first look in BLAS_ROOT before considering the default 
+# This module will first look in LAPACK_ROOT before considering the default
 # system pahts.
-# The linker language can be defined by setting the varable BLAS_LANG
+# The linker language can be defined by setting the varable LAPACK_LANG
 #
 # This module defines:
 #
-#  BLAS_INCLUDE_DIRS Where to find blas.h (or equivalent)
-#  BLAS_LIBRARIES Libraries to link against to use BLAS
-#  BLAS_FOUND Defined if BLAS is available 
-#  HAVE_BLAS To be used in #ifdefs 
-#  BLAS_H_NAME Name of BLAS header file
+#  LAPACK_INCLUDE_DIRS Where to find lapack.h (or equivalent)
+#  LAPACK_LIBRARIES Libraries to link against to use LAPACK
+#  LAPACK_FOUND Defined if LAPACK is available
+#  HAVE_LAPACK To be used in #ifdefs
+#  LAPACK_H Name of LAPACK header file
 #
-# None of the above will be defined unless BLAS can be found.
-# 
-
+# None of the above will be defined unless LAPACK can be found.
+#
 #=============================================================================
 # Copyright 2011 Jonas Juselius <jonas.juselius@uit.no>
 #
@@ -27,24 +26,25 @@
 #=============================================================================
 # (To distributed this file outside of CMake, substitute the full
 #  License text for the above reference.)
-include(BlasFunctions)
 
-if (BLAS_LANG STREQUAL "C")
-	set(blas_h_name cblas.h)
+include(MathLibFunctions)
+
+if (LAPACK_LANG STREQUAL "C")
+# fixme
 endif()
 
 set(path_suffixes lib)
-if (BLAS_LANG STREQUAL "C")
-	set(blas_libs cblas)
+if (LAPACK_LANG STREQUAL "C")
+# fixme
 else()
-	set(blas_libs blas)
+	set(lapack_libs lapack)
 endif()
 
-find_blas_header()
-find_blas_libs()
+find_math_header("lapack")
+find_math_libs("lapack")
 
-unset(blas_libs)
+unset(lapack_libs)
 unset(path_suffixes)
 
-cache_blas_result(generic)
+cache_math_result(generic "lapack")
 

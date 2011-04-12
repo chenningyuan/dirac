@@ -1,6 +1,6 @@
-# - Find a BLAS library 
+# - Find a BLAS library
 #
-# This module will first look in BLAS_ROOT before considering the default 
+# This module will first look in BLAS_ROOT before considering the default
 # system pahts.
 # The linker language can be defined by setting the varable BLAS_LANG
 #
@@ -8,13 +8,12 @@
 #
 #  BLAS_INCLUDE_DIRS Where to find blas.h (or equivalent)
 #  BLAS_LIBRARIES Libraries to link against to use BLAS
-#  BLAS_FOUND Defined if BLAS is available 
-#  HAVE_BLAS To be used in #ifdefs 
-#  BLAS_H_NAME Name of BLAS header file
+#  BLAS_FOUND Defined if BLAS is available
+#  HAVE_BLAS To be used in #ifdefs
+#  BLAS_H Name of BLAS header file
 #
 # None of the above will be defined unless BLAS can be found.
-# 
-
+#
 #=============================================================================
 # Copyright 2011 Jonas Juselius <jonas.juselius@uit.no>
 #
@@ -27,10 +26,11 @@
 #=============================================================================
 # (To distributed this file outside of CMake, substitute the full
 #  License text for the above reference.)
-include(BlasFunctions)
+
+include(MathLibFunctions)
 
 if (BLAS_LANG STREQUAL "C")
-	set(blas_h_name cblas.h)
+	set(blas_h cblas.h)
 endif()
 
 set(path_suffixes lib)
@@ -40,11 +40,11 @@ else()
 	set(blas_libs blas)
 endif()
 
-find_blas_header()
-find_blas_libs()
+find_math_header("blas")
+find_math_libs("blas")
 
 unset(blas_libs)
 unset(path_suffixes)
 
-cache_blas_result(Goto)
+cache_math_result(generic "blas")
 

@@ -1,6 +1,6 @@
-# - Find a BLAS library 
+# - Find a BLAS library
 #
-# This module will first look in BLAS_ROOT before considering the default 
+# This module will first look in BLAS_ROOT before considering the default
 # system pahts.
 # The linker language can be defined by setting the varable BLAS_LANG
 #
@@ -8,12 +8,12 @@
 #
 #  BLAS_INCLUDE_DIRS Where to find blas.h (or equivalent)
 #  BLAS_LIBRARIES Libraries to link against to use BLAS
-#  BLAS_FOUND Defined if BLAS is available 
-#  HAVE_BLAS To be used in #ifdefs 
-#  BLAS_H_NAME Name of BLAS header file
+#  BLAS_FOUND Defined if BLAS is available
+#  HAVE_BLAS To be used in #ifdefs
+#  BLAS_H Name of BLAS header file
 #
 # None of the above will be defined unless BLAS can be found.
-# 
+#
 #=============================================================================
 # Copyright 2011 Jonas Juselius <jonas.juselius@uit.no>
 #
@@ -27,33 +27,24 @@
 # (To distributed this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
-function(find_blas blas_types)
-	foreach (blas ${blas_types})
-		string(STRIP ${blas} blas)
-		set(blas_name "BLAS-${blas}")
-		find_package(${blas_name})
-		if (BLAS_FOUND)
-			break()
-		endif()
-	endforeach()
-endfunction()
+include(MathLibFunctions)
 
-if (BLAS_INCLUDE_DIRS AND BLAS_LIBRARIES)
-  set(BLAS_FIND_QUIETLY TRUE)
-endif ()
-
-if (DEFINED ENV{BLAS_TYPE}) 
-	if (NOT DEFINED BLAS_TYPE})
-		set(BLAS_TYPE $ENV{BLAS_TYPE})
-	endif()
+if (BLAS_LANG STREQUAL "C")
+	set(blas_h cblas.h)
 endif()
 
-if (DEFINED BLAS_TYPE) 
-	set(blas_types ${BLAS_TYPE})
+set(path_suffixes lib lib/atlas)
+if (BLAS_LANG STREQUAL "C")
+	set(blas_libs cblas atlas f77blas)
 else()
-	set(blas_types MKL Atlas Goto Generic)
+	set(blas_libs atlas f77blas)
 endif()
 
-find_blas("${blas_types}")
+find_math_header("blas")
+find_math_libs("blas")
 
-unset(blas_types)
+unset(blas_libs)
+unset(path_suffixes)
+
+cache_math_result(Atlas "blas")
+
