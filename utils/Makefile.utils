@@ -2,6 +2,10 @@
 # This file gets included from the main makefile, and
 # make has to be run from the top level directory.
 
+UTILSLIB=gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a gp/gpc.o
+
+MEMLIB=gp/memory_internal_ada_1d.o gp/memory_internal_ada_4d.o gp/memory_track_if.o gp/memory_control.o gp/memory_internal_ada_2d.o gp/memory_internal_init.o gp/memory_tracker.o gp/memory_errorhandler.o gp/memory_internal_ada_3d.o gp/memory_parameters.o gp/tracker_util.o gp/tracing.o gp/stacktraverse.o gp/execinfo.o
+
 utils: $(INSTALL_DIR)/gp/memory_allocator.a \
        $(INSTALL_DIR)/labread.x \
        $(INSTALL_DIR)/cfread.x \
@@ -13,22 +17,9 @@ utils: $(INSTALL_DIR)/gp/memory_allocator.a \
        $(INSTALL_DIR)/test_dsyevr \
        $(INSTALL_DIR)/utils/dirac_mointegral_export.x
 
-$(INSTALL_DIR)/gp/memory_allocator.a: gp/memory_allocator.o           gp/memory_internal_ada_1d.o     \
-gp/memory_internal_ada_4d.o     gp/memory_track_if.o            \
-gp/memory_control.o             gp/memory_internal_ada_2d.o     \
-gp/memory_internal_init.o       gp/memory_tracker.o             \
-gp/memory_errorhandler.o        gp/memory_internal_ada_3d.o     \
-gp/memory_parameters.o          gp/tracker_util.o               \
-gp/tracing.o                    gp/stacktraverse.o              \
-gp/execinfo.o
-	$(AR) cr $@  gp/memory_allocator.o           gp/memory_internal_ada_1d.o     \
-gp/memory_internal_ada_4d.o     gp/memory_track_if.o            \
-gp/memory_control.o             gp/memory_internal_ada_2d.o     \
-gp/memory_internal_init.o       gp/memory_tracker.o             \
-gp/memory_errorhandler.o        gp/memory_internal_ada_3d.o     \
-gp/memory_parameters.o          gp/tracker_util.o               \
-gp/tracing.o                    gp/stacktraverse.o              \
-gp/execinfo.o
+$(INSTALL_DIR)/gp/memory_allocator.a: gp/memory_allocator.o $(MEMLIB)
+	$(AR) cr $@  gp/memory_allocator.o $(MEMLIB)
+
 $(INSTALL_DIR)/test_dsyevr: utils/test_dsyevr.F
 	$(LD) -o $@  utils/test_dsyevr.F $(LIBS)
 
@@ -38,55 +29,20 @@ $(INSTALL_DIR)/rspread.x: utils/rspread.o
 $(INSTALL_DIR)/labread.x: utils/labread.o
 	$(LD) -o $@ utils/labread.o
 
-$(INSTALL_DIR)/twofit.x: utils/twofit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a 
-	$(LD) -o $@ utils/twofit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
-                    gp/gpc.o $(LIBS)
+$(INSTALL_DIR)/twofit.x: utils/twofit.o $(UTILSLIB)
+	$(LD) -o $@ utils/twofit.o  $(UTILSLIB) $(LIBS)
 
-$(INSTALL_DIR)/cfread.x: utils/cfread.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a
-	$(LD) -o $@ utils/cfread.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
-                    gp/gpc.o $(LIBS)
+$(INSTALL_DIR)/cfread.x: utils/cfread.o $(UTILSLIB)
+	$(LD) -o $@ utils/cfread.o  $(UTILSLIB) $(LIBS)
 
-$(INSTALL_DIR)/vibcal.x: utils/vibcal.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a
-	$(LD) -o $@ utils/vibcal.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
-                    gp/gpc.o $(LIBS)
+$(INSTALL_DIR)/vibcal.x: utils/vibcal.o $(UTILSLIB)
+	$(LD) -o $@ utils/vibcal.o  $(UTILSLIB) $(LIBS)
 
-$(INSTALL_DIR)/polfit.x: utils/polfit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a 
-	$(LD) -o $@ utils/polfit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
-                    gp/gpc.o $(LIBS)
+$(INSTALL_DIR)/polfit.x: utils/polfit.o $(UTILSLIB) 
+	$(LD) -o $@ utils/polfit.o  $(UTILSLIB) $(LIBS)
 
-$(INSTALL_DIR)/mx2fit.x: utils/mx2fit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a 
-	$(LD) -o $@ utils/mx2fit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
-                    gp/mempkg.o  gp/time.o gp/quaternion_algebra.o gp/io.o pdpack/linextra.o  pdpack/printpkg.o  \
-                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
-                    pdpack/dsp.o pdpack/dge.o gp/memory_allocator.a \
-                    gp/gpc.o $(LIBS)
+$(INSTALL_DIR)/mx2fit.x: utils/mx2fit.o $(UTILSLIB) 
+	$(LD) -o $@ utils/mx2fit.o  $(UTILSLIB) $(LIBS)
 
 $(INSTALL_DIR)/utils/dirac_mointegral_export.x: utils/dirac_mointegral_export.o
 	$(LD) -o $@ utils/dirac_mointegral_export.o
