@@ -141,6 +141,10 @@
                      write (InfoMessage,'(a,i9,a)')                       &
                         'Asked for ',kbytesRequested,' Kb, '//  &
                         'memory available is '//kbytesAvailable(1:24)
+!                        radovan: this error message can be very confusing
+!                        real example: "Asked for   1274446 Kb, memory available is 45590396 Kb"
+!                        the memory available is the memory on the node but it may not be available
+!                        if the batch system limits it
 
                      write (*,*) 'Please verify:'
                      write (*,*) ' - if the amount of memory installed in the system is sufficient'
