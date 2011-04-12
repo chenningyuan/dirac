@@ -2,8 +2,6 @@ Here we can collect successful builds for various clusters and machines. These
 recipes are mostly for own reference but can of course serve as first steps
 for users trying to install DIRAC on similar machines.
 
- Don't forget to run pamadm first !
-
 stallo (x86_64 linux cluster) 2011-02-20
 ----------------------------------------
 $ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake
@@ -24,33 +22,27 @@ $ make install
 
 larry (i686 laptop running ubuntu) 2011-02-20
 ---------------------------------------------
-$ ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+$ export MATH_ROOT=/opt/intel/mkl/10.2.6.038
+$ ./setup --fc=ifort --cc=icc
 $ cd cbuild
 $ make
-$ cd ..
-$ ln -s cbuild/dirac.x
 
 thor (laptop running suse; cmake 2.8.3) 2011-02-20
 --------------------------------------------------
-$ ./setup --fc=gfortran --cc=gcc --math="-L/opt/intel/mkl/10.0.1.014/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread" --prefix="/home/stefan/prog/dirac/seriell/mytrunk/build_gfort_seq"
+$ export MATH_ROOT=/opt/intel/mkl/10.0.1.014
+$ ./setup --fc=gfortran --cc=gcc --prefix="/home/stefan/prog/dirac/seriell/mytrunk/build_gfort_seq"
 $ cd build_gfort_seq
 $ make
-$ cd ..
-$ ln -s build_gfort_seq/dirac.x
 
 ilias@frpd2.utcpd.sk (Lunix x86_64) 2011-02-21
-------------------------------------------------------
+----------------------------------------------
 $ ./setup --fc=g95 --cc=gcc-4.2 --int64 --nomath
-$ ln -sf  cbuild/dirac.x dirac.x
 $ cd cbuild
 $ cmake ..
 $ make
 
 ilias@miro.pd.uniza.sk (Lunix x86_64) 2011-03-08
-------------------------------------------------------------------------
-$ ./pamadm -a --xcfun
-$ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --nomath --mpi --runtest_mpi=2 --debug
-$ ln -sf  cbuild/dirac.x .
+------------------------------------------------
+$ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --nomath --mpi
 $ cd cbuild
-$ make -j 2
-
+$ make
