@@ -230,10 +230,14 @@ contains
       nr_points_on_this_proc = nr_points_batch/xc_mpi_get_nr_proc()
       if (xc_mpi_is_master()) then
          allocate(buffer(nr_points_on_this_proc))
-         call mpi_scatter(rx, nr_points_on_this_proc, mpi_real8, buffer, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
-         call mpi_scatter(ry, nr_points_on_this_proc, mpi_real8, buffer, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
-         call mpi_scatter(rz, nr_points_on_this_proc, mpi_real8, buffer, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
-         call mpi_scatter(rw, nr_points_on_this_proc, mpi_real8, buffer, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+         call mpi_scatter(rx, nr_points_on_this_proc, mpi_real8, buffer, &
+              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+         call mpi_scatter(ry, nr_points_on_this_proc, mpi_real8, buffer, &
+              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+         call mpi_scatter(rz, nr_points_on_this_proc, mpi_real8, buffer, &
+              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
+         call mpi_scatter(rw, nr_points_on_this_proc, mpi_real8, buffer, &
+              nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
          deallocate(buffer)
       else
          call mpi_scatter((/0.0d0/), 0, mpi_real8, rx, nr_points_on_this_proc, mpi_real8, irank_master, mpi_comm_world, ierr)
