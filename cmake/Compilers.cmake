@@ -1,5 +1,5 @@
-message("-- DIRAC: Fortran compiler is  \"${CMAKE_Fortran_COMPILER}\" (\"${CMAKE_Fortran_COMPILER_ID}\") ")
-message("-- DIRAC:       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_ID}\") ")
+message("-- DALTON: Fortran compiler is  \"${CMAKE_Fortran_COMPILER}\" (\"${CMAKE_Fortran_COMPILER_ID}\") ")
+message("-- DALTON:       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_ID}\") ")
 
 # Fortran compilers
 
@@ -26,8 +26,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
-    add_definitions(-DVAR_G95)
-    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full")
+    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
     if(DIRAC_ENABLE_64BIT_INTEGERS)
@@ -89,6 +88,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    if(DIRAC_ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -q64"
+            )
+    endif()
 
     set_source_files_properties(${DIRAC_FREE_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
@@ -103,7 +107,7 @@ endif()
 # C compilers
 
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
-    set(CMAKE_C_FLAGS         "-Wall")
+    set(CMAKE_C_FLAGS         " ")
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
 endif()
