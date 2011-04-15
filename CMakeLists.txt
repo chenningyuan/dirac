@@ -25,12 +25,12 @@ endif()
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake")
-    include(cmake/Sources.cmake)
+    include(Sources)
 else()
     message(FATAL_ERROR "could not find cmake/Sources.cmake; run pamadm first")
 endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake")
-    include(cmake/Definitions.cmake)
+    include(Definitions)
 else()
     message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
 endif()
@@ -73,7 +73,7 @@ if(DIRAC_ENABLE_TESTS)
     include(CTest)
     enable_testing()
     if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
-        include(cmake/Tests.cmake)
+        include(Tests)
     else()
         message(FATAL_ERROR "could not find cmake/Tests.cmake; run pamadm first")
     endif()
@@ -180,12 +180,12 @@ endif()
 
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
-include(cmake/Archs.cmake)
-include(cmake/Compilers.cmake)
+include(Archs)
+include(Compilers)
 
 set(LIBS)
 
-include(cmake/Math.cmake)
+include(Math)
 
 if(DIRAC_ENABLE_MPI)
     find_package(MPI)
@@ -281,7 +281,7 @@ target_link_libraries(
     ${LIBS}
     )
 
-include(cmake/Install.cmake)
+include(Install)
 
 if(DIRAC_ENABLE_UTILITIES)
     add_executable(dirac_mointegral_export.x
