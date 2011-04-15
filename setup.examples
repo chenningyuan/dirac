@@ -5,7 +5,7 @@ for users trying to install DIRAC on similar machines.
 stallo (x86_64 linux cluster) 2011-02-20
 ----------------------------------------
 $ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake
-$ ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/global/apps/intel/mkl/10.2.0.013/lib/em64t -lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+$ ./setup --fc=mpif90 --cc=mpicc --mpi
 $ cd cbuild
 $ make
 $ cmake -DCMAKE_INSTALL_PREFIX=/global/apps/dirac/latest ..
@@ -22,14 +22,12 @@ $ make install
 
 larry (i686 laptop running ubuntu) 2011-02-20
 ---------------------------------------------
-$ export MATH_ROOT=/opt/intel/mkl/10.2.6.038
 $ ./setup --fc=ifort --cc=icc
 $ cd cbuild
 $ make
 
 thor (laptop running suse; cmake 2.8.3) 2011-02-20
 --------------------------------------------------
-$ export MATH_ROOT=/opt/intel/mkl/10.0.1.014
 $ ./setup --fc=gfortran --cc=gcc --prefix="/home/stefan/prog/dirac/seriell/mytrunk/build_gfort_seq"
 $ cd build_gfort_seq
 $ make

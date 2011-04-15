@@ -1,6 +1,5 @@
 set(MATH_FOUND  FALSE)
-set(BLAS_LANG   "Fortran")
-set(LAPACK_LANG "Fortran")
+set(MATH_LANG   "Fortran")
 
 if(DIRAC_ENABLE_EXTERNAL_MATH)
 
@@ -44,6 +43,10 @@ if(DIRAC_ENABLE_EXTERNAL_MATH)
     else()
         message("-- No external math libraries found - defaulting to DIRAC own math libraries")
     endif()
+if (ENABLE_CUDA)
+	find_package(CUDA)
+endif ()
+
 endif()
 
 if(NOT MATH_FOUND)
