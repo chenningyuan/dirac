@@ -1,4 +1,4 @@
-message("-- DALTON: CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"")
+message("-- CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DSYS_LINUX)
