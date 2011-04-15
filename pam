@@ -79,10 +79,6 @@ class pam_enviroment:
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
 
-        # print level
-        self.iprint = 1
-        self.iprint_default = 1
-
         self.just_show_settings = False
 
         self.expert_mode = False # disable various safety checks
@@ -342,13 +338,6 @@ class pam_enviroment:
         scratch_dir_name = self.user_name + '.' + scratch_dir_name
         self.scratch_dir = self.scratch_path + '/' + scratch_dir_name
 
-        if self.iprint >= 5:
-            print 'scratch_dir_name=', scratch_dir_name
-            print 'root_name set?', root_name is not None
-            if root_name is not None:
-                print 'root_name=', root_name
-            print 'self.scratch_dir=', self.scratch_dir
-
     def create_scratch_dir(self):
         """   
          create the scratch directory if it not exist
@@ -375,12 +364,9 @@ class pam_enviroment:
         # miro: to get clear error message one has to adapt try-except
         try:
             shutil.copy(src, dest)
-            if self.iprint > 0:
+            if not self.silent:
                 print '  Copying file: ', epf_src.pure_file_name, \
                 ' (as ', epf_dest.pure_file_name,').'
-            if self.iprint >= 3:
-                print ' src full path:', src
-                print 'dest full path:', dest
         except:
             if os.path.isfile(src):
                 src_message="...src exists"
@@ -446,30 +432,6 @@ class pam_enviroment:
                     file_info['f_la'])
             sys.stdout.flush()
 
-            if self.iprint >= 8:
-                print
-                print 'file name = %(fname)s' % file_info
-                print 'file size = %(fsize)s bytes' % file_info
-                print 'last modified = %(f_lm)s' % file_info
-                print 'last accessed = %(f_la)s' % file_info
-                print 'creation time = %(f_ct)s' % file_info
-                print
-                if stat.S_ISDIR(file_stats[stat.ST_MODE]):
-                    print 'This a directory'
-                else:
-                    print 'This is not a directory'
-                print
-                print 'A closer look at the os.stat(%s) tuple:' \
-                    % file_name
-                print file_stats
-                print
-                print 'The above tuple has the following sequence:'
-                print """st_mode (protection bits), st_ino (inode number),
-           st_dev (device), st_nlink (number of hard links),
-           st_uid (user ID of owner), st_gid (group ID of owner),
-           st_size (file size, bytes), st_atime (last access time, seconds since epoch),
-           st_mtime (last modification time), st_ctime (time of creation, Windows)"""
-                sys.stdout.flush()
         print '  ------------------------------------------------------------------------------'
         print '       Total size of all files :  %10.3f  MB ' % sum_filesize_mb
 
@@ -483,14 +445,14 @@ class pam_enviroment:
     def remove_scratch_dir(self):
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
-            if self.iprint > 0:
+            if not self.silent:
                 self.list_scratch_dir()
             if not self.keep_scratch:
-                if self.iprint > 0:
+                if not self.silent:
                     print '  deleting the scratch directory'
                 shutil.rmtree(self.scratch_dir)
             else:
-                if self.iprint > 0:
+                if not self.silent:
                     print '  keeping the scratch directory'
         else:
              print '  The scratch directory already does not exist. '
@@ -788,15 +750,6 @@ class pam_enviroment:
             metavar='FULL_PATH',
             )
         group.add_option(
-            '--verbosity',
-            type='int',
-            action='store',
-            dest='dest_iprint',
-            default=self.iprint_default,
-            help='set pam verbosity [default: %default]',
-            metavar='INTEGER',
-            )
-        group.add_option(
             '--timeout',
             type='string',
             action='store',
@@ -821,10 +774,8 @@ class pam_enviroment:
             print
             sys.exit()
 
-        self.iprint = int(options.dest_iprint)
-
-        if options.silent_pam:
-            self.iprint = 0
+        # produce minimal output
+        self.silent = options.silent_pam
 
         self.output_suffix = options.dest_suffix
 
@@ -844,39 +795,20 @@ class pam_enviroment:
         if options.dest_mpi:
             self.nr_proc      = int(options.dest_mpi)
             self.parallel_run = True
-            if self.iprint >= 5:
-                print 'assigned self.nr_proc=', self.nr_proc
-                print 'assigned self.self.parallel_run=', \
-                    self.parallel_run
 
             if options.dest_mpirun:
               # set the mpi launcher, use default otherwise
                 self.mpirun = options.dest_mpirun
-                if self.iprint >= 5:
-                    print 'assigned mpirun=', self.mpirun
 
             if options.dest_mpiarg:
                 self.mpiarg = options.dest_mpiarg
-                if self.iprint >= 5:
-                    print 'assigned mpiarg=', self.mpiarg
 
             if options.dest_machfile:
                 self.machinefile = options.dest_machfile
 
-                if self.iprint >= 5:
-                    print 'assigned machinefile=', self.machinefile
-
-        else:
-            if self.iprint >= 5:
-                print
-                print 'start sequential run (default); --mpi=xxx has not been specified.'
-
-
         if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
                 install_dir = str(options.dest_install_dir)
-                if self.iprint >= 5:
-                    print 'assigned install-dir=', install_dir
             else:
                 print 'Installation directory you inserted is non-existent !'
                 print 'Used the default instead:', install_dir
@@ -885,14 +817,9 @@ class pam_enviroment:
 
         if options.dest_scratch:
             self.process_scratch_dir_name(scratch_dir_string=str(options.dest_scratch))
-            if self.iprint >= 5:
-                print '\nassigned self.scratch_dir=',self.scratch_dir
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
-        if self.iprint >= 5:
-            print 'assigned self.basdir=',self.basdir
-            print 'assigned self.dirac_exe=',self.dirac_exe
 
         if options.dest_nice:
 
@@ -902,40 +829,24 @@ class pam_enviroment:
                 self.nice_cmd = 'npri -h129 '
             else:
                 self.nice_cmd = 'nice -1 '
-            if self.iprint >= 5:
-                print 'nice prirority set ! self.nice_cmd=', \
-                    self.nice_cmd
 
         if options.dest_timeout:
             from common import process_time_string
             self.timeout = process_time_string(options.dest_timeout)
             self.set_timeout_limit = True
-            if self.iprint >= 5:
-                print 'assigned timeout=', self.timeout
-        else:
-            if self.iprint >= 5:
-                print 'no timeout assigned !'
 
         self.nobackup = options.dest_nobackup
         self.no_archive = options.dest_noarch
 
         if options.dest_put:
             self.put_files = options.dest_put.split()
-            if self.iprint >= 3:
-                print '\nassigned put_files ?', self.put_files \
-                    is not None, '...these are(with wildcards):', self.put_files
 
         if options.dest_distribute:
             # wildcards...
             self.distribute = glob.glob(options.dest_distribute)
-            if self.iprint >= 3:
-                print 'extra files for distribution over nodes:',self.distribute
 
         if options.dest_get:
             self.get_files = options.dest_get
-            if self.iprint >= 5:
-                print 'assigned get_files ?', self.get_files \
-                    is not None, '...', self.get_files
 
         self.incmo = options.dest_incmo
         self.outcmo = options.dest_outcmo
@@ -945,9 +856,6 @@ class pam_enviroment:
         if options.dest_fullrestart:
             self.archive_name = options.dest_fullrestart
             self.full_restart = True
-            if self.iprint >= 5:
-                print 'assigned full-restart from archive file', \
-                    self.archive_name
 
         self.keep_scratch = options.dest_keep_scratch
         self.just_show_settings = options.just_show_settings
@@ -962,8 +870,6 @@ class pam_enviroment:
                 print 'Debugger ', options.dest_debugger, \
                     ' you want to assign does not exist ! No debugging !'
                 self.debug = False
-            if self.iprint >= 5:
-                print 'assigned debugger,', self.debugger
 
         if options.dest_vg:
             self.vg_debug = True
@@ -1001,11 +907,6 @@ class pam_enviroment:
         filled variables (class members) "self.input_molecule" and
         "self.input_dirac"'''
 
-        if self.iprint >= 5:
-            print '=== assign_mol_inp_files: ==='
-            print 'self.input_molecule=', self.input_molecule
-            print 'self.input_dirac=', self.input_dirac
-
         if os.path.isfile(self.input_molecule + '.mol'):
             self.input_file_molecule = self.input_molecule + '.mol'
         elif os.path.isfile(self.input_molecule + '.xyz'):
@@ -1030,22 +931,9 @@ class pam_enviroment:
                 print >> stream,'  input dir      :', self.input_directory
             sys.exit(5)
 
-        if self.iprint >= 5:
-            print 'assigned self.input_file_molecule=', \
-                self.input_file_molecule
-            print 'assigned self.input_file_dirac=', \
-                self.input_file_dirac
-
     def set_output_name(self):
         '''Set the output name string to be used later for naming the
         output file and the scratch directory'''
-
-        if self.iprint >= 5:
-            print '\n set_output_name routine:'
-            print 'self.input_molecule=', self.input_molecule
-            print 'self.input_file_molecule=', self.input_file_molecule
-            print 'self.input_dirac=', self.input_dirac
-            print 'self.input_file_dirac=', self.input_file_dirac
 
         if len(self.input_molecule) > 0 and len(self.input_dirac) > 0:
             if '.mol' in self.input_file_molecule:
@@ -1074,14 +962,6 @@ class pam_enviroment:
         else:
             # assign default name
             self.output_name = 'dirac_output.' + str(self.current_pid)
-
-    # control printout
-
-        if self.iprint >= 5:
-            print 'self.input_molecule=', self.input_molecule
-            print 'XYZ molecule input ?  : ', self.xyz_molecule_input
-            print 'self.input_dirac=', self.input_dirac
-            print 'set self.output_name=', self.output_name
 
     def copy_files(self):
         '''copies file from the home directory to the scratch directory'''
@@ -1128,8 +1008,6 @@ class pam_enviroment:
             os.system(unpack_command)
 
         if self.put_files is not None:
-            if self.iprint >= 4:
-                print 'self.put_files=', self.put_files
             for file_name in self.put_files:
                 for f in glob.glob(file_name):
                     copy_single_file(f)
@@ -1147,10 +1025,6 @@ class pam_enviroment:
         '''This routine is called when local disks are selected
            for parallel calculations.'''
 
-        if self.iprint >= 5:
-            print 'distribute_scratch_dir'
-            print 'assigned machine file=', self.machinefile
-
     #  The list of machines available to dirac.x check if this is an enviromental variable with "$" - than get its content
 
         if self.machinefile[0] == '$':
@@ -1161,9 +1035,6 @@ class pam_enviroment:
             except:
                 print '  The ', self.machinefile, \
                     ' enviroment variable for machinefile not active (no batch system).'
-            if self.iprint >= 4:
-                print 'machinefile enviromental variable points to', \
-                    machinefile_content
         else:
             # true file, no pointing variable
             machinefile_content = self.machinefile
@@ -1186,14 +1057,9 @@ class pam_enviroment:
             files_to_nodes=self.core_dirac_files+self.distribute # list of files to be distributed over nodes
             print '  Copying selected content of master scratch directory to nodes :',self.nodes
             for node in self.nodes:
-                if self.iprint >= 2:
-                    print '  Copying master ', self.master, \
-                          ' scratch directory selected files to the node', node,' :'
                 # create scratch directories on the nodes; TODO: find pure python replacement
                 command = self.rsh + ' ' + node + ' "mkdir -p ' \
                     + self.scratch_dir + ' "'
-                if self.iprint >= 4:
-                    print 'create scratch dir command:', command
                 os.system(command)
                 # copies file after file
                 for this_file in os.listdir(self.scratch_dir):
@@ -1203,12 +1069,9 @@ class pam_enviroment:
                         # TODO: replace the shell command by some pure python solution
                         command = self.rcp + ' ' + this_file_full + ' ' \
                             + node + ':' + this_file_full
-                        if self.iprint >= 0:
+                        if not self.silent:
                             print '  ', command
                         os.system(command)
-                        if self.iprint >= 4:  # control list of directory
-                            os.system(self.rsh + ' ' + node + ' "ls -l ' \
-                                + self.scratch_dir + ' "')
         else:
             print '  All CPUs are on the master, no distribution of scratch_dir over different nodes.'
 
@@ -1221,9 +1084,6 @@ class pam_enviroment:
                 + self.output_suffix
             self.output_file_full = self.input_directory + '/' \
                 + self.output_file
-            if self.iprint >= 5:
-                print 'set_output_file: self.output_file=', \
-                    self.output_file
         else:
             print 'can not set output file - some strings not set up !'
             print 'self.output_name=', self.output_name
@@ -1257,11 +1117,6 @@ class pam_enviroment:
     # Next line is for IBM only but will not hurt other systems
 
         os.putenv('XLFRTEOPTS', "'namelist=old'")
-
-        if self.iprint >= 5:
-            print 'DIRWRK=', os.getenv('DIRWRK')
-            print 'BASDIR=', os.getenv('BASDIR')
-            print 'IBM stuff, XLFRTEOPTS=', os.getenv('XLFRTEOPTS')
 
     def set_dirac_cmd(self):
         '''set the dirac command to be launched by the system (serial or parallel)'''
@@ -1318,9 +1173,6 @@ class pam_enviroment:
     # at the end add priority command (either empty or not) #
 
         self.dirac_cmd = self.nice_cmd + self.dirac_cmd
-
-        if self.iprint >= 5:
-            print 'set_dirac_cmd: self.dirac_cmd=', self.dirac_cmd
 
     def read_makefile_config(self):
         """Read the Makefile.config to get default values of many variables.
@@ -1406,8 +1258,7 @@ class pam_enviroment:
         if not self.nobackup:
             from common import backup_file
             backup_file(some_file=self.input_directory + '/'
-                        + self.output_file, upto=None,
-                        iprint=self.iprint)
+                        + self.output_file, upto=None)
 
         if self.set_timeout_limit:
             signal.signal(signal.SIGALRM, signal_handler)
@@ -1418,7 +1269,7 @@ class pam_enviroment:
                 self.nice_cmd
 
         basis_set_directory_list = self.basdir.split(':')
-        if self.iprint > 0:
+        if not self.silent:
             print '  basis set dirs : %s' % basis_set_directory_list[0]
             if len(basis_set_directory_list) > 1:
                 for i in range(1, len(basis_set_directory_list)):
@@ -1472,7 +1323,7 @@ class pam_enviroment:
         self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                        stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
 
-        if self.iprint > 0:
+        if not self.silent:
             print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
 
         # get stderr stream to be properly distributed
@@ -1483,7 +1334,7 @@ class pam_enviroment:
             # attach stderr to the pam output
             self.f.write('\n ====  below this line is the stderr stream  ====' + self.dirac_stderr)
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
-            if self.iprint > 0: 
+            if not self.silent:
                 print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
                 print >> sys.stderr,self.dirac_stderr
                 print >> sys.stderr,'directory:', self.input_directory
@@ -1578,7 +1429,7 @@ class pam_enviroment:
         self.all_dirac_pids=set.union( set(self.dirac_pidof_pids),set(self.dirac_pids) )
 
         # print
-        if self.iprint >= 0:
+        if not self.silent:
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream,\
                 '         dirac.x subprocess PID:',self.dirac_p.pid
@@ -1688,20 +1539,13 @@ class pam_enviroment:
     # ... save single file
 
             full_file_name = self.scratch_dir + '/' + file_name
-            if self.iprint >= 5:
-                print 'file_name=', file_name
-                print 'full_file_name=', full_file_name
             if os.path.isfile(full_file_name):
                 file_name_home = self.input_directory + '/' + file_name
-                if self.iprint > 0:
-                    print '  Copying file', file_name, \
-                          ' from the scratch dir to the input dir.'
 
         # backup file if it's there
 
                 if not self.nobackup:
-                    backup_file(some_file=file_name_home, upto=None,
-                                iprint=self.iprint)
+                    backup_file(some_file=file_name_home, upto=None)
 
         # finally copy
 
@@ -1726,14 +1570,11 @@ class pam_enviroment:
                 if os.path.isfile(archfile):
                     existing_archive_files = existing_archive_files \
                         + ' ' + archfile
-            if self.iprint >= 5:
-                print 'existing archive files:', existing_archive_files
 
       # backup
 
             if not self.nobackup:
-                backup_file(some_file=archive_full_name, upto=None,
-                            iprint=self.iprint)
+                backup_file(some_file=archive_full_name, upto=None)
             archive_command = 'tar c ' + existing_archive_files \
                 + ' | gzip > ' + archive_full_name
 
@@ -1794,10 +1635,9 @@ class pam_enviroment:
         print
         print '  output from the DIRAC python script'
         print
-        if self.iprint < 1:
+        if not self.silent:
             print '  input file     :', self.input_dirac
             print '  molecule file  :', self.input_molecule
-        else:
             print '  user           :', self.user_name
             print '  host           :', self.master,' (',self.master_full,')'
             print '  ip             :', self.hostname_ip
