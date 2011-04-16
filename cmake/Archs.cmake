@@ -10,7 +10,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    add_definitions(-DSYS_LINUX)
+    add_definitions(-DSYS_DARWIN)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
