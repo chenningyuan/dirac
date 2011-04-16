@@ -30,6 +30,11 @@ parser = OptionParser(usage)
 # define options
 
 group = OptionGroup(parser, 'Basic options')
+group.add_option('--auto',
+                 action='store_true',
+                 dest='auto',
+                 default=False,
+                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %default]')
 group.add_option('--fc',
                  type='string',
                  action='store',
@@ -78,11 +83,6 @@ group.add_option('--int64',
                  dest='int64',
                  default=False,
                  help='build for 64bit integers [default: %default]')
-group.add_option('--auto',
-                 action='store_true',
-                 dest='auto',
-                 default=False,
-                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %default]')
 group.add_option('--show',
                  action='store_true',
                  dest='show',
@@ -91,6 +91,13 @@ group.add_option('--show',
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'Change default paths')
+group.add_option('--scratch',
+                 type='string',
+                 action='store',
+                 dest='scratch',
+                 default=None,
+                 help='set the scratch directory [default: will try /work, /scratch, /scr, /temp, /tmp]',
+                 metavar='PATH')
 group.add_option('--prefix',
                  type='string',
                  action='store',
@@ -104,13 +111,6 @@ group.add_option('--install',
                  dest='install',
                  default=None,
                  help='set the install path for make install [default: %default]',
-                 metavar='PATH')
-group.add_option('--scratch',
-                 type='string',
-                 action='store',
-                 dest='scratch',
-                 default=None,
-                 help='set the scratch directory [default: will try /work, /scratch, /scr, /temp, /tmp]',
                  metavar='PATH')
 parser.add_option_group(group)
 
