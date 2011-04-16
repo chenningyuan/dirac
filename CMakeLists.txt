@@ -20,6 +20,14 @@ if(NOT CMAKE_BUILD_TYPE)
         )
 endif()
 
+string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
+if(    NOT cmake_build_type_tolower STREQUAL "debug"
+		AND NOT cmake_build_type_tolower STREQUAL "release"
+		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo")
+	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
+	Allowed values are Debug, Release, RelWithDebInfo (case-insensitive).")
+endif()
+
 # do not rebuild if rules (compiler flags) change
 # this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -35,49 +43,47 @@ else()
     message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
 endif()
 
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"      OFF)
-option(ENABLE_PROFILING      "Enable profiling"            OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"         OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"        OFF)
-option(ENABLE_EXTERNAL_MATH  "Use external math library"   ON)
-option(ENABLE_MPI            "Use MPI parallelization"     OFF)
-option(ENABLE_OMP            "Use OpenMP parallelization"  OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU accleration" OFF)
-option(ENABLE_XCFUN          "Use XCFun library"         ON)
-option(ENABLE_UTILITIES      "Compile utilities"         OFF)
-option(ENABLE_TESTS          "Enable make test"          ON)
-option(USE_LOCAL_DISKS             "Use local disks"           ON)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
+option(ENABLE_PROFILING      "Enable profiling"              OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
+option(ENABLE_EXTERNAL_MATH  "Enable external math library"  ON)
+option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU accleration"   OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
+option(ENABLE_XCFUN          "Enable XCFun library"          ON)
+option(ENABLE_UTILITIES      "Enable utilities"              OFF)
+option(ENABLE_LOCAL_DISKS    "Enable local disks"            ON)
 
-if(ENABLE_TESTS)
-    SET(BUILDNAME "${BUILDNAME}" 
-            CACHE STRING "Name of build on the dashboard"
+SET(BUILDNAME "${BUILDNAME}" 
+        CACHE STRING "Name of build on the dashboard"
+    )
+message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
+if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
+    set(DART_TESTING_TIMEOUT
+        "${RUNTEST_TIMEOUT}"
+        CACHE STRING
+        "Set timeout in seconds for every single test."
+        FORCE
         )
-    message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
-    if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
-        set(DART_TESTING_TIMEOUT
-            "${RUNTEST_TIMEOUT}"
-            CACHE STRING
-            "Set timeout in seconds for every single test."
-            FORCE
-            )
-        message("-- DIRAC: DART_TESTING_TIMEOUT (time limit for single test) set to ${DART_TESTING_TIMEOUT}")
-    endif()
-    if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
-        message("-- DIRAC: RUNTEST_NR_PROC set to ${RUNTEST_NR_PROC}")
-        set(RUNTEST_FLAGS "--mpi=${RUNTEST_NR_PROC}" )
-        message("-- DIRAC: RUNTEST_FLAGS set to \"${RUNTEST_FLAGS}\"")
-    endif()
-    if(NOT "${RUNTEST_OWN_TIMEOUT_FLAG}" STREQUAL "")
-        set(RUNTEST_TIMEOUT_FLAG "--timeout=${RUNTEST_OWN_TIMEOUT_FLAG}")
-        message("-- DIRAC: RUNTEST_TIMEOUT_FLAG set to \"${RUNTEST_TIMEOUT_FLAG}\"")
-    endif()
-    include(CTest)
-    enable_testing()
-    if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
-        include(Tests)
-    else()
-        message(FATAL_ERROR "could not find cmake/Tests.cmake; run pamadm first")
-    endif()
+    message("-- DIRAC: DART_TESTING_TIMEOUT (time limit for single test) set to ${DART_TESTING_TIMEOUT}")
+endif()
+if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
+    message("-- DIRAC: RUNTEST_NR_PROC set to ${RUNTEST_NR_PROC}")
+    set(RUNTEST_FLAGS "--mpi=${RUNTEST_NR_PROC}" )
+    message("-- DIRAC: RUNTEST_FLAGS set to \"${RUNTEST_FLAGS}\"")
+endif()
+if(NOT "${RUNTEST_OWN_TIMEOUT_FLAG}" STREQUAL "")
+    set(RUNTEST_TIMEOUT_FLAG "--timeout=${RUNTEST_OWN_TIMEOUT_FLAG}")
+    message("-- DIRAC: RUNTEST_TIMEOUT_FLAG set to \"${RUNTEST_TIMEOUT_FLAG}\"")
+endif()
+include(CTest)
+enable_testing()
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
+    include(Tests)
+else()
+    message(FATAL_ERROR "could not find cmake/Tests.cmake; run pamadm first")
 endif()
 
 add_definitions(-DPRG_DIRAC)
@@ -133,7 +139,7 @@ if(VALGRIND_EXECUTABLE)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nVALGRIND=${VALGRIND_EXECUTABLE}")
 endif()
 
-if(USE_LOCAL_DISKS)
+if(ENABLE_LOCAL_DISKS)
     add_definitions(-DSYS_LOCALDISKS)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=yes")
 else()
