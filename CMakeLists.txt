@@ -59,6 +59,9 @@ option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 
 # cdash options
+#upcoming changes: rename BUILDNAME to CDASH_BUILDNAME
+#                  remove RUNTEST_TIMEOUT (can be triggered by DART_TESTING_TIMEOUT)
+#                  rename RUNTEST_OWN_TIMEOUT_FLAG to RUNTEST_TIMEOUT
 SET(BUILDNAME "${BUILDNAME}" 
         CACHE STRING "Name of build on the dashboard"
     )
