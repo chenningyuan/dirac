@@ -5,7 +5,7 @@
 */*/Makefile
 */Makefile
 DFCOEF
-Makefile.config*
+Makefile.config
 PAMXVC
 basis_dalton/*\*
 cbuild/Makefile.dep

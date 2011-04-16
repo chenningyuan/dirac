@@ -111,24 +111,21 @@ set(SCRATCH_DIR
 # configure Makefile.config
 file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
 find_program(PROFILER gprof)
-if(PROFILER)
-    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nPROFILER=${PROFILER}")
-endif()
 find_program(VALGRIND_EXECUTABLE valgrind)
-if(VALGRIND_EXECUTABLE)
-    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nVALGRIND=${VALGRIND_EXECUTABLE}")
-endif()
 if(ENABLE_LOCAL_DISKS)
     add_definitions(-DSYS_LOCALDISKS)
-    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=yes")
+    set(LOCALDISKS "yes")
 else()
-    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=no")
+    set(LOCALDISKS "no")
 endif()
 find_program(PBS_ENVIRONMENT pbsnodes)
 if(PBS_ENVIRONMENT)
-    # this is a PBS batch system
-    file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nMACH_FILE=$PBS_NODEFILE")
+    set(MACHFILE "$PBS_NODEFILE")
 endif()
+configure_file(
+    ${CMAKE_SOURCE_DIR}/Makefile.config.in
+    ${CMAKE_SOURCE_DIR}/Makefile.config
+    )
 
 include(Archs)
 include(Compilers)
