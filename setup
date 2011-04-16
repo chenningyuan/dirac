@@ -110,7 +110,7 @@ group.add_option('--scratch',
                  action='store',
                  dest='scratch',
                  default=None,
-                 help='set the scratch directory [default: %default]',
+                 help='set the scratch directory [default: will try /work, /scratch, /scr, /temp, /tmp]',
                  metavar='PATH')
 parser.add_option_group(group)
 
