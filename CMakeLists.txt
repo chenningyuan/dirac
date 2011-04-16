@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(DIRAC Fortran C)
+add_definitions(-DPRG_DIRAC)
 
+# set version
 set(VERSION_MAJOR 10)
 set(VERSION_MINOR 1)
 set(VERSION_PATCH 0)
@@ -11,6 +13,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
+# set build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE
         Debug
@@ -19,7 +22,6 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE
         )
 endif()
-
 string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 if(    NOT cmake_build_type_tolower STREQUAL "debug"
 		AND NOT cmake_build_type_tolower STREQUAL "release"
@@ -32,22 +34,19 @@ endif()
 # this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake")
+# check whether pamadm-generated files exist, if not exit
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
+    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
+    AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
     include(Sources)
-else()
-    message(FATAL_ERROR "could not find cmake/Sources.cmake; run pamadm first")
-endif()
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake")
     include(Definitions)
+    include(Tests)
 else()
-    message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
+    message(FATAL_ERROR "could not find cmake/Sources.cmake and/or cmake/Definitions.cmake and/or cmake/Tests.cmake; run pamadm first")
 endif()
 
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
-option(ENABLE_PROFILING      "Enable profiling"              OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 option(ENABLE_EXTERNAL_MATH  "Enable external math library"  ON)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
@@ -55,7 +54,11 @@ option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
 option(ENABLE_XCFUN          "Enable XCFun library"          ON)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            ON)
+option(ENABLE_PROFILING      "Enable profiling"              OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 
+# cdash options
 SET(BUILDNAME "${BUILDNAME}" 
         CACHE STRING "Name of build on the dashboard"
     )
@@ -80,16 +83,6 @@ if(NOT "${RUNTEST_OWN_TIMEOUT_FLAG}" STREQUAL "")
 endif()
 include(CTest)
 enable_testing()
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
-    include(Tests)
-else()
-    message(FATAL_ERROR "could not find cmake/Tests.cmake; run pamadm first")
-endif()
-
-add_definitions(-DPRG_DIRAC)
-if(ENABLE_64BIT_INTEGERS)
-    add_definitions(-DINT_STAR8)
-endif()
 
 set(WORK_MEM_WORDS
     "64000000"
@@ -154,6 +147,10 @@ if(NOT MATH_FOUND)
     add_definitions(-DDIRAC_USE_DLAPACK) 
     add_definitions(-DDIRAC_USE_ZLAPACK) 
 endif() 
+
+if(ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
 
 if(ENABLE_MPI)
     find_package(MPI)
@@ -244,10 +241,6 @@ add_executable(dirac.x
     ${FIXED_FORTRAN_SOURCES}
     ${GENERATED_FILES}
     )
-
-# radovan: Miro, you can add link flags like this: 
-# SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-E")
-# radovan: i have commented it - does not work on AIX, do we really need it?
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
     SET_TARGET_PROPERTIES(dirac.x PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
