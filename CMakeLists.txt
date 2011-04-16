@@ -154,6 +154,13 @@ include(Compilers)
 set(LIBS)
 
 include(Math)
+if(NOT MATH_FOUND) 
+    message("-- Using own BLAS and LAPACK math") 
+    add_definitions(-DDIRAC_USE_BLAS) 
+    add_definitions(-DDIRAC_USE_DLAMCH) 
+    add_definitions(-DDIRAC_USE_DLAPACK) 
+    add_definitions(-DDIRAC_USE_ZLAPACK) 
+endif() 
 
 if(ENABLE_MPI)
     find_package(MPI)

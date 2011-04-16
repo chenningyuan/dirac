@@ -129,4 +129,3 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_DEBUG   " ")
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
-
