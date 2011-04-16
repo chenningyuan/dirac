@@ -119,39 +119,12 @@ group.add_option('--coverage',
                  dest='coverage',
                  default=False,
                  help='enable code coverage [default: %default]')
-parser.add_option_group(group)
-
-group = OptionGroup(parser, 'Options for nightly tests')
-group.add_option('--buildname',
-                 type='string',
-                 action='store',
-                 dest='buildname',
-                 default='noname',
-                 help='set the build name for the dashboard [default: %default]',
+group.add_option('-D',
+                 action="append",
+                 dest='cmake',
+                 default=[],
+                 help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1)',
                  metavar='STRING')
-group.add_option('--runtest_mpi',
-                 type='int',
-                 action='store',
-                 dest='runtest_mpi',
-                 default=None,
-                 help='number of processors [default: %default]',
-                 metavar='INTEGER')
-group.add_option('--runtest_timeout',
-                 type='int',
-                 action='store',
-                 dest='runtest_timeout',
-                 default=None,
-                 help='CTest timeout in seconds [default: %default]',
-                 metavar='INTEGER')
-#radovan: why do we need two flags to control timeout?
-#         please reduce to one or convince me that we need two
-group.add_option('--runtest_timeout_flag',
-                 action='store',
-                 type='string',
-                 dest='runtest_timeout_flag',
-                 default=None,
-                 metavar='STRING',
-                 help='own runtest timeout [default: %default]')
 parser.add_option_group(group)
 
 # process input
@@ -216,10 +189,6 @@ if options.math:
     command += ' -DUSERDEFINED_LIBS="%s"' % options.math
 if options.mpi:
     command += ' -DENABLE_MPI=1'
-    if options.runtest_mpi:
-        command += ' -DRUNTEST_NR_PROC=' + str(options.runtest_mpi)
-if options.runtest_timeout:
-    command += ' -DRUNTEST_TIMEOUT=' + str(options.runtest_timeout)
 
 if options.int64:
     command += ' -DENABLE_64BIT_INTEGERS=1'
@@ -227,8 +196,6 @@ if options.check:
     command += ' -DENABLE_BOUNDS_CHECK=1'
 if options.coverage:
     command += ' -DENABLE_CODE_COVERAGE=1'
-if options.runtest_timeout_flag:
-    command += ' -DRUNTEST_OWN_TIMEOUT_FLAG=' + str(options.runtest_timeout_flag)
 if options.install:
     command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 if options.scratch:
@@ -239,7 +206,10 @@ if options.debug:
 else:
     command += ' -DCMAKE_BUILD_TYPE=Release'
 
-command += ' -DBUILDNAME=' + options.buildname
+if options.cmake:
+    for definition in options.cmake:
+        command += ' -D%s' % definition
+
 command += ' %s' % root_directory
 
 print '   CMake command: %s\n' % command
