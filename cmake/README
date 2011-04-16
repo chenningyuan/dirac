@@ -36,7 +36,7 @@ Setup does nothing more that setting some environment variables (FC, CC, ...)
 and calling cmake with some flags. This means that you can call cmake directly
 if you know how, for example:
 
-$ CC=icc FC=ifort cmake -DDIRAC_ENABLE_MPI=1 ..
+$ CC=icc FC=ifort cmake -DENABLE_MPI=1 ..
 
 If you don't remember the cmake command, run setup with --show to see it.
 
@@ -47,7 +47,7 @@ How to build utilities
 $ cd /buildpath
 $ ccmake /sourcepath
 
-Now set DIRAC_ENABLE_UTILITIES to ON, [c]onfigure, then [g]enerate and exit, and finally
+Now set ENABLE_UTILITIES to ON, [c]onfigure, then [g]enerate and exit, and finally
 $ make
 Now you have the utilities!
 

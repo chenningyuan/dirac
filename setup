@@ -216,30 +216,30 @@ if not options.auto:
 command += ' cmake'
 
 if options.nomath:
-    command += ' -DDIRAC_ENABLE_EXTERNAL_MATH=0'
+    command += ' -DENABLE_EXTERNAL_MATH=0'
 if options.math:
-    command += ' -DDIRAC_USERDEFINED_LIBS="%s"' % options.math
+    command += ' -DUSERDEFINED_LIBS="%s"' % options.math
 if options.mpi:
-    command += ' -DDIRAC_ENABLE_MPI=1'
+    command += ' -DENABLE_MPI=1'
     if options.runtest_mpi:
-        command += ' -DDIRAC_RUNTEST_NR_PROC=' + str(options.runtest_mpi)
+        command += ' -DRUNTEST_NR_PROC=' + str(options.runtest_mpi)
 if options.rsh:
-    command += ' -DDIRAC_ENABLE_RSH=1'
+    command += ' -DENABLE_RSH=1'
 if options.runtest_timeout:
-    command += ' -DDIRAC_RUNTEST_TIMEOUT=' + str(options.runtest_timeout)
+    command += ' -DRUNTEST_TIMEOUT=' + str(options.runtest_timeout)
 
 if options.int64:
-    command += ' -DDIRAC_ENABLE_64BIT_INTEGERS=1'
+    command += ' -DENABLE_64BIT_INTEGERS=1'
 if options.check:
-    command += ' -DDIRAC_ENABLE_BOUNDS_CHECK=1'
+    command += ' -DENABLE_BOUNDS_CHECK=1'
 if options.coverage:
-    command += ' -DDIRAC_ENABLE_CODE_COVERAGE=1'
+    command += ' -DENABLE_CODE_COVERAGE=1'
 if options.runtest_timeout_flag:
-    command += ' -DDIRAC_RUNTEST_OWN_TIMEOUT_FLAG=' + str(options.runtest_timeout_flag)
+    command += ' -DRUNTEST_OWN_TIMEOUT_FLAG=' + str(options.runtest_timeout_flag)
 if options.install:
     command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 if options.scratch:
-    command += ' -DDIRAC_SCRATCH_DIR=' + options.scratch
+    command += ' -DSCRATCH_DIR=' + options.scratch
 
 if options.debug:
     command += ' -DCMAKE_BUILD_TYPE=Debug'

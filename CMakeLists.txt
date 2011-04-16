@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 project(DIRAC Fortran C)
 
-set(DIRAC_VERSION_MAJOR 10)
-set(DIRAC_VERSION_MINOR 1)
-set(DIRAC_VERSION_PATCH 0)
+set(VERSION_MAJOR 10)
+set(VERSION_MINOR 1)
+set(VERSION_PATCH 0)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -35,40 +35,40 @@ else()
     message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
 endif()
 
-option(DIRAC_ENABLE_64BIT_INTEGERS "Enable 64-bit integers"    OFF)
-option(DIRAC_ENABLE_PROFILING      "Enable profiling"          OFF)
-option(DIRAC_ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
-option(DIRAC_ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
-option(DIRAC_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
-option(DIRAC_ENABLE_MPI            "Use MPI parallelization"   OFF)
-option(DIRAC_ENABLE_RSH            "Use rsh/rcp for distribution over nodes "   OFF)
-option(DIRAC_ENABLE_XCFUN          "Use XCFun library"         ON)
-option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
-option(DIRAC_ENABLE_TESTS          "Enable make test"          ON)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"    OFF)
+option(ENABLE_PROFILING      "Enable profiling"          OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
+option(ENABLE_EXTERNAL_MATH  "Use external math library" ON)
+option(ENABLE_MPI            "Use MPI parallelization"   OFF)
+option(ENABLE_RSH            "Use rsh/rcp for distribution over nodes "   OFF)
+option(ENABLE_XCFUN          "Use XCFun library"         ON)
+option(ENABLE_UTILITIES      "Compile utilities"         OFF)
+option(ENABLE_TESTS          "Enable make test"          ON)
 option(USE_LOCAL_DISKS             "Use local disks"           ON)
 
-if(DIRAC_ENABLE_TESTS)
+if(ENABLE_TESTS)
     SET(BUILDNAME "${BUILDNAME}" 
             CACHE STRING "Name of build on the dashboard"
         )
     message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
-    if(NOT "${DIRAC_RUNTEST_TIMEOUT}" STREQUAL "")
+    if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
         set(DART_TESTING_TIMEOUT
-            "${DIRAC_RUNTEST_TIMEOUT}"
+            "${RUNTEST_TIMEOUT}"
             CACHE STRING
             "Set timeout in seconds for every single test."
             FORCE
             )
         message("-- DIRAC: DART_TESTING_TIMEOUT (time limit for single test) set to ${DART_TESTING_TIMEOUT}")
     endif()
-    if(NOT "${DIRAC_RUNTEST_NR_PROC}" STREQUAL "")
-        message("-- DIRAC: DIRAC_RUNTEST_NR_PROC set to ${DIRAC_RUNTEST_NR_PROC}")
-        set(DIRAC_RUNTEST_FLAGS "--mpi=${DIRAC_RUNTEST_NR_PROC}" )
-        message("-- DIRAC: RUNTEST_FLAGS set to \"${DIRAC_RUNTEST_FLAGS}\"")
+    if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
+        message("-- DIRAC: RUNTEST_NR_PROC set to ${RUNTEST_NR_PROC}")
+        set(RUNTEST_FLAGS "--mpi=${RUNTEST_NR_PROC}" )
+        message("-- DIRAC: RUNTEST_FLAGS set to \"${RUNTEST_FLAGS}\"")
     endif()
-    if(NOT "${DIRAC_RUNTEST_OWN_TIMEOUT_FLAG}" STREQUAL "")
-        set(DIRAC_RUNTEST_TIMEOUT_FLAG "--timeout=${DIRAC_RUNTEST_OWN_TIMEOUT_FLAG}")
-        message("-- DIRAC: RUNTEST_TIMEOUT_FLAG set to \"${DIRAC_RUNTEST_TIMEOUT_FLAG}\"")
+    if(NOT "${RUNTEST_OWN_TIMEOUT_FLAG}" STREQUAL "")
+        set(RUNTEST_TIMEOUT_FLAG "--timeout=${RUNTEST_OWN_TIMEOUT_FLAG}")
+        message("-- DIRAC: RUNTEST_TIMEOUT_FLAG set to \"${RUNTEST_TIMEOUT_FLAG}\"")
     endif()
     include(CTest)
     enable_testing()
@@ -80,11 +80,11 @@ if(DIRAC_ENABLE_TESTS)
 endif()
 
 add_definitions(-DPRG_DIRAC)
-if(DIRAC_ENABLE_64BIT_INTEGERS)
+if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
 endif()
 
-set(DIRAC_WORK_MEM_WORDS
+set(WORK_MEM_WORDS
     "64000000"
     CACHE STRING
     "DIRAC work memory in words"
@@ -103,27 +103,27 @@ else()
     endif()
 endif()
 
-if(NOT DIRAC_SCRATCH_DIR)
+if(NOT SCRATCH_DIR)
     # use default
-    set(DIRAC_SCRATCH_DIR "${DEFAULT_SCRATCH_BASE_DIR}/DIRAC_scratch_$ENV{USER}")
+    set(SCRATCH_DIR "${DEFAULT_SCRATCH_BASE_DIR}/scratch_$ENV{USER}")
 else()
     # use the one chosen by user
-    set(DIRAC_SCRATCH_DIR "${DIRAC_SCRATCH_DIR}")
+    set(SCRATCH_DIR "${SCRATCH_DIR}")
 endif()
 
 # set scratch directory
-set(DIRAC_SCRATCH_DIR
-    "${DIRAC_SCRATCH_DIR}"
+set(SCRATCH_DIR
+    "${SCRATCH_DIR}"
     CACHE STRING
     "DIRAC scratch directory"
     FORCE
     )
 
-message("-- DIRAC: DIRAC_SCRATCH_DIR is \"${DIRAC_SCRATCH_DIR}\"")
-file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${DIRAC_SCRATCH_DIR}")
+message("-- DIRAC: SCRATCH_DIR is \"${SCRATCH_DIR}\"")
+file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
 
 
-if(NOT DIRAC_ENABLE_RSH)
+if(NOT ENABLE_RSH)
 #  assign/find ssh/scp
      find_program(SCP_EXECUTABLE scp)
      if(SCP_EXECUTABLE)
@@ -178,7 +178,7 @@ if(PBS_ENVIRONMENT)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nMACH_FILE=$PBS_NODEFILE")
 endif()
 
-add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
+add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
 include(Compilers)
@@ -187,7 +187,7 @@ set(LIBS)
 
 include(Math)
 
-if(DIRAC_ENABLE_MPI)
+if(ENABLE_MPI)
     find_package(MPI)
     if(MPI_FOUND)
         add_definitions(-DVAR_MPI)
@@ -225,7 +225,7 @@ set(GENERATED_FILES
     ${PROJECT_SOURCE_DIR}/gp/compinfo.h
     )
 
-set(DIRAC_INTERFACES_LIST
+set(INTERFACES_LIST
     ${GENERATED_FILES}
     )
 
@@ -243,10 +243,10 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-if(DIRAC_ENABLE_XCFUN)
+if(ENABLE_XCFUN)
     add_subdirectory(xcfun)
-    set(DIRAC_INTERFACES_LIST
-        ${DIRAC_INTERFACES_LIST}
+    set(INTERFACES_LIST
+        ${INTERFACES_LIST}
         xcfun
         )
     set(LIBS
@@ -258,13 +258,13 @@ endif()
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
-    ${DIRAC_INTERFACES_LIST}
+    ${INTERFACES_LIST}
 )
 
 add_executable(dirac.x
-    ${DIRAC_C_SOURCES}
-    ${DIRAC_FREE_FORTRAN_SOURCES}
-    ${DIRAC_FIXED_FORTRAN_SOURCES}
+    ${C_SOURCES}
+    ${FREE_FORTRAN_SOURCES}
+    ${FIXED_FORTRAN_SOURCES}
     ${GENERATED_FILES}
     )
 
@@ -283,7 +283,7 @@ target_link_libraries(
 
 include(Install)
 
-if(DIRAC_ENABLE_UTILITIES)
+if(ENABLE_UTILITIES)
     add_executable(dirac_mointegral_export.x
         ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90
         )
@@ -374,11 +374,11 @@ set(CPACK_PACKAGE_VENDOR "T. Saue, L. Visscher, H. J. Aa. Jensen, and contributo
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_VERSION_MAJOR    "${DIRAC_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR    "${DIRAC_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH    "${DIRAC_VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION_MAJOR    "${VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR    "${VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH    "${VERSION_PATCH}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
-    "DIRAC ${DIRAC_VERSION_MAJOR}.${DIRAC_VERSION_MINOR}.${DIRAC_VERSION_PATCH}"
+    "DIRAC ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
     )
 
 include(CPack)
