@@ -84,12 +84,13 @@ endif()
 include(CTest)
 enable_testing()
 
+# set work memory
 set(WORK_MEM_WORDS
     "64000000"
     CACHE STRING
-    "DIRAC work memory in words"
-    FORCE
+    "Work memory in words"
     )
+add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 # find a good default scratch base directory
 foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
@@ -107,32 +108,27 @@ set(SCRATCH_DIR
     FORCE
     )
 
+# configure Makefile.config
 file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
-
 find_program(PROFILER gprof)
 if(PROFILER)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nPROFILER=${PROFILER}")
 endif()
-
 find_program(VALGRIND_EXECUTABLE valgrind)
 if(VALGRIND_EXECUTABLE)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nVALGRIND=${VALGRIND_EXECUTABLE}")
 endif()
-
 if(ENABLE_LOCAL_DISKS)
     add_definitions(-DSYS_LOCALDISKS)
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=yes")
 else()
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nLOCALDISKS=no")
 endif()
-
 find_program(PBS_ENVIRONMENT pbsnodes)
 if(PBS_ENVIRONMENT)
     # this is a PBS batch system
     file(APPEND ${PROJECT_SOURCE_DIR}/Makefile.config "\nMACH_FILE=$PBS_NODEFILE")
 endif()
-
-add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
 include(Compilers)
