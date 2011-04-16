@@ -6,7 +6,7 @@ stallo (x86_64 linux cluster) 2011-02-20
 ----------------------------------------
 $ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake
 $ ./setup --fc=mpif90 --cc=mpicc --mpi
-$ cd cbuild
+$ cd build
 $ make
 $ cmake -DCMAKE_INSTALL_PREFIX=/global/apps/dirac/latest ..
 $ make install
@@ -15,7 +15,7 @@ titan (x86_64 linux cluster) 2011-02-20
 ---------------------------------------
 $ module load intel/11.1 openmpi/1.4.3.intel cmake/2.6.4
 $ ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/site/Goto-library/AuthenticAMD-x86_64/ifort/ -lblas -L/site/Goto-library/AuthenticAMD-x86_64/ifort/ -llapack"
-$ cd cbuild
+$ cd build
 $ make
 $ cmake -DCMAKE_INSTALL_PREFIX=/home/bast/bin/dirac ..
 $ make install
@@ -23,7 +23,7 @@ $ make install
 larry (i686 laptop running ubuntu) 2011-02-20
 ---------------------------------------------
 $ ./setup --fc=ifort --cc=icc
-$ cd cbuild
+$ cd build
 $ make
 
 thor (laptop running suse; cmake 2.8.3) 2011-02-20
@@ -35,12 +35,12 @@ $ make
 ilias@frpd2.utcpd.sk (Lunix x86_64) 2011-02-21
 ----------------------------------------------
 $ ./setup --fc=g95 --cc=gcc-4.2 --int64 --nomath
-$ cd cbuild
+$ cd build
 $ cmake ..
 $ make
 
 ilias@miro.pd.uniza.sk (Lunix x86_64) 2011-03-08
 ------------------------------------------------
 $ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --nomath --mpi
-$ cd cbuild
+$ cd build
 $ make

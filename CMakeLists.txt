@@ -208,7 +208,7 @@ add_custom_command(
 
 add_executable(
     gen_fortran_interface_h
-    ${PROJECT_SOURCE_DIR}/build/gen_fortran_interface_h.c
+    ${PROJECT_SOURCE_DIR}/cbuild/gen_fortran_interface_h.c
     )
 
 add_custom_command(

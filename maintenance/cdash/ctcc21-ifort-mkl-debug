@@ -14,7 +14,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/opt/intel/mkl/lib/ia32'
 
 ./setup --fc=ifort --cc=icc --debug --scratch=$SCRATCH_DIR --buildname="linux-ifort-mkl-debug" --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread"
 
-cd $TMP_DIR/cbuild
+cd $TMP_DIR/build
 make Nightly
 
 rm -rf $TMP_DIR $SCRATCH_DIR

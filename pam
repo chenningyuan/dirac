@@ -192,10 +192,10 @@ class pam_enviroment:
         if os.path.isfile(install_dir_default + '/dirac.x'):
             self.dirac_exe = install_dir_default + '/dirac.x'
         else:
-            # does not exist, try cbuild directory
-            if os.path.isfile(install_dir_default + '/cbuild/dirac.x'):
-                # assign cbuild/dirac.x
-                self.dirac_exe = install_dir_default + '/cbuild/dirac.x'
+            # does not exist, try build directory
+            if os.path.isfile(install_dir_default + '/build/dirac.x'):
+                # assign build/dirac.x
+                self.dirac_exe = install_dir_default + '/build/dirac.x'
 
     # nice command - priority (nice/npri)
 

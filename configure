@@ -851,9 +851,9 @@ if [ "$mesp" = "mpi" ]; then
   esac
 
  $echo "\nChecking if a MPI-2 version is installed:"
-  echo "   $comptst ./build/MPI2_test.F"
+  echo "   $comptst ./cbuild/MPI2_test.F"
   mpi2version="yes"
-  $comptst ./build/MPI2_test.F 2>/dev/null || mpi2version="no"
+  $comptst ./cbuild/MPI2_test.F 2>/dev/null || mpi2version="no"
   rm -f a.out
   if [ "$mpi2version" = "no" ]; then
     echo  " "
@@ -2414,8 +2414,8 @@ get_largefiles(){
 
 checkmods()
 {
-    if [ ! -r build/Makefile.moddef ]; then
-	echo "Error, cannot find the file: build/Makefile.moddef" >&2
+    if [ ! -r cbuild/Makefile.moddef ]; then
+	echo "Error, cannot find the file: cbuild/Makefile.moddef" >&2
 	echo 'You must run "pamadm" before "configure" to correct this problem. Quitting.' >&2
 	kill $$ # Suicide is painless, it brings on many changes
     fi
@@ -2793,7 +2793,7 @@ cat <<EOF > Makefile.config
 INSTALL_DIR=$INSTALL_DIR
 SRC_DIR=$SRC_DIR
 # preprocessor flags for active modules, svn snapshot variable
-include \$(SRC_DIR)/build/Makefile.moddef
+include \$(SRC_DIR)/cbuild/Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
 # scratch directory, the same as in "pam", from where it is used

@@ -31,7 +31,7 @@ cd $TMP_DIR
   ./setup --fc=ifort --cc=icc --math="-L/opt/intel/mkl/lib/ia32 -lmkl_lapack95 -lmkl_intel -lmkl_intel_thread -lmkl_core -liomp5 -lpthread" --buildname="linux.intel12.mkl"
 # ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack" --buildname="linux.gfortran.atlas.mpi"
 
-cd $TMP_DIR/cbuild
+cd $TMP_DIR/build
 # build and run tests
 # use either Experimental or Nightly
   make Experimental

@@ -15,8 +15,8 @@ ALLFILES:=$(wildcard *.F *.f90 *.F90 *.c)
 SRC:=$(addprefix $(HERE)/,$(ALLFILES))
 F77SRC:=$(addprefix $(HERE)/,$(F77FILES))
 # strip out files in "dontbuild"
-SRC:=$(foreach FILE,$(SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/build/dontbuild && echo $(FILE)))
-F77SRC:=$(foreach FILE,$(F77SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/build/dontbuild && echo $(FILE)))
+SRC:=$(foreach FILE,$(SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/cbuild/dontbuild && echo $(FILE)))
+F77SRC:=$(foreach FILE,$(F77SRC),$(shell echo $(FILE) | egrep -v -f $(BACK)/cbuild/dontbuild && echo $(FILE)))
 
 default:
 	@make -C$(BACK)

@@ -19,9 +19,9 @@ cd $TMP_DIR
 
 ./setup --fc=mpif90 --cc=mpicc --mpi --math="-L/global/apps/intel/mkl/10.2.0.013/lib/em64t -lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread" --buildname="linux.intel11.1.mkl.mpi" --runtest_mpi=8 --runtest_timeout=1000
 
-ln -s $TMP_DIR/cbuild/dirac.x $TMP_DIR/dirac.x
+ln -s $TMP_DIR/build/dirac.x $TMP_DIR/dirac.x
 
-cd $TMP_DIR/cbuild
+cd $TMP_DIR/build
 
 make Nightly
 

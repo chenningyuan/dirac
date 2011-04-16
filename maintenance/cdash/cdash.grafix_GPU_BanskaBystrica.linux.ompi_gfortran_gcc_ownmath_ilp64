@@ -29,7 +29,7 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 # configure step
 ./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --nomath  --buildname="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2   --scratch="/tmp" --runtest_timeout_flag="00:18:00"
 
-cd $DIRAC/cbuild
+cd $DIRAC/build
 
 make clean
 make Experimental

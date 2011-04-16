@@ -10,7 +10,7 @@ cd $TMP_DIR
 ./pamadm -a --xcfun
 ./setup --fc=gfortran --cc=gcc --debug --scratch=$SCRATCH_DIR --buildname="linux-gfortran-atlas-debug" --debug
 
-cd $TMP_DIR/cbuild
+cd $TMP_DIR/build
 make Nightly
 
 rm -rf $TMP_DIR $SCRATCH_DIR
