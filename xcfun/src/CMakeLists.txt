@@ -37,7 +37,6 @@ add_custom_command (
 		${CMAKE_CURRENT_BINARY_DIR}/fortran/xcfun_autogen.F90
 	DEPENDS 
 		${CMAKE_CURRENT_BINARY_DIR}/include
-		${CMAKE_CURRENT_BINARY_DIR}/fortran
 		geninterface 
 		functionals/list_of_parameters.h 
 		${PROJECT_SOURCE_DIR}/include/xcfun.h
