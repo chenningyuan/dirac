@@ -108,25 +108,6 @@ set(SCRATCH_DIR
     FORCE
     )
 
-# configure Makefile.config
-file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
-find_program(PROFILER gprof)
-find_program(VALGRIND_EXECUTABLE valgrind)
-if(ENABLE_LOCAL_DISKS)
-    add_definitions(-DSYS_LOCALDISKS)
-    set(LOCALDISKS "yes")
-else()
-    set(LOCALDISKS "no")
-endif()
-find_program(PBS_ENVIRONMENT pbsnodes)
-if(PBS_ENVIRONMENT)
-    set(MACHFILE "$PBS_NODEFILE")
-endif()
-configure_file(
-    ${CMAKE_SOURCE_DIR}/Makefile.config.in
-    ${CMAKE_SOURCE_DIR}/Makefile.config
-    )
-
 include(Archs)
 include(Compilers)
 
@@ -178,18 +159,8 @@ add_executable(
     ${PROJECT_SOURCE_DIR}/cbuild/gen_fortran_interface_h.c
     )
 
-add_custom_command(
-    OUTPUT
-    ${PROJECT_SOURCE_DIR}/gp/compinfo.h
-    DEPENDS
-    ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py
-    COMMAND
-    python ${PROJECT_SOURCE_DIR}/utils/generate_compinfo.py --fc=${CMAKE_Fortran_COMPILER} --cc=${CMAKE_C_COMPILER} --libs="${LIBS}" > ${PROJECT_SOURCE_DIR}/gp/compinfo.h
-    )
-
 set(GENERATED_FILES
     ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
-    ${PROJECT_SOURCE_DIR}/gp/compinfo.h
     )
 
 set(INTERFACES_LIST
@@ -221,6 +192,31 @@ if(ENABLE_XCFUN)
         xcfun
         )
 endif()
+
+# configure Makefile.config
+file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
+find_program(PROFILER gprof)
+find_program(VALGRIND_EXECUTABLE valgrind)
+if(ENABLE_LOCAL_DISKS)
+    add_definitions(-DSYS_LOCALDISKS)
+    set(LOCALDISKS "yes")
+else()
+    set(LOCALDISKS "no")
+endif()
+find_program(PBS_ENVIRONMENT pbsnodes)
+if(PBS_ENVIRONMENT)
+    set(MACHFILE "$PBS_NODEFILE")
+endif()
+configure_file(
+    ${CMAKE_SOURCE_DIR}/Makefile.config.in
+    ${CMAKE_SOURCE_DIR}/Makefile.config
+    )
+
+# configure compinfo.h
+configure_file(
+    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in
+    ${CMAKE_SOURCE_DIR}/gp/compinfo.h
+    )
 
 add_custom_target(dirac_interfaces
     ALL
