@@ -99,34 +99,21 @@ set(WORK_MEM_WORDS
     )
 
 # find a good default scratch base directory
-# first try scratch/, then work/, then tmp/
-if(EXISTS "/scratch/")
-    set(DEFAULT_SCRATCH_BASE_DIR "/scratch")
-else()
-    if(EXISTS "/work/")
-        set(DEFAULT_SCRATCH_BASE_DIR "/work")
-    else()
-        set(DEFAULT_SCRATCH_BASE_DIR "/tmp")
-    endif()
-endif()
-
-if(NOT SCRATCH_DIR)
-    # use default
-    set(SCRATCH_DIR "${DEFAULT_SCRATCH_BASE_DIR}/scratch_$ENV{USER}")
-else()
-    # use the one chosen by user
-    set(SCRATCH_DIR "${SCRATCH_DIR}")
-endif()
+foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
+   if(EXISTS "${dir}/")
+       set(DEFAULT_SCRATCH_BASE_DIR ${dir})
+       break()
+   endif()
+endforeach()
 
 # set scratch directory
 set(SCRATCH_DIR
-    "${SCRATCH_DIR}"
+    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch"
     CACHE STRING
-    "DIRAC scratch directory"
+    "Default scratch directory"
     FORCE
     )
 
-message("-- DIRAC: SCRATCH_DIR is \"${SCRATCH_DIR}\"")
 file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
 
 find_program(PROFILER gprof)
