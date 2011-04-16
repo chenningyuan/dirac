@@ -21,8 +21,7 @@ if(ENABLE_EXTERNAL_MATH)
         set(MATH_FOUND TRUE)
     endif()
 
-    # try to find the best library using environment variables MATH_ROOT or
-    # BLAS_ROOT and LAPACK_ROOT
+    # try to find the best library using environment variables
     if(NOT MATH_FOUND)
         find_package(BLAS)
         find_package(LAPACK)
@@ -41,18 +40,11 @@ if(ENABLE_EXTERNAL_MATH)
             ${MATH_LIBS}
             )
     else()
-        message("-- No external math libraries found - defaulting to own math libraries")
+        message("-- No external math libraries found")
     endif()
-if (ENABLE_CUDA)
-	find_package(CUDA)
-endif ()
 
-endif()
+    if(ENABLE_CUDA)
+        find_package(CUDA)
+    endif()
 
-if(NOT MATH_FOUND)
-    message("-- Using own BLAS and LAPACK math")
-    add_definitions(-DDIRAC_USE_BLAS)
-    add_definitions(-DDIRAC_USE_DLAMCH)
-    add_definitions(-DDIRAC_USE_DLAPACK)
-    add_definitions(-DDIRAC_USE_ZLAPACK)
 endif()

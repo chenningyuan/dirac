@@ -4,7 +4,7 @@ message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_I
 # Fortran compilers
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    set(CMAKE_Fortran_FLAGS         "-fcray-pointer -fbacktrace")
+    set(CMAKE_Fortran_FLAGS         "-fcray-pointer -fbacktrace -DVAR_GFORTRAN")
                                    # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
@@ -47,7 +47,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
+    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
     if(ENABLE_64BIT_INTEGERS)
@@ -63,8 +63,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    add_definitions(-DVAR_PGF90)
-    set(CMAKE_Fortran_FLAGS         " ")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     if(ENABLE_64BIT_INTEGERS)
