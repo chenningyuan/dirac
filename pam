@@ -142,10 +142,6 @@ class pam_enviroment:
     #   this variable is also read from Makefile.config and perhaps changed
         self.localdisks = False
 
-    #   command to pass the location of the scratch directory to the slaves (to be set by configure)
-
-        self.argument_to_pass_scratch_dir_to_slaves = ''
-
     #   restrict distribution of working files over nodes by own flag/variable
  
         self.distribute = []
@@ -156,6 +152,9 @@ class pam_enviroment:
     # machine file
 
         self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
+
+    # argument to pass the scratch directory location on to the nodes (rarely needed)
+        self.argument_to_pass_scratch_dir_to_slaves = None
 
     # master name,IP
 
@@ -599,6 +598,17 @@ class pam_enviroment:
             metavar='STRING',
             )
 
+        group.add_option(
+            '--mpi-workdir-argument',
+            type='string',
+            action='store',
+            dest='dest_mpi_workdir_argument',
+            default=None,
+            help='''option to explicitly pass the scratch directory name on to the slaves 
+                                    (\"wd\" for MPICH2/Intel MPI, \"wdir\" for Open MPI).''',
+            metavar='STRING',
+            )
+
         help_machfile="""specify a machinefile for a parallel run 
                          [default: %default]
                   """
@@ -805,6 +815,10 @@ class pam_enviroment:
 
             if options.dest_machfile:
                 self.machinefile = options.dest_machfile
+
+            if options.dest_mpi_workdir_argument:
+                self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
+
 
         if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
@@ -1212,11 +1226,6 @@ class pam_enviroment:
             elif name == 'LOCALDISKS':
                 if value == 'yes':
                     self.localdisks = True
-            elif name == 'MPI_PASS_SCRATCH_ARGUMENT':
-                if self.localdisks:
-                    localdisks_pass_scratch_temp = value
-                    self.argument_to_pass_scratch_dir_to_slaves = \
-                        localdisks_pass_scratch_temp
             elif name == 'MACH_FILE':
                 self.machinefile = value
             elif name == 'RCP':
@@ -1226,8 +1235,8 @@ class pam_enviroment:
 
     def write_into_output(self):
         """
-        Write useful info at the beginning of te output file - size of
-        all static allocation, for example
+        Write useful info at the beginning of the output file - size of
+        all static allocations, for example
         """
 
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')

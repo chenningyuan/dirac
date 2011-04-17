@@ -889,30 +889,6 @@ if [ $IPRINT -ge "7" ];  then
   echo '... after mpi stuff' 
 fi
 } # END mpi2check ()
-mpivendor_check () {
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#  Check "vendor" of MPI library 
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-mpivendor=" "
-if [ "$mesp" = "mpi" ]; then
-
-  mpi_wrkdir_arg=""
-  if [ "$localdisks" = "yes" ]; then
-    mpi_wrkdir_arg="wd"
-#$echo "\nChecking for MPI library distributor other than MPICH(2), Intel MPI, Bull MPI or IBM MPI."
-#$echo "\nthis should tell us what command to use for passing the work directory argument to mpirun."
-    $echo $mpirun --version > ./mpivendor_check.txt
-    chmod u+x ./mpivendor_check.txt
-    ./mpivendor_check.txt 2>./mpivendor_check.out
-    grep -i 'Open MPI' ./mpivendor_check.out 2>/dev/null || mpi_wrkdir_arg="wdir"
-    $echo "set mpi_wrkdir_arg found: "$mpi_wrkdir_arg
-    rm -f ./mpivendor_check.txt 
-    rm -f ./mpivendor_check.out
-  fi
-fi
-} # END mpi2check ()
 
 
 find_mpi_path () {
@@ -2714,7 +2690,6 @@ arflag=
 # Parallel preprocessor directive need to be set
 set_compile_flags
 mpi2check
-mpivendor_check
 get_largefiles
 
 # given that all unix clones like linux, *bsd and mac osx have no
@@ -2806,8 +2781,6 @@ DEBUGGER=$debug
 RCP=$rcp
 RSH=$rsh
 LOCALDISKS=$localdisks
-# in case we have local disks we need to pass the work directory to the slaves as well...
-MPI_PASS_SCRATCH_ARGUMENT=$mpi_wrkdir_arg
 # default machine file - either for mpirun or for copying files onto local disks or for both
 MACH_FILE=$mach_file
 #  valgrind debugging and checking tool - check it according to your machine installation
