@@ -38,12 +38,11 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
-    include(Sources)
-    include(Definitions)
-    include(Tests)
 else()
     message(FATAL_ERROR "could not find cmake/Sources.cmake and/or cmake/Definitions.cmake and/or cmake/Tests.cmake; run pamadm first")
 endif()
+
+include(Definitions)
 
 option(ENABLE_EXTERNAL_MATH  "Enable external math library"  ON)
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
@@ -58,32 +57,30 @@ option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 
-# cdash options
-#upcoming changes: rename BUILDNAME to CDASH_BUILDNAME
-#                  remove RUNTEST_TIMEOUT (can be triggered by DART_TESTING_TIMEOUT)
-#                  rename RUNTEST_OWN_TIMEOUT_FLAG to RUNTEST_TIMEOUT
-SET(BUILDNAME "${BUILDNAME}" 
-        CACHE STRING "Name of build on the dashboard"
+# set cdash buildname
+set(BUILDNAME
+    "BUILDNAME-not-set"
+    CACHE STRING
+    "Name of build on the dashboard"
     )
-message("-- DIRAC: BUILDNAME is \"${BUILDNAME}\"")
-if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
-    set(DART_TESTING_TIMEOUT
-        "${RUNTEST_TIMEOUT}"
-        CACHE STRING
-        "Set timeout in seconds for every single test."
-        FORCE
-        )
-    message("-- DIRAC: DART_TESTING_TIMEOUT (time limit for single test) set to ${DART_TESTING_TIMEOUT}")
-endif()
+
+# set ctest own timeout
+set(DART_TESTING_TIMEOUT
+    "1200"
+    CACHE STRING
+    "Set timeout in seconds for every single test"
+    )
+
+# set additional runtest flags
+set(RUNTEST_FLAGS "")
 if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
-    message("-- DIRAC: RUNTEST_NR_PROC set to ${RUNTEST_NR_PROC}")
-    set(RUNTEST_FLAGS "--mpi=${RUNTEST_NR_PROC}" )
-    message("-- DIRAC: RUNTEST_FLAGS set to \"${RUNTEST_FLAGS}\"")
+    set(RUNTEST_FLAGS "${RUNTEST_FLAGS} --mpi=${RUNTEST_NR_PROC}")
 endif()
-if(NOT "${RUNTEST_OWN_TIMEOUT_FLAG}" STREQUAL "")
-    set(RUNTEST_TIMEOUT_FLAG "--timeout=${RUNTEST_OWN_TIMEOUT_FLAG}")
-    message("-- DIRAC: RUNTEST_TIMEOUT_FLAG set to \"${RUNTEST_TIMEOUT_FLAG}\"")
+if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
+    set(RUNTEST_FLAGS "${RUNTEST_FLAGS} --timeout=${RUNTEST_TIMEOUT}")
 endif()
+
+include(Tests)
 include(CTest)
 enable_testing()
 
@@ -117,13 +114,13 @@ include(Compilers)
 set(LIBS)
 
 include(Math)
-if(NOT MATH_FOUND) 
-    message("-- Using own BLAS and LAPACK math") 
-    add_definitions(-DDIRAC_USE_BLAS) 
-    add_definitions(-DDIRAC_USE_DLAMCH) 
-    add_definitions(-DDIRAC_USE_DLAPACK) 
-    add_definitions(-DDIRAC_USE_ZLAPACK) 
-endif() 
+if(NOT MATH_FOUND)
+    message("-- Using own BLAS and LAPACK math")
+    add_definitions(-DDIRAC_USE_BLAS)
+    add_definitions(-DDIRAC_USE_DLAMCH)
+    add_definitions(-DDIRAC_USE_DLAPACK)
+    add_definitions(-DDIRAC_USE_ZLAPACK)
+endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
@@ -227,6 +224,7 @@ add_custom_target(dirac_interfaces
     ${INTERFACES_LIST}
 )
 
+include(Sources)
 add_executable(dirac.x
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
