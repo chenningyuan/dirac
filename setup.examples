@@ -32,14 +32,14 @@ $ ./setup --fc=gfortran --cc=gcc --prefix="/home/stefan/prog/dirac/seriell/mytru
 $ cd build_gfort_seq
 $ make
 
-ilias@frpd2.utcpd.sk (Lunix x86_64) 2011-02-21
+ilias@frpd2.utcpd.sk (linux x86_64) 2011-02-21
 ----------------------------------------------
 $ ./setup --fc=g95 --cc=gcc-4.2 --int64 --nomath
 $ cd build
 $ cmake ..
 $ make
 
-ilias@miro.pd.uniza.sk (Lunix x86_64) 2011-03-08
+ilias@miro.pd.uniza.sk (linux x86_64) 2011-03-08
 ------------------------------------------------
 $ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --nomath --mpi
 $ cd build
