@@ -1,0 +1,209 @@
+
+
+Table of contents
+-----------------
+
+ 1. Configure vs. cmake for users
+ 2. Configure vs. cmake for developers
+ 3. Quick start into cmake
+ 4. Building using the setup script
+ 5. Building without the setup script
+ 6. Out of source compilation
+ 7. Compiling in verbose mode
+ 8. Compiling on many cores
+ 9. Running cmake using GUI
+10. Running tests (currently only DIRAC)
+11. Building utilities (currently only DIRAC)
+12. Creating DEB, RPM, and other packages (currently only DIRAC)
+13. Make install (currently only DIRAC)
+
+
+ 1. Configure vs. cmake for users
+    -----------------------------
+
+You have two methods to build the source code, either using the configure
+script:
+   $ ./configure; make
+or using cmake:
+   $ ./setup [--flags]; cd build; make
+
+The configure script configures a prepared Makefile, whereas cmake creates a
+new Makefile based on default parameters which can be modified.
+
+Advantages of using cmake:
+ - Configuration and build process is truly cross-platform.
+ - It is possible to configure and build the source code without having to
+   answer questions.
+ - Better detection of MPI/OpenMP and math libraries.
+ - Cross-platform user interface to modify configuration parameters including a
+   GUI.
+
+
+ 2. Configure vs. cmake for developers
+    ----------------------------------
+
+Disadvantages of the present configure script:
+ - It is *not* cross-platform, for instance it cannot be used on Microsoft OS.
+ - Configuring a large source code containing Fortran, C, and C++, linking to
+   math and MPI/OpenMP libraries is a highly nontrivial problem. Therefore the
+   configure script is (has to be) very complicated.
+ - Platforms and limitations come and go and it is hard to keep up with the
+   developments.  Therefore the configure script contains a significant amount
+   of outdated information.
+ - Significant amount of code and complication is devoted to implement a
+   cross-platform user interface.
+ - Detection of math libraries and available compilers is not ideal.
+ - Objects are built in-source, polluting the source tree. This means that you
+   cannot build several binaries (parallel, sequential, debug, release) using
+   the same source without a complete recompilation.
+ - Hard to learn and hard to maintain.
+
+Advantages of using cmake:
+ - It is easier to add new modules and external code parts to the build,
+   basically with a one-liner.
+ - Cross-platform.
+ - User interface (command line, terminal menu, GUI) for free.
+ - Easy to learn and easy to maintain.
+ - Out of source compilation. You can build several binaries (parallel,
+   sequential, debug, release, gfortran, ifort) using the same source. This is
+   invaluable for code development.
+ - You can create DEB, RPM, TGZ, ... packages with a one-liner.
+ - ctest/cdash makes it easy to implement nightly build dashboards (see for
+   instance http://repo.ctcc.no/CDash/index.php?project=DIRAC).
+
+
+ 3. Quick start into cmake
+    ----------------------
+
+First install cmake, on ubuntu/debian:
+   $ sudo apt-get install cmake
+On many clusters you need to load cmake:
+   $ module load cmake
+
+Now:
+   $ ./pamadm --a [--xcfun]
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ make
+
+There is nothing special about the directory "build".
+You can do this instead:
+   $ ./pamadm --a [--xcfun]
+   $ mkdir /buildpath
+   $ cd /buildpath
+   $ cmake /sourcepath
+   $ make
+
+
+ 4. Building using the setup script
+    -------------------------------
+
+The setup script is a useful front-end to cmake.
+It does nothing else than creating the directory "build" and calling
+cmake with appropriate environment variables and flags:
+   $ ./setup [--flags]
+   $ cd build
+   $ make
+Call setup without flags to see all available options:
+   $ ./setup
+You can see the command using:
+   $ ./setup [--flags] --show
+and use it directly to call cmake without setup.
+
+
+ 5. Building without the setup script
+    ---------------------------------
+
+The setup script does nothing else than calling cmake with appropriate
+environment variables and flags.  The two following strategies are completely
+equivalent:
+
+Using cmake directly:
+   $ mkdir build
+   $ cd build
+   $ FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 ..
+   $ make
+
+Using setup:
+   $ ./setup --fc=mpif90 --cc=mpicc --mpi
+   $ cd build
+   $ make
+
+
+ 6. Out of source compilation
+    -------------------------
+
+By default cmake builds out of source. This is a very good thing.
+You can build several binaries with the same source:
+   $ cd /sourcepath
+   $ ./setup --fc=gfortran --cc=gcc --prefix=/gfortran-buildpath
+   $ cd /gfortran-builddir
+   $ make
+   $ cd /sourcepath
+   $ ./setup --fc=ifort --cc=icc --prefix=/ifort-buildpath
+   $ cd /ifort-buildpath
+   $ make
+
+
+ 7. Compiling in verbose mode
+    -------------------------
+
+Sometimes you want to see the actual compiler flags and definitions:
+   $ make VERBOSE=1
+
+
+ 8. Compiling on many cores
+    -----------------------
+
+Yes, it works. Try:
+   $ make -j4
+
+
+ 9. Running cmake using GUI
+    -----------------------
+
+You prefer GUI? No problem. You can configure with GUI:
+   $ cd build
+   $ cmake ..
+   $ cmake-gui ..
+You may have to install cmake-gui for it, on debian/ubuntu:
+   $ sudo apt-get install cmake cmake-gui
+
+
+10. Running tests (currently only DIRAC)
+    -------------
+
+You can run the test suite with:
+   $ make test
+
+
+11. Building utilities (currently only DIRAC)
+    ------------------
+
+   $ cd build
+   $ cmake ..
+   $ ccmake ..
+Now set ENABLE_UTILITIES to ON, [c]onfigure, then [g]enerate and exit, and finally
+   $ make
+Now you have the utilities!
+
+
+12. Creating DEB, RPM, and other packages (currently only DIRAC)
+    -------------------------------------
+
+Configure and build the source, then:
+   $ cpack -G DEB
+or
+   $ cpack -G RPM
+Always use the help that is available:
+   $ cpack --help
+
+
+13. Make install (currently only DIRAC)
+    ------------
+
+Make install is very useful to make DIRAC available to other users on the same
+machine:
+   $ cmake -DCMAKE_INSTALL_PREFIX=/path /path/to/source
+   $ make install
