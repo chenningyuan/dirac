@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# example recipe to build and run tests for CDash
-# you can either run this script interactively with "make Experimental" (to calibrate it)
-# or execute it as a cron job with "make Nightly"
-# make sure cmake is installed before you run it
-
 # miro: modified to local update&build
 source ~/.bashrc
 
@@ -14,19 +9,19 @@ DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_IL
 # go to the local DIRAC directory
 cd $DIRAC
 
-# svn update, pamadm 
-svn up 
-# ...
+# radovan: bad idea, use svn co, not svn up
+svn up
+
 ./pamadm -a --xcfun --minus --openrsp
 
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  --buildname="linux.g95.gcc.ilp64.ownlibs.noopt" --scratch="/var/tmp"
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs.noopt" --scratch="/var/tmp"
 
 cd $DIRAC/build
 
-# build and run tests
-# use either Experimental or Nightly
   make clean
-  make Experimental 
+  make Experimental
+  make Experimental
+# radovan: use Nighly, not Experimental
 
 exit 0

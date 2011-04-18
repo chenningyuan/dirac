@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# example recipe to build and run tests for CDash
-# you can either run this script interactively with "make Experimental" (to calibrate it)
-# or execute it as a cron job with "make Nightly"
-# make sure cmake is installed before you run it
-
 # FYI:  crontab inscription:
 #05 04 * * 1,2,3,4,5,6,7 timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64/maintenance/cdash; $DIRAC/cdash.grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64  >  $DIRAC/cdash_buildup_log_$timestamp
 
@@ -20,19 +15,18 @@ DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
 # go to the local DIRAC directory
 cd $DIRAC
 
-#  update, pamadm 
-#git stash
+# radovan: bad idea, use git clone or svn co
 git svn rebase
+
 ./pamadm -a --xcfun 
 
 OMPI=/home/milias/bin/openmpi_ilp64/bin
 # configure step
-./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --nomath  --buildname="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" --runtest_mpi=2   --scratch="/tmp" --runtest_timeout_flag="00:18:00"
+./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --nomath  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   --scratch="/tmp" -D RUNTEST_TIMEOUT="00:18:00"
 
 cd $DIRAC/build
-
 make clean
 make Experimental
-#  make Nightly
+# radovan: use Nighly, not Experimental
 
 exit 0

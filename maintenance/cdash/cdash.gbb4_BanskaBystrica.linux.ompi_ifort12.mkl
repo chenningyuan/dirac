@@ -31,16 +31,14 @@ cd $DIRAC
 ./pamadm -a --xcfun
 
 # setup, no --debug
-./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" --buildname="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" --runtest_mpi=2 --int64 --runtest_timeout=1200
+./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64
 
 cd $DIRAC/build
 
 make clean
 
-#make -j 2
-
-#make Nightly
 make Experimental
+# radovan: run Nightly, not Experimental
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
