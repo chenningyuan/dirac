@@ -208,7 +208,7 @@ else()
 endif()
 find_program(PBS_ENVIRONMENT pbsnodes)
 if(PBS_ENVIRONMENT)
-    set(MACHFILE "$PBS_NODEFILE")
+    set(MACH_FILE "$PBS_NODEFILE")
 endif()
 configure_file(
     ${CMAKE_SOURCE_DIR}/Makefile.config.in
