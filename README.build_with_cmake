@@ -1,21 +1,19 @@
 
 
-Table of contents
------------------
+    Table of contents
+    -----------------
 
  1. Configure vs. cmake for users
- 2. Configure vs. cmake for developers
- 3. Quick start into cmake
- 4. Building using the setup script
- 5. Building without the setup script
- 6. Out of source compilation
- 7. Compiling in verbose mode
- 8. Compiling on many cores
- 9. Running cmake using GUI
-10. Running tests (currently only DIRAC)
-11. Building utilities (currently only DIRAC)
-12. Creating DEB, RPM, and other packages (currently only DIRAC)
-13. Make install (currently only DIRAC)
+ 2. Quick start into cmake
+ 3. Building using the setup script
+ 4. Building without the setup script
+ 5. Out of source compilation
+ 6. Compiling in verbose mode
+ 7. Compiling on many cores
+ 8. Running cmake using GUI
+ 9. Running tests (currently only DIRAC)
+10. Building utilities (currently only DIRAC)
+11. Make install (currently only DIRAC)
 
 
  1. Configure vs. cmake for users
@@ -39,40 +37,7 @@ Advantages of using cmake:
    GUI.
 
 
- 2. Configure vs. cmake for developers
-    ----------------------------------
-
-Disadvantages of the present configure script:
- - It is *not* cross-platform, for instance it cannot be used on Microsoft OS.
- - Configuring a large source code containing Fortran, C, and C++, linking to
-   math and MPI/OpenMP libraries is a highly nontrivial problem. Therefore the
-   configure script is (has to be) very complicated.
- - Platforms and limitations come and go and it is hard to keep up with the
-   developments.  Therefore the configure script contains a significant amount
-   of outdated information.
- - Significant amount of code and complication is devoted to implement a
-   cross-platform user interface.
- - Detection of math libraries and available compilers is not ideal.
- - Objects are built in-source, polluting the source tree. This means that you
-   cannot build several binaries (parallel, sequential, debug, release) using
-   the same source without a complete recompilation.
- - Hard to learn and hard to maintain.
-
-Advantages of using cmake:
- - It is easier to add new modules and external code parts to the build,
-   basically with a one-liner.
- - Cross-platform.
- - User interface (command line, terminal menu, GUI) for free.
- - Easy to learn and easy to maintain.
- - Out of source compilation. You can build several binaries (parallel,
-   sequential, debug, release, gfortran, ifort) using the same source. This is
-   invaluable for code development.
- - You can create DEB, RPM, TGZ, ... packages with a one-liner.
- - ctest/cdash makes it easy to implement nightly build dashboards (see for
-   instance http://repo.ctcc.no/CDash/index.php?project=DIRAC).
-
-
- 3. Quick start into cmake
+ 2. Quick start into cmake
     ----------------------
 
 First install cmake, on ubuntu/debian:
@@ -96,7 +61,7 @@ You can do this instead:
    $ make
 
 
- 4. Building using the setup script
+ 3. Building using the setup script
     -------------------------------
 
 The setup script is a useful front-end to cmake.
@@ -112,7 +77,7 @@ You can see the command using:
 and use it directly to call cmake without setup.
 
 
- 5. Building without the setup script
+ 4. Building without the setup script
     ---------------------------------
 
 The setup script does nothing else than calling cmake with appropriate
@@ -131,7 +96,7 @@ Using setup:
    $ make
 
 
- 6. Out of source compilation
+ 5. Out of source compilation
     -------------------------
 
 By default cmake builds out of source. This is a very good thing.
@@ -146,21 +111,21 @@ You can build several binaries with the same source:
    $ make
 
 
- 7. Compiling in verbose mode
+ 6. Compiling in verbose mode
     -------------------------
 
 Sometimes you want to see the actual compiler flags and definitions:
    $ make VERBOSE=1
 
 
- 8. Compiling on many cores
+ 7. Compiling on many cores
     -----------------------
 
 Yes, it works. Try:
    $ make -j4
 
 
- 9. Running cmake using GUI
+ 8. Running cmake using GUI
     -----------------------
 
 You prefer GUI? No problem. You can configure with GUI:
@@ -171,14 +136,14 @@ You may have to install cmake-gui for it, on debian/ubuntu:
    $ sudo apt-get install cmake cmake-gui
 
 
-10. Running tests (currently only DIRAC)
+ 9. Running tests (currently only DIRAC)
     -------------
 
 You can run the test suite with:
    $ make test
 
 
-11. Building utilities (currently only DIRAC)
+10. Building utilities (currently only DIRAC)
     ------------------
 
    $ cd build
@@ -189,18 +154,7 @@ Now set ENABLE_UTILITIES to ON, [c]onfigure, then [g]enerate and exit, and final
 Now you have the utilities!
 
 
-12. Creating DEB, RPM, and other packages (currently only DIRAC)
-    -------------------------------------
-
-Configure and build the source, then:
-   $ cpack -G DEB
-or
-   $ cpack -G RPM
-Always use the help that is available:
-   $ cpack --help
-
-
-13. Make install (currently only DIRAC)
+11. Make install (currently only DIRAC)
     ------------
 
 Make install is very useful to make DIRAC available to other users on the same
