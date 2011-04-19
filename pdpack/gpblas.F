@@ -10,6 +10,21 @@ C http://www.netlib.org/blas/faq.html#1.2 for the original references.
 C
 C Make sure to use this only when nothing else is available. 
 #if defined (USE_DIRAC_BLAS)
+#if defined (USE_CUBLAS)
+c     Activate CUBLAS library (if available) only when the
+c     cost of copying the data is small compared to the number
+c     of operations. We use the latter as a test (assuming that
+c     we don't encounter strange cases like m=1, n=1, and k=10^6....
+c
+      LOGICAL FUNCTION SWITCH_TO_CUBLAS (M1,M2) 
+      integer m1, m2
+      double precision treshold
+c     treshold set to 5 million based of dgemm timings on a Tesla C2050 (done in 2011)
+      parameter (treshold=5.0D6) 
+      SWITCH_TO_CUBLAS = dble(M1)*dble(M2).GT.treshold
+      return 
+      end
+#endif
       subroutine caxpy(n,ca,cx,incx,cy,incy)
 c
 c     constant times a vector plus a vector.
@@ -621,6 +636,15 @@ c
       COMPLEX            ZERO
       PARAMETER        ( ZERO = ( 0.0E+0, 0.0E+0 ) )
 *     ..
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_CGEMM
+      IF( SWITCH_TO_CUBLAS (M*N,K) )THEN
+         call cublas_CGEMM(TRANSA,TRANSB,M,N,K,ALPHA,
+     +                     A,LDA,B,LDB,BETA,C,LDC)
+         RETURN
+      END IF
+#endif
 *     .. Executable Statements ..
 *
 *     Set  NOTA  and  NOTB  as  true if  A  and  B  respectively are not
@@ -1007,6 +1031,14 @@ c
       EXTERNAL           XERBLA
 *     .. Intrinsic Functions ..
       INTRINSIC          CONJG, MAX
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_CGEMV
+      IF( SWITCH_TO_CUBLAS (M,N) )THEN
+          call cublas_CGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
+          RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
@@ -8854,6 +8886,15 @@ c
 *     .. Parameters ..
       DOUBLE PRECISION   ONE         , ZERO
       PARAMETER        ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_DGEMM
+          IF( SWITCH_TO_CUBLAS (M*N,K) )THEN
+          call cublas_DGEMM(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,
+     +                      B,LDB,BETA,C,LDC)
+      RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
@@ -9137,6 +9178,14 @@ c
       EXTERNAL           XERBLA
 *     .. Intrinsic Functions ..
       INTRINSIC          MAX
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_DGEMV
+      IF( SWITCH_TO_CUBLAS (M,N) )THEN
+          call cublas_DGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
+          RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
@@ -16285,6 +16334,15 @@ C
 *     .. Parameters ..
       REAL               ONE         , ZERO
       PARAMETER        ( ONE = 1.0E+0, ZERO = 0.0E+0 )
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_SGEMM
+      IF( SWITCH_TO_CUBLAS (M*N,K) )THEN
+          call cublas_SGEMM(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,
+     +                      B,LDB,BETA,C,LDC)
+      RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
@@ -16568,6 +16626,14 @@ C
       EXTERNAL           XERBLA
 *     .. Intrinsic Functions ..
       INTRINSIC          MAX
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_SGEMV
+      IF( SWITCH_TO_CUBLAS (M,N) )THEN
+          call cublas_SGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
+          RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
@@ -23198,6 +23264,15 @@ c
       PARAMETER        ( ONE  = ( 1.0D+0, 0.0D+0 ) )
       COMPLEX*16         ZERO
       PARAMETER        ( ZERO = ( 0.0D+0, 0.0D+0 ) )
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_ZGEMM
+      IF( SWITCH_TO_CUBLAS (M*N,K) )THEN
+          call cublas_ZGEMM(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,
+     +                      B,LDB,BETA,C,LDC)
+          RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
@@ -23586,6 +23661,14 @@ c
       EXTERNAL           XERBLA
 *     .. Intrinsic Functions ..
       INTRINSIC          DCONJG, MAX
+#if defined (USE_CUBLAS)
+      logical  SWITCH_TO_CUBLAS
+      external cublas_ZGEMV
+      IF( SWITCH_TO_CUBLAS (M,N) )THEN
+          call cublas_ZGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
+          RETURN
+      END IF
+#endif
 *     ..
 *     .. Executable Statements ..
 *
