@@ -1064,18 +1064,19 @@ contains
         if (response_order_ao == 0) then
 #endif
 #endif
-          call get_functional_derv(xc_fun,       &
-                                   xc_fun_alda,  &
-                                   xc_fun_xalda, &
-                                   max_fun_derv, &
-                                   bllen,        &
-                                   w,            &
-                                   n_0,          &
-                                   gnn_0,          &
-                                   derv_length,  &
-                                   derv,         &
+          call get_functional_derv(xc_fun,                    &
+                                   xc_fun_alda,               &
+                                   xc_fun_xalda,              &
+                                   max_fun_derv,              &
+                                   bllen,                     &
+                                   w,                         &
+                                   n_0,                       &
+                                   gnn_0,                     &
+                                   derv_length,               &
+                                   derv,                      &
                                    alda_real=dft_cfg_alda_hs, &
                                    alda_imag=dft_cfg_alda_ha, &
+                                   xalda=dft_cfg_xalda,       &
                                    tau=tau)
 
 #ifdef MOD_XCFUN
