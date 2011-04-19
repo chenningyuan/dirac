@@ -1,3 +1,2 @@
 - enable *.i.*.opt,*.s,*.p objects buildup also for Fortran/C++ source-files
-- enable running of indivudual tests, make test SELECTED_TESTS
 - send xml-output to the server after each step (update,compile, and likewise after each single test-due to timeout hardkills we are loosing outputs)
