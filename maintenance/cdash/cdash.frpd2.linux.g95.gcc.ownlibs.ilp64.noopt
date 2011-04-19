@@ -21,7 +21,6 @@ cd $DIRAC/build
 
   make clean
   make Experimental
-  make Experimental
 # radovan: use Nighly, not Experimental
 
 exit 0
