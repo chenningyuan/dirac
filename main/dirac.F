@@ -344,7 +344,7 @@ C
 C        If MCSCF-srDFT calculation ...
 C        set dirac_cfg_mcsrdft_calculation to TRUE in order to
 C        calculate proper 2-electron integrals
-         if (hfxmu.ne.d0) then
+         if (hfxmu .ne. 0.0d0) then
          dirac_cfg_mcsrdft_calculation = .true.
          endif
 C
