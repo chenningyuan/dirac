@@ -145,6 +145,17 @@ if(ENABLE_OMP)
     endif()
 endif()
 
+if(ENABLE_CUDA)
+    find_package(CUDA)
+    if(CUDA_FOUND)
+        set(LIBS
+            ${LIBS}
+            ${CUDA_CUBLAS_LIBRARIES}
+            )
+        add_definitions(-DUSE_CUBLAS)
+    endif()
+endif()
+
 add_custom_command(
     OUTPUT
     ${PROJECT_SOURCE_DIR}/include/fortran_interface.h

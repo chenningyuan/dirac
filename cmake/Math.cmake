@@ -43,8 +43,4 @@ if(ENABLE_EXTERNAL_MATH)
         message("-- No external math libraries found")
     endif()
 
-    if(ENABLE_CUDA)
-        find_package(CUDA)
-    endif()
-
 endif()
