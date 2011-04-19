@@ -1,5 +1,3 @@
 - enable *.i.*.opt,*.s,*.p objects buildup also for Fortran/C++ source-files
-- explore cmake-makefile targets ('make help') to learn how to perform partial buildup-steps
-- stop running tests if there is a compilation error and no dirac.x is produced
 - enable running of indivudual tests, make test SELECTED_TESTS
 - send xml-output to the server after each step (update,compile, and likewise after each single test-due to timeout hardkills we are loosing outputs)
