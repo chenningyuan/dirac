@@ -27,7 +27,12 @@
 #            my screen can do more than 80 characters, too,
 #            but very often i want to compare files side by side
 #            and then long lines are very annoying
-
+#
+# TODO: pam --mol=some_mol_file --inp=some_inp_file --restart=some_tgz_file
+#  (have the script extract just DFCOEF from the tgz)
+#
+#   RSH/RCP to be detected automatically
+#
 import os
 import sys
 import string
