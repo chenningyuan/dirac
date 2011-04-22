@@ -575,8 +575,8 @@ contains
 
       if (visual_cfg_2d) then
 
-         vx = (visual_cfg_2d_p_right - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
-         vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
+         vx = (visual_cfg_2d_p_right - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
+         vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
 
          vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
          vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
@@ -601,12 +601,12 @@ contains
 
                write(lunit_2d_scalar, '(3e18.10)')               &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2, &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,   &
                   s
 
                write(lunit_2d_vector, '(4e18.10)')                &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2,  &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
                   (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
                   (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
             end do
