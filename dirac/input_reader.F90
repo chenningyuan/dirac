@@ -415,6 +415,7 @@ contains
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
+      real(8)                          :: s, v_12(3), v_13(3)
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -450,6 +451,13 @@ contains
          read(unit_in, *) visual_cfg_2d_nr_right
          read(unit_in, *) visual_cfg_2d_p_top(1:3)
          read(unit_in, *) visual_cfg_2d_nr_top
+!        check that angle between 1-2 and 1-3 is 90 degs
+         v_12 = visual_cfg_2d_p_right - visual_cfg_2d_p_origin
+         v_13 = visual_cfg_2d_p_top   - visual_cfg_2d_p_origin
+         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
+         if (s > tiny(0.0d0)) then
+            call quit('.2D: lines connectiong points 1-2 and 1-3 do not enclose 90 degrees')
+         end if
       end if
 
       if (kw_matches(word, '.2D_INT')) then
@@ -460,6 +468,13 @@ contains
          read(unit_in, *) visual_cfg_2d_integration_p_top(1:3)
          read(unit_in, *) visual_cfg_2d_integration_nr_top
          read(unit_in, *) visual_cfg_2d_integration_order
+!        check that angle between 1-2 and 1-3 is 90 degs
+         v_12 = visual_cfg_2d_integration_p_right - visual_cfg_2d_integration_p_origin
+         v_13 = visual_cfg_2d_integration_p_top   - visual_cfg_2d_integration_p_origin
+         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
+         if (s > tiny(0.0d0)) then
+            call quit('.2D_INT: lines connectiong points 1-2 and 1-3 do not enclose 90 degrees')
+         end if
       end if
 
       if (kw_matches(word, '.3D    ')) then
