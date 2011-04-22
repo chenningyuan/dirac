@@ -131,7 +131,8 @@ class pam_enviroment:
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = ''  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
- 
+        self.distribute_files = False # if some distribution over different nodes
+
         # depending on the operating_system, we set a default for the MPI launcher
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH, therefore
         # no reading of MPIRUN from Makefile.config
@@ -920,6 +921,9 @@ class pam_enviroment:
         if self.create_scratch_dir_name:
             self.set_scratch_dir_name()
 
+    # set RSH/RCP if needed
+        self.handle_nodes()
+
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and
         "self.input_file_dirac" with proper input file names according to
@@ -1041,38 +1045,18 @@ class pam_enviroment:
             copy_single_file(file_name)
 
     def distribute_scratch_dir(self):
-        '''This routine is called when local disks are selected
-           for parallel calculations.'''
+        """
+        This routine is called when local disks are selected
+        for parallel calculations.
+        """
 
-    #  The list of machines available to dirac.x check if this is an enviromental variable with "$" - than get its content
-
-        if self.machinefile[0] == '$':
-            machinefile_temp = self.machinefile[1:len(self.machinefile)]
-            machinefile_content = ''
-            try:
-                machinefile_content = os.environ[machinefile_temp]
-            except:
-                print '  The ', self.machinefile, \
-                    ' enviroment variable for machinefile not active (no batch system).'
-        else:
-            # true file, no pointing variable
-            machinefile_content = self.machinefile
-
-    # identify nodes in the file
-
-        if os.path.isfile(machinefile_content):
-            for line in fileinput.input(machinefile_content):
-                line = line[:-1]
-                if line != self.master:  # append only slaves different from the master
-                    self.nodes.append(line)
-            print '  Machinefile read, list of nodes obtained.'
-            # make a unique list of nodes - remove all duplicities from the list
-            self.nodes=list(set(self.nodes)) 
-
-    # ... distribute master scratch_dir selected files over different nodes, "copying $master:$file onto $node:$WRK/."
+    # ... distribute master scratch_dir selected files over different nodes 
+    # by "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all CPUs are on one machine-master
-
+    #
         if self.nodes:
+            get_rsh_rcp()
+
             files_to_nodes=self.core_dirac_files+self.distribute # list of files to be distributed over nodes
             print '  Copying selected content of master scratch directory to nodes :',self.nodes
             for node in self.nodes:
@@ -1237,6 +1221,79 @@ class pam_enviroment:
                 self.rcp = value
             elif name == 'RSH':                
                 self.rsh = value
+
+    def handle_nodes(self):
+        """
+        if parallel multinodes run, take care of the RSH/RCP stuff
+        """
+        if self.parallel_run and self.localdisks:
+            distribute_files = True 
+        if distribute_files:
+            get_nodes()
+
+    def get_rsh_rcp(self):
+        """ 
+        get RSH/RCP by trying; either rsh/rcp or ssh/scp or error exit
+        """ 
+        from common import find_executable
+
+        def test_copy(local_rcp):
+            for node in self.nodes:
+                this_file_full = self.scratch_dir + '/dirac.x' 
+                command = local_rcp + ' ' + this_file_full + ' ' \
+                         + node + ':' + this_file_full
+
+        try:
+            local_rsh= str(find_executable('ssh'))
+            local_rcp= str(find_executable('scp'))
+            test_copy(local_rcp)
+            self.rsh=local_rsh
+            self.rcp=local_rcp
+            print 'found ssh/scp '
+            return 0
+        except:
+            print 'ssh/scp not working ! trying rsh/rcp'
+
+        try:
+            local_rsh= str(find_executable('rsh'))
+            local_rcp= str(find_executable('rcp'))
+            test_copy(local_rcp)
+            self.rsh=local_rsh
+            self.rcp=local_rcp
+            print 'found rsh/rcp '
+        except:
+            print 'rsh/rcp not working ! error exit !'
+            sys.exit(21)
+
+    def get_nodes(self):
+        """ 
+        get the list of unique nodes
+        """ 
+    #  The list of machines available to dirac.x check if this is an enviromental variable 
+    #   with "$" - than get its content
+
+        if self.machinefile[0] == '$':
+            machinefile_temp = self.machinefile[1:len(self.machinefile)]
+            machinefile_content = ''
+            try:
+                machinefile_content = os.environ[machinefile_temp]
+            except:
+                print '  The ', self.machinefile, \
+                    ' enviroment variable for machinefile not active (no batch system).'
+        else:
+            # true file, no pointing variable
+            machinefile_content = self.machinefile
+
+    # identify nodes in the file
+
+        if os.path.isfile(machinefile_content):
+            for line in fileinput.input(machinefile_content):
+                line = line[:-1]
+                if line != self.master:  # append only slaves different from the master
+                    self.nodes.append(line)
+            # make a unique list of nodes - remove all duplicities from the list
+            self.nodes=list(set(self.nodes)) 
+            print '  Machinefile read, list of unique nodes obtained:',self.nodes
 
     def write_into_output(self):
         """
@@ -1692,8 +1749,7 @@ class pam_run(pam_enviroment):
             return 0
         self.pam_variables.print_header()
         self.pam_variables.copy_files()
-        if self.pam_variables.parallel_run \
-            and self.pam_variables.localdisks:
+        if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_environment()
         self.pam_variables.set_dirac_cmd()
