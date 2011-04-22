@@ -1,14 +1,7 @@
-!dirac_copyright_start
-!dirac_copyright_end
 
-!     how to get the exported info:
-!     pam -get basis_info_ng *mol *inp
+!     radovan bast <radovan.bast@uit.no> 2011-04-20
+!     module for the export/import of basis set information
 
-!     this is supposed to be the general purpose next generation
-!     basis set importer and exporter
-!     at the moment it only exports
-
-!     the "standard":
 !     - file is formatted
 !     - file is read in free format
 !     - sections have labels, the order of section matters:
@@ -18,20 +11,12 @@
 !           *** symmetry_large
 !           *** basis_small
 !           *** symmetry_small
-!           *** basis_large_aux
-!           *** symmetry_large_aux
-!           *** basis_small_aux
-!           *** symmetry_small_aux
 !           *** dirac_specific
 !           *** foo_specific
-!     - but sections (and labels) can be omitted
-!       only 3 sections are mandatory:
-!           geometry
-!           symmetry_general
-!           basis_large
-!       if it is clear from this that symmetry is C1
-!       then basis_large etc. can be trivially generated
-!       and need not be present
+!     - but sections (and labels) can be omitted if irrelevant (e.g. C1)
+!     - only 2 sections are mandatory:
+!           *** geometry
+!           *** basis_large
 !     - normalization is absorbed in contraction coefficients
 !       (we can discuss this point)
 !     - ireps go from 0 to nr_ireps-1
@@ -57,19 +42,28 @@
 !             cartesian_to_spherical(:)
 !             spherical_address(:)
 
-!radovan: for LAO business we will also need the center of the basis functions
-
 module basis_info_ng
 
    implicit none
 
    public basis_info_write_ng
+   public basis_info_read_ng
+
+   integer, public :: nr_ireps
+   integer, public :: irep_of_axes(3)
+   integer, public :: irep_of_rotations(3)
+   integer, public :: nr_sym_independent_centers
+   integer, public :: nr_sym_dependent_centers
+
+   real(8), public, allocatable :: sym_dependent_center_charge(:)
+   real(8), public, allocatable :: sym_dependent_center_xyz(:, :)
+   real(8), public, allocatable :: sym_independent_center_charge(:)
+   real(8), public, allocatable :: sym_independent_center_xyz(:, :)
 
    private
 
    integer              :: nr_shells(0:2)
-   integer         :: sym_axes(3, 2)
-   integer              :: nr_ireps
+   integer              :: sym_axes(3, 2)
    integer, parameter   :: nr_types = 2
    integer              :: max_nr_primitives(0:2)
    integer              :: first_shell(0:2)
@@ -90,6 +84,29 @@ module basis_info_ng
    character(*), parameter :: type_label(0:2) = (/'total', 'large', 'small'/)
 
 contains
+
+   subroutine basis_info_clear()
+
+!     nr_ireps                   = 1
+!     irep_of_axes               = 1
+!     irep_of_rotations          = 1
+      nr_sym_independent_centers = 0
+      nr_sym_dependent_centers   = 0
+
+      if (allocated(sym_dependent_center_charge))   deallocate(sym_dependent_center_charge)
+      if (allocated(sym_dependent_center_xyz))      deallocate(sym_dependent_center_xyz)
+      if (allocated(sym_independent_center_charge)) deallocate(sym_independent_center_charge)
+      if (allocated(sym_independent_center_xyz))    deallocate(sym_independent_center_xyz)
+
+      if (allocated(shell_type))             deallocate(shell_type)
+      if (allocated(shell_center))           deallocate(shell_center)
+      if (allocated(shell_stabilizing_irep)) deallocate(shell_stabilizing_irep)
+      if (allocated(l_quantum_nr))           deallocate(l_quantum_nr)
+      if (allocated(nr_primitives))          deallocate(nr_primitives)
+      if (allocated(primitive_exp))          deallocate(primitive_exp)
+      if (allocated(contraction_coef))       deallocate(contraction_coef)
+
+   end subroutine
 
    subroutine basis_info_write_ng()
 
@@ -112,21 +129,25 @@ contains
 #include "dcbham.h"
 #include "nuclei.h"
 
-!     call basis_info_delete()
+      call basis_info_clear()
 
+!     always regenerate this file
       inquire(file = file_name, exist = file_exists)
-
       if (file_exists) then
-         close(file_unit, status = 'keep')
-         return
-      else
          open(file_unit,            &
               file   = file_name,   &
-              status = 'new',       &
+              status = 'unknown',   &
               form   = 'formatted', &
               access = 'sequential')
-         rewind(file_unit)
+         close(file_unit, status = 'delete')
       end if
+
+      open(file_unit,            &
+           file   = file_name,   &
+           status = 'new',       &
+           form   = 'formatted', &
+           access = 'sequential')
+      rewind(file_unit)
 
       nr_ireps = nbsym
       sym_axes = isymax
@@ -197,9 +218,6 @@ contains
       write(file_unit, '(4x, a)') 'nr_sym_independent_centers'
       write(file_unit, '(4x, i6)') nucind
 
-      write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
-      write(file_unit, '(4x, i6)') nucdep
-
       write(file_unit, '(4x, a)') 'charges_and_coordinates_independent'
       do icent = 1, nucind
          write(file_unit, '(4f26.16)') charge(icent),  &
@@ -207,6 +225,9 @@ contains
                                        cord(2, icent), &
                                        cord(3, icent)
       end do
+
+      write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
+      write(file_unit, '(4x, i6)') nucdep
 
       write(file_unit, '(4x, a)') 'charges_and_coordinates_dependent'
       do icent = 1, nucind
@@ -303,16 +324,211 @@ contains
 
       end do
 
-      deallocate(l_quantum_nr)
-      deallocate(shell_center)
-      deallocate(shell_stabilizing_irep)
-      deallocate(shell_type)
-      deallocate(nr_primitives)
-      deallocate(primitive_exp)
-      deallocate(contraction_coef)
-
       close(file_unit, status = 'keep')
+
+      call basis_info_clear()
 
    end subroutine
 
+   subroutine basis_info_read_ng()
+
+!     --------------------------------------------------------------------------
+      character(120) :: line
+      integer        :: i
+      logical        :: symmetry_info_found
+!     --------------------------------------------------------------------------
+
+      symmetry_info_found = .false.
+
+      call basis_info_clear()
+
+      inquire(file = file_name, exist = file_exists)
+      if (.not. file_exists) then
+         print *, 'basis_info_ng file not found'
+         stop
+      end if
+
+      open(file_unit,            &
+           file   = file_name,   &
+           status = 'unknown',   &
+           form   = 'formatted', &
+           access = 'sequential')
+      rewind(file_unit)
+
+      do while (.true.)
+
+         read(file_unit, '(a120)', end=1) line
+
+         if (word_contains(line, '*** geometry')) then
+            read(file_unit, *)
+            read(file_unit, *) nr_sym_independent_centers
+            read(file_unit, *)
+            allocate(sym_independent_center_charge(nr_sym_independent_centers))
+            allocate(sym_independent_center_xyz(nr_sym_independent_centers, 3))
+            do i = 1, nr_sym_independent_centers
+               read(file_unit, *) sym_independent_center_charge(i), &
+                                  sym_independent_center_xyz(i, 1:3)
+            end do
+            read(file_unit, *)
+            read(file_unit, *) nr_sym_dependent_centers
+            read(file_unit, *)
+            allocate(sym_dependent_center_charge(nr_sym_dependent_centers))
+            allocate(sym_dependent_center_xyz(nr_sym_dependent_centers, 3))
+            do i = 1, nr_sym_dependent_centers
+               read(file_unit, *) sym_dependent_center_charge(i), &
+                                  sym_dependent_center_xyz(i, 1:3)
+            end do
+         end if
+
+         if (word_contains(line, '*** symmetry_general')) then
+            symmetry_info_found = .true.
+            read(file_unit, *)
+            read(file_unit, *) nr_ireps
+            read(file_unit, *)
+            read(file_unit, *) irep_of_axes(1:3)
+            read(file_unit, *)
+            read(file_unit, *) irep_of_rotations(1:3)
+         end if
+
+!** basis_large
+!   is_spherical
+!        F
+!   nr_shells
+!        3
+!   l_quantum_nr
+!        1
+!        1
+!        2
+!   shell_center
+!        1
+!        1
+!        1
+!   max_nr_primitives
+!        4
+!   nr_primitives
+!        4
+!        1
+!        1
+!   primitive_exp_and_contraction_coef
+!      13.0099999999999998        0.0961066109833227
+!       1.9620000000000000        0.1630199747910442
+!       0.4446000000000000        0.1855450226833620
+!       0.1220000000000000        0.0737437919835051
+!       0.1220000000000000        0.1471227944285736
+!       0.7270000000000000        0.9568813750595657
+!** symmetry_large
+!   shell_stabilizing_irep
+!        3
+!        3
+!        3
+!   nr_ao_in_irep
+!        3
+!        1
+!        1
+!        0
+!        3
+!        1
+!        1
+!        0
+!   ao_offset_in_irep
+!        0
+!       24
+!       25
+!        3
+!       26
+!        3
+!        4
+!       29
+
+      end do
+1     continue
+
+      close(file_unit, status = 'keep')
+
+      if (.not. symmetry_info_found) then
+         nr_ireps          = 1
+         irep_of_axes      = 1
+         irep_of_rotations = 1
+      end if
+
+   end subroutine
+
+   function word_contains(word, substring)
+   
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: word
+      character(*), intent(in) :: substring
+!     --------------------------------------------------------------------------
+      logical                  :: word_contains
+!     --------------------------------------------------------------------------
+      
+      if (index(word, substring) > 0) then
+         word_contains = .true.
+      else
+         word_contains = .false.
+      end if
+   
+   end function
+
 end module
+!** basis_small
+!   is_spherical
+!        F
+!   nr_shells
+!        6
+!   l_quantum_nr
+!        1
+!        2
+!        2
+!        2
+!        2
+!        3
+!   shell_center
+!        1
+!        1
+!        1
+!        1
+!        1
+!        1
+!   max_nr_primitives
+!        1
+!   nr_primitives
+!        1
+!        1
+!        1
+!        1
+!        1
+!        1
+!   primitive_exp_and_contraction_coef
+!       0.7270000000000000        0.5611266563460818
+!      13.0099999999999998       35.2197856580827846
+!       1.9620000000000000        3.3098921408821012
+!       0.4446000000000000        0.5174899391838638
+!       0.1220000000000000        0.1027755657758715
+!       0.7270000000000000        1.6317563166544060
+!** symmetry_small
+!   shell_stabilizing_irep
+!        3
+!        3
+!        3
+!        3
+!        3
+!        3
+!   nr_ao_in_irep
+!        8
+!        5
+!        5
+!        1
+!        8
+!        5
+!        5
+!        1
+!   ao_offset_in_irep
+!       29
+!        5
+!       10
+!       37
+!       15
+!       38
+!       43
+!       23
