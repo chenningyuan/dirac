@@ -28,10 +28,8 @@
 #            but very often i want to compare files side by side
 #            and then long lines are very annoying
 #
-# TODO: pam --mol=some_mol_file --inp=some_inp_file --restart=some_tgz_file
-#  (have the script extract just DFCOEF from the tgz)
-#
-#   RSH/RCP to be detected automatically
+# TODO (LV's wish): pam --mol=some_mol_file --inp=some_inp_file --restart=some_tgz_file
+#                    (have the script extract just DFCOEF from the tgz)
 #
 import os
 import sys
@@ -1259,10 +1257,18 @@ class pam_enviroment:
         from common import find_executable
 
         def test_copy(local_rcp):
-            for node in self.nodes:
-                this_file_full = self.scratch_dir + '/dirac.x' 
-                command = local_rcp + ' ' + this_file_full + ' ' \
+            try:
+                for node in self.nodes:
+                    this_file_full = self.scratch_dir + '/dirac.x' 
+                    command = local_rcp + ' ' + this_file_full + ' ' \
                          + node + ':' + this_file_full
+                    #os.system(command)
+                    #x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                    x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                    print 'was stderr ?',x.communicate()[1]
+                    print 'stdout ?',x.communicate()[0]
+            except:
+                return 1
 
         try:
             local_rsh= str(find_executable('ssh'))
@@ -1282,8 +1288,9 @@ class pam_enviroment:
             self.rsh=local_rsh
             self.rcp=local_rcp
             print 'found rsh/rcp '
+            return 0
         except:
-            print 'rsh/rcp not working ! error exit !'
+            print 'Neither rsh/rcp working ! error exit !'
             sys.exit(21)
 
     def get_nodes(self):
