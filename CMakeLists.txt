@@ -209,7 +209,7 @@ file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
 find_program(PROFILER gprof)
 find_program(DEBUGGER gdb)
 
-if(SSH_NOT_AVAILABLE)
+if(NO_SSH_ACCESS_TO_NODES)
     find_program(SCP_EXEC rcp)
     find_program(SSH_EXEC rsh)
 else()
