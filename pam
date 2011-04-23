@@ -1059,7 +1059,7 @@ class pam_enviroment:
     # otherwise print message that all CPUs are on one machine-master
     #
         if self.nodes:
-            get_rsh_rcp()
+            self.get_rsh_rcp()
 
             files_to_nodes=self.core_dirac_files+self.distribute # list of files to be distributed over nodes
             print '  Copying selected content of master scratch directory to nodes :',self.nodes
