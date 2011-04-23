@@ -56,6 +56,7 @@ option(ENABLE_LOCAL_DISKS    "Enable local disks"            ON)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
+option(NO_SSH_ACCESS_TO_NODES "Use rsh/rcp access to nodes"  OFF)
 
 # set cdash buildname
 set(BUILDNAME
