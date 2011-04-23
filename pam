@@ -1261,14 +1261,16 @@ class pam_enviroment:
                 for node in self.nodes:
                     this_file_full = self.scratch_dir + '/DIRAC.INP' 
                     command = local_rcp + ' ' + this_file_full + ' ' \
-                         + node + ':.'
+                         + node + ':/scratch/.'
                     #os.system(command)
-                    #x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                    x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                    x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                    #x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                    #x= subprocess.Popen(command, shell=True, stderr=subprocess.PIPE)
                     print 'try command:',command
                     print 'stdout ?',x.communicate()[0]
                     print 'was stderr ?',x.communicate()[1]
-                    return 1
+                    print
+                    #return 1
             except:
                 return 1
 
