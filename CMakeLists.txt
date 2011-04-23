@@ -217,6 +217,7 @@ else()
     find_program(SCP_EXEC scp)
     find_program(SSH_EXEC ssh)
 endif()
+message("-- To access nodes in parallel calculations, use \"${SCP_EXEC}\" and \"${SSH_EXEC}\"")
 
 find_program(VALGRIND_EXECUTABLE valgrind)
 if(ENABLE_LOCAL_DISKS)
