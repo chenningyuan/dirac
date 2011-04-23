@@ -158,6 +158,7 @@ class pam_enviroment:
     # machine file
 
         self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
+        self.machinefile_content = None
 
     # argument to pass the scratch directory location on to the nodes (rarely needed)
         self.argument_to_pass_scratch_dir_to_slaves = None
@@ -1050,6 +1051,9 @@ class pam_enviroment:
         for parallel calculations.
         """
 
+        # get the list of nodes
+        self.get_nodes()
+
     # ... distribute master scratch_dir selected files over different nodes 
     # by "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all CPUs are on one machine-master
@@ -1227,9 +1231,26 @@ class pam_enviroment:
         if parallel multinodes run, take care of the RSH/RCP stuff
         """
         if self.parallel_run and self.localdisks:
-            distribute_files = True 
-        if distribute_files:
-            get_nodes()
+            self.distribute_files = True 
+
+    def handle_machinefile(self):
+        """
+        take care of the machinefile
+        """
+    #  The list of machines available to dirac.x check if this is an enviromental variable 
+    #   with "$" - than get its content
+
+        if self.machinefile[0] == '$':
+            machinefile_temp = self.machinefile[1:len(self.machinefile)]
+            self.machinefile_content = ''
+            try:
+                self.machinefile_content = os.environ[machinefile_temp]
+            except:
+                print '  The ', self.machinefile, \
+                    ' enviroment variable for machinefile is not active (no batch system).'
+        else:
+            # true file, no pointing variable
+            self.machinefile_content = self.machinefile
 
     def get_rsh_rcp(self):
         """ 
@@ -1269,25 +1290,15 @@ class pam_enviroment:
         """ 
         get the list of unique nodes
         """ 
-    #  The list of machines available to dirac.x check if this is an enviromental variable 
-    #   with "$" - than get its content
 
-        if self.machinefile[0] == '$':
-            machinefile_temp = self.machinefile[1:len(self.machinefile)]
-            machinefile_content = ''
-            try:
-                machinefile_content = os.environ[machinefile_temp]
-            except:
-                print '  The ', self.machinefile, \
-                    ' enviroment variable for machinefile not active (no batch system).'
-        else:
-            # true file, no pointing variable
-            machinefile_content = self.machinefile
+        # first, get the machinefile content if any
+        if self.machinefile:
+            self.handle_machinefile()
 
-    # identify nodes in the file
+    # get names of nodes in the machinefile
 
-        if os.path.isfile(machinefile_content):
-            for line in fileinput.input(machinefile_content):
+        if os.path.isfile(str(self.machinefile_content)):
+            for line in fileinput.input(self.machinefile_content):
                 line = line[:-1]
                 if line != self.master:  # append only slaves different from the master
                     self.nodes.append(line)
