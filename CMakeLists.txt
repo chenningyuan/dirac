@@ -80,6 +80,11 @@ endif()
 if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
     set(RUNTEST_FLAGS "${RUNTEST_FLAGS} --timeout=${RUNTEST_TIMEOUT}")
 endif()
+# add message on the variable content:
+if(NOT "${RUNTEST_FLAGS}" STREQUAL "")
+message("-- Variable for runtest flags, RUNTEST_FLAGS=\"${RUNTEST_FLAGS}\" ")
+endif()
+
 
 include(Tests)
 include(CTest)
