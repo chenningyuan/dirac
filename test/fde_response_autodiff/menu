@@ -1,13 +1,11 @@
-sh bzip2 -d FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym.bz2
-sh bzip2 -d ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym.bz2
+sh ln -sf FRZDNS.2e-1 FRZDNS
+sh ln -sf ../fde_static-vemb_dipole/EMBPOT.2e-1 EMBPOT
 
-sh ln -sf FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym FRZDNS
-sh ln -sf ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym EMBPOT
+sh ln -sf lda+tfk_vemb-read.inp lda+tfk_vemb-read_short.inp
+sh ln -sf pbe+pw91k_vemb-update.inp pbe+pw91k_vemb-update_short.inp
 
-lda+tfk_vemb-read.inp     water.sto6g.c2v.mol --put="FRZDNS EMBPOT"
-pbe+pw91k_vemb-update.inp water.sto6g.c2v.mol --put="FRZDNS"
+lda+tfk_vemb-read_short.inp     water.sto6g.c2v.mol --put="FRZDNS EMBPOT"
+pbe+pw91k_vemb-update_short.inp water.sto6g.c2v.mol --put="FRZDNS"
 
-sh bzip2 -9 FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym
-sh bzip2 -9 ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym
-
+sh rm -f lda+tfk_vemb-read_short.inp pbe+pw91k_vemb-update_short.inp
 sh rm -f EMBPOT FRZDNS
