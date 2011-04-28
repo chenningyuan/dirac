@@ -1747,6 +1747,11 @@ C     Traceless theta quadrupole integrals
 C
       ELSE IF(LABINT(3:7).EQ.'THETA') THEN
         CLASLB = 'THETA  '
+
+!requested by Malaya Kumar Nayak <mk.nayak72@gmail.com>
+      ELSE IF(LABINT(2:8).EQ.'NUCFIEL') THEN
+        CLASLB = 'NUCFIEL'
+
 C
 C     Cartesian/spherical/electronic solvent moments integrals
 C
