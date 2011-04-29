@@ -272,9 +272,8 @@ class pam_enviroment:
 
         self.nobackup = False
 
-    # default - do the archivation of files
-
-        self.no_archive = False
+        # default is to archive files
+        self.archive = True
 
     # list of all possible DIRAC produced files for the archivation
 
@@ -857,7 +856,9 @@ class pam_enviroment:
             self.set_timeout_limit = True
 
         self.nobackup = options.dest_nobackup
-        self.no_archive = options.dest_noarch
+
+        if options.dest_noarch:
+            self.archive = False
 
         if options.dest_put:
             self.put_files = options.dest_put.split()
@@ -1658,10 +1659,8 @@ class pam_enviroment:
                 for stream in [sys.stdout,sys.stderr]:
                     print >> stream, file_name, ' not found in the scratch directory.'
 
-        if not self.no_archive:
+        if self.archive:
             self.archive_working_files()   
-        else:
-            print 'no archivation of working files'
 
     # take care of the rest - get files from scratch_dir to home dir
 
