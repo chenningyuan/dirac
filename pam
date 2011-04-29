@@ -1630,7 +1630,7 @@ class pam_enviroment:
     def save_files(self):
         "save files in various manners from the scratch directory"
 
-        from common import backup_file
+        #from common import backup_file
 
         def save_single_file(file_name):
 
@@ -1653,32 +1653,9 @@ class pam_enviroment:
                     print >> stream, file_name, ' not found in the scratch directory.'
 
         if not self.no_archive:
-
-      # set name of the archive file; TODO: Windows packing adaptation
-
-            archive_name = self.output_name + '.tgz'
-            print '  creating archive file ', archive_name
-            archive_full_name = self.input_directory + '/' \
-                + archive_name
-
-      # select existing files in self.archive_files for the archive
-
-            existing_archive_files = ''
-            for archfile in self.archive_files:
-                if os.path.isfile(archfile):
-                    existing_archive_files = existing_archive_files \
-                        + ' ' + archfile
-
-      # backup
-
-            if not self.nobackup:
-                backup_file(some_file=archive_full_name, upto=None)
-            archive_command = 'tar c ' + existing_archive_files \
-                + ' | gzip > ' + archive_full_name
-
-      # own packing (Linux)
-
-            os.system(archive_command)
+            self.archive_working_files()   
+        else:
+            print 'no archivation of working files'
 
     # take care of the rest - get files from scratch_dir to home dir
 
@@ -1724,8 +1701,42 @@ class pam_enviroment:
                     self.scratch_dir, ' deleted.'
                 sys.stdout.flush()
 
-    def print_header(self):
+    def archive_working_files(self):
+        """
+        archive (pack) working files at the end of the DIRAC program run
+        """
+        # set name of the archive file; TODO: Windows packing adaptation
 
+        archive_name = self.output_name + '.tgz'
+        archive_full_name = self.input_directory + '/' \
+                + archive_name
+
+      # select existing files in self.archive_files for the archive
+
+        existing_archive_files = ''
+        for archfile in self.archive_files:
+            if os.path.isfile(archfile):
+                existing_archive_files = existing_archive_files \
+                    + ' ' + archfile
+
+        print '  creating archive file ', archive_name
+        print '  archived working files:',existing_archive_files 
+
+      # backup
+
+        if not self.nobackup:
+            from common import backup_file
+            backup_file(some_file=archive_full_name, upto=None)
+
+      # own packing (Linux, TODO: adapt for Windows)
+        archive_command = 'tar c ' + existing_archive_files \
+            + ' | gzip > ' + archive_full_name
+        os.system(archive_command)
+
+    def print_header(self):
+        """
+        print nice header
+        """
         if self.parallel_run:
             dirac_run = 'parallel ( launcher:'+self.mpirun+')'
         else:
