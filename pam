@@ -28,12 +28,11 @@
 #            but very often i want to compare files side by side
 #            and then long lines are very annoying
 #
-# TODO (LV's wish): pam --mol=some_mol_file --inp=some_inp_file --restart=some_tgz_file
-#                    (have the script extract just DFCOEF from the tgz)
+# TODO/WISHLIST:
 # 
-#  defaults into ".diracrc"
+# defaults into ".diracrc"
 #
-# to investigate RSH/RCP assignment: 
+# to investigate automated RSH/RCP assignment: 
 #  http://stackoverflow.com/questions/3830508/check-if-passwordless-access-has-been-setup
 #
 import os
