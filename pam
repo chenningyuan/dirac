@@ -907,7 +907,7 @@ class pam_enviroment:
 #   check that they are there, if not exit
 #   if yes, assign output file name
 
-        if not (self.full_restart or self.just_show_settings):
+        if not self.just_show_settings:
             if options.mol_file is not None and options.inp_file \
                 is not None:
                 self.input_molecule = options.mol_file
@@ -1020,19 +1020,26 @@ class pam_enviroment:
             archive_scratch_dir = self.scratch_dir + '/' + self.archive_name
             unpack_command = 'tar --directory ' + self.scratch_dir \
                 + ' -xvf ' + archive_scratch_dir
-            print 'Unpacking archive file in the scratch directory, command ', \
+            print 'Unpacking the archive file into the scratch directory, command ', \
                 unpack_command
             os.system(unpack_command)
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
-        if self.xyz_molecule_input == True:
-            self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
+        if self.input_file_molecule:
+            if self.xyz_molecule_input == True:
+                self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
                            + 'MOLECULE.XYZ')
-        else:
-            self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
+            else:
+                self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
                            + 'MOLECULE.MOL')
-        self.copy_file(self.input_file_dirac, self.scratch_dir + '/'
+        else:
+            print '  No molecule input file provided, assuming it is obtained from the restart file.'
+
+        if self.input_file_dirac:
+            self.copy_file(self.input_file_dirac, self.scratch_dir + '/'
                        + 'DIRAC.INP')
+        else:
+            print '  No input file provided, assuming it is obtained from the restart file.'
 
         if self.put_files is not None:
             for file_name in self.put_files:
