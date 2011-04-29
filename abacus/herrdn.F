@@ -4855,6 +4855,9 @@ C     This subroutine prints information about atomic coordinates
 C
 C     tuh 081188 - Bush elected
 C
+
+      use codata
+
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4924,6 +4927,42 @@ C
             END IF
   100    CONTINUE
       END IF
+
+
+
+!     print also coordinates in xyz format for easy copy-paste-ability
+      if (ipread > 0) then
+         call header('Cartesian coordinates xyz format (angstrom)', 1)
+         write(lupri, '(i5)') nucdep
+         write(lupri, *)
+         do icent = 1, nucind
+            mulcnt = istbnu(icent)
+            name   = namex(3*icent)(1:4)
+            if (mult(mulcnt) == 1) then
+               write(lupri, '(a, 3f15.10)')
+     &               name, 
+     *               cord(1, icent)*xtang,
+     *               cord(2, icent)*xtang,
+     *               cord(3, icent)*xtang
+            else
+               do isymop = 0, maxopr
+                  if (ibtand(isymop, mulcnt) == 0) then
+                     write(lupri, '(a, 3f15.10)')
+     &                  name, 
+     *            pt(ibtand(isymax(1, 1), isymop))*cord(1, icent)*xtang,
+     *            pt(ibtand(isymax(2, 1), isymop))*cord(2, icent)*xtang,
+     *            pt(ibtand(isymax(3, 1), isymop))*cord(3, icent)*xtang
+                  end if
+               end do
+            end if
+         end do
+      end if
+
+
+
+
+
+
 C
 C     ********************************
 C     ***** Symmetry Coordinates *****
