@@ -4,27 +4,15 @@
 
 !     - file is formatted
 !     - file is read in free format
-!     - sections have labels, the order of section matters:
-!           *** geometry
-!           *** symmetry_general
-!           *** basis_large
-!           *** symmetry_large
-!           *** basis_small
-!           *** symmetry_small
-!           *** dirac_specific
-!           *** foo_specific
-!     - but sections (and labels) can be omitted if irrelevant (e.g. C1)
-!     - only 2 sections are mandatory:
-!           *** geometry
-!           *** basis_large
+!     - sections have labels
+!     - order of sections does not matter
+!     - section symmetry can be omitted if irrelevant (e.g. C1)
 !     - normalization is absorbed in contraction coefficients
 !       (we can discuss this point)
 !     - ireps go from 0 to nr_ireps-1
 
 !radovan: notes to myself
 !       8. dirac specific information
-!          label: "dirac_specific"
-!             refine later ...
 !             pq_to_uq(4, 0:7)
 !             uq_to_pq(4, 0:7)
 !             iq(0:3)
@@ -68,7 +56,7 @@ module basis_info_ng
    integer              :: max_nr_primitives(0:2)
    integer              :: first_shell(0:2)
    integer              :: last_shell(0:2)
-   logical              :: is_spherical(0:2)
+   logical              :: is_spherical
    integer, allocatable :: shell_type(:)
    integer, allocatable :: shell_center(:)
    integer, allocatable :: shell_stabilizing_irep(:)
@@ -82,6 +70,7 @@ module basis_info_ng
    logical                 :: file_exists
 
    character(*), parameter :: type_label(0:2) = (/'total', 'large', 'small'/)
+   character(1), parameter :: ls(2) = (/'L', 'S'/)
 
 contains
 
@@ -113,6 +102,7 @@ contains
 !     --------------------------------------------------------------------------
       integer :: i, j, i_c, i_s, ic
       integer :: ishell, icount, isym, iprim, irep, icent
+      integer :: jshell
 !     --------------------------------------------------------------------------
 
 #include "mxcent.h"
@@ -220,7 +210,7 @@ contains
 
       write(file_unit, '(4x, a)') 'charges_and_coordinates_independent'
       do icent = 1, nucind
-         write(file_unit, '(4f26.16)') charge(icent),  &
+         write(file_unit, '(4f27.16)') charge(icent),  &
                                        cord(1, icent), &
                                        cord(2, icent), &
                                        cord(3, icent)
@@ -232,14 +222,14 @@ contains
       write(file_unit, '(4x, a)') 'charges_and_coordinates_dependent'
       do icent = 1, nucind
          if (mult(istbnu(icent)) == 1) then
-               write(file_unit, '(4f26.16)') charge(icent),  &
+               write(file_unit, '(4f27.16)') charge(icent),  &
                                              cord(1, icent), &
                                              cord(2, icent), &
                                              cord(3, icent)
          else
             do irep = 0, nr_ireps - 1
                if (iand(irep, istbnu(icent)) == 0) then
-                  write(file_unit, '(4f26.16)') charge(icent),                               &
+                  write(file_unit, '(4f27.16)') charge(icent),                               &
                                                 cord(1, icent)*pt(iand(isymax(1, 1), irep)), &
                                                 cord(2, icent)*pt(iand(isymax(2, 1), irep)), &
                                                 cord(3, icent)*pt(iand(isymax(3, 1), irep))
@@ -248,7 +238,42 @@ contains
          end if
       end do
 
-      write(file_unit, '(a)') '*** symmetry_general'
+      write(file_unit, '(a)') '*** basis'
+
+      is_spherical = .false.
+      do ic = 1, nr_types
+         do ishell = first_shell(ic), last_shell(ic)
+            if (sphr(ishell)) then
+               is_spherical = .true.
+            end if
+         end do
+      end do
+      write(file_unit, '(4x, a)') 'is_spherical'
+      write(file_unit, '(4x, l6)') is_spherical
+
+      write(file_unit, '(4x, a)') 'nr_primitives'
+      write(file_unit, '(4x, i6)') sum(nr_primitives)
+
+      write(file_unit, '(4x, a6, a4, 2a5, 2a26)') '# cent',  &
+                                                  'L/S',     &
+                                                  'l',       &
+                                                  'irep',    &
+                                                  'prim',    &
+                                                  'coef'
+      do ic = 1, nr_types
+         do ishell = first_shell(ic), last_shell(ic)
+            do i = 1, nr_primitives(ishell)
+               write(file_unit, '(4x, i6, a4, 2i5, 2f26.16)') shell_center(ishell),           &
+                                                              ls(ic),                         &
+                                                              l_quantum_nr(ishell),           &
+                                                              shell_stabilizing_irep(ishell), &
+                                                              primitive_exp(ishell, i),       &
+                                                              contraction_coef(ishell, i)
+            end do
+         end do
+      end do
+
+      write(file_unit, '(a)') '*** symmetry'
 
       write(file_unit, '(4x, a)') 'nr_ireps'
       write(file_unit, '(4x, i6)') nr_ireps
@@ -263,65 +288,17 @@ contains
       write(file_unit, '(4x, i6)') sym_axes(2, 2)
       write(file_unit, '(4x, i6)') sym_axes(3, 2)
 
-      do ic = 1, nr_types
-
-         is_spherical(ic) = .false.
-         do ishell = first_shell(ic), last_shell(ic)
-            if (sphr(ishell)) then
-               is_spherical(ic) = .true.
-            end if
-         end do
-
-         write(file_unit, '(a)') '*** basis_'//type_label(ic)
-
-         write(file_unit, '(4x, a)') 'is_spherical'
-         write(file_unit, '(4x, l6)') is_spherical(ic)
-
-         write(file_unit, '(4x, a)') 'nr_shells'
-         write(file_unit, '(4x, i6)') nr_shells(ic)
-
-         write(file_unit, '(4x, a)') 'l_quantum_nr'
-         do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, i6)') l_quantum_nr(ishell)
-         end do
-
-         write(file_unit, '(4x, a)') 'shell_center'
-         do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, i6)') shell_center(ishell)
-         end do
-
-         write(file_unit, '(4x, a)') 'max_nr_primitives'
-         write(file_unit, '(4x, i6)') max_nr_primitives(ic)
-
-         write(file_unit, '(4x, a)') 'nr_primitives'
-         do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, i6)') nr_primitives(ishell)
-         end do
-
-         write(file_unit, '(4x, a)') 'primitive_exp_and_contraction_coef'
-         do ishell = first_shell(ic), last_shell(ic)
-            do i = 1, nr_primitives(ishell)
-               write(file_unit, '(2f26.16)') primitive_exp(ishell, i), contraction_coef(ishell, i)
-            end do
-         end do
-
-         write(file_unit, '(a)') '*** symmetry_'//type_label(ic)
-
-         write(file_unit, '(4x, a)') 'shell_stabilizing_irep'
-         do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, i6)') shell_stabilizing_irep(ishell)
-         end do
-
-         write(file_unit, '(4x, a)') 'nr_ao_in_irep'
-         do irep = 0, nr_ireps - 1
-            write(file_unit, '(4x, i6)') nbbas(irep, ic)
-         end do
-
-         write(file_unit, '(4x, a)') 'ao_offset_in_irep'
-         do irep = 0, nr_ireps - 1
-            write(file_unit, '(4x, i6)') ibbas(irep, ic)
-         end do
-
+      write(file_unit, '(4x, 5a6)') '# irep', &
+                                    'nr-L',   &
+                                    'nr-S',   &
+                                    'off-L',  &
+                                    'off-S'
+      do irep = 0, nr_ireps - 1
+         write(file_unit, '(4x, 5i6)') irep,           &
+                                       nbbas(irep, 1), &
+                                       nbbas(irep, 2), &
+                                       ibbas(irep, 1), &
+                                       ibbas(irep, 2)
       end do
 
       close(file_unit, status = 'keep')
