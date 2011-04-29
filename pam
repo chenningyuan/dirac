@@ -227,6 +227,8 @@ class pam_enviroment:
         self.default_memory_dynamic = 0
         self.max_memory_dynamic     = self.default_memory_dynamic
 
+    # all files from the archive.tgz are unpacked, assumed that archive file is copied into the scratch_dir
+
         self.full_restart = False
         self.archive_name = ''
 
@@ -290,10 +292,6 @@ class pam_enviroment:
             'matexport.m',
             'DFCOEF.BEST',
             ]
-
-    # all files from the archive are unpacked, it is assumed that archive file is copied into scratch_dir
-
-        self.fullrestart = False
 
     # ... DFCOEF
 
@@ -1015,6 +1013,17 @@ class pam_enviroment:
 
     # copy dirac.x executable if wanted
         self.copy_file(self.dirac_exe, self.scratch_dir + '/' + 'dirac.x')
+
+    # restarting stuff
+        if self.full_restart:
+            copy_single_file(self.archive_name)
+            archive_scratch_dir = self.scratch_dir + '/' + self.archive_name
+            unpack_command = 'tar --directory ' + self.scratch_dir \
+                + ' -xvf ' + archive_scratch_dir
+            print 'Unpacking archive file in the scratch directory, command ', \
+                unpack_command
+            os.system(unpack_command)
+
     # the existence of self.input_file molecule,self.input_file_dirac is verified
         if self.xyz_molecule_input == True:
             self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
@@ -1024,15 +1033,6 @@ class pam_enviroment:
                            + 'MOLECULE.MOL')
         self.copy_file(self.input_file_dirac, self.scratch_dir + '/'
                        + 'DIRAC.INP')
-
-        if self.full_restart:
-            copy_single_file(self.archive_name)
-            archive_scratch_dir = self.scratch_dir + '/' + self.archive_name
-            unpack_command = 'tar --directory ' + self.scratch_dir \
-                + ' -xvf ' + archive_scratch_dir
-            print 'Unpacking archive file in the scratch directory, command ', \
-                unpack_command
-            os.system(unpack_command)
 
         if self.put_files is not None:
             for file_name in self.put_files:
