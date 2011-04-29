@@ -37,12 +37,23 @@ module basis_info_ng
    public basis_info_write_ng
    public basis_info_read_ng
 
-   integer, public :: nr_ireps
+   integer, public :: ao_nr(0:7,  2)
+   integer, public :: ao_off(0:7, 2)
    integer, public :: irep_of_axes(3)
    integer, public :: irep_of_rotations(3)
-   integer, public :: nr_sym_independent_centers
+   integer, public :: nr_ireps
+   integer, public :: nr_shells
+   integer, public :: nr_shells_large
+   integer, public :: nr_shells_small
    integer, public :: nr_sym_dependent_centers
+   integer, public :: nr_sym_independent_centers
+   logical, public :: basis_is_spherical
 
+   integer, public, allocatable :: l_quantum_nr(:)
+   integer, public, allocatable :: shell_center(:)
+   integer, public, allocatable :: shell_stabilizing_irep(:)
+   real(8), public, allocatable :: contraction_coef(:, :)
+   real(8), public, allocatable :: primitive_exp(:, :)
    real(8), public, allocatable :: sym_dependent_center_charge(:)
    real(8), public, allocatable :: sym_dependent_center_xyz(:, :)
    real(8), public, allocatable :: sym_independent_center_charge(:)
@@ -50,59 +61,46 @@ module basis_info_ng
 
    private
 
-   integer              :: nr_shells(0:2)
-   integer              :: sym_axes(3, 2)
-   integer, parameter   :: nr_types = 2
-   integer              :: max_nr_primitives(0:2)
-   integer              :: first_shell(0:2)
-   integer              :: last_shell(0:2)
-   logical              :: is_spherical
-   integer, allocatable :: shell_type(:)
-   integer, allocatable :: shell_center(:)
-   integer, allocatable :: shell_stabilizing_irep(:)
-   integer, allocatable :: l_quantum_nr(:)
-   integer, allocatable :: nr_primitives(:)
-   real(8), allocatable :: primitive_exp(:, :)
-   real(8), allocatable :: contraction_coef(:, :)
-
    character(*), parameter :: file_name = 'basis_info_ng'
    integer,      parameter :: file_unit = 137
    logical                 :: file_exists
 
-   character(*), parameter :: type_label(0:2) = (/'total', 'large', 'small'/)
    character(1), parameter :: ls(2) = (/'L', 'S'/)
 
 contains
 
    subroutine basis_info_clear()
 
-!     nr_ireps                   = 1
-!     irep_of_axes               = 1
-!     irep_of_rotations          = 1
-      nr_sym_independent_centers = 0
+      ao_nr                      = 0
+      ao_off                     = 0
+      irep_of_axes               = 0
+      irep_of_rotations          = 0
+      nr_ireps                   = 0
+      nr_shells                  = 0
+      nr_shells_large            = 0
+      nr_shells_small            = 0
       nr_sym_dependent_centers   = 0
+      nr_sym_independent_centers = 0
+      basis_is_spherical         = .false.
 
-      if (allocated(sym_dependent_center_charge))   deallocate(sym_dependent_center_charge)
-      if (allocated(sym_dependent_center_xyz))      deallocate(sym_dependent_center_xyz)
+      if (allocated(l_quantum_nr                 )) deallocate(l_quantum_nr                 )
+      if (allocated(shell_center                 )) deallocate(shell_center                 )
+      if (allocated(shell_stabilizing_irep       )) deallocate(shell_stabilizing_irep       )
+      if (allocated(contraction_coef             )) deallocate(contraction_coef             )
+      if (allocated(primitive_exp                )) deallocate(primitive_exp                )
+      if (allocated(sym_dependent_center_charge  )) deallocate(sym_dependent_center_charge  )
+      if (allocated(sym_dependent_center_xyz     )) deallocate(sym_dependent_center_xyz     )
       if (allocated(sym_independent_center_charge)) deallocate(sym_independent_center_charge)
-      if (allocated(sym_independent_center_xyz))    deallocate(sym_independent_center_xyz)
-
-      if (allocated(shell_type))             deallocate(shell_type)
-      if (allocated(shell_center))           deallocate(shell_center)
-      if (allocated(shell_stabilizing_irep)) deallocate(shell_stabilizing_irep)
-      if (allocated(l_quantum_nr))           deallocate(l_quantum_nr)
-      if (allocated(nr_primitives))          deallocate(nr_primitives)
-      if (allocated(primitive_exp))          deallocate(primitive_exp)
-      if (allocated(contraction_coef))       deallocate(contraction_coef)
+      if (allocated(sym_independent_center_xyz   )) deallocate(sym_independent_center_xyz   )
 
    end subroutine
 
    subroutine basis_info_write_ng()
 
 !     --------------------------------------------------------------------------
-      integer :: i, j, i_c, i_s, ic
-      integer :: ishell, icount, isym, iprim, irep, icent
-      integer :: jshell
+      integer              :: i, j, ic
+      integer              :: ishell, icount, iprim, irep, icent
+      integer, allocatable :: nr_primitives(:)
 !     --------------------------------------------------------------------------
 
 #include "mxcent.h"
@@ -139,64 +137,40 @@ contains
            access = 'sequential')
       rewind(file_unit)
 
-      nr_ireps = nbsym
-      sym_axes = isymax
+      nr_ireps  = nbsym
+      nr_shells = kmax
 
-      nr_shells(1) = nlrgsh
-      nr_shells(2) = kmax - nr_shells(1)
-      nr_shells(0) = nr_shells(1) + nr_shells(2)
-
-      first_shell(1) = 1
-      last_shell(1)  = nr_shells(1)
-      first_shell(2) = nr_shells(1)  + 1
-      last_shell(2)  = last_shell(1) + nr_shells(2)
-
-      allocate(l_quantum_nr(nr_shells(0)))
-      allocate(shell_center(nr_shells(0)))
-      allocate(shell_stabilizing_irep(nr_shells(0)))
-      do ishell = 1, nr_shells(0)
+      allocate(l_quantum_nr(nr_shells))
+      allocate(shell_center(nr_shells))
+      allocate(shell_stabilizing_irep(nr_shells))
+      do ishell = 1, nr_shells
          l_quantum_nr(ishell)           = nhkt(ishell)
          shell_center(ishell)           = ncent(ishell)
          shell_stabilizing_irep(ishell) = istbao(ishell)
       end do
 
-      allocate(shell_type(nr_shells(0)))
-      do ishell = 1, nr_shells(0)
-         do ic = 1, nr_types
-            if (ishell >= first_shell(ic) .and. ishell <= last_shell(ic)) then
-               shell_type(ishell) = ic
-            end if
-         end do
-      end do
-
-      max_nr_primitives = 0
-      do ishell = 1, nr_shells(0)
+      allocate(nr_primitives(nr_shells))
+      do ishell = 1, nr_shells
          i = jstrt(ishell) + 1
          j = jstrt(ishell) + nuco(ishell)
          icount = 0
          do iprim = i, j
             if (dabs(priccf(iprim, numcf(ishell))) > tiny(0.0d0)) then
                icount = icount + 1
-               if (icount > max_nr_primitives(shell_type(ishell))) then
-                  max_nr_primitives(shell_type(ishell)) = icount
-               end if
+               nr_primitives(ishell) = icount
             end if
          end do
       end do
-      max_nr_primitives(0) = maxval(max_nr_primitives)
 
-      allocate(nr_primitives(nr_shells(0)))
-      allocate(primitive_exp(nr_shells(0), max_nr_primitives(0)))
-      allocate(contraction_coef(nr_shells(0), max_nr_primitives(0)))
-
-      do ishell = 1, nr_shells(0)
+      allocate(primitive_exp(nr_shells,    sum(nr_primitives)))
+      allocate(contraction_coef(nr_shells, sum(nr_primitives)))
+      do ishell = 1, nr_shells
          i = jstrt(ishell) + 1
          j = jstrt(ishell) + nuco(ishell)
          icount = 0
          do iprim = i, j
             if (dabs(priccf(iprim, numcf(ishell))) > tiny(0.0d0)) then
                icount = icount + 1
-               nr_primitives(ishell)            = icount
                contraction_coef(ishell, icount) = priccf(iprim, numcf(ishell))
                primitive_exp(ishell, icount)    = priexp(iprim)
             end if
@@ -240,38 +214,42 @@ contains
 
       write(file_unit, '(a)') '*** basis'
 
-      is_spherical = .false.
-      do ic = 1, nr_types
-         do ishell = first_shell(ic), last_shell(ic)
-            if (sphr(ishell)) then
-               is_spherical = .true.
-            end if
-         end do
+      basis_is_spherical = .false.
+      do ishell = 1, kmax
+         if (sphr(ishell)) then
+            basis_is_spherical = .true.
+         end if
       end do
       write(file_unit, '(4x, a)') 'is_spherical'
-      write(file_unit, '(4x, l6)') is_spherical
+      write(file_unit, '(4x, l6)') basis_is_spherical
 
-      write(file_unit, '(4x, a)') 'nr_primitives'
+      write(file_unit, '(4x, a)') 'nr_primitive_exp'
       write(file_unit, '(4x, i6)') sum(nr_primitives)
 
-      write(file_unit, '(4x, a6, a4, 2a5, 2a26)') '# cent',  &
-                                                  'L/S',     &
-                                                  'l',       &
-                                                  'irep',    &
-                                                  'prim',    &
-                                                  'coef'
-      do ic = 1, nr_types
-         do ishell = first_shell(ic), last_shell(ic)
-            do i = 1, nr_primitives(ishell)
-               write(file_unit, '(4x, i6, a4, 2i5, 2f26.16)') shell_center(ishell),           &
-                                                              ls(ic),                         &
-                                                              l_quantum_nr(ishell),           &
-                                                              shell_stabilizing_irep(ishell), &
-                                                              primitive_exp(ishell, i),       &
-                                                              contraction_coef(ishell, i)
-            end do
+      write(file_unit, '(4x, 5a6, 2a26)') '# cent', &
+                                          'L/S',    &
+                                          'shell',  &
+                                          'l',      &
+                                          'irep',   &
+                                          'prim',   &
+                                          'coef'
+      do ishell = 1, kmax
+         if (ishell > nlrgsh) then
+            ic = 2
+         else
+            ic = 1
+         end if
+         do i = 1, nr_primitives(ishell)
+            write(file_unit, '(4x, i6, a6, 3i6, 2f26.16)') shell_center(ishell),           &
+                                                           ls(ic),                         &
+                                                           ishell,                         &
+                                                           l_quantum_nr(ishell),           &
+                                                           shell_stabilizing_irep(ishell), &
+                                                           primitive_exp(ishell, i),       &
+                                                           contraction_coef(ishell, i)
          end do
       end do
+      deallocate(nr_primitives)
 
       write(file_unit, '(a)') '*** symmetry'
 
@@ -279,14 +257,14 @@ contains
       write(file_unit, '(4x, i6)') nr_ireps
 
       write(file_unit, '(4x, a)') 'irep_of_axes'
-      write(file_unit, '(4x, i6)') sym_axes(1, 1)
-      write(file_unit, '(4x, i6)') sym_axes(2, 1)
-      write(file_unit, '(4x, i6)') sym_axes(3, 1)
+      write(file_unit, '(4x, i6)') isymax(1, 1)
+      write(file_unit, '(4x, i6)') isymax(2, 1)
+      write(file_unit, '(4x, i6)') isymax(3, 1)
 
       write(file_unit, '(4x, a)') 'irep_of_rotations'
-      write(file_unit, '(4x, i6)') sym_axes(1, 2)
-      write(file_unit, '(4x, i6)') sym_axes(2, 2)
-      write(file_unit, '(4x, i6)') sym_axes(3, 2)
+      write(file_unit, '(4x, i6)') isymax(1, 2)
+      write(file_unit, '(4x, i6)') isymax(2, 2)
+      write(file_unit, '(4x, i6)') isymax(3, 2)
 
       write(file_unit, '(4x, 5a6)') '# irep', &
                                     'nr-L',   &
@@ -311,8 +289,11 @@ contains
 
 !     --------------------------------------------------------------------------
       character(120) :: line
-      integer        :: i
+      integer        :: i, j, k, l, n
+      integer        :: idummy, irep, cent, ishell
       logical        :: symmetry_info_found
+      real(8)        :: prim, coef
+      character(1)   :: ch
 !     --------------------------------------------------------------------------
 
       symmetry_info_found = .false.
@@ -357,7 +338,7 @@ contains
             end do
          end if
 
-         if (word_contains(line, '*** symmetry_general')) then
+         if (word_contains(line, '*** symmetry')) then
             symmetry_info_found = .true.
             read(file_unit, *)
             read(file_unit, *) nr_ireps
@@ -365,57 +346,60 @@ contains
             read(file_unit, *) irep_of_axes(1:3)
             read(file_unit, *)
             read(file_unit, *) irep_of_rotations(1:3)
+            read(file_unit, *)
+            do irep = 0, nr_ireps - 1
+               read(file_unit, *) idummy,          &
+                                  ao_nr(irep, 1),  &
+                                  ao_nr(irep, 2),  &
+                                  ao_off(irep, 1), &
+                                  ao_off(irep, 2)
+            end do
          end if
 
-!** basis_large
-!   is_spherical
-!        F
-!   nr_shells
-!        3
-!   l_quantum_nr
-!        1
-!        1
-!        2
-!   shell_center
-!        1
-!        1
-!        1
-!   max_nr_primitives
-!        4
-!   nr_primitives
-!        4
-!        1
-!        1
-!   primitive_exp_and_contraction_coef
-!      13.0099999999999998        0.0961066109833227
-!       1.9620000000000000        0.1630199747910442
-!       0.4446000000000000        0.1855450226833620
-!       0.1220000000000000        0.0737437919835051
-!       0.1220000000000000        0.1471227944285736
-!       0.7270000000000000        0.9568813750595657
-!** symmetry_large
-!   shell_stabilizing_irep
-!        3
-!        3
-!        3
-!   nr_ao_in_irep
-!        3
-!        1
-!        1
-!        0
-!        3
-!        1
-!        1
-!        0
-!   ao_offset_in_irep
-!        0
-!       24
-!       25
-!        3
-!       26
-!        3
-!        4
-!       29
+         if (word_contains(line, '*** basis')) then
+            read(file_unit, *)
+            read(file_unit, *) basis_is_spherical
+            read(file_unit, *)
+            read(file_unit, *) n
+            read(file_unit, *)
+
+!           overkill allocation for convenience
+!           it will "never become a bottleneck" (2011-04-29)
+            allocate(shell_center(n))
+            allocate(l_quantum_nr(n))
+            allocate(shell_stabilizing_irep(n))
+            allocate(primitive_exp(n, n))
+            allocate(contraction_coef(n, n))
+
+            j = 1
+            k = 1
+            nr_shells_large = 0
+            nr_shells_small = 0
+            do i = 1, n
+               read(file_unit, *) cent,   &
+                                  ch,     &
+                                  ishell, &
+                                  l,      &
+                                  irep,   &
+                                  prim,   &
+                                  coef
+               if (ishell > k) then
+                  j = j + 1
+               else
+                  j = 1
+               end if
+               shell_center(ishell)           = cent
+               l_quantum_nr(ishell)           = l
+               shell_stabilizing_irep(ishell) = irep
+               primitive_exp(ishell, j)       = prim
+               contraction_coef(ishell, j)    = coef
+               k = ishell
+               if (ch == 'L') nr_shells_large = nr_shells_large + 1
+               if (ch == 'S') nr_shells_small = nr_shells_small + 1
+            end do
+            nr_shells = nr_shells_large + nr_shells_small
+
+         end if
 
       end do
 1     continue
@@ -423,89 +407,26 @@ contains
       close(file_unit, status = 'keep')
 
       if (.not. symmetry_info_found) then
-         nr_ireps          = 1
-         irep_of_axes      = 1
-         irep_of_rotations = 1
+!        fixme
       end if
 
    end subroutine
 
    function word_contains(word, substring)
-   
+
 !     --------------------------------------------------------------------------
       character(*), intent(in) :: word
       character(*), intent(in) :: substring
 !     --------------------------------------------------------------------------
       logical                  :: word_contains
 !     --------------------------------------------------------------------------
-      
+
       if (index(word, substring) > 0) then
          word_contains = .true.
       else
          word_contains = .false.
       end if
-   
+
    end function
 
 end module
-!** basis_small
-!   is_spherical
-!        F
-!   nr_shells
-!        6
-!   l_quantum_nr
-!        1
-!        2
-!        2
-!        2
-!        2
-!        3
-!   shell_center
-!        1
-!        1
-!        1
-!        1
-!        1
-!        1
-!   max_nr_primitives
-!        1
-!   nr_primitives
-!        1
-!        1
-!        1
-!        1
-!        1
-!        1
-!   primitive_exp_and_contraction_coef
-!       0.7270000000000000        0.5611266563460818
-!      13.0099999999999998       35.2197856580827846
-!       1.9620000000000000        3.3098921408821012
-!       0.4446000000000000        0.5174899391838638
-!       0.1220000000000000        0.1027755657758715
-!       0.7270000000000000        1.6317563166544060
-!** symmetry_small
-!   shell_stabilizing_irep
-!        3
-!        3
-!        3
-!        3
-!        3
-!        3
-!   nr_ao_in_irep
-!        8
-!        5
-!        5
-!        1
-!        8
-!        5
-!        5
-!        1
-!   ao_offset_in_irep
-!       29
-!        5
-!       10
-!       37
-!       15
-!       38
-!       43
-!       23
