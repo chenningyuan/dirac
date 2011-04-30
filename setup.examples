@@ -5,10 +5,9 @@ for users trying to install DIRAC on similar machines.
 stallo (x86_64 linux cluster) 2011-02-20
 ----------------------------------------
 $ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake
-$ ./setup --fc=mpif90 --cc=mpicc --mpi
+$ ./setup --fc=mpif90 --cc=mpicc --mpi --install=/global/apps/dirac/r13692
 $ cd build
 $ make
-$ cmake -DCMAKE_INSTALL_PREFIX=/global/apps/dirac/latest ..
 $ make install
 
 titan (x86_64 linux cluster) 2011-02-20
