@@ -111,7 +111,6 @@ set(SCRATCH_DIR
     "${DEFAULT_SCRATCH_BASE_DIR}/DIRAC_scratch"
     CACHE STRING
     "Default scratch directory"
-    FORCE
     )
 
 include(Archs)
