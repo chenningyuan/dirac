@@ -1,25 +1,25 @@
-#
-# http://www.robvanderwoude.com/batchfiles.php
-#
-# for crontab&queue system you have to set up enviroment !
+@ECHO OFF
 
-# the directory where your DIRAC sits
-DIRAC=C:\Users\dv6-2145ec\Dirac-Windows\trunk
+cls
 
-# go to the local DIRAC directory
-cd $DIRAC
+rem  http://www.robvanderwoude.com/batchfiles.php
+rem the directory where your DIRAC sits
 
-# radovan: bad idea, use svn co, not svn up
+echo "hello, building up DIRAC"
+set DIRAC=C:\Users\dv6-2145ec\Dirac-Windows\trunk
+
+rem go to the local DIRAC directory
+cd %DIRAC%
+
+rem radovan: bad idea, use svn co, not svn up
 svn up
 
 ./pamadm -a --xcfun 
 
-# configure step
-cmake -G "MinGW Makefiles" "FC=gfortran"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  ..\
+rem configure step
+cmake -G "MinGW Makefiles" "FC=gfortran"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  %DIRAC%
 
-cd $DIRAC\build
-
-make clean
-
+cd %DIRAC%\build
+rem make clean
 make dirac.x
 
