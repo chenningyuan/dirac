@@ -11,7 +11,7 @@ from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-5]
 
-default_path = root_directory + 'build/'
+default_path = root_directory + 'build'
 
 # define example usage
 
@@ -151,16 +151,16 @@ def which(program):
     fpath, fname = os.path.split(program)
     if fpath:
         if is_exe(program):
-            return program
+            return True
     else:
         for path in os.environ["PATH"].split(os.pathsep):
             exe_file = os.path.join(path, program)
             if is_exe(exe_file):
-                return exe_file
+                return True
 
     return None
 
-if not which('cmake'):
+if not which('cmake.exe') and not which ('cmake'):
     # there is no cmake
     # print info
     print '   You are not running autoconf/automake tools!'
