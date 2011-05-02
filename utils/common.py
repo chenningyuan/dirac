@@ -30,9 +30,8 @@ def is_windows():
     """
     returns true if this machine is Windows operating system
     """
-    import distutils
-    platform = distutils.util.get_platform()
-    return platform.find("win") == -1
+    import sys
+    return sys.platform == "win32"
 
 def process_time_string_core(time_string):
     """
