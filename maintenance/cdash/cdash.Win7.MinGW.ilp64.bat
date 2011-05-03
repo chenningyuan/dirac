@@ -14,12 +14,14 @@ cd %DIRAC%
 rem radovan: bad idea, use svn co, not svn up
 svn up
 
-./pamadm -a --xcfun 
+python pamadm -a --xcfun 
 
 rem configure step
 cmake -G "MinGW Makefiles" "FC=gfortran"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  %DIRAC%
 
 cd %DIRAC%\build
 rem make clean
-make dirac.x
+rem make dirac.x
+mingw32-make dirac.x
+
 
