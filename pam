@@ -99,12 +99,10 @@ class pam_enviroment:
         self.trond_mode = False # You are Trond Saue
 
      #  installation directory ...
-
         self.dirac_home = install_dir
 
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-	
         self.basdir = '.:' + os.path.join(install_dir_default,'basis')+':' \
                             + os.path.join(install_dir_default,'basis_dalton')
 
@@ -134,7 +132,6 @@ class pam_enviroment:
         self.dirac_stderr=''     
 
     # ... variables related to parallel calculations
-
         self.parallel_build = False  # parallel build - read from Makefile.config
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = ''  # additional arguments for the MPIRUN
@@ -157,14 +154,12 @@ class pam_enviroment:
         self.localdisks = False
 
     #   restrict distribution of working files over nodes by own flag/variable
- 
         self.distribute = []
 
     #   list of basic (core) DIRAC files to be distributed over nodes by default
         self.core_dirac_files=[self.dirac_exe_file,'MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
 
     # machine file
-
         self.machinefile = None  # could be enviroment variable (like $PBS_NODEFILE)
         self.machinefile_content = None
 
@@ -172,33 +167,27 @@ class pam_enviroment:
         self.argument_to_pass_scratch_dir_to_slaves = None
 
     # master name,IP
-
         self.master = get_hostname()  # short hostname
         self.master_full = get_full_hostname()  # full hostname
         self.hostname_ip = get_hostname_ip()
 
     #  user login name
-
         self.user_name=get_username()
 
     # nodes (if any) - list; filled from self.machinefile
-
         self.nodes = []
 
     # rcp, rsh for parallel, multinodes calculations
-
         self.rcp = None  # default taken from Makefile.config
         self.rsh = None 
 
     # dirac profiling
-
         self.profile = False
         self.profiler = ''  # empty, but later read from Makefile.config
         self.profiling_file = 'gmon.out'  # usuall output file
         self.profile_command = ''  # command for profiling
 
     # dirac executable command (set in own routine)
-
         self.dirac_cmd = ''
 		
     # dirac-executable position (could be reset after flag reading)
@@ -211,18 +200,17 @@ class pam_enviroment:
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
+            else:
+                sys.exit('No Dirac binary found, quitting.')
 
     # nice command - priority (nice/npri)
-
         self.nice_cmd = ''
 
     # ## put/get files (flag controlled) ###
-
         self.put_files = ''
         self.get_files = ''
 
     # memory allocation
-
         mw = 64
         self.mw_to_mb = 2*3.81
         self.default_memory_work_master = mw
@@ -234,56 +222,45 @@ class pam_enviroment:
         self.max_memory_dynamic     = self.default_memory_dynamic
 
     # all files from the archive.tgz are unpacked, assumed that archive file is copied into the scratch_dir
-
         self.full_restart = False
         self.archive_name = ''
 
     # classic debugging (gdb, idb, dbx ...)
-
         self.debug = False
         self.debugger = ''  # empty, but later to be read from Makefile.config
 
     # valgrind debugging
-
         self.vg_debug = False
 
     # input directory (=directory with input files)
-
         self.input_directory = ''
 
     # molecule/input names plus  molecule/input file names
-
         self.input_molecule = ''
         self.input_file_molecule = ''
         self.input_dirac = ''
         self.input_file_dirac = ''
 
     # output name created from *inp & *mol names
-
         self.output_name = ''
 
     # default output suffix
-
         self.output_suffix = 'out'
 
     # output file (sitting in the input directory)
-
         self.output_file = ''
         self.output_file_full = ''  # full (absolute) path
 
     # lu of the DIRAC run output file (open in the "execute_dirac" method)
-
         self.f = None
 
     # by default, do backup files
-
         self.nobackup = False
 
         # default is to archive files
         self.archive = True
 
     # list of all possible DIRAC produced files for the archivation
-
         self.archive_files = [
             'MOLECULE.MOL',
             'MOLECULE.XYZ',
@@ -299,22 +276,18 @@ class pam_enviroment:
             ]
 
     # ... DFCOEF
-
         self.incmo = False
         self.outcmo = False
 
     # ... DFFCK2
-
         self.infock = False
         self.outfock = False
 
     # execution time-limit (in seconds; TODO: implement general time format)
-
         self.set_timeout_limit = False
         self.timeout = ''
 
     # pam script sitting in the installation directory (TODO: better specification)
-
         self.pam_command = os.path.join(install_dir,"pam")
 
     def show_settings(self):
@@ -338,7 +311,6 @@ class pam_enviroment:
     def set_scratch_dir_name(self):
         ''' sets the scratch directory name according to the
     self.output_name;  depends on self.scratch_path '''
-
         root_name=self.output_name
         if len(root_name) > 0:
             scratch_dir_name = root_name + '.' + str(self.current_pid)
@@ -346,18 +318,12 @@ class pam_enviroment:
             scratch_dir_name = 'dirac_scratch_dir.' + str(self.current_pid)
 
     # attach user login name to the scratch_dir name
-
         scratch_dir_name = self.user_name + '.' + scratch_dir_name
         self.scratch_dir = os.path.join(self.scratch_path,scratch_dir_name)
 
     def create_scratch_dir(self):
-        """   
-         create the scratch directory if it not exist
-        """
         if not os.path.isdir(self.scratch_dir):
-#           os.mkdir(self.scratch_dir)
-#           radovan: we need to create it with parent
-            os.system('mkdir -p ' + self.scratch_dir)
+            os.mkdirs(self.scratch_dir)
         else:
             print '  The scratch directory already exists.'
 
@@ -1053,7 +1019,6 @@ class pam_enviroment:
                     copy_single_file(f)
 
     # copies files to scratch_dir
-
         if self.incmo:
             file_name = 'DFCOEF'
             copy_single_file(file_name)
@@ -1066,7 +1031,6 @@ class pam_enviroment:
         This routine is called when local disks are selected
         for parallel calculations.
         """
-
         # get the list of nodes
         self.get_nodes()
 
@@ -1075,8 +1039,6 @@ class pam_enviroment:
     # otherwise print message that all CPUs are on one machine-master
     #
         if self.nodes:
-            #self.get_rsh_rcp()
-
             files_to_nodes=self.core_dirac_files+self.distribute # list of files to be distributed over nodes
             print '  Copying selected content of master scratch directory to nodes :',self.nodes
             for node in self.nodes:
@@ -1133,7 +1095,6 @@ class pam_enviroment:
 
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
-            # make sure DIRNOD is integer
             os.putenv('DIRNOD', str(int(self.max_memory_work_slave * 1000000)))
 
     # Next line is for IBM only but will not hurt other systems
@@ -1146,12 +1107,9 @@ class pam_enviroment:
         this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
 
         if self.parallel_run:
-
-      # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
-      # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-
-      # stefan: first try of a rudimentary correct passing of -wd/-wdir...
-
+            # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
+            # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
+            # stefan: first try of a rudimentary correct passing of -wd/-wdir...
             if self.mpirun == None:
                 # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                 #          then self.mpirun is None and we have to stop here otherwise pam calls
@@ -1193,7 +1151,6 @@ class pam_enviroment:
                 self.dirac_cmd = this_dirac_exe
 
     # at the end add priority command (either empty or not) #
-
         self.dirac_cmd = self.nice_cmd + self.dirac_cmd
 
     def read_makefile_config(self):
@@ -1281,8 +1238,6 @@ class pam_enviroment:
                          + node + ':/scratch/.'
                     #os.system(command)
                     x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                    #x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-                    #x= subprocess.Popen(command, shell=True, stderr=subprocess.PIPE)
                     print 'try command:',command
                     print 'stdout ?',x.communicate()[0]
                     print 'was stderr ?',x.communicate()[1]
@@ -1318,13 +1273,11 @@ class pam_enviroment:
         """ 
         get the list of unique nodes
         """ 
-
         # first, get the machinefile content if any
         if self.machinefile:
             self.handle_machinefile()
 
-    # get names of nodes in the machinefile
-
+        # get names of nodes in the machinefile
         if os.path.isfile(str(self.machinefile_content)):
             for line in fileinput.input(self.machinefile_content):
                 line = line[:-1]
@@ -1339,7 +1292,6 @@ class pam_enviroment:
         Write useful info at the beginning of the output file - size of
         all static allocations, for example
         """
-
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
         # radovan: just FYI, the "-e" ends up in my output, not in yours?
         size_command = \
@@ -1462,7 +1414,6 @@ class pam_enviroment:
       
         while True:
             try:
-
                 while True:
                     print_std_out_err("Going to kill (SIGTERM) dirac.x related process with PID="+str(pid))
                     print_std_out_err(get_pid_label(pid))
@@ -1582,17 +1533,14 @@ class pam_enviroment:
         command="ps -p "+str(pid)
         process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
-        #print process_string
         # check on presense of substrings
         if 'dirac.x' in process_string:
             return True
         from common import extract_path_file
         if self.parallel_run:
-            #TODO: fix it here....
+            #TODO: fix it here.... (FIX what??)
             z=extract_path_file()
             z.get_path_file(self.mpirun)
-            #print z.extracted,z.pure_file_name,z.pure_file_path
-            #if z.pure_file_name in process_string:
             if "mpirun" in process_string:
                 return True
             if "poe" in process_string:
@@ -1620,11 +1568,9 @@ class pam_enviroment:
         """
         profile after the DIRAC execution- we are in the scratch directory
         """
-
         if os.path.isfile(self.profiling_file):
             self.f = open(self.output_file_full, 'a', 0)  # open file for appending
             self.f.write('\n\n Profiling dirac.x in '+os.getcwd())
-            #self.profile_command = self.profiler + ' ' + self.dirac_exe \
             self.profile_command = self.profiler + ' dirac.x ' \
                 + ' ' + self.profiling_file
             print '  Going to profile after, command:',self.profile_command
@@ -1640,24 +1586,14 @@ class pam_enviroment:
 
     def save_files(self):
         "save files in various manners from the scratch directory"
-
-        #from common import backup_file
-
         def save_single_file(file_name):
-
-    # ... save single file
-
             full_file_name = os.path.join(self.scratch_dir,file_name)
             if os.path.isfile(full_file_name):
                 file_name_home = os.path.join(self.input_directory,file_name)
-
         # backup file if it's there
-
                 if not self.nobackup:
                     backup_file(some_file=file_name_home, upto=None)
-
         # finally copy
-
                 self.copy_file(full_file_name, file_name_home)
             else:
                 for stream in [sys.stdout,sys.stderr]:
@@ -1674,12 +1610,10 @@ class pam_enviroment:
                     save_single_file(f)
 
         if self.outcmo:
-            file_name = 'DFCOEF'
-            save_single_file(file_name)
+            save_single_file('DFCOEF')
 
         if self.outfock:
-            file_name = 'DFFCK2'
-            save_single_file(file_name)
+            save_single_file('DFFCK2')
 
     # take care of individual nodes if parallel run
 
