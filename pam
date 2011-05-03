@@ -81,8 +81,16 @@ class pam_enviroment:
 
     def __init__(self):
         '''Initialize the global set of variables'''
-        from common import get_username, get_hostname, get_full_hostname, get_hostname_ip
+        from common import get_username, get_hostname, get_full_hostname
+        from common import get_hostname_ip, is_windows
 
+        # own dirac executable file 
+        if is_windows():
+            self.dirac_exe_file="dirac.x.exe"
+        else:
+            self.dirac_exe_file="dirac.x"
+
+		
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
 
@@ -100,7 +108,6 @@ class pam_enviroment:
 
         self.basdir = '.:' + install_dir_default + '/basis:' \
             + install_dir_default + '/basis_dalton'
-
 
     # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
@@ -155,7 +162,7 @@ class pam_enviroment:
         self.distribute = []
 
     #   list of basic (core) DIRAC files to be distributed over nodes by default
-        self.core_dirac_files=['dirac.x','MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
+        self.core_dirac_files=[self.dirac_exe_file,'MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP']
 
     # machine file
 
@@ -194,16 +201,17 @@ class pam_enviroment:
     # dirac executable command (set in own routine)
 
         self.dirac_cmd = ''
-
+		
     # dirac-executable position (could be reset after flag reading)
-
-        if os.path.isfile(install_dir_default + '/dirac.x'):
-            self.dirac_exe = install_dir_default + '/dirac.x'
+        exec_position=install_dir_default + '/'+self.dirac_exe_file
+        if os.path.isfile(exec_position):
+            self.dirac_exe = exec_position
         else:
             # does not exist, try build directory
-            if os.path.isfile(install_dir_default + '/build/dirac.x'):
+            exec_position=install_dir_default + '/build/' + self.dirac_exe_file
+            if os.path.isfile(exec_position):
                 # assign build/dirac.x
-                self.dirac_exe = install_dir_default + '/build/dirac.x'
+                self.dirac_exe = exec_position
 
     # nice command - priority (nice/npri)
 
@@ -1012,7 +1020,7 @@ class pam_enviroment:
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
-        self.copy_file(self.dirac_exe, self.scratch_dir + '/' + 'dirac.x')
+        self.copy_file(self.dirac_exe, self.scratch_dir + '/' + self.dirac_exe_file)
 
     # restarting stuff
         if self.full_restart:
@@ -1138,7 +1146,7 @@ class pam_enviroment:
     def set_dirac_cmd(self):
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
-        this_dirac_exe = self.scratch_dir + '/dirac.x'
+        this_dirac_exe = self.scratch_dir + '/' + self.dirac_exe_file
 
         if self.parallel_run:
 
