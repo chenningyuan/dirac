@@ -233,10 +233,15 @@ class disk_space:
         """
         import os
         gb_factor = float(1024*1024*1024)
-        self.disk_info = os.statvfs(path)
-        self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
-        self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
-        self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
+        if not is_windows():
+            self.disk_info = os.statvfs(path)
+            self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
+            self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
+            self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
+        else:
+            self.available = 0
+            self.capacity = 0
+            self.used = 0
 
 class extract_path_file:
     """
