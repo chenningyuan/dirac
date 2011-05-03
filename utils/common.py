@@ -146,8 +146,12 @@ def get_full_hostname():
     get the server's full hostname using its IP-address
     """
     import socket
-    host=socket.gethostbyaddr(get_ip()) 
-    return host[0]
+    try:
+	    this_host=str(socket.gethostbyaddr(get_ip())[0])
+        #this_host=str(host[0])
+    except:
+        this_host="not found"
+    return this_host
 
 def get_hostname_ip():
     """
