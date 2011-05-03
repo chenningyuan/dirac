@@ -104,9 +104,9 @@ class pam_enviroment:
 
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-
-        self.basdir = '.:' + install_dir_default + '/basis:' \
-            + install_dir_default + '/basis_dalton'
+	
+        self.basdir = '.:' + os.path.join(install_dir_default,'basis')+':' \
+                            + os.path.join(install_dir_default,'basis_dalton')
 
     # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
