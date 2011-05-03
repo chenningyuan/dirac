@@ -87,10 +87,8 @@ class pam_enviroment:
         # own dirac executable file 
         if is_windows():
             self.dirac_exe_file="dirac.x.exe"
-            self.separator='\\'
         else:
             self.dirac_exe_file="dirac.x"
-            self.separator='/'
 		
         # returns the name of the operating system, empty if it cannot be determined
         self.operating_system = platform.system()
@@ -204,12 +202,12 @@ class pam_enviroment:
         self.dirac_cmd = ''
 		
     # dirac-executable position (could be reset after flag reading)
-        exec_position=install_dir_default + self.separator + self.dirac_exe_file
+        exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
         else:
             # does not exist, try build directory
-            exec_position=install_dir_default+self.separator+"build"+self.separator+self.dirac_exe_file
+            exec_position=os.path.join(install_dir_default,"build",self.dirac_exe_file)
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
@@ -317,7 +315,7 @@ class pam_enviroment:
 
     # pam script sitting in the installation directory (TODO: better specification)
 
-        self.pam_command = install_dir+self.separator+"pam"
+        self.pam_command = os.path.join(install_dir,"pam")
 
     def show_settings(self):
         "Print current settings to stdout"
@@ -350,7 +348,7 @@ class pam_enviroment:
     # attach user login name to the scratch_dir name
 
         scratch_dir_name = self.user_name + '.' + scratch_dir_name
-        self.scratch_dir = self.scratch_path + self.separator + scratch_dir_name
+        self.scratch_dir = os.path.join(self.scratch_path,scratch_dir_name)
 
     def create_scratch_dir(self):
         """   
@@ -423,8 +421,7 @@ class pam_enviroment:
         print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
         print '  ------------------------------------------------------------------------------'
         for filename in os.listdir(self.scratch_dir):
-            filesize_mb = float(os.path.getsize(self.scratch_dir + self.separator
-                                + filename)) / 1024000
+            filesize_mb = float(os.path.getsize(os.path.join(self.scratch_dir,filename)))/1024000
 
             sum_filesize_mb=sum_filesize_mb+filesize_mb
 
@@ -1004,9 +1001,9 @@ class pam_enviroment:
         '''copies file from the home directory to the scratch directory'''
 
         def copy_single_file(file_name):
-            full_file_name = self.input_directory + self.separator + file_name
+            full_file_name = os.path.join(self.input_directory,file_name)
             if os.path.isfile(full_file_name):
-                file_name_scratch = self.scratch_dir + self.separator + file_name
+                file_name_scratch = os.path.join(self.scratch_dir, file_name)
                 self.copy_file(full_file_name, file_name_scratch)
             else:
                 if self.expert_mode:
@@ -1024,12 +1021,12 @@ class pam_enviroment:
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
-        self.copy_file(self.dirac_exe, self.scratch_dir + self.separator + self.dirac_exe_file)
+        self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
 
     # restarting stuff
         if self.full_restart:
             copy_single_file(self.archive_name)
-            archive_scratch_dir = self.scratch_dir + self.separator + self.archive_name
+            archive_scratch_dir = os.path.join(self.scratch_dir, self.archive_name)
             unpack_command = 'tar --directory ' + self.scratch_dir \
                 + ' -xvf ' + archive_scratch_dir
             print 'Unpacking the archive file into the scratch directory, command ', \
@@ -1039,17 +1036,14 @@ class pam_enviroment:
     # the existence of self.input_file molecule,self.input_file_dirac is verified
         if self.input_file_molecule:
             if self.xyz_molecule_input == True:
-                self.copy_file(self.input_file_molecule, self.scratch_dir + self.separator
-                           + 'MOLECULE.XYZ')
+                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.XYZ')) 
             else:
-                self.copy_file(self.input_file_molecule, self.scratch_dir + self.separator
-                           + 'MOLECULE.MOL')
+                self.copy_file(self.input_file_molecule, os.path.join(self.scratch_dir,'MOLECULE.MOL'))
         else:
             print '  No molecule input file provided, assuming it is obtained from the restart file.'
 
         if self.input_file_dirac:
-            self.copy_file(self.input_file_dirac, self.scratch_dir + self.separator
-                       + 'DIRAC.INP')
+            self.copy_file(self.input_file_dirac, os.path.join(self.scratch_dir,'DIRAC.INP'))
         else:
             print '  No input file provided, assuming it is obtained from the restart file.'
 
@@ -1094,7 +1088,7 @@ class pam_enviroment:
                 for this_file in os.listdir(self.scratch_dir):
                     # distribute only selected files in the list
                     if this_file in files_to_nodes:
-                        this_file_full = self.scratch_dir + self.separator + this_file
+                        this_file_full = os.path.join(self.scratch_dir,this_file)
                         # TODO: replace the shell command by some pure python solution
                         command = self.rcp + ' ' + this_file_full + ' ' \
                             + node + ':' + this_file_full
@@ -1111,8 +1105,7 @@ class pam_enviroment:
         if len(self.output_name) > 0 and len(self.output_suffix) > 0:
             self.output_file = self.output_name + '.' \
                 + self.output_suffix
-            self.output_file_full = self.input_directory + self.separator \
-                + self.output_file
+            self.output_file_full = os.path.join(self.input_directory,self.output_file)
         else:
             print 'can not set output file - some strings not set up !'
             print 'self.output_name=', self.output_name
@@ -1150,7 +1143,7 @@ class pam_enviroment:
     def set_dirac_cmd(self):
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
-        this_dirac_exe = self.scratch_dir + self.separator + self.dirac_exe_file
+        this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
 
         if self.parallel_run:
 
@@ -1219,7 +1212,7 @@ class pam_enviroment:
             else:
                 return ('','')
 
-        makefile_config = install_dir + self.separator + 'Makefile.config'
+        makefile_config = os.path.join(install_dir,'Makefile.config')
         # if no Makefile.config present, leave with warning message
         if not os.path.isfile(makefile_config):
             return
@@ -1374,8 +1367,7 @@ class pam_enviroment:
 
         if not self.nobackup:
             from common import backup_file
-            backup_file(some_file=self.input_directory + self.separator
-                        + self.output_file, upto=None)
+            backup_file(some_file=os.path.join(self.input_directory,self.output_file),upto=None)
 
         if self.set_timeout_limit:
             signal.signal(signal.SIGALRM, signal_handler)
@@ -1655,9 +1647,9 @@ class pam_enviroment:
 
     # ... save single file
 
-            full_file_name = self.scratch_dir + self.separator + file_name
+            full_file_name = os.path.join(self.scratch_dir,file_name)
             if os.path.isfile(full_file_name):
-                file_name_home = self.input_directory + self.separator + file_name
+                file_name_home = os.path.join(self.input_directory,file_name)
 
         # backup file if it's there
 
@@ -1725,8 +1717,7 @@ class pam_enviroment:
         # set name of the archive file; TODO: Windows packing adaptation
 
         archive_name = self.output_name + '.tgz'
-        archive_full_name = self.input_directory + self.separator \
-                + archive_name
+        archive_full_name = os.path.join(self.input_directory,archive_name) 
 
       # select existing files in self.archive_files for the archive
 
