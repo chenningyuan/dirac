@@ -340,8 +340,6 @@ def line_is_keyword(line):
 # main function
 def main(*args):
 
-    f_todo = open('test/LOGS/todo.txt', 'w')
-
 #  get list of tasks
     l = []
     for test in list_of_tests_to_run:
@@ -438,16 +436,6 @@ def main(*args):
             elapsed = (time.time() - start)
             global_elapsed += elapsed
 
-            # check whether quick is quick and regular is not quick
-            # if not suggest change in todo.txt
-            # of course quick_time is relative - feel free to adapt
-            quick_time = 10.0
-            if (result_text == 'OK') or (result_text == 'FAIL'):
-                if (task.kind == 'q') and (elapsed > quick_time):
-                    f_todo.write('%s %s (%s) is marked as quick but should be regular\n' % (task.inp, task.mol, task.get_test_name()))
-                if (task.kind == 'r') and (elapsed <= quick_time):
-                    f_todo.write('%s %s (%s) is marked as regular but should be quick\n' % (task.inp, task.mol, task.get_test_name()))
-
             progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
             task.print_result(progress, result_text, elapsed)
 
@@ -487,8 +475,6 @@ def main(*args):
 
     global_elapsed_str = time.strftime('%Hh%Mm%Ss', time.gmtime(global_elapsed))
     print 'total time: %s\n' % global_elapsed_str
-
-    f_todo.close()
 
     # return code
     if (nr_failed + nr_crashed) > 0 :
