@@ -2177,7 +2177,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
       do igas = 1, ngas
 !       print *, ' loop for igas ==>',igas
 !       initialize (.false.) 
-        call lzero(symmetry_closed_ring,nirrep)
+        symmetry_closed_ring = .false.
         ibssm = 1
         do isym = nirrep/2+1, nirrep
 !         print *, ' isym, igas ==> ngsob',isym,igas,
