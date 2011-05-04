@@ -4970,7 +4970,7 @@ C
      &     3X,'Integral transformation: ',/,
      &     3X,'  Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
      &     3X,'Linear symmetry implementation:',/,
-     &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen',/,
+     &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen',//,
      &     3X,'KRMC-GASCIP CI code: ',/,
      &     3X,'  Joern Thyssen and Hans Joergen Aa. Jensen',//,
      &     3X,'LUCIAREL CI code: ',/,
