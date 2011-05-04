@@ -193,7 +193,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck x2uu */
       SUBROUTINE X2UU(HX,H2XY)
 C***********************************************************************
 C
@@ -239,7 +238,6 @@ C
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck x2gu */
       SUBROUTINE X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C***********************************************************************
 C
@@ -370,7 +368,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gu2ug */
       SUBROUTINE GU2UGT(GUINT,UGTINT,IREPIJ,NORBI,NASHI)
 C***********************************************************************
 C
@@ -442,7 +439,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck ifacnz3 */
       FUNCTION IFACNZ3(I3,IZ,IQ1,IQ2)
 C***********************************************************************
 C
@@ -552,7 +548,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck btch2f */
       SUBROUTINE BTCH2F(HT,IZ2,IREPABR,HX,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -610,7 +605,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck intb2x */
       SUBROUTINE INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -831,7 +825,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck f2btch */
       SUBROUTINE F2BTCH(HX,HT,IZ2,IREPABR,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -894,7 +887,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck f2gu */
       SUBROUTINE F2GU(HX,HT,IZ2,IREPABR,IREPIJ,NKL)
 C***********************************************************************
 C
@@ -936,7 +928,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck blkzero */
       SUBROUTINE BLKZERO(J1MO,N1MO,J2MO,N2MO,AMAT,NRDIM,NCDIM,
      &              NZ,NFSYM,IREPIJ)
 C***********************************************************************
@@ -968,7 +959,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck blkunit */
       SUBROUTINE BLKUNIT(JMO,NMO,AMAT,NRDIM,NCDIM,NZ,NFSYM)
 C***********************************************************************
 C
@@ -999,7 +989,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rprci */
       SUBROUTINE RPRCI(CIVEC,NZCONF,NZ,CIPRG,THRPCI,LUPRI)
 C***********************************************************************
 C
@@ -1051,7 +1040,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rappbos */
       SUBROUTINE RAPPBOS(CMO,IBOSYM,IBEIG,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
@@ -1185,7 +1173,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rgmcmo */
       SUBROUTINE RGMCMO(CMO,WORK,LWORK)
 C***********************************************************************
 C
@@ -1294,7 +1281,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck appfq */
       SUBROUTINE APPFQ(CTL,FQ,DV,FV,WORK,LWORK)
 C***********************************************************************
 C
@@ -1416,7 +1402,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dcsct */
       SUBROUTINE DCSCT(DC)
 C***********************************************************************
 C
@@ -1450,7 +1435,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotfc */
       SUBROUTINE ROTFC(C,U,FC,WORK,LWORK)
 C***********************************************************************
 C
@@ -1514,7 +1498,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotfc1 */
       SUBROUTINE ROTFC1(C,U,FC,FCOLD,WORK,LWORK)
 C***********************************************************************
 C
@@ -1564,7 +1547,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotfc */
       SUBROUTINE ROTFQ(C,U,FQ,WORK,LWORK)
 C***********************************************************************
 C
@@ -1629,7 +1611,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rotorb */
       SUBROUTINE ROTORB(C,U,CMO,WORK,LWORK)
 C***********************************************************************
 C
@@ -1708,7 +1689,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck diagc */
       SUBROUTINE DIAGC(C,AM,EIG,EIGVEC,NDIM,WORK,LWORK)
 C***********************************************************************
 C
@@ -1945,7 +1925,6 @@ C
 
       end subroutine block_one_dens
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck TRKRLUCI */
       SUBROUTINE TRKRLUCI(CIRUN,ISYNC_NODES)
 C***********************************************************************
 C
@@ -1961,6 +1940,8 @@ C
 C     Last revision:
 C
 C***********************************************************************
+      use symmetry_setup_krci
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
@@ -1975,79 +1956,195 @@ C***********************************************************************
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
-#include "../luciarel/lucinp.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
 #include "../luciarel/cprnt.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/oper.inc"
-#include "../luciarel/machine.inc"
 #include "../luciarel/cands.inc"
-#include "../luciarel/input.inc"
 #include "../luciarel/noccn_inf.inc"
 #include "krmc_shmem.h"
 #include "krmcluci_inf.h"
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN
-C
-      CHARACTER*72 TITLEC(3)
-C
-C     TITLE
-      IF( JKRRUNTYPE .eq. 1) THEN
-         TITLEC(1) = ' --------------------------- '
-         TITLEC(2) = '    Relativistic MCSCF run   '
-         TITLEC(3) = ' --------------------------- '
-      ELSE IF( JKRRUNTYPE .eq. 2 )THEN
-         TITLEC(1) = ' --------------------------- '
-         TITLEC(2) = '    Relativistic KR-CI run   '
-         TITLEC(3) = ' --------------------------- '
-      END IF
-#if defined (VAR_MPI)
-      IF( ISYNC_NODES .eq. 1 ) 
-     &  CALL MPI_BCAST(GROUP,3,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+      logical isopen, ex_mcdf
+!     scratch
+      integer, allocatable  :: orb_sym_vec(:)
+      integer               :: orb_sym_fh
+      character (len=11)    :: orb_sym_fn
+      character (len= 4)    :: mynum_str
+ 
+!     basic symmetry information
+#ifdef VAR_MPI
+      if(isync_nodes .eq. 1)then
+       CALL MPI_BCAST(GROUP, 3,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
+       CALL MPI_BCAST(spinfr,1,MPI_LOGICAL,  MASTER,MPI_COMM_WORLD,IERR)
+       CALL MPI_BCAST(linear,1,MPI_LOGICAL,  MASTER,MPI_COMM_WORLD,IERR)
+      end if
 #endif
-C     Double group
+
+!     distribute orbital symmetry information (if applicable)
+      if(linear.or.spinfr)then
+
+        call alloc(orb_sym_vec,norbt)
+        orb_sym_vec = 0
+
+!       read data from master file krmcscf or dfcoef
+        if(myproc.eq.master)then
+          inquire(file="KRMCSCF",opened=isopen,exist=ex_mcdf)
+          if(ex_mcdf)then
+            if(.not.isopen) open(lukrmc,status="old",
+     &                           form="unformatted")
+            rewind(lukrmc)
+            if(linear)then
+              call ireakrmc(lukrmc,'MJVEC   ',orb_sym_vec,norbt)
+            else if(spinfr)then
+              call ireakrmc(lukrmc,'IBEIG   ',orb_sym_vec,norbt)
+            end if
+            if(.not.isopen) close(lukrmc,status="keep")
+          else
+            call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
+            call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,orb_sym_vec,
+     &                          dummy,8)
+            close(lucoef,status='KEEP')
+          end if
+        end if
+!       communicate data
+#ifdef VAR_MPI
+        if(isync_nodes .eq. 1)then
+          call mpi_bcast(orb_sym_vec,norbt,my_MPI_INTEGER,master,
+     &                   MPI_COMM_WORLD,ierr)
+        end if
+#endif
+!       store orbital symmetry information on file 'orbsym.xxxx' 
+!       where xxxx is the process id.
+        orb_sym_fh = 99
+        call num2str(myproc,mynum_str)
+        write(orb_sym_fn,'(a7,a4)') 'orbsym.',mynum_str
+        open(orb_sym_fh,file=orb_sym_fn,status='replace',
+     &       form='unformatted',action='readwrite',position='rewind')
+        write(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
+        close(orb_sym_fh)
+
+        call dealloc(orb_sym_vec)
+      end if
+
+!     set double group and point group (for historical reasons and it is
+!     still widely used in the code)
+
+!     initialize PNTGRP and DOUGRP
+      pntgrp = 0
+      dougrp = 0
+
       IF (GROUP.eq.'C1 ') THEN
-         PNTGRP = 5
-         NIRREP = 2
-         IRIQ = 2
+         PNTGRP      = 5
+         DOUGRP      = 8
+         NIRR_DG     = 2
+         NIRR_PN     = 1
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'Ci ') THEN
-         PNTGRP = 6
-         NIRREP = 4
-         IRIQ = 2
+         PNTGRP      = 6
+         DOUGRP      = 7
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'Cs ') THEN
-         PNTGRP = 7
-         NIRREP = 4
-         IRIQ = 2
+         PNTGRP      = 7
+         DOUGRP      = 6
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'C2 ') THEN
-         PNTGRP = 8
-         NIRREP = 4
-         IRIQ = 2
-      ELSE IF (GROUP.eq.'C2h') THEN
-         PNTGRP = 9
-         NIRREP = 8
-         IRIQ = 2
-      ELSE IF (GROUP.eq.'C2v') THEN
-         PNTGRP = 8
-         NIRREP = 4
-         IRIQ = 1
+         PNTGRP      = 8
+         DOUGRP      = 5
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 2
       ELSE IF (GROUP.eq.'D2 ') THEN
-         PNTGRP = 8
-         NIRREP = 4
-         IRIQ = 1
+!        D2 treated as C2 inside KR-CI
+         PNTGRP      = 8
+         DOUGRP      = 5
+         NIRR_DG     = 4
+         NIRR_PN     = 2
+         IRIQ        = 1
+      ELSE IF (GROUP.eq.'C2h') THEN
+         PNTGRP      = 9
+         DOUGRP      = 4
+         NIRR_DG     = 8
+         NIRR_PN     = 4
+         IRIQ        = 2
+      ELSE IF (GROUP.eq.'C2v') THEN
+         if(linear)then
+!          Cinfv (known as C2v + linear) treated as C32 inside KR-CI
+           PNTGRP      = 10
+           DOUGRP      = 10
+           NIRR_DG     = 128
+           NIRR_PN     = NIRR_DG/2
+           IRIQ        = 1
+         else
+!          C2v treated as C2 inside KR-CI
+           PNTGRP      = 8
+           DOUGRP      = 5
+           NIRR_DG     = 4
+           NIRR_PN     = 2
+           IRIQ        = 1
+         end if
       ELSE IF (GROUP.eq.'D2h') THEN
-         PNTGRP = 9
-         NIRREP = 8
-         IRIQ = 1
+         if(linear)then
+!          Dinfh (known as D2h + linear) treated as C16h inside KR-CI
+           PNTGRP      = 11
+           DOUGRP      = 11
+           NIRR_DG     = 128
+           NIRR_PN     = NIRR_DG/2
+           IRIQ        = 1
+         else if(spinfr.and..not.linear)then
+!          D2h spinfree
+           PNTGRP      = 9
+           DOUGRP      = 9
+           NIRR_DG     = 8
+           NIRR_PN     = 8
+           IRIQ        = 1
+           print *,
+     & '*** error in trkrluci: no spinfree formalism yet in KR-CI. ***'
+           call quit(
+     & '*** error in trkrluci: no spinfree formalism in KR-CI! ***')
+         else
+!          D2h treated as C2h inside KR-CI
+           PNTGRP      = 9
+           DOUGRP      = 4
+           NIRR_DG     = 8
+           NIRR_PN     = 4
+           IRIQ        = 1
+         end if
       ELSE
-         CALL QUIT('Illegal double group.')
+         call quit(
+     & '*** error in trkrluci: unknown double group in KR-CI 
+     &  specified! ***')
       END IF
-      NSMSH = NIRREP/2
-      NSMOB = NIRREP
-      NIRR_DG_LOC = NIRREP
+
+!     consistency check
+      if(max(2,NIRR_DG).gt.mxndgirr)then
+        write(6,*) '   *** error in trkrluci: number of double'//
+     &  ' group irreps exceeds current limit of 128 (mxpdim.inc).***'
+        call quit('*** error in trkrluci. max number of double group
+     &  irreps exceeded.***')
+      end if
+
+!     set symmetry relations for excitation, etc.
+      NSMOB       = NIRR_DG
+      NSMSX       = NIRR_DG
+      NSMDX       = NIRR_DG
+      NSMST       = NIRR_DG
+      NSMCI       = NIRR_DG
+      NSMXT       = NIRR_DG
+      itssx       = 1
+      itsdx       = 1
+      itsxt       = 1
+
 C     Reference symmetry
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) 
@@ -2135,8 +2232,6 @@ C     Maximum number of CI vectors
       END IF
 C     CI storage mode
       ICISTR = 3
-C     Using determinants
-      NOCSF = 1
 C     No integrals (we use this to calculate just #determinants)
       IF( CIRUN .eq. 'NDET  ') THEN
          NOINT = 1
@@ -2144,7 +2239,8 @@ C     No integrals (we use this to calculate just #determinants)
          NOINT = 0
       END IF
 C     Dimension of resolution matrices (used in SIGDEN_REL3)
-      MXINKA = 50
+!     MXINKA = 50 
+      MXINKA = 64 ! testing a slightly larger value...
 C     Core energy from DIRAC
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
@@ -2176,9 +2272,9 @@ C     been initialized on the outside.
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NGSH,2*MXPNGAS,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NGSHT,MXPNGAS,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(IORB,NFSYM,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
@@ -2192,45 +2288,6 @@ C     been initialized on the outside.
      &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
-C     erase first
-      DO I= 1, MXPIRR
-        DO J = 1, NGAS
-          NGSSH(I,J) = 0
-        END DO
-      END DO
-!     write(6,*) 'OPT_UCIBOS is',OPT_UCIBOS
-      DO IFSYM = 1, NFSYM
-         IOFF = 0
-         IF (.NOT.OPT_UCIBOS) THEN
-C           To get correct Fermion symmetry labeling in
-C           LUCIAREL we need to specify same(!) gerade boson
-C           irrep for all gerade orbitals and same ungerade
-C           boson irrep for all ungerade orbitals (note: which
-C           gerade or ungerade boson irrep we choose doesn't
-C           matter). Now find first ungerade irrep
-C    FIXME: This is hardwired now to be irrep number 3.
-C           Should be made flexible later on to account for
-C           different symmetry generator setup.
-            IBOSYMI = 0
-            IF( IFSYM .ne. 1 ) IBOSYMI = IFSYM
-            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+1)=IBOSYMI
-         END IF
-         DO IGAS = 1, NGAS
-!           write(6,*) 'NGSH(IFSYM,IGAS) is',NGSH(IFSYM,IGAS)
-            DO I = 1, NGSH(IFSYM,IGAS)
-               IOFF = IOFF + 1
-               IF( OPT_UCIBOS )THEN
-                  IBOSYMI = 
-     &            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+IOFF)
-!              write(6,*) 'IBOSYMI is',IBOSYMI
-               END IF
-               IADR = IBOSYMI + 1 + (IGAS-1) * MXPIRR
-!              write(6,*) 'IADR is',IADR
-               CALL ADD_TO_GSS(NGSSH,IADR,0,1)
-CSK            NGSSH(IADR) = NGSSH(IADR) + 1
-            END DO
-         END DO
-      END DO
             
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
@@ -2270,10 +2327,6 @@ C     Density matrices requested
       ELSE IF ( CIRUN .eq. 'DENS2 ' ) THEN 
         IDENSI = 4
       END IF
-C     Double group CI
-      IDBGCI = 1
-C     Relativistic CI
-      IRELACI = 1
 C     Type of operator wrt. relativity
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 ) THEN
@@ -2281,12 +2334,9 @@ C     Type of operator wrt. relativity
         CALL MPI_BCAST(LEVYLE,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
       END IF
 #endif
-      ISO1 = 1
-      ISO2 = 1
+C     Relativistic CI
       ISPINFREE = 0
       IF( SPINFR .or. LEVYLE ) THEN
-        ISO1 = 0
-        ISO2 = 0
         ISPINFREE = 1
       END IF
 C     Reference value for two times M_K projection
@@ -2309,8 +2359,6 @@ C     Reference value for two times Delta M_K projection (coupling range)
            CALL QUIT( ' *** ERROR *** Spin-dependent calculation'//
      &                ' and MK2DEL = 0.' ) 
       END IF
-C     Initial spinor expansion type
-      ISPEXP_INI = 3
 C     COMHAM option
       IF (ISEQCI(1,1) .LT. 0 ) THEN
 C        ISEQCI(1,1) = MAXCIT from KRMC/KRCI
@@ -2357,39 +2405,24 @@ C     S and L are no good quantum numbers. Don't use combinations.
       IDC = 1
 C     C(Ka,Jb,j) matrices will be used in alpha-beta loop
       ICJKAIB = 1
-C     Using N-2 projection method in sigma vector
-      MOCAA = 0
-      MOCAB = 0
 C     Only 1 GAS space combination in use.
       LCMBSPC(1) = 1
       ICMBSPC(1,1) = 1
 C     No use of F + Lambda(H-F) instead of H as operator
       XLAMBDA = 1.0D0
-C     No MO file, transformation is performed by moltra.
-      NOMOFL = 1
-C     No initial integral transformation (done with moltra).
-      ITRANS = 0
-C     Final orbitals are computed externally (KRMC). No iterative 
-C     natural spinors
-      IFINMO = 0
+C     No iterative natural spinors
       NATITER = 1
 C     No class selection performed.
       ICLSSEL = 0
-C     Restart option
-C     Restarting is determined from the outside (sigma, density),
-C     so set to default value
-      IRST2 = 1         ! sic
 C     Never skip evaluation of energy (only used in pico3, anyway)
       ISKIPEI = 0
 C     No property calculations here (yet)
       NPROP = 0
-C     External Fock matrix always assumed. Specification not allowed
-C     in DIRAC environment.
-      IFOCKEX = 0
-C     No orbitals/spinors on external file.
-      ORBFILE = .false.
-C     Currently always SIGDEN route (excitation class formalism)
+C     SIGDEN route is default (excitation class formalism)
       SIGDEN_ROUTE = 'SIGDEN'
+      if(SIGDEN_ROUTE .eq.'TRADIT') 
+     & call quit(' *** error in trkrluci: TRADIT route
+     & no longer supported.***')
 C     integral handling in parallel runs
       IIOMOD_REL = 0
 #if defined (VAR_MPI)
@@ -2575,102 +2608,52 @@ C     DIAPAR.1
         END IF
       END IF 
 #endif
-C
-C     *****************************************
-C     Print section (only for testing purposes)
-C     *****************************************
-C
-      IF ( IPROPT .ge. 1 .and. MYPROC .eq. MASTER ) then
 
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) '******************'
-      WRITE(LUPRI,*) '*  Title of run  *'
-      WRITE(LUPRI,*) '******************'
-      WRITE(LUPRI,*)
-      CALL PRTITL(TITLEC)
-      WRITE(LUPRI,*)
+      END 
+!**********************************************************************
+
+      subroutine print_ci_info()
+!**********************************************************************
+      use symmetry_setup_krci
+#include "implicit.h"
+#include "priunit.h"
+#include "parluci.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "maxorb.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbbos.h"
+#include "../luciarel/mxpdim.inc"
+#include "../luciarel/cstate.inc"
+#include "../luciarel/crun.inc"
+#include "../luciarel/cprnt.inc"
+#include "../luciarel/cgas.inc"
+#include "../luciarel/oper.inc"
+#include "../luciarel/cands.inc"
+#include "../luciarel/noccn_inf.inc"
+#ifdef VAR_MPI
+#include "mpif.h"
+#include "krmc_shmem.h"
+#endif
+#include "krmcluci_inf.h"
+#include "krciprop.h"
+!**********************************************************************
 *
 *. Type of calculation
 *
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) '************************'
       WRITE(LUPRI,*) '*  Type of calculation *'
       WRITE(LUPRI,*) '************************'
-      WRITE(LUPRI,*)
-      IF(IDBGCI.EQ.0.AND.IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Non-relativistic calculation in spatial pointgroup'
-      ELSE IF(IDBGCI.EQ.1.AND.IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Non-relativistic calculation in double group '
-      ELSE IF(IDBGCI.EQ.1.AND.IRELACI.EQ.1) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Relativistic calculation in double group '
-      ELSE IF(IDBGCI.EQ.0.AND.IRELACI.EQ.1) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Relativistic calculation in spatial pointgroup '
-        WRITE(LUPRI,'(A)')
-     &  '     This is dangerous. You better think about it! '
-      END IF
-      IF(IRELACI.EQ.1) THEN
-        IF(ISO1.EQ.1.AND.ISO2.EQ.1) then
-          if (ENVIRO(1:6).ne.'DIRAC ') then
-            WRITE(LUPRI,'(A)')
-     &  '         One- and two- electron spin-orbit operator '
-          else
-            WRITE(LUPRI,'(A)')
-     &  '         Dirac-Coulomb Hamiltonian        '
-          end if
-        end if
-        IF(ISO1.EQ.1.AND.ISO2.EQ.0) then
-          if (ENVIRO(1:6).ne.'DIRAC ') then
-            WRITE(LUPRI,'(A)')
-     &  '         One-electron spin-orbit (mean-field) operator '
-          else
-            WRITE(LUPRI,'(A)')
-     &  '         Dirac-Coulomb Hamiltonian        '
-          end if
-        end if
-        if (ISO1.eq.0.and.ISO2.eq.0.and.ENVIRO(1:6).eq.'DIRAC ') then
-          write(LUPRI,'(A)')
-     &  '         Dirac-Coulomb Hamiltonian        '
-          write(LUPRI,'(A)')
-     &  '         Spinfree formalism               '
-        end if
-        if (ISO1.EQ.0.AND.ISO2.EQ.1) then
-          if (ENVIRO(1:6).eq.'DIRAC ') then
-            write(LUPRI,*) 'Setting of relativistic operators not'
-            write(LUPRI,*) 'allowed in DIRAC environment.'
-            write(LUPRI,*) 'This is relativistic theory!'
-            call Abend2 ('Input error.')
-          end if
-          WRITE(LUPRI,'(A)')
-     &  '         Two-electron spin-orbit operator '
-        end if
-      END IF
-      if (IFOCKEX.eq.1) then
-        WRITE(LUPRI,'(A)')
-     &  '         Fock matrix gen. externally for inactive orbitals '
-        WRITE(LUPRI,'(A43,8I4)')
-     &  '         Full orbital basis in symmetries: ',
-     &            (NORB_F(ISYM),ISYM=1,NSMSH,1)
-      end if
-      if (INTIMP.eq.1) then
-        if (ORBFILE) then
-          WRITE(LUPRI,'(A)')
-     &    '         MO vector read from formatted ASCII file INPORB '
-      else
-          WRITE(LUPRI,'(A)')
-     &    '         MO vector read from RASSCF file JOBIPH          '
-        end if
-      end if
+
+      WRITE(LUPRI,'(A)')
+     &'     Relativistic calculation in double group '
 *
 *. Type of reference state
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) '*************************************'
       WRITE(LUPRI,*) '*  Symmetry and spin of CI vectors  *'
       WRITE(LUPRI,*) '*************************************'
-      WRITE(LUPRI,*)
 *. Point group
       IF(PNTGRP.EQ.1) THEN
         WRITE(LUPRI,'(A)')
@@ -2699,6 +2682,12 @@ C
       ELSE IF(PNTGRP.EQ.9) THEN
         WRITE(LUPRI,'(A)')
      &  '     Double group ........... C2H'
+      ELSE IF(PNTGRP.EQ.10) THEN
+        WRITE(LUPRI,'(A)')
+     &  '     Double group ........... Cinf'
+      ELSE IF(PNTGRP.EQ.11) THEN
+        WRITE(LUPRI,'(A)')
+     &  '     Double group ........... Cinfh'
       END IF
 *.Spatial symmetry
       IF(PNTGRP.EQ.1) THEN
@@ -2723,58 +2712,38 @@ C
      &  '     Parity   ..............  Gerade'
         IF(IREFPA.EQ.2) WRITE(LUPRI,'(A)')
      &  '     Parity   ..............  Ungerade'
-       ELSE IF(PNTGRP.GE.5.AND.PNTGRP.LE.9) THEN
+       ELSE IF(PNTGRP.GE.5)THEN
+        print *,'@timo+stefan: check this print (krmcgp.F) here...'
         WRITE(LUPRI,'(A,I1)')
      &  '     Double group symmetry... ', IREFSM
       END IF
 *.Spin
-      WRITE(LUPRI,*)
-      IF(IRELACI.EQ.0.AND.IDBGCI.EQ.0) THEN
-C       WRITE(LUPRI,'(A,I2)')
-C    &    '     2 times spinprojection  ', MS2
-C       WRITE(LUPRI,'(A,I2)')
-C    &    '     Spin multiplicity ....  ', MULTS
-      ELSE
         WRITE(LUPRI,'(A,I2)')
      &    '     2*reference value of MK ', MK2REF_CI
         WRITE(LUPRI,'(A,I2,A,I2)')
      &    '     Allowed interval of MK2 ',
      &          MK2REF_CI-MK2DEL_CI,' to ', MK2REF_CI+MK2DEL_CI
-        WRITE(6,*)
-      END IF
 *.Number of active electrons
       WRITE(LUPRI,'(A,I2)')
      &  '     Active electrons .....  ', NACTEL
 *
 *. GAS space
 *
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) ' *************************'
       WRITE(LUPRI,*) ' Generalized active space '
       WRITE(LUPRI,*) ' *************************'
-      WRITE(LUPRI,*)
-      IF(IRELACI.EQ.0) THEN
-        WRITE(LUPRI,'(A/A)') ' Orbital subspaces:',
-     &                       ' =================='
-      ELSE
         WRITE(LUPRI,'(A/A)')
      &  ' Orbital subspaces in molecular pointgroup',
      &  ' ========================================='
-      END IF
       WRITE(LUPRI,'(A,10I4,A)')
-     &  '                Irrep ',(I,I = 1,NSMSH)
+     &  '                Irrep ',(I,I = 1,nirr_dg/2)
       WRITE(LUPRI,'(A,2X,10A,A)')
-     &  '                ===== ',('====',I = 1,NSMSH )
+     &  '                ===== ',('====',I = 1,nirr_dg/2 )
       DO IGAS = 1, NGAS
         WRITE(LUPRI,'(A,I2,A,10I4,6X,2I6)')
      &  '        GAS',IGAS,'          ',
-     &  (NGSSH(IRREP,IGAS),IRREP = 1, NSMSH )
+     &  (NGSSH(IRREP,IGAS),IRREP = 1, nirr_dg/2 )
       END DO
-*
-      IF(IRELACI.NE.0) THEN
-        WRITE(6,*)
-     &' ( Information about spinors in double group comes later)'
-      END IF
 *
       WRITE(LUPRI,'(A,I3)')
      & ' Number of Occupation spaces : ',NCISPC
@@ -2793,8 +2762,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
       END DO
       END DO
 *
-      WRITE(6,*)
-      WRITE(6,'(A,I3)')
+      WRITE(6,'(/A,I3)')
      &' Number of CI spaces included : ', NCMBSPC
       WRITE(6,*)
       DO JCMBSPC = 1, NCMBSPC
@@ -2828,11 +2796,9 @@ C    &    '     Spin multiplicity ....  ', MULTS
         END DO
       END DO
 *
-      WRITE(LUPRI,*)
       WRITE(LUPRI,*) '***********'
       WRITE(LUPRI,*) '*  Roots  *'
       WRITE(LUPRI,*) '*********** '
-      WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I3)')
      &  '     Number of roots to be obtained ', NROOT
       WRITE(LUPRI,'(A,(20I3))')
@@ -2845,22 +2811,6 @@ C    &    '     Spin multiplicity ....  ', MULTS
       WRITE(LUPRI,*)
 *. Program environment
       WRITE(6,'(A,A6)') '      Program environment... ', ENVIRO
-*. Integral transformation
-      IF(ITRANS.NE.0) THEN
-        WRITE(LUPRI,'(A,I1)')
-     &  '     Initial integral transformation, level = ', ITRANS
-      END IF
-*. Initial spinor transformation
-      IF(ISPEXP_INI.EQ.1) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Initial spinor expansion obtained from MO expansion'
-      ELSE IF (ISPEXP_INI.EQ.2) THEN
-        WRITE(LUPRI,'(A)')
-     &  '     Initial spinor expansion read in '
-      else if (ISPEXP_INI.eq.3) then
-        WRITE(LUPRI,'(A)')
-     &  '     Reading integrals over transformed spinors. '
-      END IF
 *. No. of particle Hamiltonian
       if (IHAM12.eq.1) then
         WRITE(LUPRI,'(A)')
@@ -2912,26 +2862,12 @@ C    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUPRI,'(A)')
      &  '     two-electron ints from unit 13, transformed '
       END IF
-*. Integral storage
-      IF(INCORE.EQ.1) WRITE(LUPRI,'(A)')
-     &  '     All integrals stored in core'
-      END IF
-* ( END IF for NOINT
-*. CSF or SD expansion
-      IF(NOCSF.EQ.0) THEN
-        WRITE(LUPRI,'(/A/)')
-     &  '     CI optimization performed with CSF''s '
-      ELSE
-        WRITE(LUPRI,'(/A/)')
+      WRITE(LUPRI,'(/A/)')
      &  '     CI optimization performed with SD''s '
-      END IF
 *. Initial approximation to vectors
-      IF(IRESTR.EQ.1.AND.IRESTRF.EQ.0) THEN
+      IF(IRESTR.EQ.1)THEN
          WRITE(LUPRI,'(A)')
      &  '     Restarted calculation '
-      ELSE IF(IRESTRF.EQ.1) THEN
-         WRITE(LUPRI,'(A)')
-     &  '     Restarted calculation from REFERENCE space expansion'
       ELSE
          IF(MXP1.NE.0) THEN
            WRITE(LUPRI,'(A)')
@@ -2953,15 +2889,8 @@ C    &    '     Spin multiplicity ....  ', MULTS
      &  '     No combination of degenerate initial vectors'
       END IF
 *. CI storage mode
-      if (SIGDEN_ROUTE.eq.'SIGDEN') then
         WRITE(LUPRI,'(/A)')
      &  '     SIGDEN route for sigma vectors and densities invoked   '
-      else
-        WRITE(LUPRI,'(/A)')
-     &  '     SIGDEN keyword: ',SIGDEN_ROUTE
-        call quit('Unallowed keyword value')
-      end if
-      WRITE(LUPRI,*)
       IF(ICISTR.EQ.1) THEN
         WRITE(LUPRI,*)
      &  '     3 symmetry blocks and two vectors will be held in core '
@@ -2980,12 +2909,7 @@ C    &    '     Spin multiplicity ....  ', MULTS
         WRITE(LUPRI,*)
      &  '     C(Ka,Jb,j) matrices will be used in alpha-beta loop '
       END IF
-      IF(MOCAA.NE.0) WRITE(LUPRI,'(A,I4)')
-     &  '     MOC method used for alpha-alpha+beta-beta loop '
-      IF(MOCAB.NE.0) WRITE(LUPRI,'(A,I4)')
-     &  '     MOC method used for alpha-beta loop            '
 *
-      WRITE(LUPRI,*)
       IF(IDENSI.EQ.0) THEN
         WRITE(LUPRI,'(A)')
      &  '     No calculation of density matrices  '
@@ -3036,11 +2960,6 @@ C    &    '     Spin multiplicity ....  ', MULTS
         END IF
       END IF
 *
-*. No restart in CI calc 2
-      IF(IRST2.EQ.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '        No restart from previous vectors in second calc '
-      END IF
       IF(ISKIPEI.EQ.1) THEN
         WRITE(LUPRI,'(A/A)')
      &  '        Initial energy evaluations skipped after first calc',
@@ -3075,34 +2994,6 @@ C    &    '     Spin multiplicity ....  ', MULTS
         END IF
       END IF
 *
-*
-*. Print levels
-*
-      WRITE(LUPRI,'(/A)')  '     Print levels : '
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for string    information = ', IPRSTR
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for wave function info    = ', IPRWFC
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for CI space  information = ', IPRCIX
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for orbital   information = ', IPRORB
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for density matrix        = ', IPRDEN
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for iterative information = ', IPRDIA
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for External blocks       = ', IPRXT
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for transformation info   = ', IPRTRA
-      WRITE(LUPRI,'(A,I3)')
-     &'      Chosen  print level for sigma vector info     = ', IPRSIG
-*
-      IF(IPROCC.NE.0) THEN
-        WRITE(LUPRI,'(A,I3)')
-     &  '      Occupation of SD''s/ configurations           = ',IPROCC
-      END IF
-C
       END IF
 C     ^ end if IPROPT for input printing.
       END
@@ -3175,7 +3066,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* deck GET_XOMEGALIST */
       SUBROUTINE GET_XOMEGALIST(OMLISTREOD,XEIGVC,NXSTATES,
      &                          STATEREP,XEIGVL)
 C***********************************************************************

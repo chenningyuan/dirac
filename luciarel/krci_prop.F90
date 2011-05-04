@@ -63,12 +63,12 @@ contains
      integer, intent(in)           :: sigma_fh
      integer, intent(inout)        :: off_state_file_glb
      integer, intent(in)           :: mz
-     character (len=1), intent(in) :: state_file_extension
+     character (len=2), intent(in) :: state_file_extension
 !----------------------------------------------------------------------
      real(8)                :: propval_real_tmp
      real(8)                :: propval_imag_tmp
      integer                :: state_fh
-     character (len=12)     :: state_file_name
+     character (len=13)     :: state_file_name
 !**********************************************************************
       
                  propval_real_tmp = val_d0
@@ -79,7 +79,7 @@ contains
 !        step 1: open state vector file
 !        ------------------------------------------------------------------------------
          state_fh = 15
-         write(state_file_name,'(a11,a1)') 'KRCI_CVECS.',state_file_extension
+         write(state_file_name,'(a11,a2)') 'KRCI_CVECS.',state_file_extension
          open(unit=state_fh,file=state_file_name,status='old',action="readwrite",     &
               form='unformatted',position='rewind')
 

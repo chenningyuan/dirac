@@ -80,7 +80,7 @@ C**********************************************************************
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_TRED_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_RCCTOS_LEN
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_IAPROC_LEN
-      CHARACTER BLOCKFLE*16
+      CHARACTER BLOCKFLE*18
       LOGICAL EX_BFL, DIST_COMPLETE, SPLIT_IJKL_FILE, SHARED_M_FILE
       LOGICAL PRINT_BLOCK_DIST
 C
@@ -88,7 +88,7 @@ C
       IT_ACTIVE_R  = 0
       IT_ACTIVE_I  = 0
       IF( CPBLCK_FILE_LUCIX ) 
-     &    WRITE(BLOCKFLE,'(A15,A1)') 'KRCI_BLOCKDIST.',SYMFLABEL
+     &    WRITE(BLOCKFLE,'(A15,A3)') 'KRCI_BLOCKDIST.',SYMFLABEL
       PRINT_BLOCK_DIST = .TRUE.
 C
 C     set mark for local memory
@@ -348,10 +348,6 @@ C
 C
 csk       WRITE(LUWRT,*) ' IT_ACTIVE_R, IT_ACTIVE_I, NSPOBEX_TP',
 csk  &                     IT_ACTIVE_R, IT_ACTIVE_I, NSPOBEX_TP
-csk       WRITE(LUWRT,*) ' showing array IBTSOSO_TP'
-csk       CALL IWRTMAMN8(IBTSOSO_TP,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
-csk       WRITE(LUWRT,*) ' showing array IPOSDIA'
-csk       CALL IWRTMAMN8(IPOSDIA,1,NDIAINT,1,NDIAINT,LUWRT)
 C
           CALL T_BLOCK_DISTR(IT_TTPL,IT_CTALL,IT_CTONE,I_APROC,
      &                       NSPOBEX_TP,IT_ACTIVE_R,IT_ACTIVE_I)
@@ -507,7 +503,7 @@ CSK      WRITE(LUWRT,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
       IF(NPTEST.GE.0) THEN
         WRITE(LUWRT,'(/7X,A)')
      &  '==================================================='
-        WRITE(LUWRT,'(7X, A,I2)')
+        WRITE(LUWRT,'(7X, A,I3)')
      &  ' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
         WRITE(LUWRT,'(7X,A/)')
      &  '==================================================='
@@ -838,7 +834,7 @@ C
       IF(NPTEST.GE.0) THEN
         WRITE(LUWRT,'(/7X,A)')
      &  '==================================================='
-        WRITE(LUWRT,'(7X, A,I2)')
+        WRITE(LUWRT,'(7X, A,I3)')
      &  ' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
         WRITE(LUWRT,'(7X,A/)')
      &  '==================================================='
@@ -1034,7 +1030,7 @@ C       ^ IILENGTH > 0
 C
       WRITE(LUWRT,'(/7X,A)')
      &'==================================================='
-      WRITE(LUWRT,'(7X, A,I2)')
+      WRITE(LUWRT,'(7X, A,I3)')
      &' parallel distribution setup for symmetry irrep ',JSYM_DISTBLK
       WRITE(LUWRT,'(7X,A/)')
      &'==================================================='
@@ -1816,8 +1812,6 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -1950,8 +1944,6 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 #include "krmc_shmem.h"
@@ -2081,8 +2073,6 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -2723,8 +2713,6 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -2980,11 +2968,7 @@ csk      END IF
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PART_CIV_PAR3(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         NSMST,MXLNG,IOCOC,ISMOST,
      &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
@@ -3227,11 +3211,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PART_CIV4_PAR(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         IOFFBLK,IOFFBTC,
      &                         NSMST,MXLNG,IOCOC,ISMOST,
@@ -3430,11 +3410,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE FIND_IMAT_SC_REL(ISCALFAC_C,ISCALFAC_S,ICCTOS,
      &                            ICWEIGHTF,IAM_BLK_ACT_C,
      &                            IAM_BLK_ACT_S,NDIM)
@@ -3496,15 +3472,13 @@ C
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE FIND_IMAT_DRV1(NBATS,LBATS,LEBATS,I1BATS,IBATS,ISIGDEN,
      &                          ISCLFAC_C,ISCLFAC_S,ICCTOS,ICWEIGHTF,
      &                          NDIM_B,IAM_BLK_ACT_C,IAM_BLK_ACT_S)
 *
+      use symmetry_setup_krci
+      use mospinor_info
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3512,20 +3486,16 @@ C
 *.Input
 * =====
 #include "cands.inc"
-#include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "lucinp.inc"
 #include "cprnt.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "clunit.inc"
 #include "infpar.h"
@@ -3549,16 +3519,6 @@ C
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'FNDSC1')
 C
-*
-*     define symmetry, factors, and loop restrictions
-      call evenodd(IEONELEC,NACTEL)
-      if (IEONELEC.eq.1) then
-        IKRA_SYM = 0
-      else if (IEONELEC.eq.2) then
-        IKRA_SYM = 1
-      end if
-      IKRA_SYM = 0         ! FOR THE MOMENT !
-* 
 *     assumption: no matter if NZ ==1 or NZ == 2, 
 *     the contribution of a block is CONTRIB * NZ
 *     ==> IRILP = 1 even for NZ == 2
@@ -3601,7 +3561,7 @@ C
 *         arrays giving block type
           KSVST = 1
           call memmar(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
-          CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP))
+          CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,WORK(KSBLTP))
 *
 *         loop over batches of sigma for this MK2_S projection value
 *
@@ -3623,11 +3583,14 @@ C
               END DO
             ELSE 
               DO ISBLK = I1BATS(JBATABS),KBATSEND-1,1
+!               print *,'icompute check: ISBLK',ISBLK
                 IF( ISCLFAC_S(ISBLK) .eq. 1 ) ICOMPUTE = 1
+!               print *,'icompute check: isblk, IS.. ==> ',
+!    &                   ISBLK,ISCLFAC_S(ISBLK)
               END DO
             END IF
 *
-csk         WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
+!           WRITE(LUWRT,*) ' ICOMPUTE is ', ICOMPUTE
 *
             IF( ICOMPUTE .eq. 0 ) THEN
               GOTO 60
@@ -3657,33 +3620,23 @@ C
 *                   k-imaginary) /HJAAJ Aug 2008. TODO TODO to define
 *                   max_MK2_DIFF
 *
-* Kramers symmetry restriction
-                if (IKRA_SYM.eq.1.and.MK2_C.lt.0) then
-                  if (IRIC.eq.1) IKSFAC = 1
-                  if (IRIC.eq.2) IKSFAC = -1
-* copy relevant block of sigma vector to position and 
-* multiply with IKSFAC.
-* FIXME !!
-                  stop 'KS not implemented yet.'
-                else
-                  IACTP = IST_FOR_DT(1,IMK2_C)
-                  IBCTP = IST_FOR_DT(2,IMK2_C)
-                  NBL_C = NBLK_MS2(IMK2_C)
-C                 C and sigma may have different symmetry in general
-                  IF( DOSIGPROP ) NBL_C = NBLK_MS2_C(IMK2_C)
-*                 set new offset
-                  INT_IOFF1_C = INT_IOFF1_C + INT_IOFF2_C
+                IACTP = IST_FOR_DT(1,IMK2_C)
+                IBCTP = IST_FOR_DT(2,IMK2_C)
+                NBL_C = NBLK_MS2(IMK2_C)
+C               C and sigma may have different symmetry in general
+                IF( DOSIGPROP ) NBL_C = NBLK_MS2_C(IMK2_C)
+*               set new offset
+                INT_IOFF1_C = INT_IOFF1_C + INT_IOFF2_C
 *
-                  IF (MK2_DIFF .le. max_MK2_DIFF)
-     &            CALL FIND_IMAT_DRV2(LBATS(JBATABS),
-     &                                IBATS(1,I1BATS(JBATABS)),1,
-     &                                1,IASTP,IBSTP,IRIS,IRIC,
-     &                                INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,
-     &                                ICCTOS,ICWEIGHTF,INT_IOFF1,
-     &                                NUM_SBLK,IAM_BLK_ACT_C,
-     &                                IAM_BLK_ACT_S,CHECK_TSPLIT)
-                end if
-C               ^ end if Kramers restriction
+!               print *,'NUM_SBLK is ...',NUM_SBLK
+                IF (MK2_DIFF .le. max_MK2_DIFF)
+     &          CALL FIND_IMAT_DRV2(LBATS(JBATABS),
+     &                              IBATS(1,I1BATS(JBATABS)),1,
+     &                              1,IASTP,IBSTP,IRIS,IRIC,
+     &                              INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,
+     &                              ICCTOS,ICWEIGHTF,INT_IOFF1,
+     &                              NUM_SBLK,IAM_BLK_ACT_C,
+     &                              IAM_BLK_ACT_S,CHECK_TSPLIT)
 C
 C               keep track of correct offset
                 NUM_BLK = NUM_BLK + NBL_C
@@ -3709,17 +3662,15 @@ C               keep track of correct offset
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE FIND_IMAT_DRV2(NBLOCK,IBLOCK,IBOFF,ISIGDEN,IASTP_SCR,
      &                         IBSTP_SCR,IRIS,IRIC,
      &                         INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
      &                         ICWEIGHTF,INT_IOFF1,NUM_SBLK,
      &                         IAM_BLK_ACT_C,IAM_BLK_ACT_S,CHECK_TSPLIT)
 *
+      use symmetry_setup_krci
+      use mospinor_info
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
@@ -3732,29 +3683,25 @@ C               keep track of correct offset
       INTEGER IBLOCK(8,*)
 *
 #include "cands.inc"
-#include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "lucinp.inc"
 #include "cprnt.inc"
-#include "glbbas.inc"
 #include "oper.inc"
 #include "ctcc.inc"
       COMMON/CMXCJ/MXCJ
 *
-      COMMON/HIDSCRR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
 #include "cintfo.inc"
 #include "parluci.h"
       LOGICAL CHECK_TSPLIT
 *
+!               print *,'NUM_SBLK - 2 - is ...',NUM_SBLK
       IASTP = IASTP_SCR
       IBSTP = IBSTP_SCR
 *
@@ -3843,7 +3790,7 @@ C?   &        MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS
       call memmar(KLIBT ,8*NTTS,'ADDL  ',1,'IBTC  ')
 *. Arrays giving block type
       call memmar(KCBLTP,NSMST,'ADDL  ',1,'CBLTP ')
-      CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP))
+      CALL ZBLTP_REL(ISMOST(1,ICSM),NSMST,WORK(KCBLTP))
 *. Use all symmetryblocks of given TT
       ITTSS_ORD = 2
 *
@@ -3851,9 +3798,29 @@ C?   &        MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS
      &     WORK(KNSTSO2(IBCTP)),NOCTPA_C,NOCTPB_C,NSMST,LSCR1,
      &     WORK(KCIOIO),ISMOST(1,ICSM),NCBATCH,WORK(KLLBT),
      &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
-*
+ 
+!     allocation for string length handling of unbarred (alpha)/ barred
+!     (beta) creation / annihilation strings
+      call memmar(KNICA    ,MXNDGIRR              ,'ADDL  ',1,'KNICA ')
+      call memmar(KNICB    ,MXNDGIRR              ,'ADDL  ',1,'KNICB ')
+      call memmar(KNIAA    ,MXNDGIRR              ,'ADDL  ',1,'KNIAA ')
+      call memmar(KNIAB    ,MXNDGIRR              ,'ADDL  ',1,'KNIAB ')
+      call memmar(KNKA     ,MXNDGIRR              ,'ADDL  ',1,'KNKA  ')
+      call memmar(KNKB     ,MXNDGIRR              ,'ADDL  ',1,'KNKB  ')
+      
+      call memmar(KIB_CA   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_CA')
+      call memmar(KIB_CB   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_CB')
+      call memmar(KIB_AA   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_AA')
+      call memmar(KIB_AB   ,MXNDGIRR**2 * MXNOP   ,'ADDL  ',1,'KIB_AB')
+      call memmar(KIB_T    ,MXNDGIRR**2 * MXNDGIRR,'ADDL  ',1,'KIB_T ')
+      call memmar(KNIKAINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNIKA ')
+      call memmar(KNIKBINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNIKB ')
+      call memmar(KNJKAINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNJKA ')
+      call memmar(KNJKBINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNJKB ')
+
       CALL MEMMAR(KLISMDST,MAX_NSYMDIST,'ADDL  ',1,'ISMDST')
 *
+!               print *,'NUM_SBLK - 3 - is ...',NUM_SBLK
       CALL FIND_IMAT_DRV3(NBLOCK,IBLOCK(1,IBOFF),
      &     WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &     WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
@@ -3862,8 +3829,13 @@ C?   &        MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS
      &     WORK(KI3),WORK(KXI3S),WORK(KI4),WORK(KXI4S),
      &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
      &     ISSM,ICSM,ISIGDEN,NCBATCH,IDIAG,IRIS,IRIC,
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLSPOBEX_AC),
-     &     WORK(KTOCC1),WORK(KTOCC2), WORK(KTOCC3),WORK(KTOCC4),
+     &     NSPOBEX_TP,WORK(KLSOBEX),
+     &     WORK(KTOCC1),WORK(KTOCC2),WORK(KTOCC3),WORK(KTOCC4),
+     &     WORK(KNICA),WORK(KNICB),WORK(KNIAA),WORK(KNIAB),
+     &     WORK(KNKA),WORK(KNKB),
+     &     WORK(KIB_CA),WORK(KIB_CB),WORK(KIB_AA),
+     &     WORK(KIB_AB),WORK(KIB_T),WORK(KNIKAINTM),
+     &     WORK(KNIKBINTM),WORK(KNJKAINTM),WORK(KNJKBINTM),
      &     WORK(KLISMDST),INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
      &     ICWEIGHTF,INT_IOFF1,NUM_SBLK,IAM_BLK_ACT_C,IAM_BLK_ACT_S,
      &     CHECK_TSPLIT)
@@ -3873,19 +3845,19 @@ C     release local memory
       call memmar(KDUM ,IDUM,'FLUSM ',2,'FNDSC2')
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE FIND_IMAT_DRV3(NSBLOCK,ISBLOCK,
      &                          NSSOA_S,NSSOB_S,NSSOA_C,NSSOB_C,
      &                          IASTP,IBSTP,IACTP,IBCTP,MAXK,
      &                          I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                          LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,
      &                          ISSM,ICSM,ISIGDEN,NCBATCH,IDIAG,IRIS,
-     &                          IRIC,NSPOBEX_TP,ITSPOBEX_TP,ISPOBEX_AC,
-     &                          TOCC1,TOCC2,TOCC3,TOCC4,ISMDST,
+     &                          IRIC,NSPOBEX_TP,ITSPOBEX_TP,
+     &                          TOCC1,TOCC2,TOCC3,TOCC4,
+     &                          NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &                          IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &                          NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM,
+     &                          ISMDST,
      &                          INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
      &                          ICWEIGHTF,INT_IOFF1,NUM_SBLK,
      &                          IAM_BLK_ACT_C,IAM_BLK_ACT_S,
@@ -3906,6 +3878,8 @@ C     release local memory
 * MAXK  : Largest number of N-2,N-1 strings treated simultaneously
 * MAXI  : Max number of N strings treated simultaneously
 *
+      use symmetry_setup_krci
+      use mospinor_info
 #include "implicit.h"
 #include "ipoist8.inc"
 *
@@ -3917,9 +3891,6 @@ C     release local memory
 #include "parluci.h"
 *. General input
 #include "mxpdim.inc"
-#include "csm.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
 #include "gasstr.inc"
 #include "wrkspc.inc"
 #include "cgas.inc"
@@ -3935,7 +3906,7 @@ C     release local memory
       DIMENSION I1(*),I2(*),I3(*),I4(*),XI1S(*),XI2S(*),XI3S(*),XI4S(*)
       DIMENSION ISMDST(*)
 *. T-coefficients
-      DIMENSION ITSPOBEX_TP(4*NGAS,*),ISPOBEX_AC(*)
+      DIMENSION ITSPOBEX_TP(4*NGAS,*)
       LOGICAL CHECK_TSPLIT
 *
       ONEM = -1.0D0
@@ -4003,10 +3974,10 @@ csk            WRITE(LUWRT,*) ' active c block found',IC_OFF_BLK+JBLK-1
 *           skip all loops that follow.
 *
             ICOMPUTE_S = 0
-            NSBLK = NSMST
+            NSBLK      = NSMST
             IS_OFF_BLK = 0
             IS_OFF_BLK = NUM_SBLK + 1
-csk         WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
+!           WRITE(LUWRT,*) 'starting at IS_OFF_BLK',IS_OFF_BLK
             IF( CHECK_TSPLIT ) THEN
               DO JJBLK = ISBLK, ISBLK + NSBLK - 1
 csk               WRITE(LUWRT,*) 'Checking for sigma block',
@@ -4020,12 +3991,12 @@ csk  &                               IS_OFF_BLK+JJBLK-1
               END DO
             ELSE 
               DO JJBLK = ISBLK, ISBLK + NSBLK - 1
-CSK                  WRITE(LUWRT,*) 'Checking for sigma block',
-CSK     &                            IS_OFF_BLK+JJBLK-1
+!                 WRITE(LUWRT,*) 'Checking for sigma block',
+!    &                            IS_OFF_BLK+JJBLK-1
                   IF( ISCLFAC_S( JJBLK + IS_OFF_BLK-1 ) .gt. 0 ) THEN
                     ICOMPUTE_S = 1
-CSK                    WRITE(LUWRT,*) ' active s block found',
-CSK     &                               IS_OFF_BLK+JJBLK-1
+!                   WRITE(LUWRT,*) ' active s block found',
+!    &                               IS_OFF_BLK+JJBLK-1
                   END IF
               END DO
             END IF
@@ -4055,17 +4026,14 @@ CSK     &      ISBLK,IATP,IBTP,ISOFF
      &                     ITSPOBEX_TP(IAB_OFF,ITTP),
      &                     NGAS,ICON)
 *
-               IF( ICON .eq. 1 .and. ISPOBEX_AC(ITTP) .eq. 1 ) THEN
+               IF(ICON .eq. 1)THEN
 *
 CSK                 WRITE(LUWRT,*) 'CONNECTION FOUND for ITTP', ICON, ITTP
-* Setting undefined variables to zero:
-                 ITABTRNSP = 0
-                 ICRESTRICT = 0
-                 ISRESTRICT = 0
-                 ITDIAG = 0
 C
 C                ... ready for connection matrix determination
 C
+!                print *,' ITTP is ==> ',ITTP
+!                call RMEMCHK_opt('next type           ')
                  CALL FIND_IMAT_CALC(ISIGDEN,IRIS,IRIC,
      &                ITSPOBEX_TP(ICA_OFF,ITTP),
      &                ITSPOBEX_TP(ICB_OFF,ITTP),
@@ -4078,7 +4046,9 @@ C
      &                ITTP,ISSM,ICSM,
      &                I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                MAXK,TOCC1,TOCC2,TOCC3,TOCC4,
-     &                ITDIAG,ITABTRNSP,ICRESTRICT,ISRESTRICT,
+     &                NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &                IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &                NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM,
      &                ISMDST,INT_IOFF1_C+ICBLK-1,IS_OFF_BLK+ISBLK-1,
      &                ISCLFAC_C,ISCLFAC_S,ICCTOS,ICWEIGHTF,
      &                IAM_BLK_ACT_C,IAM_BLK_ACT_S,CHECK_TSPLIT)
@@ -4106,27 +4076,28 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIND_IMAT_CALC(ISD,IRIS,IRIC,ICA,ICB,IAA,IAB,
-     &           IAOC,IBOC,JAOC,JBOC,
-     &           NIA,NIB,NJA,NJB,
-     &           IXTP,ISSM,ICSM,
-     &           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
-     &           MAXLB,ICA_STR,ICB_STR,IAA_STR,IAB_STR,
-     &           ITDIAG,ITABTRNSP,IC_RESTRICT,IS_RESTRICT,
-     &           ISMDST,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S,
-     &           ICCTOS,ICWEIGHTF,IAM_BLK_ACT_C,
-     &           IAM_BLK_ACT_S,CHECK_TSPLIT)
+     &                          IAOC,IBOC,JAOC,JBOC,
+     &                          NIA,NIB,NJA,NJB,
+     &                          IXTP,ISSM,ICSM,
+     &                          I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                          MAXLB,ICA_STR,ICB_STR,IAA_STR,IAB_STR,
+     &                          NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &                          IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &                          NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM,
+     &                          ISMDST,IOFF_BLK_C,IOFF_BLK_S,IACT_C,
+     &                          IACT_S,ICCTOS,ICWEIGHTF,IAM_BLK_ACT_C,
+     &                          IAM_BLK_ACT_S,CHECK_TSPLIT)
 *
 * IX_RESTRICT = 1: BLocks in X are restricted to those with IASM.GE.IBSM
 * IX_RESTRICT =-1: BLocks in X are restricted to those with IASM.LT.IBSM
 *
+      use mospinor_info
+      use symmetry_setup_krci
 #include "implicit.h"
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "gasstr.inc"
-#include "orbinp.inc"
-#include "csm.inc"
-#include "symm.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
@@ -4137,23 +4108,26 @@ C
       DIMENSION ICCTOS(I_NZERO_LEN_C,*),ICWEIGHTF(*)
 *.Local Scratch
       INTEGER KAOC(MXPNGAS),KBOC(MXPNGAS)
-      INTEGER NIKAINTM(MXPOBS,MXPLCCOP),NIKBINTM(MXPOBS,MXPLCCOP)
-      INTEGER NJKAINTM(MXPOBS,MXPLCCOP),NJKBINTM(MXPOBS,MXPLCCOP)
-      INTEGER NKA(MXPOBS),NKB(MXPOBS)
 *. 
-      INTEGER NICA(MXPOBS),NICB(MXPOBS),NIAA(MXPOBS),NIAB(MXPOBS)
+      INTEGER NICA(MXNDGIRR),NICB(MXNDGIRR) 
+      INTEGER NIAA(MXNDGIRR),NIAB(MXNDGIRR)
+      INTEGER  NKA(MXNDGIRR), NKB(MXNDGIRR)
+
       INTEGER ICA_EXP(MXNOP),ICB_EXP(MXNOP),
      &        IAA_EXP(MXNOP),IAB_EXP(MXNOP)
       INTEGER ICAGP(MXPNGAS),ICBGP(MXPNGAS)
       INTEGER IAAGP(MXPNGAS),IABGP(MXPNGAS)
       integer KAGP(MXPNGAS),KBGP(MXPNGAS)
       integer JAGP(MXPNGAS),JBGP(MXPNGAS)
-      INTEGER IAC_AR(MXNOP)
-      INTEGER IB_CA(MXNDGIRR,MXNDGIRR,MXPLCCOP),
-     &        IB_CB(MXNDGIRR,MXNDGIRR,MXPLCCOP)
-      INTEGER IB_AA(MXNDGIRR,MXNDGIRR,MXPLCCOP),
-     &        IB_AB(MXNDGIRR,MXNDGIRR,MXPLCCOP)
+
+      INTEGER IB_CA(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_CB(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_AA(MXNDGIRR,MXNDGIRR,MXNOP)
+      INTEGER IB_AB(MXNDGIRR,MXNDGIRR,MXNOP)
       INTEGER IB_T(MXNDGIRR,MXNDGIRR,MXNDGIRR)
+      INTEGER NIKAINTM(MXPOBS,MXNOP),NIKBINTM(MXPOBS,MXNOP)
+      INTEGER NJKAINTM(MXPOBS,MXNOP),NJKBINTM(MXPOBS,MXNOP)
+
       INTEGER IB_C(MXNDGIRR),IB_S(MXNDGIRR)
 *. Scratch through input 
       DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
@@ -4206,9 +4180,10 @@ CSK   CALL WRT_TP_GENOP(ICA,ICB,IAA,IAB,NGAS)
 C
 C     T operator symmetry
       IOPSM = IDBGMULT(INVELM(ICSM),ISSM)
-      LI = INVELM(ICSM)
-C     WRITE(LUWRT,*) ' ISSM and ICSM and INVELM(ICSM)   ',ISSM,ICSM,LI
-C     WRITE(LUWRT,*) ' operator symmetry in FIND_IMAT...',IOPSM
+      LI    = INVELM(ICSM)
+!     WRITE(LUWRT,*) ' ISSM and ICSM and INVELM(ICSM)   ',ISSM,ICSM,LI
+!     WRITE(LUWRT,*) ' operator symmetry in FIND_IMAT...',IOPSM
+!     WRITE(LUWRT,*) ' IXTP                          ...',IXTP
 C
 C     types of strings in T in groupnotation
       CALL OCC_TO_GRP(ICA,ICAGP,1)
@@ -4225,8 +4200,9 @@ C     operators in T in expanded form
 C          REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY)
 C
 C     type of Ka and Kb
-      CALL CCEX_OCC_OCC(JAOC,KAOC,NGAS,1,IAA,IKA_ZERO)
-      CALL CCEX_OCC_OCC(JBOC,KBOC,NGAS,1,IAB,IKB_ZERO)
+      CALL CCEX_OCC_OCC(JAOC,KAOC,NGAS,IAA,IKA_ZERO)
+      CALL CCEX_OCC_OCC(JBOC,KBOC,NGAS,IAB,IKB_ZERO)
+!     print *, 'NCA_OP 2 ==> NCA_OP',NCA_OP
 C
 C     check that annihilation has not acted upon empty GAS 
       IF(IKA_ZERO.EQ.0.AND.IKB_ZERO.EQ.0) THEN
@@ -4234,56 +4210,66 @@ C
 C      get group of K mapped occupations
        call occ_to_grp(KAOC,KAGP,1)
        call occ_to_grp(KBOC,KBGP,1)
+!     print *, 'NCA_OP 3 ==> NCA_OP',NCA_OP
 C
 C      number of strings in this supergroup
-       DO KSM = 1,NSMST,1
+       NEL_KA = IELSUM(KAOC,NGAS)
+       NEL_KB = IELSUM(KBOC,NGAS)
+!     print *, 'NCA_OP 3.5 ==> NCA_OP',NCA_OP
+       do KSM = 1,NSMST,1
          call nst_spgrp_dbg(NGAS,KAGP,KSM,NSMST,NKA(KSM),NKADST,1)
+!        call getstr2_totsm_spgp_rel(1,KAGP,NGAS,KSM,NEL_KA,
+!    &                               NKA(KSM),NKADST)
+!     print *, 'NCA_OP 3.x  ==> NCA_OP',NCA_OP, KSM, NEL_KA, NKA(KSM)
          call nst_spgrp_dbg(NGAS,KBGP,KSM,NSMST,NKB(KSM),NKBDST,2)
-       END DO
-C
-C      number of strings in excitation ops
-       DO ISYM = 1,NSMST,1
+!        call getstr2_totsm_spgp_rel(2,KBGP,NGAS,KSM,NEL_KB,
+!    &                               NKB(KSM),NKBDST)
+!     print *, 'NCA_OP 3.xx ==> NCA_OP',NCA_OP, KSM, NEL_KB, NKB(KSM)
+       end do
+       NEL_CA = IELSUM(ICA,NGAS)
+       NEL_CB = IELSUM(ICB,NGAS)
+       NEL_AA = IELSUM(IAA,NGAS)
+       NEL_AB = IELSUM(IAB,NGAS)
+C       number of strings in excitation ops
+        do ISYM = 1,NSMST,1
+
+!         call getstr2_totsm_spgp_rel(1,ICAGP,NGAS,ISYM,NEL_CA,
+!    &                                NICA(ISYM),NCADST)
+!         call getstr2_totsm_spgp_rel(2,ICBGP,NGAS,ISYM,NEL_CB,
+!    &                                NICB(ISYM),NCBDST)
+!         call getstr2_totsm_spgp_rel(1,IAAGP,NGAS,ISYM,NEL_AA,
+!    &                                NIAA(ISYM),NAADST)
+!         call getstr2_totsm_spgp_rel(2,IABGP,NGAS,ISYM,NEL_AB,
+!    &                                NIAB(ISYM),NABDST)
          call nst_spgrp_dbg(NGAS,ICAGP,ISYM,NSMST,NICA(ISYM),NCADST,1)
          call nst_spgrp_dbg(NGAS,ICBGP,ISYM,NSMST,NICB(ISYM),NCBDST,2)
-C
-C        all arrays refer to strings of creation operators of given occ;
-C        so do not bother with difference between anni and crea here 
          call nst_spgrp_dbg(NGAS,IAAGP,ISYM,NSMST,NIAA(ISYM),NAADST,1)
          call nst_spgrp_dbg(NGAS,IABGP,ISYM,NSMST,NIAB(ISYM),NABDST,2)
-       END DO
+
+        end do
 C
 C      offset for symmetryblocks of T
-       IF(ITABTRNSP.EQ.0) THEN
-         CALL Z_TCC_OFF(IB_T,NICA,NICB,NIAA,NIAB,IOPSM,NSMST,ITDIAG)
-       ELSE
-         CALL Z_TCC_OFF(IB_T,NICB,NICA,NIAB,NIAA,IOPSM,NSMST,ITDIAG)
-       END IF
-C             Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM,NSMST)
+       CALL Z_TCC_OFF_opt(IB_T,NICA,NICB,NIAA,NIAB,IOPSM)
 C
 C      creation path from C/S strings to K strings
 C      mappings from !I> to !K> are annihilations mappings 
-       NMXOP_T = MAX(NCA_OP,NCB_OP,NAA_OP,NAB_OP)
-       DO JOP = 1, NMXOP_T
-         IAC_AR(JOP) = 1
-       END DO
-       ONE = 1.0D0
 C      CA : KA => IA mappings in 1
-C      MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,SCLFAC,ISMDST,IAB)
+C      MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,ISMDST,IAB)
        IAB_MAP = 1
-       CALL MAP_EXSTR(ICA_EXP,IAC_AR,NCA_OP,IAOC,I1,XI1S,
-     &                NIKAINTM,IB_CA,ONE,ISMDST,IAB_MAP)
+       CALL MAP_EXSTR(ICA_EXP,NCA_OP,IAOC,I1,XI1S,
+     &                NIKAINTM,IB_CA,ISMDST,IAB_MAP)
 C      CB : KB => IB     
        IAB_MAP = 2
-       CALL MAP_EXSTR(ICB_EXP,IAC_AR,NCB_OP,IBOC,I2,XI2S,
-     &                NIKBINTM,IB_CB,ONE,ISMDST,IAB_MAP)
+       CALL MAP_EXSTR(ICB_EXP,NCB_OP,IBOC,I2,XI2S,
+     &                NIKBINTM,IB_CB,ISMDST,IAB_MAP)
 C      AA : KA => JA
        IAB_MAP = 1
-       CALL MAP_EXSTR(IAA_EXP,IAC_AR,NAA_OP,JAOC,I3,XI3S,
-     &                NJKAINTM,IB_AA,ONE,ISMDST,IAB_MAP)
+       CALL MAP_EXSTR(IAA_EXP,NAA_OP,JAOC,I3,XI3S,
+     &                NJKAINTM,IB_AA,ISMDST,IAB_MAP)
 C      AB : KB => JB
        IAB_MAP = 2
-       CALL MAP_EXSTR(IAB_EXP,IAC_AR,NAB_OP,JBOC,I4,XI4S,
-     &                NJKBINTM,IB_AB,ONE,ISMDST,IAB_MAP)
+       CALL MAP_EXSTR(IAB_EXP,NAB_OP,JBOC,I4,XI4S,
+     &                NJKBINTM,IB_AB,ISMDST,IAB_MAP)
 C
 C      loop over symmetry-blocks of C and sigma
 C      ________________________________________
@@ -4296,13 +4282,15 @@ C      initialize offsets for sigma- and c-block loops
 C
        DO IASM = 1, NSMST 
 C
+!       print *, ' I_BLK_S_SCR ==> ',I_BLK_S_SCR
+!       print *, ' I_BLK_C_SCR ==> ',I_BLK_C_SCR
         IF( IACT_S( I_BLK_S_SCR ) .eq. 0 ) THEN
-CSK          WRITE(LUWRT,*) ' I SKIP S_BLOCK',I_BLK_S_SCR,'with IACT_S',
-CSK     &                     IACT_S( I_BLK_S_SCR )
+!         WRITE(LUWRT,*) ' I SKIP S_BLOCK',I_BLK_S_SCR,'with IACT_S',
+!    &                     IACT_S( I_BLK_S_SCR )
           GOTO 3003
-CSK        ELSE
-CSK          WRITE(LUWRT,*) ' I CALC S_BLOCK',I_BLK_S_SCR,'with IACT_S',
-CSK     &                     IACT_S( I_BLK_S_SCR )
+!       ELSE
+!         WRITE(LUWRT,*) ' I CALC S_BLOCK',I_BLK_S_SCR,'with IACT_S',
+!    &                     IACT_S( I_BLK_S_SCR )
         END IF
 C
         IBSM = IDBGMULT(ISSM,INVELM(IASM))
@@ -4310,23 +4298,24 @@ C
 C       reset offset for c-block loop
         I_BLK_C_SCR = 0
         I_BLK_C_SCR = IOFF_BLK_C
-CSK     WRITE(LUWRT,*) 'starting c-block check at block',I_BLK_C_SCR
+!       WRITE(LUWRT,*) 'starting c-block check at block',I_BLK_C_SCR
         DO JASM = 1, NSMST
 C
          IF( IACT_C( I_BLK_C_SCR ) .eq. 0 ) GOTO 2002
 C
          JBSM = IDBGMULT(ICSM,INVELM(JASM))
 C
-         DO KASM = 1, NSMST
+         DO 100 KASM = 1, NSMST
 C         IAA_SM is symmetry of ANNIHILATOR string
-          IAA_SM = IDBGMULT(KASM,INVELM(JASM))
-          ICA_SM = IDBGMULT(IASM,INVELM(KASM))
-C
+          IAA_SM  = IDBGMULT(KASM,INVELM(JASM))
+          ICA_SM  = IDBGMULT(IASM,INVELM(KASM))
 C         to obtain the number of annnihilator strings of a given sym
-C         we find the number of creator strings of conjugated symmetry
+C         we find the number of creator strings of conjugated
+C         symmetry
           LIAA_SM = NIAA(INVELM(IAA_SM))
           LICA_SM = NICA(ICA_SM)
-          LKA_SM = NKA(KASM)
+          LKA_SM  = NKA(KASM)
+          if(LIAA_SM*LICA_SM*LKA_SM.le.0) goto 100
 C
           DO KBSM = 1, NSMST
 C
@@ -4337,9 +4326,10 @@ C
            LICB_SM = NICB(ICB_SM)
 C
            LKB_SM = NKB(KBSM)
+!          print *, ' KBSM is ==> ',KBSM
+!      call rmemchk_opt('inside find 3       ')
 C
-           IF(LIAA_SM*LICA_SM*LIAB_SM*LICB_SM*LKA_SM*LKB_SM.NE.0)
-     &     THEN
+           IF(LIAB_SM*LICB_SM*LKB_SM.NE.0)THEN
 C
 csk             WRITE(LUWRT,*) '  GREAT, THIS IS AN ALLOWED CONNECTION'
              IF( CHECK_TC .or. CHECK_TSPLIT ) THEN 
@@ -4359,8 +4349,8 @@ CSK          WRITE(LUWRT,*) ' now i have to put in the connection'
 C
            END IF
 C          ^ End if symmetry combinations have nonvanishing dimensions
-         END DO
-         END DO
+         end do
+  100    CONTINUE
 C        ^ End of loop over KASM, KBSM
  2002  CONTINUE
 C      ^ skip c-block not included in active-block-list; only in parallel
@@ -8426,11 +8416,7 @@ C     ^ loop over batches - imag part
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,LUWRT_FILE)
 C
 C     Synchronize MASTER and NODES - general routine
@@ -8447,100 +8433,42 @@ C**********************************************************************
 #include "cicisp.inc"
 #include "dcbopt.h"
 #include "dcborb.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 #include "krmcluci_inf.h"
-
       CHARACTER*6 CIRUN
-C
-C     introduce CIRUN and JKRRUNTYPE for NODES
-C
+!
+!     introduce CIRUN and JKRRUNTYPE for NODES
       CALL MPI_BCAST(CIRUN,6,MPI_CHARACTER,MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(JKRRUNTYPE,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
-C
+!
       IF( MYPROC .ne. MASTER )THEN
         CALL LUCI_TASK_NODES(CIRUN)
       END IF
-C
-C     communicate some CIRUN specific variables, arrays ...
-C
-C     note: ISYM_KRMC == IOPT_SYMMETRY
-C
-C
-      IF( CIRUN .eq. 'NDET  ' .or. CIRUN .eq. 'ANALYZ' ) THEN
-C
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-      ELSE IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
-C
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ECORE_KRMC,1,MPI_REAL8,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-      ELSE IF( CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' ) THEN
-C
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-      ELSE IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
-C
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-C
-      ELSE IF( CIRUN .eq. 'IJKLRO' .or. CIRUN .eq. 'PROP1 ' ) THEN
-        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
-     &                 MPI_COMM_WORLD,IERR)
-      END IF
-C
-C     all needed for proper read-in of integrals...
-C
+ 
+!     communicate some CIRUN specific variables, arrays ...
+      CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+
+!     ISYM_KRMC == IOPT_SYMMETRY
+      CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ECORE_KRMC,1,MPI_REAL8,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+!
+!     all needed for proper read-in of integrals...
       CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(JBTOF,8*2,my_MPI_INTEGER,MASTER,
@@ -8555,14 +8483,14 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(OPT_NOPFQ,1,MPI_LOGICAL,MASTER,
      &               MPI_COMM_WORLD,IERR)
-C     big integer arrays ...
+!     big integer arrays ...
       CALL MPI_BCAST(IDXT2G,4*MXCORB,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IDXU2G,MAXASH,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IDXG2U,MXCORB,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
-C
+!
       CALL MPI_BCAST(NIDX3,2,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(NIDX4,2,my_MPI_INTEGER,MASTER,
@@ -8575,14 +8503,10 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(N2ORBX,1,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
-C
+
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SYNC_NODES_REL_P2(F1,F2,CIRUN)
 C
 C     Synchronize MASTER and NODES - CIRUN specific routine
@@ -9032,13 +8956,13 @@ C
 * Jeppe Olsen, Feb. 98
 *
 * For relativistic program
+      use symmetry_setup_krci
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
@@ -9144,7 +9068,7 @@ CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
         call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
         CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
 *
-        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP))
+        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,WORK(KPCBLTP))
 *
         IF(IMS2.EQ.1) THEN
           IOFFBLK = 1
@@ -9216,13 +9140,13 @@ C
 C      S. Knecht - Nov 2008: modified for CI property runs
 C
 C**********************************************************************
+      use symmetry_setup_krci
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
-#include "csm.inc"
 #include "strbas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
@@ -9254,7 +9178,7 @@ C       info needed for generation of block info
         call memmar(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
         CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
 C
-        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP))
+        CALL ZBLTP_REL(ISMOST(1,ISM),NSMST,WORK(KPCBLTP))
 C
         IF(IMS2.EQ.1) THEN
           IOFFBLK = 1

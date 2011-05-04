@@ -321,6 +321,8 @@ C?            END IF
 * NSTAKTS: Total Number of K supergroup strings with correct symmetry
 * ISTAKTS: Offset for K supergroup strings with hiven symmetrydistribution
 * NSTAI : Number of I groupstrings in active gasspace
+!
+! IAC: 1 --> annihilation mapping; 2 --> creation mapping
 *
       IMPLICIT REAL*8(A,H,O-Z)
 *. Input
@@ -402,15 +404,14 @@ COLD             IF(ICREORB(IROW,KSTR) .EQ. -IORBRT ) THEN
 *. Excitation is open, corresponding active I string
 * Relative to start of given symmetry for this group
             ISTR = ISTR - IOFFI+ 1
-C?          WRITE(6,*) ' ISTR, relative = ', ISTR
+!           WRITE(6,*) 
+!    &      ' ISTR (relative), IOFFI, IOFFISP ==> ',ISTR,IOFFI, IOFFISP
 *. This Creation is active for all choices of strings in supergroup
 *. before and after the active type. Store the corrsponding mappings
             IADRK0 = (KSTR-IOFFK)*NSTA +IOFFKSP-1
             IADRI0 = (ISTR-1)*NSTA     +IOFFISP-1
 C?          WRITE(6,*) ' IADRK0 IOFFK IOFFKSP ',
 C?   &                   IADRK0,IOFFK,IOFFKSP
-C?          WRITE(6,*) ' ISTR, IADRI0, IOFFISP ',
-C?   &                   ISTR, IADRI0, IOFFISP
 *
             NSTAINSTA = NSTAI*NSTA
             NSTAKNSTA = NSTAK*NSTA
@@ -421,6 +422,7 @@ C?          WRITE(6,*) ' NSTAI,NSTAK',NSTAI,NSTAK
               DO IA = 1, NSTA
 C               IBKA = IADRI0 + (IB-1)*NSTAI*NSTA+IA
 C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
+!               print *,'IADRI0, IA ==>',IADRI0, IA
                 ISTMAP(IADRK0+IA,IORBRTS) = IADRI0 + IA
                 SGNMAP(IADRK0+IA,IORBRTS) = SIGN
               END DO
@@ -431,24 +433,22 @@ C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
         END DO
       END DO
 *
-      NTEST = 00
-      IF(NTEST.GT.0) THEN
-        WRITE(6,*) ' Output from ADAST_GASSM '
-        WRITE(6,*) ' ======================== '
-        NK = NSTB*NSTAK*NSTA
-        WRITE(6,*) ' Number of K strings accessed ', NK
-        IF(NK.NE.0) THEN
-          DO IORB = IORBTSF,IORBTSF + NORBTS  - 1
-            IORBR = IORB-IORBTSF+1
-            WRITE(6,*) ' Update Info for orbital ', IORB
-            WRITE(6,*) ' Mapped strings and sign '
-            CALL IWRTMA(ISTMAP(1,IORBR),1,NK,1,NK)
-            CALL WRTMAT(SGNMAP(1,IORBR),1,NK,1,NK)
-          END DO
-        END IF
+#ifdef LUCI_DEBUG
+      WRITE(6,*) ' Output from ADAST_GASSM '
+      WRITE(6,*) ' ======================== '
+      NK = NSTB*NSTAK*NSTA
+      WRITE(6,*) ' Number of K strings accessed ', NK
+      IF(NK.NE.0) THEN
+        DO IORB = IORBTSF,IORBTSF + NORBTS  - 1
+          IORBR = IORB-IORBTSF+1
+          WRITE(6,*) ' Update Info for orbital ', IORB
+          WRITE(6,*) ' Mapped strings and sign '
+          CALL IWRTMA(ISTMAP(1,IORBR),1,NK,1,NK)
+          CALL WRTMAT(SGNMAP(1,IORBR),1,NK,1,NK)
+        END DO
       END IF
+#endif
 
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -1483,13 +1483,14 @@ C
 *
       implicit real*8(A-H,O-Z)
 *
-      dimension IARRAY(LENGTH)
+      dimension iarray(length)
 *
-      MVALUE = 0
-      do I=1,LENGTH,1
-         if (IARRAY(I).gt.MVALUE) MVALUE = IARRAY(I)
+      mvalue = iarray(1)
+
+      do i = 2, length
+        mvalue = max(mvalue,iarray(i))
       end do
-      return
+
       end
 ***********************************************************************
 *                                                                     *
@@ -2195,20 +2196,22 @@ CMI        IF(INCLUDE .EQ.1) THEN
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      FUNCTION IELSUM(IVEC,NELMNT)
+      integer function ielsum(IVEC,NELMNT)
+      implicit none
 *
 * Sum elements of integer vector IVEC
 *
-      DIMENSION IVEC(*)
+      integer, intent(in) :: nelmnt
+      integer, intent(in) :: ivec(nelmnt)
+      integer             :: ielmnt, isum
 *
-      ISUM = 0
-      DO 100 IELMNT = 1, NELMNT
-        ISUM = ISUM + IVEC(IELMNT)
-  100 CONTINUE
+      isum = 0
+      do ielmnt = 1, nelmnt
+        isum = isum + ivec(ielmnt)
+      end do
 *
-      IELSUM = ISUM
+      ielsum = isum
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *
@@ -2872,10 +2875,9 @@ C
       FUNCTION IOFF_SYM_DIST(ISYM,NGASL,IOFF,MAXVAL,MINVAL)
 *
 * A ts block of string is given and the individual
-* symmetrydisrtributions has been obtained ( for example
-* by TS_SYM_PNT)
+* symmetry disrtributions has been obtained ( for example by TS_SYM_PNT)
 *
-* Obtain offset for symmetrycombination defined by ISYM
+* Obtain offset for symmetry combination defined by ISYM
 *
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER ISYM(*),IOFF(*),MAXVAL(*),MINVAL(*)
@@ -4552,7 +4554,7 @@ C
       SUBROUTINE SYMCM1(ITASK,IOBJ,I1,I2,I12)
 *
 * Symmetries I1,I2,I12 are related as
-* I1*I2 = 12
+* I1*I2 = I12
 * IF(ITASK = 1 ) I2 and I12 are known, find I1
 * IF(ITASK = 2 ) I1 and I12 are known, find I1
 * IF(ITASK = 3 ) I1 and I2 are known , find I12

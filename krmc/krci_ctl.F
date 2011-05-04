@@ -19,10 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision: 7316 $
-C DATE    : $Date: 2008-08-07 16:46:22 +0200 (Do, 07 Aug 2008) $
-C FILE    : krmcopt.F
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCI_INP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
@@ -58,6 +54,7 @@ C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input and start-up --> "modularize"
 C
 C***********************************************************************
+      use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -69,7 +66,7 @@ C
       CHARACTER*4 REPNA(64)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, TMPLAB*8
       CHARACTER CTEMP*72, LINE*80, TEXT*20, REPA(8)*4
-      DIMENSION WORK(LWORK), MULTB_TMP(64,64)
+      DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
 #include "maxorb.h"
@@ -92,12 +89,23 @@ C
      &            '.MXCIVE','.KTRLVL','.PARINT','.MEMFAC','.NOOCCN',
      &            '.RDFOCK','.WRTFCK','.SHMEMO','.IJKLRO','.IJKLSP',
      &            '.PRINT ','.MAKE C','.CNVINT','.ITRINT','.INTFLG',
-     &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
+     &            '.THRPCI','.xxxxxx','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
-     &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
+     &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
+      character (len= 4)              :: symmetry_str
+      character (len= 4)              :: tmp_symmetry_str
+      character (len= 4), allocatable :: nkrci_ciroots_symstr(:)
+      character (len= 1)              :: last_char
+      character (len= 2)              :: ferm_lab
+      logical                         :: gerade_mcci_wf
+      integer                         :: tmp_mij_val
+      integer                         :: fermion_sym
+      integer                         :: ascii_lchar
+      integer                         :: double_group
+      integer, allocatable            :: multb_tmp(:,:)
 C
 #include "ibtfun.h"
 #include "sdpre.h"
@@ -131,8 +139,7 @@ C
       TRANATO_KRCI      = .FALSE.
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
-      LOWSORT_KRCI    = .FALSE.
-      LOWSORT_KRCI    = .FALSE.
+      LOWSORT_KRCI      = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -214,6 +221,7 @@ C
 C     some scratch
       IKRCI_SYMSEL   = 0 
       NOMEGASEL_KRCI = 0
+ 
 C
 C     Process input for *KRCICALC
 C     ===========================
@@ -221,8 +229,20 @@ C
       NEWDEF = (WORD .EQ. '*KRCICA')
       ICHANG = 0
       IF (NEWDEF) THEN
-         WORD1 = WORD
-  100    CONTINUE
+
+!       initialize symmetry information irreps required for input
+!       processing. note, we assume 
+!       the # double group irreps here to be 128. FIXME: make it general in
+!       Dirac for higher linear symmetry double groups. "global Dirac post-HF symmetry module".
+        if(linear)then
+          double_group = 11
+          if(nfsym .eq. 1) double_group = 10
+          call symmetry_setup_init(double_group,max_nkrci_max_sym)
+          allocate(nkrci_ciroots_symstr(4*max_nkrci_max_sym))
+        end if
+
+        WORD1 = WORD
+  100   CONTINUE
             READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -271,19 +291,84 @@ C&&& .ANALYZ: Analyze LUCIAREL CI vector(s)
     5          CONTINUE
 C&&& .CIROOTS: Symmetry and number of CI roots to be optimized in this
 C              symmetry
-                  READ(LUCMD,*) IKRCI_SYMMETRY,NCIROOT_KRCI
-                  IF (IKRCI_SYMMETRY .LE. MAX_NKRCI_MAX_SYM .AND.
-     &                IKRCI_SYMMETRY .GT. 0) THEN
-                     NKRCI_CIROOTS(IKRCI_SYMMETRY) = NCIROOT_KRCI
-                     NKRCI_MAX_SYM = MAX(NKRCI_MAX_SYM, IKRCI_SYMMETRY)
-                  ELSE
-                     WRITE(LUPRI,'(//A/I10,A,I3)')
+                  if(.not.linear) then
+                    READ(LUCMD,*) IKRCI_SYMMETRY,NCIROOT_KRCI
+                    IF(IKRCI_SYMMETRY .LE. MAX_NKRCI_MAX_SYM .AND.
+     &                 IKRCI_SYMMETRY .GT. 0) THEN
+                      NKRCI_CIROOTS(IKRCI_SYMMETRY) = NCIROOT_KRCI
+                      NKRCI_MAX_SYM = MAX(NKRCI_MAX_SYM, IKRCI_SYMMETRY)
+                    ELSE
+                      WRITE(LUPRI,'(//A/I10,A,I3)')
      &                '*** ERROR in KRCI_INP .CIROOTS *** ' //
      &                'Requested symmetry outside hardwired limits:',
      &                IKRCI_SYMMETRY, ' outside 1 to',MAX_NKRCI_MAX_SYM
-                     CALL QUIT('*** ERROR in KRCI_INP .CIROOTS *** ' //
-     &                 'Requested symmetry outside hardwired limits.')
-                  END IF
+                      CALL QUIT('*** ERROR in KRCI_INP .CIROOTS *** ' //
+     &                'Requested symmetry outside hardwired limits.')
+                    END IF
+                  else
+!                   read mij value and # roots in linear symmetry input format
+                    read(lucmd,*) symmetry_str, NCIROOT_KRCI
+
+!                   manipulate mij-value input string for further processing
+!                   print *,'symmetry_str is ==> ',symmetry_str
+                    tmp_symmetry_str = trim(symmetry_str)
+                    length_of_string = len_trim(tmp_symmetry_str)
+!                   print *,'length of symmetry_str is ==> ',
+!    &                       length_of_string
+                    last_char = tmp_symmetry_str(length_of_string:
+     &                                           length_of_string)
+!                   print *,'last char of symmetry_str is ==> ',
+!    &                       last_char
+
+!                   determine symmetry irrep of CI wave function
+!                   --------------------------------------------
+
+!                   a. check for inversion symmetry
+                    ascii_lchar = iachar(last_char)
+                    if(nfsym .gt. 1)then
+                      if(ascii_lchar .eq. iachar('g'))then
+                        gerade_mcci_wf = .true.
+                      else if(ascii_lchar .eq. iachar('u'))then
+                        gerade_mcci_wf = .false.
+                      else 
+                        write(lupri,'(/a,/a)') 
+     & '  *** input error: Dinfh contains the inversion operation'//
+     & ' as group element.',
+     & '  please specify either g or u in addition to the mj value. ***'
+                        call quit('  *** input error: Dinfh contains
+     & the inversion operation as group element. ***')
+                      end if
+                    else
+                      gerade_mcci_wf   = .true.
+                      length_of_string = length_of_string + 1
+                      if(ascii_lchar .eq. iachar('g') 
+     &                   .or. ascii_lchar .eq. iachar('u'))then
+                        call quit(' *** input error: Cinfv does not
+     & have inversion as group element. ***')
+                      end if
+                    end if
+
+!                   b. get mij value in integer format
+                    read(tmp_symmetry_str(1:length_of_string-1), 
+     &              fmt='(i6)') tmp_mij_val
+                    fermion_sym = 1
+                    if(.not.gerade_mcci_wf) fermion_sym = 2
+!                   print *,'fermion_sym, tmp_mij_val are ==> ',
+!    &                       fermion_sym, tmp_mij_val
+!                   call quit('==> bla bla ***')
+
+!                   retrieve active dbg irrep (routine is inside the module symmetry_setup_krci)
+                    call convert_mj_ferm_2_dbg_irrep_linsym_krci(
+     &                   mj2rep,max_nkrci_max_sym,tmp_mij_val,
+     &                   fermion_sym,is_current_dbg_irrep)
+
+!                   c. store # roots for the active irrep
+                    nkrci_ciroots(is_current_dbg_irrep) = nciroot_krci
+                    nkrci_max_sym = max(nkrci_max_sym,
+     &                                  is_current_dbg_irrep)
+                    nkrci_ciroots_symstr(is_current_dbg_irrep) =
+     &              tmp_symmetry_str(1:length_of_string)
+                  end if
                GO TO 100
     6          CONTINUE
 C&&& .MXCIVE: Number of CI vectors allowed for subspace
@@ -450,13 +535,7 @@ C&&& THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRCI_THRPCI
                GO TO 100
    22          CONTINUE
-C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
-               IF (IKWSET(22) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
-     &                 'You can only specify symmetry once')
-               END IF
-               KRCI_UCIBOS = .TRUE.
-               IKWSET(22) = 2
+C&&& xxx
                GO TO 100
    23          CONTINUE
 C&&& MIN MK2: minimum value of 2 * MK
@@ -536,15 +615,8 @@ C                          using j_z = l_z + s_z
                   DOPROP_KRCI  = .TRUE.
                   DOJZEXP = .TRUE.
                GO TO 100
+!  xxx
    34          CONTINUE
-C&&&  RELSYM:  use relativistic double group symmetry of the wave function
-C              including spin in symmetry
-               IF (IKWSET(22) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
-     &                 'You can only specify symmetry once')
-               END IF
-               KRCI_UCIBOS = .FALSE.
-               IKWSET(22) = 2
                GO TO 100
    35          CONTINUE
 C&&&  CHECKP:  write intermediate check point file that is readable by 
@@ -700,7 +772,7 @@ C
 C     Default: one CI root in symmetry 1
 C
       IF (NKRCI_MAX_SYM .EQ. -1) THEN
-         NKRCI_MAX_SYM = 1
+         NKRCI_MAX_SYM    = 1
          NKRCI_CIROOTS(1) = 1
       END IF
 C
@@ -812,52 +884,60 @@ C     ... next symmetry
      &     ' * Allowed interval of approximate 2 * MS :',
      &     NKRCI_MINMK2, ' to ', NKRCI_MAXMK2
       ELSE
-         IF (SPINFR.or.levyle) THEN
-            CALL GMULTSF(NREP,REPNA,MULTB_TMP)
-         ELSE
-            CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
-         ENDIF
-         IF ( MOD ( NKRCIAELEC, 2 ) .EQ. 0 ) THEN
-            IRRP = NREP + IKRCI_SYMMETRY
-            WRITE(LUPRI,'(A,I3,2A)')
-     &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
-     &        ' in symmetry (boson):',REPNA(IRRP)
-C             store on common block in krciprop.h
-              XREPEIG(IKRCI_SYMMETRY) = REPNA(IRRP)
-            IF (NKRCI_MAX_SYM .GT. NREP) THEN
-               WRITE(LUPRI,'(/A//A,2I5)')
-     &         ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
-     &         ' is non-existent!',
-     &         ' Symmetry, max value of symmetry = ', 
-     &           NKRCI_MAX_SYM, NREP
-               CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
-            END IF
+         if(linear)then
+!          store on common block in krciprop.h
+           xrepeig(ikrci_symmetry) = 
+     &     nkrci_ciroots_symstr(ikrci_symmetry)
+           if(mod(nkrciaelec, 2) .eq. 0)then
+             ferm_lab = '  '
+           else
+             ferm_lab = '/2'
+           end if
+           WRITE(LUPRI,'(a,i3,a,a4,a2)')
+     &        '    ** ',nkrci_ciroots(ikrci_symmetry),' eigenstate(s)'//
+     &        ' for MJ-value: ',adjustr(xrepeig(ikrci_symmetry)),
+     &                          ferm_lab
+         else
+           allocate(multb_tmp(64,64))
+           IF (SPINFR.or.levyle) THEN
+              CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+           ELSE
+              CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+           ENDIF
+           deallocate(multb_tmp)
+           IF(MOD(NKRCIAELEC, 2) .EQ. 0)THEN
+             IRRP = NREP + IKRCI_SYMMETRY
+             WRITE(LUPRI,'(A,I3,2A)')
+     &       '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
+     &       ' in symmetry (boson):',REPNA(IRRP)
+C            store on common block in krciprop.h
+             XREPEIG(IKRCI_SYMMETRY) = REPNA(IRRP)
+             IF (NKRCI_MAX_SYM .GT. NREP) THEN
+                WRITE(LUPRI,'(/A//A,2I5)')
+     &          ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
+     &          ' is non-existent!',
+     &          ' Symmetry, max value of symmetry = ', 
+     &            NKRCI_MAX_SYM, NREP
+                CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
+             END IF
 C
-         ELSE
-            WRITE(LUPRI,'(A,I3,2A)')
+           ELSE
+              WRITE(LUPRI,'(A,I3,2A)')
      &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
      &        ' in symmetry (fermion):',REPNA(IKRCI_SYMMETRY)
-C             store on common block in krciprop.h
-              XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
+C               store on common block in krciprop.h
+                XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
 C
 C           FIXME: check proper abort criterion
-C
-CSK         IF ( NKRCI_MAX_SYM .GT. NREP) THEN
-CSK            WRITE(LUPRI,'(/A//A,2I5)')
-CSK  &         ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
-CSK  &         ' is non-existent!',
-CSK  &         ' Symmetry, max value of symmetry = ', 
-CSK  &           NKRCI_MAX_SYM, NREP
-CSK            CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
-CSK         END IF
-         END IF
+           END IF
+         end if
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     '    -- Allowed interval of 2 * MK :',
-     &     NKRCI_MINMK2, ' to ', NKRCI_MAXMK2
+     &     NKRCI_MINMK2,' to ',NKRCI_MAXMK2
       END IF
  202  CONTINUE
 C
-      IF (KRCI_CIPROGRAM .eq. 'LUCIAREL' ) THEN
+      IF(KRCI_CIPROGRAM .eq. 'LUCIAREL') THEN
          WRITE(LUPRI,'(A/A)')
      &' * Using symmetry nomenclature for LUCIAREL. ',
      &'      Boson and Fermion irreps of complex (sub)groups  '
@@ -1044,8 +1124,15 @@ C
   303   continue
       end if
 C
-  400 RETURN
-      END
+  400 if(linear) then 
+!       call quit('bla bla')
+        if(allocated(nkrci_ciroots_symstr)) 
+     &    deallocate(nkrci_ciroots_symstr)
+      end if 
+
+!     call quit('bla bla... :)')
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRCI_CALC(WFTYP,WFCONV,WORK,LWORK)
 C***********************************************************************
@@ -1146,14 +1233,14 @@ C
       KFREE_100_LOOP = KFREE
 
       DO 100 IOPT_SYMMETRY = 1, NKRCI_MAX_SYM
-         NCIROOT = NKRCI_CIROOTS(IOPT_SYMMETRY)
-         WRITE (LUPRI,'(//80A1/A,I5/A,I8/80A1/)')
-     &   ('&',I=1,80),
-     &   '&&& KRCI calculation for symmetry no.',IOPT_SYMMETRY,
-     &   '&&& Number of CI roots for this symmetry',NCIROOT,
-     &   ('&',I=1,80)
-
+        NCIROOT = NKRCI_CIROOTS(IOPT_SYMMETRY)
         IF (NCIROOT .LE. 0) GO TO 100
+        WRITE (LUPRI,'(//80A1/A,I5/A,I8/80A1/)')
+     &  ('&',I=1,80),
+     &  '&&& KRCI calculation for symmetry no.',IOPT_SYMMETRY,
+     &  '&&& Number of CI roots for this symmetry',NCIROOT,
+     &  ('&',I=1,80)
+
 C
 C       ***************************************************
 C       *** Initialize configurational and orbital      ***
@@ -1364,10 +1451,9 @@ C
 C
       CALL MEMREL('KRCI_CALC_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('KRCI_CALC_1')
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck krcihi */
+
       SUBROUTINE KRCIHI
 C***********************************************************************
 C
@@ -1404,6 +1490,8 @@ C
      &     3X,'  Timo Fleig and Jeppe Olsen',//,
      &     3X,'Parallel LUCIAREL CI code: ',/,
      &     3X,'  Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig',
+     &   //3X,'Linear symmetry implementation (CI and MCSCF):',/,
+     &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen',
      &     //,
      &     1X,79('*'))
 !
@@ -1418,10 +1506,9 @@ C
      &    20X,'   J Chem Phys, 132,1 (2010) 014108', //,
      &     1X,79('*'),/)
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck setkrci */
+
       SUBROUTINE SETKRCI(LUPRI)
 C***********************************************************************
 C

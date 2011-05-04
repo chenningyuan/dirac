@@ -533,7 +533,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
-      CHARACTER*1 XSYMFLAB(*) 
+      CHARACTER*3 XSYMFLAB(*) 
       CHARACTER*8 FILELAB
       LOGICAL EX, PRINT_EV, FNDLAB
 C
@@ -550,7 +550,7 @@ C     read final energies from file KRCI_CVECS.INFO
       NXSCR = 1
       DO I = 1, NKRCI_MAX_SYM
         IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
-          WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+          WRITE(FILELAB,'(A5,A3)') "eroot",XSYMFLAB(I)
           REWIND LU_INFO
           PRINT_EV = FNDLAB(FILELAB,LU_INFO)
           IF(PRINT_EV) THEN 
@@ -1762,12 +1762,17 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-      CHARACTER*1 XSYMFLAB(IXSYM), XLAB(16)
-      DATA (XLAB(I),I=1,16) /"a","b","c","d","e","f","g","h","i","j",
-     &                       "k","l","m","n","o","p"/
-      DO I = 1, IXSYM
-        XSYMFLAB(I) = XLAB(I)
-      END DO
+      CHARACTER*3 XSYMFLAB(IXSYM) 
+       
+      do i = 1, IXSYM
+        if(i.lt.10)then
+          write(XSYMFLAB(I),'(i1,a2)'),i,'  '
+        else if(i.lt.100)then
+          write(XSYMFLAB(I),'(i2,a1)'),i,' '
+        else
+          write(XSYMFLAB(I),'(i3)'),i
+        end if
+      end do
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FIND_XPRPINDEX */

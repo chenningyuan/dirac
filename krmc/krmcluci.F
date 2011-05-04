@@ -38,34 +38,130 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
 C
 C***********************************************************************
+      use memory_allocator
+      use mospinor_info
+      use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "maxorb.h"
+#include "../krmc/dcbbos.h"
 #include "../luciarel/cprnt.inc"
+#include "../luciarel/mxpdim.inc"
+#include "../luciarel/cgas.inc"
+#include "dcborb.h"
+#include "dgroup.h"
 #include "parluci.h"
+!     scratch
+      integer, allocatable  :: orb_sym_vec(:)
+      integer               :: orb_sym_fh
+      character (len=11)    :: orb_sym_fn
+      character (len= 4)    :: mynum_str
 C
 C     set "I/O node master" + "shared memory node master"
       N_MASTER    = 0
       N_MASTER_SM = 0
-C
-C     Assign disk units
+ 
+!     assign disk units
       CALL DISKUN_REL
-C
-C. Ratio beteeen real and integer word length
-      CALL ZIRAT_REL
-C. From shells to orbitals
+
+!     setup double group multiplication table
+      call symmetry_setup_init(dougrp,nirr_dg)
+
+!     initialize mo-spinor information arrays
+      call mospinor_info_init()
+      
+!     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
+      if(dougrp .ge. 10)then
+        call num2str(myproc,mynum_str)
+        call alloc(orb_sym_vec,norbt)
+        write(orb_sym_fn,'(a7,a4)') 'orbsym.',mynum_str
+        orb_sym_vec = 0
+        orb_sym_fh = 99
+        open(orb_sym_fh,file=orb_sym_fn,status='old',
+     &       form='unformatted',action='readwrite',position='rewind')
+        read(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
+        close(orb_sym_fh)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        print *, 'content of orb_sym_vec is: ',myproc
+        call iwrtma(orb_sym_vec,1,norbt,1,norbt)
+#endif
+!#undef LUCI_DEBUG
+      end if
+
+!     generalized routine for handling of all double groups including
+!     linear symmetry (dougrp == 10 or 11)
+      call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
+     &                                orb_sym_vec,iorb,npsh,nish,
+     &                                mxndgirr,mxpngas,nfsym,ngas,
+     &                                dougrp,nirr_dg,mj2rep,
+     &                                imosp_dirac_counter1,
+     &                                imosp_dirac_counter2)
+
+      if(dougrp .ge. 10) call dealloc(orb_sym_vec)
+
+!     setup shell, orbital and spinor index lists 
+!     (in short: fill arrays stored in module mospinor_info)
       CALL ORBINF_REL(LUPRI,IPRORB)
-C. Types of determinants to be included
+
+!     types of determinants to be included
       CALL DETTYP(IPRSTR)
-C. Number of string types
+
+!     number of string types
       CALL STRTYP_GAS_REL(IPRSTR)
-C. Symmetry information
-      CALL SYMINF_REL(IPRORB)
-C. Number of integrals
+
+!     number of integrals
       CALL INTDIM_REL(IPRTRA)
 C
-      RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUCI_CLOSEDOWN()
+!**********************************************************************
+!     purpose: 
+!
+!       - close LUCIAREL files and keep them
+!       - destroy arrays containing symmetry information
+!
+!     written by Stefan Knecht   April 24, 2007
+!
+!**********************************************************************
+      use mospinor_info
+      use symmetry_setup_krci
+      IMPLICIT REAL*8           (A-H,O-Z)
+#include "../luciarel/clunit.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#endif
+#include "parluci.h"
+#include "krciprop.h"
+*
+!     close files
+      close(unit=ludia,status='KEEP')
+      if(myproc.eq.master.and..not.runxprop)
+     &   close(unit=luc,status='KEEP')
+      if(myproc.eq.master) close(unit=lu_info,status='KEEP')
+      close(unit=luhc,  status='KEEP')
+      close(unit=lusc1, status='KEEP')
+      close(unit=lusc2, status='KEEP')
+      close(unit=lusc3, status='KEEP')
+      close(unit=lusc34,status='KEEP')
+      close(unit=lusc35,status='KEEP')
+      close(unit=lusc36,status='KEEP')
+      close(unit=lusc37,status='KEEP')
+      close(unit=lusc38,status='KEEP')
+      close(unit=lusc39,status='KEEP')
+      close(unit=lusc41,status='KEEP')
+      close(unit=lusc61,status='DELETE')
+      close(unit=lusc62,status='DELETE')
+
+!     deallocate mo-spinor information arrays
+      call mospinor_info_delete()
+
+!     deallocate symmetry arrays
+      call symmetry_setup_delete()
+     
+      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KRMC_LUCI(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
 C***********************************************************************
@@ -115,7 +211,7 @@ C
       END IF
 C
 C     Transfer data to LUCIAREL common blocks (only for NODES) 
-C     --> communication is enabled.
+C     --> "1" means that communication is enabled.
       CALL TRKRLUCI(CIRUN,1)
 #endif
 C
@@ -157,6 +253,7 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use symmetry_setup_krci
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
@@ -171,16 +268,13 @@ C***********************************************************************
 #include "../luciarel/clunit.inc"
 *.Print flags
 #include "../luciarel/cprnt.inc"
-#include "../luciarel/lucinp.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
 #include "../luciarel/cicisp.inc"
 #include "../luciarel/oper.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/glbbas.inc"
-#include "../luciarel/csm.inc"
 #include "../luciarel/cintfo.inc"
-#include "../luciarel/picasso.inc"
 #include "../luciarel/ctcc.inc"
 C information for property run
 #include "krciprop.h"
@@ -203,6 +297,11 @@ C*******************************************
       CALL QENTER('KRMC_LUCI2')
 C*******************************************
 C
+
+#ifdef LUCI_DEBUG
+      if(myproc .eq. master) call print_ci_info()
+#endif
+
       MZ_NUM = 0
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
@@ -231,7 +330,7 @@ C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
 C
 C     Internal subspaces
-      CALL LCISPC_REL(LCSBLK,IPRCIX)
+      CALL LCISPC_REL(LCSBLK,IPRCIX,CIRUN)
 C
 ******************************************
       if (CIRUN.eq.'NDET  ') GO TO 9999
@@ -362,24 +461,14 @@ C
       CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
       NFLGRPS_REL = 0
 #endif
-C
 C     Finished with preparation for parallelization.
-C
-**********************************************************
-C     Allocate work space for general arrays and matrices
-      CALL ALLOC_REL
-**********************************************************
-C
+
 C     IDGSTYP determines the integral classes and corresponding operator
 C     classes depending on the double group in use.
-C
       IDGSTYP = -1
-C
-      if (PNTGRP.le.4) then
-        IDGSTYP = 1
-      else if (PNTGRP.eq.6.or.PNTGRP.eq.5) then
+      if(PNTGRP.eq.6.or.PNTGRP.eq.5) then
         IDGSTYP = 3
-      else if (PNTGRP.ge.7.and.PNTGRP.le.9) then
+      else if (PNTGRP.ge.7)then
         IDGSTYP = 2
       end if
 C
@@ -442,9 +531,6 @@ C
 C       loop over natural spinors (currently hardwired to 1)
         do INATIT=1,NATITER,1
 C
-C         Generate symmetry info and the like
-          IF (INATIT .eq. 1 ) call luc2pic(ISO1,IPRTRA)
-C
           RUN_SHMEM_T = .FALSE.
 C
           IF( IT_SHL .ge. 0 .or. SPLIT_IJKL ) THEN
@@ -458,9 +544,9 @@ C
 ************************************************************
           IF (CIRUN.ne.'ANALYZ') THEN
 CSK         IDUMMY ==> IT_TTPL
-            call picasso(INTSPACE,ISO1,IPRTRA,MCSCF,
+            call picasso(IPRTRA,MCSCF,
      &                   NL2D,IBU2D,ISM2D,F1,F2,DUMMY1,DUMMY2,
-     &                   IDUMMY,IBOSYM,CIRUN,RUN_SHMEM_T)
+     &                   IDUMMY,ibosym,CIRUN,RUN_SHMEM_T)
           END IF
 ************************************************************
           IF ( CIRUN .eq. 'IJKLRO' ) GOTO 300
@@ -573,24 +659,17 @@ C               CI vectors
                 IRESTR = 1
               END IF
               IF(ISEQCI(JSEQ,JCMBSPC).GT.0) THEN
-                IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
-C                 No restart from previous vectors - 
-C                 IRST2 has been set to zero
-                  IRESTR = 0
-                  WRITE(LUWRT,*) ' No restart from previous vectors'
-                END IF
 C
 C               Good old normal CI !!!!
 C               do CI in space JCMBPSC
-C
                 MAXIT = ISEQCI(JSEQ,JCMBSPC)
 C
                 ISPC = JCMBSPC
-                ISM = IREFSM
+                ISM  = IREFSM
 C
 C###############################################################
                 CALL GASCI_REL(F1,F2,
-     &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
+     &                         IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
 C###############################################################
@@ -623,6 +702,7 @@ C
 #endif
 C
  9999 CALL QEXIT('KRMC_LUCI2')
+
 C
       RETURN
       END
@@ -731,12 +811,12 @@ C
 C     Compute the number of determinants for this setup and return.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
+C     transfer number of dets to common block variable
+      NDET = INT(XISPSM(ISYM_KRMC,1))
 C
-C     close files ...
-C
+C     close files and release symmetry arrays
       CALL LUCI_CLOSEDOWN()
 C
-      NDET = INT(XISPSM(ISYM_KRMC,1))
 C
       RETURN
       END
@@ -1755,12 +1835,14 @@ C
       DIMENSION VPROP_KRCI(*), WORK(*)
 C               VPROP_KRCI(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,MZ)
 #include "parluci.h"
+      integer :: print_level
 C
 #include "memint.h"
 C
       CALL QENTER('KRCIGETPRP')
 C
-      MZ    = MIN(NZ,2)
+      print_level = 0
+      MZ          = MIN(NZ,2)
 C     output file handle
       LUWRT = LUPRI
 C
@@ -1777,7 +1859,7 @@ C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C     Determine operator symmetries in sub-double group used in LUCIAREL
-      CALL GET_PRPOPSYM_KRCI(WORK(KFREE),LFREE,0)
+      CALL GET_PRPOPSYM_KRCI(WORK(KFREE),LFREE,print_level)
 C
 C     Get reordered operator matrices - write back to KRMC_FOCK on label 
 C     LABEL = PRPNAM(property operator)(1:6)RO (first 6 chars of
@@ -2149,12 +2231,12 @@ C
         L1 = (2*NASHT)**2 * MZ
         CALL MEMGET('REAL',KRHO1,L1,WORK,KFREE,LFREE)
         CALL DZERO(WORK(KRHO1),L1)
-        L2 = (2*NASHT)**4 * MZ
+        L2       = (2*NASHT)**4 * MZ
         LF2_ZERO = (2*NASHT)**4 * MZ
 C
       ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN 
 C
-        N_FCACM = (2*NASHT)*(2*NASHT)
+        N_FCACM     = (2*NASHT)*(2*NASHT)
         LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
 C
         CALL MEMGET('REAL',KFCACM,MZ*N_FCACM,WORK,KFREE,LFREE)

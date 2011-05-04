@@ -1,11 +1,12 @@
-      COMMON/CGASR/IDOGAS,NGAS,NGSSH(MXPIRR,MXPNGAS),
-     &            NGSSHT(MXPNGAS),NGSOB(MXPOBS,MXPNGAS),
-     &            NGSOBT(MXPNGAS),IGSOCC(MXPNGAS,2),IGSINA,IGSDEL,
-     &            IGSOCCX(MXPNGAS,2,MXPICI),NCISPC,
-     &            NCMBSPC,LCMBSPC(MXPICI),ICMBSPC(MXPSTT,MXPICI),
-     &            NMXOCCLS,MXNELGS(MXPNGAS),
-     &            NGSOB2(MXPOBS,MXPNGAS),NGSOBT2(MXPNGAS),
-     &            IPHGAS(MXPNGAS),IBSH(MXPOBS)
-C NOTE > NGSSHT is the number of shells of given symmetry, not
-C given type. Should be changed ( name and dimension some day )
-C ( Someday never comes as C.C.R sings )
+      integer NACTEL, IDOGAS, NGAS, IGSINA, IGSDEL, NCISPC, NCMBSPC
+      integer NMXOCCLS
+      integer NGSSH, NGSSH2
+      integer IGSOCC, IGSOCCX
+      integer LCMBSPC, ICMBSPC
+      integer MXNELGS
+      COMMON/CGASR/NACTEL,IDOGAS,NGAS,IGSINA,IGSDEL,NCISPC,NCMBSPC,
+     &             NMXOCCLS,
+     &             NGSSH(MXNDGIRR,MXPNGAS),NGSSH2(MXNDGIRR,MXPNGAS),
+     &             IGSOCC(MXPNGAS,2),IGSOCCX(MXPNGAS,2,MXPICI),
+     &             LCMBSPC(MXPICI),ICMBSPC(MXPSTT,MXPICI),
+     &             MXNELGS(MXPNGAS)

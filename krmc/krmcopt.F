@@ -1161,7 +1161,7 @@ C        be a bit more slack (?) when running NO occ. numbers
 C        with LUCIAREL
 C
       IF( OPT_CIPROGRAM.eq. 'LUCIAREL' .and. NATOLCR ) THEN
-        XDEPS = 1.0D-6 
+        XDEPS = 1.0D-6
       END IF
 C
 C     IF (... debug check of DV,PV trace ...) THEN
@@ -1208,12 +1208,12 @@ C     IF (... debug check of DV,PV trace ...) THEN
      &                 DTRCE(IZ),DTREXP,ABS(DTRCE(IZ)-DTREXP)
                END IF
                IF ( ABS ( DTRCE(IZ) - DTREXP ) .GE. DEPS ) THEN
-!                 IF( OPT_CIPROGRAM.eq. 'LUCIAREL' .and. NATOLCR ) THEN
-!                   IF ( ABS ( DTRCE(IZ) - DTREXP ) .GE. XDEPS ) THEN
-!                     GOTO 150
-!                   END IF
-!                   GOTO 200
-!                 END IF
+                  IF(OPT_CIPROGRAM .eq. 'LUCIAREL' .and. NATOLCR ) THEN
+                    IF (ABS(DTRCE(IZ) - DTREXP) .GE. XDEPS)THEN
+                      GOTO 150
+                    END IF
+                    GOTO 200
+                  END IF
  150              CONTINUE
                   IF (IPROPT .LT. 10) THEN
                      IPROPT = 10
@@ -1297,10 +1297,6 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision :
 C      Oct 24, 2003: Diagonalization of FC + FV matrix,
 C                    save orbital energies in ORBENE      T. Fleig
-C
-C
-C     Modified in October 2010 by Emmanuel Fromager for MCSCF-srDFT              
-C
 C
 C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
@@ -1417,7 +1413,7 @@ C                             - coulomb^{sr} (and calculate EJKVSR = tr(DAO * J^
 C
 C     now call xcfun... with the (inactive+active)DAO to obtain V_{xc}^{sr}
 C     and E_{xc}^{sr} 
-C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) 
+C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) - 1/2 tr(V_{xc}^{sr} * DCAO) 
 C
 C     ***************************************************
 C     *** Get 1-electron Fock matrix ********************
@@ -1476,31 +1472,12 @@ C     If MCSCF-srDFT calculation: add the srxc
 C     potential V^{sr}_{xc}[D] to the inactive Fock operator
 C     FCAO, where D = DC + DV is the total density matrix.
 C     Note that, in addition, the srXC correction
-C     E^{sr}_{xc}[D] - tr (V^{sr}_xc[D] * DV)
+C     E^{sr}_{xc}[D] - tr (V^{sr}_xc[D] * dvao)
 C     is added to the inactive energy. The second term relates
 C     to the active energy contribution tr(FC*DV) which will be
 C     calculated later on with the MCSCF-srDFT inactive Fock operator
 C     that contains V^{sr}_xc[D].
-      if (dirac_cfg_mcsrdft_calculation) then
-         call addsrxc(ntbas(0),
-     &                nz,
-     &                nisht,
-     &                work(kfcao),
-     &                work(kdcao),
-     &                work(kdvao),
-     &                emcmy) ! inactive energy
-      end if 
-C 
-C     If MCSCF-srDFT calculation: add the srH
-C     potential V^{sr}_{H}[D] to the inactive Fock operator
-C     FCAO, where D = DC + DV is the total density matrix.
-C     Note that, in addition, the srH correction
-C     1/2 * tr (D * J^{sr} * D) - tr (DV * J^{sr} * D)
-C     is added to the inactive energy. The second term relates
-C     to the active energy contribution tr(FC*DV) which will be
-C     calculated later on with the MCSCF-srDFT inactive Fock operator
-C     that contains J^{sr} * D.
-      if (dirac_cfg_mcsrdft_calculation) then
+      if (dirac_cfg_dft_calculation) then
          call addsrxc(ntbas(0),
      &                nz,
      &                nisht,
@@ -2220,6 +2197,7 @@ C
 C     Extracted from RSETWOP 9-Jul-2002 by HJAaJ.
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2237,9 +2215,69 @@ C
       CHARACTER*(*) USE_CIPROGRAM
       DIMENSION WORK(*)
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-C
+      LOGICAL FNDLAB, FND
+      character orbital_info_label*8
+      integer, allocatable :: orb_sym_vec(:)
+
       CALL QENTER('RSETCI')
       CALL GETTIM(CPU1,WLL1)
+ 
+ 
+      if(linear.or.spinfr_krmc)then
+
+!       may be oversized if not all orbitals are active
+        call alloc(orb_sym_vec,norbt)
+        orb_sym_vec = 0
+
+!       get orbital symmetry values - either from a previous MCSCF or HF run
+        IF ( LUKRM5 .GT. 0 ) THEN
+          REWIND(LUKRM5)
+          IF ( FNDLAB('MJVEC   ',LUKRM5) )THEN
+            CALL IREAKRMC(LUKRM5,'MJVEC   ',orb_sym_vec,NORBT)
+            if(IPROPT .ge. 2)then
+              WRITE(LUPRI,'(/A)') 
+     &   ' (RSETCI) *** orbital mj-vector read from KRMCOLD ***'
+            end if
+         ELSE IF(FNDLAB('IBEIG   ',LUKRM5))THEN
+            CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
+            if(IPROPT .ge. 2)then
+              WRITE(LUPRI,'(/A)') 
+     &        ' (RSETCI) *** orbital boson irreps read'//
+     &        ' from KRMCOLD ***'
+            end if
+          END IF
+        ELSE
+C         read orbital symmetry values from DFCOEF
+          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RSETCI')
+          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,
+     &                        TOTERG,8)
+          CLOSE(LUCOEF,STATUS='KEEP')
+          if(IPROPT .ge. 2)then
+            WRITE(LUPRI,'(/A)') 
+     &      ' (RSETCI) *** orbital symmetry information read'// 
+     &      ' from DFCOEF ***'
+          end if
+        END IF
+C
+C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
+        REWIND(LUKRMC)
+        FND = FNDLAB('SODLABEL',LUKRMC)
+        BACKSPACE LUKRMC
+        CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
+        REWIND(LUKRMC)
+
+        if(.not.spinfr_krmc)then
+          orbital_info_label = 'MJVEC   '
+        else
+          orbital_info_label = 'IBEIG   '
+        end if
+ 
+!       save symmetry information
+        call iwrtkrmc(lukrmc,orbital_info_label,orb_sym_vec,norbt)
+
+        call dealloc(orb_sym_vec)
+      end if ! linear or spinfr_krmc switch
+
 C
 C     Check that NAELEC .le. 2 *NASHT
 C     (NAELEC: # of active electrons)
@@ -2296,15 +2334,15 @@ C
 C
 #ifdef MOD_DEBUG
 C
-C           Generate list of Kramers partners...
-C           This is only used for debugging purposes.
+C          Generate list of Kramers partners...
+C          This is only used for debugging purposes.
 C
-            IF ( MOD(NAELEC,2) .EQ. 0) THEN
-              CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
-              CALL GASCIP_KRLIST(NZCONF,WORK(KZCONF),WORK(KRLIST),IPROPT)
-              CALL IWRTKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
-              CALL MEMREL('RSETCI.KRLIST',WORK,1,KRLIST,KFREE,LFREE)
-            END IF
+           IF ( MOD(NAELEC,2) .EQ. 0) THEN
+             CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
+             CALL GASCIP_KRLIST(NZCONF,WORK(KZCONF),WORK(KRLIST),IPROPT)
+             CALL IWRTKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
+             CALL MEMREL('RSETCI.KRLIST',WORK,1,KRLIST,KFREE,LFREE)
+           END IF
 #endif
          ELSE IF ( USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
@@ -2419,27 +2457,20 @@ C...    may be oversized if not all orbitals are active
         orb_sym_vec = 0
 C
 C       get orbital symmetry values - either from a previous MCSCF or HF run
-        IF ( LUKRM5 .GT. 0 ) THEN
-          REWIND(LUKRM5)
-          IF ( FNDLAB('MJVEC   ',LUKRM5) )THEN
-            CALL IREAKRMC(LUKRM5,'MJVEC   ',orb_sym_vec,NORBT)
-            WRITE(LUPRI,'(/A)') 
-     & ' (RESETXOP_sym) *** orbital mj-vector read from KRMCOLD ***'
-          ELSE IF(FNDLAB('IBEIG   ',LUKRM5))THEN
-            CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
-            WRITE(LUPRI,'(/A)') 
-     &      ' (RESETXOP_sym) *** orbital boson irreps read'//
-     &      ' from KRMCOLD ***'
-          END IF
+        REWIND(LUKRMC)
+        if(.not.spinfr_krmc)then
+          orbital_info_label = 'MJVEC   '
+        else
+          orbital_info_label = 'IBEIG   '
+        end if
+        IF(FNDLAB(orbital_info_label,LUKRMC))THEN
+          CALL IREAKRMC(LUKRMC,orbital_info_label,orb_sym_vec,NORBT)
         ELSE
-C         read orbital symmetry values from DFCOEF
-          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESoro')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,
-     &                        TOTERG,8)
-          CLOSE(LUCOEF,STATUS='KEEP')
           WRITE(LUPRI,'(/A)') 
-     &    ' (RESETXOP_sym) *** orbital symmetry information read'// 
-     &    ' from DFCOEF ***'
+     &    ' (RESETXOP_sym) - error: *** orbital symmetry information'//
+     &    ' not found on file KRMCSCF. ***'
+          call quit('*** error in RESETXOP_sym: orbital symmetry'//
+     &              ' information not found on file KRMCSCF.***')
         END IF
 C
 C       debug print
@@ -2449,22 +2480,6 @@ C       debug print
         END IF
 C
         IF( IREDJOB .eq. 10 )THEN 
-C
-C
-C         clean LUKRMC and save orbital symmetry information on file KRMCSCF
-          REWIND(LUKRMC)
-          FND = FNDLAB('SODLABEL',LUKRMC)
-          BACKSPACE LUKRMC
-          CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
-          REWIND(LUKRMC)
-
-          if(.not.spinfr_krmc)then
-            orbital_info_label = 'MJVEC   '
-          else
-            orbital_info_label = 'IBEIG   '
-          end if
- 
-          CALL IWRTKRMC(LUKRMC,orbital_info_label,orb_sym_vec,norbt)
 C
 C         reduce orbital parameters wrt mj-blocking
           CALL DELPAR(orb_sym_vec,JXOPE,NZXOPE,NZHOPE,JXOPP,NZXOPP,
@@ -3112,6 +3127,7 @@ C         write back on file - if not present
             CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','KR CI ')
             CALL NEWLAB('*KRCI   ',LUNI,LUPRI)
             CALL NEWLAB('SODLABEL',LUNI,LUPRI)
+            CALL NEWLAB('EOFLABEL',LUNI,LUPRI)
             CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
             CLOSE(LUNI,STATUS='KEEP')
           END IF
@@ -4953,6 +4969,8 @@ C
      &     'and Joern Thyssen',//,
      &     3X,'Integral transformation: ',/,
      &     3X,'  Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
+     &     3X,'Linear symmetry implementation:',/,
+     &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen',/,
      &     3X,'KRMC-GASCIP CI code: ',/,
      &     3X,'  Joern Thyssen and Hans Joergen Aa. Jensen',//,
      &     3X,'LUCIAREL CI code: ',/,

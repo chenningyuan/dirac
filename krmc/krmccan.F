@@ -1120,6 +1120,7 @@ C
 C
 #include "memint.h"
 C
+!     IPROPT = 50
       MZ = MIN(2,NZ)
 C
       CALL QENTER('KRCIPRPMO')
@@ -1204,10 +1205,10 @@ C    &                           FILELAB
      &                   nasht,nz,ipqtoq(1,isym-1),lupri )
            end if
          end if
+         WRITE(LUPRI,'(A,3I5)')
+     &   ' - KRCIPRPMO: Boson, Fermion, and Time reversal symmetry :',
+     &   ISYM,IOPSY,ITRSYM
 #endif
-C        WRITE(LUPRI,'(A,3I5)')
-C    &   ' - KRCIPRPMO: Boson, Fermion, and Time reversal symmetry :',
-C    &   ISYM,IOPSY,ITRSYM
          CALL QFC2MFC(WORK(KRPRPMOAC),WORK(KRPRPMOACM),ISYM,
      &                ITRSYM,IPROPT)
 C             QFC2MFC(DQFC,DMFC,ISYM,ITIM,IPRINT)
@@ -1224,6 +1225,7 @@ C
       end if
 #endif
 C
+!     IPROPT = 00
       CLOSE(LU1INT,STATUS = 'KEEP')
       CALL QEXIT('KRCIPRPMO')
       RETURN

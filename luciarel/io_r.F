@@ -20,10 +20,7 @@
 !dirac_copyright_end
 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPNBLKD(LUIN,LUOUT,SEGMNT,NBLOCK,IREW,LBLK)
 *
 * If (LUOUT .gt. 0) Copy Nblocks from FILE LUIN to file LUOUT
@@ -83,13 +80,9 @@ C
 *     ^End of loop over blocks
  3333 CONTINUE
 *
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPVCD_REL(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 C
 C COPY VECTOR ON FILE LUIN TO FILE LUOUT
@@ -156,13 +149,9 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
         END IF
       IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
 C
-      RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPVCDC(LUIN,LUOUT,VEC1,IREW,IRI,LBLK)
 *
 * Copy complex vector from LUIN to LUOUT
@@ -184,14 +173,14 @@ C
         CALL COPVCD_REL(LUIN,LUOUT,VEC1,0,LBLK)
       end if
 *
-      RETURN
       END
 !**********************************************************************
+
       subroutine krci_cp_sel_root(xflabel,istate,iri,omega_val)
 !**********************************************************************
       implicit none
 
-      character (len=1),  intent(in)     :: xflabel
+      character (len=3),  intent(in)     :: xflabel
       integer,            intent(in)     :: istate
       integer,            intent(in)     :: iri
       integer,            intent(in)     :: omega_val
@@ -204,8 +193,8 @@ C
       integer                            :: ispacked
       integer                            :: iskip
       integer                            :: ipart
-      character (len=12)                 :: infile_name
-      character (len=19)                 :: outfile_name
+      character (len=14)                 :: infile_name
+      character (len=21)                 :: outfile_name
 !**********************************************************************
 !
 !     initialize scratch variables
@@ -214,8 +203,8 @@ C
       block_length = 0
 
 !     initialize file names
-      write(infile_name,'(a11,a1)')     'KRCI_CVECS.',xflabel
-      write(outfile_name,'(a11,a1,a7)') 'KRCI_CVECS.',xflabel,'.select'
+      write(infile_name,'(a11,a3)')     'KRCI_CVECS.',xflabel
+      write(outfile_name,'(a11,a3,a7)') 'KRCI_CVECS.',xflabel,'.select'
 
 !     step 1: open files
       open(in_fh,file=infile_name,status='old',form='unformatted',
@@ -262,16 +251,12 @@ C
       close(in_fh)
       close(out_fh)
 
-      print '(/2x,a,i2,a,a19)', 
+      print '(/2x,a,i2,a,a21)', 
      &      ' *** selected CI vector (omega = ',omega_val,
      &      '[/2 for fermionic systems]) saved on file ',outfile_name
       end
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE DISKUN_REL
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "ipoist8.inc"
@@ -396,7 +381,7 @@ C
 *. CI vector
       LUC =   61
       LUC_MPIN ="KRCI_CVECS"
-      LUC_MPIL=12
+      LUC_MPIL=14
       IF( MYPROC .eq. MASTER )THEN
         IF( IREFSM .le. NMAX_SYM_CI )THEN
           SYMFLABEL = XSYMFLAB(IREFSM)
@@ -408,7 +393,7 @@ C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
      &              symmetry label to KRCI_CVECS file failed ")
         END IF
         IF( .not. RUNXPROP )THEN
-           WRITE (NLUC_MPI,'(A10,A1,A1)') LUC_MPIN,'.',SYMFLABEL
+           WRITE (NLUC_MPI,'(A10,A1,A3)') LUC_MPIN,'.',SYMFLABEL
            Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
      &          Form='UNFORMATTED')
         END IF
@@ -698,49 +683,8 @@ C     natural spinors in terms of double group adapted atomic spin-orbitals
       LUMOUTRI_MPIL = 7
 #endif
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE LUCI_CLOSEDOWN()
-*
-*     close LUCIAREL files and keep them
-*
-*     Stefan Knecht   April 24, 2007
-*
-      IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
-#include "clunit.inc"
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
-#include "krciprop.h"
-*
-      CLOSE(UNIT=LUDIA,STATUS='KEEP')
-      IF( MYPROC .eq. MASTER .and. .not. RUNXPROP )
-     &   CLOSE(UNIT=LUC,STATUS='KEEP')
-      IF( MYPROC .eq. MASTER ) CLOSE(UNIT=LU_INFO,STATUS='KEEP')
-      CLOSE(UNIT=LUHC,STATUS='KEEP')
-      CLOSE(UNIT=LUSC1,STATUS='KEEP')
-      CLOSE(UNIT=LUSC2,STATUS='KEEP')
-      CLOSE(UNIT=LUSC3,STATUS='KEEP')
-      CLOSE(UNIT=LUSC34,STATUS='KEEP')
-      CLOSE(UNIT=LUSC35,STATUS='KEEP')
-      CLOSE(UNIT=LUSC36,STATUS='KEEP')
-      CLOSE(UNIT=LUSC37,STATUS='KEEP')
-      CLOSE(UNIT=LUSC38,STATUS='KEEP')
-      CLOSE(UNIT=LUSC39,STATUS='KEEP')
-      CLOSE(UNIT=LUSC41,STATUS='KEEP')
-      CLOSE(UNIT=LUSC61,STATUS='DELETE')
-      CLOSE(UNIT=LUSC62,STATUS='DELETE')
-*
-      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE GET_LUC_FILE(LUC,IXSYM,EX)
 **********************************************************************
 C
@@ -754,11 +698,11 @@ C**********************************************************************
 #include "implicit.h"
 #include "cstate.inc"
 #include "krciprop.h"
-      CHARACTER LUC_NAME*10, my_LUC_NAME*12, SYMFLABEL*1
+      CHARACTER LUC_NAME*10, my_LUC_NAME*14, SYMFLABEL*3
       LOGICAL EX, open_already
       EX = .FALSE.
       LUC_NAME    = "KRCI_CVECS"
-      LUC_NAMEL   = 12
+      LUC_NAMEL   = 14
       IF( IXSYM .le. NMAX_SYM_CI )THEN
          SYMFLABEL = XSYMFLAB(IXSYM)
 C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
@@ -769,7 +713,7 @@ C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
      &            symmetry label to GET_LUC_FILE file failed ")
       END IF
 C     set file name and open file (if existing)
-      WRITE (my_LUC_NAME,'(A10,A1,A1)') LUC_NAME,'.',SYMFLABEL
+      WRITE (my_LUC_NAME,'(A10,A1,A3)') LUC_NAME,'.',SYMFLABEL
       INQUIRE (FILE=my_LUC_NAME,EXIST=EX,opened=open_already)
       if(open_already) print *,'*** attention: file already open***'
       IF( EX )THEN 
@@ -779,7 +723,3 @@ C     set file name and open file (if existing)
       END IF
 C
       END
-***********************************************************************
-*     Dummy routine for normal compilations
-      subroutine opnone
-      end
