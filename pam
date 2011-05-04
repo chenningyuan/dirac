@@ -323,7 +323,7 @@ class pam_enviroment:
 
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
-            os.mkdir(self.scratch_dir)
+            os.makedirs(self.scratch_dir)
         else:
             print '  The scratch directory already exists.'
 
