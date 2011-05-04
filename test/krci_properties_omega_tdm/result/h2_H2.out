@@ -1,8 +1,10 @@
-DIRAC launched (pam script) by stefan@noname at Di 7. Sep 01:52:28 CEST 2010
-in : /home/stefan/calc/test_lucita/h2/prop_test
-===========================================================================================
-Size of all static allocations (pam script) : 80.9694 MB
-DIRAC serial allocating 64000000 words (488 MB) of memory
+DIRAC pam run in /home/stefan/prog/dirac/parallel/my_merge_prep_trunk/test/krci_properties_omega_tdm
+Size of all static allocations: 130.421 MB 
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -72,44 +74,48 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ******************************************************************************
  *                                                                            *
- *         =======================================================            *
+ *         =========================================================          *
  *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic Allelectron Calculations            *
- *         =======================================================            *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
  *                                                                            *
- *                        VERSION 08.00  17 September 2008                    *
+ *                      VERSION 10.00  10 October 2010                        *
  *                                                                            *
  ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions to DIRAC08 from:                                 *
+ *    with new contributions since the DIRAC08 release from:                  *
  *                                                                            *
- *    Radovan Bast             University of Tromsoe             Norway       *
- *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Radovan Bast             University of Tromsø              Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
  *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
- *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
- *    Trygve U. Helgaker       University of Oslo                Norway       *
- *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           University of Zilina              Slovakia     *
- *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
- *    Stefan Knecht            University of Duesseldorf         Germany      *
- *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe             Norway       *
- *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.sdu.dk                                        *
+ *    website http://dirac.chem.vu.nl                                         *
  *                                                                            *
  *    This is an experimental code. The authors accept no responsibility      *
  *    for the performance of the code or for the correctness of the results.  *
@@ -122,31 +128,32 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC08 (2008),                                                 *
- *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
- *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
- *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
- *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
- *    (see http://dirac.chem.sdu.dk).                                         *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
  *                                                                            *
  ******************************************************************************
- Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : noname
+ Version           : Dirac 10.0 (patchlevel 0) 
+ Hostname          : thor
  Operating system  : Linux 2.6.22.19-0.4-default
  Machine           : i686
  Run               : Sequential
- Last compilation  : 01:45:58 Sep  7 2010 (by stefan@noname:/home/stefan/prog/dirac/parallel/trunk)
- FORTRAN compiler  : /etc/gfortran/bin//gfortran -O3 -ffast-math -funroll-loops -g -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DVAR_GFORTRAN -DGFORTRAN=430 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_SRDFT -DMOD_KRMC -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
- C compiler        : /usr/bin/gcc -O3 -ffast-math -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_SRDFT -DMOD_KRMC -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries: -L/opt/intel/mkl/10.0.1.014/lib/32 -lguide -lmkl -lmkl_lapack -lmkl_intel -lpthread 
+ Last compilation  : 12:20:13 May  4 2011 (by stefan@thor.theochem.uni-duesseldorf.de:/home/stefan/prog/dirac/parallel/my_merge_prep_trunk)
+ FORTRAN compiler  : /opt/intel/fc/10.1.008/bin/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF   
+ C compiler        : /opt/intel/cc/10.1.008/bin/icc -O3 -ip -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DARCH32BIT -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries: -L/opt/intel/mkl/10.0.1.014/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread 
  Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
  ILP data model    : ILP32 
- SVN URL           : http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk 
- SVN Revision      : 11539 
+ SVN URL           : Basis des Projektarchivs: http://dirac.chem.sdu.dk/svnDirac 
+ SVN Revision      : 13729 
 
  
-     Date and time (Linux)  : Tue Sep  7 01:52:28 2010 
+     Date and time (Linux)  : Wed May  4 12:52:37 2011
      Host name              : thor                                    
 
 
@@ -181,17 +188,19 @@ LUCIAREL
 .MK2DEL
  2
 .CIROOTS
- 1 2
+ 0g 2
 .CIROOTS
- 2 2
+ 2g 2
 .CIROOTS
- 3 2
+ 0u 2
 .CIROOTS
- 4 6
+ 2u 8
+.CIROOTS
+ 4u 2
 .MAX CI
  20
 .MXCIVE
- 16
+ 32
 .TRDM
 .OMEGAQ
 **END OF
@@ -213,7 +222,7 @@ LUCIAREL
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
- * Running in pure two-component mode (with LL integrals only)
+ * running in two-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
  * Spherical transformation embedded in MO-transformation
@@ -399,6 +408,7 @@ Represented as: D2h
   Threshold for integrals (to be written to file):  1.00D-15
 
   MNF.INP input file (for the AMFI stuff) is ready.
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
@@ -422,6 +432,15 @@ Represented as: D2h
    5            y      0.0000000000
    6            z     -0.6803014082
 
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    2
+ 
+H 1    0.0000000000   0.0000000000   0.3600000000
+H 1    0.0000000000   0.0000000000  -0.3600000000
 
 
   Symmetry Coordinates
@@ -553,7 +572,7 @@ Represented as: D2h
     S. Knecht and T. Saue:
     manuscript in preparation, Strasbourg 2010. 
 
- * running in 2-component modus
+ * running in two-component mode
  * Default integral flags passed to all modules
    - LL-integrals:     1
    - LS-integrals:     0
@@ -571,17 +590,6 @@ Represented as: D2h
  * All AMFI mean-field summations are on neutral individual atoms.
  * order of AMFI contributions to the X2C Hamiltonian:  2
   --> adding spin-same orbit MFSSO2 terms.
-
-
- *******************************************************************************
- ************************** Memory required by HERMIT **************************
- *******************************************************************************
-
-===========================================================================
- Maximum memory load for two-electron integral processing:
-===========================================================================
- * LL-integrals:
-   2(H 1  Lp)   2(H 1  Lp)   2(H 1  Lp)   2(H 1  Lp)                 777
 
 
     **************************************************************************
@@ -622,8 +630,33 @@ Represented as: D2h
  * NB!!! No e-p rotations in 2nd order optimization.
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
+  evaluating active dbg irrep...
+  # dbg irreps               :          128
+  # active MJ value          :            0
+  # active fermion sym       :            1
+  # active double group irrep:            1
+  evaluating active dbg irrep...
+  # dbg irreps               :          128
+  # active MJ value          :            2
+  # active fermion sym       :            1
+  # active double group irrep:            2
+  evaluating active dbg irrep...
+  # dbg irreps               :          128
+  # active MJ value          :            0
+  # active fermion sym       :            2
+  # active double group irrep:           33
+  evaluating active dbg irrep...
+  # dbg irreps               :          128
+  # active MJ value          :            2
+  # active fermion sym       :            2
+  # active double group irrep:           34
+  evaluating active dbg irrep...
+  # dbg irreps               :          128
+  # active MJ value          :            4
+  # active fermion sym       :            2
+  # active double group irrep:           36
 ===========================================================================
- KRCICALC: General set-up for KR-CI calculation:
+ *KRCICALC: General set-up for KR-CI calculation:
 ===========================================================================
  * Inactive orbitals     :    0   0
  * Active orbitals       :    2   4
@@ -633,13 +666,15 @@ Represented as: D2h
     (constraints: min/max active electrons after space :   2/  2)
  * CI program used       : LUCIAREL
  * optimization of wave function(s) in the following symmetries:
-    **   2 eigenstate(s) in symmetry (boson):  ag
+    **   2 eigenstate(s) for MJ-value:   0g  
     -- Allowed interval of 2 * MK :  -2 to   2
-    **   2 eigenstate(s) in symmetry (boson):  bg
+    **   2 eigenstate(s) for MJ-value:   2g  
     -- Allowed interval of 2 * MK :  -2 to   2
-    **   2 eigenstate(s) in symmetry (boson):  au
+    **   2 eigenstate(s) for MJ-value:   0u  
     -- Allowed interval of 2 * MK :  -2 to   2
-    **   6 eigenstate(s) in symmetry (boson):  bu
+    **   8 eigenstate(s) for MJ-value:   2u  
+    -- Allowed interval of 2 * MK :  -2 to   2
+    **   2 eigenstate(s) for MJ-value:   4u  
     -- Allowed interval of 2 * MK :  -2 to   2
  * Using symmetry nomenclature for LUCIAREL. 
       Boson and Fermion irreps of complex (sub)groups  
@@ -651,7 +686,7 @@ Represented as: D2h
  Control parameters for KR-CI optimization
 ===========================================================================
  * Maximum number of CI iterations for each symmetry:  20
- * Maximum subspace dimension set to  16
+ * Maximum subspace dimension set to  32
  * Property calculation for the following one-electron operators: 
 
 
@@ -699,6 +734,7 @@ Represented as: D2h
     ************************ End of input processing ************************
     *************************************************************************
 
+ PAMSET reports: TWOCOMPBSS T
 
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
@@ -724,8 +760,6 @@ Represented as: D2h
     1         0.00000000     0.00000000    -0.68030141       1
 
  The following elements were found:   X  Y  Z  
-
-  MNF.INP input file (for the AMFI stuff) is ready.
 
                    *****************************************************************
                    *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***
@@ -758,6 +792,8 @@ Represented as: D2h
                                 ------------------
 
 * Applied strict kinetic balance !
+ norb1_f, n1esh_f           8           4
+ norb1_f, n1esh_f           8           4
 
   *** MNF.INP - read number of unique nuclei: 1
 
@@ -801,11 +837,12 @@ Represented as: D2h
       *** AMFIIN: ADDING nucleus    1 with charge   1 to the BSSn Hamiltonian.
       *** AMFIIN: ADDING nucleus    2 with charge   1 to the BSSn Hamiltonian.
 
-                   ******************************************
-                   *** X2C transformation ended properly. ***
-                   *** continue calculation in 2c mode... ***
-                   ******************************************
+                   *****************************************************************
+                   ***            X2C transformation ended properly.             ***
+                   ***       Calculation continues in two-component mode.        ***
+                   *****************************************************************
 
+ >>> Time used in mk_h2c is   0.27 seconds
 
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
@@ -831,8 +868,6 @@ Represented as: D2h
     1         0.00000000     0.00000000    -0.68030141       1
 
  The following elements were found:   X  Y  Z  
-
-  MNF.INP input file (for the AMFI stuff) is ready.
 
 
                        Generating Lowdin canonical matrix:
@@ -865,6 +900,7 @@ Represented as: D2h
 No. of electronic orbitals (NESH):     4       4       8
 No. of positronic orbitals (NPSH):     0       0       0
 Total no. of orbitals      (NORB):     4       4       8
+ >>> Time used in PAMSET is   0.30 seconds
 
 
  *******************************************************************************
@@ -876,70 +912,70 @@ Total no. of orbitals      (NORB):     4       4       8
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Sep  7 01:52:28 2010
+########## START ITERATION NO.   1 ##########   Wed May  4 12:52:37 2011
 
-It.   1    0.6219200181051      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Sep  7
+It.   1    0.6219200181051      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed May  4
 
-########## START ITERATION NO.   2##########   Tue Sep  7 01:52:28 2010
+########## START ITERATION NO.   2 ##########   Wed May  4 12:52:37 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00999999s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total CPU-time : 0.00999999s
 
-########## END ITERATION NO.   2 ##########   Tue Sep  7 01:52:28 2010
+########## END ITERATION NO.   2 ##########   Wed May  4 12:52:37 2011
 
-It.   2   -0.8915201144882      1.51D+00 -2.39D-01  5.98D-02               0.00000000s   LL             Tue Sep  7
+It.   2   -0.8915201144882      1.51D+00 -2.39D-01  5.98D-02               0.00999999s   LL             Wed May  4
 
-########## START ITERATION NO.   3##########   Tue Sep  7 01:52:28 2010
+########## START ITERATION NO.   3 ##########   Wed May  4 12:52:37 2011
 
     3 *** Differential density matrix. DCOVLP     = 1.0116
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800002s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00000000s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00800002s
+>>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   3 ##########   Tue Sep  7 01:52:28 2010
+########## END ITERATION NO.   3 ##########   Wed May  4 12:52:37 2011
 
-It.   3   -0.8923959179633      8.76D-04 -4.86D-03  9.36D-03   DIIS   2    0.00800002s   LL             Tue Sep  7
+It.   3   -0.8923959179633      8.76D-04 -4.86D-03  9.36D-03   DIIS   2    0.00000000s   LL             Wed May  4
 
-########## START ITERATION NO.   4##########   Tue Sep  7 01:52:28 2010
+########## START ITERATION NO.   4 ##########   Wed May  4 12:52:37 2011
 
     4 *** Differential density matrix. DCOVLP     = 1.0022
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00000000s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00999999s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total CPU-time : 0.00999999s
 
-########## END ITERATION NO.   4 ##########   Tue Sep  7 01:52:28 2010
+########## END ITERATION NO.   4 ##########   Wed May  4 12:52:37 2011
 
-It.   4   -0.8924178308334      2.19D-05 -9.12D-04  6.53D-06   DIIS   3    0.00000000s   LL             Tue Sep  7
+It.   4   -0.8924178308334      2.19D-05 -9.12D-04  6.53D-06   DIIS   3    0.00999999s   LL             Wed May  4
 
-########## START ITERATION NO.   5##########   Tue Sep  7 01:52:28 2010
+########## START ITERATION NO.   5 ##########   Wed May  4 12:52:37 2011
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00800097s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.00800097s
-
-########## END ITERATION NO.   5 ##########   Tue Sep  7 01:52:28 2010
-
-It.   5   -0.8924178308431      9.74D-12  8.27D-07  1.94D-06   DIIS   4    0.00800097s   LL             Tue Sep  7
-
-########## START ITERATION NO.   6##########   Tue Sep  7 01:52:28 2010
-
-    6 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   6 ##########   Tue Sep  7 01:52:28 2010
+########## END ITERATION NO.   5 ##########   Wed May  4 12:52:37 2011
 
-It.   6   -0.8924178308440      9.43D-13 -1.89D-07  7.70D-12   DIIS   4    0.00000000s   LL             Tue Sep  7
+It.   5   -0.8924178308431      9.74D-12  8.27D-07  1.94D-06   DIIS   3    0.00000000s   LL             Wed May  4
+
+########## START ITERATION NO.   6 ##########   Wed May  4 12:52:37 2011
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.01000002s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01000002s
+
+########## END ITERATION NO.   6 ##########   Wed May  4 12:52:37 2011
+
+It.   6   -0.8924178308441      9.41D-13 -1.89D-07  2.09D-10   DIIS   3    0.01000002s   LL             Wed May  4
 
 
                                    SCF - CYCLE
@@ -955,12 +991,12 @@ It.   6   -0.8924178308440      9.43D-13 -1.89D-07  7.70D-12   DIIS   4    0.000
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    0.6219200181051      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Sep  7
-It.   2   -0.8915201144882      1.51D+00 -2.39D-01  5.98D-02               0.00000000s   LL             Tue Sep  7
-It.   3   -0.8923959179633      8.76D-04 -4.86D-03  9.36D-03   DIIS   2    0.00800002s   LL             Tue Sep  7
-It.   4   -0.8924178308334      2.19D-05 -9.12D-04  6.53D-06   DIIS   3    0.00000000s   LL             Tue Sep  7
-It.   5   -0.8924178308431      9.74D-12  8.27D-07  1.94D-06   DIIS   4    0.00800097s   LL             Tue Sep  7
-It.   6   -0.8924178308440      9.43D-13 -1.89D-07  7.70D-12   DIIS   4    0.00000000s   LL             Tue Sep  7
+It.   1    0.6219200181051      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed May  4
+It.   2   -0.8915201144882      1.51D+00 -2.39D-01  5.98D-02               0.00999999s   LL             Wed May  4
+It.   3   -0.8923959179633      8.76D-04 -4.86D-03  9.36D-03   DIIS   2    0.00000000s   LL             Wed May  4
+It.   4   -0.8924178308334      2.19D-05 -9.12D-04  6.53D-06   DIIS   3    0.00999999s   LL             Wed May  4
+It.   5   -0.8924178308431      9.74D-12  8.27D-07  1.94D-06   DIIS   3    0.00000000s   LL             Wed May  4
+It.   6   -0.8924178308441      9.41D-13 -1.89D-07  2.09D-10   DIIS   3    0.01000002s   LL             Wed May  4
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    6 iterations.
 * Average elapsed time per iteration: 
@@ -971,13 +1007,13 @@ It.   6   -0.8924178308440      9.43D-13 -1.89D-07  7.70D-12   DIIS   4    0.000
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -1.6273861757051564
+   Electronic energy                        :    -1.6273861757051629
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :     0.7349683448611113
+   Nuclear repulsion energy                 :     0.7349683448611112
 
    Sum of all contributions to the energy
-   Total energy                             :    -0.8924178308440451
+   Total energy                             :    -0.8924178308440517
 
 
                                    Eigenvalues
@@ -986,21 +1022,21 @@ It.   6   -0.8924178308440      9.43D-13 -1.89D-07  7.70D-12   DIIS   4    0.000
 
 * Block   1 in E1g:  Omega =  1/2
   * Closed shell, f = 1.0000
--0.414593798704352  ( 2)
+-0.414593799298939  ( 2)
   * Virtual eigenvalues, f = 0.0000
- 1.952114807217167  ( 2)    2.140237267520213  ( 2)
+ 1.952114807910934  ( 2)    2.140237267581919  ( 2)
 
 * Block   2 in E1g:  Omega =  3/2
   * Virtual eigenvalues, f = 0.0000
- 2.140315744033121  ( 2)
+ 2.140315744094824  ( 2)
 
 * Block   1 in E1u:  Omega =  1/2
   * Virtual eigenvalues, f = 0.0000
- 0.803238427393110  ( 2)    1.393163059529585  ( 2)    2.968673685981371  ( 2)
+ 0.803238427392475  ( 2)    1.393163059585542  ( 2)    2.968673686098919  ( 2)
 
 * Block   2 in E1u:  Omega =  3/2
   * Virtual eigenvalues, f = 0.0000
- 1.393220707320131  ( 2)
+ 1.393220707376087  ( 2)
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
@@ -1055,6 +1091,9 @@ tot.num. of pos.erg shells:    3    1
    Parallel LUCIAREL CI code: 
      Stefan Knecht, Hans Joergen Aa. Jensen and Timo Fleig
 
+   Linear symmetry implementation (CI and MCSCF):
+     Stefan Knecht and Hans Joergen Aa. Jensen
+
  *******************************************************************************
 
  This module is published in:
@@ -1080,9 +1119,46 @@ tot.num. of pos.erg shells:    3    1
   //  CIRUN = NDET  
   //  The number of CI determinants will be computed
 
- (RSETCI) Number of determinants:           20 (dimension           20)
+   The largest block of two-electron integrals is       366
 
- CPU (Wall) time for generation of determinants:  0.00800103s( 0.00000000s)
+  Number of determinants per double group irrep 
+  ============================================= 
+     14.0000000000         7.00000000000         7.00000000000         3.00000000000    
+     3.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     12.0000000000         8.00000000000         8.00000000000         2.00000000000    
+     2.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+
+ (RSETCI) Number of determinants:           14 (dimension           14)
+
+ CPU (Wall) time for generation of determinants:  0.15999998s( 1.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1094,11 +1170,9 @@ tot.num. of pos.erg shells:    3    1
      Active orbitals     :    1..   4                                        
      Secondary orbitals  :                                                   
 
- (RESETXOP_sym) *** orbital symmetry information read from DFCOEF ***
-
  (DELPAR): vector of orbital types: mj-/ml-/boson-irrep values
-
-     1 :      1      1      1     -3      1      1     -3      1
+0  1            1          1          1         -3
+                1          1         -3          1
 
  (DELPAR) ** statistics of deleted orbital rotations: **
    Type  Before              After               Reduction
@@ -1119,34 +1193,36 @@ tot.num. of pos.erg shells:    3    1
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Computing+transform. i       0.008 seconds
+ Time in  Initializing MS4IND fi       0.010 seconds
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:00 (   00:00:00)
-            Transformation ended Tue Sep  7 01:52:28 2010
+            Transformation ended Wed May  4 12:52:38 2011
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
+
+   The largest block of two-electron integrals is       366
   Allocating for              222 diagonal integrals.
 
 
-  Allocating for             1804 integrals.
+  Allocating for              986 integrals.
 
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
  Reading from file : 4IND2XXXX0
 
- Number of integrals/CC amplitudes:             1804
+ Number of integrals/CC amplitudes:              986
  (including imaginary parts) 
 
-  Number of determinants/combinations            20
+  Number of determinants/combinations            14
   Quaternion real relativistic CI 
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63995143
-   allocate two CI vectors each of length:                     20
-   allocate resolution vector of length:                       32
+   current available free memory in double words:        63976828
+   allocate two CI vectors each of length:                     14
+   allocate resolution vector of length:                       18
    ==============================================================
 
   
@@ -1158,45 +1234,45 @@ tot.num. of pos.erg shells:    3    1
 
  Info from iteration     1
 ___________________________
- Iter RNORM EIGAPR          1   .2246858750550E+00         -0.9127459245
- Iter RNORM EIGAPR          1   .3328781398767E+00          0.6581391536
+ Iter RNORM EIGAPR          1   .2246858750333E+00         -0.9127459245
+ Iter RNORM EIGAPR          1   .3328781398618E+00          0.6581391536
  Dimension of projected matrix:           4
- >>>  CPU (WALL) TIME IN ITERATION:  0.05200297s( 1.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.11000001s( 0.00000000s)
 
  Info from iteration     2
 ___________________________
- Iter RNORM EIGAPR          2   .6200097536524E-02         -0.9296313017
- Iter RNORM EIGAPR          2   .1294443813031E+00          0.5644947325
+ Iter RNORM EIGAPR          2   .6200097544014E-02         -0.9296313017
+ Iter RNORM EIGAPR          2   .1294443813074E+00          0.5644947325
  Dimension of projected matrix:           6
- >>>  CPU (WALL) TIME IN ITERATION:  0.06000507s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.16999998s( 0.00000000s)
 
  Info from iteration     3
 ___________________________
- Iter RNORM EIGAPR          3   .2115150125480E-03         -0.9296389547
- Iter RNORM EIGAPR          3   .4998167987286E-03          0.5524659523
+ Iter RNORM EIGAPR          3   .2115150128429E-03         -0.9296389547
+ Iter RNORM EIGAPR          3   .4998168006361E-03          0.5524659523
  Dimension of projected matrix:           8
- >>>  CPU (WALL) TIME IN ITERATION:  0.07200396s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.21999996s( 0.00000000s)
 
  Info from iteration     4
 ___________________________
- Iter RNORM EIGAPR          4   .1203807261078E-07         -0.9296389674
- Iter RNORM EIGAPR          4   .6136714295330E-06          0.5524658224
+ Iter RNORM EIGAPR          4   .1203807252035E-07         -0.9296389674
+ Iter RNORM EIGAPR          4   .6136714311821E-06          0.5524658224
  Dimension of projected matrix:          10
- >>>  CPU (WALL) TIME IN ITERATION:  0.08400500s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.27000000s( 1.00000000s)
 
  Info from iteration     5
 ___________________________
- Iter RNORM EIGAPR          5   .1360564778242E-14         -0.9296389674
- Iter RNORM EIGAPR          5   .6475297357131E-13          0.5524658224
- >>>  CPU (WALL) TIME IN ITERATION:  0.03200197s( 0.00000000s)
-
+ Iter RNORM EIGAPR          5   .2092026350907E-14         -0.9296389674
+ Iter RNORM EIGAPR          5   .6953314509119E-13          0.5524658224
+ >>>  CPU (WALL) TIME IN ITERATION:  0.19000005s( 0.00000000s)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
- Final Eigenvalue   1 :     -0.9296389673989
- Final Eigenvalue   2 :      0.5524658224022
-
+ 
+ The final eigenvalue    1         -0.9296389674 (converged)
+ The final eigenvalue    2          0.5524658224 (converged)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
+ 
 
   I have completed task  KR-CI 
 
@@ -1205,7 +1281,7 @@ ___________________________
 
  (ROPTST)  KR-CI calculation ended after   20 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  0.74804598s( 1.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  1.25999995s( 1.00000000s)
 
 
 
@@ -1220,9 +1296,46 @@ ___________________________
   //  CIRUN = NDET  
   //  The number of CI determinants will be computed
 
- (RSETCI) Number of determinants:           14 (dimension           14)
+   The largest block of two-electron integrals is       366
 
- CPU (Wall) time for generation of determinants:  0.00000000s( 0.00000000s)
+  Number of determinants per double group irrep 
+  ============================================= 
+     14.0000000000         7.00000000000         7.00000000000         3.00000000000    
+     3.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     12.0000000000         8.00000000000         8.00000000000         2.00000000000    
+     2.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+
+ (RSETCI) Number of determinants:            7 (dimension            7)
+
+ CPU (Wall) time for generation of determinants:  0.10000002s( 0.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1234,11 +1347,9 @@ ___________________________
      Active orbitals     :    1..   4                                        
      Secondary orbitals  :                                                   
 
- (RESETXOP_sym) *** orbital symmetry information read from DFCOEF ***
-
  (DELPAR): vector of orbital types: mj-/ml-/boson-irrep values
-
-     1 :      1      1      1     -3      1      1     -3      1
+0  1            1          1          1         -3
+                1          1         -3          1
 
  (DELPAR) ** statistics of deleted orbital rotations: **
    Type  Before              After               Reduction
@@ -1252,33 +1363,33 @@ ___________________________
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
+
+   The largest block of two-electron integrals is       366
   Allocating for              222 diagonal integrals.
 
 
-  Allocating for             1804 integrals.
+  Allocating for              986 integrals.
 
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
  Reading from file : 4IND2XXXX0
 
- Number of integrals/CC amplitudes:             1804
+ Number of integrals/CC amplitudes:              986
  (including imaginary parts) 
 
-  Number of determinants/combinations            14
+  Number of determinants/combinations             7
   Quaternion real relativistic CI 
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63995143
-   allocate two CI vectors each of length:                     16
-   allocate resolution vector of length:                       32
+   current available free memory in double words:        63976828
+   allocate two CI vectors each of length:                      9
+   allocate resolution vector of length:                       18
    ==============================================================
 
   
-  IROOT NDEG            1           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
+  IROOT NDEG            1           1
   IROOT NDEG            2           1
               ::::::::::::::::::::::::   
                 Entering MICDV4 (rel)    
@@ -1286,38 +1397,38 @@ ___________________________
 
  Info from iteration     1
 ___________________________
- Iter RNORM EIGAPR          1   .1097111161175E+00          0.7779334024
- Iter RNORM EIGAPR          1   .1097111161175E+00          0.7779334024
+ Iter RNORM EIGAPR          1   .1097111056628E+00          0.7779333960
+ Iter RNORM EIGAPR          1   .8452267257332E-01          1.0681354381
  Dimension of projected matrix:           4
- >>>  CPU (WALL) TIME IN ITERATION:  0.06000412s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.10999996s( 0.00000000s)
 
  Info from iteration     2
 ___________________________
- Iter RNORM EIGAPR          2   .2816766831095E-04          0.7713477381
- Iter RNORM EIGAPR          2   .2816766831095E-04          0.7713477381
+ Iter RNORM EIGAPR          2   .1855928388793E-04          0.7713477360
+ Iter RNORM EIGAPR          2   .1430045489261E+00          1.0450952441
  Dimension of projected matrix:           6
- >>>  CPU (WALL) TIME IN ITERATION:  0.07600391s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.18000005s( 1.00000000s)
 
  Info from iteration     3
 ___________________________
- Iter RNORM EIGAPR          3   .2565232319416E-05          0.7713477357
- Iter RNORM EIGAPR          3   .2565232319416E-05          0.7713477357
- Dimension of projected matrix:           8
- >>>  CPU (WALL) TIME IN ITERATION:  0.08000612s( 0.00000000s)
+ Iter RNORM EIGAPR          3   .3431487529371E-09          0.7713477357
+ Iter RNORM EIGAPR          3   .5514560866944E-05          1.0135674542
+ Dimension of projected matrix:           7
+ >>>  CPU (WALL) TIME IN ITERATION:  0.13999995s( 0.00000000s)
 
  Info from iteration     4
 ___________________________
- Iter RNORM EIGAPR          4   .2263972127055E-05          0.7713477357
- Iter RNORM EIGAPR          4   .2263972127055E-05          0.7713477357
- >>>  CPU (WALL) TIME IN ITERATION:  0.02000093s( 0.00000000s)
-
+ Iter RNORM EIGAPR          4   .3202512327186E-16          0.7713477357
+ Iter RNORM EIGAPR          4   .2614038760949E-13          1.0135674541
+ >>>  CPU (WALL) TIME IN ITERATION:  0.12999994s( 0.00000000s)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
- Final Eigenvalue   1 :      0.7713477357263
- Final Eigenvalue   2 :      0.7713477357263
-
+ 
+ The final eigenvalue    1          0.7713477357 (converged)
+ The final eigenvalue    2          1.0135674541 (converged)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
+ 
 
   I have completed task  KR-CI 
 
@@ -1326,14 +1437,14 @@ ___________________________
 
  (ROPTST)  KR-CI calculation ended after   20 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  0.50403202s( 1.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  0.82000004s( 1.00000000s)
 
 
 
 
 
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-&&& KRCI calculation for symmetry no.    3
+&&& KRCI calculation for symmetry no.   33
 &&& Number of CI roots for this symmetry       2
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -1341,9 +1452,46 @@ ___________________________
   //  CIRUN = NDET  
   //  The number of CI determinants will be computed
 
- (RSETCI) Number of determinants:           16 (dimension           16)
+   The largest block of two-electron integrals is       366
 
- CPU (Wall) time for generation of determinants:  0.00399995s( 0.00000000s)
+  Number of determinants per double group irrep 
+  ============================================= 
+     14.0000000000         7.00000000000         7.00000000000         3.00000000000    
+     3.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     12.0000000000         8.00000000000         8.00000000000         2.00000000000    
+     2.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+
+ (RSETCI) Number of determinants:           12 (dimension           12)
+
+ CPU (Wall) time for generation of determinants:  0.11000001s( 0.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1355,11 +1503,9 @@ ___________________________
      Active orbitals     :    1..   4                                        
      Secondary orbitals  :                                                   
 
- (RESETXOP_sym) *** orbital symmetry information read from DFCOEF ***
-
  (DELPAR): vector of orbital types: mj-/ml-/boson-irrep values
-
-     1 :      1      1      1     -3      1      1     -3      1
+0  1            1          1          1         -3
+                1          1         -3          1
 
  (DELPAR) ** statistics of deleted orbital rotations: **
    Type  Before              After               Reduction
@@ -1373,27 +1519,29 @@ ___________________________
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
+
+   The largest block of two-electron integrals is       366
   Allocating for              222 diagonal integrals.
 
 
-  Allocating for             1804 integrals.
+  Allocating for              986 integrals.
 
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
  Reading from file : 4IND2XXXX0
 
- Number of integrals/CC amplitudes:             1804
+ Number of integrals/CC amplitudes:              986
  (including imaginary parts) 
 
-  Number of determinants/combinations            16
+  Number of determinants/combinations            12
   Quaternion real relativistic CI 
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63995143
-   allocate two CI vectors each of length:                     16
-   allocate resolution vector of length:                       32
+   current available free memory in double words:        63976828
+   allocate two CI vectors each of length:                     12
+   allocate resolution vector of length:                       18
    ==============================================================
 
   
@@ -1407,52 +1555,52 @@ ___________________________
 
  Info from iteration     1
 ___________________________
- Iter RNORM EIGAPR          1   .1147027260215E+00         -0.3617112390
- Iter RNORM EIGAPR          1   .2609590986319E+00         -0.0066345291
+ Iter RNORM EIGAPR          1   .1147027259813E+00         -0.3617112390
+ Iter RNORM EIGAPR          1   .2609590987276E+00         -0.0066345291
  Dimension of projected matrix:           4
- >>>  CPU (WALL) TIME IN ITERATION:  0.05200386s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.12999993s( 0.00000000s)
 
  Info from iteration     2
 ___________________________
- Iter RNORM EIGAPR          2   .7784055357820E-02         -0.3668384656
- Iter RNORM EIGAPR          2   .4652669302488E-01         -0.0390585274
+ Iter RNORM EIGAPR          2   .7784055358384E-02         -0.3668384656
+ Iter RNORM EIGAPR          2   .4652669304442E-01         -0.0390585274
  Dimension of projected matrix:           6
- >>>  CPU (WALL) TIME IN ITERATION:  0.05600309s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.20999988s( 1.00000000s)
 
  Info from iteration     3
 ___________________________
- Iter RNORM EIGAPR          3   .4198724619899E-04         -0.3668555524
- Iter RNORM EIGAPR          3   .2267985123723E-02         -0.0398304536
+ Iter RNORM EIGAPR          3   .4198724766741E-04         -0.3668555524
+ Iter RNORM EIGAPR          3   .2267985124876E-02         -0.0398304536
  Dimension of projected matrix:           8
- >>>  CPU (WALL) TIME IN ITERATION:  0.07200503s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.27000012s( 0.00000000s)
 
  Info from iteration     4
 ___________________________
- Iter RNORM EIGAPR          4   .3299915734877E-07         -0.3668555533
- Iter RNORM EIGAPR          4   .6529262108941E-05         -0.0398324092
+ Iter RNORM EIGAPR          4   .3299915684281E-07         -0.3668555533
+ Iter RNORM EIGAPR          4   .6529262116476E-05         -0.0398324092
  Dimension of projected matrix:          10
- >>>  CPU (WALL) TIME IN ITERATION:  0.07600403s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.34000007s( 0.00000000s)
 
  Info from iteration     5
 ___________________________
- Iter RNORM EIGAPR          5   .1048180404700E-07         -0.3668555533
- Iter RNORM EIGAPR          5   .1449168002543E-06         -0.0398324093
+ Iter RNORM EIGAPR          5   .1048180408745E-07         -0.3668555533
+ Iter RNORM EIGAPR          5   .1449168006306E-06         -0.0398324093
  Dimension of projected matrix:          11
- >>>  CPU (WALL) TIME IN ITERATION:  0.05200386s( 0.00000000s)
+ >>>  CPU (WALL) TIME IN ITERATION:  0.31999986s( 1.00000000s)
 
  Info from iteration     6
 ___________________________
- Iter RNORM EIGAPR          6   .1048180404699E-07         -0.3668555533
- Iter RNORM EIGAPR          6   .3992014189792E-14         -0.0398324093
- >>>  CPU (WALL) TIME IN ITERATION:  0.03600192s( 0.00000000s)
-
+ Iter RNORM EIGAPR          6   .1048180408746E-07         -0.3668555533
+ Iter RNORM EIGAPR          6   .6147566482521E-14         -0.0398324093
+ >>>  CPU (WALL) TIME IN ITERATION:  0.32000013s( 0.00000000s)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
- Final Eigenvalue   1 :     -0.3668555532909
- Final Eigenvalue   2 :     -0.0398324093268
-
+ 
+ The final eigenvalue    1         -0.3668555533 (converged)
+ The final eigenvalue    2         -0.0398324093 (converged)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
+ 
 
   I have completed task  KR-CI 
 
@@ -1461,24 +1609,61 @@ ___________________________
 
  (ROPTST)  KR-CI calculation ended after   20 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  0.60803795s( 0.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  1.88000000s( 2.00000000s)
 
 
 
 
 
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-&&& KRCI calculation for symmetry no.    4
-&&& Number of CI roots for this symmetry       6
+&&& KRCI calculation for symmetry no.   34
+&&& Number of CI roots for this symmetry       8
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
   //  LUCIAREL called
   //  CIRUN = NDET  
   //  The number of CI determinants will be computed
 
- (RSETCI) Number of determinants:           16 (dimension           16)
+   The largest block of two-electron integrals is       366
 
- CPU (Wall) time for generation of determinants:  0.00000000s( 0.00000000s)
+  Number of determinants per double group irrep 
+  ============================================= 
+     14.0000000000         7.00000000000         7.00000000000         3.00000000000    
+     3.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     12.0000000000         8.00000000000         8.00000000000         2.00000000000    
+     2.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+
+ (RSETCI) Number of determinants:            8 (dimension            8)
+
+ CPU (Wall) time for generation of determinants:  0.09999990s( 0.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1490,11 +1675,9 @@ ___________________________
      Active orbitals     :    1..   4                                        
      Secondary orbitals  :                                                   
 
- (RESETXOP_sym) *** orbital symmetry information read from DFCOEF ***
-
  (DELPAR): vector of orbital types: mj-/ml-/boson-irrep values
-
-     1 :      1      1      1     -3      1      1     -3      1
+0  1            1          1          1         -3
+                1          1         -3          1
 
  (DELPAR) ** statistics of deleted orbital rotations: **
    Type  Before              After               Reduction
@@ -1508,100 +1691,69 @@ ___________________________
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
+
+   The largest block of two-electron integrals is       366
   Allocating for              222 diagonal integrals.
 
 
-  Allocating for             1804 integrals.
+  Allocating for              986 integrals.
 
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
  Reading from file : 4IND2XXXX0
 
- Number of integrals/CC amplitudes:             1804
+ Number of integrals/CC amplitudes:              986
  (including imaginary parts) 
 
-  Number of determinants/combinations            16
+  Number of determinants/combinations             8
   Quaternion real relativistic CI 
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63995143
-   allocate two CI vectors each of length:                     16
-   allocate resolution vector of length:                       32
+   current available free memory in double words:        63976828
+   allocate two CI vectors each of length:                      9
+   allocate resolution vector of length:                       18
    ==============================================================
 
   
-  IROOT NDEG            1           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
+  IROOT NDEG            1           1
   IROOT NDEG            2           1
-  IROOT NDEG            3           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
+  IROOT NDEG            3           1
   IROOT NDEG            4           1
-  IROOT NDEG            5           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
+  IROOT NDEG            5           1
   IROOT NDEG            6           1
+  IROOT NDEG            7           1
+  IROOT NDEG            8           1
               ::::::::::::::::::::::::   
                 Entering MICDV4 (rel)    
               ::::::::::::::::::::::::   
 
  Info from iteration     1
 ___________________________
- Iter RNORM EIGAPR          1   .1147027259282E+00         -0.3617112388
- Iter RNORM EIGAPR          1   .1147027259282E+00         -0.3617112388
- Iter RNORM EIGAPR          1   .5589112485794E-01          0.2071517642
- Iter RNORM EIGAPR          1   .5589112485794E-01          0.2071517642
- Iter RNORM EIGAPR          1   .1096074158340E-01          0.4756079447
- Iter RNORM EIGAPR          1   .1096074158340E-01          0.4756079447
- Dimension of projected matrix:          12
- >>>  CPU (WALL) TIME IN ITERATION:  0.32002020s( 0.00000000s)
-
- Info from iteration     2
-___________________________
- Iter RNORM EIGAPR          2   .8109352969994E-02         -0.3668368745
- Iter RNORM EIGAPR          2   .8109352969994E-02         -0.3668368745
- Iter RNORM EIGAPR          2   .1227648236373E-05          0.2055007083
- Iter RNORM EIGAPR          2   .1227648236373E-05          0.2055007083
- Iter RNORM EIGAPR          2   .7807669313350E-05          0.4755370943
- Iter RNORM EIGAPR          2   .7807669313350E-05          0.4755370943
- Dimension of projected matrix:          12
- >>>  CPU (WALL) TIME IN ITERATION:  0.31602097s( 0.00000000s)
-
- Info from iteration     3
-___________________________
- Iter RNORM EIGAPR          3   .3569692847966E-05         -0.3668555531
- Iter RNORM EIGAPR          3   .3569692766621E-05         -0.3668555531
- Iter RNORM EIGAPR          3   .1295637902762E-08          0.2055007083
- Iter RNORM EIGAPR          3   .1295637895041E-08          0.2055007083
- Iter RNORM EIGAPR          3   .9027206165991E-08          0.4755370943
- Iter RNORM EIGAPR          3   .9027206166921E-08          0.4755370943
- Dimension of projected matrix:           8
- >>>  CPU (WALL) TIME IN ITERATION:  0.10800576s( 0.00000000s)
-
- Info from iteration     4
-___________________________
- Iter RNORM EIGAPR          4   .7608719573113E-08         -0.3668555531
- Iter RNORM EIGAPR          4   .7608718266355E-08         -0.3668555531
- Iter RNORM EIGAPR          4   .3456498590525E-10          0.2055007083
- Iter RNORM EIGAPR          4   .3456497515679E-10          0.2055007083
- Iter RNORM EIGAPR          4   .3086013833766E-09          0.4755370943
- Iter RNORM EIGAPR          4   .3086014885124E-09          0.4755370943
- >>>  CPU (WALL) TIME IN ITERATION:  0.07200408s( 1.00000000s)
-
+ Iter RNORM EIGAPR          1   .4442995976887E-14         -0.3668555531
+ Iter RNORM EIGAPR          1   .4343111785896E-14          0.2055007083
+ Iter RNORM EIGAPR          1   .2753014903508E-14          0.4755370943
+ Iter RNORM EIGAPR          1   .1964529714310E-14          1.5094994991
+ Iter RNORM EIGAPR          1   .6101033753746E-14          1.8389784363
+ Iter RNORM EIGAPR          1   .1506923310632E-14          2.0991639447
+ Iter RNORM EIGAPR          1   .1587024964225E-14          2.1712768536
+ Iter RNORM EIGAPR          1   .5472446957314E-14          3.6247081476
+ >>>  CPU (WALL) TIME IN ITERATION:  0.82999996s( 1.00000000s)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
- Final Eigenvalue   1 :     -0.3668555531326
- Final Eigenvalue   2 :     -0.3668555531326
- Final Eigenvalue   3 :      0.2055007082887
- Final Eigenvalue   4 :      0.2055007082887
- Final Eigenvalue   5 :      0.4755370942733
- Final Eigenvalue   6 :      0.4755370942733
-
+ 
+ The final eigenvalue    1         -0.3668555531 (converged)
+ The final eigenvalue    2          0.2055007083 (converged)
+ The final eigenvalue    3          0.4755370943 (converged)
+ The final eigenvalue    4          1.5094994991 (converged)
+ The final eigenvalue    5          1.8389784363 (converged)
+ The final eigenvalue    6          2.0991639447 (converged)
+ The final eigenvalue    7          2.1712768536 (converged)
+ The final eigenvalue    8          3.6247081476 (converged)
+ 
  *++++++++++++++++++++++++++++++++++++++++++++*
-
+ 
 
   I have completed task  KR-CI 
 
@@ -1610,17 +1762,61 @@ ___________________________
 
  (ROPTST)  KR-CI calculation ended after   20 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  1.12806988s( 2.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  1.31000010s( 1.00000000s)
 
 
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&&& KRCI calculation for symmetry no.   36
+&&& Number of CI roots for this symmetry       2
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
   //  LUCIAREL called
   //  CIRUN = NDET  
   //  The number of CI determinants will be computed
 
- (RSETCI) Number of determinants:           16 (dimension           16)
+   The largest block of two-electron integrals is       366
 
- CPU (Wall) time for generation of determinants:  0.00000000s( 0.00000000s)
+  Number of determinants per double group irrep 
+  ============================================= 
+     14.0000000000         7.00000000000         7.00000000000         3.00000000000    
+     3.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     12.0000000000         8.00000000000         8.00000000000         2.00000000000    
+     2.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+
+ (RSETCI) Number of determinants:            2 (dimension            2)
+
+ CPU (Wall) time for generation of determinants:  0.10999990s( 0.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1632,11 +1828,137 @@ ___________________________
      Active orbitals     :    1..   4                                        
      Secondary orbitals  :                                                   
 
- (RESETXOP_sym) *** orbital symmetry information read from DFCOEF ***
+ (DELPAR): vector of orbital types: mj-/ml-/boson-irrep values
+0  1            1          1          1         -3
+                1          1         -3          1
+
+ (DELPAR) ** statistics of deleted orbital rotations: **
+   Type  Before              After               Reduction
+   e-e      11   (    4)        11   (    4)       0.0%
+
+ (ROPTST)  Start orbitals read from file DFCOEF
+
+ -> Gram-Schmidt orthonormalizing MO coefficients.
+
+  Vector containing mj-values saved as MJVEC on KRMCSCF
+  //  LUCIAREL called
+  //  CIRUN = KR-CI 
+  //  Running large-scale CI calculation
+
+   The largest block of two-electron integrals is       366
+  Allocating for              222 diagonal integrals.
+
+
+  Allocating for              986 integrals.
+
+ Reading from file : 4INDINFO 
+ Reading from file : 4IND1XXXX0
+ Reading from file : 4IND2XXXX0
+
+ Number of integrals/CC amplitudes:              986
+ (including imaginary parts) 
+
+  Number of determinants/combinations             2
+  Quaternion real relativistic CI 
+
+   ==============================================================
+   ==> allocation of two CI vectors and one resolution vector <==
+  
+   current available free memory in double words:        63976828
+   allocate two CI vectors each of length:                      9
+   allocate resolution vector of length:                       18
+   ==============================================================
+
+  
+  IROOT NDEG            1           1
+  IROOT NDEG            2           1
+              ::::::::::::::::::::::::   
+                Entering MICDV4 (rel)    
+              ::::::::::::::::::::::::   
+
+ Info from iteration     1
+___________________________
+ Iter RNORM EIGAPR          1   .4437129678413E-16          0.2055295355
+ Iter RNORM EIGAPR          1   .1213969354409E-14          2.0991927858
+ >>>  CPU (WALL) TIME IN ITERATION:  0.05999973s( 0.00000000s)
+ 
+ *++++++++++++++++++++++++++++++++++++++++++++*
+ 
+ The final eigenvalue    1          0.2055295355 (converged)
+ The final eigenvalue    2          2.0991927858 (converged)
+ 
+ *++++++++++++++++++++++++++++++++++++++++++++*
+ 
+
+  I have completed task  KR-CI 
+
+
+ (RCIST) CI energy:          0.00000000
+
+ (ROPTST)  KR-CI calculation ended after   20 CI iterations.
+
+>>> TOTAL CPU (WALL) TIME IN KR-CI:  0.36999995s( 0.00000000s)
+
+
+
+  //  LUCIAREL called
+  //  CIRUN = NDET  
+  //  The number of CI determinants will be computed
+
+   The largest block of two-electron integrals is       366
+
+  Number of determinants per double group irrep 
+  ============================================= 
+     14.0000000000         7.00000000000         7.00000000000         3.00000000000    
+     3.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     12.0000000000         8.00000000000         8.00000000000         2.00000000000    
+     2.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
+
+ (RSETCI) Number of determinants:            2 (dimension            2)
+
+ CPU (Wall) time for generation of determinants:  0.10000038s( 0.00000000s)
+
+ (RSETWOP) Orbital classes:
+   Fermion irrep 1
+     Inactive orbitals   :                                                   
+     Active orbitals     :    1..   2                                        
+     Secondary orbitals  :    3..   4                                        
+   Fermion irrep 2
+     Inactive orbitals   :                                                   
+     Active orbitals     :    1..   4                                        
+     Secondary orbitals  :                                                   
 
  (DELPAR): vector of orbital types: mj-/ml-/boson-irrep values
-
-     1 :      1      1      1     -3      1      1     -3      1
+0  1            1          1          1         -3
+                1          1         -3          1
 
  (DELPAR) ** statistics of deleted orbital rotations: **
    Type  Before              After               Reduction
@@ -1655,36 +1977,80 @@ ___________________________
 
  *******************************************************************************
 
+   The module is published in:
+
+      Stefan R. Knecht,
+        Parallel Relativistic Multiconfiguration Methods:
+        New Powerful Tools for Heavy-Element Electronic-Structure Studies,
+        PhD thesis, University of Duesseldorf, 2009.
+
+ *******************************************************************************
+
+
   Symmetry   # of electronic states
   ________   ______________________
       1              2
       2              2
-      3              2
-      4              6
+      3              0
+      4              0
+      5              0
+      6              0
+      7              0
+      8              0
+      9              0
+     10              0
+     11              0
+     12              0
+     13              0
+     14              0
+     15              0
+     16              0
+     17              0
+     18              0
+     19              0
+     20              0
+     21              0
+     22              0
+     23              0
+     24              0
+     25              0
+     26              0
+     27              0
+     28              0
+     29              0
+     30              0
+     31              0
+     32              0
+     33              2
+     34              8
+     35              0
+     36              2
   _________________________________
-  Total             12
+  Total             16
 
   //  LUCIAREL called
   //  CIRUN = PROP1 
   //  Computing one-electron properties.
+
+   The largest block of two-electron integrals is       366
 
   Determination of operator representation in KRCI module
   _______________________________________________________
 
   operator     boson rep in DIRAC     boson rep in KR-CI
   ________     __________________     __________________
-   X dipole            B3u                   Bu
-   Y dipole            B2u                   Bu
-   Z dipole            B1u                   Au
-   z-spin              B1g                   Ag
-   z-angula            B1g                   Ag
+   X dipole            B3u                  B3u
+   Y dipole            B2u                  B2u
+   Z dipole            B1u                  B1u
+   z-spin              B1g                  B1g
+   z-angula            B1g                  B1g
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63997556
-   allocate two CI vectors each of length:                     20
-   allocate resolution vector of length:                       32
+   current available free memory in double words:        63973785
+   allocate two CI vectors each of length:                     14
+   allocate resolution vector of length:                       18
    ==============================================================
 
 
@@ -1697,10 +2063,13 @@ ___________________________
   * looping now over all states of symmetry   2
 
 
-  * looping now over all states of symmetry   3
+  * looping now over all states of symmetry  33
 
 
-  * looping now over all states of symmetry   4
+  * looping now over all states of symmetry  34
+
+
+  * looping now over all states of symmetry  36
 
 
   *********  end of property matrix calculation  *********
@@ -1711,36 +2080,44 @@ ___________________________
   List of eigenstates in property calculation
   ___________________________________________________
    # eigenstate    irrep           energy (a.u.)
-          1         ag              -0.9296389674
-          2         ag               0.5524658224
-          3         bg               0.7713477357
-          4         bg               0.7713477357
-          5         au              -0.3668555533
-          6         au              -0.0398324093
-          7         bu              -0.3668555531
-          8         bu              -0.3668555531
-          9         bu               0.2055007083
-         10         bu               0.2055007083
-         11         bu               0.4755370943
-         12         bu               0.4755370943
+          1       0g                -0.9296389674
+          2       0g                 0.5524658224
+          3       2g                 0.7713477357
+          4       2g                 1.0135674541
+          5       0u                -0.3668555533
+          6       0u                -0.0398324093
+          7       2u                -0.3668555531
+          8       2u                 0.2055007083
+          9       2u                 0.4755370943
+         10       2u                 1.5094994991
+         11       2u                 1.8389784363
+         12       2u                 2.0991639447
+         13       2u                 2.1712768536
+         14       2u                 3.6247081476
+         15       4u                 0.2055295355
+         16       4u                 2.0991927858
   ___________________________________________________
 
 
   List of eigenstates in property calculation (sorted)
   ____________________________________________________________________________________________________________________
   Level | abs. eigenvalue     | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1) | irrep 
-     0           -0.9296389674  0.000000000000            0.000000000000              0.000000000000      (  ag)
-     1           -0.3668555533  0.562783414108           15.314115273732         123516.682302211790      (  au)
-     2           -0.3668555531  0.562783414266           15.314115278040         123516.682336953018      (  bu)
-     3           -0.3668555531  0.562783414266           15.314115278040         123516.682336953018      (  bu)
-     4           -0.0398324093  0.889806558072           24.212867437178         195289.966243971721      (  au)
-     5            0.2055007083  1.135139675688           30.888720970605         249134.361773554119      (  bu)
-     6            0.2055007083  1.135139675688           30.888720970605         249134.361773554119      (  bu)
-     7            0.4755370943  1.405176061672           38.236784611792         308400.498019877821      (  bu)
-     8            0.4755370943  1.405176061672           38.236784611792         308400.498019877821      (  bu)
-     9            0.5524658224  1.482104789801           40.330121730291         325284.402260857983      (  ag)
-    10            0.7713477357  1.700986703125           46.286201401355         373323.429481673928      (  bg)
-    11            0.7713477357  1.700986703125           46.286201401355         373323.429481673928      (  bg)
+     0           -0.9296389674  0.000000000000            0.000000000000              0.000000000000      (0g  )
+     1           -0.3668555533  0.562783414108           15.314115273732         123516.682302212619      (0u  )
+     2           -0.3668555531  0.562783414266           15.314115278040         123516.682336953803      (2u  )
+     3           -0.0398324093  0.889806558072           24.212867437178         195289.966243972449      (0u  )
+     4            0.2055007083  1.135139675688           30.888720970605         249134.361773555313      (2u  )
+     5            0.2055295355  1.135168502925           30.889505399602         249140.688620744389      (4u  )
+     6            0.4755370943  1.405176061672           38.236784611792         308400.498019879044      (2u  )
+     7            0.5524658224  1.482104789801           40.330121730291         325284.402260859380      (0g  )
+     8            0.7713477357  1.700986703122           46.286201401264         373323.429480934457      (2g  )
+     9            1.0135674541  1.943206421527           52.877335034992         426484.512866865320      (2g  )
+    10            1.5094994991  2.439138466462           66.372332068803         535329.015569129027      (2u  )
+    11            1.8389784363  2.768617403748           75.337909765979         607641.283844748745      (2u  )
+    12            2.0991639447  3.028802912131           82.417917399540         664745.402361594373      (2u  )
+    13            2.0991927858  3.028831753193           82.418702204733         664751.732243010774      (4u  )
+    14            2.1712768536  3.100915821012           84.380209413917         680572.356448824517      (2u  )
+    15            3.6247081476  4.554347115020          123.930085655680         999563.653792972094      (2u  )
   ________________________________________________________________________________________________________
 
 
@@ -1750,30 +2127,29 @@ ___________________________
 
    <initial state   |x,y,z|   final state>              TDM [a.u.] (x, y, z)           Norm [a.u.]  Norm [Debye]
   __________________       _________________    _______________________________________________________________
-   * state  1(  ag)         * state  6(  au)     0.00000000  0.00000000 -1.07350904    1.07350904    2.72858750
-   * state  1(  ag)         * state  7(  bu)     0.00000442 -0.00000442  0.00000000    0.00000625    0.00001587
-   * state  1(  ag)         * state  8(  bu)    -0.00000442 -0.00000442  0.00000000    0.00000625    0.00001587
-   * state  1(  ag)         * state  9(  bu)    -0.00005278  0.00005278  0.00000000    0.00007464    0.00018972
-   * state  1(  ag)         * state 10(  bu)     0.00005278  0.00005278  0.00000000    0.00007464    0.00018972
-   * state  1(  ag)         * state 11(  bu)    -0.59350431 -0.59350431  0.00000000    0.83934184    2.13339392
-   * state  1(  ag)         * state 12(  bu)     0.59350431 -0.59350431  0.00000000    0.83934184    2.13339392
-   * state  6(  au)         * state  2(  ag)     0.00000000  0.00000000  0.71701177    0.71701177    1.82246193
-   * state  7(  bu)         * state  2(  ag)     0.00004414  0.00004414  0.00000000    0.00006242    0.00015865
-   * state  8(  bu)         * state  2(  ag)    -0.00004414  0.00004414  0.00000000    0.00006242    0.00015865
-   * state  9(  bu)         * state  2(  ag)     0.00000100  0.00000100  0.00000000    0.00000141    0.00000358
-   * state 10(  bu)         * state  2(  ag)    -0.00000100  0.00000100  0.00000000    0.00000141    0.00000358
-   * state 11(  bu)         * state  2(  ag)    -0.01847535  0.01847535  0.00000000    0.02612810    0.06641099
-   * state 12(  bu)         * state  2(  ag)     0.01847535  0.01847535  0.00000000    0.02612810    0.06641099
-   * state  5(  au)         * state  3(  bg)     0.00009313 -0.00009313  0.00000000    0.00013170    0.00033475
-   * state  6(  au)         * state  3(  bg)     0.00000543 -0.00000543  0.00000000    0.00000767    0.00001950
-   * state  7(  bu)         * state  3(  bg)     0.00000000  0.00000000 -0.93183074    0.93183074    2.36847722
-   * state  9(  bu)         * state  3(  bg)     0.00000000  0.00000000  0.00011125    0.00011125    0.00028277
-   * state 12(  bu)         * state  3(  bg)     0.00000000  0.00000000 -0.00001065    0.00001065    0.00002707
-   * state  5(  au)         * state  4(  bg)    -0.00009313 -0.00009313  0.00000000    0.00013170    0.00033475
-   * state  6(  au)         * state  4(  bg)     0.00000543  0.00000543  0.00000000    0.00000767    0.00001950
-   * state  8(  bu)         * state  4(  bg)     0.00000000  0.00000000  0.93183074    0.93183074    2.36847722
-   * state 10(  bu)         * state  4(  bg)     0.00000000  0.00000000 -0.00011125    0.00011125    0.00028277
-   * state 11(  bu)         * state  4(  bg)     0.00000000  0.00000000  0.00001065    0.00001065    0.00002707
+   * state  1(0g  )         * state  6(0u  )     0.00000000  0.00000000 -1.07350904    1.07350904    2.72858750
+   * state  6(0u  )         * state  2(0g  )     0.00000000  0.00000000  0.71701177    0.71701177    1.82246193
+   * state  7(2u  )         * state  2(0g  )     0.00004414  0.00004414  0.00000000    0.00006242    0.00015865
+   * state  8(2u  )         * state  2(0g  )     0.00000100  0.00000100  0.00000000    0.00000141    0.00000358
+   * state  9(2u  )         * state  2(0g  )    -0.01847535 -0.01847535  0.00000000    0.02612810    0.06641099
+   * state  7(2u  )         * state  3(2g  )     0.00000000  0.00000000  0.93183074    0.93183074    2.36847722
+   * state  8(2u  )         * state  3(2g  )     0.00000000  0.00000000 -0.00010938    0.00010938    0.00027803
+   * state  9(2u  )         * state  3(2g  )     0.00000000  0.00000000 -0.00001096    0.00001096    0.00002787
+   * state  3(2g  )         * state 10(2u  )     0.00000000  0.00000000 -0.64047018    0.64047018    1.62791264
+   * state  3(2g  )         * state 11(2u  )     0.00000000  0.00000000  1.03861301    1.03861301    2.63989066
+   * state  3(2g  )         * state 12(2u  )     0.00000000  0.00000000 -0.00002767    0.00002767    0.00007032
+   * state  3(2g  )         * state 13(2u  )     0.00000000  0.00000000  0.00004790    0.00004790    0.00012176
+   * state  3(2g  )         * state 14(2u  )     0.00000000  0.00000000  0.05953725    0.05953725    0.15132857
+   * state 15(4u  )         * state  3(2g  )     0.01221529  0.01221529  0.00000000    0.01727502    0.04390872
+   * state  7(2u  )         * state  4(2g  )     0.00000000  0.00000000  0.00006537    0.00006537    0.00016615
+   * state  8(2u  )         * state  4(2g  )     0.00000000  0.00000000 -0.81271277    0.81271277    2.06570959
+   * state  9(2u  )         * state  4(2g  )     0.00000000  0.00000000 -0.00014716    0.00014716    0.00037404
+   * state  4(2g  )         * state 10(2u  )     0.00000000  0.00000000 -0.00015258    0.00015258    0.00038783
+   * state  4(2g  )         * state 11(2u  )     0.00000000  0.00000000  0.00006438    0.00006438    0.00016364
+   * state  4(2g  )         * state 12(2u  )     0.00000000  0.00000000 -0.96007119    0.96007119    2.44025729
+   * state  4(2g  )         * state 13(2u  )     0.00000000  0.00000000  0.00012138    0.00012138    0.00030853
+   * state  4(2g  )         * state 14(2u  )     0.00000000  0.00000000  0.00000430    0.00000430    0.00001093
+   * state 15(4u  )         * state  4(2g  )    -0.00001012 -0.00001012  0.00000000    0.00001431    0.00003636
   __________________________________________    _______________________________________________________________
 
     omega expectation values for calculated eigenstates
@@ -1782,25 +2158,53 @@ ___________________________
     state #        symmetry      <omega>      <s_z>     <l_z>
   ----------     -----------   ------------  -------  --------
 
-          1          ag            0          0.0000   -0.0000
-          2          ag            0         -0.0000    0.0000
-          1          bg            1          1.0000    0.0000
-          2          bg           -1         -1.0000   -0.0000
-          1          au            0          0.0000   -0.0000
-          2          au            0         -0.0000    0.0000
-          1          bu            1          1.0000    0.0000
-          2          bu           -1         -1.0000   -0.0000
-          3          bu            1          0.0000    1.0000
-          4          bu           -1         -0.0000   -1.0000
-          5          bu           -1         -0.0000   -1.0000
-          6          bu            1          0.0000    1.0000
+          1        0g              0          0.0000    0.0000
+          2        0g              0          0.0000    0.0000
+          1        2g              1          1.0000    0.0000
+          2        2g              1          0.0000    1.0000
+          1        0u              0          0.0000    0.0000
+          2        0u              0          0.0000    0.0000
+          1        2u              1          1.0000    0.0000
+          2        2u              1          0.0000    1.0000
+          3        2u              1          0.0000    1.0000
+          4        2u              1          1.0000    0.0000
+          5        2u              1          1.0000    0.0000
+          6        2u              1          0.0000    1.0000
+          7        2u              1          0.0000    1.0000
+          8        2u              1          1.0000    0.0000
+          1        4u              2          1.0000    1.0000
+          2        4u              2          1.0000    1.0000
 
  
-     Date and time (Linux)  : Tue Sep  7 01:52:39 2010 
+     Date and time (Linux)  : Wed May  4 12:52:50 2011
      Host name              : thor                                    
->>>> Node 0, utime: 9, stime: 1, minflt: 128982, majflt: 0, nvcsw: 58, nivcsw: 2899, maxrss: 0
->>>> Total WALL time used in DIRAC: 11s
-*****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :         0.80
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine unknown                                    for work array at main                        
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+        1.91 Mb at subroutine krmc_luci2_.+0xc16                         for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       496.00
+       reached at subroutine : krmc_luci2_.+0xc16                        
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:     3.62 MB
+
+*****************************************************
+>>>> Node 0, utime: 8, stime: 4, minflt: 305932, majflt: 0, nvcsw: 72, nivcsw: 1462, maxrss: 0
+>>>> Total WALL time used in DIRAC: 14s
