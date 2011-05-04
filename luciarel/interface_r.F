@@ -467,7 +467,7 @@ C
           call memmar(kdumx12,idum,'FLUSM ',idum,'geth12')
         end if ! iiomod_rel == 1 or myproc == master
 #if defined (VAR_MPI2)
-        IF( IIOMOD_REL .eq. 0 )THEN
+!       IF( IIOMOD_REL .eq. 0 )THEN
 *           ... co-workers get the integrals
           LEN_INT_BCAST = 0
 #if defined (INT_STAR8)
@@ -478,7 +478,7 @@ C
 #endif
           CALL MPI_BCAST(WORK(KINTI12),LEN_INT_BCAST,MPI_REAL8,
      &                   MASTER,MPI_COMM_WORLD,IERR)
-        END IF
+!       END IF
 #endif
 C
 C       integrals on WORK(KINTI12) / F1-F2 --> 
