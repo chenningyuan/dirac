@@ -25,7 +25,6 @@ module visual
   use visual_cfg
   use codata
   use ao_eval
-  use basis_info
   use matrix_defop
   use matrix_genop, only: copy_matrix_sym
   use dirac_interface
@@ -348,9 +347,9 @@ contains
 !   initialize ao module
 !   ====================
 
-    call basis_info_read(.true., .false.)
     call ao_eval_init(max_ao_g_order, &
                       max_ao_m_order, &
+                      .false.,        &
                       .false.)
 
     call alloc(ao,     total_ao_vector_length)
@@ -402,8 +401,6 @@ contains
        D_con = 0
     end if
 #endif
-
-    call basis_info_delete()
 
     end subroutine
 

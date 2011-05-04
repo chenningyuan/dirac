@@ -1,245 +1,159 @@
-!dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
-!> \brief   write/read basis set information to/from file
-!> \author  radovan bast
-!> \date    2010-05-01
-!> \warning output format ugly and not final, feel free to improve
+!    radovan bast <radovan.bast@uit.no> 2011-04-20
+!    module for the export/import of basis set information
 
+!    general design
+!    --------------
+!  - file is formatted
+!  - file is read in free format
+!  - sections have labels
+!  - order of sections does not matter
+!  - section symmetry can be omitted if irrelevant (e.g. C1)
+!  - normalization is absorbed in contraction coefficients
+!    (we can discuss this point)
+!    AOs are normalized based on angular momentum and exponent
+!    such that each shell has a common normalization
+!    with this < AO | AO > =   1 for s, px, py, pz, dxy, dxz, dyz, fxyz
+!                              3 for dxx, dyy, dzz, fxxy, ...
+!                             15     fxxx, fyyy, fzzz, gxxxy, ...
+!                            105     gxxxx, ...
+!                            ...     ...
+!                              9 for gxxyy, ...
+!                            etc     ...
+!  - ireps go from 0 to nr_ireps-1
 
-! there are a few things that are perhaps not ideal about the basis set exporter:
-! 
-! * it exports everything that is needed to calculated AOs with symmetry. some of
-! the exported information is redundant. it could be generated with knowledge of
-! symmetry, ordering, etc (e.g. AO-SO transformation, cartesian-spherical
-! transformation). but i didn't want to do any "thinking" after reading the
-! information, didn't want to double code that is figuring out all this already
-! in core DIRAC. so it contains a little bit too much, but at the moment i tried
-! to be not too clever, just to get it isolated.
-! 
-! * the exported file does not look very nice. i really want it to be formatted,
-! so that it can be read by python etc but i am not sure what format is ideal. so
-! i just throw all data in there, formatted but without much thinking. one could
-! certainly agree on a better structure.  so the data format is certainly not
-! final and not stable. and i don't mind if it changes. one could write the data
-! in some standard format like g5cost but then there are many DIRAC-own
-! parameters that i fear will not fit in (but i haven't checked q5cost). 
-
-
-! a note on normalization:
-! AOs are normalized based on angular momentum and exponent
-! such that each shell has a common normalization
-! with this < AO | AO > =   1 for s, px, py, pz, dxy, dxz, dyz, fxyz
-!                           3 for dxx, dyy, dzz, fxxy, ...
-!                          15     fxxx, fyyy, fzzz, gxxxy, ...
-!                         105     gxxxx, ...
-!                         ...     ...
-!                           9 for gxxyy, ...
-!                         etc     ...
-! normalization is hidden in contraction_coef
+!    todo and known issues
+!    ---------------------
+!  - remove shell stabilizers and refer to center stabilizers
+!  - move all symmetry related info to *** symmetry, also center degeneracy and
+!    sym independent nuclei
+!  - make it possible to read from basis_info without *** symmetry assuming C1
+!  - remove dependency on dft_cfg_betasigma
 
 module basis_info
-
-#ifdef VAR_MPI
-   use dirac_mpi
-#endif
-   use ao_xyz_power
-   use dft_cfg
 
    implicit none
 
    public basis_info_write
    public basis_info_read
-   public basis_info_delete
 
-   private
+   integer, public, parameter :: l_max = 20
 
-!  -----------------------------------------------------------------------------
-!  public non-allocatables
-
-   integer, public :: nr_shells
-   integer, public :: nr_shells_all
-   integer, public :: nr_boson_sym
-!>                    always cartesian
-   integer, public :: nr_ao_cartesian
-!>                    can be cartesian or spherical
-   integer, public :: nr_ao
-!>                    number of so-ao contributions when evaluating sa-ao (so)
-   integer, public :: nr_so_ao
-
-!                     the following ll..., ss... and ls... parameters are used
-!                     to figure out where to jump on quaternion symmetry-packed
-!                     matrices when evaluating densities and distributing XC factors
-!>                    for (number) density and spin density and similar (diagonal operators)
-!                                            0 operator: 1
-!                                            1 operator: \Sigma_x
-!                                            2 operator: \Sigma_y
-!                                            3 operator: \Sigma_z
-!                                            |
-!                                            |    0-7 irep
-!                                            |    |
-!                                            v    v
-   integer, public :: llss_nr_density_blocks(0:3, 0:7)
-!                     in a specific block b there are
-!                     ll_nr_ao(1, b, ...) of functions that start at ll_st_ao(1, b, ...)
-!                     combined with
-!                     ll_nr_ao(2, b, ...) of functions that start at ll_st_ao(2, b, ...)
-!                     note that there can be less blocks then ireps (or ireps*2)
-!                     if some ireps do not contain any basis functions
-   integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
-   integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
-!                        on which iz unit is 0=r, 1=x, 2=y, 3=z
-!                        |
-!                        v
+   integer, public :: ao_nr(0:7, 2)
+   integer, public :: ao_off(0:7, 2)
+   integer, public :: ao_off_hermit(8, 2)
+   integer, public :: c2s_index(l_max)
    integer, public :: iq(0:3)
-
-   real(8), public :: llss_prefactor(16, 0:3, 0:7)
-
-!>                    for kinetic energy density and current density and similar (off-diagonal operators)
-!                                            0 operator: \gamma_5
-!                                            1 operator: \alpha_x
-!                                            2 operator: \alpha_y
-!                                            3 operator: \alpha_z
-!                                            |
-!                                            v
-   integer, public :: lssl_nr_density_blocks(0:3, 0:7)
-!                     for an operator (0:3) and irep (0:7)
-!                     there are maximum 16 ls_nr_density_blocks
-!                     which give totally symmetric contributions
-!                     (2*max_nr_boson_sym; 2 is for large and small)
+   integer, public :: irep_of_axes(3)
+   integer, public :: irep_of_rotations(3)
+   integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
+   integer, public :: llss_nr_density_blocks(0:3, 0:7)
+   integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
    integer, public :: lssl_nr_ao(2, 16, 0:3, 0:7)
+   integer, public :: lssl_nr_density_blocks(0:3, 0:7)
    integer, public :: lssl_st_ao(2, 16, 0:3, 0:7)
-
-!>                    packed quaternion to unpacked quaternion
+   integer, public :: nr_ao
+   integer, public :: nr_ao_cartesian
+   integer, public :: nr_ao_spherical
+   integer, public :: nr_ireps
+   integer, public :: nr_shells
+   integer, public :: nr_shells_large
+   integer, public :: nr_shells_small
+   integer, public :: nr_so_ao
+   integer, public :: nr_sym_dependent_centers
+   integer, public :: nr_sym_independent_centers
    integer, public :: pq_to_uq(4, 0:7)
-!>                    unpacked quaternion to packed quaternion
    integer, public :: uq_to_pq(4, 0:7)
-
-!>                    behavior of principal axes under basic operations
-   integer, public :: sym_axes(3, 2)
-
-!  -----------------------------------------------------------------------------
-!  public allocatables
+   logical, public :: basis_is_spherical
+   logical, public :: use_only_large
+   real(8), public :: llss_prefactor(16, 0:3, 0:7)
 
    integer, allocatable, public :: cartesian_deg(:)
    integer, allocatable, public :: cartesian_off(:)
+   integer, allocatable, public :: i_so_ao(:, :)
+   integer, allocatable, public :: l_quantum_nr(:)
+   integer, allocatable, public :: nr_nonzero_contraction_coefs(:)
+   integer, allocatable, public :: shell_center(:)
+   integer, allocatable, public :: shell_stabilizing_irep(:)
    integer, allocatable, public :: spherical_deg(:)
    integer, allocatable, public :: spherical_off(:)
-!>                                 starts at s=1
-   integer, allocatable, public :: l_quantum_nr(:)
-   integer, allocatable, public :: shell_center(:)
-   real(8), allocatable, public :: shell_center_xyz(:, :)
-!>                                 shell stabiliser: sym that does not move center
-   integer, allocatable, public :: shell_stabilizer(:)
-   logical, allocatable, public :: shell_is_spherical(:)
-   real(8), allocatable, public :: shell_extent(:)
-   integer, allocatable, public :: nr_nonzero_contraction_coefs(:)
+   integer, allocatable, public :: sym_independent_center_deg(:)
+   real(8), allocatable, public :: c2s_mat(:)
    real(8), allocatable, public :: contraction_coef(:, :)
-   real(8), allocatable, public :: primitive_exp(:, :)
-   integer, allocatable, public :: i_so_ao(:, :)
    real(8), allocatable, public :: f_so_ao(:)
-   real(8), allocatable, public :: bitstring_parity(:)
-   real(8), allocatable, public :: cartesian_to_spherical(:)
-   integer, allocatable, public :: spherical_address(:)
+   real(8), allocatable, public :: primitive_exp(:, :)
+   real(8), allocatable, public :: sym_dependent_center_charge(:)
+   real(8), allocatable, public :: sym_dependent_center_xyz(:, :)
+   real(8), allocatable, public :: sym_independent_center_charge(:)
+   real(8), allocatable, public :: sym_independent_center_xyz(:, :)
 
-!  -----------------------------------------------------------------------------
-!  private
+   private
 
    character(*), parameter :: file_name = 'basis_info'
    integer,      parameter :: file_unit = 137
    logical                 :: file_exists
 
-   logical                 :: only_large
-
-   real(8),      parameter :: cell_size          = 2.25d0
-!>                                                 cell_size*0.5d0*sqrt(3.0d0)
-   real(8),      parameter :: half_cell_diagonal = cell_size*0.866025404d0
-   real(8),      parameter :: ao_threshold       = 1.0d-15
-
-!>                            this is probably eq. 8.2.25 in the pink book
-   real(8),      parameter :: g(10) = (/1.0d0, 1.3333d0, 1.6d0, 1.83d0, 2.03d0, 2.22d0, 2.39d0, 2.55d0, 2.70d0, 2.84d0/)
-
 contains
 
-!> \brief deallocate arrays
-   subroutine basis_info_delete()
+   subroutine basis_info_clear()
 
-      nr_shells              = 0
-      nr_shells_all          = 0
-      nr_boson_sym           = 0
-      nr_ao_cartesian        = 0
-      nr_ao                  = 0
-      nr_so_ao               = 0
-      llss_nr_density_blocks = 0
-      llss_nr_ao             = 0
-      llss_st_ao             = 0
-      lssl_nr_density_blocks = 0
-      lssl_nr_ao             = 0
-      lssl_st_ao             = 0
-      iq                     = 0
-      llss_prefactor         = 0.0d0
-      pq_to_uq               = 0
-      uq_to_pq               = 0
-      sym_axes               = 0
+      ao_nr                      = 0
+      ao_off                     = 0
+      ao_off_hermit              = 0
+      c2s_index                  = 0
+      iq                         = 0
+      irep_of_axes               = 0
+      irep_of_rotations          = 0
+      llss_nr_ao                 = 0
+      llss_nr_density_blocks     = 0
+      llss_st_ao                 = 0
+      lssl_nr_ao                 = 0
+      lssl_nr_density_blocks     = 0
+      lssl_st_ao                 = 0
+      nr_ao                      = 0
+      nr_ao_cartesian            = 0
+      nr_ao_spherical            = 0
+      nr_ireps                   = 0
+      nr_shells                  = 0
+      nr_shells_large            = 0
+      nr_shells_small            = 0
+      nr_so_ao                   = 0
+      nr_sym_dependent_centers   = 0
+      nr_sym_independent_centers = 0
+      pq_to_uq                   = 0
+      uq_to_pq                   = 0
+      basis_is_spherical         = .false.
+      use_only_large             = .false.
+      llss_prefactor             = 0.0d0
 
-      if (allocated(cartesian_deg               )) deallocate(cartesian_deg               )
-      if (allocated(cartesian_off               )) deallocate(cartesian_off               )
-      if (allocated(spherical_deg               )) deallocate(spherical_deg               )
-      if (allocated(spherical_off               )) deallocate(spherical_off               )
-      if (allocated(l_quantum_nr                )) deallocate(l_quantum_nr                )
-      if (allocated(shell_center                )) deallocate(shell_center                )
-      if (allocated(shell_center_xyz            )) deallocate(shell_center_xyz            )
-      if (allocated(shell_stabilizer            )) deallocate(shell_stabilizer            )
-      if (allocated(shell_is_spherical          )) deallocate(shell_is_spherical          )
-      if (allocated(shell_extent                )) deallocate(shell_extent                )
-      if (allocated(nr_nonzero_contraction_coefs)) deallocate(nr_nonzero_contraction_coefs)
-      if (allocated(contraction_coef            )) deallocate(contraction_coef            )
-      if (allocated(primitive_exp               )) deallocate(primitive_exp               )
-      if (allocated(i_so_ao                     )) deallocate(i_so_ao                     )
-      if (allocated(f_so_ao                     )) deallocate(f_so_ao                     )
-      if (allocated(bitstring_parity            )) deallocate(bitstring_parity            )
-      if (allocated(cartesian_to_spherical      )) deallocate(cartesian_to_spherical      )
-      if (allocated(spherical_address           )) deallocate(spherical_address           )
-
-      call ao_xyz_power_delete()
+      if (allocated(cartesian_deg                )) deallocate(cartesian_deg                )
+      if (allocated(cartesian_off                )) deallocate(cartesian_off                )
+      if (allocated(i_so_ao                      )) deallocate(i_so_ao                      )
+      if (allocated(l_quantum_nr                 )) deallocate(l_quantum_nr                 )
+      if (allocated(nr_nonzero_contraction_coefs )) deallocate(nr_nonzero_contraction_coefs )
+      if (allocated(shell_center                 )) deallocate(shell_center                 )
+      if (allocated(shell_stabilizing_irep       )) deallocate(shell_stabilizing_irep       )
+      if (allocated(spherical_deg                )) deallocate(spherical_deg                )
+      if (allocated(spherical_off                )) deallocate(spherical_off                )
+      if (allocated(sym_independent_center_deg   )) deallocate(sym_independent_center_deg   )
+      if (allocated(c2s_mat                      )) deallocate(c2s_mat                      )
+      if (allocated(contraction_coef             )) deallocate(contraction_coef             )
+      if (allocated(f_so_ao                      )) deallocate(f_so_ao                      )
+      if (allocated(primitive_exp                )) deallocate(primitive_exp                )
+      if (allocated(sym_dependent_center_charge  )) deallocate(sym_dependent_center_charge  )
+      if (allocated(sym_dependent_center_xyz     )) deallocate(sym_dependent_center_xyz     )
+      if (allocated(sym_independent_center_charge)) deallocate(sym_independent_center_charge)
+      if (allocated(sym_independent_center_xyz   )) deallocate(sym_independent_center_xyz   )
 
    end subroutine
 
-!> \brief write basis set info to file
    subroutine basis_info_write()
 
 !     --------------------------------------------------------------------------
-      integer :: i, j, i_c, i_s, ic
-      integer :: ishell, icount, isym, iprim, irep
-      integer :: iso, iso_dirac_sorting, iao
-      integer :: index_in_ao_block, nr_ao_irep, nshell, mul, l
-      integer :: max_contraction_length
-      real(8) :: r, f
-      integer :: inter_irep(0:3), jxyz, irep1, irep2, nr1, nr2
-      integer :: lssl_ic(2) = (/2, 1/)
-      integer :: ns
-      integer :: nc
-      integer :: nsoao
-      integer :: ncs
-      integer :: nq
+      integer                 :: i, j, ic
+      integer                 :: ishell, icount, iprim, irep, icent
+      integer, allocatable    :: nr_primitives(:)
+      character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
 #include "mxcent.h"
@@ -254,15 +168,16 @@ contains
 #include "pincom.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "nuclei.h"
 
-      call basis_info_delete()
+      call basis_info_clear()
 
-      inquire(file  = file_name, exist = file_exists)
-
+!     always regenerate this file
+      inquire(file = file_name, exist = file_exists)
       if (file_exists) then
          open(file_unit,            &
               file   = file_name,   &
-              status = 'old',       &
+              status = 'unknown',   &
               form   = 'formatted', &
               access = 'sequential')
          close(file_unit, status = 'delete')
@@ -275,256 +190,398 @@ contains
            access = 'sequential')
       rewind(file_unit)
 
-      only_large = .false.
+      nr_ireps  = nbsym
+      nr_shells = kmax
+
+      allocate(l_quantum_nr(nr_shells))
+      allocate(shell_center(nr_shells))
+      allocate(shell_stabilizing_irep(nr_shells))
+      do ishell = 1, nr_shells
+         l_quantum_nr(ishell)           = nhkt(ishell) - 1
+         shell_center(ishell)           = ncent(ishell)
+         shell_stabilizing_irep(ishell) = istbao(ishell)
+      end do
+
+      allocate(nr_primitives(nr_shells))
+      do ishell = 1, nr_shells
+         i = jstrt(ishell) + 1
+         j = jstrt(ishell) + nuco(ishell)
+         icount = 0
+         do iprim = i, j
+            if (dabs(priccf(iprim, numcf(ishell))) > tiny(0.0d0)) then
+               icount = icount + 1
+               nr_primitives(ishell) = icount
+            end if
+         end do
+      end do
+
+      allocate(primitive_exp(nr_shells,    sum(nr_primitives)))
+      allocate(contraction_coef(nr_shells, sum(nr_primitives)))
+      do ishell = 1, nr_shells
+         i = jstrt(ishell) + 1
+         j = jstrt(ishell) + nuco(ishell)
+         icount = 0
+         do iprim = i, j
+            if (dabs(priccf(iprim, numcf(ishell))) > tiny(0.0d0)) then
+               icount = icount + 1
+               contraction_coef(ishell, icount) = priccf(iprim, numcf(ishell))
+               primitive_exp(ishell, icount)    = priexp(iprim)
+            end if
+         end do
+      end do
+
+      write(file_unit, '(a)') '*** geometry'
+
+      write(file_unit, '(4x, a)') 'nr_sym_independent_centers'
+      write(file_unit, '(4x, i6)') nucind
+
+      write(file_unit, '(4x, a)') 'charges_and_coordinates_independent'
+      do icent = 1, nucind
+         write(file_unit, '(4f27.16)') charge(icent),  &
+                                       cord(1, icent), &
+                                       cord(2, icent), &
+                                       cord(3, icent)
+      end do
+
+      write(file_unit, '(4x, a)') 'degeneracy_of_center'
+      do icent = 1, nucind
+         write(file_unit, '(4x, 2i6)') icent, nucdeg(icent)
+      end do
+
+      write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
+      write(file_unit, '(4x, i6)') nucdep
+
+      write(file_unit, '(4x, a)') 'charges_and_coordinates_dependent'
+      do icent = 1, nucind
+         if (mult(istbnu(icent)) == 1) then
+               write(file_unit, '(4f27.16)') charge(icent),  &
+                                             cord(1, icent), &
+                                             cord(2, icent), &
+                                             cord(3, icent)
+         else
+            do irep = 0, nr_ireps - 1
+               if (iand(irep, istbnu(icent)) == 0) then
+                  write(file_unit, '(4f27.16)') charge(icent),                               &
+                                                cord(1, icent)*pt(iand(isymax(1, 1), irep)), &
+                                                cord(2, icent)*pt(iand(isymax(2, 1), irep)), &
+                                                cord(3, icent)*pt(iand(isymax(3, 1), irep))
+               end if
+            end do
+         end if
+      end do
+
+      write(file_unit, '(a)') '*** basis'
+
+      basis_is_spherical = .false.
+      do ishell = 1, kmax
+         if (sphr(ishell)) then
+            basis_is_spherical = .true.
+         end if
+      end do
+      write(file_unit, '(4x, a)') 'is_spherical'
+      write(file_unit, '(4x, l6)') basis_is_spherical
+
+      use_only_large = .false.
       if (mc == 1) then
-         only_large = .true.
+         use_only_large = .true.
       end if
+      write(file_unit, '(4x, a)') 'use_only_large'
+      write(file_unit, '(4x, l6)') use_only_large
 
-      nr_shells_all = kmax
-      if (only_large) then
-         nr_shells = nlrgsh
-      else
-         nr_shells = nr_shells_all
-      end if
+      write(file_unit, '(4x, a)') 'nr_primitive_exp'
+      write(file_unit, '(4x, i6)') sum(nr_primitives)
 
-      nr_boson_sym = nbsym
-      pq_to_uq     = ipqtoq
-      uq_to_pq     = iqtopq
-      sym_axes     = isymax
-
-
-!     get nr_ao_cartesian and max_contraction_length
-!     ==============================================
-
-      nr_ao_cartesian        = 0
-      max_contraction_length = 0
-      do ishell = 1, nr_shells_all
-
-         i = jstrt(ishell) + 1
-         j = jstrt(ishell) + nuco(ishell)
-
-         index_in_ao_block = numcf(ishell)
-         if (index_in_ao_block > mxcont) then
-            call quit('increase mxcont and recompile')
+      write(file_unit, '(4x, 5a6, 2a26)') '# cent', &
+                                          'L/S',    &
+                                          'shell',  &
+                                          'l',      &
+                                          'irep',   &
+                                          'prim',   &
+                                          'coef'
+      do ishell = 1, kmax
+         if (ishell > nlrgsh) then
+            ic = 2
+         else
+            ic = 1
          end if
-
-         icount = 0
-         do iprim = i, j
-            if (dabs(priccf(iprim, index_in_ao_block)) > tiny(1.0d0)) then
-               icount = icount + 1
-            end if
+         do i = 1, nr_primitives(ishell)
+            write(file_unit, '(4x, i6, a6, 3i6, 2e26.16)') shell_center(ishell),           &
+                                                           ls(ic),                         &
+                                                           ishell,                         &
+                                                           l_quantum_nr(ishell),           &
+                                                           shell_stabilizing_irep(ishell), &
+                                                           primitive_exp(ishell, i),       &
+                                                           contraction_coef(ishell, i)
          end do
-         if (icount > max_contraction_length) then
-            max_contraction_length = icount
-         end if
+      end do
+      deallocate(nr_primitives)
 
-         do isym = 0, maxopr
-            if (iand(isym, istbao(ishell)) == 0) then
-               nr_ao_cartesian = nr_ao_cartesian + kckt(ishell)
-            end if
-         end do
+      write(file_unit, '(a)') '*** symmetry'
 
+      write(file_unit, '(4x, a)') 'nr_ireps'
+      write(file_unit, '(4x, i6)') nr_ireps
+
+      write(file_unit, '(4x, a)') 'irep_of_axes'
+      write(file_unit, '(4x, i6)') isymax(1, 1)
+      write(file_unit, '(4x, i6)') isymax(2, 1)
+      write(file_unit, '(4x, i6)') isymax(3, 1)
+
+      write(file_unit, '(4x, a)') 'irep_of_rotations'
+      write(file_unit, '(4x, i6)') isymax(1, 2)
+      write(file_unit, '(4x, i6)') isymax(2, 2)
+      write(file_unit, '(4x, i6)') isymax(3, 2)
+
+      write(file_unit, '(4x, 7a8)') '# irep',  &
+                                    'nr-L',    &
+                                    'nr-S',    &
+                                    'D-off-L', &
+                                    'D-off-S', &
+                                    'H-off-L', &
+                                    'H-off-S'
+      do irep = 0, nr_ireps - 1
+         write(file_unit, '(4x, 7i8)') irep,            &
+                                       nbbas(irep, 1),  &
+                                       nbbas(irep, 2),  &
+                                       ibbas(irep, 1),  &
+                                       ibbas(irep, 2),  &
+                                       icos(irep+1, 1), &
+                                       icos(irep+1, 2)
       end do
 
-
-!     get nr_so_ao
-!     ============
-
-      i = 1
-      nr_so_ao = 0
-      do irep = 0, maxrep
-         icount = 0
-         nr_ao_irep = nbbas(irep, 1) + nbbas(irep, 2)
-         do iso = i, i + nr_ao_irep - 1
-
-            ishell = iand(ishft(ipind(iso), -16), 65535)
-            mul    = istbao(ishell)
-
-            icount = icount + 1
-            if (icount > nbbas(irep, 1)) then
-!              is small
-               ic = 2
-            else
-!              is large
-               ic = 1
-            end if
-
-!           do not plan to AO-SO transform small component functions
-!           in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
-            if (.not. (only_large .and. (ic == 2))) then
-               do isym = 0, maxopr
-                  if (iand(isym, mul) == 0) then
-                     nr_so_ao = nr_so_ao + 1
-                  endif
-               end do
-            end if
-         end do
-         i = i + nr_ao_irep
+      pq_to_uq = ipqtoq
+      uq_to_pq = iqtopq
+      write(file_unit, '(4x, a)') 'quaternion_packing'
+      do i = 1, 4
+         write(file_unit, '(8x, 8i2)') pq_to_uq(i, 0:7)
       end do
-
-      ns    = nr_shells_all
-      nc    = max_contraction_length
-      nsoao = nr_so_ao
-      ncs   = ncsp
-      nq    = mxqn
-
-      call allocate_arrays(ns,    &
-                           nc,    &
-                           nsoao, &
-                           ncs,   &
-                           nq)
-
-      bitstring_parity       = pt
-      cartesian_to_spherical = csp
-      spherical_address      = ispadr
-
-
-!     shells
-!     ======
-
-      shell_extent = 0.0d0
-
-      i_c = 1
-      i_s = 1
-
-      do ishell = 1, nr_shells_all
-
-         cartesian_deg(ishell)       = kckt(ishell)
-         cartesian_off(ishell)       = i_c - 1
-         spherical_deg(ishell)       = khkt(ishell)
-         spherical_off(ishell)       = i_s - 1
-         l_quantum_nr(ishell)        = nhkt(ishell)
-         shell_center(ishell)        = ncent(ishell)
-         shell_center_xyz(1, ishell) = cent(ishell, 1, 1)
-         shell_center_xyz(2, ishell) = cent(ishell, 2, 1)
-         shell_center_xyz(3, ishell) = cent(ishell, 3, 1)
-         shell_stabilizer(ishell)    = istbao(ishell)
-         shell_is_spherical(ishell)  = sphr(ishell)
-
-         index_in_ao_block = numcf(ishell)
-
-         i = jstrt(ishell) + 1
-         j = jstrt(ishell) + nuco(ishell)
-
-         icount = 0
-         do iprim = i, j
-            if (dabs(priccf(iprim, index_in_ao_block)) > tiny(1.0d0)) then
-               icount = icount + 1
-               nr_nonzero_contraction_coefs(ishell) = icount
-               contraction_coef(ishell, icount)     = priccf(iprim, index_in_ao_block)
-               primitive_exp(ishell, icount)        = priexp(iprim)
-
-!              get shell extents
-               r = (log(abs(priccf(iprim, index_in_ao_block))) &
-                  - log(ao_threshold))/priexp(iprim)
-
-               if (shell_extent(ishell) < r) shell_extent(ishell) = r
-            end if
-         end do
-
-         shell_extent(ishell) = sqrt(shell_extent(ishell))*g(l_quantum_nr(ishell)) &
-                              + half_cell_diagonal
-
-!        better square this once than sqrt p2 in each point
-         shell_extent(ishell) = shell_extent(ishell)**2.0d0
-
-         i_c = i_c + cartesian_deg(ishell)
-         i_s = i_s + spherical_deg(ishell)
-
+      do i = 1, 4
+         write(file_unit, '(8x, 8i2)') uq_to_pq(i, 0:7)
       end do
-
-      nr_ao = ntbas(0)
-
-
-!     ao to so transformation
-!     =======================
-
-      i = 1
-      nr_so_ao = 0
-      do irep = 0, maxrep
-         icount = 0
-         nr_ao_irep = nbbas(irep, 1) + nbbas(irep, 2)
-         do iso = i, i + nr_ao_irep - 1
-
-            ishell = iand(ishft(ipind(iso), -16), 65535)
-            nshell = iand(ishft(ipind(iso),  -8),   255)
-
-            mul = istbao(ishell)
-            l   = l_quantum_nr(ishell)
-
-            iao = kstrt(ishell) + nshell
-
-            icount = icount + 1
-            if (icount > nbbas(irep, 1)) then
-!              is small
-               ic = 2
-            else
-!              is large
-               ic = 1
-            end if
-
-!           do not plan to AO-SO transform small component functions
-!           in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
-            if (.not. (only_large .and. (ic == 2))) then
-
-!              shift by difference dirac sorting minus hermit sorting
-               iso_dirac_sorting = iso + ibbas(irep, ic) - icos(irep + 1, ic)
-
-               do isym = 0, maxopr
-                  if (iand(isym, mul) == 0) then
-
-                     f = pt(iand(isym, ieor(irep, isymao(l, nshell))))
-
-                     nr_so_ao = nr_so_ao + 1
-
-                     i_so_ao(1, nr_so_ao) = iso_dirac_sorting
-                     i_so_ao(2, nr_so_ao) = iao
-                     f_so_ao(nr_so_ao)    = f
-
-                     iao = iao + spherical_deg(ishell)
-
-                  endif
-               end do
-            end if
-         end do
-         i = i + nr_ao_irep
-      end do
-
-
-!     matrix blocking
-!     ===============
 
       iq(0) = 1
-      do jxyz = 1, 3
-         iq(jxyz) = jm4pos(4 - jxyz)
-         iq(jxyz) = iqtopq(iq(jxyz), isymax(jxyz, 2))
+      do i = 1, 3
+         iq(i) = jm4pos(4 - i)
+         iq(i) = iqtopq(iq(i), isymax(i, 2))
       end do
+      write(file_unit, '(4x, a)') 'quaternion_units'
+      write(file_unit, '(8x, 4i2)') iq(0:3)
+
+      close(file_unit, status = 'keep')
+
+      call basis_info_clear()
+
+   end subroutine
+
+   subroutine basis_info_read(use_mpi_if_possible)
+
+      use dft_cfg
+      use xc_mpi
+
+!     --------------------------------------------------------------------------
+      logical, intent(in)  :: use_mpi_if_possible
+!     --------------------------------------------------------------------------
+      character(120)       :: line
+      integer              :: i, j, k, l, m, n
+      integer              :: sum_nr_primitives
+      integer              :: ioff_c, ioff_s
+      integer              :: idummy, irep, cent
+      logical              :: symmetry_info_found
+      real(8)              :: prim, coef
+      character(1)         :: ch
+      integer              :: inter_irep(0:3), jxyz, irep1, irep2, ic, nr1, nr2, mc, icount
+      integer              :: nr_ao_irep, isym, deg
+      integer              :: lvar, mvar, nvar
+      integer              :: iao, iso, iso_dirac_sorting
+      integer              :: ishell, nshell
+      integer              :: nround
+      integer              :: size_c2s_mat
+      integer              :: lssl_ic(2) = (/2, 1/)
+      real(8)              :: f
+      integer, allocatable :: isymao(:, :)
+      integer, allocatable :: irepao(:)
+      integer, allocatable :: ipind(:)
+      integer, allocatable :: kstart(:)
+      real(8), parameter   :: bitstring_parity(0:7) = (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)
+!     --------------------------------------------------------------------------
+
+      call basis_info_clear()
+
+      if (xc_mpi_is_master()) then
+
+      symmetry_info_found = .false.
+
+      inquire(file = file_name, exist = file_exists)
+      if (.not. file_exists) then
+         print *, 'basis_info file not found'
+         stop
+      end if
+
+      open(file_unit,            &
+           file   = file_name,   &
+           status = 'unknown',   &
+           form   = 'formatted', &
+           access = 'sequential')
+      rewind(file_unit)
+
+      do while (.true.)
+
+         read(file_unit, '(a120)', end=1) line
+
+         if (word_contains(line, '*** geometry')) then
+            read(file_unit, *)
+            read(file_unit, *) nr_sym_independent_centers
+            read(file_unit, *)
+            allocate(sym_independent_center_charge(nr_sym_independent_centers))
+            allocate(sym_independent_center_xyz(nr_sym_independent_centers, 3))
+            do i = 1, nr_sym_independent_centers
+               read(file_unit, *) sym_independent_center_charge(i), &
+                                  sym_independent_center_xyz(i, 1:3)
+            end do
+            read(file_unit, *)
+            allocate(sym_independent_center_deg(nr_sym_independent_centers))
+            do i = 1, nr_sym_independent_centers
+               read(file_unit, *) idummy, sym_independent_center_deg(i)
+            end do
+            read(file_unit, *)
+            read(file_unit, *) nr_sym_dependent_centers
+            read(file_unit, *)
+            allocate(sym_dependent_center_charge(nr_sym_dependent_centers))
+            allocate(sym_dependent_center_xyz(nr_sym_dependent_centers, 3))
+            do i = 1, nr_sym_dependent_centers
+               read(file_unit, *) sym_dependent_center_charge(i), &
+                                  sym_dependent_center_xyz(i, 1:3)
+            end do
+         end if
+
+         if (word_contains(line, '*** symmetry')) then
+            symmetry_info_found = .true.
+            read(file_unit, *)
+            read(file_unit, *) nr_ireps
+            read(file_unit, *)
+            read(file_unit, *) irep_of_axes(1:3)
+            read(file_unit, *)
+            read(file_unit, *) irep_of_rotations(1:3)
+            read(file_unit, *)
+            do irep = 0, nr_ireps - 1
+               read(file_unit, *) idummy,                   &
+                                  ao_nr(irep, 1),           &
+                                  ao_nr(irep, 2),           &
+                                  ao_off(irep, 1),          &
+                                  ao_off(irep, 2),          &
+                                  ao_off_hermit(irep+1, 1), &
+                                  ao_off_hermit(irep+1, 2)
+            end do
+            read(file_unit, *)
+            do i = 1, 4
+               read(file_unit, *) pq_to_uq(i, 0:7)
+            end do
+            do i = 1, 4
+               read(file_unit, *) uq_to_pq(i, 0:7)
+            end do
+            read(file_unit, *)
+            read(file_unit, *) iq(0:3)
+         end if
+
+         if (word_contains(line, '*** basis')) then
+            read(file_unit, *)
+            read(file_unit, *) basis_is_spherical
+            read(file_unit, *)
+            read(file_unit, *) use_only_large
+            read(file_unit, *)
+            read(file_unit, *) sum_nr_primitives
+            read(file_unit, *)
+
+!           overkill allocation for convenience
+!           it will "never become a bottleneck" (2011-04-29)
+            allocate(shell_center(sum_nr_primitives))
+            allocate(l_quantum_nr(sum_nr_primitives))
+            allocate(nr_nonzero_contraction_coefs(sum_nr_primitives))
+            allocate(shell_stabilizing_irep(sum_nr_primitives))
+            allocate(cartesian_deg(sum_nr_primitives))
+            allocate(cartesian_off(sum_nr_primitives))
+            allocate(spherical_deg(sum_nr_primitives))
+            allocate(spherical_off(sum_nr_primitives))
+            allocate(primitive_exp(sum_nr_primitives, sum_nr_primitives))
+            allocate(contraction_coef(sum_nr_primitives, sum_nr_primitives))
+
+            j = 0
+            k = 0
+            ioff_c = 0
+            ioff_s = 0
+            nr_shells_large = 0
+            nr_shells_small = 0
+            do i = 1, sum_nr_primitives
+               read(file_unit, *) cent,   &
+                                  ch,     &
+                                  ishell, &
+                                  l,      &
+                                  irep,   &
+                                  prim,   &
+                                  coef
+               if (ishell > k) then
+                  j = 1
+                  shell_center(ishell)           = cent
+                  l_quantum_nr(ishell)           = l
+                  shell_stabilizing_irep(ishell) = irep
+                  cartesian_deg(ishell) = (l+1)*(l+2)/2
+                  cartesian_off(ishell) = ioff_c
+                  ioff_c = ioff_c + cartesian_deg(ishell)
+                  spherical_deg(ishell) = 2*l + 1
+                  spherical_off(ishell) = ioff_s
+                  ioff_s = ioff_s + spherical_deg(ishell)
+                  if (ch == 'L') then
+                     nr_shells_large = nr_shells_large + 1
+                  end if
+                  if (ch == 'S') then
+                     nr_shells_small = nr_shells_small + 1
+                  end if
+               else
+                  j = j + 1
+               end if
+               primitive_exp(ishell, j)    = prim
+               contraction_coef(ishell, j) = coef
+               nr_nonzero_contraction_coefs(ishell) = j
+               k = ishell
+            end do
+         end if
+
+      end do
+1     continue
+
+      close(file_unit, status = 'keep')
+
+      if (use_only_large) then
+         mc = 1
+      else
+         mc = 2
+      end if
 
 !     transform as rotation
       llss_nr_density_blocks = 0
 
       inter_irep(0) = 0
       do jxyz = 1, 3
-         inter_irep(jxyz) = isymax(jxyz, 2)
+         inter_irep(jxyz) = irep_of_rotations(jxyz)
       end do
 
-      do irep = 0, nbsym - 1
+      do irep = 0, nr_ireps - 1
          do jxyz = 0, 3
             i = 0
             do ic = 1, mc
-               do irep1 = 0, nbsym - 1
+               do irep1 = 0, nr_ireps - 1
                   irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
 
-                  nr1 = nbbas(irep1, ic)
-                  nr2 = nbbas(irep2, ic)
+                  nr1 = ao_nr(irep1, ic)
+                  nr2 = ao_nr(irep2, ic)
 
                   if ((nr1 > 0) .and. (nr2 > 0)) then
                      i = i + 1
                      llss_nr_ao(1, i, jxyz, irep) = nr1
-                     llss_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
+                     llss_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
                      llss_nr_ao(2, i, jxyz, irep) = nr2
-                     llss_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
+                     llss_st_ao(2, i, jxyz, irep) = ao_off(irep2, ic) + 1
                      llss_prefactor(i, jxyz, irep) = 1.0d0
+!                                        fixme ugly dependency
                      if ((ic == 2) .and. dft_cfg_betasigma) then
                         llss_prefactor(i, jxyz, irep) = -1.0d0
                      end if
@@ -540,25 +597,25 @@ contains
 
       inter_irep(0) = 0
       do jxyz = 1, 3
-         inter_irep(jxyz) = isymax(jxyz, 1)
+         inter_irep(jxyz) = irep_of_axes(jxyz)
       end do
 
-      do irep = 0, nbsym - 1
+      do irep = 0, nr_ireps - 1
          do jxyz = 0, 3
             i = 0
             do ic = 1, mc
-               do irep1 = 0, nbsym - 1
+               do irep1 = 0, nr_ireps - 1
                   irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
 
-                  nr1 = nbbas(irep1, ic)
-                  nr2 = nbbas(irep2, lssl_ic(ic))
+                  nr1 = ao_nr(irep1, ic)
+                  nr2 = ao_nr(irep2, lssl_ic(ic))
 
                   if ((nr1 > 0) .and. (nr2 > 0)) then
                      i = i + 1
                      lssl_nr_ao(1, i, jxyz, irep) = nr1
-                     lssl_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
+                     lssl_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
                      lssl_nr_ao(2, i, jxyz, irep) = nr2
-                     lssl_st_ao(2, i, jxyz, irep) = ibbas(irep2, lssl_ic(ic)) + 1
+                     lssl_st_ao(2, i, jxyz, irep) = ao_off(irep2, lssl_ic(ic)) + 1
                   end if
                end do
             end do
@@ -566,283 +623,455 @@ contains
          end do
       end do
 
-      write(file_unit, *) ns
-      write(file_unit, *) nc
-      write(file_unit, *) nsoao
-      write(file_unit, *) ncs
-      write(file_unit, *) nq
-
-      write(file_unit, *) nr_shells
-      write(file_unit, *) nr_shells_all
-      write(file_unit, *) nr_boson_sym
-      write(file_unit, *) nr_ao_cartesian
-      write(file_unit, *) nr_ao
-      write(file_unit, *) nr_so_ao
-      write(file_unit, *) llss_nr_density_blocks
-      write(file_unit, *) llss_nr_ao
-      write(file_unit, *) llss_st_ao
-      write(file_unit, *) lssl_nr_density_blocks
-      write(file_unit, *) lssl_nr_ao
-      write(file_unit, *) lssl_st_ao
-      write(file_unit, *) iq
-      write(file_unit, *) llss_prefactor
-      write(file_unit, *) pq_to_uq
-      write(file_unit, *) uq_to_pq
-      write(file_unit, *) sym_axes
-
-      do ishell = 1, nr_shells_all
-         write(file_unit, *) &
-! Degeneracy of cartesian ishell ( 1,3,6,10,.. = (L+1)(L+2)/2 )
-                             cartesian_deg(ishell),       &
-!                offset;     cartesian_off(3) = 13 means that shell 3 starts at 14
-                             cartesian_off(ishell),       &
-! Same thing for spherical function. we need both spherical and
-!                                  cartiesian- aos are evaluated in
-!                                  cartesian and maybe transformed to
-!                                  spherical, so we need offsets etc.
-!                                  the confusing thing is that in a
-!                                  standard DIRAC (cartesian) run both
-!                                  _degs and _offs are same
-!                             = (1,3,5,7,9, .. ) = 2*L+1
-                             spherical_deg(ishell),       & 
-                             spherical_off(ishell),       &
-!>                           l quantum number, degeneracies can be computed from this
-!>                           starts at s=1
-                             l_quantum_nr(ishell),        & 
-                             shell_center(ishell),        &
-                             shell_center_xyz(1, ishell), &
-                             shell_center_xyz(2, ishell), &
-                             shell_center_xyz(3, ishell), &
-!>                           shell stabiliser: sym op that does not move center
-                             shell_stabilizer(ishell),    & 
-                             shell_is_spherical(ishell),  &
-                             shell_extent(ishell),        &
-                             nr_nonzero_contraction_coefs(ishell)
-
-
-         do i = 1, nr_nonzero_contraction_coefs(ishell)
-            write(file_unit, *) contraction_coef(ishell, i), &
-                                primitive_exp(ishell, i)
-         end do
-      end do
-      do i = 1, nr_so_ao
-!                            coefficients for ao to sa-ao transformation
-         write(file_unit, *) i_so_ao(1, i), &
-                             i_so_ao(2, i), &
-                             f_so_ao(i)
-      end do
-      do i = 0, 7
-         write(file_unit, *) bitstring_parity(i)
-      end do
-      do i = 1, ncs
-         write(file_unit, *) cartesian_to_spherical(i)
-      end do
-      do i = 1, nq
-         write(file_unit, *) spherical_address(i)
-      end do
-
-      close(file_unit, status = 'keep')
-
-      call basis_info_delete()
-
-   end subroutine
-
-!> \brief read basis set info from file
-   subroutine basis_info_read(i_am_master, &
-                              is_parallel_calculation)
-
-!     --------------------------------------------------------------------------
-      logical, intent(in) :: i_am_master
-      logical, intent(in) :: is_parallel_calculation
-!     --------------------------------------------------------------------------
-      integer             :: i, ishell, l_max
-      integer             :: ns
-      integer             :: nc
-      integer             :: nsoao
-      integer             :: ncs
-      integer             :: nq
-!     --------------------------------------------------------------------------
-
-      call basis_info_delete()
-
-      if (i_am_master) then
-         inquire(file  = file_name, exist = file_exists)
-         
-         if (file_exists) then
-            open(file_unit,            &
-                 file   = file_name,   &
-                 status = 'unknown',   &
-                 form   = 'formatted', &
-                 access = 'sequential')
-            rewind(file_unit)
-         else
-            call quit('cannot read from file basis_info')
-         end if
-         
-         read(file_unit, *) ns     
-         read(file_unit, *) nc     
-         read(file_unit, *) nsoao     
-         read(file_unit, *) ncs     
-         read(file_unit, *) nq     
-      end if
-
-#ifdef VAR_MPI
-      if (is_parallel_calculation) then
-         call dirac_mpi_bcast(ns)
-         call dirac_mpi_bcast(nc)
-         call dirac_mpi_bcast(nsoao)
-         call dirac_mpi_bcast(ncs)
-         call dirac_mpi_bcast(nq)
-      end if
-#endif
-
-      call allocate_arrays(ns,    &
-                           nc,    &
-                           nsoao, &
-                           ncs,   &
-                           nq)
-
-      if (i_am_master) then
-         read(file_unit, *) nr_shells
-         read(file_unit, *) nr_shells_all
-         read(file_unit, *) nr_boson_sym
-         read(file_unit, *) nr_ao_cartesian
-         read(file_unit, *) nr_ao
-         read(file_unit, *) nr_so_ao
-         read(file_unit, *) llss_nr_density_blocks
-         read(file_unit, *) llss_nr_ao
-         read(file_unit, *) llss_st_ao
-         read(file_unit, *) lssl_nr_density_blocks
-         read(file_unit, *) lssl_nr_ao
-         read(file_unit, *) lssl_st_ao
-         read(file_unit, *) iq
-         read(file_unit, *) llss_prefactor
-         read(file_unit, *) pq_to_uq
-         read(file_unit, *) uq_to_pq
-         read(file_unit, *) sym_axes
-         
-         do ishell = 1, nr_shells_all
-            read(file_unit, *) cartesian_deg(ishell),       &
-                               cartesian_off(ishell),       &
-                               spherical_deg(ishell),       &
-                               spherical_off(ishell),       &
-                               l_quantum_nr(ishell),        &
-                               shell_center(ishell),        &
-                               shell_center_xyz(1, ishell), &
-                               shell_center_xyz(2, ishell), &
-                               shell_center_xyz(3, ishell), &
-                               shell_stabilizer(ishell),    &
-                               shell_is_spherical(ishell),  &
-                               shell_extent(ishell),        &
-                               nr_nonzero_contraction_coefs(ishell)
-         
-         
-            do i = 1, nr_nonzero_contraction_coefs(ishell)
-               read(file_unit, *) contraction_coef(ishell, i), &
-                                  primitive_exp(ishell, i)
+      if (basis_is_spherical) then
+         allocate(isymao(l_max, 2*l_max + 1))
+         isymao = 0
+         do l = 0, l_max
+            do i = 1, 2*l + 1
+               isymao(l + 1, i) = ireplm(l, mdef(l, i))
             end do
          end do
-         do i = 1, nr_so_ao
-            read(file_unit, *) i_so_ao(1, i), &
-                               i_so_ao(2, i), &
-                               f_so_ao(i)
+      else
+         allocate(isymao(l_max, (l_max+1)*(l_max+2)/2))
+         isymao = 0
+         do l = 1, l_max
+            k = 0
+            do m = 1, l
+               do n = 1, m
+                  k = k + 1
+                  lvar = mod(l-m, 2)*irep_of_axes(1)
+                  mvar = mod(m-n, 2)*irep_of_axes(2)
+                  nvar = mod(n-1, 2)*irep_of_axes(3)
+                  isymao(l, k) = ieor(lvar, ieor(mvar, nvar))
+               end do
+            end do
          end do
-         do i = 0, 7
-            read(file_unit, *) bitstring_parity(i)
+      end if
+
+      nr_shells = nr_shells_large + nr_shells_small
+
+      nr_ao_cartesian = 0
+      nr_ao_spherical = 0
+      do ishell = 1, nr_shells
+         do irep = 0, nr_ireps - 1
+            if (iand(irep, shell_stabilizing_irep(ishell)) == 0) then
+               nr_ao_cartesian = nr_ao_cartesian + cartesian_deg(ishell)
+               nr_ao_spherical = nr_ao_spherical + spherical_deg(ishell)
+            end if
          end do
-         do i = 1, ncs
-            read(file_unit, *) cartesian_to_spherical(i)
+      end do
+
+      if (basis_is_spherical) then
+         nr_ao = nr_ao_spherical
+      else
+         nr_ao = nr_ao_cartesian
+      end if
+
+      allocate(irepao(nr_ao))
+      allocate(ipind(nr_ao))
+      irepao = 0
+      ipind = 0
+      iso = 0
+      do irep = 0, nr_ireps - 1
+         iao = 0
+         do ishell = 1, nr_shells
+            if (basis_is_spherical) then
+               deg = spherical_deg(ishell)
+            else
+               deg = cartesian_deg(ishell)
+            end if
+            do k = 1, deg
+               iao = iao + 1
+               if (iand(shell_stabilizing_irep(ishell), ieor(irep, isymao(l_quantum_nr(ishell) + 1, k))) == 0) then
+                  iso = iso + 1
+                  ipind(iso) = ishell*2**16 + k*2**8 + irepao(iao)
+                  irepao(iao) = irepao(iao) + 1
+               end if
+            end do
          end do
-         do i = 1, nq
-            read(file_unit, *) spherical_address(i)
+      end do
+      deallocate(irepao)
+
+      allocate(kstart(nr_shells))
+      kstart = 0
+      do ishell = 2, nr_shells
+         if (basis_is_spherical) then
+            deg = spherical_deg(ishell-1)
+         else
+            deg = cartesian_deg(ishell-1)
+         end if
+         kstart(ishell) = kstart(ishell - 1) + sym_independent_center_deg(shell_center(ishell-1))*deg
+      end do
+
+      nr_so_ao = 0
+      do nround = 1, 2
+!        two rounds: first round gets dimensions
+!                    second round allocates and sets arrays
+
+         if (nround == 2) then
+            allocate(i_so_ao(2, nr_so_ao))
+            allocate(f_so_ao(nr_so_ao))
+            nr_so_ao = 0
+         end if
+
+         i = 1
+         do irep = 0, nr_ireps - 1
+            icount = 0
+            nr_ao_irep = ao_nr(irep, 1) + ao_nr(irep, 2)
+            do iso = i, i + nr_ao_irep - 1
+
+               ishell = iand(ishft(ipind(iso), -16), 65535)
+               nshell = iand(ishft(ipind(iso),  -8),   255)
+
+               iao = kstart(ishell) + nshell
+
+               icount = icount + 1
+               if (icount > ao_nr(irep, 1)) then
+!                 is small
+                  ic = 2
+               else
+!                 is large
+                  ic = 1
+               end if
+
+!              do not plan to AO-SO transform small component functions
+!              in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
+               if (.not. (use_only_large .and. (ic == 2))) then
+
+!                 shift by difference dirac sorting minus hermit sorting
+                  iso_dirac_sorting = iso + ao_off(irep, ic) - ao_off_hermit(irep + 1, ic)
+
+                  do isym = 0, nr_ireps - 1
+                     if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
+
+                        f = bitstring_parity(iand(isym, ieor(irep, isymao(l_quantum_nr(ishell) + 1, nshell))))
+
+                        nr_so_ao = nr_so_ao + 1
+                        if (nround == 2) then
+                           i_so_ao(1, nr_so_ao) = iso_dirac_sorting
+                           i_so_ao(2, nr_so_ao) = iao
+                           f_so_ao(nr_so_ao)    = f
+                        end if
+
+                        if (basis_is_spherical) then
+                           iao = iao + spherical_deg(ishell)
+                        else
+                           iao = iao + cartesian_deg(ishell)
+                        end if
+
+                     endif
+                  end do
+               end if
+            end do
+            i = i + nr_ao_irep
          end do
-         
-         close(file_unit, status = 'keep')
+      end do
+
+      deallocate(isymao)
+      deallocate(ipind)
+      deallocate(kstart)
+
+      if (.not. symmetry_info_found) then
+!        fixme
+      end if
+
+!     limit active nr of shells
+      if (use_only_large) then
+         nr_shells = nr_shells_large
+      end if
+
+      call setup_c2s_mat()
+      size_c2s_mat = size(c2s_mat)
+
       end if
 
 #ifdef VAR_MPI
-      if (is_parallel_calculation) then
-         call dirac_mpi_bcast(nr_shells)
-         call dirac_mpi_bcast(nr_shells_all)
-         call dirac_mpi_bcast(nr_boson_sym)
-         call dirac_mpi_bcast(nr_ao_cartesian)
-         call dirac_mpi_bcast(nr_ao)
-         call dirac_mpi_bcast(nr_so_ao)
-         call dirac_mpi_bcast(llss_nr_density_blocks)
-         call dirac_mpi_bcast(llss_nr_ao)
-         call dirac_mpi_bcast(llss_st_ao)
-         call dirac_mpi_bcast(lssl_nr_density_blocks)
-         call dirac_mpi_bcast(lssl_nr_ao)
-         call dirac_mpi_bcast(lssl_st_ao)
-         call dirac_mpi_bcast(iq)
-         call dirac_mpi_bcast(llss_prefactor)
-         call dirac_mpi_bcast(pq_to_uq)
-         call dirac_mpi_bcast(uq_to_pq)
-         call dirac_mpi_bcast(sym_axes)
-         call dirac_mpi_bcast(cartesian_deg)
-         call dirac_mpi_bcast(cartesian_off)
-         call dirac_mpi_bcast(spherical_deg)
-         call dirac_mpi_bcast(spherical_off)
-         call dirac_mpi_bcast(l_quantum_nr)
-         call dirac_mpi_bcast(shell_center)
-         call dirac_mpi_bcast(shell_center_xyz)
-         call dirac_mpi_bcast(shell_stabilizer)
-         call dirac_mpi_bcast(shell_is_spherical)
-         call dirac_mpi_bcast(shell_extent)
-         call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
-         call dirac_mpi_bcast(contraction_coef)
-         call dirac_mpi_bcast(primitive_exp)
-         call dirac_mpi_bcast(i_so_ao)
-         call dirac_mpi_bcast(f_so_ao)
-         call dirac_mpi_bcast(bitstring_parity)
-         call dirac_mpi_bcast(cartesian_to_spherical)
-         call dirac_mpi_bcast(spherical_address)
+      if (use_mpi_if_possible .and. (xc_mpi_get_nr_proc() > 1)) then
+
+         call xc_mpi_bcast(nr_so_ao                  )
+         call xc_mpi_bcast(nr_sym_dependent_centers  )
+         call xc_mpi_bcast(nr_sym_independent_centers)
+         call xc_mpi_bcast(sum_nr_primitives         )
+         call xc_mpi_bcast(size_c2s_mat              )
+
+         if (.not. xc_mpi_is_master()) then
+            allocate(sym_independent_center_charge(nr_sym_independent_centers))
+            allocate(sym_independent_center_xyz(nr_sym_independent_centers, 3))
+            allocate(sym_independent_center_deg(nr_sym_independent_centers))
+
+            allocate(sym_dependent_center_charge(nr_sym_dependent_centers))
+            allocate(sym_dependent_center_xyz(nr_sym_dependent_centers, 3))
+
+            allocate(shell_center(sum_nr_primitives))
+            allocate(l_quantum_nr(sum_nr_primitives))
+            allocate(nr_nonzero_contraction_coefs(sum_nr_primitives))
+            allocate(shell_stabilizing_irep(sum_nr_primitives))
+            allocate(cartesian_deg(sum_nr_primitives))
+            allocate(cartesian_off(sum_nr_primitives))
+            allocate(spherical_deg(sum_nr_primitives))
+            allocate(spherical_off(sum_nr_primitives))
+            allocate(primitive_exp(sum_nr_primitives, sum_nr_primitives))
+            allocate(contraction_coef(sum_nr_primitives, sum_nr_primitives))
+            allocate(c2s_mat(size_c2s_mat))
+
+            allocate(i_so_ao(2, nr_so_ao))
+            allocate(f_so_ao(nr_so_ao))
+         end if
+
+         call xc_mpi_bcast(ao_nr                     )
+         call xc_mpi_bcast(ao_off                    )
+         call xc_mpi_bcast(ao_off_hermit             )
+         call xc_mpi_bcast(c2s_index                 )
+         call xc_mpi_bcast(iq                        )
+         call xc_mpi_bcast(irep_of_axes              )
+         call xc_mpi_bcast(irep_of_rotations         )
+         call xc_mpi_bcast(llss_nr_ao                )
+         call xc_mpi_bcast(llss_nr_density_blocks    )
+         call xc_mpi_bcast(llss_st_ao                )
+         call xc_mpi_bcast(lssl_nr_ao                )
+         call xc_mpi_bcast(lssl_nr_density_blocks    )
+         call xc_mpi_bcast(lssl_st_ao                )
+         call xc_mpi_bcast(nr_ao                     )
+         call xc_mpi_bcast(nr_ao_cartesian           )
+         call xc_mpi_bcast(nr_ao_spherical           )
+         call xc_mpi_bcast(nr_ireps                  )
+         call xc_mpi_bcast(nr_shells                 )
+         call xc_mpi_bcast(nr_shells_large           )
+         call xc_mpi_bcast(nr_shells_small           )
+         call xc_mpi_bcast(pq_to_uq                  )
+         call xc_mpi_bcast(uq_to_pq                  )
+         call xc_mpi_bcast(basis_is_spherical        )
+         call xc_mpi_bcast(use_only_large            )
+         call xc_mpi_bcast(llss_prefactor            )
+
+         call xc_mpi_bcast(cartesian_deg                )
+         call xc_mpi_bcast(cartesian_off                )
+         call xc_mpi_bcast(i_so_ao                      )
+         call xc_mpi_bcast(l_quantum_nr                 )
+         call xc_mpi_bcast(nr_nonzero_contraction_coefs )
+         call xc_mpi_bcast(shell_center                 )
+         call xc_mpi_bcast(shell_stabilizing_irep       )
+         call xc_mpi_bcast(spherical_deg                )
+         call xc_mpi_bcast(spherical_off                )
+         call xc_mpi_bcast(sym_independent_center_deg   )
+         call xc_mpi_bcast(c2s_mat                      )
+         call xc_mpi_bcast(contraction_coef             )
+         call xc_mpi_bcast(f_so_ao                      )
+         call xc_mpi_bcast(primitive_exp                )
+         call xc_mpi_bcast(sym_dependent_center_charge  )
+         call xc_mpi_bcast(sym_dependent_center_xyz     )
+         call xc_mpi_bcast(sym_independent_center_charge)
+         call xc_mpi_bcast(sym_independent_center_xyz   )
       end if
 #endif
 
-      l_max = 0
-      do ishell = 1, nr_shells_all
-         if (l_quantum_nr(ishell) > l_max) then
-            l_max = l_quantum_nr(ishell)
-         end if
+   end subroutine
+
+   function word_contains(word, substring)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: word
+      character(*), intent(in) :: substring
+!     --------------------------------------------------------------------------
+      logical                  :: word_contains
+!     --------------------------------------------------------------------------
+
+      if (index(word, substring) > 0) then
+         word_contains = .true.
+      else
+         word_contains = .false.
+      end if
+
+   end function
+
+   function fac(n)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: n
+      real(8)             :: fac
+!     it is real(8) so that expressions don't overflow!
+!     --------------------------------------------------------------------------
+      integer             :: i
+!     --------------------------------------------------------------------------
+
+      fac = 1.0d0
+      do i = 1, n
+         fac = fac*dble(i)
       end do
-      call ao_xyz_power_init(l_max)
+
+   end function
+
+   function fac2(n)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: n
+      real(8)             :: fac2
+!     it is real(8) so that expressions don't overflow!
+!     --------------------------------------------------------------------------
+      integer             :: i
+!     --------------------------------------------------------------------------
+
+      if (n < 0) then
+         fac2 = dble(n + 2)
+         do i = n + 4, 1, 2
+            fac2 = fac2*dble(i)
+         end do
+         fac2 = 1.0d0/fac2
+      else if (n == 0) then
+         fac2 = 1.0d0
+      else
+         fac2 = dble(n)
+         do i = n - 2, 1, -2
+            fac2 = fac2*dble(i)
+         end do
+      end if
+
+   end function
+
+   function binom(i, j)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: i
+      integer, intent(in) :: j
+      integer             :: binom
+      real(8)             :: f
+!     --------------------------------------------------------------------------
+
+      f = fac(i)/(fac(i - j)*fac(j))
+!     f and fac are real(8) so that binom doesn't overflow!
+      binom = int(f)
+
+   end function
+
+   subroutine setup_c2s_mat()
+
+!     --------------------------------------------------------------------------
+      integer              :: nc, ns
+      integer              :: i, j, k, l, m, n
+      integer              :: ix, ilm
+      real(8)              :: cm, cmk, cmki, cmkij
+      real(8), allocatable :: tmat(:, :)
+      real(8), allocatable :: cossin_coef(:, :)
+      real(8), allocatable :: legendre_coef(:)
+!     --------------------------------------------------------------------------
+
+
+      c2s_index = 0
+      n = 0
+      do l = 2, l_max
+         c2s_index(l) = n + 1
+         n = n + ((l+1)*(l+2)/2)**2
+      end do
+      allocate(c2s_mat(n))
+      c2s_mat = 0.0d0
+
+      do l = 2, l_max
+
+         nc = (l+1)*(l+2)/2
+         ns = 2*l + 1
+
+         allocate(legendre_coef(0:l))
+         legendre_coef = 0.0d0
+         do k = 0, l/2
+            legendre_coef(l - 2*k) = (dble((-1)**k)/dble(2**l))*binom(l, k)*binom(2*(l - k), l)
+         end do
+
+         allocate(cossin_coef(0:l, 0:l))
+         cossin_coef = 0.0d0
+         do m = 0, l
+            cossin_coef(m, 0) = 1.0d0
+            do k = 1, m
+               cossin_coef(m, k) = cossin_coef(m - 1, k - 1)*dble((-1)**(k - 1))
+               if (m > k) cossin_coef(m, k) = cossin_coef(m, k) + cossin_coef(m - 1, k)
+            end do
+         end do
+
+         allocate(tmat(nc, ns))
+         tmat = 0.0d0
+         do m = 0, l
+            cm = sqrt(2.0d0*fac(l - m)/fac(l + m))
+            if (m  ==  0) cm = 1.0d0
+            cm = cm/dsqrt(dble(fac2(2*l - 1)))
+            do k = mod(l - m, 2), l - m, 2
+               if (m > 0) legendre_coef(k) = dble((k + 1))*legendre_coef(k + 1)
+               cmk = cm*legendre_coef(k)
+               do i = 0, (l - k - m)/2
+                  cmki = cmk*binom((l - k - m)/2,i)
+                  do j = 0, i
+                     cmkij = cmki*binom(i, j)
+                     do n = 0, m
+                        ix = l - 2*j - m + n
+                        ix = ix*(ix + 1)/2 + l + 1 - m - 2*i
+                        if (mod(n, 2) == 1) then
+                           ilm = 1 + l - m
+                        else
+                           ilm = 1 + l + m
+                        end if
+                        tmat(ix, ilm) = tmat(ix, ilm) + cmkij*cossin_coef(m, n)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         k = c2s_index(l)
+         do i = 1, nc
+            do j = 1, ns
+               c2s_mat(k) = tmat(i, j)
+               k = k + 1
+            end do
+         end do
+
+         deallocate(tmat)
+         deallocate(cossin_coef)
+         deallocate(legendre_coef)
+
+      end do
 
    end subroutine
 
-   subroutine allocate_arrays(ns,    &
-                              nc,    &
-                              nsoao, &
-                              ncs,   &
-                              nq)
+   function mdef(l, i)
 
 !     --------------------------------------------------------------------------
-      integer, intent(in) :: ns
-      integer, intent(in) :: nc
-      integer, intent(in) :: nsoao
-      integer, intent(in) :: ncs
-      integer, intent(in) :: nq
+      integer, intent(in) :: l
+      integer, intent(in) :: i
+      integer             :: mdef
 !     --------------------------------------------------------------------------
 
-      allocate(cartesian_deg(ns))
-      allocate(cartesian_off(ns))
-      allocate(spherical_deg(ns))
-      allocate(spherical_off(ns))
-      allocate(l_quantum_nr(ns))
-      allocate(shell_center(ns))
-      allocate(shell_center_xyz(3, ns))
-      allocate(shell_stabilizer(ns))
-      allocate(shell_is_spherical(ns))
-      allocate(shell_extent(ns))
-      allocate(nr_nonzero_contraction_coefs(ns))
-      allocate(contraction_coef(ns, nc))
-      allocate(primitive_exp(ns, nc))
-      allocate(i_so_ao(2, nsoao))
-      allocate(f_so_ao(nsoao))
-      allocate(bitstring_parity(0:7))
-      allocate(cartesian_to_spherical(ncs))
-      allocate(spherical_address(nq))
+      if (l == 1) then
+          select case (i)
+             case (1)
+                mdef = 1
+             case (2)
+                mdef = -1
+             case (3)
+                mdef = 0
+          end select
+      else
+         mdef = i - l - 1
+      endif
 
-   end subroutine
+   end function
+
+   function ireplm(l, m)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: l
+      integer, intent(in) :: m
+      integer             :: ireplm
+!     --------------------------------------------------------------------------
+
+      ireplm = 0
+      if (mod(l + m,  2) == 1) then
+         ireplm = irep_of_axes(3)
+      end if
+      if (mod(abs(m), 2) == 1) then
+         ireplm = ieor(ireplm, irep_of_axes(1))
+      end if
+      if (m < 0) then
+         ireplm = ieor(ireplm, ieor(irep_of_axes(1), irep_of_axes(2)))
+      end if
+
+   end function
 
 end module

@@ -108,7 +108,6 @@ C
       integer, allocatable            :: multb_tmp(:,:)
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 #include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.

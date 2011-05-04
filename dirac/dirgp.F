@@ -3177,7 +3177,6 @@ C
      &          IRKB(NPSHEL)
       DATA COMP/'L','S'/
 #include "ibtfun.h"
-#include "sdpre.h"
 C
 C
 C     Initialize
@@ -3257,15 +3256,15 @@ C.........these factors assure the correct normalized linear
 C.........combination of L and (L-2) for the modified solid harmonic
           L = LL - 1
 
-          ARGSQRT = (D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1)
+          ARGSQRT = (D2*dble(L)+D1)*(D2*dble(L)-D1)
 
           IF (IPRINT.GE.8) THEN
-           write(lupri,*) 'L,SDPRE(L)=',L,SDPRE(L)
+           write(lupri,*) 'L,dble(L)=',L,dble(L)
            write(lupri,*) 'ARGSQRT=',ARGSQRT
            CALL FLSHFO(LUPRI) 
           ENDIF
 
-CMI       FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
+CMI       FACL   = D1/SQRT((D2*dble(L)+D1)*(D2*dble(L)-D1))
           IF (ARGSQRT.GT.D0) THEN
             FACL   = D1/SQRT(ARGSQRT)
           ELSE
@@ -3275,7 +3274,7 @@ CMI       FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
      &       ARGSQRT
             ENDIF
           ENDIF
-          FACLM2 = -D2*(D2*SDPRE(L)-D1)*FACL
+          FACLM2 = -D2*(D2*dble(L)-D1)*FACL
         ENDIF
 C
 C       Expand transformation matrix

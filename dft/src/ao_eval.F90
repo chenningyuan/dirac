@@ -86,9 +86,9 @@ module ao_eval
    use basis_info
    use xc_max_block_length
    use ao_xyz_power
- 
+
    implicit none
- 
+
    public get_ao
    public ao_eval_init
 
@@ -98,6 +98,8 @@ module ao_eval
       module procedure get_ao_point
       module procedure get_ao_block
    end interface
+
+   real(8), parameter :: bitstring_parity(0:7) = (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)
 
    integer, parameter :: max_order = 2
    integer, public    :: total_ao_vector_length = 0
@@ -140,7 +142,7 @@ contains
                             ao)
 
 !     without symmetry skip the rest
-      if (nr_boson_sym == 1) return
+      if (nr_ireps == 1) return
 
 !     transform from ao(bu) to so(bs)
       call ao_to_so_point(ao, &
@@ -171,7 +173,7 @@ contains
                             ao)
 
 !     without symmetry skip the rest
-      if (nr_boson_sym == 1) return
+      if (nr_ireps == 1) return
 
 !     transform from ao(bu) to so(bs)
       call ao_to_so_block(block_length, &
@@ -201,12 +203,12 @@ contains
 
     i = 1
     do ishell = 1, nr_shells
-      do isym = 0, nr_boson_sym - 1
-        if (iand(isym, shell_stabilizer(ishell)) == 0) then
+      do isym = 0, nr_ireps - 1
+        if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
 
-          px = cx - bitstring_parity(iand(sym_axes(1, 1), isym))*shell_center_xyz(1, ishell)
-          py = cy - bitstring_parity(iand(sym_axes(2, 1), isym))*shell_center_xyz(2, ishell)
-          pz = cz - bitstring_parity(iand(sym_axes(3, 1), isym))*shell_center_xyz(3, ishell)
+          px = cx - bitstring_parity(iand(irep_of_axes(1), isym))*sym_independent_center_xyz(shell_center(ishell), 1)
+          py = cy - bitstring_parity(iand(irep_of_axes(2), isym))*sym_independent_center_xyz(shell_center(ishell), 2)
+          pz = cz - bitstring_parity(iand(irep_of_axes(3), isym))*sym_independent_center_xyz(shell_center(ishell), 3)
 
           p2 = px*px + py*py + pz*pz
 
@@ -240,7 +242,7 @@ contains
 
 !           this is because get_gao1 does both ao and ao1
             if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
-              off_power = power_offset(l_quantum_nr(ishell))
+              off_power = power_offset(l_quantum_nr(ishell) + 1)
               call get_gao(ishell,             &
                            ao(i),              &
                            px,                 &
@@ -255,7 +257,7 @@ contains
              !ofg = ao_start(1, 0) + i - 1
              !radovan: cheating, need to shift to the right, later shifting back
               ofg = ao_start(1, 0) + i - 1 + nr_ao_cartesian - nr_ao
-              off_power = power_offset(l_quantum_nr(ishell))
+              off_power = power_offset(l_quantum_nr(ishell) + 1)
               call get_gao1(ishell,             &
                             ao(i),              &
                             ao(ofg),            &
@@ -275,7 +277,7 @@ contains
                     call quit('fix second AO derivatives for spherical AO')
                 end if
                ofg = ao_start(2, 0) + i - 1
-               off_power = power_offset(l_quantum_nr(ishell))
+               off_power = power_offset(l_quantum_nr(ishell) + 1)
                call get_gao2(ishell,             &
                              ao(ofg          ),  &
                              ao(ofg + 1*nr_ao_cartesian),  &
@@ -336,7 +338,7 @@ contains
 !>          if spherical and d or higher then transform
 !> \fixme   spherical lao: nothing is done for them now
 !> \todo    this should happen outside this routine
-            if (shell_is_spherical(ishell) .and. (l_quantum_nr(ishell) > 2)) then
+            if (basis_is_spherical .and. (l_quantum_nr(ishell) > 1)) then
                call transform_c_to_s(ishell, ao(i))
                if (need_ao_order(1, 0)) then
                  !ioff = ao_start(1, 0) + i - 1
@@ -348,8 +350,11 @@ contains
                end if
             end if
 
-
-          i = i + spherical_deg(ishell)
+            if (basis_is_spherical) then
+               i = i + spherical_deg(ishell)
+            else
+               i = i + cartesian_deg(ishell)
+            end if
 
         end if
       end do
@@ -402,13 +407,13 @@ contains
 
       i = 1
       do ishell = 1, nr_shells
-         do isym = 0, nr_boson_sym - 1
-            if (iand(isym, shell_stabilizer(ishell)) == 0) then
-      
-               sx = bitstring_parity(iand(sym_axes(1, 1), isym))*shell_center_xyz(1, ishell)
-               sy = bitstring_parity(iand(sym_axes(2, 1), isym))*shell_center_xyz(2, ishell)
-               sz = bitstring_parity(iand(sym_axes(3, 1), isym))*shell_center_xyz(3, ishell)
-    
+         do isym = 0, nr_ireps - 1
+            if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
+
+               sx = bitstring_parity(iand(irep_of_axes(1), isym))*sym_independent_center_xyz(shell_center(ishell), 1)
+               sy = bitstring_parity(iand(irep_of_axes(2), isym))*sym_independent_center_xyz(shell_center(ishell), 2)
+               sz = bitstring_parity(iand(irep_of_axes(3), isym))*sym_independent_center_xyz(shell_center(ishell), 3)
+
                do k = 1, block_length
                   px(k) = cx(k) - sx
                   py(k) = cy(k) - sy
@@ -417,7 +422,7 @@ contains
                         + py(k)*py(k) &
                         + pz(k)*pz(k)
                end do
-    
+
                do k = 1, block_length
                   g_00_00_00_000(k) = 0.0d0
                end do
@@ -444,8 +449,8 @@ contains
                      end do
                   end if
                end do
-    
-               off_power = power_offset(l_quantum_nr(ishell))
+
+               off_power = power_offset(l_quantum_nr(ishell) + 1)
                if (need_ao_order(1, 0)) then
                   call get_gao1_block(block_length, &
                                       ishell,       &
@@ -471,9 +476,13 @@ contains
                                      y_power(off_power), &
                                      z_power(off_power))
                end if
-    
-               i = i + spherical_deg(ishell)
-    
+
+               if (basis_is_spherical) then
+                  i = i + spherical_deg(ishell)
+               else
+                  i = i + cartesian_deg(ishell)
+               end if
+
             end if
          end do
       end do
@@ -505,10 +514,10 @@ contains
       integer                :: ic, jc, k
 !     --------------------------------------------------------------------------
 
-      if (l_quantum_nr(ishell) < 8) then
+      if (l_quantum_nr(ishell) < 7) then
 !        faster explicit code
          call get_cartesian_ao_g0(block_length,         &
-                                  l_quantum_nr(ishell), &
+                                  l_quantum_nr(ishell)+1, &
                                   px,                   &
                                   py,                   &
                                   pz,                   &
@@ -568,10 +577,10 @@ contains
       real(8)                :: p0t
 !     --------------------------------------------------------------------------
 
-      if (l_quantum_nr(ishell) < 8) then
+      if (l_quantum_nr(ishell) < 7) then
 !        faster explicit code
          call get_cartesian_ao_g1(block_length,         &
-                                  l_quantum_nr(ishell), &
+                                  l_quantum_nr(ishell)+1, &
                                   px,                   &
                                   py,                   &
                                   pz,                   &
@@ -582,7 +591,7 @@ contains
       else
 !        slower general-order code
          do ic = 1, cartesian_deg(ishell)
-        
+
             l = x_pwr(ic)
             m = y_pwr(ic)
             n = z_pwr(ic)
@@ -591,25 +600,25 @@ contains
                tx = 0.0d0
                ty = 0.0d0
                tz = 0.0d0
-               
+
                if (l > 0) tx = dfloat(l)*(px(k)**(l-1))*(py(k)**m)*(pz(k)**n)
                if (m > 0) ty = dfloat(m)*(px(k)**l)*(py(k)**(m-1))*(pz(k)**n)
                if (n > 0) tz = dfloat(n)*(px(k)**l)*(py(k)**m)*(pz(k)**(n-1))
-               
+
                p0 = (px(k)**l)*(py(k)**m)*(pz(k)**n)
-               
+
                ao (k, ic) = 0.0d0
                aox(k, ic) = 0.0d0
                aoy(k, ic) = 0.0d0
                aoz(k, ic) = 0.0d0
                do i = 1, nr_nonzero_contraction_coefs(ishell)
                   f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2(k))
-               
+
                   p0t = -2.0d0*primitive_exp(ishell, i)*p0
                   ux  = px(k)*p0t + tx
                   uy  = py(k)*p0t + ty
                   uz  = pz(k)*p0t + tz
-               
+
                   ao (k, ic) = ao (k, ic) + p0*f2
                   aox(k, ic) = aox(k, ic) + ux*f2
                   aoy(k, ic) = aoy(k, ic) + uy*f2
@@ -645,9 +654,9 @@ contains
     integer                :: i, ic
 !   ----------------------------------------------------------------------------
 
-    if (l_quantum_nr(ishell) < 12) then
+    if (l_quantum_nr(ishell) < 11) then
 !      faster explicit code
-       call get_cartesian_ao_g0(l_quantum_nr(ishell), &
+       call get_cartesian_ao_g0(l_quantum_nr(ishell)+1, &
                                 px, py, pz,           &
                                 gao)
     else
@@ -694,9 +703,9 @@ contains
     real(8)                :: p0, p0t
 !   ----------------------------------------------------------------------------
 
-    if (l_quantum_nr(ishell) < 12) then
+    if (l_quantum_nr(ishell) < 11) then
 !      faster explicit code
-       call get_cartesian_ao_g1(l_quantum_nr(ishell), &
+       call get_cartesian_ao_g1(l_quantum_nr(ishell)+1, &
                                 px, py, pz,           &
                                 gao,                  &
                                 gaox,                 &
@@ -707,33 +716,33 @@ contains
     else
 !      slower general-order code
        do ic = 1, cartesian_deg(ishell)
-      
+
           l = x_pwr(ic)
           m = y_pwr(ic)
           n = z_pwr(ic)
-      
+
           tx = 0.0d0
           ty = 0.0d0
           tz = 0.0d0
-      
+
           if (l > 0) tx = dfloat(l)*(px**(l-1))*(py**m)*(pz**n)
           if (m > 0) ty = dfloat(m)*(px**l)*(py**(m-1))*(pz**n)
           if (n > 0) tz = dfloat(n)*(px**l)*(py**m)*(pz**(n-1))
-      
+
           p0 = (px**l)*(py**m)*(pz**n)
-      
+
           gao (ic) = 0.0d0
           gaox(ic) = 0.0d0
           gaoy(ic) = 0.0d0
           gaoz(ic) = 0.0d0
           do i = 1, nr_nonzero_contraction_coefs(ishell)
              f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
-       
+
              p0t = -2.0d0*primitive_exp(ishell, i)*p0
              ux  = px*p0t + tx
              uy  = py*p0t + ty
              uz  = pz*p0t + tz
-       
+
              gao (ic) = gao (ic) + p0*f2
              gaox(ic) = gaox(ic) + ux*f2
              gaoy(ic) = gaoy(ic) + uy*f2
@@ -793,23 +802,23 @@ contains
 !   ----------------------------------------------------------------------------
 
        do ic = 1, cartesian_deg(ishell)
-      
+
           l = x_pwr(ic)
           m = y_pwr(ic)
           n = z_pwr(ic)
-      
+
           pxd = 0.0d0
           pyd = 0.0d0
           pzd = 0.0d0
-      
+
           if (l > 1) pxd = dfloat(l*(l-1))*(px**(l-2))
           if (m > 1) pyd = dfloat(m*(m-1))*(py**(m-2))
           if (n > 1) pzd = dfloat(n*(n-1))*(pz**(n-2))
-      
+
           pxm = 0.0d0
           pym = 0.0d0
           pzm = 0.0d0
-      
+
           if (l > 0) pxm = dfloat(l)*(px**(l-1))
           if (m > 0) pym = dfloat(m)*(py**(m-1))
           if (n > 0) pzm = dfloat(n)*(pz**(n-1))
@@ -818,7 +827,7 @@ contains
           py0 = py**m
           pz0 = pz**n
           p000 = px0*py0*pz0
-      
+
           gaoxx(ic) = 0.0d0
           gaoxy(ic) = 0.0d0
           gaoxz(ic) = 0.0d0
@@ -845,7 +854,7 @@ contains
              gaxy = tapax*tapay*p000 + (pxp*pym + pxm*pyp + pxm*pym)*pz0
              gaxz = tapax*tapaz*p000 + (pxp*pzm + pxm*pzp + pxm*pzm)*py0
              gayz = tapay*tapaz*p000 + (pyp*pzm + pym*pzp + pym*pzm)*px0
-       
+
              gaoxx(ic) = gaoxx(ic) + gaxx*f2
              gaoxy(ic) = gaoxy(ic) + gaxy*f2
              gaoxz(ic) = gaoxz(ic) + gaxz*f2
@@ -958,35 +967,40 @@ contains
 !> \brief initialize ao_eval module
    subroutine ao_eval_init(max_ao_g_order, &
                            max_ao_m_order, &
-                           use_screening)
+                           use_screening,  &
+                           use_mpi_if_possible)
 
 !     --------------------------------------------------------------------------
       integer, intent(in) :: max_ao_g_order
       integer, intent(in) :: max_ao_m_order
       logical, intent(in) :: use_screening
+      logical, intent(in) :: use_mpi_if_possible
 !     --------------------------------------------------------------------------
       integer             :: g_order
       integer             :: m_order
 !     --------------------------------------------------------------------------
 
+      call basis_info_read(use_mpi_if_possible)
+      call ao_xyz_power_init(l_max)
+
       use_ao_screening = use_screening
       need_ao_order    = .false.
       nr_ao_slices     = 0
 
-     do g_order = 0, max_ao_g_order
-        do m_order = 0, max_ao_m_order
-           need_ao_order(g_order, m_order) = .true.
-           ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-           nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
-           if (g_order > 1) then
-             nr_ao_slices = nr_ao_slices - 3*(g_order - 1)
-           end if
-           if (m_order > 1) then
-             nr_ao_slices = nr_ao_slices - 3*(m_order - 1)
-           end if
-           ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-        end do
-     end do
+      do g_order = 0, max_ao_g_order
+         do m_order = 0, max_ao_m_order
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
+            if (g_order > 1) then
+              nr_ao_slices = nr_ao_slices - 3*(g_order - 1)
+            end if
+            if (m_order > 1) then
+              nr_ao_slices = nr_ao_slices - 3*(m_order - 1)
+            end if
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         end do
+      end do
 
 !     total_ao_vector_length = nr_ao_slices*nr_ao
 !     radovan: the above can lead to "plus one" or "plus few" out-of-bounds
@@ -1015,17 +1029,17 @@ contains
          buffer(i) = ao(i)
       end do
 
-      call mxma(cartesian_to_spherical(spherical_address(l_quantum_nr(ishell))), &
-                1,                                                               &
-                spherical_deg(ishell),                                           &
-                buffer,                                                          &
-                1,                                                               &
-                cartesian_deg(ishell),                                           &
-                ao,                                                              &
-                1,                                                               &
-                spherical_deg(ishell),                                           &
-                spherical_deg(ishell),                                           &
-                cartesian_deg(ishell),                                           &
+      call mxma(c2s_mat(c2s_index(l_quantum_nr(ishell))), &
+                1,                                        &
+                spherical_deg(ishell),                    &
+                buffer,                                   &
+                1,                                        &
+                cartesian_deg(ishell),                    &
+                ao,                                       &
+                1,                                        &
+                spherical_deg(ishell),                    &
+                spherical_deg(ishell),                    &
+                cartesian_deg(ishell),                    &
                 1)
 
    end subroutine

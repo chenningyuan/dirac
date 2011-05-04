@@ -50,7 +50,6 @@ C
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
       DATA IS/0,1,1,2,1,2,2,3/
-#include "sdpre.h"
 #include "ibtfun.h"
 C
 C     Initialization
@@ -162,7 +161,7 @@ C     =======================================================
 C
       DO 101 I = 0,7
          MULT(I)  = 2**MAX(0,NSYMOP-IS(I))
-         FMULT(I) = SDPRE(MULT(I))
+         FMULT(I) = dble(MULT(I))
   101 CONTINUE
 C
       RETURN

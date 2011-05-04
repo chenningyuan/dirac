@@ -2707,14 +2707,13 @@ c     R1UPPERB is a routine for finding an upper bound for R-integrals,
 c     for given orbital exponent and 
       FUNCTION R1UPPERB(N,ALPHA)
 #include "implicit.h"
-#include "sdpre.h"
       UL  = 0D0
       ALPHA2  = ALPHA
       ALPHA2I = 1D0
       FAC = -1D0
       DO I = 0, N
-         FAC     = FAC*SDPRE(2*I-1)
-         UL      = MAX(UL,ABS(ALPHA2I*FAC/SDPRE(2*I+1)))
+         FAC     = FAC*dble(2*I-1)
+         UL      = MAX(UL,ABS(ALPHA2I*FAC/dble(2*I+1)))
          ALPHA2I = ALPHA2I*ALPHA2
       END DO
       R1UPPERB = ul

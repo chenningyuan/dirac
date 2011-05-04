@@ -2232,7 +2232,6 @@ C
 #include "dcbham.h"
 #include "dcbrho1.h"
 C
-#include "sdpre.h"
 C
 C     Calculate distance between centers
 C
@@ -2246,7 +2245,7 @@ C
       ASTEP  = DSTEP/XTANG
       NPOINT = INT(DISTAN/ASTEP)
       IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
-      ASTEP  = DISTAN/SDPRE(NPOINT)
+      ASTEP  = DISTAN/dble(NPOINT)
 C
 C     Calculate density along between centers:
 C     If bond distance is 2R, then points are calculated between (-R,3R)
@@ -2254,7 +2253,7 @@ C
       IP1 = -NPOINT/2
       IP2 = NPOINT - IP1 
       DO IP = IP1,IP2
-        PP  = SDPRE(IP)*ASTEP
+        PP  = dble(IP)*ASTEP
         PX  = COORD(1,1) + PP*DX
         PY  = COORD(2,1) + PP*DY
         PZ  = COORD(3,1) + PP*DZ
@@ -2520,7 +2519,6 @@ C
 #include "dcbham.h"
 #include "dcbrho.h"
 C
-#include "sdpre.h"
 C     
       DO I1 = 1,NCUBE(1)
         DO I2 = 1,NCUBE(2)
@@ -4119,7 +4117,6 @@ C=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
-#include "sdpre.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 

@@ -3846,7 +3846,6 @@ C  /* Deck sphco1 */
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
-#include "sdpre.h"
 C
       LVAL1 = LVAL + 1
 C
@@ -3855,7 +3854,7 @@ C     ---------------------
 C
       CALL DZERO(PL(0),LVAL1)
       DO 100 K = 0, LVAL/2
-         PL(LVAL-2*K) = (SDPRE((-1)**K)/SDPRE(2**LVAL))
+         PL(LVAL-2*K) = (dble((-1)**K)/dble(2**LVAL))
      &                    *BINOM(LVAL,K)*BINOM(2*(LVAL-K),LVAL)
   100 CONTINUE
 C
@@ -3866,7 +3865,7 @@ C
       DO 200 M = 0, LVAL
          COSSIN(M,0) = D1
          DO 210 K = 1, M
-            COSSIN(M,K) = COSSIN(M-1,K-1)*SDPRE((-1)**(K-1))
+            COSSIN(M,K) = COSSIN(M-1,K-1)*dble((-1)**(K-1))
             IF (M .GT. K) COSSIN(M,K) = COSSIN(M,K) + COSSIN(M-1,K)
   210    CONTINUE
   200 CONTINUE
@@ -3888,7 +3887,7 @@ C
          IF (M .EQ. 0) CM = D1
          IF (MINTEG.EQ.2) CM = CM/SQRT(FACUL2(2*LVAL-1))
          DO 400 K = MOD(LVAL - M,2), LVAL - M, 2
-            IF (M .GT. 0) PL(K) = SDPRE((K+1))*PL(K+1)
+            IF (M .GT. 0) PL(K) = dble((K+1))*PL(K+1)
             CMK = CM*PL(K)
             DO 500 I = 0, (LVAL - K - M)/2
                CMKI = CMK*BINOM((LVAL - K - M)/2,I)
@@ -3942,7 +3941,6 @@ C  /* Deck facult */
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
-#include "sdpre.h"
       IF (N .LT. 0) THEN
          WRITE (LUPRI,'(/,A,I10,/A)')
      &         ' Argument less than zero in FACULT:',N,
@@ -3951,7 +3949,7 @@ C  /* Deck facult */
       ELSE
         FACULT = D1
         DO 100 I = 1, N
-           FACULT = FACULT*SDPRE(I)
+           FACULT = FACULT*dble(I)
   100   CONTINUE
       END IF
       RETURN
@@ -3964,16 +3962,15 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
-#include "sdpre.h"
 C
 C     N < 0
 C
       IF (N .LT. 0) THEN
-         FACUL2 = SDPRE(N + 2)
+         FACUL2 = dble(N + 2)
          DO I = N + 4, 1, 2
-            FACUL2 = FACUL2*SDPRE(I)
+            FACUL2 = FACUL2*dble(I)
          END DO
-         IF (FACUL2 .EQ. SDPRE(0)) THEN
+         IF (FACUL2 .EQ. dble(0)) THEN
             WRITE (LUPRI,'(/,A,I10,/A)')
      &            ' Double factorial undefined for ',N,
      &            ' Program cannot continue.'
@@ -3990,9 +3987,9 @@ C
 C     N > 0
 C
       ELSE
-        FACUL2 = SDPRE(N)
+        FACUL2 = dble(N)
         DO I = N - 2, 1, -2
-           FACUL2 = FACUL2*SDPRE(I)
+           FACUL2 = FACUL2*dble(I)
         END DO
       END IF
       RETURN

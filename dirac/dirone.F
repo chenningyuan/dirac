@@ -3759,7 +3759,6 @@ C
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),TMAT(NCAR,NCAR),WORK(*)
       DATA COMP/'L','S'/
-#include "sdpre.h"
 #include "ibtfun.h"
 C
 C**************************************************

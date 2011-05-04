@@ -72,7 +72,7 @@ set(DFT_SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_eval_point.F90
     ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
     ${PROJECT_SOURCE_DIR}/src/basis_info.F90
-    ${PROJECT_SOURCE_DIR}/src/basis_info_ng.F90
+    ${PROJECT_SOURCE_DIR}/src/basis_info.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/dft_input.F90

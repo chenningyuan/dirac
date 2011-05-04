@@ -28,7 +28,6 @@ module visual_in_point
   use codata
   use ao_eval
   use density_eval
-  use basis_info
   use matrix_defop
 #ifdef MOD_UNRELEASED
   use visual_london

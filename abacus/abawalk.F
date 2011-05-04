@@ -782,12 +782,11 @@ C
 #include "prkoor.h"
 #include "taymol.h"
 C
-#include "sdpre.h"
 C
       IF (IPRWLK .GT. 5) CALL TITLER('Output from WLKDR1','*',103)
 C
       OLD = .NOT.START
-      SGNMOD = SDPRE(SIGN(1,IMODE))
+      SGNMOD = dble(SIGN(1,IMODE))
       IMODE = ABS(IMODE)
 C
 C     ***************************

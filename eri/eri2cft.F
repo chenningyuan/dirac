@@ -245,9 +245,8 @@ C
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
 #include "ibtfun.h"
-#include "sdpre.h"
 C
-      DLEVEL = SDPRE(IDL)
+      DLEVEL = dble(IDL)
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -350,7 +349,7 @@ C
                   END DO
                END IF
                DO T = 1, I - 2
-                  T1 = SIGN*SDPRE(T + 1)
+                  T1 = SIGN*dble(T + 1)
                   DO K = 1, NPP12
                      ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
      &                              + PA(K)*ETIJ(K,  T,I-1,0)
@@ -470,7 +469,7 @@ C
                      END DO
                   END IF
                   DO T = 1, IJ - 2
-                     T1 = SIGN*SDPRE(T + 1)
+                     T1 = SIGN*dble(T + 1)
                      DO K = 1, NPP12
                         ETIJ(K,T,I,J)=HPI(K)*ETIJ(K,T-1,I,J-1)
      &                               + PB(K)*ETIJ(K,  T,I,J-1)
@@ -594,7 +593,7 @@ C
                      END DO
                   END IF
                   DO T = 2 - IBTAND(1,I), I - 2, 2
-                     T1 = SIGN*SDPRE(T + 1)
+                     T1 = SIGN*dble(T + 1)
                      DO K = 1, NPP12
                         ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
      &                                    + T1*ETIJ(K,T+1,I-1,0)
@@ -626,7 +625,7 @@ C
                      END DO
                   ENDIF
                   DO T = 1 + IBTAND(1,I), I - 3, 2
-                     T1   = SIGN*SDPRE(T + 1)
+                     T1   = SIGN*dble(T + 1)
                      DO K = 1, NPP12
                         HPK  = HPI(K)
                         EXP2 = -DLEVEL*EXP12(K,2)
@@ -750,7 +749,7 @@ C
                         END DO
                      END IF
                      DO T = 2 - IBTAND(1,IJ), IJ - 2, 2
-                        T1 = SIGN*SDPRE(T + 1)
+                        T1 = SIGN*dble(T + 1)
                         DO K = 1, NPP12
                            ETIJ(K,T,I,J) = HPI(K)*ETIJ(K,T-1,I,J-1)
      &                                       + T1*ETIJ(K,T+1,I,J-1)
@@ -782,7 +781,7 @@ C
                         END DO
                      END IF
                      DO T = 1 + IBTAND(1,IJ), IJ - 3, 2
-                        T1 = SIGN*SDPRE(T + 1)
+                        T1 = SIGN*dble(T + 1)
                         DO K = 1, NPP12
                            HPK  = HPI(K)
                            EXP1 = DLEVEL*EXP12(K,1)
@@ -899,7 +898,6 @@ C
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
 #include <ibtfun.h>
-#include <sdpre.h>
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -914,7 +912,7 @@ C
 C
 C           E(0,0)
 C
-            TIM = SDPRE(I-1)
+            TIM = dble(I-1)
             IF (I .EQ. 0) THEN
               DO K = 1, NPP12
                 ETIJ(K,0,0,0) = D1
@@ -953,7 +951,7 @@ C
                 ETIJ(K,  I,I,0) =  HPK*ETIJ(K,I-1,I-1,0)
               END DO
               DO T = 1, I - 2
-                T1 = SIGN*SDPRE(T + 1)
+                T1 = SIGN*dble(T + 1)
                 DO K = 1, NPP12
                   ETIJ(K,T,I,0) =  HPI(K)*ETIJ(K,T-1,I-1,0)
      &                            + PA(K)*ETIJ(K,  T,I-1,0)
@@ -968,7 +966,7 @@ C           ==========
 C
             DO J = 1, JMAXJ
               IJ = I + J
-              TJM = SDPRE(J-1)
+              TJM = dble(J-1)
 C
 C             E(0,1)
 C
@@ -1017,7 +1015,7 @@ C
                   ETIJ(K,  IJ,I,J) =  HPK*ETIJ(K,IJ-1,I,J-1)
                 END DO
                 DO T = 1, IJ - 2
-                  T1 = SIGN*SDPRE(T + 1)
+                  T1 = SIGN*dble(T + 1)
                   DO K = 1, NPP12
                     ETIJ(K,T,I,J)= HPI(K)*ETIJ(K,T-1,I,J-1)
      &                            + PB(K)*ETIJ(K,  T,I,J-1)
@@ -1066,7 +1064,7 @@ C
 C            E(I,0)
 C
             ELSE
-              TIM = SDPRE(I-1)
+              TIM = dble(I-1)
               IF (IBTAND(1,I) .EQ. 0) THEN
                 DO K = 1, NPP12
                   ETIJ(K,0,I,0) =  SIGN*ETIJ(K,  1,I-1,0)
@@ -1079,7 +1077,7 @@ C
                 END DO
               END IF
               DO T = 2 - IBTAND(1,I), I - 2, 2
-                T1 = SIGN*SDPRE(T + 1)
+                T1 = SIGN*dble(T + 1)
                 DO K = 1, NPP12
                   ETIJ(K,T,I,0) = HPI(K)*ETIJ(K,T-1,I-1,0)
      &                              + T1*ETIJ(K,T+1,I-1,0)
@@ -1093,7 +1091,7 @@ C           ==========
 C
             DO J = 1, JMAXJ
                IJ = I + J
-               TJM = SDPRE(J-1)
+               TJM = dble(J-1)
 C
 C              E(0,1)
 C
@@ -1119,7 +1117,7 @@ C
 C              E(I,J)
 C
                ELSE
-                 TJM = SDPRE(J-1)
+                 TJM = dble(J-1)
                  IF (IBTAND(1,IJ) .EQ. 0) THEN
                    DO K = 1, NPP12
                      ETIJ(K, 0,I,J) =  SIGN*ETIJ(K,   1,I,J-1)
@@ -1133,7 +1131,7 @@ C
                    END DO
                  END IF
                  DO T = 2 - IBTAND(1,IJ), IJ - 2, 2
-                   T1 = SIGN*SDPRE(T + 1)
+                   T1 = SIGN*dble(T + 1)
                    DO K = 1, NPP12
                      ETIJ(K,T,I,J) = HPI(K)*ETIJ(K,T-1,I,J-1)
      &                              + T1*ETIJ(K,T+1,I,J-1) 

@@ -103,7 +103,6 @@ contains
 
 
 !   initialize variables from common blocks
-!    call basis_info_read(.true., .false.)
     call common_blocks_vars()
 
 !

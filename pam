@@ -1351,8 +1351,12 @@ class pam_enviroment:
             signal.alarm(0)
         except:
 
-            # killing (all) dirac.x-(sub)process(es)
-            return_code = self.kill_dirac_processes()
+            if self.set_timeout_limit:
+                # kill all dirac.x (sub)processes
+                return_code = self.kill_dirac_processes()
+            else:
+                # don't start the killing machinery if timeout limit is not set
+                return_code = 1
 
     # do the profiling after the execution if wanted
 

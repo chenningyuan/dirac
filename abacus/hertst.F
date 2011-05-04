@@ -222,7 +222,6 @@ C
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -258,25 +257,25 @@ C
                NSANG = NHKT(ISSHL) - 1
 C
                IF (JCOOR .EQ. 1) THEN
-                  RENR1(2) = SDPRE(NRANG - ISTEP(IRCMP))
-                  RENS2(2) = SDPRE(NSANG - ISTEP(ISCMP))
+                  RENR1(2) = dble(NRANG - ISTEP(IRCMP))
+                  RENS2(2) = dble(NSANG - ISTEP(ISCMP))
                ELSE IF (JCOOR .EQ. 2) THEN
-                  RENR1(2) = SDPRE(MVAL(IRCMP))
-                  RENS2(2) = SDPRE(MVAL(ISCMP))
+                  RENR1(2) = dble(MVAL(IRCMP))
+                  RENS2(2) = dble(MVAL(ISCMP))
                ELSE
-                  RENR1(2) = SDPRE(NVAL(IRCMP))
-                  RENS2(2) = SDPRE(NVAL(ISCMP))
+                  RENR1(2) = dble(NVAL(IRCMP))
+                  RENS2(2) = dble(NVAL(ISCMP))
                END IF
 C
                IF (KCOOR .EQ. 1) THEN
-                  RENS1(2) = SDPRE(NSANG - ISTEP(ISCMP))
-                  RENR2(2) = SDPRE(NRANG - ISTEP(IRCMP))
+                  RENS1(2) = dble(NSANG - ISTEP(ISCMP))
+                  RENR2(2) = dble(NRANG - ISTEP(IRCMP))
                ELSE IF (KCOOR .EQ. 2) THEN
-                  RENS1(2) = SDPRE(MVAL(ISCMP))
-                  RENR2(2) = SDPRE(MVAL(IRCMP))
+                  RENS1(2) = dble(MVAL(ISCMP))
+                  RENR2(2) = dble(MVAL(IRCMP))
                ELSE
-                  RENS1(2) = SDPRE(NVAL(ISCMP))
-                  RENR2(2) = SDPRE(NVAL(IRCMP))
+                  RENS1(2) = dble(NVAL(ISCMP))
+                  RENR2(2) = dble(NVAL(IRCMP))
                END IF
 C
 C Find the shells and components of the orbitals that result from
@@ -313,7 +312,7 @@ C
                  DO 21 NS = 1,2
                     SGNRS = SGNR
                     IF (NS .EQ. 2) SGNRS = - SGNR
-                    FACTOR = SDPRE(NR*NS)*FACEXP*SGNRS
+                    FACTOR = dble(NR*NS)*FACEXP*SGNRS
                     NX = JR(NR)
                     NY = KS(NS)
                     VAL = VAL + RENR1(NR)*RENS1(NS)*FACTOR*ONEINT(NX,NY)
@@ -589,7 +588,6 @@ C
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       DIFMAX   = 0D0
       RENR1(1) = 1D0
@@ -627,25 +625,25 @@ C
                      NSANG = NHKT(ISSHL) - 1
 C
                      IF (JCOOR .EQ. 1) THEN
-                        RENR1(2) = SDPRE(NRANG - ISTEP(IRCMP))
-                        RENS2(2) = SDPRE(NSANG - ISTEP(ISCMP))
+                        RENR1(2) = dble(NRANG - ISTEP(IRCMP))
+                        RENS2(2) = dble(NSANG - ISTEP(ISCMP))
                      ELSE IF (JCOOR .EQ. 2) THEN
-                        RENR1(2) = SDPRE(MVAL(IRCMP))
-                        RENS2(2) = SDPRE(MVAL(ISCMP))
+                        RENR1(2) = dble(MVAL(IRCMP))
+                        RENS2(2) = dble(MVAL(ISCMP))
                      ELSE
-                        RENR1(2) = SDPRE(NVAL(IRCMP))
-                        RENS2(2) = SDPRE(NVAL(ISCMP))
+                        RENR1(2) = dble(NVAL(IRCMP))
+                        RENS2(2) = dble(NVAL(ISCMP))
                      END IF
 C
                      IF (KCOOR .EQ. 1) THEN
-                        RENS1(2) = SDPRE(NSANG - ISTEP(ISCMP))
-                        RENR2(2) = SDPRE(NRANG - ISTEP(IRCMP))
+                        RENS1(2) = dble(NSANG - ISTEP(ISCMP))
+                        RENR2(2) = dble(NRANG - ISTEP(IRCMP))
                      ELSE IF (KCOOR .EQ. 2) THEN
-                        RENS1(2) = SDPRE(MVAL(ISCMP))
-                        RENR2(2) = SDPRE(MVAL(IRCMP))
+                        RENS1(2) = dble(MVAL(ISCMP))
+                        RENR2(2) = dble(MVAL(IRCMP))
                      ELSE
-                        RENS1(2) = SDPRE(NVAL(ISCMP))
-                        RENR2(2) = SDPRE(NVAL(IRCMP))
+                        RENS1(2) = dble(NVAL(ISCMP))
+                        RENR2(2) = dble(NVAL(IRCMP))
                      END IF
 C
 C Find the shells and components of the orbitals that result from
@@ -692,7 +690,7 @@ C
                        DO 21 NS = 1,2
                           SGNRS = SGNR
                           IF (NS .EQ. 2) SGNRS = - SGNR
-                          FACTOR = SDPRE(NR*NS)*FACEXP*SGNRS
+                          FACTOR = dble(NR*NS)*FACEXP*SGNRS
 C
 C First term
 C

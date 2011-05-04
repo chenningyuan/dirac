@@ -825,7 +825,6 @@ C
      &                                                               /
       DATA SET/.FALSE./
 C
-#include "sdpre.h"
 #include "ibtfun.h"
 #include "memint.h"
       IF (SET) THEN

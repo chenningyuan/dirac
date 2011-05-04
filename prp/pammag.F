@@ -1925,7 +1925,6 @@ C*****************************************************************************
 #include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
-#include "sdpre.h"
 
       CALL QENTER('RSKLOND')
 C
@@ -2060,7 +2059,7 @@ C
             END DO
          END DO
 C
-         FAC = D1/SDPRE(MAXREP + 1)
+         FAC = D1/dble(MAXREP + 1)
          NN = NDMAT*3*NBASIS*NBASIS
          CALL DSCAL(NN,FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN

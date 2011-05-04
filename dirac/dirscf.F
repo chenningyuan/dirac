@@ -1066,7 +1066,6 @@ C
 C*****************************************************************************
 
       use basis_info
-      use basis_info_ng
       use occupation_info
 
 #include "implicit.h"
@@ -1101,7 +1100,6 @@ C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 !     if you move this to somewhere else think about
 !     geometry optimization!
       call basis_info_write()
-      call basis_info_write_ng()
       call occupation_info_write()
 
       IF(ONESYS) THEN

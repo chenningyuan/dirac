@@ -6635,7 +6635,6 @@ C
 C
 #include "cbirea.h"
 #include "molinp.h"
-#include "sdpre.h"
 C
 C
 C
@@ -6674,7 +6673,7 @@ C
             FAMEXP(NFAMEXP(1) - K + 1, 1) =
      $           FAMEXP(NFAMEXP(1) - K + 2, 1) * FAMPAR(2) *
      $           ( D1 + FAMPAR(3) *
-     $           ( ( SDPRE(K) / SDPRE(NFAMEXP(1)) ) ** FAMPAR(4) ) )
+     $           ( ( dble(K) / dble(NFAMEXP(1)) ) ** FAMPAR(4) ) )
          END DO
 C
 C        Copy into set 2.

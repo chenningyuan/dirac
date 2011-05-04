@@ -1122,7 +1122,6 @@ C
       DIMENSION PTRI(IDIMENS),PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),
      &          NR(*),PBUF(*),IBUF(*),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*)
 C
-#include "sdpre.h"
 C
 C     Make population matrix
 C
@@ -1171,7 +1170,7 @@ C
         DO M = 1,NTRI
           IJ = IBUF(M)
           IF(ABS(PTRI(IJ)/EXPVAL).LT.DTOL) GOTO 10
-          J  = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+          J  = INT(SQRT(dble(2*IJ) + 0.25D0) + 0.4999D0)
           I  = IJ - J*(J-1)/2
           JR = INDX(1,J)
           JJ = INDX(2,J)

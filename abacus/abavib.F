@@ -2117,7 +2117,6 @@ C            and Hall, 1973, p.73ff.
 C
 #include "implicit.h"
       PARAMETER ( CASYMP = 0.01 D0 , D1 = 1.0D0 )
-#include "sdpre.h"
 C
 C     This implementation is accurate to at least 7 digits or more.
 C
@@ -2126,7 +2125,7 @@ C
       ELSE
          FROT = D1
          DO 100 J = 1,60
-            FJ   = SDPRE(2*J+1) * EXP(- SDPRE(J*(J+1)) * C)
+            FJ   = dble(2*J+1) * EXP(- dble(J*(J+1)) * C)
             FROT = FROT + FJ
             IF (FJ .LT. 1.D-10) GO TO 200
   100    CONTINUE

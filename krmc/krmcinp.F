@@ -80,7 +80,6 @@ C
 C
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
 #include "memint.h"
       IF (SET) THEN
@@ -823,7 +822,6 @@ C
      &            '.THQKVA'/
       DATA SET/.FALSE./
 C
-#include "sdpre.h"
 #include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -997,7 +995,6 @@ C
      &            '.WRTFCK','-------','-------','-------','.GENFOC'/
       DATA SET/.FALSE./
 C
-#include "sdpre.h"
 #include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.

@@ -196,7 +196,6 @@ module numoper_integrals
          use memory_allocator
          use grid_file
          use ao_eval
-         use basis_info
 
          implicit none
          logical :: doint(4)
@@ -215,8 +214,7 @@ module numoper_integrals
          call read_grid(from_file,grid,operator)
          npoint = size(grid,2)
 
-         call basis_info_read(.true., .false.) 
-         call ao_eval_init(0, 0, .false.)
+         call ao_eval_init(0, 0, .false., .false.)
 
          ndim = n_ao
          call alloc(ao,ndim)

@@ -567,7 +567,6 @@ C*******************************************************************C
 C     CONTINUED FRACTION REPRESENTATION                             C
 C*******************************************************************C
       PARAMETER (ITMAX=100,EPS=1.D-12,D0 = 0.0D0,D1 = 1.0D0)
-#include "sdpre.h"
       GLN=GAMMLN(A)
       GOLD=D0
       A0=D1
@@ -576,7 +575,7 @@ C*******************************************************************C
       B1=D1
       FAC=D1
       DO 11 N=1,ITMAX
-        AN=SDPRE(N)
+        AN=dble(N)
         ANA=AN-A
         A0=(A1+A0*ANA)*FAC
         B0=(B1+B0*ANA)*FAC
@@ -611,11 +610,10 @@ C                                                               C
 C***************************************************************C
       COMMON/FACTRL/DFACT(30)
 C
-#include "sdpre.h"
       DFACT(1)=D1
       DFACT(2)=D1
       DO 10 M=3,30
-      DFACT(M)=SDPRE(M-2)*DFACT(M-2)
+      DFACT(M)=dble(M-2)*DFACT(M-2)
 10    CONTINUE
       RETURN
       END

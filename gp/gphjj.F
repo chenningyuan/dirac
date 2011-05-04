@@ -361,25 +361,6 @@ C
 C
       RETURN
       END
-C  /* Deck lzero */
-      SUBROUTINE LZERO(LOGI,LENGTH)
-C...................................................................
-C
-C   Subroutine LZERO sets all members of logical array of length *LENGTH*
-C   to .FALSE.
-C
-C   Wriiten by Miro Ilias, Tel Aviv, April 2007
-C...................................................................
-      LOGICAL LOGI(LENGTH)
-      INTEGER LENGTH
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I=1,LENGTH
-  100    LOGI(I) = .FALSE.
-C
-      RETURN
-      END
 
 
 C  /* Deck jaco */

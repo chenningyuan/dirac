@@ -28,8 +28,8 @@ module xc_driver
 !  these dependencies should be removed
    use fde_mod
 #endif
-   use basis_info
    use num_grid_cfg
+   use basis_info
    use occupation_info
    use dft_cfg
    use xc_derv
@@ -270,8 +270,6 @@ contains
 
       parallel_xc = (xc_mpi_get_nr_proc() > 1)
 
-      call basis_info_read(xc_mpi_is_master(), parallel_xc)
-
 #ifdef VAR_MPI
       if (parallel_xc) then
          call sync_dft_cfg()
@@ -446,6 +444,67 @@ contains
          end if
       end if
 
+!     set and sync functional
+#ifdef MOD_XCFUN
+      if (fun_is_automatic) then
+         call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
+      else
+#endif
+#ifdef VAR_MPI
+      if (parallel_xc) then
+         call dftsyncfunc(xc_mpi_is_master())
+      end if
+#endif
+#ifdef MOD_XCFUN
+      end if
+#endif
+
+!     check whether gga code structure will be used
+      use_gga_qr = (fun_is_gga() .or. fun_is_tau_mgga())
+      use_gga_qi = (fun_is_gga() .or. fun_is_tau_mgga())
+      if (response_order_mo > 0) then
+         if (dft_cfg_alda_hs) use_gga_qr = .false.
+         if (dft_cfg_alda_ha) use_gga_qi = .false.
+      end if
+      if (use_gga_qr .or. use_gga_qi) then
+         use_gga = .true.
+      end if
+!     in qr it is not so easy to separate h+ and h-
+!     contributions since they may mix
+!     therefore i quit here if the user wants qr
+!     and not the full alda or xalda
+!     it is really unfair to quit as late as here
+!     this can be checked earlier
+!     but this is anyway an exotic option
+      if (response_order_mo > 1) then
+         if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
+            call quit('qr and partial alda is not implemented')
+         end if
+         if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
+            call quit('qr and partial alda is not implemented')
+         end if
+      end if
+
+      max_ao_g_order = 0
+      if (use_gga) then
+        max_ao_g_order = 1
+      end if
+      if (do_geo) then
+        max_ao_g_order = max_ao_g_order + 1
+      end if
+     
+      max_ao_m_order = 0
+      if (do_london_rhs_direct) then
+        max_ao_m_order = 1
+      end if
+     
+      call ao_eval_init(max_ao_g_order,    &
+                        max_ao_m_order,    &
+                        dft_cfg_screening, &
+                        .true.)
+
       if (xc_mpi_is_master()) then
 !        initial expectation value of the two-electron matrix
          if (do_potential) then
@@ -498,49 +557,6 @@ contains
             end if
          end if
 #endif
-      end if
-
-!     set and sync functional
-#ifdef MOD_XCFUN
-      if (fun_is_automatic) then
-         call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
-      else
-#endif
-#ifdef VAR_MPI
-      if (parallel_xc) then
-         call dftsyncfunc(xc_mpi_is_master())
-      end if
-#endif
-#ifdef MOD_XCFUN
-      end if
-#endif
-
-!     check whether gga code structure will be used
-      use_gga_qr = (fun_is_gga() .or. fun_is_tau_mgga())
-      use_gga_qi = (fun_is_gga() .or. fun_is_tau_mgga())
-      if (response_order_mo > 0) then
-         if (dft_cfg_alda_hs) use_gga_qr = .false.
-         if (dft_cfg_alda_ha) use_gga_qi = .false.
-      end if
-      if (use_gga_qr .or. use_gga_qi) then
-         use_gga = .true.
-      end if
-!     in qr it is not so easy to separate h+ and h-
-!     contributions since they may mix
-!     therefore i quit here if the user wants qr
-!     and not the full alda or xalda
-!     it is really unfair to quit as late as here
-!     this can be checked earlier
-!     but this is anyway an exotic option
-      if (response_order_mo > 1) then
-         if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
-            call quit('qr and partial alda is not implemented')
-         end if
-         if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
-            call quit('qr and partial alda is not implemented')
-         end if
       end if
 
 #ifdef MOD_UNRELEASED
@@ -641,7 +657,6 @@ contains
          call report()
       end if
 
-      call basis_info_delete()
       call nullify_and_release()
 
 #ifdef PRINT_FMAT
@@ -831,22 +846,6 @@ contains
 
 
 
-    max_ao_g_order = 0
-    if (use_gga) then
-      max_ao_g_order = 1
-    end if
-    if (do_geo) then
-      max_ao_g_order = max_ao_g_order + 1
-    end if
-
-    max_ao_m_order = 0
-    if (do_london_rhs_direct) then
-      max_ao_m_order = 1
-    end if
-
-    call ao_eval_init(max_ao_g_order, &
-                      max_ao_m_order, &
-                      dft_cfg_screening)
 
     allocate(ao    (total_ao_vector_length))
     ao = 0.0d0

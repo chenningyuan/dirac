@@ -129,7 +129,6 @@ C
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
-#include "sdpre.h"
 C-----------------------------------------------------------------------
 C
 C     One-center Integrals
@@ -144,7 +143,7 @@ C
          IF (JMAX .GT. 0) THEN
             CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
             DO 500 J = 1, JMAX
-               FAC = D1/SDPRE(2*J + 1)
+               FAC = D1/dble(2*J + 1)
                DO 510 I = 1, NPPX
                   RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
                   FACINT(I)  = ALPHA(I)*FACINT(I)
@@ -238,7 +237,6 @@ C
 #include "drw2el.h"
 #include "ericom.h"
 #include "erithr.h"
-#include "sdpre.h"
 C
       DRWFAC=DP25*ALPHA2*DARFAC
 C
@@ -251,7 +249,7 @@ C     numerical instabilities for large exponents.
 C
       IF (IPQXYZ.EQ.7) THEN
          DO 500 J = 0, JMAX
-            FAC = D1/SDPRE(2*J + 1)
+            FAC = D1/dble(2*J + 1)
             DO 510 I = 1, NPPX
                RJ000(I,J) = (FAC + DRWFAC*ALPHA(I))*FACINT(I)
                FACINT(I)  = ALPHA(I)*FACINT(I)
@@ -340,7 +338,6 @@ C
 #include "drw2el.h"
 #include "ericom.h"
 #include "erithr.h"
-#include "sdpre.h"
 C
       IF (DO2DAR) DRWFAC=DP25*ALPHA2
       IF (S4CENT) DRWFAC=-DP25/PI
@@ -416,7 +413,6 @@ C
 C
 #include "ericom.h"
 #include "erithr.h"
-#include "sdpre.h"
 C-----------------------------------------------------------------------
 C
 C     One-center Integrals
@@ -439,7 +435,7 @@ C          NOTE: changes the values of FACINT and ALPHA
          IF (JMAX .GT. 0) THEN
             CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
             DO 500 J = 1, JMAX
-               FAC = D1/SDPRE(2*J + 1)
+               FAC = D1/dble(2*J + 1)
                DO 510 I = 1, NPPX
                   RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
                   FACINT(I)  = ALPHA(I)*FACINT(I)
@@ -614,7 +610,6 @@ C
 #include "hertop.h"
 C
 #include "ibtfun.h"
-#include "sdpre.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -663,7 +658,7 @@ C
                CUR(I,2) = PQX(I)*OLD(I,1)
   200       CONTINUE
             DO 300 T = 2, MIN(MAXT,JVAL)
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = dble(T - 1)
                TUV   = INDHER(T  ,0,0)
                M1T   = INDHER(T-1,0,0)
                M2T   = INDHER(T-2,0,0)
@@ -673,7 +668,7 @@ C
   300       CONTINUE
          ELSE
             DO 400 T = 2, MIN(MAXT,JVAL), 2
-               TMIN1 = SDPRE(T - 1)
+               TMIN1 = dble(T - 1)
                TUV   = INDHER(T  ,0,0)
                M2T   = INDHER(T-2,0,0)
                DO 410 I = 1, NPPX
@@ -693,7 +688,7 @@ C
   510          CONTINUE
   500       CONTINUE
             DO 600 U = 2, MIN(MAXU,JVAL)
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = dble(U - 1)
                DO 610 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M1U = INDHER(T,U-1,0)
@@ -705,7 +700,7 @@ C
   600       CONTINUE
          ELSE
             DO 700 U = 2, MIN(MAXU,JVAL), 2
-               UMIN1  = SDPRE(U - 1)
+               UMIN1  = dble(U - 1)
                DO 710 T = 0, MIN(MAXT,JVAL - U), IPQX
                   TUV = INDHER(T,U  ,0)
                   M2U = INDHER(T,U-2,0)
@@ -730,7 +725,7 @@ C
   810          CONTINUE
   800       CONTINUE
             DO 900 V = 2, MIN(MAXV,JVAL)
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = dble(V - 1)
                IUMAX  = JVAL - V
                DO 910 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 920 T = 0, MIN(MAXT,IUMAX - U), IPQX
@@ -745,7 +740,7 @@ C
   900       CONTINUE
          ELSE
             DO 1000 V = 2, MIN(MAXV,JVAL), 2
-               VMIN1  = SDPRE(V - 1)
+               VMIN1  = dble(V - 1)
                IUMAX  = JVAL - V
                DO 1010 U = 0, MIN(MAXU,IUMAX), IPQY
                   DO 1020 T = 0, MIN(MAXT,IUMAX - U), IPQX

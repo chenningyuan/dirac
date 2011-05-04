@@ -50,7 +50,6 @@ C
       logical   set_qphaseFAC
       real(8)   qphase_FAC
 C
-#include "sdpre.h"
 C
       CALL DZERO(VNZ3,NELEM*NZ*3)
 C
@@ -130,14 +129,14 @@ C
                      IQ2 = IPQTOQ(IZ2,IREPAB)
                      IFAC = IFACNZ3(ICLASS,1,IQ1,IQ2)
                      IF (IFAC .NE. 0) THEN
-                        CALL DAXPY(NELEM,SDPRE(IFAC),
+                        CALL DAXPY(NELEM,dble(IFAC),
      &                       VCL(1,IZ2,IZ1,IREPABR),1,
      &                       VNZ3(1,1,ICLASS),1)
                      END IF
                      IF (NZ .GT. 1) THEN
                         IFAC = IFACNZ3(ICLASS,2,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-                           CALL DAXPY(NELEM,SDPRE(IFAC),
+                           CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,2,ICLASS),1)
                         END IF
@@ -172,13 +171,13 @@ C
                         IQ2 = IPQTOQ(IZ2,IREPAB)
                         IFAC = IFACNZ3(ICLASS,3,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-                           CALL DAXPY(NELEM,SDPRE(IFAC),
+                           CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,3,ICLASS),1)
                         END IF
                         IFAC = IFACNZ3(ICLASS,4,IQ1,IQ2)
                         IF (IFAC .NE. 0) THEN
-                           CALL DAXPY(NELEM,SDPRE(IFAC),
+                           CALL DAXPY(NELEM,dble(IFAC),
      &                          VCL(1,IZ2,IZ1,IREPABR),1,
      &                          VNZ3(1,4,ICLASS),1)
                         END IF
@@ -392,7 +391,6 @@ C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
 C
-#include "sdpre.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DCOPY(NORBI*NASHI*NCLASS,GUINT,1,UGTINT,1)
@@ -1080,7 +1078,6 @@ C
 C
       DIMENSION WEIGHT(8)
 C
-#include "sdpre.h"
 #include "ibtfun.h"
 #include "memint.h"
 C

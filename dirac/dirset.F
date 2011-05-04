@@ -705,7 +705,6 @@ C***********************************************************************
       LOGICAL XPOL,IPOL
       DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
       SAVE SCCHRG,BFIT
-#include "sdpre.h"
 C
       DATA (SCCHRG(I),I = 1,103)
      +/ 0.000013D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
@@ -742,8 +741,8 @@ C
       DO I = 1,N
         IQ   = NINT(Q(I))
         XPOL = IQ.GT.103
-c       IPOL = (ABS(Q(I)-SDPRE(IQ)).GT.DTOL).AND.(.NOT.XPOL)
-        IPOL = ABS(Q(I)-SDPRE(IQ)).GT.DTOL .OR. IQ.GT.150
+c       IPOL = (ABS(Q(I)-dble(IQ)).GT.DTOL).AND.(.NOT.XPOL)
+        IPOL = ABS(Q(I)-dble(IQ)).GT.DTOL .OR. IQ.GT.150
 c       IF(XPOL.OR.IPOL) THEN
         IF(IPOL) THEN
 C       ... non-integer nuclear charge, assume this is a point charge

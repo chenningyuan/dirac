@@ -261,7 +261,6 @@ C
       DIMENSION RADWT(2000), RADNDE(2000)
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
-#include "sdpre.h"
 #include "ibtfun.h"
 C
 C     Get estimates for atomic size ratios for use in the Becke
@@ -516,7 +515,7 @@ CVT         NTOTAL = NTOTAL + IPT
          END IF
          IF(NDEG.GT.0) THEN
 C          Scale weights with multiplicity of center
-           FAC = SDPRE(NDEG) 
+           FAC = dble(NDEG) 
            CALL DSCAL(NTHIS,FAC,WT8,1)
          ENDIF
          NTHAT = NTHIS
@@ -944,7 +943,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
-#include "sdpre.h"
 
       J = 0
       DO I = 1, NPOINT
@@ -954,7 +952,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
             X(J) = X(I)
             Y(J) = Y(I)
             Z(J) = Z(I)
-            WT(J) = SDPRE(NDEG)*WT(I) 
+            WT(J) = dble(NDEG)*WT(I) 
          END IF
       END DO
       KPOINT = J
@@ -1308,7 +1306,6 @@ C     Arrays for 2nd order polynomial fit:
 C
       DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
 C
-#include "sdpre.h"
 
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//
@@ -1329,7 +1326,7 @@ C
       ASTEP  = DSTEP/XTANG
       NPOINT = INT(DISTAN/ASTEP)
       IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
-      ASTEP  = DISTAN/SDPRE(NPOINT)
+      ASTEP  = DISTAN/dble(NPOINT)
 
       RHOA = 0.0D0
       RHOB = 0.0D0
@@ -1341,7 +1338,7 @@ C     Start between nuclei and get sum of partial densities for
 C     atom pair (ICENTA,ICENTB).
 
       IP = NPOINT/2
-      PP  = SDPRE(IP)*ASTEP
+      PP  = dble(IP)*ASTEP
       PX  = COORD(1,1) + PP*DX
       PY  = COORD(2,1) + PP*DY
       PZ  = COORD(3,1) + PP*DZ
@@ -1355,7 +1352,7 @@ C
 C     Take one step towards ICENTB
 C
       IP = IP + 1
-      PP  = SDPRE(IP)*ASTEP
+      PP  = dble(IP)*ASTEP
       PX  = COORD(1,1) + PP*DX
       PY  = COORD(2,1) + PP*DY
       PZ  = COORD(3,1) + PP*DZ
@@ -1381,7 +1378,7 @@ C
       ENDIF
 
       DO 1 IP = ISTART,IEND,INCR
-         PP  = SDPRE(IP)*ASTEP
+         PP  = dble(IP)*ASTEP
          PX  = COORD(1,1) + PP*DX
          PY  = COORD(2,1) + PP*DY
          PZ  = COORD(3,1) + PP*DZ
@@ -1406,7 +1403,7 @@ C     Fit a second order polynomial around minimum point on the grid
 C
  2    K = 1
       DO IP  = IPMIN-1,IPMIN+1
-         PP  = SDPRE(IP)*ASTEP
+         PP  = dble(IP)*ASTEP
          PX  = COORD(1,1) + PP*DX
          PY  = COORD(2,1) + PP*DY
          PZ  = COORD(3,1) + PP*DZ

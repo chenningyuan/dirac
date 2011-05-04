@@ -770,7 +770,6 @@ CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
 C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
 
-#include "sdpre.h"
 #include "ibtfun.h"
 
 C
@@ -837,7 +836,7 @@ C
      &              NTRANS,NATOM)
 C         IF(NDEG.GT.0) THEN
 C          Scale weights with multiplicity of center
-C           FAC = SDPRE(NDEG) 
+C           FAC = dble(NDEG) 
            WT(NATOM) = WEIGHT
 C           WRITE(6,*) 'WT(',NATOM,') = ', WT(NATOM)
 C         ENDIF
@@ -1056,7 +1055,6 @@ C***********************************************************************
 C
       DIMENSION COORD(3,2),WT(NATOMS)
 #include "dcbwt1.h"
-#include "sdpre.h"
 C
 C     Calculate distance between centers
 C
@@ -1070,7 +1068,7 @@ C
       ASTEP  = DSTEP/XTANG
       NPOINT = INT(DISTAN/ASTEP)
       IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
-      ASTEP  = DISTAN/SDPRE(NPOINT)
+      ASTEP  = DISTAN/dble(NPOINT)
 C
 C     Calculate density along between centers:
 C     If bond distance is 2R, then points are calculated between (-R,3R)
@@ -1078,7 +1076,7 @@ C
       IP1 = -NPOINT/2
       IP2 = NPOINT - IP1 
       DO IP = IP1,IP2
-        PP  = SDPRE(IP)*ASTEP
+        PP  = dble(IP)*ASTEP
         PX  = COORD(1,1) + PP*DX
         PY  = COORD(2,1) + PP*DY
         PZ  = COORD(3,1) + PP*DZ
