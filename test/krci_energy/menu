@@ -1,5 +1,7 @@
 quick 
+sh cp ./result/filter_be ./result/filter
 be.d2h.inp Be.d2h.mol 
 
 regular
+sh cp ./result/filter_f  ./result/filter
 f.inp      F.mol  
