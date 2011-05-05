@@ -1035,7 +1035,7 @@ C        =========================================
          call rgeth21(.true.,.true.,pv,fq,h2ac,
      &                work(khmat),work(kh2xy),work(kh2yx),
      &                work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                ibeig,ipropt,lupri)
+     &                ibeig,.true.,ipropt,lupri)
 
          call memrel('rgeth2',work,1,khmat,kfree,lfree)
 C
@@ -1114,10 +1114,10 @@ C
 !
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rgeth21 */
       SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,
      &                   hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
-     &                   ibeig,iprint,print_unit)
+     &                   ibeig,int_file_is_master_file,
+     &                   iprint,print_unit)
 C***********************************************************************
 C
 C     Calculate FQ and H2AC.
@@ -1139,6 +1139,7 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
+#include "infpar.h"  
 #include "maxash.h"
 C
 #include "dcbopt.h"
@@ -1154,6 +1155,9 @@ C
       dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
       dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
       LOGICAL DOFQ, DOH2AC
+!     controls whether or not we read only from the integral file
+!     associated with the master process.
+      logical, intent(in) :: int_file_is_master_file
 C     index arrays
       DIMENSION NFPCK12(2), NFPCK34(2)
       DIMENSION NSTR(2,0:2,4)
@@ -1167,6 +1171,7 @@ C     strings
       integer, allocatable :: indxb34_reod(:,:)
       integer, allocatable :: orb_info_array(:,:,:)
       logical              :: set_qphaseFAC
+      integer              :: mytid_save
 
       CALL QENTER('RGETH21')
 C
@@ -1257,6 +1262,15 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
      &               IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
+
+!        if enabled always read from the integral files associated with the master
+         if(int_file_is_master_file)then
+           mytid_save = mytid
+           mytid      = 0
+           fnode      = lfnam(fnam)
+           mytid      = mytid_save
+         end if
+
          WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)

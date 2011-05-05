@@ -103,6 +103,7 @@
       integer, allocatable :: ibeig(:)
       integer, allocatable :: icheck_file(:)
       logical mcscf, ex, alloc_int, alloc_int_scr, fileopen, ex_mc
+      logical int_file_is_master_file
 *
 C
       INTIMP = 6
@@ -457,17 +458,22 @@ C
           call memmar(kdxb34, 2*ndim_kl,'ADDL  ', 1,'idxb34')
           call memmar(kdxkr12,2*ndim_ij,'ADDL  ', 1,'idxk12')
 
+!         make sure we always read from the integral file(s) associated
+!         with the master process
+          int_file_is_master_file = iiomod_rel .eq. 1 
+     &                              .or. myproc .eq. master
+
 !         get integrals on work(kinti12)
           call rgeth21(.false.,.true.,dummy,dummy,work(kinti12),
      &                 work(khmat),work(kh2xy),work(kh2yx),
      &                 work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                 ibeig,ntest,luwrt)
+     &                 ibeig,int_file_is_master_file,ntest,luwrt)
 
 !         release scratch space
           call memmar(kdumx12,idum,'FLUSM ',idum,'geth12')
         end if ! iiomod_rel == 1 or myproc == master
 #if defined (VAR_MPI2)
-!       IF( IIOMOD_REL .eq. 0 )THEN
+        IF( IIOMOD_REL .eq. 0 )THEN
 *           ... co-workers get the integrals
           LEN_INT_BCAST = 0
 #if defined (INT_STAR8)
@@ -478,7 +484,7 @@ C
 #endif
           CALL MPI_BCAST(WORK(KINTI12),LEN_INT_BCAST,MPI_REAL8,
      &                   MASTER,MPI_COMM_WORLD,IERR)
-!       END IF
+        END IF
 #endif
 C
 C       integrals on WORK(KINTI12) / F1-F2 --> 

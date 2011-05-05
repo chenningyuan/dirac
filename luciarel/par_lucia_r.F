@@ -9161,7 +9161,7 @@ C     get batches and blocks
       IRUN_THIS = 0
       ILENB_OLD = 0
       INUMB_OLD = 0
-      NTTS = MXNTTS
+      NTTS      = MXNTTS
       CALL MEMMAR(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
 C
 C     loop over MS2 spaces

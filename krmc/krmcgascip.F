@@ -843,7 +843,7 @@ C     ==============================================
       call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &             work(khmat),work(kh2xy),work(kh2yx),
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             work(kibeig),iprint,lupri)
+     &             work(kibeig),.true.,iprint,lupri)
 C
 C     Transform integrals to Molfdir format:
 C
@@ -1821,7 +1821,7 @@ C     ==============================================
       call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &             work(khmat),work(kh2xy),work(kh2yx),
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             work(kibeig),iprint,lupri)
+     &             work(kibeig),.true.,iprint,lupri)
 
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1

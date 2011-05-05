@@ -650,6 +650,7 @@ C***********************************************************************
 #include "typesz_mpi2.h"
       real*8,  allocatable :: t_buffx(:)
 #endif
+      logical              :: int_file_is_master_file
 !     scratch memory
       real(8), allocatable :: t_unsort(:)
       real(8), allocatable :: t_buff_lowsort(:)
@@ -675,11 +676,14 @@ C
         allocate(indxb12(2,ndim_ij))
         allocate(indxb34(2,ndim_kl))
         allocate(idxkr12(2,ndim_ij))
+!       make sure we read from the master integral file(s)
+        int_file_is_master_file = iiomod_rel .eq. 1
+     &                       .or. myproc     .eq. master
         
 !       get integrals on t_unsort
         call rgeth21(.false.,.true.,dummy,dummy,t_unsort,
      &               hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
-     &               ibeig,iprnt,luwrt)
+     &               ibeig,int_file_is_master_file,iprnt,luwrt)
 
 !       release scratch space
         deallocate(idxkr12)

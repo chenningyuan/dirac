@@ -953,7 +953,7 @@ C
         call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &               work(khmat),work(kh2xy),work(kh2yx),
      &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               ipropt,lupri)
+     &               .true.,ipropt,lupri)
 C
       else if (I_IITP.eq.1) then
 C
@@ -1151,7 +1151,7 @@ C
         call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &               work(khmat),work(kh2xy),work(kh2yx),
      &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               ipropt,lupri)
+     &               .true.,ipropt,lupri)
 C
       else if (I_IITP.eq.1) then
 C
@@ -2169,7 +2169,7 @@ C
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 
-!       get dimensions for scracth matrices
+!       get dimensions for scratch matrices
 !       SK - Aug 2010: FIXME: this structure as it is cannot work 
 !       if the integral files are not available to the co-workers... 
 !       @ Timo: before continuing (if ever) we have to think about how
@@ -2189,7 +2189,7 @@ C
         call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &               work(khmat),work(kh2xy),work(kh2yx),
      &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               0,luwrt)
+     &               .true.,0,luwrt)
 C
       else if (I_IITP.eq.1) then
 C

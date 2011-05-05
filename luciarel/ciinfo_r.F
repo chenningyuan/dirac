@@ -1368,8 +1368,10 @@ C    &              NL2D,IUB2D(4,10),ISM2D(3,10),L2D(10)
         LMAXE2LST = MAX(LMAXE2LST,L2D(IL2))
       END DO
 *
+#ifdef LUCI_DEBUG
       write(6,'(/A,I10)')
      & '   The largest block of two-electron integrals is',LMAXE2LST
+#endif
 
 !     release scratch memory
       deallocate(nnorb)

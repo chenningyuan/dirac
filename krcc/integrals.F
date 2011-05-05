@@ -679,7 +679,7 @@ C     orbital symmetry info array
       call rgeth21(.false.,.true.,dummy,dummy,WORK(KH2AC),
      &             work(khmat),work(kh2xy),work(kh2yx),
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             work(kibeig),ipropt,lupri)
+     &             work(kibeig),.true.,ipropt,lupri)
 
       CALL MEMCHK('cemory3',WORK,KCMO)
       call memrel('rgeth2',work,1,khmat,kfree,lfree)
