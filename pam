@@ -1325,8 +1325,9 @@ class pam_enviroment:
             backup_file(some_file=os.path.join(self.input_directory,self.output_file),upto=None)
 
         if self.set_timeout_limit:
-            signal.signal(signal.SIGALRM, signal_handler)
-            signal.alarm(self.timeout)
+            if not is_windows():
+                signal.signal(signal.SIGTERM, signal_handler)
+                signal.alarm(self.timeout)
 
         if len(self.nice_cmd) > 1:
             print '  Lowest process priority set through ', \
