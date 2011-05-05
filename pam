@@ -423,7 +423,8 @@ class pam_enviroment:
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
             if not self.silent:
-                self.list_scratch_dir()
+                print 
+                #self.list_scratch_dir()
             if not self.keep_scratch:
                 if not self.silent:
                     print '  deleting the scratch directory'
@@ -1292,21 +1293,24 @@ class pam_enviroment:
         Write useful info at the beginning of the output file - size of
         all static allocations, for example
         """
+        from common import is_windows
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
         # radovan: just FYI, the "-e" ends up in my output, not in yours?
-        size_command = \
+        if not is_windows:
+            # this is pure linux way to obatin size of static allocations
+            size_command = \
             "echo -e 'Size of all static allocations: \c'; size " \
             + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
             + " 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
-        p1 = subprocess.Popen(size_command, shell=True,
-                              stdin=subprocess.PIPE, stdout=self.f)
+            p1 = subprocess.Popen(size_command, shell=True,
+                           stdin=subprocess.PIPE, stdout=self.f)
 
 
     def execute_dirac(self):
         ''' 
         Excecute dirac.x, either in serial or parallel mode. Perform debugging, if wanted.
         '''
-
+        from common import is_windows
         def signal_handler(signum, frame):
             '''Controling the time of the execution'''
             print '  DIRAC execution to be interrupted, because takes longer than the limit of ', \
@@ -1340,6 +1344,7 @@ class pam_enviroment:
         try:
             if not self.debug and not self.vg_debug:
                 return_code = self.launch_dirac_subprocess()
+                print '  command ended with return code:',return_code
             elif self.parallel_run == False:
                 print 'debugging dirac in plain serial run...', \
                     self.dirac_cmd
@@ -1348,7 +1353,8 @@ class pam_enviroment:
                 print '...no dirac run-wrong parallel/debugger combination'
 
             # zero the signal alarm
-            signal.alarm(0)
+            if not is_windows: 
+                signal.alarm(0)
         except:
 
             if self.set_timeout_limit:
@@ -1369,25 +1375,27 @@ class pam_enviroment:
         """
         launch dirac.x subprocess; called from ...
         """
-
+        #sys.exit(0)
         # open the outhput file
+        #return 0
         self.f = open(self.output_file_full, 'w', 0)
-
+        #return 0
+		
         # write something into the output file by pam
         self.write_into_output()
-
+        #from common import is_windows
+        
         # process the dirac.x (or mpi-wrapper) as the child subprocess
-
         # stderr=None means flushing stderr output only into console (red color in trac-webpage)
-
         # radovan: with shell=True the pid does not necessarily match
         #          the dirac job, it matches the shell command that spawns the dirac job
         #          then timeout terminates the command but not the dirac.x run
         #          but we do need shell=True (painful lesson when testing without)
         # http://mail.python.org/pipermail/python-bugs-list/2009-January/067267.html  
+        #return 0
         self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                        stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
-
+        
         if not self.silent:
             print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
 
@@ -1441,6 +1449,9 @@ class pam_enviroment:
         """
         kill all dirac processes...
         """
+        from common import is_windows
+        if is_windows() : return 		
+	
         self.get_dirac_pids()
         was_killed=True
       
