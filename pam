@@ -1186,11 +1186,10 @@ class pam_enviroment:
                 self.debugger = value
             elif name == 'PROFILER':
                 self.profiler = value
-            elif name == 'MPIRUN':
+            elif name == 'MPIRUN' and value != '':
                 self.parallel_build = True
-            elif name == 'LOCALDISKS':
-                if value == 'yes':
-                    self.localdisks = True
+            elif name == 'LOCALDISKS' and value == 'yes':
+                self.localdisks = True
             elif name == 'MACH_FILE':
                 self.machinefile = value
             elif name == 'RCP':
