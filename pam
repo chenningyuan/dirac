@@ -423,8 +423,7 @@ class pam_enviroment:
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
             if not self.silent:
-                print 
-                #self.list_scratch_dir()
+                self.list_scratch_dir()
             if not self.keep_scratch:
                 if not self.silent:
                     print '  deleting the scratch directory'
