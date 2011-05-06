@@ -1325,7 +1325,7 @@ class pam_enviroment:
 
         if self.set_timeout_limit:
             if not is_windows():
-                signal.signal(signal.SIGTERM, signal_handler)
+                signal.signal(signal.SIGALRM, signal_handler)
                 signal.alarm(self.timeout)
 
         if len(self.nice_cmd) > 1:
