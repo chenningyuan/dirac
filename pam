@@ -203,9 +203,6 @@ class pam_enviroment:
             else:
                 sys.exit('No Dirac binary found, quitting.')
 
-    # nice command - priority (nice/npri)
-        self.nice_cmd = ''
-
     # ## put/get files (flag controlled) ###
         self.put_files = ''
         self.get_files = ''
@@ -749,10 +746,6 @@ class pam_enviroment:
                 ,
             metavar='TIME_STRING',
             )
-        group.add_option('--nice', action='store_true', dest='dest_nice'
-                         , default=False,
-                         help='run with high priority [default: %default]'
-                         )
         parser.add_option_group(group)
         #   process input
         (options, args) = parser.parse_args()
@@ -815,15 +808,6 @@ class pam_enviroment:
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
-
-        if options.dest_nice:
-
-    # assign here the full nice/npri command; TODO: set for windows (in own routine)
-
-            if os.path.isfile('/usr/sbin/npri'):
-                self.nice_cmd = 'npri -h129 '
-            else:
-                self.nice_cmd = 'nice -1 '
 
         if options.dest_timeout:
             from common import process_time_string
@@ -1150,9 +1134,6 @@ class pam_enviroment:
             # no debug, plain run
                 self.dirac_cmd = this_dirac_exe
 
-    # at the end add priority command (either empty or not) #
-        self.dirac_cmd = self.nice_cmd + self.dirac_cmd
-
     def read_makefile_config(self):
         """Read the Makefile.config to get default values of many variables.
         Makefile.config file is the storage place for important variables
@@ -1327,10 +1308,6 @@ class pam_enviroment:
             if not is_windows():
                 signal.signal(signal.SIGALRM, signal_handler)
                 signal.alarm(self.timeout)
-
-        if len(self.nice_cmd) > 1:
-            print '  Lowest process priority set through ', \
-                self.nice_cmd
 
         basis_set_directory_list = self.basdir.split(':')
         if not self.silent:
