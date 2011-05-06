@@ -2999,67 +2999,6 @@ fi
 
 
 
-# generate pam.sh
-make_pam_sh () {
-
-pam_file=$INSTALL_DIR/pam.sh
-
-echo '#!/bin/bash' > $pam_file
-
-let wrkmem_reduced=$memsiz/1000000
-if [ $IPRINT -ge 1 ]; then
-   $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
-fi
-cat <<EOF>> $pam_file
-#
-# default memory used by dirac.x is determined by Makefile.config 
-WRKMEM_DEFAULT=$wrkmem_reduced
-#
-SCR_DEFAULT=$worksp
-BIN_DIR=$INSTALL_DIR
-SRC_DIR=$SRC_DIR
-BASDIR=$SRC_DIR/basis/:$SRC_DIR/basis_dalton/
-### ... check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables) - if assigned, pam defaults is parallel run
-MPIRUN=$mpirun
-### ... is machinefile needed for the MPIRUN launcher ? 
-MACH_FILE_MPIRUN=$mach_file_mpirun
-# .... if local disks needed, input files are copied onto slaves listed in machinefile 
-LOCALDISKS=$localdisks
-# .... mpi argument to pass the work-directory to the slaves
-# ... default machine file - either for mpirun or for copying files onto local disks or for both
-MACH_FILE=$mach_file
-# 
-# For passing files to local disks; if empty, no copying to local disks of nodes
-#
-RCP=$rcp
-RSH=$rsh
-#
-# debugger - check it according to your machine installation
-#
-DEBUGGER=$debug
-#
-#  valgrind debugging and checking tool - check it according to your machine installation
-#
-VALGRIND=$valgrind_tool
-#
-# profiler - check it according to your machine installation, we offer gprof :)
-#
-PROFILER=$profiler
-#
-CLEANUP=
-#
-# ILPdata type model
-#
-ILP_DATATYPE=$ilp_datatype
-#
-EOF
-
-cat ./pam.in >> $pam_file
-chmod a+rx      $pam_file
-
-test $IPRINT -ge "5" && echo 'make_pam_sh: done'
-
-} # END make_pam_sh ()
 
 
 final_words () {
@@ -3307,6 +3246,5 @@ set_memsize
 set_installdir
 set_scratchdir
 make_Makefile.config
-make_pam_sh
 final_words
 
