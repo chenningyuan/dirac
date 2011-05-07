@@ -1112,17 +1112,6 @@ contains
                                          derv_nadd,    &
                                          parallel_xc)
 
-!      if (print_data_at_point) then
-!        write (*,*) 'debug: at grid point ',ipoint
-!        write (*,*) '       for embedding potential, response construction'
-!        write (*,*) '       n_0:',n_0(1),'  n_0_t:',n_0_t(1),"   w:",w(1)
-!        write (*,*) '       ep :',fde_elpot(ipoint)
-!        ii = 1
-!         do ji = 0, derv_length
-!           write (*,*) 'ss(',ii,',',ji,'):',derv(ii,ji),'    nadd(',ii,',',ji,'):',derv_nadd(ii,ji)
-!         enddo
-!        print_data_at_point = .false.
-!      endif
 
               do ii = 1, max_block_length
                 do ji = 0, derv_length
