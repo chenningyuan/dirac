@@ -15,7 +15,7 @@ svn up
 ./pamadm -a --xcfun --minus --openrsp
 
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs.noopt" --scratch="/var/tmp" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00"
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs.noopt" --scratch="/var/tmp" -D DART_TESTING_TIMEOUT=1200 -D RUNTEST_TIMEOUT="00:18:00"
 
 cd $DIRAC/build
 

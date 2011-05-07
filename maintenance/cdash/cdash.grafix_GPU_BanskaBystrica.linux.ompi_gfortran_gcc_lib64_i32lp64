@@ -20,7 +20,7 @@ git svn rebase
 
 OMPI=/home/milias/bin/openmpi_i32lp64/bin
 # configure step
-./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_lib64_i32lp64" -D RUNTEST_NR_PROC=2   --scratch="/tmp" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999
+./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_lib64_i32lp64" -D RUNTEST_NR_PROC=2   --scratch="/tmp" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=1200
 
 cd $DIRAC/build
 make clean
