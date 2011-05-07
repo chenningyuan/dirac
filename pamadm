@@ -254,7 +254,6 @@ files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
 files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
 
 files_never_compiled.append('dft/src/dirac_cfg.F90')
-files_never_compiled.append('dft/src/extra.F')
 files_never_compiled.append('dft/src/main.F90')
 
 do_not_release = []
