@@ -66,11 +66,22 @@ set(BUILDNAME
     )
 
 # set ctest own timeout
-set(DART_TESTING_TIMEOUT
-    "1200"
-    CACHE STRING
-    "Set timeout in seconds for every single test"
-    )
+
+if (DART_TESTING_TIMEOUT)
+    set(DART_TESTING_TIMEOUT
+        "${DART_TESTING_TIMEOUT}"
+        CACHE STRING
+        "Set user given timeout in seconds for every single test"
+     )
+    message("-- user ctest timeout for each test, DART_TESTING_TIMEOUT=\"${DART_TESTING_TIMEOUT}\" ")
+else()
+    set(DART_TESTING_TIMEOUT
+        "1200"
+        CACHE STRING
+        "Set default timeout in seconds for every single test"
+        )
+    message("-- using default ctest timeout for each test, DART_TESTING_TIMEOUT=\"${DART_TESTING_TIMEOUT}\" ")
+endif()
 
 #
 # set additional runtest flags - number of CPU and runtest timeout
