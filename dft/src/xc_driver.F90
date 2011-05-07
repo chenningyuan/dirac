@@ -1093,6 +1093,7 @@ contains
                                    xalda=dft_cfg_xalda,       &
                                    tau=tau)
 
+#ifdef MOD_UNRELEASED
 #ifdef MOD_XCFUN
            if (do_fde_update_vemb .or. do_fde_response) then
 !
@@ -1128,12 +1129,13 @@ contains
                   if (ji >  1 ) &
       &             derv(ii,ji) = derv(ii,ji) + derv_nadd(ii,ji)
 ! we add the electrostatic potential from the frozen subsystem(s) to the derivative
-                  if (ji == 1 .and. update_vemb) &
+                  if (ji == 1 .and. do_fde_update_vemb) &
       &             derv(ii,ji) = derv(ii,ji) + derv_nadd(ii,ji) + w(1)*fde_elpot(ipoint)
                 enddo
               enddo
            endif
 #endif /*  MOD_XCFUN */
+#endif /*  MOD_UNRELEASED */
 
 
 #ifdef MOD_XCFUN
