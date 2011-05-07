@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(DFT Fortran C)
+project(DFT Fortran)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -26,14 +26,9 @@ include(cmake/Archs.cmake)
 include(cmake/Compilers.cmake)
 
 set(LIBS)
-set(INTERFACES_LIST)
 
 add_definitions(-DMOD_XCFUN)
 add_subdirectory(xcfun)
-set(INTERFACES_LIST
-    ${INTERFACES_LIST}
-    xcfun
-    )
 set(LIBS
     ${LIBS}
     xcfun
@@ -105,14 +100,14 @@ add_custom_target(
     dft_interfaces
     ALL
     DEPENDS
-    ${INTERFACES_LIST}
+    xcfun
     )
 
-add_executable(dft.x
+add_executable(
+    dft.x
     ${SOURCES}
     )
 
-message("blub libs: ${LIBS}")
 target_link_libraries(
     dft.x
     ${LIBS}
