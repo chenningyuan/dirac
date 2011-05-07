@@ -188,7 +188,7 @@ set(INTERFACES_LIST
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/dft/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -200,7 +200,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     )
 
 if(ENABLE_XCFUN)
-    add_subdirectory(xcfun)
+    add_subdirectory(dft/xcfun)
     set(INTERFACES_LIST
         ${INTERFACES_LIST}
         xcfun

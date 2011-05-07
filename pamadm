@@ -228,8 +228,8 @@ list_of_tests.append('zora')
 
 directories_never_compiled = []
 directories_never_compiled.append('utils')
-directories_never_compiled.append('xcfun/src')
-directories_never_compiled.append('xcfun/test')
+directories_never_compiled.append('dft/xcfun/src')
+directories_never_compiled.append('dft/xcfun/test')
 
 files_never_compiled = []
 files_never_compiled.append('utils/cube2pov.c')
@@ -247,7 +247,7 @@ files_never_compiled.append('relccsd/ccmain.F')
 files_never_compiled.append('relccsd/quit.F')
 files_never_compiled.append('cbuild/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
-files_never_compiled.append('xcfun/fortran/example.F90')
+files_never_compiled.append('dft/xcfun/fortran/example.F90')
 files_never_compiled.append('fmm/mm_standalone_drv.f90')
 files_never_compiled.append('fmm/mm_standalone_aux.F')
 files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
@@ -364,7 +364,7 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'xcfun'
 dirac_modules[this_module] = dirac_module('xcfun', 'XCFun module')
 dirac_modules[this_module].add_cppflag('MOD_XCFUN')
-dirac_modules[this_module].add_directory('xcfun')
+dirac_modules[this_module].add_directory('dft/xcfun')
 dirac_modules[this_module].add_test('dft_alda_xcfun')
 dirac_modules[this_module].add_test('dft_erf_xcfun')
 dirac_modules[this_module].add_test('dft_minnesota')
@@ -554,9 +554,9 @@ print
 if dirac_modules['xcfun'].is_included:
    print "* "
    print "* XCFun module active"
-   print "* First compile xcfun (cd xcfun; make -f Makefile.gcc)"
+   print "* First compile xcfun (cd dft/xcfun; make -f Makefile.gcc)"
    print "* Then please use (in Makefile.config)"
-   print "* LIBS=-Lxcfun/lib -lxcfun"
+   print "* LIBS=-Ldft/xcfun/lib -lxcfun"
    print "* "
    print
 
@@ -672,7 +672,7 @@ for module in dirac_modules:
             directories_with_sources.append(directory)
 # ugly fix to get xcfun, will make it nicer later:
 if dirac_modules['xcfun'].is_included:
-    directories_with_sources.append('xcfun/fortran')
+    directories_with_sources.append('dft/xcfun/fortran')
 
 directories_with_sources = set(directories_with_sources)
 
