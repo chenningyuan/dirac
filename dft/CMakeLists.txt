@@ -16,19 +16,30 @@ if(NOT CMAKE_BUILD_TYPE)
         )
 endif()
 
-option(DFT_ENABLE_PROFILING      "Enable profiling"          OFF)
-option(DFT_ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
-option(DFT_ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
-option(DFT_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
-option(DFT_ENABLE_MPI            "Use MPI parallelization"   OFF)
-option(DFT_ENABLE_XCFUN          "Use XCFun library"         ON)
+option(ENABLE_PROFILING      "Enable profiling"          OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
+option(ENABLE_EXTERNAL_MATH  "Use external math library" ON)
+option(ENABLE_MPI            "Use MPI parallelization"   OFF)
 
 include(cmake/Archs.cmake)
 include(cmake/Compilers.cmake)
 
 set(LIBS)
+set(INTERFACES_LIST)
 
-if(DFT_ENABLE_EXTERNAL_MATH)
+add_definitions(-DMOD_XCFUN)
+add_subdirectory(xcfun)
+set(INTERFACES_LIST
+    ${INTERFACES_LIST}
+    xcfun
+    )
+set(LIBS
+    ${LIBS}
+    xcfun
+    )
+
+if(ENABLE_EXTERNAL_MATH)
     set(BLAS_LANG "Fortran")
     find_package(BLAS)
     if(BLAS_FOUND)
@@ -41,7 +52,7 @@ if(DFT_ENABLE_EXTERNAL_MATH)
     endif()
 endif()
 
-if(DFT_ENABLE_MPI)
+if(ENABLE_MPI)
     find_package(MPI)
     if(MPI_FOUND)
         add_definitions(-DVAR_MPI)
@@ -53,6 +64,7 @@ endif()
 
 include_directories(
     ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_BINARY_DIR}/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -63,7 +75,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-set(DFT_SOURCES
+set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/quaternion_algebra.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
@@ -85,12 +97,22 @@ set(DFT_SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/../grid/num_grid_cfg.F90
+    ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
+    ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
+    )
+
+add_custom_target(
+    dft_interfaces
+    ALL
+    DEPENDS
+    ${INTERFACES_LIST}
     )
 
 add_executable(dft.x
-    ${DFT_SOURCES}
+    ${SOURCES}
     )
 
+message("blub libs: ${LIBS}")
 target_link_libraries(
     dft.x
     ${LIBS}
