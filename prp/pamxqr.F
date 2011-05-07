@@ -2591,9 +2591,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2644,9 +2644,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2745,9 +2745,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2818,9 +2818,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3002,9 +3002,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"

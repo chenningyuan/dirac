@@ -21,7 +21,7 @@
 
 module density_eval
 
-   use basis_info
+   use interface_ao
 
    implicit none
 
@@ -54,9 +54,6 @@ module density_eval
 ! integer :: jxyz_start = 3 !collinear
 
   save
-
-! cval, will not work in parallel!
-#include "dcbgen.h"
 
 contains
 
@@ -305,6 +302,7 @@ contains
    end subroutine
 
    subroutine get_j(j,       &
+                    cval,    &
                     irep,    &
                     mat_dim, &
                     dmat,    &
@@ -313,6 +311,7 @@ contains
    
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: j(3)
+      real(8), intent(in)  :: cval
       integer, intent(in)  :: irep
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
@@ -511,6 +510,7 @@ contains
    end subroutine
 
   subroutine get_t(t,       &
+                   cval,    &
                    irep,    &
                    mat_dim, &
                    dmat,    &
@@ -536,6 +536,7 @@ contains
 !                (with atoms i got it 99.8% right)
 !   ----------------------------------------------------------------------------
     real(8), intent(out) :: t
+    real(8), intent(in)  :: cval
     integer, intent(in)  :: irep
     integer, intent(in)  :: mat_dim
     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
@@ -648,6 +649,7 @@ contains
 
    subroutine get_gj(v,       &
                      gv,      &
+                     cval,    &
                      irep,    &
                      mat_dim, &
                      dmat,    &
@@ -658,6 +660,7 @@ contains
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: v(3)
       real(8), intent(out) :: gv(3, 3)
+      real(8), intent(in)  :: cval
       integer, intent(in)  :: irep
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)

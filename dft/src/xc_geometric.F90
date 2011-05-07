@@ -21,7 +21,7 @@
 
 module xc_geometric
 
-   use basis_info
+   use interface_ao
 
    implicit none 
 

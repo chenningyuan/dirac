@@ -372,6 +372,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use xc_driver
+      use interface_mo
       use dft_cfg
       use fde_mod
       use num_grid_gen
@@ -562,6 +563,10 @@ C
 
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+ 
+!          write mo info to file
+!          read by the dft module
+           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1065,8 +1070,7 @@ C   Called from PSIDHF
 C
 C*****************************************************************************
 
-      use basis_info
-      use occupation_info
+      use interface_ao
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1099,8 +1103,7 @@ C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 !     this is then used in dft and visualization
 !     if you move this to somewhere else think about
 !     geometry optimization!
-      call basis_info_write()
-      call occupation_info_write()
+      call interface_ao_write()
 
       IF(ONESYS) THEN
 C
@@ -1182,6 +1185,7 @@ C*****************************************************************************
       use xc_driver
       use fde_mod
       use num_grid_gen
+      use interface_mo
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1233,14 +1237,8 @@ C
 C     Start cycle
 C
       CALL FLSHFO(LUPRI)
-!     asymptotic correction
-      old_homo_eigenvalue = 0.0d0
-      DO 10 ITER = 2,MAXITR
 
-!       asymptotic correction
-        if(dft_cfg_grac .or. dft_cfg_saop) then
-          call dftac_eigenvalues(eig, old_homo_eigenvalue)
-        end if
+      DO 10 ITER = 2,MAXITR
 
          NITER  = NITER + 1
          KITER  = KITER + 1
@@ -1364,6 +1362,10 @@ C
 
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
+ 
+!          write mo info to file
+!          read by the dft module
+           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)

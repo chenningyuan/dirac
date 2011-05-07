@@ -3678,6 +3678,7 @@ C
 C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -3690,7 +3691,6 @@ C
 #include "pgroup.h"
 #include "symmet.h"
 #include "dcbham.h"
-#include "dcbqal.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
 #include "dcbibt.h"
@@ -3812,6 +3812,7 @@ C     make compressed coefficients in sorted basis
 C
 C     Written by T.Saue Mar 4 2008
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -3823,13 +3824,11 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "symmet.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
       DIMENSION CBU(*),EIGU(*),IBEIGU(*),
      &          CBS(NCMOTQ),EIGS(*),IBEIGS(*),IBUF(NORBT,2),NBF(2)
-      EXTERNAL BDQALGEBRA
 C
       CALL DZERO(CBS,NCMOTQ)
       NBF(1) = 0
@@ -3863,6 +3862,7 @@ C
 C     Written by T.Saue Mar 4 2008
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -3874,7 +3874,6 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
       DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
 #include "dcbibt.h"
 C

@@ -73,8 +73,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
 
-      use basis_info
-      use occupation_info
+      use interface_ao
+      use interface_mo
 
 #include "implicit.h"
 #include "priunit.h"
@@ -91,9 +91,9 @@ C
 
 
 !     write info to files
-!     this is then used in dft and visualization
-      call basis_info_write()
-      call occupation_info_write()
+!     this is used in dft and visualization
+      call interface_ao_write()
+      call interface_mo_write()
 
 
       IF ( INPTES ) RETURN

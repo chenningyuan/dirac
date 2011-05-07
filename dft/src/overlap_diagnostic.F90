@@ -28,6 +28,9 @@ module overlap_diagnostic
 !  implemented 2011/01/11 by Radovan Bast <radovan.bast@uit.no>
 
    use memory_allocator
+   use interface_ao
+   use interface_mo
+   use xc_mpi
 
    implicit none
 
@@ -41,21 +44,6 @@ module overlap_diagnostic
 
    private
 
-   integer                 :: nr_qu
-   integer                 :: nr_fermi
-
-   integer                 :: nr_mo
-   integer                 :: nr_g_mo
-   integer                 :: nr_g_mo_ns
-   integer                 :: nr_g_mo_pi
-   integer                 :: nr_g_mo_ps
-   integer                 :: nr_u_mo
-   integer                 :: nr_u_mo_ns
-   integer                 :: nr_u_mo_pi
-   integer                 :: nr_u_mo_ps
-
-   integer                 :: nr_g_ao
-   integer                 :: nr_u_ao
    integer                 :: nr_g_ao_blocks
    integer                 :: nr_u_ao_blocks
    integer                 :: g_ao_start(8)
@@ -63,7 +51,6 @@ module overlap_diagnostic
    integer                 :: g_ao_end(8)
    integer                 :: u_ao_end(8)
 
-   real(8), allocatable    :: mo_coef(:)
    real(8), allocatable    :: o_matrix(:, :)
    real(8), allocatable    :: buffer(:, :)
 
@@ -95,16 +82,16 @@ contains
 
       select case (ifermi)
          case (1)
-            ioff = nr_g_mo_ns
+            ioff = nr_mo_gerade_negative_secondary
          case (2)
-            ioff = nr_g_mo + nr_u_mo_ns
+            ioff = nr_mo_gerade + nr_mo_ungerade_negative_secondary
       end select
 
       select case (sfermi)
          case (1)
-            soff = nr_g_mo_ns
+            soff = nr_mo_gerade_negative_secondary
          case (2)
-            soff = nr_g_mo + nr_u_mo_ns
+            soff = nr_mo_gerade + nr_mo_ungerade_negative_secondary
       end select
 
       lambda_numerator   = lambda_numerator   + kappa*o_matrix(ioff + i, soff + s)
@@ -114,7 +101,6 @@ contains
 
    subroutine overlap_diagnostic_init(parallel_xc, i_am_master)
 
-      use xc_mpi
 
 !     --------------------------------------------------------------------------
       logical, intent(in) :: parallel_xc, i_am_master
@@ -122,34 +108,7 @@ contains
       integer             :: k, irep, ic, nc
 !     --------------------------------------------------------------------------
 
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
-
       if (i_am_master) then
-         nr_qu    = nz
-         nr_fermi = nfsym
-         
-         nr_g_mo_ns = npsh(1)
-         nr_g_mo_pi = nish(1)
-         nr_g_mo_ps = nesh(1) - nr_g_mo_pi
-         nr_g_mo    = nr_g_mo_ns + nr_g_mo_pi + nr_g_mo_ps
-         
-         nr_u_mo_ns = npsh(2)
-         nr_u_mo_pi = nish(2)
-         nr_u_mo_ps = nesh(2) - nr_u_mo_pi
-         nr_u_mo    = nr_u_mo_ns + nr_u_mo_pi + nr_u_mo_ps
-         
-         nr_mo      = nr_g_mo + nr_u_mo
-         
-         nr_g_ao    = nfbas(1, 0)
-         nr_u_ao    = nfbas(2, 0)
          
          nr_g_ao_blocks = 0
          nr_u_ao_blocks = 0
@@ -158,23 +117,24 @@ contains
          g_ao_end       = 0
          u_ao_end       = 0
          
-         if (twocomp) then
+         if (use_only_large) then
             nc = 1
          else
             nc = 2
          end if
-         
+
          do ic = 1, nc
-            do irep = 0, maxrep
-               if (nbbas(irep, ic) > 0) then
-                  if (jbtof(irep, ic) == 1) then
+            do irep = 0, nr_boson_ireps - 1
+               if (ao_nr(irep, ic) > 0) then
+!                 fixme check this carefully
+                  if (ao_fermion_corep(irep, ic) == 1) then
                      nr_g_ao_blocks = nr_g_ao_blocks + 1
-                     g_ao_start(nr_g_ao_blocks) = ibbas(irep, ic) + 1
-                     g_ao_end(nr_g_ao_blocks)   = ibbas(irep, ic) + nbbas(irep, ic)
+                     g_ao_start(nr_g_ao_blocks) = ao_off(irep, ic) + 1
+                     g_ao_end(nr_g_ao_blocks)   = ao_off(irep, ic) + ao_nr(irep, ic)
                   else
                      nr_u_ao_blocks = nr_u_ao_blocks + 1
-                     u_ao_start(nr_u_ao_blocks) = ibbas(irep, ic) + 1
-                     u_ao_end(nr_u_ao_blocks)   = ibbas(irep, ic) + nbbas(irep, ic)
+                     u_ao_start(nr_u_ao_blocks) = ao_off(irep, ic) + 1
+                     u_ao_end(nr_u_ao_blocks)   = ao_off(irep, ic) + ao_nr(irep, ic)
                   end if
                end if
             end do
@@ -183,19 +143,6 @@ contains
 
 #ifdef VAR_MPI
       if (parallel_xc) then
-         call xc_mpi_bcast(nr_qu         )
-         call xc_mpi_bcast(nr_fermi      )
-         call xc_mpi_bcast(nr_mo         )
-         call xc_mpi_bcast(nr_g_mo       )
-         call xc_mpi_bcast(nr_g_mo_ns    )
-         call xc_mpi_bcast(nr_g_mo_pi    )
-         call xc_mpi_bcast(nr_g_mo_ps    )
-         call xc_mpi_bcast(nr_u_mo       )
-         call xc_mpi_bcast(nr_u_mo_ns    )
-         call xc_mpi_bcast(nr_u_mo_pi    )
-         call xc_mpi_bcast(nr_u_mo_ps    )
-         call xc_mpi_bcast(nr_g_ao       )
-         call xc_mpi_bcast(nr_u_ao       )
          call xc_mpi_bcast(nr_g_ao_blocks)
          call xc_mpi_bcast(nr_u_ao_blocks)
          call xc_mpi_bcast(g_ao_start    )
@@ -205,79 +152,32 @@ contains
       end if
 #endif
 
-      call alloc(mo_coef, nr_qu*(nr_g_mo*nr_g_ao + nr_u_mo*nr_u_ao))
       call alloc(o_matrix, nr_mo, nr_mo)
-      call alloc(buffer, nr_mo, nr_qu)
+      call alloc(buffer, nr_mo, nr_quaternion_blocks)
 
-      mo_coef  = 0.0d0
       o_matrix = 0.0d0
 
-      if (i_am_master) then
-         call read_mo_coef(mo_coef)
-      end if
-
-#ifdef VAR_MPI
-      if (parallel_xc) then
-         call xc_mpi_bcast(mo_coef)
-      end if
-#endif
 
    end subroutine
 
    subroutine overlap_diagnostic_collect(i_am_master)
 
-      use xc_mpi
 
 !     --------------------------------------------------------------------------
-      logical, intent(in) :: i_am_master
+      logical             :: i_am_master
 !     --------------------------------------------------------------------------
       integer             :: ierr
       real(8)             :: dummy
 !     --------------------------------------------------------------------------
 
 #ifdef VAR_MPI
-#include "mpif.h"
-
-      if (i_am_master) then
-         call mpi_reduce(MPI_IN_PLACE,         &
-                         o_matrix,             &
-                         nr_mo*nr_mo,          &
-                         mpi_double_precision, &
-                         mpi_sum,              &
-                         0,                    &
-                         mpi_comm_world,       &
-                         ierr)
-      else
-         call mpi_reduce(o_matrix,             &
-                         dummy,                &
-                         nr_mo*nr_mo,          &
-                         mpi_double_precision, &
-                         mpi_sum,              &
-                         0,                    &
-                         mpi_comm_world,       &
-                         ierr)
-      end if
+         call xc_mpi_reduce(o_matrix)
 #endif
 
    end subroutine
 
    subroutine overlap_diagnostic_delete()
 
-      nr_qu          = 0
-      nr_fermi       = 0
-
-      nr_mo          = 0
-      nr_g_mo        = 0
-      nr_g_mo_ns     = 0
-      nr_g_mo_pi     = 0
-      nr_g_mo_ps     = 0
-      nr_u_mo        = 0
-      nr_u_mo_ns     = 0
-      nr_u_mo_pi     = 0
-      nr_u_mo_ps     = 0
-
-      nr_g_ao        = 0
-      nr_u_ao        = 0
       nr_g_ao_blocks = 0
       nr_u_ao_blocks = 0
       g_ao_start     = 0
@@ -285,7 +185,6 @@ contains
       g_ao_end       = 0
       u_ao_end       = 0
 
-      if (allocated(mo_coef))  call dealloc(mo_coef)
       if (allocated(o_matrix)) call dealloc(o_matrix)
       if (allocated(buffer))   call dealloc(buffer)
 
@@ -308,21 +207,10 @@ contains
          rewind(file_unit)
       end if
 
-      write(file_unit) nr_g_mo_ns
-      write(file_unit) nr_g_mo_pi
-      write(file_unit) nr_g_mo_ps
-      write(file_unit) nr_u_mo_ns
-      write(file_unit) nr_u_mo_pi
-      write(file_unit) nr_u_mo_ps
-      write(file_unit) nr_g_mo
-      write(file_unit) nr_u_mo
-      write(file_unit) nr_g_ao
-      write(file_unit) nr_u_ao
       write(file_unit) o_matrix
 
       close(file_unit, status = 'keep')
 
-      if (allocated(mo_coef))       call dealloc(mo_coef)
       if (allocated(o_matrix)) call dealloc(o_matrix)
 
    end subroutine
@@ -349,18 +237,7 @@ contains
 !        return
       end if
 
-      read(file_unit) nr_g_mo_ns
-      read(file_unit) nr_g_mo_pi
-      read(file_unit) nr_g_mo_ps
-      read(file_unit) nr_u_mo_ns
-      read(file_unit) nr_u_mo_pi
-      read(file_unit) nr_u_mo_ps
-      read(file_unit) nr_g_mo
-      read(file_unit) nr_u_mo
-      read(file_unit) nr_g_ao
-      read(file_unit) nr_u_ao
-
-      call alloc(o_matrix, nr_g_mo + nr_u_mo, nr_g_mo + nr_u_mo)
+      call alloc(o_matrix, nr_mo_gerade + nr_mo_ungerade, nr_mo_gerade + nr_mo_ungerade)
       read(file_unit) o_matrix
 
       close(file_unit, status = 'keep')
@@ -403,40 +280,40 @@ contains
 !
 !     structure of mo_coef (assuming no active orbitals):
 !
-!      _____  1 ... nr_qu
+!      _____  1 ... nr_quaternion_blocks
 !     |  ___
 !     | |  _  1 ... nr gerade mo negative energy secondary
-!     | | |_  1 ... nr gerade ao (order according to ibbas)
+!     | | |_  1 ... nr gerade ao (order according to ao_off)
 !     | |___
 !     |  ___
 !     | |  _  1 ... nr gerade mo positive energy inactive
-!     | | |_  1 ... nr gerade ao (order according to ibbas)
+!     | | |_  1 ... nr gerade ao (order according to ao_off)
 !     | |___
 !     |  ___
 !     | |  _  1 ... nr gerade mo positive energy secondary
-!     | | |_  1 ... nr gerade ao (order according to ibbas)
+!     | | |_  1 ... nr gerade ao (order according to ao_off)
 !     | |___
 !     |_____
 !
-!      _____  1 ... nr_qu
+!      _____  1 ... nr_quaternion_blocks
 !     |  ___
 !     | |  _  1 ... nr ungerade mo negative energy secondary
-!     | | |_  1 ... nr ungerade ao (order according to ibbas)
+!     | | |_  1 ... nr ungerade ao (order according to ao_off)
 !     | |___
 !     |  ___
 !     | |  _  1 ... nr ungerade mo positive energy inactive
-!     | | |_  1 ... nr ungerade ao (order according to ibbas)
+!     | | |_  1 ... nr ungerade ao (order according to ao_off)
 !     | |___
 !     |  ___
 !     | |  _  1 ... nr ungerade mo positive energy secondary
-!     | | |_  1 ... nr ungerade ao (order according to ibbas)
+!     | | |_  1 ... nr ungerade ao (order according to ao_off)
 !     | |___
 !     |_____
 
       i = 0
-      do iz = 1, nr_qu
+      do iz = 1, nr_quaternion_blocks
 !        gerade
-         do s = 1, nr_g_mo
+         do s = 1, nr_mo_gerade
             buffer(s, iz) = 0.0d0
             do n = 1, nr_g_ao_blocks
                do k = g_ao_start(n), g_ao_end(n)
@@ -446,10 +323,10 @@ contains
             end do
          end do
       end do
-      do iz = 1, nr_qu
-         if (nr_fermi > 1) then
+      do iz = 1, nr_quaternion_blocks
+         if (nr_fermion_coreps > 1) then
 !           ungerade
-            do s = nr_g_mo + 1, nr_g_mo + nr_u_mo
+            do s = nr_mo_gerade + 1, nr_mo_gerade + nr_mo_ungerade
                buffer(s, iz) = 0.0d0
                do n = 1, nr_u_ao_blocks
                   do k = u_ao_start(n), u_ao_end(n)
@@ -461,9 +338,9 @@ contains
          end if
       end do
 
-      do s = 1, nr_g_mo + nr_u_mo
-         do t = s, nr_g_mo + nr_u_mo
-            select case (nr_qu)
+      do s = 1, nr_mo_gerade + nr_mo_ungerade
+         do t = s, nr_mo_gerade + nr_mo_ungerade
+            select case (nr_quaternion_blocks)
                case (1)
                   q1 = buffer(s, 1)*buffer(t, 1)
                   q_norm = dsqrt(q1*q1)
@@ -498,27 +375,4 @@ contains
 
    end subroutine
 
-   subroutine read_mo_coef(mo_coef)
-
-!     --------------------------------------------------------------------------
-      real(8), intent(out) :: mo_coef(*)
-!     --------------------------------------------------------------------------
-      integer, parameter   :: file_unit = 66
-      real(8)              :: energy
-!     --------------------------------------------------------------------------
-
-      call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
-
-      call reacmo_no_work(file_unit, &
-                          'DFCOEF',  &
-                          mo_coef,   &
-                          (/0.0d0/), &
-                          (/0/),     &
-                          energy,    &
-                          2)
-
-      close(file_unit, status = 'keep')
-
-   end subroutine
-
-end module overlap_diagnostic
+end module

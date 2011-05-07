@@ -259,3 +259,4 @@ if normal_cmake_termination:
     print '   $ cd ' + build_path
     print '   $ ccmake ' + root_directory
     print '   $ make'
+

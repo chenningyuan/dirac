@@ -83,9 +83,10 @@ module ao_eval
 !        | L Ag | L B1g | L B2g | L B3g | S B3u | ... | S B3g | and then the derivatives
 
 
-   use basis_info
+   use interface_ao
    use xc_max_block_length
    use ao_xyz_power
+   use extra
 
    implicit none
 
@@ -142,7 +143,7 @@ contains
                             ao)
 
 !     without symmetry skip the rest
-      if (nr_ireps == 1) return
+      if (nr_boson_ireps == 1) return
 
 !     transform from ao(bu) to so(bs)
       call ao_to_so_point(ao, &
@@ -173,7 +174,7 @@ contains
                             ao)
 
 !     without symmetry skip the rest
-      if (nr_ireps == 1) return
+      if (nr_boson_ireps == 1) return
 
 !     transform from ao(bu) to so(bs)
       call ao_to_so_block(block_length, &
@@ -203,7 +204,7 @@ contains
 
     i = 1
     do ishell = 1, nr_shells
-      do isym = 0, nr_ireps - 1
+      do isym = 0, nr_boson_ireps - 1
         if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
 
           px = cx - bitstring_parity(iand(irep_of_axes(1), isym))*sym_independent_center_xyz(shell_center(ishell), 1)
@@ -274,7 +275,8 @@ contains
 
             if (need_ao_order(2, 0)) then
                 if (nr_ao_cartesian /= nr_ao) then
-                    call quit('fix second AO derivatives for spherical AO')
+                    print *, 'fix second AO derivatives for spherical AO'
+                    stop
                 end if
                ofg = ao_start(2, 0) + i - 1
                off_power = power_offset(l_quantum_nr(ishell) + 1)
@@ -296,7 +298,8 @@ contains
 
             if (need_ao_order(0, 1)) then
                 if (nr_ao_cartesian /= nr_ao) then
-                    call quit('implement LAO with spherical AO')
+                    print *, 'implement LAO with spherical AO'
+                    stop
                 end if
               ! ao_start(0, 1) indicate the place in ao where
               ! magn dervs should start
@@ -407,7 +410,7 @@ contains
 
       i = 1
       do ishell = 1, nr_shells
-         do isym = 0, nr_ireps - 1
+         do isym = 0, nr_boson_ireps - 1
             if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
 
                sx = bitstring_parity(iand(irep_of_axes(1), isym))*sym_independent_center_xyz(shell_center(ishell), 1)
@@ -980,7 +983,7 @@ contains
       integer             :: m_order
 !     --------------------------------------------------------------------------
 
-      call basis_info_read(use_mpi_if_possible)
+      call interface_ao_read(use_mpi_if_possible)
       call ao_xyz_power_init(l_max)
 
       use_ao_screening = use_screening

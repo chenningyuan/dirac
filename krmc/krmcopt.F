@@ -1070,6 +1070,7 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 24.01.2001, T. Fleig
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-8 )
@@ -1078,7 +1079,6 @@ C
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       LOGICAL CALCDV, CALCPV
       DIMENSION DV(*), PV(*), CREF(*), WORK(*)

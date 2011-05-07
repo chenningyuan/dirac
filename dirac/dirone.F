@@ -1013,13 +1013,13 @@ C     Last revision: May 19 1996 - tsaue
 C     Dec.2005, MI - generalized for square properties (IDIMENS = NNBBASX or N2BBASX)
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
@@ -1027,7 +1027,6 @@ C
       LOGICAL FIRST(*), DOINT(4), SQUARE
       DIMENSION PMAT(IDIMENS,*),OP1INT(IDIMENS),IDOINT(4)
 C
-      EXTERNAL BDQALGEBRA
 
 CMI   ... find out type of AO matrix - triangular or square
       IF (IDIMENS.NE.N2BBASX.AND.IDIMENS.NE.NNBBASX) THEN
@@ -1300,13 +1299,13 @@ C     Dec.2005, MI - adapted for square properties (IDIMENS = NNBBASX or N2BBASX
 C
 C*************************************************************************
 ****
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
@@ -1314,7 +1313,6 @@ C
       LOGICAL FIRST(*), DOINT(4), SQUARE
       DIMENSION PMAT(IDIMENS,4),OP1INT(IDIMENS),IDOINT(4)
 C
-      EXTERNAL BDQALGEBRA
 
 
 CMI   ... find out type of AO matrix - triangular or square
@@ -1572,6 +1570,7 @@ C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
       use x2c_fio
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12)
@@ -1584,7 +1583,6 @@ C
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "dcbqal.h"
 #include "dummy.h"
 C
       LOGICAL FIRST(NZ),IS_SQUARE, YESPCTRA, MAKEPCTRA
@@ -1592,7 +1590,6 @@ C
      &          OP1INT(IDIMENS),WORK(LWORK)
       CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
-      EXTERNAL BDQALGEBRA
 
       CALL QENTER('PRPMSAO')
 #include "memint.h"
@@ -5305,12 +5302,12 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 C
@@ -5401,10 +5398,10 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
       DIMENSION FOCK(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)
@@ -5507,10 +5504,10 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 17, 2001
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
       DIMENSION DENS(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)

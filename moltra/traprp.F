@@ -307,13 +307,13 @@ C     file
 C     Instead of array NSTRT now NSTRT1 and NSTRT2 are parameters
 C     ==============================================================
 C
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbqal.h"
 #include "dcbham.h"
       PARAMETER (DM1=-1.D0)
       CHARACTER*32 ACHAR

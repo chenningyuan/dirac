@@ -1,0 +1,416 @@
+module xc_ac
+
+   use dft_cfg
+   use dft_input
+   use extra
+   use xc_derv
+   use xc_max_block_length
+   use interface_ao
+   use interface_mo
+
+   implicit none
+
+   public dftac
+   public dftac_saop_get_dmats
+   public dftac_eigenvalues
+
+   private
+
+   real(8) :: homo_eigenvalue
+   real(8) :: homo_eigenvalue_previous
+
+
+contains
+
+      SUBROUTINE DFTAC(derv,WEIGHT,                                     &
+     &                 RHO,RHO13,RHO_RESP,RHO_OUTER,z_0)
+
+      real(8) :: derv(max_block_length, 0:99)
+      real(8) :: x, shiftbulk
+      real(8) :: VX_BULK(3),                                       &
+     &          VX_OUTER(3),                                       &
+     &          VX_SLATER(3),                                      &
+     &          VX_RESP(3)
+      real(8) :: RHO43, RHO, RHO13, fade, weight
+      real(8) :: RHO_resp, rho_outer, z_0
+
+#ifdef PRG_DIRAC
+#include "../../cfun/functionals.h"
+#else
+      print *, 'adapt standalone AC to xcfun'
+      stop
+#endif
+
+
+!
+!
+!     GRAC parameters
+!     ===============
+!
+      if (dft_cfg_grac) then
+        RHO43 = RHO*RHO13
+        X = 0.0d0
+        IF(RHO43 .NE. 0.0d0) THEN
+          X = dsqrt(z_0)/RHO43
+        ELSE
+          RETURN
+        ENDIF
+      end if
+!
+!
+!     shift bulk?
+!     ===========
+!
+      shiftbulk = 0.0d0
+      if (dft_cfg_grac) then
+        shiftbulk = dft_cfg_ac_ip + homo_eigenvalue
+      end if
+!
+!
+!     bulk potential
+!     ==============
+!
+      vx_bulk = 0.0d0
+!
+      IF (dft_cfg_saop_with_response_part) THEN
+        vx_slater = 0.0d0
+        vx_resp = 0.0d0
+!
+#ifdef PRG_DIRAC
+        CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,dsqrt(z_0))
+#endif
+        VX_RESP(1) = 0.42D0*WEIGHT*RHO_RESP/RHO
+        VX_BULK(1) = VX_SLATER(1) + VX_RESP(1)
+      ELSE
+        VX_BULK(1) = derv(1, d1000000)
+      END IF
+!
+      VX_BULK(2) = derv(1, d0010000)
+!
+!
+!     asymptotic potential
+!     ====================
+!
+      VX_OUTER = 0.0d0
+!
+#ifdef PRG_DIRAC
+      IF(dft_cfg_asymptote_is_lb94)                                     &
+     &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,dsqrt(z_0))
+      IF(dft_cfg_asymptote_is_lbalpha)                                  &
+     &                CALL LBALPHAPOT(VX_OUTER,WEIGHT,RHO,dsqrt(z_0))
+#endif
+!
+!
+!     howto FADE (with D0 .LE. FADE .LE. D1)
+!     ======================================
+!
+!     SAOP
+      IF(dft_cfg_saop)                                                  &
+     & FADE = RHO_OUTER/RHO
+!     GRAC
+      IF(dft_cfg_grac)                                                  &
+     & FADE = 1.0d0/(1.0d0+                                             &
+     &             EXP(-dft_cfg_GRAC_ALPHA*(X-dft_cfg_GRAC_BETA)))
+!
+!
+!     connection
+
+      derv(1, d0010000) = (1.0d0-FADE)* VX_BULK(2)
+      derv(1, d1000000) = (1.0d0-FADE)*(VX_BULK(1)-WEIGHT*SHIFTBULK)  &
+     &        +     FADE * VX_OUTER(1)*(1.0d0-hf_exchange_factor)
+      end subroutine
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* deck dftac_eigenvalues */
+      SUBROUTINE DFTAC_EIGENVALUES()
+!=======================================================================
+!     check orbital energy convergence
+!     for asymptotic correction
+!     modelled after Andreas Hesselmann's routine HOMO
+!     which has been incorporated into this one, so thanks Andreas!
+!-----------------------------------------------------------------------
+!     radovan bast                         last revision: september 2006
+!=======================================================================
+
+      if (.not. interface_ao_set) then
+         return
+      end if
+      if (.not. mo_eigenvalues_available) then
+         return
+      end if
+
+      if (dft_cfg_grac) then
+         if (.not. dft_cfg_grac_is_active) then
+            call get_homo_eigenvalue()
+            if (dabs(homo_eigenvalue_previous - homo_eigenvalue) <= dft_cfg_ac_threshold) then
+               dft_cfg_grac_is_active = .true.
+            end if
+            homo_eigenvalue_previous = homo_eigenvalue
+         end if
+      end if
+
+      if (dft_cfg_saop) then
+         dft_cfg_saop_is_active = .true.
+      end if
+
+      if (dft_cfg_grac_is_active) then
+         print *, 'GRAC asymptotic correction active'
+      end if
+      if (dft_cfg_saop_is_active) then
+         print *, 'SAOP asymptotic correction active'
+      end if
+
+   end subroutine
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* deck dftac_saop_get_dmats */
+      SUBROUTINE DFTAC_SAOP_GET_DMATS(DMAT_OUTER_AO,                    &
+     &                                DMAT_RESP_AO)
+      LOGICAL   FILE_IS_THERE,                                          &
+     &          FILE_IS_OPENED
+      real(8) ::  DMAT_OUTER_AO(nr_ao*nr_ao*nr_quaternion_blocks),                               &
+     &          DMAT_RESP_AO(nr_ao*nr_ao*nr_quaternion_blocks)
+      real(8), allocatable :: dmat_outer_mo(:)
+      real(8), allocatable :: dmat_resp_mo(:)
+      real(8), allocatable :: saop_energies(:)
+      integer :: i, j, joff, jhelp, joffnext, np, ni, no
+      integer :: k, kcheck, i2basx(2, 2), i2orbx(2, 2), icmoq(2)
+      real(8) :: somediff
+      real(8) :: toterg, e
+      integer :: lusaop, itemp(2)
+      integer :: nr_ao_in_fermion_corep(2)
+!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!
+      if (.not. mo_eigenvalues_available) then
+         print *, 'error: dft ac code cannot find mo_eigenvalues'
+         stop
+      end if
+      if (.not. mo_coef_available) then
+         print *, 'error: dft ac code cannot find mo_coef'
+         stop
+      end if
+
+      allocate(dmat_outer_mo(nr_mo*nr_mo))
+      if (dft_cfg_saop_with_response_part) then
+         allocate(dmat_resp_mo(nr_mo*nr_mo))
+      end if
+      allocate(saop_energies(nr_mo))
+
+
+      call get_homo_eigenvalue()
+!
+!
+!     calculate energy differences
+!     ============================
+!
+      K = 0
+      saop_energies = 0.0d0
+      DO I = 1,nr_fermion_coreps
+        if (i == 1) then
+           np = nr_mo_gerade_negative_secondary
+           ni = nr_mo_gerade_positive_inactive
+        else
+           np = nr_mo_ungerade_negative_secondary
+           ni = nr_mo_ungerade_positive_inactive
+        end if
+        IF(NI.GT.0) THEN
+          DO J = 1,NI
+            K = K+1
+            saop_energies(k) =                                          &
+     &            homo_eigenvalue                               &
+     &           -mo_eigenvalues(J+(I-1)*nr_mo_gerade+NP)
+          ENDDO
+        ENDIF
+      ENDDO
+!
+!
+!     get orbital density matrices
+!     ============================
+!
+      dmat_outer_ao = 0.0d0
+      dmat_outer_mo = 0.0d0
+      if (dft_cfg_saop_with_response_part) then
+        dmat_resp_ao = 0.0d0
+        dmat_resp_mo = 0.0d0
+      end if
+      K = 0
+      DO I = 1,nr_fermion_coreps
+        if (i == 1) then
+           np = nr_mo_gerade_negative_secondary
+           ni = nr_mo_gerade_positive_inactive
+        else
+           np = nr_mo_ungerade_negative_secondary
+           ni = nr_mo_ungerade_positive_inactive
+        end if
+        IF(NI.GT.0) THEN
+          DO J = 1,NI
+            K = K+1
+            JOFF = (nr_mo_gerade*(I-1)+NP)*nr_mo
+            JOFF = JOFF+nr_mo_gerade*(I-1)+NP
+            JOFF = JOFF+(J-1)*nr_mo+J-1
+            IF(dft_cfg_saop_with_response_part) THEN
+              DMAT_RESP_MO(1+JOFF)                                      &
+     &                                 = SQRT(saop_energies(K))
+            ENDIF
+            DMAT_OUTER_MO(1+JOFF)                                       &
+     &                        = EXP(-2.0d0*(saop_energies(K)**2.0d0))
+          ENDDO
+        ENDIF
+      ENDDO
+!
+!
+!     to avoid numerical problems for degenerate orbitals
+!     ===================================================
+!
+      DO I = 1,nr_fermion_coreps
+        if (i == 1) then
+           np = nr_mo_gerade_negative_secondary
+           ni = nr_mo_gerade_positive_inactive
+        else
+           np = nr_mo_ungerade_negative_secondary
+           ni = nr_mo_ungerade_positive_inactive
+        end if
+        IF(NI.GT.0) THEN
+          DO JHELP = 1,(NI-1)
+            J = NI-JHELP
+            KCHECK = nr_mo_gerade_positive_inactive*(I-1)+J
+!
+            JOFF = (nr_mo_gerade*(I-1)+NP)*nr_mo
+            JOFF = JOFF+nr_mo_gerade*(I-1)+NP
+            JOFF = JOFF+(J-1)*nr_mo+J-1
+!
+            JOFFNEXT = JOFF+nr_mo+1
+!
+            SOMEDIFF = ABS(saop_energies(1+KCHECK)                      &
+     &                                  -saop_energies(KCHECK))
+            IF(SOMEDIFF.LT.1.0D-5) THEN
+              IF(dft_cfg_saop_with_response_part) THEN
+                dmat_resp_mo(1+joff) = dmat_resp_mo(1+joffnext)
+              ENDIF
+           dmat_outer_mo(1+joff) = dmat_outer_mo(1+joffnext)
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+
+      i2basx = 0
+      if (nr_fermion_coreps > 1) then
+         i2basx(2, 1) = nr_ao_gerade
+         i2basx(1, 2) = nr_ao_gerade*nr_ao_gerade &
+                      + nr_ao_gerade*nr_ao_ungerade
+         i2basx(2, 2) = i2basx(2, 1) + i2basx(1, 2)
+      end if
+
+      i2orbx = 0
+      if (nr_fermion_coreps > 1) then
+         i2orbx(2, 1) = nr_mo_gerade
+         i2orbx(1, 2) = nr_mo_gerade*nr_mo_gerade &
+                      + nr_mo_gerade*nr_mo_ungerade
+         i2orbx(2, 2) = i2orbx(2, 1) + i2orbx(1, 2)
+      end if
+
+      icmoq = 0
+      if (nr_fermion_coreps > 1) then
+         icmoq(2) = nr_mo_gerade*nr_ao_gerade
+      end if
+
+      nr_ao_in_fermion_corep(1) = nr_ao_gerade
+      nr_ao_in_fermion_corep(2) = nr_ao_ungerade
+!
+!
+!     transform density matrices
+!     ==========================
+!
+      DO I = 1,nr_fermion_coreps
+        if (i == 1) then
+           np = nr_mo_gerade_negative_secondary
+           ni = nr_mo_gerade_positive_inactive
+           no = nr_mo_gerade
+        else
+           np = nr_mo_ungerade_negative_secondary
+           ni = nr_mo_ungerade_positive_inactive
+           no = nr_mo_ungerade
+        end if
+        IF(NI.GT.0) THEN
+          IF(dft_cfg_saop_with_response_part) THEN
+            CALL QTRANS90('MOAO','S',0.0d0,                             &
+     &                  nr_ao_in_fermion_corep(i),nr_ao_in_fermion_corep(i),NO, no, &
+     &                  DMAT_RESP_AO(1+I2BASX(I,I)),                    &
+     &                  nr_ao, nr_ao,1,pq_to_uq,                            &
+     &                  DMAT_RESP_MO(1+I2ORBX(I,I)),                    &
+     &                  nr_mo,nr_mo,1,pq_to_uq,                         &
+     &                  mo_coef(1+ICMOQ(I)),                           &
+     &                  nr_ao_in_fermion_corep(i),no,nr_quaternion_blocks,pq_to_uq,                 &
+     &                  mo_coef(1+ICMOQ(I)),                           &
+     &                  nr_ao_in_fermion_corep(i),no,nr_quaternion_blocks,pq_to_uq,                 &
+     &                  0)
+          ENDIF
+          CALL QTRANS90('MOAO','S',0.0d0,                               &
+     &                  nr_ao_in_fermion_corep(i),nr_ao_in_fermion_corep(i),NO, no, &
+     &                DMAT_OUTER_AO(1+I2BASX(I,I)),                     &
+     &                  nr_ao, nr_ao,1,pq_to_uq,                            &
+     &                DMAT_OUTER_MO(1+I2ORBX(I,I)),                     &
+     &                nr_mo,nr_mo,1,pq_to_uq,                           &
+     &                mo_coef(1+ICMOQ(I)),                             &
+     &                nr_ao_in_fermion_corep(i),no,nr_quaternion_blocks,pq_to_uq,                   &
+     &                mo_coef(1+ICMOQ(I)),                             &
+     &                nr_ao_in_fermion_corep(i),no,nr_quaternion_blocks,pq_to_uq,                   &
+     &                0)
+        ENDIF
+      ENDDO
+
+
+
+
+
+      dmat_outer_ao = 2.0d0*dmat_outer_ao
+      if (dft_cfg_saop_with_response_part) then
+         dmat_resp_ao = 2.0d0*dmat_resp_ao
+      end if
+
+      deallocate(dmat_outer_mo)
+      if (dft_cfg_saop_with_response_part) then
+         deallocate(dmat_resp_mo)
+      end if
+      deallocate(saop_energies)
+
+      end subroutine
+
+   subroutine get_homo_eigenvalue()
+
+!     --------------------------------------------------------------------------
+      integer :: i, j
+!     --------------------------------------------------------------------------
+
+      homo_eigenvalue = -1.0d20
+      j = 0
+      do i = 1, nr_mo_gerade_negative_secondary
+         j = j + 1
+      end do
+      do i = 1, nr_mo_gerade_positive_inactive
+         j = j + 1
+         if (mo_eigenvalues(j) > homo_eigenvalue) then
+            homo_eigenvalue = mo_eigenvalues(j)
+         end if
+      end do
+      do i = 1, nr_mo_gerade_positive_secondary
+         j = j + 1
+      end do
+      do i = 1, nr_mo_ungerade_negative_secondary
+         j = j + 1
+      end do
+      do i = 1, nr_mo_ungerade_positive_inactive
+         j = j + 1
+         if (mo_eigenvalues(j) > homo_eigenvalue) then
+            homo_eigenvalue = mo_eigenvalues(j)
+         end if
+      end do
+      do i = 1, nr_mo_ungerade_positive_secondary
+         j = j + 1
+      end do
+
+   end subroutine
+
+end module

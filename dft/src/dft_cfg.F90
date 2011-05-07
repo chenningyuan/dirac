@@ -49,7 +49,6 @@ module dft_cfg
    real(8), public :: dft_cfg_dfthri                  = 2.0d-12
    real(8), public :: dft_cfg_ac_ip                   = 0.0d0
    real(8), public :: dft_cfg_ac_threshold            = 0.0d0
-   real(8), public :: dft_cfg_homo_eigenvalue         = 0.0d0
    real(8), public :: dft_cfg_grac_alpha              = 0.0d0
    real(8), public :: dft_cfg_grac_beta               = 0.0d0
 
@@ -83,7 +82,6 @@ contains
       call xc_mpi_bcast(dft_cfg_dfthri                 )
       call xc_mpi_bcast(dft_cfg_ac_ip                  )
       call xc_mpi_bcast(dft_cfg_ac_threshold           )
-      call xc_mpi_bcast(dft_cfg_homo_eigenvalue        )
       call xc_mpi_bcast(dft_cfg_grac_alpha             )
       call xc_mpi_bcast(dft_cfg_grac_beta              )
       call xc_mpi_bcast(dft_cfg_alda_order             )

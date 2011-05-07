@@ -46,14 +46,13 @@ module visual_in_point
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
-
-
 
 contains
 
@@ -189,6 +188,7 @@ contains
                   v = 0.5d0*v
                else
                   call get_j(v,            &
+                             cval,         &
                              D(imat)%irep, &
                              D(imat)%nrow, &
                              D(imat)%elms, &
@@ -257,6 +257,7 @@ contains
                 (visual_cfg_property(imat) == iq_rotj)) then
                call get_gj(v,            &
                            matrix_33,    &
+                           cval,         &
                            D(imat)%irep, &
                            D(imat)%nrow, &
                            D(imat)%elms, &
@@ -319,6 +320,7 @@ contains
                 (visual_cfg_property(imat) == iq_bdipz)) then
             
                call get_j(v,            &
+                          cval,         &
                           D(imat)%irep, &
                           D(imat)%nrow, &
                           D(imat)%elms, &
@@ -359,6 +361,7 @@ contains
                   v = 0.5d0*v
                else
                   call get_j(v,            &
+                             cval,         &
                              D(imat)%irep, &
                              D(imat)%nrow, &
                              D(imat)%elms, &

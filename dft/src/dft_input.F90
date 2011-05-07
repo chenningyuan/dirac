@@ -21,66 +21,35 @@
 
 module dft_input
 
-  use dft_cfg
-  use xc_derv
+   use dft_cfg
+   use xc_derv
 #ifdef MOD_XCFUN
-  use xcfun
+   use xcfun
 #endif
 
-  implicit none
+   implicit none
 
 #ifdef MOD_XCFUN
-  public parse_functional
-  public set_xc_fun_alda
-  public set_xc_fun_xalda
-  public set_kin_fun_alda
-  public set_kin_fun_xalda
+   public parse_functional
+   public set_xc_fun_alda
+   public set_xc_fun_xalda
+   public set_kin_fun_alda
+   public set_kin_fun_xalda
 #endif
-  public consistency_after_dft_input
-  public report_after_dft_input
-  public reset_hfxfac
-
-
-  logical, save :: reset_hfxfac = .true.
-
-  private
+   public consistency_after_dft_input
+   public report_after_dft_input
+   public set_hf_exchange_factor
+ 
+   real(8), public :: hf_exchange_factor
+ 
+   private
 
 contains
 
-   subroutine reset_hfx()
-#include "dcbham.h"
-      hfxfac = 0.0d0
+   subroutine set_hf_exchange_factor(h)
+      real(8), intent(in) :: h
+      hf_exchange_factor = h
    end subroutine
-
-   subroutine add_hfx(w)
-      real(8), intent(in) :: w
-#include "dcbham.h"
-      hfxfac = hfxfac + w
-   end subroutine
-
-   subroutine set_cam_mu(mu)
-      real(8), intent(in) :: mu
-#include "dcbham.h"
-      hfxmu  = mu
-   end subroutine
-
-   subroutine set_cam_beta(beta)
-      real(8), intent(in) :: beta
-#include "dcbham.h"
-      hfxatt = beta
-   end subroutine
-
-  function get_hfx()
-
-#include "dcbham.h"
-
-!   ----------------------------------------------------------------------------
-    real(8)                   :: get_hfx
-!   ----------------------------------------------------------------------------
-
-    get_hfx = hfxfac
-
-  end function
 
   function get_weight(word, functional)
 
@@ -113,7 +82,12 @@ contains
   end function
 
 #ifdef MOD_XCFUN
-   subroutine parse_functional(line, f)
+   subroutine parse_functional(line,     &
+                               f,        &
+                               hfx_out,  &
+                               mu_out,   &
+                               beta_out, &
+                               set_hf_exchange_factor)
    
 !     radovan: line is made lowercase, then cut into words
 !              if word contains "=" the weight is read
@@ -132,6 +106,10 @@ contains
 !     --------------------------------------------------------------------------
       character(80)              :: line
       type(functional)           :: f
+      real(8), intent(out)       :: hfx_out
+      real(8), intent(out)       :: mu_out
+      real(8), intent(out)       :: beta_out
+      logical, intent(in)        :: set_hf_exchange_factor
 !     --------------------------------------------------------------------------
       character(80), allocatable :: word_array(:)
       integer                    :: i, nr_words
@@ -139,12 +117,13 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
       
-      u = get_lupri()
-      
-      write(u, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
-      write(u, '(a)') '   (weight: functional)'
-      
-      if (reset_hfxfac) call reset_hfx()
+      write(*, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
+      write(*, '(a)') '   (weight: functional)'
+
+      hfx_out  = 0.0d0
+      mu_out   = 0.0d0
+      beta_out = 0.0d0
+
       f%w = 0.0d0
       
       line = lowercase(line)
@@ -178,7 +157,7 @@ contains
            f%w(XC_BECKECORRX) = f%w(XC_BECKECORRX) + 0.72d0*w
            f%w(XC_VWN5C     ) = f%w(XC_VWN5C     ) + 0.19d0*w
            f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
-           call add_hfx(0.2d0*w)
+           hfx_out = hfx_out + 0.2d0*w
         end if
       
         w = get_weight(word_array(i), 'm05')
@@ -190,7 +169,7 @@ contains
 !          this is not the case for m05x
            f%w(XC_M05X) = f%w(XC_M05X) + w*(1.0d0 - h)
            f%w(XC_M05C) = f%w(XC_M05C) + w
-           call add_hfx(w*h)
+           hfx_out = hfx_out + h*w
         end if
       
         w = get_weight(word_array(i), 'm06')
@@ -198,7 +177,7 @@ contains
            h = 0.27d0
            f%w(XC_M06X) = f%w(XC_M06X) + w
            f%w(XC_M06C) = f%w(XC_M06C) + w
-           call add_hfx(w*h)
+           hfx_out = hfx_out + h*w
         end if
       
         w = get_weight(word_array(i), 'm06l')
@@ -223,7 +202,7 @@ contains
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_PBEX) = f%w(XC_PBEX) + 0.75d0*w
            f%w(XC_PBEC) = f%w(XC_PBEC) +        w
-           call add_hfx(0.25d0*w)
+           hfx_out = hfx_out + 0.25d0*w
         end if
       
         w = get_weight(word_array(i), 'kt1')
@@ -246,13 +225,13 @@ contains
       
         w = get_weight(word_array(i), 'kin_pw91')
         if (dabs(w) > tiny(0.0d0)) then
-          write(u, '(f10.6, a)') w, ': kin_pw91'
+          write(*, '(f10.6, a)') w, ': kin_pw91'
           f%w(XC_PW91K) = f%w(XC_PW91K) + w
         end if
 
         w = get_weight(word_array(i), 'kin_tf')
         if (dabs(w) > tiny(0.0d0)) then
-          write(u, '(f10.6, a)') w, ': kin_tf'
+          write(*, '(f10.6, a)') w, ': kin_tf'
           f%w(XC_TFK) = f%w(XC_TFK) + w
         end if
 
@@ -278,7 +257,7 @@ contains
       
         w = get_weight(word_array(i), 'hfx')
         if (dabs(w) > tiny(0.0d0)) then
-           call add_hfx(w)
+           hfx_out = hfx_out + w
         end if
       
         w = get_weight(word_array(i), 'ldaerfx')
@@ -299,12 +278,12 @@ contains
         w = get_weight(word_array(i), 'mu')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_RANGESEP_MU) = w
-           call set_cam_mu(w)
+           mu_out = mu_out + w
         end if
       
         w = get_weight(word_array(i), 'beta')
         if (dabs(w) > tiny(0.0d0)) then
-           call set_cam_beta(w)
+           beta_out = beta_out + w
         end if
 
         w = get_weight(word_array(i), 'slater')
@@ -326,7 +305,7 @@ contains
       
       deallocate(word_array)
  
-      write(u, '(a)')
+      write(*, '(a)')
 
 !     check that not all weights are zero
 !     this happens when no functional is recognized
@@ -336,7 +315,12 @@ contains
          h = h + dabs(f%w(i)) 
       end do
       if (h < tiny(0.0d0)) then
-         call quit('XCFun functional not recognized from input')
+         print *, 'XCFun functional not recognized from input'
+         stop
+      end if
+
+      if (set_hf_exchange_factor) then
+         hf_exchange_factor = hfx_out
       end if
    
    end subroutine
@@ -360,7 +344,7 @@ contains
 !     --------------------------------------------------------------------------
 
       f%w = 0.0d0
-      f%w(XC_SLATERX) = 1.0d0 - get_hfx()
+      f%w(XC_SLATERX) = 1.0d0 - hf_exchange_factor
       f%w(XC_VWN5C  ) = 1.0d0
 
    end subroutine
@@ -387,34 +371,16 @@ contains
 
 #endif /* ifdef MOD_XCFUN */
 
-  function get_lupri() result(u)
-
-#include "priunit.h"
-
-!   ----------------------------------------------------------------------------
-    integer :: u
-!   ----------------------------------------------------------------------------
-
-    u = lupri
-
-  end function
-
-  subroutine set_lscale_dft_gaunt()
-
-#include "dcbham.h"
-
-    lscale_dft_gaunt = .true.
-
-  end subroutine
-
   subroutine consistency_after_dft_input()
 
     if (dft_cfg_asymptote_is_lb94 .and. dft_cfg_asymptote_is_lbalpha) then
-      call quit('LBalpha = LB94 = .true.')
+       print *, 'LBalpha = LB94 = .true.'
+       stop
     end if
 
     if (dft_cfg_sdft_collinear .and. dft_cfg_no_sdft) then
-      call quit('.COLLINEAR cannot be used together with .NOSDFT')
+       print *, '.COLLINEAR cannot be used together with .NOSDFT'
+       stop
     end if
 
   end subroutine
@@ -425,61 +391,59 @@ contains
     integer :: u
 !   ----------------------------------------------------------------------------
 
-    u = get_lupri()
-
     write(*, *) ' ===== Kohn-Sham calculation set-up ====='
 
 !   thresholds
 
-    write(u, '(a)')          ' * DFT thresholds:'
-    write(u, '(a, e12.5)')   '   - dfthr0 = ', dft_cfg_dfthr0
-    write(u, '(a, e12.5)')   '   - dfthri = ', dft_cfg_dfthri
+    write(*, '(a)')          ' * DFT thresholds:'
+    write(*, '(a, e12.5)')   '   - dfthr0 = ', dft_cfg_dfthr0
+    write(*, '(a, e12.5)')   '   - dfthri = ', dft_cfg_dfthri
 
 !   asymptotic correction
 
     if (dft_cfg_grac) then
-      write(u, '(a)')        ' * Gradient regulated asymptotic correction:'
-      write(u, '(a, e12.5)') '   - alpha = ', dft_cfg_grac_alpha
-      write(u, '(a, e12.5)') '   - beta  = ', dft_cfg_grac_beta
-      write(u, '(a)')        '   - threshold for difference in HOMO eigenvalue'
-      write(u, '(a, e12.5)') '     below which asymptotic correction '// &
+      write(*, '(a)')        ' * Gradient regulated asymptotic correction:'
+      write(*, '(a, e12.5)') '   - alpha = ', dft_cfg_grac_alpha
+      write(*, '(a, e12.5)') '   - beta  = ', dft_cfg_grac_beta
+      write(*, '(a)')        '   - threshold for difference in HOMO eigenvalue'
+      write(*, '(a, e12.5)') '     below which asymptotic correction '// &
                              'is switched on: ', dft_cfg_ac_threshold
-      write(u, '(a, e12.5)') '   - bulk potential will be shifted by (IP): ', dft_cfg_ac_ip
+      write(*, '(a, e12.5)') '   - bulk potential will be shifted by (IP): ', dft_cfg_ac_ip
     end if
 
     if (dft_cfg_saop) then
-      write(u, '(a)')        ' * Statistical averaging of (model) orbital potentials:'
+      write(*, '(a)')        ' * Statistical averaging of (model) orbital potentials:'
     end if
 
     if (dft_cfg_saop_with_response_part) then
-      write(u, '(a)')        '   - original SAOP as in JCP 112, 1344 (2000) chosen'
-      write(u, '(a)')        '   - this activates ALDA xc kernel'
-      write(u, '(a)')        '   - the functional under .DFT is expected to be GLLBhole'
+      write(*, '(a)')        '   - original SAOP as in JCP 112, 1344 (2000) chosen'
+      write(*, '(a)')        '   - this activates ALDA xc kernel'
+      write(*, '(a)')        '   - the functional under .DFT is expected to be GLLBhole'
     end if
 
     if (dft_cfg_asymptote_is_lb94) then
-      write(u, '(a)')        '   - the asymptotic potential is LB94'
+      write(*, '(a)')        '   - the asymptotic potential is LB94'
     end if
 
     if (dft_cfg_asymptote_is_lbalpha) then
-      write(u, '(a)')        '   - the asymptotic potential is LBalpha'
+      write(*, '(a)')        '   - the asymptotic potential is LBalpha'
     end if
 
 !   sdft
 
     if (dft_cfg_no_sdft) then
 
-      write(u, '(a)')        ' * No spin density contribution in response calculations.'
+      write(*, '(a)')        ' * No spin density contribution in response calculations.'
 
     else
 
-      write(u, '(a)')        ' * Spin density contribution in response calculations:'
+      write(*, '(a)')        ' * Spin density contribution in response calculations:'
 
       if (dft_cfg_sdft_collinear) then
-        write(u, '(a)')      '   - use the collinear approximation as '// &
+        write(*, '(a)')      '   - use the collinear approximation as '// &
                              'a definition of the spin density'
       else
-        write(u, '(a)')      '   - use the norm of the spin magnetization vector as '// &
+        write(*, '(a)')      '   - use the norm of the spin magnetization vector as '// &
                              'a definition of the spin density (noncollinear definition)'
       end if
 
@@ -489,31 +453,31 @@ contains
 
     if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
 
-      write(u, '(a)')        ' * Adiabatic local density approximation (ALDA):'
-      write(u, '(a)')        '   - approximate all functional derivatives '// &
+      write(*, '(a)')        ' * Adiabatic local density approximation (ALDA):'
+      write(*, '(a)')        '   - approximate all functional derivatives '// &
                              'beyond the xc potential by SVWN derivatives'
 
       if (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
-        write(u, '(a)')      '   - use ALDA only for the Hermitian part '// &
+        write(*, '(a)')      '   - use ALDA only for the Hermitian part '// &
                              '(density contribution)'
-        write(u, '(a)')      '   - use the proper xc kernel for the anti-Hermitian '// &
+        write(*, '(a)')      '   - use the proper xc kernel for the anti-Hermitian '// &
                              'part (spin density contribution)'
       end if
 
       if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
-        write(u, '(a)')      '   - use ALDA only for the anti-Hermitian part '// &
+        write(*, '(a)')      '   - use ALDA only for the anti-Hermitian part '// &
                              '(spin density contribution)'
-        write(u, '(a)')      '   - use the proper xc kernel for the Hermitian '// &
+        write(*, '(a)')      '   - use the proper xc kernel for the Hermitian '// &
                              'part (density contribution)'
       end if
 
       if (dft_cfg_xalda) then
-        write(u, '(a)')      '   - keep the fraction of exact exchange of the '// &
+        write(*, '(a)')      '   - keep the fraction of exact exchange of the '// &
                              'xc functional in the solution of the response equation'
       else
-        write(u, '(a)')      '   - for hybrid functionals exact exchange is '// &
+        write(*, '(a)')      '   - for hybrid functionals exact exchange is '// &
                              'switched off in the solution of the response equation'
-        write(u, '(a)')      '     (if you want to keep it, use .XALDA)'
+        write(*, '(a)')      '     (if you want to keep it, use .XALDA)'
       end if
 
     end if !if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then

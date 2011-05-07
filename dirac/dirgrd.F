@@ -173,6 +173,7 @@ C
 C     J. Thyssen, 2000/8/27
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -188,7 +189,6 @@ C
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 #include "symmet.h"
@@ -761,6 +761,7 @@ C
 C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -785,7 +786,6 @@ C     Timing variables
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "nuclei.h"
 #include "cbiher.h"
 #include "cbihr1.h"

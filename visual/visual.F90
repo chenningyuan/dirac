@@ -357,7 +357,6 @@ contains
 
 #ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
-       call xc_london_c1_init(ntbas(0))
        D_con_ao = 0
        D_con_mo = 0
     end if

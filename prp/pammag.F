@@ -673,6 +673,7 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       use xc_driver
       use dft_cfg
       use num_grid_gen
+      use quaternion_algebra
 
       implicit none
 !
@@ -689,7 +690,6 @@ C.....Get full AO-Fock matrix with two-electron London integrals
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "iratdef.h"
 C
 #include "aovec.h"
@@ -765,6 +765,7 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
+      use quaternion_algebra
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -780,7 +781,6 @@ C***********************************************************************
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "iratdef.h"
 C
 #include "aovec.h"
@@ -927,6 +927,7 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
+      use quaternion_algebra
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -942,7 +943,6 @@ C***********************************************************************
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "iratdef.h"
 C
 #include "aovec.h"
@@ -1054,6 +1054,7 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
+      use quaternion_algebra
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -1069,7 +1070,6 @@ C***********************************************************************
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "iratdef.h"
 C
 #include "aovec.h"
@@ -1744,9 +1744,9 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -2164,6 +2164,7 @@ C     Written by T.Saue October 1994
 C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
@@ -2174,11 +2175,9 @@ C
 #include "symmet.h"
 C
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
       LOGICAL DOINT(2,2),DIAG,SAME
       DIMENSION ONEINT(*)
-      EXTERNAL BDQALGEBRA
       CHARACTER TYP*1
 C
 #include "ibtfun.h"
@@ -2274,6 +2273,7 @@ C                     1998  TEC
 C                     jan.2003 MI 
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2285,7 +2285,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dcbqal.h"
 #include "dummy.h"
 C
 #include "ibtfun.h"
@@ -2478,6 +2477,7 @@ C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
@@ -2490,7 +2490,6 @@ C*****************************************************************************
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "iratdef.h"
 C
 #include "aovec.h"
@@ -2650,7 +2649,6 @@ C*****************************************************************************
 
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
-      EXTERNAL BDQALGEBRA
 
       CALL QENTER('HORDRNT')
 

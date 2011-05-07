@@ -1530,9 +1530,9 @@ C
 C     REMARKS:
 C     
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0)
 C         
 #include "dcborb.h"
@@ -1541,7 +1541,6 @@ C
 C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),DMO(NORBT,NORBT,NZ),WORK(*)
 C           
-      EXTERNAL BDQALGEBRA
 C     
       CALL DZERO(DMAT,N2BBASXQ)
 C     

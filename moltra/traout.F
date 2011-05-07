@@ -744,11 +744,11 @@ C    Written by Luuk Visscher, April 1997
 C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
-#include "dcbqal.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)

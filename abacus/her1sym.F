@@ -111,6 +111,7 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
+      use quaternion_algebra
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -147,7 +148,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dcbqal.h"
 #include "dcbgrd.h"
 #else
 #include "energy.h"

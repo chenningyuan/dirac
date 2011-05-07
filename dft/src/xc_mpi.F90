@@ -59,6 +59,7 @@ module xc_mpi
       module procedure xc_mpi_reduce_i1
       module procedure xc_mpi_reduce_r0
       module procedure xc_mpi_reduce_r1
+      module procedure xc_mpi_reduce_r2
       module procedure xc_mpi_reduce_r4
    end interface
 #endif
@@ -192,6 +193,15 @@ contains
 
    subroutine xc_mpi_reduce_r1(x)
       real(8) :: x(:)
+      if (xc_mpi_is_master()) then
+         call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+      else
+         call mpi_reduce(x, MPI_IN_PLACE, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
+      end if
+   end subroutine
+
+   subroutine xc_mpi_reduce_r2(x)
+      real(8) :: x(:, :)
       if (xc_mpi_is_master()) then
          call mpi_reduce(MPI_IN_PLACE, x, size(x), mpi_double_precision, mpi_sum, 0, mpi_comm_world, ierr)
       else

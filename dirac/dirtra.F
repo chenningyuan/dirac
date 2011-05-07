@@ -231,17 +231,16 @@ C     Theory: T.Saue &  H.J.Aa.Jensen
 C     Written by T.Saue October 1994
 C     Last revision: Nov 7 2001 - hjaaj
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
       LOGICAL DIAG,SAME
       DIMENSION ONEINT(NNBBASX), IDOINT(2,2)
       PARAMETER (IL = 2, IR = 1)
-      EXTERNAL BDQALGEBRA
 C
 #include "ibtfun.h"
 C
@@ -301,6 +300,7 @@ C              q2phase  (this routine) is for Hermit sorted matrices
 C              q2bphase (next routine) is for DIRAC  sorted matrices
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -311,11 +311,9 @@ C
 C
 #include "symmet.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
-      EXTERNAL BDQALGEBRA
 C
       IF(TYP.NE.'F'.AND.TYP.NE.'D') THEN
         CALL QUIT('Q2PHASE: Unknown TYP !')
@@ -366,6 +364,7 @@ C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -376,11 +375,9 @@ C
 C
 #include "symmet.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
-      EXTERNAL BDQALGEBRA
 C
       IF(TYP.NE.'F'.AND.TYP.NE.'D') THEN
         CALL QUIT('Q2BPHASE: Unknown TYP !')
@@ -428,6 +425,7 @@ C
 C     based on q2bphase; adaption for non-quadratic matrices by S. Knecht
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -438,11 +436,9 @@ C
 C
 #include "symmet.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
-      EXTERNAL BDQALGEBRA
 C
 #ifdef DEBUG_mat_transform
       print '(a,i4)', ' phase factor insertion: jfac is',jfac
@@ -523,13 +519,13 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
@@ -542,7 +538,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -572,13 +567,13 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 -jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
@@ -591,7 +586,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -620,12 +614,12 @@ C     Vector Transform: QO-basis to SO-basis
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
-#include "dcbqal.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
@@ -640,7 +634,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -670,13 +663,13 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
@@ -689,7 +682,6 @@ C
 #else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ

@@ -1,26 +1,3 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      BLOCK DATA BDQALGEBRA
-C
-C Initialize /QALGEBRA/
-C
-#include "implicit.h"
-#include "dcbqal.h"
-C
-      DATA IQMULT / 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2, 4, 3, 2, 1,
-     &              2, 1, 4, 3, 1, 2, 3, 4, 4, 3, 2, 1, 3, 4, 1, 2,
-     &              3, 4, 1, 2, 4, 3, 2, 1, 1, 2, 3, 4, 2, 1, 4, 3,
-     &              4, 3, 2, 1, 3, 4, 1, 2, 2, 1, 4, 3, 1, 2, 3, 4/
-      DATA IQPHASE/ 1, 1, 1, 1, 1,-1,-1, 1, 1, 1,-1,-1, 1,-1, 1,-1,
-     &              1,-1,-1, 1,-1,-1,-1,-1, 1,-1, 1,-1,-1,-1, 1, 1,
-     &              1, 1,-1,-1,-1, 1,-1, 1,-1,-1,-1,-1, 1,-1,-1, 1,
-     &              1,-1, 1,-1, 1, 1,-1,-1,-1, 1, 1,-1,-1,-1,-1,-1/
-      DATA IQSIGN / 1, 1, 1, 1, 1,-1,-1,-1,
-     &              1, 1,-1,-1, 1,-1, 1, 1,
-     &              1,-1, 1,-1, 1, 1,-1, 1,
-     &              1,-1,-1, 1, 1, 1, 1,-1/
-      DATA QUNIT  / '1','i','j','k'/
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck iqpack */
       SUBROUTINE IQPACK(IQPA,NZA,IQPB,NZB,IQPC,NZC)
 C***********************************************************************
@@ -33,12 +10,11 @@ C     Written by T.Saue - June 27 1996
 C     Last revision: June 27 1996 - tsaue
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
-#include "dcbqal.h"
 C
       LOGICAL LBUF(4)
       DIMENSION IQPA(NZA),IQPB(NZB),IQPC(*)
-      EXTERNAL BDQALGEBRA
 C
 C     Initialize LBUF
 C     ===============
@@ -106,9 +82,9 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1=1.0D0)
 C
 C     Global variables
@@ -122,7 +98,6 @@ C
       DIMENSION IPB(4)
       LOGICAL   LBUF(4)      
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialize LBUF
 C     ===============
@@ -287,9 +262,9 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1=1.0D0)
 C
 C     Global variables
@@ -303,7 +278,6 @@ C
       LOGICAL   LBUF(4)      
       DIMENSION IPC(4)
 C
-      EXTERNAL BDQALGEBRA
 C
 C
 C     Initialize LBUF
@@ -1016,15 +990,14 @@ C     Written by T.Saue July 1996
 C     Last revision: July 14 196 - tsaue
 C     
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0)
 C
       CHARACTER FA*1, TA*1
       DIMENSION A(N,NZA),IQPA(*)
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Determine FA:
 C     =============

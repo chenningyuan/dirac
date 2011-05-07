@@ -21,6 +21,7 @@
 
 module london_prp_cfg
 
+      use quaternion_algebra
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
@@ -127,7 +128,6 @@ module london_prp_cfg
 #include "shells.h"
 #include "symmet.h"
 #include "cbihr2.h"
-#include "dcbqal.h"
 
 
 

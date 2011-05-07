@@ -57,6 +57,7 @@ contains
                          prop_op_trsym,        &
                          prop_op_name)
 
+      use quaternion_algebra
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -69,7 +70,6 @@ contains
 #include "ccom.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbqal.h"
 #include "priunit.h"
 
 !   ----------------------------------------------------------------------------

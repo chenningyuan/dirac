@@ -29,10 +29,13 @@ module xc_driver
    use fde_mod
 #endif
    use num_grid_cfg
-   use basis_info
-   use occupation_info
+   use interface_ao
+   use interface_mo
    use dft_cfg
+   use dft_input
    use xc_derv
+   use xc_ac
+   use extra
    use num_grid_io
    use ao_eval
    use density_eval
@@ -250,7 +253,7 @@ contains
    integer, parameter :: max_mat_number = 10
    integer, target    :: default_pg_sym(max_mat_number)
    integer, target    :: default_ih_sym(max_mat_number)
-    real(8)             :: save_ddot1, save_ddot2
+    real(8)             :: save_ddot1, save_ddot2, h
 
 
 
@@ -480,10 +483,10 @@ contains
 !     but this is anyway an exotic option
       if (response_order_mo > 1) then
          if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
-            call quit('qr and partial alda is not implemented')
+            call my_quit('qr and partial alda is not implemented')
          end if
          if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
-            call quit('qr and partial alda is not implemented')
+            call my_quit('qr and partial alda is not implemented')
          end if
       end if
 
@@ -537,17 +540,35 @@ contains
       end if
 #endif
 
+      call interface_mo_read()
+
+      if (dft_cfg_saop .or. dft_cfg_grac) then
+         call dftac_eigenvalues()
+#ifdef VAR_MPI
+         !fixme ugly
+         if (xc_mpi_is_master()) then
+            h = hf_exchange_factor
+         end if
+         if (parallel_xc) then
+            call xc_mpi_bcast(h)
+            call set_hf_exchange_factor(h)
+         end if
+#endif
+      end if
+
 !     allocate saop density matrices
       if (dft_cfg_saop) then
-         dft_cfg_saop_is_active = .true.
          allocate(dmat_saop_outer(mat_dim*mat_dim))
          if (dft_cfg_saop_with_response_part) then
             allocate(dmat_saop_resp(mat_dim*mat_dim))
          end if
-!        only master calculates saop density matrices
-         if (xc_mpi_is_master()) then
-            call dftac_saop_get_dmats(dmat_saop_outer, &
-                                      dmat_saop_resp)
+         if (mo_eigenvalues_available .and. mo_coef_available) then
+            dft_cfg_saop_is_active = .true.
+!           only master calculates saop density matrices
+            if (xc_mpi_is_master()) then
+               call dftac_saop_get_dmats(dmat_saop_outer, &
+                                         dmat_saop_resp)
+            end if
          end if
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -760,7 +781,7 @@ contains
             do iz = 1, nz
                do im = 1, nr_dmat
                   iq = pq_to_uq(iz, dmat_pg_sym(im) - 1)
-                  call q2bphase('D', iq, 1, dmat(1, 1, iz, im))
+                  call my_q2bphase('D', iq, 1, dmat(1, 1, iz, im))
                end do
             end do
          end if
@@ -768,7 +789,7 @@ contains
             do iz = 1, nz
                do im = 1, nr_fmat
                   iq = pq_to_uq(iz, fmat_pg_sym(im) - 1)
-                  call q2bphase('F', iq, 1, fmat(1, 1, iz, im))
+                  call my_q2bphase('F', iq, 1, fmat(1, 1, iz, im))
                end do
             end do
          end if
@@ -890,12 +911,6 @@ contains
     if (do_london_lr) then
        max_fun_derv = 2
     end if
-
-#ifdef MOD_OPENRSP
-    if (do_london_ks .or. do_london_lr) then
-       call xc_london_c1_init(mat_dim)
-    end if
-#endif
 
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
@@ -1700,8 +1715,6 @@ contains
    subroutine report()
     real(8) :: error_nr_electrons
 
-      call occupation_info_read()
-
       error_nr_electrons  = nr_electrons &
                           - nr_electrons_total
 
@@ -1843,7 +1856,7 @@ contains
 #ifdef MOD_UNRELEASED
             else if (do_fde_update_vemb .or. do_fde_response) then
                if (parallel_xc) then
-                  call quit('fix fde_response mpi')
+                  call my_quit('fix fde_response mpi')
                end if
 
                allocate(fde_froz_n(nr_points_batch))

@@ -631,6 +631,8 @@ C
 C output: VCMAT with Coulomb attraction integrals
 C
 C*****************************************************************************
+
+      use quaternion_algebra
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -652,7 +654,6 @@ C
 #ifdef PRG_DIRAC
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbqal.h"
 #include "dcbgrd.h"
 #else
 #include "energy.h"

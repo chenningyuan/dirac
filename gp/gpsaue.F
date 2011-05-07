@@ -1869,9 +1869,9 @@ C
 C     Written by T.Saue, University of Oslo, Apr 7 1997
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0=0.0D0)
 C
 C     Global variables
@@ -1884,7 +1884,6 @@ C     Local variables
 C
       DIMENSION IPA(4)
 C
-      EXTERNAL BDQALGEBRA
       IF (N.LE.0)       RETURN
 C
       IF(N*INCX.GT.NX) CALL QUIT('QAXPY:N*INCX.GT.NX')
@@ -1975,9 +1974,9 @@ C
 C     Written by T.Saue, University of Oslo, Apr 7 1997
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0=0.0D0)
 C
 C     Global variables
@@ -1990,7 +1989,6 @@ C     Local variables
 C
       DIMENSION IPA(4)
 C
-      EXTERNAL BDQALGEBRA
       IF (N.LE.0)       RETURN
 C
       IF(N*INCX.GT.NX) CALL QUIT('QXAPY:N*INCX.GT.NX')
@@ -2403,16 +2401,15 @@ C
 C     Written by T.Saue March 25 1999
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0=0.0D0)
       DIMENSION X(LRX,NZX),Y(LRY,NZY),P(NZP),
      &          IQPX(NZX),IQPY(NZY),IQPP(NZP)
       CHARACTER  FX*1,FY*1
       DIMENSION IPY(4)
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C
@@ -2459,16 +2456,15 @@ C
 C     Written by T.Saue Nov 3 2000
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0=0.0D0)
       DIMENSION X(LRX,LCX,NZX),Y(LRY,LCY,NZY),S(LDS,NY),P(NZP),
      &          IQPP(NZP),IQPX(NZX),IQPY(NZY)
       CHARACTER  FX*1,FY*1
       DIMENSION IPY(4)
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Found out INC[XY] is not used! /hjaaj 4-Nov-2001
 C

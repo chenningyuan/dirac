@@ -40,14 +40,12 @@ module xc_london_c1
 !          anyway this code can be useful for development in C1
 
 ! todo (*) work only on matrix blocks that couple AOs of different centers
-!      (*) figure out centers of AOs in dft_ao
 
    use memory_allocator
-   use basis_info
+   use interface_ao
 
    implicit none
 
-   public xc_london_c1_init
    public xc_london_c1_ks_lda
    public xc_london_c1_ks_gga
    public xc_london_c1_lr_lda_densities
@@ -56,80 +54,10 @@ module xc_london_c1
 
    private
 
-!radovan: these common blocks should go away
-!         p array should be set up in dft_ao
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "shells.h"
-#include "symmet.h"
-#include "aovec.h"
-#include "primit.h"
-#include "sphtrm.h"
-#include "dcbbas.h"
-#include "pincom.h"
-#include "dgroup.h"
-#include "dcbham.h"
-
-!                          both ideally calculated only once
-   real(8), allocatable :: p_k(:, :)
-   real(8), allocatable :: r_kl(:, :, :)
-
-   logical :: all_set = .false.
-
    integer :: b(3) = (/2, 3, 1/)
    integer :: c(3) = (/3, 1, 2/)
 
 contains
-
-   subroutine xc_london_c1_init(mat_dim)
-
-!     --------------------------------------------------------------------------
-      integer, intent(in) :: mat_dim
-!     --------------------------------------------------------------------------
-      integer             :: i, j, k, l, ixyz, ishell, isym
-      real(8)             :: px, py, pz
-!     --------------------------------------------------------------------------
-
-      if (.not. all_set) then
-
-         call alloc(r_kl, mat_dim, mat_dim, 3)
-         call alloc(p_k, mat_dim, 3)
-
-         i = 1
-         do ishell = 1, kmax
-            do isym = 0, maxopr
-               if (iand(isym, istbao(ishell)) == 0) then
-
-                  px = pt(iand(isymax(1, 1), isym))*cent(ishell, 1, 1)
-                  py = pt(iand(isymax(2, 1), isym))*cent(ishell, 2, 1)
-                  pz = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
-
-                  do j = i, i + spherical_deg(ishell) - 1
-                     p_k(j, 1) = px
-                     p_k(j, 2) = py
-                     p_k(j, 3) = pz
-                  end do
-
-                  i = i + spherical_deg(ishell)
-               end if
-            end do
-         end do
-
-         do ixyz = 1, 3
-            do l = 1, mat_dim
-               do k = 1, mat_dim
-                  r_kl(k, l, ixyz) = p_k(k, ixyz) - p_k(l, ixyz)
-               end do
-            end do
-         end do
-
-!        call dealloc(p_k)
-
-         all_set = .true.
-      end if
-
-   end subroutine
 
    subroutine xc_london_c1_ks_lda(d_n,     &
                                   mat_dim, &
@@ -159,8 +87,8 @@ contains
             omega = ao(k)*ao(l)
 
             do bxyz = 1, 3
-               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
-                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
+                           - ao_distance(k, l, c(bxyz))*r(b(bxyz))
                rkl_cross_r = 0.5d0*rkl_cross_r
 
                f = d_n*rkl_cross_r*omega
@@ -215,12 +143,12 @@ contains
             gnn_kl = 2.0d0*gnn_kl
 
             do bxyz = 1, 3
-               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
-                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
+                           - ao_distance(k, l, c(bxyz))*r(b(bxyz))
                rkl_cross_r = 0.5d0*rkl_cross_r
 
-               rkl_cross_gn_0 = r_kl(k, l, b(bxyz))*gn_0(c(bxyz)) &
-                              - r_kl(k, l, c(bxyz))*gn_0(b(bxyz))
+               rkl_cross_gn_0 = ao_distance(k, l, b(bxyz))*gn_0(c(bxyz)) &
+                              - ao_distance(k, l, c(bxyz))*gn_0(b(bxyz))
                rkl_cross_gn_0 = 0.5d0*rkl_cross_gn_0
 
                f = d_n*rkl_cross_r*omega    &
@@ -265,8 +193,8 @@ contains
             omega = ao(k)*ao(l)*f
 
             do bxyz = 1, 3
-               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
-                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
+                           - ao_distance(k, l, c(bxyz))*r(b(bxyz))
                rkl_cross_r = 0.5d0*rkl_cross_r
 
                n_b(bxyz) = n_b(bxyz) &
@@ -325,12 +253,12 @@ contains
             gnn_kl = 2.0d0*gnn_kl
 
             do bxyz = 1, 3
-               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
-                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
+                           - ao_distance(k, l, c(bxyz))*r(b(bxyz))
                rkl_cross_r = 0.5d0*rkl_cross_r
 
-               rkl_cross_gn_0 = r_kl(k, l, b(bxyz))*gn_0(c(bxyz)) &
-                              - r_kl(k, l, c(bxyz))*gn_0(b(bxyz))
+               rkl_cross_gn_0 = ao_distance(k, l, b(bxyz))*gn_0(c(bxyz)) &
+                              - ao_distance(k, l, c(bxyz))*gn_0(b(bxyz))
                rkl_cross_gn_0 = 0.5d0*rkl_cross_gn_0
 
                n_b(bxyz) = n_b(bxyz) &
@@ -346,13 +274,13 @@ contains
                end do
             end do
 !           gn_b(1, 1)
-            gn_b(1, 2) = gn_b(1, 2) + 0.5d0*r_kl(k, l, 3)*omega
-            gn_b(1, 3) = gn_b(1, 3) - 0.5d0*r_kl(k, l, 2)*omega
-            gn_b(2, 1) = gn_b(2, 1) - 0.5d0*r_kl(k, l, 3)*omega
+            gn_b(1, 2) = gn_b(1, 2) + 0.5d0*ao_distance(k, l, 3)*omega
+            gn_b(1, 3) = gn_b(1, 3) - 0.5d0*ao_distance(k, l, 2)*omega
+            gn_b(2, 1) = gn_b(2, 1) - 0.5d0*ao_distance(k, l, 3)*omega
 !           gn_b(2, 2)
-            gn_b(2, 3) = gn_b(2, 3) + 0.5d0*r_kl(k, l, 1)*omega
-            gn_b(3, 1) = gn_b(3, 1) + 0.5d0*r_kl(k, l, 2)*omega
-            gn_b(3, 2) = gn_b(3, 2) - 0.5d0*r_kl(k, l, 1)*omega
+            gn_b(2, 3) = gn_b(2, 3) + 0.5d0*ao_distance(k, l, 1)*omega
+            gn_b(3, 1) = gn_b(3, 1) + 0.5d0*ao_distance(k, l, 2)*omega
+            gn_b(3, 2) = gn_b(3, 2) - 0.5d0*ao_distance(k, l, 1)*omega
 !           gn_b(3, 3)
          end do
       end do
@@ -384,17 +312,17 @@ contains
       q = 0.0d0
 
       if (lao) then
-         do k = 1, ntbas(1)
-            do l = 1, ntbas(1)
+         do k = 1, nr_ao_large
+            do l = 1, nr_ao_large
                f = ao(k)*ao(l)*dmat(l, k, 1)
                do ixyz = 1, 3
-                  q(ixyz) = q(ixyz) + (r(ixyz) - p_k(l, ixyz))*f
+                  q(ixyz) = q(ixyz) + (r(ixyz) - ao_center(l, ixyz))*f
                end do
             end do
          end do
       else
-         do k = 1, ntbas(1)
-            do l = 1, ntbas(1)
+         do k = 1, nr_ao_large
+            do l = 1, nr_ao_large
                f = ao(k)*ao(l)*dmat(l, k, 1)
                do ixyz = 1, 3
                   q(ixyz) = q(ixyz) + (r(ixyz) - gauge_origin(ixyz))*f

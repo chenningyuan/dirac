@@ -52,9 +52,6 @@ if(DFT_ENABLE_MPI)
 endif()
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/../include
-    ${PROJECT_SOURCE_DIR}/../dft
-    ${PROJECT_SOURCE_DIR}/../gp
     ${PROJECT_BINARY_DIR}/modules
     )
 
@@ -67,55 +64,26 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     )
 
 set(DFT_SOURCES
+    ${PROJECT_SOURCE_DIR}/src/quaternion_algebra.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_point.F90
     ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
-    ${PROJECT_SOURCE_DIR}/src/basis_info.F90
-    ${PROJECT_SOURCE_DIR}/src/basis_info.F90
+    ${PROJECT_SOURCE_DIR}/src/interface_ao.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/dft_input.F90
-    ${PROJECT_SOURCE_DIR}/src/dftac.F
+    ${PROJECT_SOURCE_DIR}/src/xc_ac.F90
     ${PROJECT_SOURCE_DIR}/src/dirac_cfg.F90
-    ${PROJECT_SOURCE_DIR}/src/extra.F
+    ${PROJECT_SOURCE_DIR}/src/extra.F90
     ${PROJECT_SOURCE_DIR}/src/main.F90
     ${PROJECT_SOURCE_DIR}/src/num_grid_io.F90
-    ${PROJECT_SOURCE_DIR}/src/occupation_info.F90
+    ${PROJECT_SOURCE_DIR}/src/interface_mo.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
     ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
     ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
-    ${PROJECT_SOURCE_DIR}/../cfun/emb-functional.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-becke.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-cam.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-gga.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-gllb_hole.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-hjsx.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-kin_pw91k.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-kin_tf.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-kin_vw.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-kt.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-lb94.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-lbalpha.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-lyp.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-optx.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-p86c.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-pbec.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-pbex.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-pw86x.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-pw91c.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-pw91x.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-pz81.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-revpbex.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-rpbex.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-slater.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-srpbec.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-srvwn5.c
-    ${PROJECT_SOURCE_DIR}/../cfun/fun-vwn.c
-    ${PROJECT_SOURCE_DIR}/../cfun/functionals.c
-    ${PROJECT_SOURCE_DIR}/../cfun/general.c
     ${PROJECT_SOURCE_DIR}/../grid/num_grid_cfg.F90
     )
 

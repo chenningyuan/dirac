@@ -1391,9 +1391,9 @@ C     tA*
      &     WORK,LWRK)
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1797,9 +1797,9 @@ C
 C     Written by panor 1999/ulfek&hjj 2006
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"

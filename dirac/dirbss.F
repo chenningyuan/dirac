@@ -9468,13 +9468,13 @@ C
 C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"

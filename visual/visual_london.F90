@@ -24,7 +24,7 @@ module visual_london
 
 #ifdef MOD_UNRELEASED
   use memory_allocator
-  use basis_info
+  use interface_ao
   use visual_cfg
   use ao_eval
   use density_eval

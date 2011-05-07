@@ -674,9 +674,9 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D0 = 0.0D0, DP5 = 0.5D00)
 C
 #include "dcborb.h"
@@ -687,7 +687,6 @@ C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ)
       LOGICAL   LBIT, LBIT_1
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C     ==============
@@ -1168,9 +1167,9 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -1185,7 +1184,6 @@ C
       DIMENSION WORK(*)
       DIMENSION IPH1X(*), IPH1(*), IPBMAT(*)
 C
-      EXTERNAL BDQALGEBRA
 C
       CALL RTKTIME(.TRUE.,15)
 C
@@ -5103,9 +5101,9 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbqal.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -5117,7 +5115,6 @@ C
       DIMENSION FMO(NORBT,NORBT,NZ),FBUF(NORBT,NORBT,NZ),
      &          BMAT(NORBT,NORBT,NZ),WORK(*)
 C
-      EXTERNAL BDQALGEBRA
 C
 C     Initialization
 C     ==============

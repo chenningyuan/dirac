@@ -4270,7 +4270,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbham.h"
-!#include "amfi_if.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -4289,6 +4288,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
       DIMENSION KSOP(0:7),WORK(LWORK)
+      real(8) :: hfx_out, mu_out, beta_out
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
@@ -4594,9 +4594,10 @@ C              ... hjaaj: DFTINPUT accumulates def. of functional
 C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                   CALL DFTINPUT(line100, INPERR)
-                  if (inperr .gt. 0) then
-                    call quit('failure in DFTINPUT after .DFT')
+                  if (inperr /= 0) then
+                     call quit('failure in DFTINPUT after .DFT')
                   end if
+                  call set_hf_exchange_factor(hfxfac)
 
 #ifdef MOD_ERI
 C aspg, 20070909
@@ -4913,7 +4914,11 @@ C    (see MRCON1 of the MOLTRA module)
   154     continue
 #ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
-          call parse_functional(line, xc_fun)
+          call parse_functional(line, xc_fun,
+     &                          hfx_out, mu_out, beta_out, .true.)
+          hfxfac = hfx_out
+          hfxmu  = mu_out
+          hfxatt = beta_out
           call set_xc_fun_alda(xc_fun_alda)
           call set_xc_fun_xalda(xc_fun_xalda)
           fun_is_automatic = .true.

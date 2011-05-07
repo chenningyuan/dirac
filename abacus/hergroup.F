@@ -436,6 +436,7 @@ C     Sep 24 1996 - tsaue: Updated version
 C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
@@ -447,10 +448,8 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 C
       LOGICAL LBUF(8)
-      EXTERNAL BDQALGEBRA
 C
 #include "ibtfun.h"
 C

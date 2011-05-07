@@ -21,11 +21,12 @@
 
 module xc_blas3
 
-   use basis_info
+   use interface_ao
    use xc_max_block_length
    use xc_derv
 !fixme dft_cfg should not be used here, move xc derv business to separate module
    use dft_cfg
+   use extra
 
    implicit none
 

@@ -517,6 +517,7 @@ C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
 C     Dec 2005, MI - adapting for both triangular and square operators
 C
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -530,7 +531,6 @@ C
 #include "dummy.h"
 !gosia: temporarily i need it
 #include "dcbprl.h"
-#include "dcbqal.h"
 C
       LOGICAL FIRST(*),QBTR, IS_SQUARE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),

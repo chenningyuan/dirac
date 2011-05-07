@@ -93,7 +93,9 @@ module xc_derv
    
    private
 
+#ifdef PRG_DIRAC
 #include "../../cfun/functionals.h"
+#endif
 
    integer, parameter :: max_dim = 99
 
@@ -102,30 +104,37 @@ contains
    function fun_is_lda()
       logical :: fun_is_lda
 
+      fun_is_lda = .false.
       if (fun_is_automatic) then
 #ifdef MOD_XCFUN
          fun_is_lda = (xc_get_type(xc_fun%id) == 0)
 #endif
       else
+#ifdef PRG_DIRAC
          fun_is_lda = (.not. dftisgga())
+#endif
       end if
    end function
 
    function fun_is_gga()
       logical :: fun_is_gga
 
+      fun_is_gga = .false.
       if (fun_is_automatic) then
 #ifdef MOD_XCFUN
          fun_is_gga = (xc_get_type(xc_fun%id) == 1)
 #endif
       else
+#ifdef PRG_DIRAC
          fun_is_gga = dftisgga()
+#endif
       end if
    end function
 
    function fun_is_tau_mgga()
       logical :: fun_is_tau_mgga
 
+      fun_is_tau_mgga = .false.
       if (fun_is_automatic) then
 #ifdef MOD_XCFUN
          fun_is_tau_mgga = (xc_get_type(xc_fun%id) == 2)
@@ -229,7 +238,9 @@ contains
     real(8)                       :: t1(max_dim, max_block_length)
     real(8)                       :: t2(max_dim, max_block_length)
     integer                       :: k, l, id
+#ifdef PRG_DIRAC
     real(8), external             :: dftenergy
+#endif
     logical                       :: do_alda_real
     logical                       :: do_alda_imag
     logical                       :: do_xalda
@@ -303,7 +314,7 @@ contains
          select case (order)
 
             case (0)
-               call quit('get_functional_derv: order 0; probably programming error')
+               call my_quit('get_functional_derv: order 0; probably programming error')
 
             case (1)
                if (fun_is_lda()) then
@@ -316,7 +327,7 @@ contains
                   derv(k, d0010000) = f%output(XC_D0010000, k)
                   derv(k, d0000010) = f%output(XC_D0000010, k)
                else
-                  call quit('get_functional_derv: unknown fun type')
+                  call my_quit('get_functional_derv: unknown fun type')
                end if
 
             case (2)
@@ -341,7 +352,7 @@ contains
                      derv(k, d0010010) = f%output(XC_D0010010, k)
                      derv(k, d1000010) = f%output(XC_D1000010, k)
                   else
-                     call quit('get_functional_derv: unknown fun type')
+                     call my_quit('get_functional_derv: unknown fun type')
                   end if
                end if
 !              order 2 - spin polarized
@@ -365,13 +376,13 @@ contains
                      derv(k, d0001001) = f%output(XC_D0001001, k)
                      derv(k, d0100001) = f%output(XC_D0100001, k)
                   else
-                     call quit('get_functional_derv: unknown fun type')
+                     call my_quit('get_functional_derv: unknown fun type')
                   end if
                end if
 
             case (3)
                if (do_alda_real .or. do_alda_imag) then
-                  call quit('get_functional_derv: xcfun alda qr not implemented')
+                  call my_quit('get_functional_derv: xcfun alda qr not implemented')
                end if
                if (fun_is_lda()) then
                   derv(k, d2000000) = f%output(XC_D20, k)
@@ -400,13 +411,13 @@ contains
                   derv(k, d0030000) = f%output(XC_D00300, k)
                   derv(k, d0012000) = f%output(XC_D00120, k)
                else if (fun_is_tau_mgga()) then
-                  call quit('get_functional_derv: tau mgga qr not implemented')
+                  call my_quit('get_functional_derv: tau mgga qr not implemented')
                else
-                  call quit('get_functional_derv: unknown fun type')
+                  call my_quit('get_functional_derv: unknown fun type')
                end if
 
             case default
-               call quit('get_functional_derv: order too high')
+               call my_quit('get_functional_derv: order too high')
 
          end select
 
@@ -415,6 +426,7 @@ contains
     else
 #endif /* ifdef MOD_XCFUN */
 
+#ifdef PRG_DIRAC
       select case (order)
 
         case (0)
@@ -440,9 +452,13 @@ contains
           end do
 
         case default
-          call quit('get_functional_derv: order too high')
+          call my_quit('get_functional_derv: order too high')
 
       end select
+#else
+      print *, 'tried to use cfun in standalone'
+      stop
+#endif
 
       do l = 1, n
         do k = 1, block_length

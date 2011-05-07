@@ -197,12 +197,12 @@ C
 !
 !***********************************************************************
       use memory_allocator
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbqal.h"
       integer orb_info_array(2,norbt,norbt)
       dimension ibeig(*)
       integer, allocatable  :: orb_sym_vec(:)
@@ -1334,13 +1334,13 @@ C   MAXLIN    : max. lines of output with vector elements
 C   LUOUT     : output unit
 C
 C
+      use quaternion_algebra
 #include "implicit.h"
       DIMENSION VEC(NDIM*INCVEC,NZ)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
       LOGICAL   VSCALE
       DIMENSION IPQ(4)
-#include "dcbqal.h"
 C
 C     Test input
 C

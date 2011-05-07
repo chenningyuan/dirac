@@ -458,6 +458,7 @@ C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -468,7 +469,6 @@ C
 #include "dcblab.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
@@ -476,7 +476,6 @@ C     KNFBAS = NFBAS(IFRP,0)
 C
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
       DIMENSION III(2)
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
 C
       IF(NVEC.EQ.0) RETURN
@@ -709,6 +708,7 @@ C
 C     Written by T.Saue May 1996
 C     Last revision: May 6 1996
 C***********************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -719,7 +719,6 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "symmet.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
@@ -729,7 +728,6 @@ C     NBAST  = NTBAS(0)
 C
       DIMENSION CMO(KNFBAS,KNORB,NZ),
      &          CBUF(NBAST,NVEC,NZ),CAO(NBAST,NVEC,4)
-      EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
 C
       NTOT = NVEC*NTBAS(0)

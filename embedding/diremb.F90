@@ -85,6 +85,8 @@
 
       logical, save :: fde_set_functionals(20) 
 #endif
+
+      real(8) :: hfx_out, mu_out, beta_out
       
       CONTAINS
 
@@ -213,6 +215,7 @@
       SUBROUTINE FDEINI()
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbham.h"
          integer :: i
 
 #ifdef MOD_UNRELEASED
@@ -221,18 +224,14 @@
          update_vemb = .true. 
          have_frozen_density = .true.
 
-         reset_hfxfac = .false.
-
-         call parse_functional(kefun_fde,fde_kef)
-         call parse_functional(kefun_fde,fde_kef_alda)
-         call parse_functional(xcfun_fde,fde_xcf)
-         call parse_functional(xcfun_fde,fde_xcf_alda)
+         call parse_functional(kefun_fde, fde_kef,      hfx_out, mu_out, beta_out, .false.)
+         call parse_functional(kefun_fde, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
+         call parse_functional(xcfun_fde, fde_xcf,      hfx_out, mu_out, beta_out, .false.)
+         call parse_functional(xcfun_fde, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
 
          do i = 1, 20
             fde_set_functionals(i) = .true.
          enddo
-
-         reset_hfxfac = .true.
 
 #else 
          call quit('XCFun not available in this version')
@@ -255,6 +254,7 @@
 #include "implicit.h"
 #include "priunit.h" 
 #include "dcbgen.h"
+#include "dcbham.h"
       PARAMETER (NTABLE = 8)
 !
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, line*80
@@ -307,7 +307,7 @@
             CASE ('.NAXCF')
 #ifdef MOD_XCFUN
               read(lucmd,'(a80)') xcfun_fde
-              call parse_functional(xcfun_fde,fde_xcf)
+              call parse_functional(xcfun_fde, fde_xcf, hfx_out, mu_out, beta_out, .false.)
               write(*,*) 'testing ',xcfun_fde
 #else         
               call quit('XCFun not available in this version')
@@ -317,7 +317,7 @@
             CASE ('.NAKEF')
 #ifdef MOD_XCFUN
               read(lucmd,'(a80)') kefun_fde
-              call parse_functional(kefun_fde,fde_kef)
+              call parse_functional(kefun_fde, fde_kef, hfx_out, mu_out, beta_out, .false.)
 #else         
               call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */

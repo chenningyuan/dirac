@@ -40,6 +40,7 @@ C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -51,7 +52,6 @@ C
 #include "dcbham.h"
 #include "cbihr2.h"
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "ccom.h"
 #include "dcborb.h"
@@ -3505,6 +3505,7 @@ C     tsaue -    Sep 2 1996 Generalized to NFMAT
 C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3517,13 +3518,11 @@ C
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "cbieri.h"
 #include "blocks.h"
 #include "cbihr2.h"
-      EXTERNAL BDQALGEBRA
 #include "ibtfun.h"
 C
       CALL QENTER('DIRAOF')
@@ -3648,6 +3647,7 @@ C
 C     Driver for direct SCF calculations
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
@@ -3672,7 +3672,6 @@ C
 #include "dcbbas.h"
 #include "shells.h"
 #include "blocks.h"
-#include "dcbqal.h"
 #include "densfit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -3685,7 +3684,6 @@ C
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
-      EXTERNAL BDQALGEBRA
 C
       CALL QENTER('DIRAO1')
 #include "memint.h"
@@ -4079,16 +4077,15 @@ C
 C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"    
       PARAMETER (D0 = 0.0D0)
 C
-#include "dcbqal.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C     External variables
-      EXTERNAL BDQALGEBRA
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 C     Local variables
@@ -4475,19 +4472,18 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
+      use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 C
 #include "dgroup.h"
-#include "dcbqal.h"
 #include "dcbbas.h"
 #include "blocks.h"
       DIMENSION DQO(N2BBASX,NZ,NFMAT),
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)
-      EXTERNAL BDQALGEBRA      
 C
 #include "ibtfun.h"
       CALL QENTER('MKDRQO')
