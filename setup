@@ -259,9 +259,3 @@ if normal_cmake_termination:
     print '   $ cd ' + build_path
     print '   $ ccmake ' + root_directory
     print '   $ make'
-
-    file_name = 'rebuild'
-    f = open(build_path + file_name, 'w')
-    f.write('%s; make' % command)
-    f.close()
-    os.system('chmod 700 %s' % build_path + file_name)
