@@ -18,7 +18,7 @@ svn up
 ./pamadm -a --xcfun 
 
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=1234 --scratch="/tmp" -D RUNTEST_TIMEOUT="00:40:00"
+./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=1234 --scratch="/tmp"
 
 cd $DIRAC/build
 make clean

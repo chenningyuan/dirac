@@ -32,29 +32,6 @@ from optparse import OptionParser, OptionGroup
 root_directory = os.path.realpath(__file__)[:-8]
 current_directory = os.path.realpath('.')
 
-def extract_time(time_string):
-# extract time (in seconds) from the entering time string "hh:mm:ss"
-# returns time in secs
-    def error_printout():
-        for stream in [sys.stdout,sys.stderr]:
-            print >> stream,\
-            'runtest: timestring must be hh:mm:ss, entering ',time_string
-        sys.exit(3)
-
-    if len(time_string) != 8:
-        error_printout()
-    if (time_string[2] != ":" or time_string[5] != ":"):
-        error_printout()
-    try:
-        hours=int(time_string[0:2])
-        mins=int(time_string[3:5])
-        secs=int(time_string[6:8])
-    except:
-        error_printout()
-    # sum up the total time and return
-    total_time=secs+(60*mins)+(60*60*hours)
-    return total_time
-
 def backup(file):
     import os.path, shutil
     max_depth = 7
@@ -120,12 +97,6 @@ group.add_option('--giveup',
                  dest='giveup',
                  default=False,
                  help='give up after first failing test [default: %default]')
-group.add_option('--timeout',
-                 action='store',
-                 dest='timeout',
-                 default=None,
-                 help='time limit for runtest [default: %default]',
-                 metavar='"hh:mm:ss"')
 group.add_option('--overwrite',
                  action='store_true',
                  dest='overwrite',
@@ -184,10 +155,6 @@ if options.individual:
         if test != '':
             list_of_tests_to_run.append(test)
 
-if options.timeout:
-    # extract the total time in seconds
-    timeout = extract_time(options.timeout)
-
 # write the html header
 
 os.chdir(root_directory)
@@ -224,16 +191,6 @@ class run:
          self.mol  = line.split()[1]
          self.kind = kind
          pam_flags = ''
-
-         # pretty please no timeout when executed interactively
-         if not executed_from_subdir:
-            # default timeouts for quick, regular and benchmark tests
-            if self.kind == 'q':
-                pam_flags +=  '--timeout=21m '
-            elif self.kind == 'r':
-                pam_flags +=  '--timeout=21m '
-            else:
-                pam_flags +=  '--timeout=1h '
 
          if len(line.split()) > 2:
              for i in range(2, len(line.split())):
@@ -452,15 +409,6 @@ def main(*args):
                 print 'cowardly gave up after the first problem'
                 print '(fix your code or remove --giveup to continue)'
                 sys.exit(1)
-
-            if options.timeout:
-                if global_elapsed > timeout:  
-                    # miro: we need the stderr output to see this message on the CDash board
-                    for stream in [sys.stdout,sys.stderr]:
-                        print >> stream,'\n Giving up runtest. Total allowed time of ',\
-                                 timeout ,' seconds exceeded !\n'
-                        stream.flush()
-                    sys.exit(1)
 
         #task.pam_output_file.close()
         testname_0 = testname_1
