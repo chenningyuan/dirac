@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
-add_definitions(-DVAR_MFDS)
+
 # set version
 set(VERSION_MAJOR 10)
 set(VERSION_MINOR 1)
