@@ -195,7 +195,7 @@ contains
       write(file_unit, '(4x, i6)') nr_df_open
       if (nr_df_open > 0) then
          do i = 1, nr_df_open
-            write(file_unit, '(4x, i6, e26.16)') i, df_open(i)
+            write(file_unit, '(4x, i6, e26.16)') i, df(i)
          end do
       end if
 
