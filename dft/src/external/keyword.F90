@@ -186,7 +186,8 @@ contains
     write(*, *) line
     write(*, *) 'following keyword '//kw_input
 
-    call quit('error in line following keyword '//kw_input)
+    print *, 'error in line following keyword '//kw_input
+    stop
 
   end subroutine
 
@@ -215,7 +216,8 @@ contains
         write(*, *) available_kw_list(i)
       end do
 
-      call quit('illegal keyword '//kw_input//' in section '//kw_section)
+      print *, 'illegal keyword '//kw_input//' in section '//kw_section
+      stop
 
     end if
 

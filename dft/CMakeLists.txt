@@ -79,6 +79,9 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/dirac_cfg.F90
+    ${PROJECT_SOURCE_DIR}/src/external/character_processing.F90
+    ${PROJECT_SOURCE_DIR}/src/external/keyword.F90
+    ${PROJECT_SOURCE_DIR}/src/external/quaternion_algebra.F90
     ${PROJECT_SOURCE_DIR}/src/extra.F90
     ${PROJECT_SOURCE_DIR}/src/interface_ao.F90
     ${PROJECT_SOURCE_DIR}/src/interface_functional_read.F90
@@ -86,15 +89,12 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/interface_input.F90
     ${PROJECT_SOURCE_DIR}/src/interface_mo.F90
     ${PROJECT_SOURCE_DIR}/src/main.F90
-    ${PROJECT_SOURCE_DIR}/src/quaternion_algebra.F90
     ${PROJECT_SOURCE_DIR}/src/xc_ac.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
     ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
     ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
-    ${PROJECT_SOURCE_DIR}/src/character_processing.F90
-    ${PROJECT_SOURCE_DIR}/src/keyword.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
     )
 

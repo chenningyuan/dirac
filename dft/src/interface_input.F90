@@ -62,7 +62,8 @@ contains
          else if (lowercase(first_4) == 'lbal') then
             dft_cfg_asymptote_is_lbalpha = .true.
          else
-            call quit('keyword following .SAOP not recognized')
+            print *, 'keyword following .SAOP not recognized'
+            stop
          end if
       end if
 
