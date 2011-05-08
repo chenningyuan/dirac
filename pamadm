@@ -229,6 +229,7 @@ directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('dft/xcfun/src')
 directories_never_compiled.append('dft/xcfun/test')
+directories_never_compiled.append('dft/src/external')
 
 files_never_compiled = []
 files_never_compiled.append('utils/cube2pov.c')
@@ -239,7 +240,6 @@ files_never_compiled.append('eri/eri2par.F')
 files_never_compiled.append('openrsp/openrsp_visual.F90')
 files_never_compiled.append('densfit/denfit_noddy.F')
 files_never_compiled.append('lucita/unused.F')
-files_never_compiled.append('dft/src/external')
 files_never_compiled.append('eri/eriprg.F')
 files_never_compiled.append('cfun/fun-tester.c')
 files_never_compiled.append('relccsd/ccmain.F')
@@ -251,8 +251,6 @@ files_never_compiled.append('fmm/mm_standalone_drv.f90')
 files_never_compiled.append('fmm/mm_standalone_aux.F')
 files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
 files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
-
-files_never_compiled.append('dft/src/dirac_cfg.F90')
 files_never_compiled.append('dft/src/main.F90')
 
 do_not_release = []
