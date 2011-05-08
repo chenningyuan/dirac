@@ -7897,3 +7897,9 @@ C
 !
       RETURN
       END
+
+      subroutine set_lscale_dft_gaunt()
+      implicit none
+#include "dcbham.h"
+      lscale_dft_gaunt = .true.
+      end subroutine
