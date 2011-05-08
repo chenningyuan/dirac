@@ -32,11 +32,11 @@ module xc_driver
    use interface_ao
    use interface_mo
    use dft_cfg
-   use dft_input
+   use interface_functional_read
    use xc_derv
    use xc_ac
    use extra
-   use num_grid_io
+   use interface_grid
    use ao_eval
    use density_eval
    use xc_blas3
@@ -874,7 +874,7 @@ contains
     buffer = 0.0d0
 
     if (dft_cfg_blocked) then
-       block_threshold = get_block_threshold(dft_cfg_dfthr0, mat_dim, dmat_0)
+       block_threshold = get_block_threshold(dft_cfg_small_density_threshold, mat_dim, dmat_0)
     end if
 
 
@@ -1025,7 +1025,7 @@ contains
       end if
 #endif
 
-      if (n_0(1) > dft_cfg_dfthr0) then
+      if (n_0(1) > dft_cfg_small_density_threshold) then
          nr_points_used = nr_points_used + 1
 
          u%n  = 0.0d0
@@ -1051,7 +1051,7 @@ contains
          end if
 
         if (do_fde_update_vemb .or. do_fde_response) then
-           if ( fde_froz_n(ipoint) > (dft_cfg_dfthr0/10000) ) then
+           if ( fde_froz_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
               n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
 
               z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1)
@@ -1680,7 +1680,7 @@ contains
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
-      end if !if (n_0(1) > dft_cfg_dfthr0) then
+      end if !if (n_0(1) > dft_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
 #ifdef MOD_UNRELEASED
    end if !if (dft_cfg_blocked) then

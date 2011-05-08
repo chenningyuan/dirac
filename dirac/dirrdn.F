@@ -38,7 +38,7 @@ C***********************************************************************
       use dirac_cfg
       use num_grid_cfg
       use input_reader
-      use dft_input
+      use interface_functional_read
       use x2cmod_cfg
 
 #include "implicit.h"
@@ -4254,7 +4254,7 @@ C***********************************************************************
       USE FDE_MOD, ONLY: FDEINI, FDEINP, FDE_setupFDEgrid, update_vemb
       use dft_cfg
       use xc_derv
-      use dft_input
+      use interface_functional_read
       use input_reader
       use x2cmod_cfg
 

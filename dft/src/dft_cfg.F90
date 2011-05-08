@@ -42,7 +42,7 @@ module dft_cfg
    logical, public :: dft_cfg_betasigma               = .false.
    logical, public :: dft_cfg_blocked                 = .false.
 
-   real(8), public :: dft_cfg_dfthr0                  = 1.0d-9
+   real(8), public :: dft_cfg_small_density_threshold = 1.0d-9
    real(8), public :: dft_cfg_ac_ip                   = 0.0d0
    real(8), public :: dft_cfg_ac_threshold            = 0.0d0
    real(8), public :: dft_cfg_grac_alpha              = 0.0d0
@@ -55,25 +55,25 @@ contains
    subroutine sync_dft_cfg()
 
 #ifdef VAR_MPI
-      call xc_mpi_bcast(dft_cfg_alda_hs                )
-      call xc_mpi_bcast(dft_cfg_alda_ha                )
-      call xc_mpi_bcast(dft_cfg_xalda                  )
-      call xc_mpi_bcast(dft_cfg_no_sdft                )
-      call xc_mpi_bcast(dft_cfg_sdft_collinear         )
-      call xc_mpi_bcast(dft_cfg_grac                   )
-      call xc_mpi_bcast(dft_cfg_grac_is_active         )
-      call xc_mpi_bcast(dft_cfg_saop                   )
-      call xc_mpi_bcast(dft_cfg_saop_is_active         )
-      call xc_mpi_bcast(dft_cfg_saop_with_response_part)
-      call xc_mpi_bcast(dft_cfg_asymptote_is_lb94      )
-      call xc_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
-      call xc_mpi_bcast(dft_cfg_betasigma              )
-      call xc_mpi_bcast(dft_cfg_blocked                )
-      call xc_mpi_bcast(dft_cfg_dfthr0                 )
-      call xc_mpi_bcast(dft_cfg_ac_ip                  )
-      call xc_mpi_bcast(dft_cfg_ac_threshold           )
-      call xc_mpi_bcast(dft_cfg_grac_alpha             )
-      call xc_mpi_bcast(dft_cfg_grac_beta              )
+      call xc_mpi_bcast(dft_cfg_alda_hs                 )
+      call xc_mpi_bcast(dft_cfg_alda_ha                 )
+      call xc_mpi_bcast(dft_cfg_xalda                   )
+      call xc_mpi_bcast(dft_cfg_no_sdft                 )
+      call xc_mpi_bcast(dft_cfg_sdft_collinear          )
+      call xc_mpi_bcast(dft_cfg_grac                    )
+      call xc_mpi_bcast(dft_cfg_grac_is_active          )
+      call xc_mpi_bcast(dft_cfg_saop                    )
+      call xc_mpi_bcast(dft_cfg_saop_is_active          )
+      call xc_mpi_bcast(dft_cfg_saop_with_response_part )
+      call xc_mpi_bcast(dft_cfg_asymptote_is_lb94       )
+      call xc_mpi_bcast(dft_cfg_asymptote_is_lbalpha    )
+      call xc_mpi_bcast(dft_cfg_betasigma               )
+      call xc_mpi_bcast(dft_cfg_blocked                 )
+      call xc_mpi_bcast(dft_cfg_small_density_threshold )
+      call xc_mpi_bcast(dft_cfg_ac_ip                   )
+      call xc_mpi_bcast(dft_cfg_ac_threshold            )
+      call xc_mpi_bcast(dft_cfg_grac_alpha              )
+      call xc_mpi_bcast(dft_cfg_grac_beta               )
 #endif /* ifdef VAR_MPI */
 
    end subroutine

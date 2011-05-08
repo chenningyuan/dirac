@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-module num_grid_io
+module interface_grid
 
    implicit none
 

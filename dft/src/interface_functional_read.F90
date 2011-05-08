@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-module dft_input
+module interface_functional_read
 
    use dft_cfg
    use xc_derv
@@ -396,7 +396,7 @@ contains
 !   thresholds
 
     write(*, '(a)')          ' * DFT thresholds:'
-    write(*, '(a, e12.5)')   '   - dfthr0 = ', dft_cfg_dfthr0
+    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_small_density_threshold
 
 !   asymptotic correction
 

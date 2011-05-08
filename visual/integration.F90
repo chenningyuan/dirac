@@ -26,7 +26,7 @@ module visual_integrate
    use memory_allocator
    use visual_cfg
    use visual_in_point
-   use num_grid_io
+   use interface_grid
 #ifdef MOD_UNRELEASED
    use visual_london
 #endif

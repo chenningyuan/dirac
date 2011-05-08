@@ -222,7 +222,7 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
-       use num_grid_io
+       use interface_grid
 
 #include "implicit.h" 
 #include "priunit.h" 

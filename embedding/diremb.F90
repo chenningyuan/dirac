@@ -39,7 +39,7 @@
 #ifdef MOD_XCFUN
       use xcfun
 #endif
-      use dft_input
+      use interface_functional_read
       use xc_derv
 
 #ifdef PRG_DIRAC

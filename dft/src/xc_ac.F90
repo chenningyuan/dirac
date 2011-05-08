@@ -1,7 +1,7 @@
 module xc_ac
 
    use dft_cfg
-   use dft_input
+   use interface_functional_read
    use extra
    use xc_derv
    use xc_max_block_length

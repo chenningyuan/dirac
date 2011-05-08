@@ -84,7 +84,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/dirac_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/extra.F90
     ${PROJECT_SOURCE_DIR}/src/main.F90
-    ${PROJECT_SOURCE_DIR}/src/num_grid_io.F90
+    ${PROJECT_SOURCE_DIR}/src/interface_grid.F90
     ${PROJECT_SOURCE_DIR}/src/interface_mo.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
     ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
