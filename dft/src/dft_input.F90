@@ -397,7 +397,6 @@ contains
 
     write(*, '(a)')          ' * DFT thresholds:'
     write(*, '(a, e12.5)')   '   - dfthr0 = ', dft_cfg_dfthr0
-    write(*, '(a, e12.5)')   '   - dfthri = ', dft_cfg_dfthri
 
 !   asymptotic correction
 

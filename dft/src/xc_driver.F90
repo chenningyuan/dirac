@@ -503,9 +503,9 @@ contains
         max_ao_m_order = 1
       end if
      
-      call ao_eval_init(max_ao_g_order,    &
-                        max_ao_m_order,    &
-                        dft_cfg_screening, &
+      call ao_eval_init(max_ao_g_order, &
+                        max_ao_m_order, &
+                        .false.,        &
                         .true.)
 
       if (xc_mpi_is_master()) then
@@ -1728,7 +1728,7 @@ contains
             'number of electrons from numerical integration = ', &
             nr_electrons
 
-      if (abs(error_nr_electrons) > dft_cfg_accepted_error) then
+      if (abs(error_nr_electrons) > 1.0d-3) then
          write(file_unit, '(3x, a, i9)')                            &
                'number of electrons from orbital occupations   = ', &
                nr_electrons_total
@@ -1736,8 +1736,7 @@ contains
                'WARNING: error in the number of electrons      = ', &
                error_nr_electrons
          write(file_unit, '(12x, a, f15.6)')                        &
-               'is larger than .ERRELS (set input)    =  ',         &
-                dft_cfg_accepted_error
+               'is larger than 1.0d-3'
          write(file_unit, '(12x, a)')                              &
                'this can happen when starting from coefficients'
          write(file_unit, '(12x, a)')                              &

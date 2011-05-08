@@ -27,13 +27,11 @@ module dft_cfg
 
    public sync_dft_cfg
 
-   logical, public :: dft_cfg_screening               = .false.
    logical, public :: dft_cfg_alda_hs                 = .false.
    logical, public :: dft_cfg_alda_ha                 = .false.
    logical, public :: dft_cfg_xalda                   = .false.
    logical, public :: dft_cfg_no_sdft                 = .false.
    logical, public :: dft_cfg_sdft_collinear          = .false.
-   logical, public :: dft_cfg_cdft_vrg                = .false.
    logical, public :: dft_cfg_grac                    = .false.
    logical, public :: dft_cfg_grac_is_active          = .false.
    logical, public :: dft_cfg_saop                    = .false.
@@ -44,15 +42,11 @@ module dft_cfg
    logical, public :: dft_cfg_betasigma               = .false.
    logical, public :: dft_cfg_blocked                 = .false.
 
-   real(8), public :: dft_cfg_accepted_error          = 1.0d-3
    real(8), public :: dft_cfg_dfthr0                  = 1.0d-9
-   real(8), public :: dft_cfg_dfthri                  = 2.0d-12
    real(8), public :: dft_cfg_ac_ip                   = 0.0d0
    real(8), public :: dft_cfg_ac_threshold            = 0.0d0
    real(8), public :: dft_cfg_grac_alpha              = 0.0d0
    real(8), public :: dft_cfg_grac_beta               = 0.0d0
-
-   integer, public :: dft_cfg_alda_order              = 99
 
    private
 
@@ -61,13 +55,11 @@ contains
    subroutine sync_dft_cfg()
 
 #ifdef VAR_MPI
-      call xc_mpi_bcast(dft_cfg_screening              )
       call xc_mpi_bcast(dft_cfg_alda_hs                )
       call xc_mpi_bcast(dft_cfg_alda_ha                )
       call xc_mpi_bcast(dft_cfg_xalda                  )
       call xc_mpi_bcast(dft_cfg_no_sdft                )
       call xc_mpi_bcast(dft_cfg_sdft_collinear         )
-      call xc_mpi_bcast(dft_cfg_cdft_vrg               )
       call xc_mpi_bcast(dft_cfg_grac                   )
       call xc_mpi_bcast(dft_cfg_grac_is_active         )
       call xc_mpi_bcast(dft_cfg_saop                   )
@@ -77,14 +69,11 @@ contains
       call xc_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
       call xc_mpi_bcast(dft_cfg_betasigma              )
       call xc_mpi_bcast(dft_cfg_blocked                )
-      call xc_mpi_bcast(dft_cfg_accepted_error         )
       call xc_mpi_bcast(dft_cfg_dfthr0                 )
-      call xc_mpi_bcast(dft_cfg_dfthri                 )
       call xc_mpi_bcast(dft_cfg_ac_ip                  )
       call xc_mpi_bcast(dft_cfg_ac_threshold           )
       call xc_mpi_bcast(dft_cfg_grac_alpha             )
       call xc_mpi_bcast(dft_cfg_grac_beta              )
-      call xc_mpi_bcast(dft_cfg_alda_order             )
 #endif /* ifdef VAR_MPI */
 
    end subroutine

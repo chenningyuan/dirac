@@ -184,11 +184,6 @@ contains
          call kw_read(word, dft_cfg_dfthr0)
       end if
 
-      if (kw_matches(word, '.ERRELS')) then
-!        threshold for accepted error in integrated number of electrons
-         call kw_read(word, dft_cfg_accepted_error)
-      end if
-
       if (kw_matches(word, '.GRAC  ')) then
 !        gradient regulated asymptotic correction
          dft_cfg_grac = .true.
@@ -289,23 +284,8 @@ contains
          call setaldaha(.true.) !activate alda for the h- part
       end if
 
-!radovan: not documented on wiki, code not perfectly tested
-      if (kw_matches(word, '.ALDAOR')) then
-         call kw_read(word, dft_cfg_alda_order)
-      end if
-
       if (kw_matches(word, '.GAUTSC')) then
          call set_lscale_dft_gaunt()
-      end if
-
-!radovan: not documented on wiki, code not perfectly tested
-      if (kw_matches(word, '.VRG   ')) then
-         dft_cfg_cdft_vrg = .true.
-      end if
-
-!radovan: not documented on wiki, code not perfectly tested
-      if (kw_matches(word, '.SCREEN')) then
-         dft_cfg_screening = .true.
       end if
 
 !radovan: not documented on wiki, code not perfectly tested
