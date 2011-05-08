@@ -78,10 +78,10 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
-    ${PROJECT_SOURCE_DIR}/src/dirac_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/external/character_processing.F90
     ${PROJECT_SOURCE_DIR}/src/external/keyword.F90
     ${PROJECT_SOURCE_DIR}/src/external/quaternion_algebra.F90
+    ${PROJECT_SOURCE_DIR}/src/external/dirac_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/extra.F90
     ${PROJECT_SOURCE_DIR}/src/interface_ao.F90
     ${PROJECT_SOURCE_DIR}/src/interface_functional_read.F90

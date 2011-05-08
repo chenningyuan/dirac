@@ -26,7 +26,9 @@ contains
       integer                          :: i, n
 !     ---------------------------------------------------------------------------
 
+#ifdef PRG_DIRAC
       if (.not. dirac_cfg_dft_calculation) return
+#endif
 
       call reset_available_kw_list()
 
