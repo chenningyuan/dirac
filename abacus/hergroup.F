@@ -200,6 +200,7 @@ C
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+#include "xmlout.h"
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -348,6 +349,10 @@ C
 C     Output section
 C     ==============
 C
+      IF (LUXML.GT.0) THEN
+         write(luxml,*) '<point-group>'//GROUP//'</point-group>'
+      ENDIF
+
       IF(IPREAD.GT.0) THEN
         CALL HEADER('SYMGRP:Point group information',-1)
 C

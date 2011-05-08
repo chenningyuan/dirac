@@ -64,6 +64,7 @@ C
 #include "orgcom.h"
 #include "dcbprp.h"
 #include "dgroup.h"
+#include "xmlout.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
@@ -87,7 +88,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.XMLOUT','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -139,10 +140,11 @@ C
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
       DORKBIMP     = .FALSE.
-      BXLAO       = .FALSE.
-      BYLAO       = .FALSE.
-      BZLAO       = .FALSE.
+      BXLAO        = .FALSE.
+      BYLAO        = .FALSE.
+      BZLAO        = .FALSE.
       EFFDEN       = .FALSE.
+
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -419,7 +421,8 @@ C&&&& EFFDEN; calculate effective electronic densities at the nuclei
             EFFDEN = .TRUE. 
             GO TO 100
   139    CONTINUE
-C&&&& XXXXXX
+C&&&& XMLOUT: Turn on xml format output by opening a file
+
             GO TO 100
   140    CONTINUE
 C&&&& XXXXXX

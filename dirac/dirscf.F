@@ -396,6 +396,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
+#include "xmlout.h"
       LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -765,6 +766,13 @@ C
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
+        if (luxml.gt.0) then
+           write(luxml,'(A,I3,A)') 
+     &          '<scf-iteration iteration="',NITER,'">'
+           write(luxml,'(A,E24.16,A)') 
+     &          '<energy unit="Hartree">',DHFERG,'</energy>'
+           write(luxml,*) '</scf-iteration>'
+        endif
       ENDIF
 C
       IF (TRIFCK) THEN
@@ -1204,6 +1212,7 @@ C
 #include "dgroup.h"
 #include "dcbreo.h"
 #include "densfit.h"
+#include "xmlout.h"
       LOGICAL   LBIT
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
@@ -1495,6 +1504,13 @@ CMI    ... we may get the DHFEXIT
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
+        if (luxml.gt.0) then
+           write(luxml,'(A,I3,A)') 
+     &          '<scf-iteration iteration="',NITER,'">'
+           write(luxml,'(A,E24.16,A)') 
+     &          '<energy unit="Hartree">',DHFERG,'</energy>'
+           write(luxml,*) '</scf-iteration>'
+        endif
         CALL FLSHFO(LUPRI)
 C
 C       switch off onecap approximation ?

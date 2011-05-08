@@ -47,6 +47,7 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dgroup.h"
 #include "cbirea.h"
+#include "xmlout.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PAMINP')
@@ -72,6 +73,9 @@ C
       OPEN(LUCMD,FILE = 'DIRAC.INP',IOSTAT=IOS)
       CALL JOBINP
       CLOSE(LUCMD)
+
+C     Start the xml <calculation> and echo the input to the xml output
+      IF (LUXML.GT.0) call xmlout_begin
 C
 C     General input
       OPEN(LUCMD,FILE = 'DIRAC.INP')
@@ -576,22 +580,26 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (NTABLE = 12, NDIR = 4)
+      PARAMETER (NTABLE = 13, NDIR = 4)
       LOGICAL FIND_KEYWORD
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7, TABDIR(NDIR)*7,
      &          WORD1*7
 C
 #include "dcbgen.h"
+#include "xmlout.h"
 C
       DATA TABDIR /'*END OF','*OPTIMI','*MINIMI','xXXXXXX'/
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
-     &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI'/
+     &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
+     &             '.XMLOUT'/
 C
       NJOBS = 0
       NOSFCRASH=.FALSE.
+c     no xml output unless .XMLOUT
+      LUXML = -1
 C
 C     Read menu file
 C     ==============
@@ -613,7 +621,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112),I
+     &                111,112,113),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -678,6 +686,15 @@ C&&&& OPTIMIZE: Geometry optimization
 C&&&& MINIMIZE: Geometry optimization
 Ctsaue: retained for backwards compatibility
             OPTIMI = .TRUE.
+            GOTO 100
+ 113     CONTINUE
+C     XMLOUT: Write output in xml format to separate file
+            LUXML = 83
+            OPEN(UNIT=LUXML,FILE='dirac.xml',STATUS='NEW', 
+     &           FORM='FORMATTED',IOSTAT=ISTAT)
+            IF (ISTAT.NE.0) THEN
+               CALL QUIT('Error opening dirac.xml for output')
+            ENDIF
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
