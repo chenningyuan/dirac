@@ -72,7 +72,7 @@ set(DART_TESTING_TIMEOUT
     CACHE STRING
     "Set default timeout in seconds for every single test"
     )
-message("-- DART_TESTING_TIMEOUT=\"${DART_TESTING_TIMEOUT}\" ")
+message("-- Timeout in seconds for every single test, DART_TESTING_TIMEOUT=\"${DART_TESTING_TIMEOUT}\" ")
 
 #
 # set additional runtest flags - number of CPU and runtest timeout
