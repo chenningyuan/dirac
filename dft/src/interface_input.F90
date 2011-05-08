@@ -43,7 +43,8 @@ contains
          else if (lowercase(first_4) == 'lbal') then
             dft_cfg_asymptote_is_lbalpha = .true.
          else
-            call quit('keyword following .GRAC not recognized')
+            print *, 'keyword following .GRAC not recognized'
+            stop
          end if
          call kw_read(word,               &
                       dft_cfg_grac_alpha, &
@@ -72,8 +73,10 @@ contains
          dft_cfg_asymptote_is_lbalpha    = .true.
          dft_cfg_alda_hs                 = .true.
          dft_cfg_alda_ha                 = .true.
+#ifdef PRG_DIRAC
          call setaldahs(.true.) !activate alda for the h+ part
          call setaldaha(.true.) !activate alda for the h- part
+#endif
       end if
 
       if (kw_matches(word, '.NOSDFT')) then
@@ -88,6 +91,7 @@ contains
          dft_cfg_betasigma = .true.
       end if
 
+#ifdef PRG_DIRAC
       if (kw_matches(word, '.ALDA  ')) then
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
@@ -137,6 +141,7 @@ contains
       if (kw_matches(word, '.GAUTSC')) then
          call set_lscale_dft_gaunt()
       end if
+#endif
 
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.BLOCKE')) then
