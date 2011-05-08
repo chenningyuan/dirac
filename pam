@@ -273,6 +273,7 @@ class pam_enviroment:
             'X2CMAT',
             'matexport.m',
             'DFCOEF.BEST',
+            '*.xml'
             ]
 
     # ... DFCOEF
@@ -1470,10 +1471,11 @@ class pam_enviroment:
       # select existing files in self.archive_files for the archive
 
         existing_archive_files = ''
-        for archfile in self.archive_files:
-            if os.path.isfile(archfile):
-                existing_archive_files = existing_archive_files \
-                    + ' ' + archfile
+        for p in self.archive_files:
+            for archfile in glob.glob(p):
+                if os.path.isfile(archfile):
+                    existing_archive_files = existing_archive_files \
+                        + ' ' + archfile
 
         print '  creating archive file ', archive_name
         print '  archived working files:',existing_archive_files 
