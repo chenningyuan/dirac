@@ -20,15 +20,3 @@ nr.inp  ne_ci.mol
 nr.inp  ne_cs.mol
 nr.inp  ne_d2.mol
 nr.inp  ne_d2h.mol
-
-x2c.inp h2o_auto.mol
-x2c.inp h2o_c1.mol
-x2c.inp ne_auto.mol
-x2c.inp ne_c1.mol
-x2c.inp ne_c2.mol
-x2c.inp ne_c2h.mol
-x2c.inp ne_c2v.mol
-x2c.inp ne_ci.mol
-x2c.inp ne_cs.mol
-x2c.inp ne_d2.mol
-x2c.inp ne_d2h.mol
