@@ -31,7 +31,7 @@ program main
    open(unit_grid,                 &
         file   = 'numerical_grid', &
         status = 'unknown',        &
-        form   = 'unformatted',    &
+        form   = 'formatted',      &
         access = 'sequential')
    rewind(unit_grid)
 
