@@ -2219,6 +2219,13 @@ C     The transpose of Wilsons B matrix is decomposed to:
 C
 C           B^t = U W V^t  ;   U,V orthogonal, W diagonal
 C
+
+!radovan: this routine is numerically very unstable
+!         if checks with .eq. d0,
+!         if checks with a+b .eq. b,
+!         sign functions with noisy input variables,
+!         and more
+
       BMTNRM = D0
       SCL    = D0
       SGNFAC = D0
