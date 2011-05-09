@@ -117,10 +117,11 @@ contains
          g_ao_end       = 0
          u_ao_end       = 0
          
-         if (use_only_large) then
-            nc = 1
-         else
+!        fixme doing too much for Levy-Leblond and .X2C4
+         if (nr_shells_small > 0) then
             nc = 2
+         else
+            nc = 1
          end if
 
          do ic = 1, nc
@@ -323,10 +324,10 @@ contains
             end do
          end do
       end do
-      do iz = 1, nr_quaternion_blocks
-         if (nr_fermion_coreps > 1) then
+      if (nr_fermion_coreps > 1) then
+         do iz = 1, nr_quaternion_blocks
 !           ungerade
-            do s = nr_mo_gerade + 1, nr_mo_gerade + nr_mo_ungerade
+            do s = nr_mo_gerade + 1, nr_mo
                buffer(s, iz) = 0.0d0
                do n = 1, nr_u_ao_blocks
                   do k = u_ao_start(n), u_ao_end(n)
@@ -335,11 +336,11 @@ contains
                   end do
                end do
             end do
-         end if
-      end do
+         end do
+      end if
 
-      do s = 1, nr_mo_gerade + nr_mo_ungerade
-         do t = s, nr_mo_gerade + nr_mo_ungerade
+      do s = 1, nr_mo
+         do t = s, nr_mo
             select case (nr_quaternion_blocks)
                case (1)
                   q1 = buffer(s, 1)*buffer(t, 1)
