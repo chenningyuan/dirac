@@ -88,6 +88,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/interface_grid.F90
     ${PROJECT_SOURCE_DIR}/src/interface_input.F90
     ${PROJECT_SOURCE_DIR}/src/interface_mo.F90
+    ${PROJECT_SOURCE_DIR}/src/interface_file_io.F90
     ${PROJECT_SOURCE_DIR}/src/main.F90
     ${PROJECT_SOURCE_DIR}/src/xc_ac.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90

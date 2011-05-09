@@ -31,6 +31,7 @@ module xc_driver
    use num_grid_cfg
    use interface_ao
    use interface_mo
+   use interface_file_io
    use dft_cfg
    use interface_functional_read
    use xc_derv
@@ -249,15 +250,17 @@ contains
       integer, optional,         intent(in)    :: xc_response_order_mo
       integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
-    real(8), external :: ddot
-   integer, parameter :: max_mat_number = 10
-   integer, target    :: default_pg_sym(max_mat_number)
-   integer, target    :: default_ih_sym(max_mat_number)
-    real(8)             :: save_ddot1, save_ddot2, h
+      real(8), external :: ddot
+      integer, parameter :: max_mat_number = 10
+      integer, target    :: default_pg_sym(max_mat_number)
+      integer, target    :: default_ih_sym(max_mat_number)
+      real(8)             :: save_ddot1, save_ddot2, h
+!     --------------------------------------------------------------------------
 
-
-
-!   ----------------------------------------------------------------------------
+!#define DEBUG_XC
+#ifdef DEBUG_XC
+      call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0)
+#endif
 
 !     start timer
       time_integration_start = second()
@@ -588,10 +591,9 @@ contains
       endif
 #endif
 
-!#define PRINT_FMAT
-#ifdef PRINT_FMAT
+#ifdef DEBUG_XC
       write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
-      call dzero(fmat, mat_dim*mat_dim*nz)
+      fmat = 0.0d0
 #endif
 
 #ifdef MOD_UNRELEASED
@@ -680,7 +682,7 @@ contains
 
       call nullify_and_release()
 
-#ifdef PRINT_FMAT
+#ifdef DEBUG_XC
       write(*, *) 'debug: real part of the XC potential matrix'
       call prqmat(xc_fmat,        &
                   mat_dim,        &
@@ -690,6 +692,7 @@ contains
                   1,              &
                   (/1, 2, 3, 4/), &
                   file_unit)
+      call matrix_to_file('xc_fmat', mat_dim*mat_dim, xc_fmat)
 #endif
 
    end subroutine
