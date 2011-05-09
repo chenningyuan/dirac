@@ -25,7 +25,6 @@ module interface_grid
 
    public num_grid_write
    public num_grid_read
-   public num_grid_read_unformatted
 
    private
 
@@ -83,28 +82,6 @@ contains
       do i = 1, nr_points
          read(lunit, *) x(i), y(i), z(i), w(i)
       enddo
-
-   end subroutine
-
-   subroutine num_grid_read_unformatted(          &
-                                        x,        &
-                                        y,        &
-                                        z,        &
-                                        w,        &
-                                        lunit,    &
-                                        nr_points &
-                                       )
-
-!     --------------------------------------------------------------------------
-      real(8), intent(out) :: x(nr_points)
-      real(8), intent(out) :: y(nr_points)
-      real(8), intent(out) :: z(nr_points)
-      real(8), intent(out) :: w(nr_points)
-      integer, intent(in)  :: lunit
-      integer, intent(in)  :: nr_points
-!     --------------------------------------------------------------------------
-
-      read(lunit) x, y, z, w
 
    end subroutine
 

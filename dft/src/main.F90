@@ -28,10 +28,10 @@ program main
 
    call matrix_from_file('xc_dmat0', nr_ao, dmat)
 
-   open(unit_grid,              &
-        file   = 'DIRAC.QUAD',  &
-        status = 'unknown',     &
-        form   = 'unformatted', &
+   open(unit_grid,                 &
+        file   = 'numerical_grid', &
+        status = 'unknown',        &
+        form   = 'unformatted',    &
         access = 'sequential')
    rewind(unit_grid)
 

@@ -83,7 +83,7 @@ contains
         call alloc(z, nr_points)
         call alloc(w, nr_points)
 
-        call num_grid_read_unformatted(x, y, z, w, lunit, nr_points)
+        call num_grid_read(x, y, z, w, lunit, nr_points)
 
         call integrate_quantity(nr_dmat, d,        &
                                 d_0,               &
@@ -163,7 +163,7 @@ contains
          call alloc(z, nr_points)
          call alloc(w, nr_points)
 
-         call num_grid_read_unformatted(x, y, z, w, lunit, nr_points)
+         call num_grid_read(x, y, z, w, lunit, nr_points)
 
          quantity_integral = 0.0d0
 
@@ -415,7 +415,7 @@ contains
          file   = file_name,    &
          status = 'unknown',    &
          access = 'sequential', &
-         form = 'unformatted')
+         form = 'formatted')
       rewind u
 
       vx = p_right - p_origin
@@ -452,7 +452,7 @@ contains
          end do
       end do
 
-      call wrtqua(rx, ry, rz, rw, u, ipoint)
+      call num_grid_write(rx, ry, rz, rw, u, ipoint)
 
       call dealloc(x)
       call dealloc(w)

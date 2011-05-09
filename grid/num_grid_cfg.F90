@@ -32,7 +32,6 @@ module num_grid_cfg
    integer,       public :: num_grid_cfg_angmin                  = 15
    integer,       public :: num_grid_cfg_integration_check_level = 0
    logical,       public :: num_grid_cfg_estimate_radii          = .false.
-   logical,       public :: num_grid_cfg_export_grid             = .false.
    logical,       public :: num_grid_cfg_force_4c_grid           = .false.
    logical,       public :: num_grid_cfg_import_grid             = .false.
    logical,       public :: num_grid_cfg_multigrid               = .false.
@@ -72,10 +71,6 @@ contains
             write(*, '(a)')      '   - estimate relative atomic sizes for use in the Becke'
             write(*, '(a)')      '     partitioning scheme from atomic contributions '// &
                                  'to the density'
-         end if
-
-         if (num_grid_cfg_export_grid) then
-            write(*, '(a)')        '   - integration grid exported to file'
          end if
 
       end if

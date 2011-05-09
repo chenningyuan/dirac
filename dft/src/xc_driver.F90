@@ -257,6 +257,7 @@ contains
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
 
+
 !#define DEBUG_XC
 #ifdef DEBUG_XC
       call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0)
@@ -1819,15 +1820,15 @@ contains
 
 !        get number of points in this batch
          if (xc_mpi_is_master()) then
-            if (num_grid_cfg_import_grid) then
+#ifdef MOD_UNRELEASED
+            if (do_fde_update_vemb .or. do_fde_response) then
+               nr_points_batch = fde_grid_np
+            else
+#endif
                read(file_unit_grid, *) nr_points_batch
 #ifdef MOD_UNRELEASED
-            else if (do_fde_update_vemb .or. do_fde_response) then
-               nr_points_batch = fde_grid_np
-#endif
-            else
-               read(file_unit_grid) nr_points_batch
             end if
+#endif
          end if
 
 #ifdef VAR_MPI
@@ -1882,7 +1883,7 @@ contains
 
 #endif
             else
-               call num_grid_read_unformatted(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
+               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
             end if
          end if
 

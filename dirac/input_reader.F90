@@ -189,11 +189,6 @@ contains
          num_grid_cfg_estimate_radii = .true.
       end if
 
-      if (kw_matches(word, '.EXPORT')) then
-         num_grid_cfg_export_grid = .true.
-         call kw_read(word, num_grid_cfg_gridfile)
-      end if
-
       if (kw_matches(word, '.IMPORT')) then
          num_grid_cfg_import_grid = .true.
          call kw_read(word, num_grid_cfg_gridfile)

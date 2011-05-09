@@ -69,7 +69,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       TIMSTR = SECOND()
 
-
 C
 C     ********************************
 C     ***** Set up common blocks *****
@@ -138,23 +137,15 @@ C
      &       FILE   =  num_grid_cfg_gridfile)
       ELSE
         OPEN(lunit_grid,
-     &       FORM   = 'UNFORMATTED',
+     &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   = 'DIRAC.QUAD')
+     &       FILE   = 'numerical_grid')
       ENDIF
       REWIND lunit_grid
 
       if (num_grid_cfg_import_grid) go to 999
 
-      if (num_grid_cfg_export_grid) then
-        OPEN(lunit_grid+1,
-     &       FORM   = 'FORMATTED',
-     &       STATUS = 'UNKNOWN',
-     &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  num_grid_cfg_gridfile)
-        rewind lunit_grid+1
-      end if
 
 C
 C     Calculate abscissas and weights
@@ -534,11 +525,8 @@ C        Write to file
 C        ====================
 C
          lunit_grid = 44
-         CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NTHIS)
-         if (num_grid_cfg_export_grid) then
-           call num_grid_write(x8, y8, z8, wt8, 
-     &                          lunit_grid+1, nthis)
-         end if
+         call num_grid_write(x8, y8, z8, wt8, 
+     &                        lunit_grid, nthis)
 
          NTOTAL = NTOTAL + NTHIS
          NALL = NALL + NTHAT
@@ -550,80 +538,14 @@ C
 10    CONTINUE
 
       NLAST = -1
-      CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NLAST)
-      if (num_grid_cfg_export_grid) then
-        call num_grid_write(x8, y8, z8, wt8, 
-     &                       lunit_grid+1, nlast)
-      end if
+      call num_grid_write(x8, y8, z8, wt8, 
+     &                     lunit_grid, nlast)
 
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
      &     ' Number of grid points in quadrature:',NTOTAL,
      &     ' (',FLOAT(100*NTOTAL)/FLOAT(NALL),'%)'
-C
-C     Print file
-C
-      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,lunit_grid)
-      RETURN
-      END
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck wrtqua */                                                   C
-      SUBROUTINE WRTQUA(X,Y,Z,WT,LUQUAD,NPOINT)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-#include "implicit.h" 
-
-      DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
-
-      WRITE(LUQUAD) NPOINT
-      IF (NPOINT .GT. 0) WRITE(LUQUAD) X,Y,Z,WT
-
-      RETURN
-      END
-
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck priqua */                                                   C
-      SUBROUTINE PRIQUA(X,Y,Z,WT,LUQUAD)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-#include "implicit.h" 
-
-      DIMENSION X(*),Y(*),Z(*),WT(*)
-
-      REWIND LUQUAD
-  100 CONTINUE
-
-      READ(LUQUAD) NPOINT
-      IF (NPOINT .LT. 0) GO TO 200
-      CALL PRIQU2(X,Y,Z,WT,LUQUAD,NPOINT)
-      GO TO 100
-  200 CONTINUE
-
-      RETURN
-      END
-
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck priqu2 */                                                   C
-      SUBROUTINE PRIQU2(X,Y,Z,WT,LUQUAD,NPOINT)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-#include "implicit.h" 
-#include "priunit.h"
-
-      DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
-
-      READ(LUQUAD) X,Y,Z,WT
-      DO 100 I = 1, NPOINT
-         WRITE (LUPRI,'(2X,4F20.12)') X(I),Y(I),Z(I),WT(I)
-  100 CONTINUE
-
-      RETURN
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
