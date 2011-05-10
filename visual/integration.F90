@@ -74,7 +74,7 @@ contains
         REWIND LUNIT
 
  1      CONTINUE
-        READ(LUNIT) NR_POINTS
+        READ(LUNIT, *) NR_POINTS
 
         IF(NR_POINTS .LE. 0) GOTO 2
 
@@ -156,7 +156,7 @@ contains
                               lunit)
 
          rewind lunit
-         read(lunit) nr_points
+         read(lunit, *) nr_points
 
          call alloc(x, nr_points)
          call alloc(y, nr_points)
