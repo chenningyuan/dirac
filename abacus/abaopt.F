@@ -2103,12 +2103,13 @@ C
       IJ = 1
       DO 10 J = 1, NUCIND
          DO 20 I = 1, 3
-            CORDNW(I,J) = CORD(I,J) + CSTEP(IJ)
-            IF ( ILL_NUMBER(CORDNW(I,J)) ) THEN
-               WRITE(LUPRI,*) 'I,J,CORD(I,J),CSTEP(IJ):',
-     &          I,J,CORD(I,J),CSTEP(IJ)
-               CALL QUIT('ill number detected !')
+            IF ( ILL_NUMBER(CSTEP(IJ)) ) THEN
+               WRITE(LUPRI,*) 'ill number: I,J,CORD(I,J),CSTEP(IJ):',
+     &         I,J,CORD(I,J),CSTEP(IJ)
+               WRITE(LUPRI,*) 'setting CSTEP(IJ)=0.0D0'
+               CSTEP(IJ)=0.0D0
             ENDIF
+            CORDNW(I,J) = CORD(I,J) + CSTEP(IJ)
             IJ = IJ + 1
  20      CONTINUE
  10   CONTINUE
