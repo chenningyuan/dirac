@@ -2103,11 +2103,14 @@ C
       IJ = 1
       DO 10 J = 1, NUCIND
          DO 20 I = 1, 3
+!miro: report ill number, but do not change value
             IF ( ILL_NUMBER(CSTEP(IJ)) ) THEN
-               WRITE(LUPRI,*) 'ill number: I,J,CORD(I,J),CSTEP(IJ):',
-     &         I,J,CORD(I,J),CSTEP(IJ)
-               WRITE(LUPRI,*) 'setting CSTEP(IJ)=0.0D0'
-               CSTEP(IJ)=0.0D0
+               WRITE(LUPRI,*) 'ill number: I,J,CSTEP(IJ):',
+     &         I,J,CSTEP(IJ)
+            ENDIF
+            IF ( ILL_NUMBER(CORD(I,J)) ) THEN
+               WRITE(LUPRI,*) 'ill number: I,J,CORD(I,J):',
+     &         I,J,CORD(I,J)
             ENDIF
             CORDNW(I,J) = CORD(I,J) + CSTEP(IJ)
             IJ = IJ + 1
