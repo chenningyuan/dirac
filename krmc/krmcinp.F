@@ -657,8 +657,8 @@ C
            end if
            WRITE(LUPRI,'(a,i3,a,a4,a2)')
      &        '    ** ', 1,' eigenstate'//
-     &        ' for MJ-value: ',adjustr(xrepeig(ikrmc_symmetry)),
-     &                          ferm_lab
+     &        ' for MJ-value (doubled): ',
+     &          adjustr(xrepeig(ikrmc_symmetry)),ferm_lab
          else
            allocate(multb_tmp(64,64))
            IF (SPINFR) THEN

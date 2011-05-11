@@ -894,8 +894,8 @@ C     ... next symmetry
            end if
            WRITE(LUPRI,'(a,i3,a,a4,a2)')
      &        '    ** ',nkrci_ciroots(ikrci_symmetry),' eigenstate(s)'//
-     &        ' for MJ-value: ',adjustr(xrepeig(ikrci_symmetry)),
-     &                          ferm_lab
+     &        ' for MJ-value (doubled): ',
+     &          adjustr(xrepeig(ikrci_symmetry)),ferm_lab
          else
            allocate(multb_tmp(64,64))
            IF (SPINFR.or.levyle) THEN

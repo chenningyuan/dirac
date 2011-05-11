@@ -633,7 +633,7 @@ contains
       print *, ' evaluating active dbg irrep...'
 
       print *, ' # dbg irreps               : ',num_dbg_irreps
-      print *, ' # active MJ value          : ',active_mj_val
+      print *, ' # active MJ value (doubled): ',active_mj_val
       print *, ' # active fermion sym       : ',active_ferm_sym
 
       if(abs(active_mj_val) .gt. num_dbg_irreps/2)then
