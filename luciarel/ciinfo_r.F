@@ -1559,32 +1559,42 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
       call memmar(KLBLTP,NSMST,'ADDL  ',2,'KLBLTP')
 *. Array defining symmetry combinations of internal strings
       CALL SMOST_REL(NSMST,NSMCI,MXNDGIRR,ISMOST)
-*
-      MXSB   = 0
-      MXSOOB = 0
+
+!     create batches
+      ITTSS_ORD = 2
+      MXSB      = 0
+      MXSOOB    = 0
+      MXNTTS    = 0
+      call dzero(XISPSM,MXNDGIRR*MXPICI)
 !     calculate number of internal dets for each symmetry
 !     ---------------------------------------------------
 
-!     loop over MS2 spaces
-      DO IMS2 = 1, NMS2VAL
-        IATP   = IST_FOR_DT(1,IMS2)
-        IBTP   = IST_FOR_DT(2,IMS2)
-*
-        NOCTPA =  NOCTYP(IATP)
-        NOCTPB =  NOCTYP(IBTP)
-*
-        IOCTPA = IBSPGPFTP(IATP)
-        IOCTPB = IBSPGPFTP(IBTP)
-*
-        DO ICI = 1, NICISP
-*. allowed combination of types
-          CALL IAIBCM_GAS(LCMBSPC(ICI),ICMBSPC(1,ICI),
-     &                    IGSOCCX,NOCTPA,
-     &                    NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &                    NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRNT)
-*
-          DO  ISYM = 1, NSMCI
-            CALL ZBLTP_REL(ISMOST(1,ISYM),NSMST,WORK(KLBLTP))
+!     loop over CI spaces
+      DO ICI = 1, NICISP
+!     loop over symmetry irreps
+        DO ISYM = 1, NSMCI
+
+          CALL ZBLTP_REL(ISMOST(1,ISYM),NSMST,WORK(KLBLTP))
+          IOFFBLK = 0
+
+!         loop over MS2 spaces
+          DO IMS2 = 1, NMS2VAL
+            IATP   = IST_FOR_DT(1,IMS2)
+            IBTP   = IST_FOR_DT(2,IMS2)
+!
+            NOCTPA =  NOCTYP(IATP)
+            NOCTPB =  NOCTYP(IBTP)
+!
+            IOCTPA = IBSPGPFTP(IATP)
+            IOCTPB = IBSPGPFTP(IBTP)
+
+!           allowed combination of types
+            CALL IAIBCM_GAS(LCMBSPC(ICI),ICMBSPC(1,ICI),
+     &                      IGSOCCX,NOCTPA,NOCTPB,ISPGPFTP(1,IOCTPA),
+     &                      ISPGPFTP(1,IOCTPB),NELFGP,MXPNGAS,NGAS,
+     &                      WORK(KLIOIO),IPRNT)
+
+!           a. number of determinants (ci space / symmetry / ms2 value)
             CALL NGASDT_REL(IGSOCCX(1,1,ICI),IGSOCCX(1,2,ICI),
      &                      NGAS,ISYM,NSMST,NOCTPA,NOCTPB,
      &                      WORK(KNSTSO(IATP)),WORK(KNSTSO2(IBTP)),
@@ -1592,80 +1602,63 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
      &                      ISPGPFTP(1,IBSPGPFTP(IBTP)),MXPNGAS,NELFGP,
      &                      NCOMB,XNCOMB,MXS,MXSOO,WORK(KLBLTP),NTTSBL,
      &                      LCOL,WORK(KLIOIO))
-*
-            IF(IMS2.EQ.1) THEN
-              XISPSM(ISYM,ICI) = XNCOMB
-              NBLKIC(ISYM,ICI) = NTTSBL
-            ELSE
-              XISPSM(ISYM,ICI) = XISPSM(ISYM,ICI) + XNCOMB
-              NBLKIC(ISYM,ICI) = NBLKIC(ISYM,ICI) + NTTSBL
-            END IF
-            MXSOOB = MAX(MXSOOB,MXSOO)
-            MXSB = MAX(MXSB,MXS)
-          END  DO ! loop over symmetries
-        END DO ! loop over CI spaces
-      END DO ! loop over MS2 spaces
-*
-*     Setting size of resolution matrices
+
+!           b. number of ttss blocks per (ci space / symmetry / ms2 value)
+            call determine_ttss_block_num(WORK(KLBLTP),
+     &                                    WORK(KNSTSO(IATP)),
+     &                                    WORK(KNSTSO2(IBTP)),NOCTPA,
+     &                                    NOCTPB,IOFFBLK,
+     &                                    NSMST,WORK(KLIOIO),
+     &                                    ISMOST(1,ISYM),
+     &                                    ITTSS_ORD)
+!
+            XISPSM(ISYM,ICI) = XISPSM(ISYM,ICI) + XNCOMB
+            MXSOOB           = MAX(MXSOOB,MXSOO)
+            MXSB             = MAX(MXSB,MXS)
+            MXNTTS           = MAX(MXNTTS,IOFFBLK)
+          END DO ! loop over MS2 spaces
+        END DO ! loop over symmetries
+      END DO ! loop over CI spaces
+!
+!     Setting size of resolution matrices
       LCSBLK = IMAXLBLKSZ
-*      
-*     Check for minimum size of resolution matrices:
+!      
+!     Check for minimum size of resolution matrices:
       if(MXSB.gt.LCSBLK)then
         write(LUWRT,'(/a,i12,a,i12/)') 
      & ' *** warning: resetting LCSBLK from',LCSBLK,' to:',MXSB
         LCSBLK = MXSB
       end if
-*
+!
       if(cirun.eq.'NDET  ')then
         write(luwrt,'(/a)')
      &'  Number of determinants per double group irrep '
         write(luwrt,'(a)')
      &'  ============================================= '
-*
         do ici = 1, ncmbspc
           write(luwrt,'(1p,4g22.12)') (xispsm(ii,ici),ii=1,nsmci)
         end do
       end if
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      WRITE(LUWRT,'(/a,i8)') ' Largest symmetry block           ==>',
-     &                         MXSB
-      WRITE(LUWRT,'(a,i8)')  ' Largest Symmetry-type-type block ==>',
-     &                         MXSOOB
-*
-      WRITE(LUWRT,*) ' Number of TTS subblocks per CI expansion '
-      WRITE(LUWRT,*) ' ======================================== '
-*
-      DO ICI = 1,  NCMBSPC
-        WRITE(LUWRT,*) ' Internal CI space ', ICI
-        CALL IWRTMAMN(NBLKIC(1,ICI),1,NSMCI,1,NSMCI,LUWRT)
-      END DO
+      WRITE(LUWRT,'(/a,i8)') 
+     &' Largest symmetry block                          ==>',
+     &  MXSB
+      WRITE(LUWRT,'(a,i8)')  
+     &' Largest type-type-symmetry (TTS) block          ==>',
+     &  MXSOOB
+      WRITE(LUWRT,'(a,i8/)')  
+     &' Largest number of TTS subblocks in CI expansion ==>',
+     &  MXNTTS
 #endif
-*
-*. Largest number of BLOCKS in a CI expansion
-      MXNTTS = 0
-      DO ICI = 1,NCMBSPC
-       DO ISM =1, NSMCI
-!old    MXNTTS = MAX(MXNTTS,        NBLKIC(ISM,ICI))
-        MXNTTS = MAX(MXNTTS,NIRR_DG*NBLKIC(ISM,ICI))
-       END DO
-      END DO
-*
-#ifdef LUCI_DEBUG
-      IF(NTEST.GE.5) THEN
-        WRITE(LUWRT,*) ' Largest number of blocks in CI expansion',
-     &                   MXNTTS
-      END IF
-#endif
-*
-C
-C     eliminate local memory
+!#undef LUCI_DEBUG
+!
+!     eliminate local memory
       IDUM = 0
       call memmar(KDUM ,IDUM,'FLUSM ',2,'LCISP ')
 
       CALL QEXIT('LCISP')
-*
-      RETURN
       END
 ***********************************************************************
 
@@ -2388,7 +2381,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
         WRITE(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        stop ' In PART_CIV3. '
+        call quit(' Insufficient buffer detected in PART_CIV3.')
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000
@@ -2573,7 +2566,7 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
         WRITE(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        stop ' In PART_CIV4. '
+        call quit(' Insufficient buffer detected in PART_CIV4.')
       ELSE
 *
 *     this batch is finished, goto next batch
@@ -2595,7 +2588,7 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
             WRITE(LUWRT,*) ' block LENGTH, actual batch length ',
      &                       LENGTH, LEBATCH(NBATCH)
             WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from',MXLNG
-            stop ' In PART_CIV4 because of N_TRY .ge. 1. '
+            call quit(' N_TRY .ge. 1. in PART_CIV4.')
           END IF
 *
           I_SAVE_IBLOCK = IBLOCK
@@ -2979,7 +2972,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        stop ' In PART_CIV3_SPC. '
+        call quit(' Insufficient buffer detected in PART_CIV3_SPC.')
       ELSE
 *. This batch is finished, goto next batch
 *
@@ -3041,6 +3034,74 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       END IF
 *
       END
+***********************************************************************
+
+      subroutine determine_ttss_block_num(IBLTP,NSSOA,NSSOB,
+     &                                    NOCTPA,NOCTPB,IOFFBLK,NSMST,
+     &                                    IOCOC,ISMOST,ITTSS_ORD)
+!
+! Partition a CI vector with given MS2 into batches of blocks.
+! The length of a batch must be atmost MXLNG
+!
+! output: 
+!         number of TTSS blocks ==> nblocks
+!
+! based on part_civ2 originally written by Jeppe Olsen
+!
+      implicit none
+
+!-------------------------------------------------------------------------------
+      integer, intent(inout) :: ioffblk
+      integer, intent(in)    :: nsmst
+      integer, intent(in)    :: noctpa, noctpb
+      integer, intent(in)    :: nssoa(nsmst,*), nssob(nsmst,*)
+      integer, intent(in)    :: iococ(noctpa,noctpb)
+      integer, intent(in)    :: ibltp(nsmst)
+      integer, intent(in)    :: ismost(*)
+      integer, intent(in)    :: ittss_ord
+!-------------------------------------------------------------------------------
+      integer                :: ib, ia, ism
+      integer                :: lblock, length, iblock, ifrst, ifini
+      integer(8), parameter  :: max_batch_length = 100000000000
+!-------------------------------------------------------------------------------
+
+!     block  zero
+      ib     = 1
+      ia     = 1
+      ism    = 1
+      iblock = ioffblk
+      ifini  = 0
+!     loop over batches of blocks
+ 2000 CONTINUE
+      length = 0
+      ifrst  = 1
+!     loop over blocks in batch
+ 1000 continue
+!     next block : order is: IB, IA, ISM (leftmost inner loop)
+      if(ifrst .eq. 0)then
+        call nxt_tts(ittss_ord,ia,ib,ism,ifini,noctpa,noctpb,nsmst)
+      end if
+      ifrst = 0
+      if(ifini .eq. 1) goto 2002
+      if(ibltp(ism) .eq. 0) goto 1000
+      if(ibltp(ism) .eq. 2 .and. ia .lt. ib) goto 1000
+      if(iococ(ia,ib) .eq. 0) goto 1000
+
+!     can this block be included
+      lblock = nssoa(ism,ia) * nssob(ismost(ism),ib)
+
+      if(length+lblock .le. max_batch_length)then
+        iblock = iblock + 1
+        length = length + lblock
+#ifdef LUCI_DEBUG
+        print '(a,i6)', 'set ttss block counter ==> ',IBLOCK
+#endif
+        goto 1000
+      end if ! length of batch < MXLNG?
+!
+ 2002 ioffblk = iblock 
+
+      end
 ***********************************************************************
 
       SUBROUTINE RSMXMN_REL(MAXEL,MINEL,NORB1,NORB2,NORB3,NEL,
