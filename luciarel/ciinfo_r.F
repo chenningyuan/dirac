@@ -590,6 +590,7 @@ C
       integer, allocatable              :: mjorb_vec(:)
       integer, intent(inout)            :: mj_statistics(-32:32)
       character (len=1) , intent(inout) :: inv_symbol
+      character (len=1)                 :: inv_symbol_orb
       character (len=4),  allocatable   :: conf_string_a(:)
       character (len=4),  allocatable   :: conf_string_b(:)
       character (len=10), allocatable   :: stringa(:)
@@ -756,13 +757,13 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                                 is_gas_shell   = i
                                 is_orb_idx_gas = iorb_idx_gas
                                 if(nfsym.eq.1)then
-                                  inv_symbol = ' '
+                                  inv_symbol_orb = ' '
                                 else
-                                  inv_symbol = 'g'
+                                  inv_symbol_orb = 'g'
                                   inversion_counter = 
      &                            inversion_counter + 2
                                   if(j.eq.2)then 
-                                    inv_symbol = 'u'
+                                    inv_symbol_orb = 'u'
                                     inversion_counter = 
      &                              inversion_counter + 1
                                   end if
@@ -790,7 +791,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 !                         get orbital mj-value
                           mjval_orb = mjorb_vec(iorbidx_dc)
                           write(conf_string_a(iel),'(i3,a1)') 
-     &                    mjval_orb,inv_symbol
+     &                    mjval_orb,inv_symbol_orb
                           mjval     = mjval + mjval_orb
                       end do
                       do iel = 1, nbel
@@ -811,13 +812,13 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                                 is_gas_shell   = i
                                 is_orb_idx_gas = iorb_idx_gas
                                 if(nfsym.eq.1)then
-                                  inv_symbol = ' '
+                                  inv_symbol_orb = ' '
                                 else
-                                  inv_symbol = 'g'
+                                  inv_symbol_orb = 'g'
                                   inversion_counter = 
      &                            inversion_counter + 2
                                   if(j.eq.2)then 
-                                    inv_symbol = 'u'
+                                    inv_symbol_orb = 'u'
                                     inversion_counter = 
      &                              inversion_counter + 1
                                   end if
@@ -845,7 +846,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 !                         get orbital mj-value
                           mjval_orb = -mjorb_vec(iorbidx_dc)
                           write(conf_string_b(iel),'(i3,a1)') 
-     &                    mjval_orb,inv_symbol
+     &                    mjval_orb,inv_symbol_orb
                           mjval     =  mjval + mjval_orb
                       end do
                       if(mod(nael+nbel,2).eq.0)then
