@@ -14,7 +14,7 @@ subroutine xmlout_embed_formatted(file_path,file_type)
   ENDIF
   do while (.true.)
      read(lu,*,end=666) linebuf
-     write(luxml,*),trim(linebuf)
+     write(luxml,*) trim(linebuf)
   enddo
 666 continue
   write(LUXML,*) '    </file>'
