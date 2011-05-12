@@ -2161,6 +2161,11 @@ C
       WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
      &   ' Norm of step                   : ', STPNRM, 
      & ' (the threshold is:',THRSTP,')'
+!MI: fuse - end optimization if step is too close to zero
+      IF (DABS(STPNRM).LE.1.0D-9) THEN
+        WRITE(LUPRI,*)'Norm of step too small-ending optimization here'
+        GECONV=.TRUE.
+      ENDIF
       WRITE(LUPRI,'(A,D12.6)')
      &   ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3) THEN
