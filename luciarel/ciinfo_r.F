@@ -3063,7 +3063,9 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 !-------------------------------------------------------------------------------
       integer                :: ib, ia, ism
       integer                :: lblock, length, iblock, ifrst, ifini
-      integer(8), parameter  :: max_batch_length = 100000000000
+      integer(8), parameter  :: max_batch_number = 1000
+      integer(8), parameter  :: max_batch_length = 1000000000 * 
+     &                          max_batch_number
 !-------------------------------------------------------------------------------
 
 !     block  zero
