@@ -2594,7 +2594,6 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
 *
           I_SAVE_IBLOCK = IBLOCK
 *         set batch back to first available TT-1 block
-          print *,'go in here?'
           call bck_tts(ITTSS_ORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,
      &                 NBLOCK,LENGTH,LENGTHP,NBATCH,6)
 *
