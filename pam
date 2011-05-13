@@ -1335,6 +1335,7 @@ class pam_enviroment:
         if not is_windows():
             signal.signal(signal.SIGHUP,child_signaller)
         signal.signal(signal.SIGTERM,child_signaller)
+        signal.signal(signal.SIGINT,child_signaller)
             
         self.f = open(self.output_file_full, 'w', 0)
 		
