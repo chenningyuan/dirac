@@ -1329,7 +1329,7 @@ class pam_enviroment:
         pgid = None # process group id of the "dirac" process
         def child_signaller(signum, frame):
             '''Pass on signals to pam to its children'''
-            if pdid is not None:
+            if pgid is not None:
                 os.killpg(pgid,signum)
             sys.exit()
         if not is_windows():
