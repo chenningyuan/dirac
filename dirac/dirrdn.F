@@ -49,22 +49,88 @@ C***********************************************************************
 #include "cbirea.h"
 #include "xmlout.h"
       DIMENSION WORK(*)
+      character(100)     :: line 
+      integer, parameter :: file_unit = 137
+      logical            :: file_exists, file_exists2
+
+
 C
       CALL QENTER('PAMINP')
 C
 C     Initializations
 C
       CALL PAMINI()
-C
-C     Echo back the input and count the number of keywords given
-C
-      CALL TITLER('Input read from DIRAC.INP','*',127)
+
+
+
+
+!     print contents of input file to output
+      inquire(file = 'DIRAC.INP', exist = file_exists)
+      if (file_exists) then
+         open(file_unit,
+     &        file   = 'DIRAC.INP',
+     &        status = 'unknown',
+     &        form   = 'formatted',
+     &        access = 'sequential')
+         rewind(file_unit)
+      else
+         call quit('*.inp file not found')
+      end if
+      write(lupri, *)
+      write(lupri, *)
+      write(lupri, '(a)') 'Contents of the input file:'
+      write(lupri, *)
+      do while (.true.)
+         read(file_unit, '(a100)', end=1) line
+         write(lupri, '(a)') line
+      end do
+ 1    continue
+      close(file_unit, status = 'keep')
+
+!     print contents of molecule file to output
+      inquire(file = 'MOLECULE.MOL', exist = file_exists)
+      if (file_exists) then
+         open(file_unit,
+     &        file   = 'MOLECULE.MOL',
+     &        status = 'unknown',
+     &        form   = 'formatted',
+     &        access = 'sequential')
+         rewind(file_unit)
+      else
+         inquire(file = 'MOLECULE.XYZ', exist = file_exists2)
+         if (file_exists2) then
+            open(file_unit,
+     &           file   = 'MOLECULE.XYZ',
+     &           status = 'unknown',
+     &           form   = 'formatted',
+     &           access = 'sequential')
+            rewind(file_unit)
+         else
+            call quit('*.mol/*.xyz file not found')
+         end if
+      end if
+      write(lupri, *)
+      write(lupri, *)
+      write(lupri, '(a)') 'Contents of the molecule file:'
+      write(lupri, *)
+      do while (.true.)
+         read(file_unit, '(a100)', end=2) line
+         write(lupri, '(a)') line
+      end do
+ 2    continue
+      close(file_unit, status = 'keep')
+
+
+
+
+
+
       OPEN(LUCMD,FILE = 'DIRAC.INP',IOSTAT=IOS)
       IF (IOS.NE.0) THEN
         WRITE(LUPRI,*) 'Error in opening DIRAC.INP!'
         CALL QUIT('Error in opening DIRAC.INP!')
       ENDIF
-      CALL KEYWORD_SCAN (.TRUE.,.TRUE.,.TRUE.,.TRUE.,.TRUE.,.TRUE.,
+      CALL KEYWORD_SCAN (.TRUE.,.TRUE.,.TRUE.,.TRUE.,
      &                   .FALSE.,NUMBER_OF_KEYWORDS,WORK)
       CLOSE(LUCMD)
 C
@@ -7432,7 +7498,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck keyword_scan */
       SUBROUTINE KEYWORD_SCAN (DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST,
-     &                         PRINT_LIST,PRINT_ALL,FILL_LIST,
+     &                         FILL_LIST,
      &                         NUMBER_OF_KEYWORDS,KEYWORD_LIST)
 C***********************************************************************
 C
@@ -7446,16 +7512,13 @@ C           - SINGLE_STAR : Include keys corresponding to subsections
 C           - DOT         : Include keys from within subsections
 C           - NAME_LIST   : Include NAMELIST type input (RELCCSD)
 C
-C     All keywords found are also printed to output if PRINT_LIST is TRUE
-C     The whole input is echoed to output if PRINT_ALL is TRUE
-C
 C     Written by L. Visscher, october 2006
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST
-      LOGICAL PRINT_LIST,PRINT_ALL,FILL_LIST
+      LOGICAL FILL_LIST
       CHARACTER*80 LINE
       CHARACTER*7 KEYWORD_LIST(*)
       INTEGER NUMBER_OF_KEYWORDS, LEN_LINE
@@ -7475,17 +7538,13 @@ C
       IF (DOUBLE_STAR .AND. LINE(1:2) .EQ. '**') THEN
         NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
         IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(3:9)
-        IF (PRINT_LIST) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ELSE IF (SINGLE_STAR .AND. LINE(1:1) .EQ. '*') THEN
         NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
         IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
-        IF (PRINT_LIST) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ELSE IF (DOT. AND. LINE(1:1) .EQ. '.') THEN
         NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
         IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
-        IF (PRINT_LIST) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ELSE
-        IF (PRINT_ALL) WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       ENDIF
 C
 C     Search for namelist input (first remove initial blanks)
@@ -7496,8 +7555,6 @@ C
       IF (NAME_LIST .AND. (LINE(1:1).EQ.'&' .OR. LINE(1:1).EQ.'$')) THEN
        NUMBER_OF_KEYWORDS = NUMBER_OF_KEYWORDS + 1
        IF (FILL_LIST) KEYWORD_LIST(NUMBER_OF_KEYWORDS)(1:7) = LINE(2:8)
-       IF (PRINT_LIST.AND..NOT.PRINT_ALL)
-     &    WRITE (LUPRI,'(A)') LINE(1:LEN_LINE)
       END IF
 C
       GO TO 100
