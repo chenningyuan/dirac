@@ -153,6 +153,39 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 
 void sysinf_(fortran_int_t *parcal)
 {
+
+#ifdef THIS_IS_CMAKE_BUILD
+   printf("\n");
+   printf("\n");
+   printf("CMAKE_SYSTEM_NAME           : %s \n", CMAKE_SYSTEM_NAME           );
+   printf("\n");
+   printf("ENABLE_EXTERNAL_MATH        : %s \n", ENABLE_EXTERNAL_MATH        );
+   printf("ENABLE_64BIT_INTEGERS       : %s \n", ENABLE_64BIT_INTEGERS       );
+   printf("ENABLE_MPI                  : %s \n", ENABLE_MPI                  );
+   printf("ENABLE_XCFUN                : %s \n", ENABLE_XCFUN                );
+   printf("ENABLE_LOCAL_DISKS          : %s \n", ENABLE_LOCAL_DISKS          );
+   printf("NO_SSH_ACCESS_TO_NODES      : %s \n", NO_SSH_ACCESS_TO_NODES      );
+   printf("\n");
+   printf("CMAKE_BUILD_TYPE            : %s \n", CMAKE_BUILD_TYPE            );
+   printf("\n");
+   printf("CMAKE_Fortran_COMPILER      : %s \n", CMAKE_Fortran_COMPILER      );
+   printf("CMAKE_Fortran_FLAGS         : %s \n", CMAKE_Fortran_FLAGS         );
+   printf("CMAKE_Fortran_FLAGS_DEBUG   : %s \n", CMAKE_Fortran_FLAGS_DEBUG   );
+   printf("CMAKE_Fortran_FLAGS_RELEASE : %s \n", CMAKE_Fortran_FLAGS_RELEASE );
+   printf("\n");
+   printf("CMAKE_C_COMPILER            : %s \n", CMAKE_C_COMPILER            );
+   printf("CMAKE_C_FLAGS               : %s \n", CMAKE_C_FLAGS               );
+   printf("CMAKE_C_FLAGS_DEBUG         : %s \n", CMAKE_C_FLAGS_DEBUG         );
+   printf("CMAKE_C_FLAGS_RELEASE       : %s \n", CMAKE_C_FLAGS_RELEASE       );
+   printf("\n");
+   printf("BLAS_LIBRARIES              : %s \n", BLAS_LIBRARIES              );
+   printf("LAPACK_LIBRARIES            : %s \n", LAPACK_LIBRARIES            );
+   printf("\n");
+   printf("SVN_REVISION                : %s \n", SVN_REVISION                );
+   printf("GIT_REVISION                : %s \n", GIT_REVISION                );
+
+#else
+
 #if !defined (SYS_WINDOWS)
    struct utsname *un;
    un = (struct utsname *) malloc(sizeof(struct utsname));
@@ -169,13 +202,11 @@ void sysinf_(fortran_int_t *parcal)
       printf( " Machine           : %s\n" , un->machine);
    }
    free(un);
-#endif   
+#endif /* if !defined (SYS_WINDOWS) */
    if ( ! *parcal )
       printf( " Run               : Sequential\n");
    else
       printf( " Run               : Parallel\n");
-
-   /* Information about compilation */
 
    printf(" Last compilation  : %s %s (by %s@%s:%s)\n", 
       __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED, COMPILED_DIRAC_DIR);
@@ -187,6 +218,8 @@ void sysinf_(fortran_int_t *parcal)
    printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
    printf(" SVN URL           : %s \n", DIRAC_SVN_URL);
    printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
+
+#endif /* #ifdef THIS_IS_CMAKE_BUILD */
    fflush(stdout);
 }
 

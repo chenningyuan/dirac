@@ -8,6 +8,8 @@ set(VERSION_MAJOR 10)
 set(VERSION_MINOR 1)
 set(VERSION_PATCH 0)
 
+set(THIS_IS_CMAKE_BUILD 1)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -230,6 +232,28 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/Makefile.config.in
     ${CMAKE_SOURCE_DIR}/Makefile.config
     )
+
+# get svn or git revision number
+set(SVN_REVISION "")
+set(GIT_REVISION "")
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    find_program(GIT_FOUND git)
+    if(GIT_FOUND)
+        execute_process(
+            COMMAND git rev-parse HEAD
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_REVISION
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+    find_program(SVN_FOUND svn)
+    if(SVN_FOUND)
+        execute_process(
+            COMMAND svn info | grep Revision | sed 's/.* //'
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE SVN_REVISION
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+endif()
 
 # configure compinfo.h
 configure_file(
