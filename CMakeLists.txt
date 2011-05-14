@@ -237,22 +237,22 @@ configure_file(
 set(SVN_REVISION "")
 set(GIT_REVISION "")
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    find_program(GIT_FOUND git)
-    if(GIT_FOUND)
-        execute_process(
-            COMMAND git rev-parse HEAD
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_REVISION
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-    endif()
-    find_program(SVN_FOUND svn)
-    if(SVN_FOUND)
-        execute_process(
-            COMMAND svn info | grep Revision | sed 's/.* //'
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            OUTPUT_VARIABLE SVN_REVISION
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-    endif()
+   #find_program(GIT_FOUND git)
+   #if(GIT_FOUND)
+   #    execute_process(
+   #        COMMAND git rev-parse HEAD
+   #        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+   #        OUTPUT_VARIABLE GIT_REVISION
+   #        OUTPUT_STRIP_TRAILING_WHITESPACE)
+   #endif()
+   #find_program(SVN_FOUND svn)
+   #if(SVN_FOUND)
+   #    execute_process(
+   #        COMMAND "svn info ${PROJECT_SOURCE_DIR} | grep Revision | sed 's/.* //'"
+   #        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+   #        OUTPUT_VARIABLE SVN_REVISION
+   #        OUTPUT_STRIP_TRAILING_WHITESPACE)
+   #endif()
 endif()
 
 # configure compinfo.h
