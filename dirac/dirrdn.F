@@ -78,7 +78,8 @@ C
       end if
       write(lupri, *)
       write(lupri, *)
-      write(lupri, '(a)') 'Contents of the input file:'
+      write(lupri, '(a)') 'Contents of the input file'
+      write(lupri, '(a)') '--------------------------'
       write(lupri, *)
       do while (.true.)
          read(file_unit, '(a100)', end=1) line
@@ -111,7 +112,8 @@ C
       end if
       write(lupri, *)
       write(lupri, *)
-      write(lupri, '(a)') 'Contents of the molecule file:'
+      write(lupri, '(a)') 'Contents of the molecule file'
+      write(lupri, '(a)') '-----------------------------'
       write(lupri, *)
       do while (.true.)
          read(file_unit, '(a100)', end=2) line

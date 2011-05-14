@@ -157,6 +157,9 @@ void sysinf_(fortran_int_t *parcal)
 #ifdef THIS_IS_CMAKE_BUILD
    printf("\n");
    printf("\n");
+   printf("Compilation settings\n");
+   printf("--------------------\n");
+   printf("\n");
    printf("CMAKE_SYSTEM_NAME           : %s \n", CMAKE_SYSTEM_NAME           );
    printf("\n");
    printf("ENABLE_EXTERNAL_MATH        : %s \n", ENABLE_EXTERNAL_MATH        );
