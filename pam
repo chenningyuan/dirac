@@ -1409,6 +1409,7 @@ class pam_enviroment:
                 file_name_home = os.path.join(self.input_directory,file_name)
         # backup file if it's there
                 if not self.nobackup:
+                    from common import backup_file
                     backup_file(some_file=file_name_home, upto=None)
         # finally copy
                 self.copy_file(full_file_name, file_name_home)
