@@ -1846,6 +1846,9 @@ C
       END
 C  /* Deck dp0pri */
       SUBROUTINE DP0PRI(DIPOLE)
+!
+! prints the nuclear dipole moment
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1868,7 +1871,7 @@ C  /* Deck dp0pri */
   100    CONTINUE
          WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 Debye = ',DEBYE,' a.u. '
       END IF
-      WRITE (LUPRI,'(//)')
+      !WRITE (LUPRI,'(//)')
       RETURN
       END
 C  /* Deck cmmass */

@@ -55,6 +55,9 @@ C
 #include "cbiher.h"
 #include "nuclei.h"
       CALL QENTER('ONEGEN')
+
+      !mi: always print nuclear contribution to the dipole moment (costs nothing)
+      CALL DIPNUC(1,.FALSE.)
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
