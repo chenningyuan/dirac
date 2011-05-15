@@ -92,6 +92,10 @@ C     set "I/O node master" + "shared memory node master"
 
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
+#ifdef VAR_IFORT && !def INT_STAR8
+      write(lupri,*) ' '
+      call flshfo(lupri)
+#endif
       call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
      &                                orb_sym_vec,iorb,npsh,nish,
      &                                mxndgirr,mxpngas,nfsym,ngas,
@@ -108,6 +112,10 @@ C     set "I/O node master" + "shared memory node master"
 !     types of determinants to be included
       CALL DETTYP(IPRSTR)
 
+#ifdef VAR_IFORT && !def INT_STAR8
+      write(lupri,*) ' '
+      call flshfo(lupri)
+#endif
 !     number of string types
       CALL STRTYP_GAS_REL(IPRSTR)
 
@@ -2068,6 +2076,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT REAL*8(A-H,O-Z)
 C
+#include "priunit.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "parluci.h"
@@ -2125,7 +2134,9 @@ C     to the corresponding output file.
       OPEN(MSLVOUT_REL,FILE = LUCIFILN_REL(1:LUFIL))
 C
 C     transfer file handle to common block
-      LUWRT = MSLVOUT_REL
+      LUWRT      = MSLVOUT_REL
+      lupri_save = lupri
+      lupri      = LUWRT
 C
 C     synchronize nodes, part 1
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,MSLVOUT_REL)
@@ -2329,6 +2340,8 @@ C     close files ...
 C
 C     LUCIAREL run is finished for the slaves ...
       CLOSE (MSLVOUT_REL,STATUS='KEEP')
+
+      lupri = lupri_save
 C
 C     .. wait for the master
       LUEND = .FALSE.
