@@ -26,11 +26,13 @@
 #define CMAKE_BUILD_TYPE            "@CMAKE_BUILD_TYPE@"
 
 #define CMAKE_Fortran_COMPILER      "@CMAKE_Fortran_COMPILER@"
+#define FORTRAN_COMPILER_VERSION    "@FORTRAN_COMPILER_VERSION@"
 #define CMAKE_Fortran_FLAGS         "@CMAKE_Fortran_FLAGS@"
 #define CMAKE_Fortran_FLAGS_DEBUG   "@CMAKE_Fortran_FLAGS_DEBUG@"
 #define CMAKE_Fortran_FLAGS_RELEASE "@CMAKE_Fortran_FLAGS_RELEASE@"
 
 #define CMAKE_C_COMPILER            "@CMAKE_C_COMPILER@"
+#define C_COMPILER_VERSION          "@C_COMPILER_VERSION@"
 #define CMAKE_C_FLAGS               "@CMAKE_C_FLAGS@"
 #define CMAKE_C_FLAGS_DEBUG         "@CMAKE_C_FLAGS_DEBUG@"
 #define CMAKE_C_FLAGS_RELEASE       "@CMAKE_C_FLAGS_RELEASE@"

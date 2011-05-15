@@ -172,11 +172,13 @@ void sysinf_(fortran_int_t *parcal)
    printf("CMAKE_BUILD_TYPE            : %s \n", CMAKE_BUILD_TYPE            );
    printf("\n");
    printf("CMAKE_Fortran_COMPILER      : %s \n", CMAKE_Fortran_COMPILER      );
+   printf("FORTRAN_COMPILER_VERSION    : %s \n", FORTRAN_COMPILER_VERSION    );
    printf("CMAKE_Fortran_FLAGS         : %s \n", CMAKE_Fortran_FLAGS         );
    printf("CMAKE_Fortran_FLAGS_DEBUG   : %s \n", CMAKE_Fortran_FLAGS_DEBUG   );
    printf("CMAKE_Fortran_FLAGS_RELEASE : %s \n", CMAKE_Fortran_FLAGS_RELEASE );
    printf("\n");
    printf("CMAKE_C_COMPILER            : %s \n", CMAKE_C_COMPILER            );
+   printf("C_COMPILER_VERSION          : %s \n", C_COMPILER_VERSION          );
    printf("CMAKE_C_FLAGS               : %s \n", CMAKE_C_FLAGS               );
    printf("CMAKE_C_FLAGS_DEBUG         : %s \n", CMAKE_C_FLAGS_DEBUG         );
    printf("CMAKE_C_FLAGS_RELEASE       : %s \n", CMAKE_C_FLAGS_RELEASE       );

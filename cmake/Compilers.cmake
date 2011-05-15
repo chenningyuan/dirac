@@ -3,6 +3,8 @@ message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_I
 
 # Fortran compilers
 
+set(FORTRAN_COMPILER_VERSION "")
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-fcray-pointer -fbacktrace -DVAR_GFORTRAN")
                                    # -fcray-pointer is for VAR_MPI2
@@ -22,6 +24,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -ftest-coverage"
             )
+    endif()
+
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        execute_process(
+            COMMAND ./get-gfortran-version
+            TIMEOUT 1
+            OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
 endif()
 
@@ -44,6 +55,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
             "${CMAKE_Fortran_FLAGS}"
             )
     endif()
+
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        execute_process(
+            COMMAND ./get-g95-version
+            TIMEOUT 1
+            OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
@@ -59,6 +79,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback"
             )
+    endif()
+
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        execute_process(
+            COMMAND ./get-ifort-version
+            TIMEOUT 1
+            OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
 endif()
 
@@ -105,10 +134,21 @@ endif()
 
 # C compilers
 
+set(C_COMPILER_VERSION "")
+
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         " ")
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
+
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        execute_process(
+            COMMAND ./get-gcc-version
+            TIMEOUT 1
+            OUTPUT_VARIABLE C_COMPILER_VERSION
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
@@ -116,6 +156,15 @@ if(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        execute_process(
+            COMMAND ./get-icc-version
+            TIMEOUT 1
+            OUTPUT_VARIABLE C_COMPILER_VERSION
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES PGI)
