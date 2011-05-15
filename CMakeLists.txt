@@ -238,16 +238,16 @@ set(SVN_REVISION "")
 set(GIT_REVISION "")
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     execute_process(
-        COMMAND ./git_discovery
+        COMMAND ./get-git-revision
         TIMEOUT 1
         OUTPUT_VARIABLE GIT_REVISION
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gp
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
         OUTPUT_STRIP_TRAILING_WHITESPACE)
     execute_process(
-        COMMAND ./svn_discovery
+        COMMAND ./get-svn-revision
         TIMEOUT 1
         OUTPUT_VARIABLE SVN_REVISION
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gp
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
