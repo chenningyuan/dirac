@@ -685,7 +685,7 @@ contains
          if (basis_is_spherical) then
             allocate(isymao(l_max, 2*l_max + 1))
             isymao = 0
-            do l = 0, l_max
+            do l = 0, l_max-1
                do i = 1, 2*l + 1
                   isymao(l + 1, i) = ireplm(l, mdef(l, i))
                end do
