@@ -1105,7 +1105,7 @@ class pam_enviroment:
 
             self.dirac_cmd = self.dirac_cmd + this_dirac_exe
             if self.vg_debug:
-                self.dirac_cmd = 'valgrind --error-limit=no --log-fd=1 %s' % self.dirac_cmd
+                self.dirac_cmd = 'valgrind -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes --log-fd=1 %s' % self.dirac_cmd
         else:
             # serial run (also in debugger)
             if self.debug:
@@ -1117,8 +1117,7 @@ class pam_enviroment:
                           # set command for valgrid
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
-
-                self.dirac_cmd = 'valgrind --error-limit=no --log-fd=1 ' \
+                self.dirac_cmd = 'valgrind -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes --log-fd=1 ' \
                     + this_dirac_exe + ' | tee ' + self.output_file_full
             else:
             # no debug, plain run
