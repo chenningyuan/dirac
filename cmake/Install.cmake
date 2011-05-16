@@ -40,6 +40,13 @@ install(
     )
 
 install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/Makefile.config
+    DESTINATION
+    dirac
+    )
+
+install(
     DIRECTORY
     ${PROJECT_SOURCE_DIR}/basis
     ${PROJECT_SOURCE_DIR}/basis_dalton
