@@ -15,19 +15,6 @@
 #
 ##########################################################################
 
-# radovan: suggestions:
-#         1. please use standard indentation of 4 spaces (not 2 spaces, no tabs)
-#         2. please do not use if bar>=5:
-#                                  foo="bar"+oof#hard to read
-#            instead use       if bar >= 5:
-#                                  foo = "bar" + oof # easy to read
-#         3. ###please no banner comments###
-#            # one hash is enough
-#         4. pleas wrap long lines
-#            my screen can do more than 80 characters, too,
-#            but very often i want to compare files side by side
-#            and then long lines are very annoying
-#
 # TODO/WISHLIST:
 # 
 # defaults into ".diracrc"
@@ -881,13 +868,12 @@ class pam_enviroment:
                     print 'both --mol=... and --inp=... input parameters are required !'
                     sys.exit()
 
-    # set output name and the scratch_dir name
         self.set_output_name()
         if self.create_scratch_dir_name:
             self.set_scratch_dir_name()
 
-    # set RSH/RCP if needed
-        self.handle_nodes()
+        if self.parallel_run and self.localdisks:
+            self.distribute_files = True 
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and
@@ -1181,13 +1167,6 @@ class pam_enviroment:
                 self.rcp = value
             elif name == 'RSH':                
                 self.rsh = value
-
-    def handle_nodes(self):
-        """
-        if parallel multinodes run, take care of the RSH/RCP stuff
-        """
-        if self.parallel_run and self.localdisks:
-            self.distribute_files = True 
 
     def handle_machinefile(self):
         """
