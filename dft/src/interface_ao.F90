@@ -1065,18 +1065,34 @@ contains
 
    end function
 
-   function binom(i, j)
+   function binom(n, k)
 
+!     taken from: http://blog.plover.com/math/choose.html
+!     thanks to Ulf for sending me this link
 !     --------------------------------------------------------------------------
-      integer, intent(in) :: i
-      integer, intent(in) :: j
+      integer, intent(in) :: n
+      integer, intent(in) :: k
       integer             :: binom
-      real(8)             :: f
+!     --------------------------------------------------------------------------
+      integer             :: j, m
 !     --------------------------------------------------------------------------
 
-      f = fac(i)/(fac(i - j)*fac(j))
-!     f and fac are real(8) so that binom doesn't overflow!
-      binom = int(f)
+      if (k == 0) then
+         binom = 1
+         return
+      end if
+      if (n == 0) then
+         binom = 0
+         return
+      end if
+
+      m = n
+      binom = 1 
+      do j = 1, k
+         binom = binom*m
+         binom = binom/j
+         m = m - 1
+      end do
 
    end function
 
