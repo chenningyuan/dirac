@@ -23,7 +23,7 @@ module xc_geometric
 
    use interface_ao
 
-   implicit none 
+   implicit none
 
    public xc_geo_0_lda_c1
    public xc_geo_0_gga_c1
@@ -67,7 +67,7 @@ contains
             g(ic) = g(ic) - d_n*u*ao_g1(k, ixyz)
          end do
       end do
-   
+
    end subroutine
 
    subroutine xc_geo_0_gga_c1(g,       &
@@ -93,39 +93,45 @@ contains
 !     --------------------------------------------------------------------------
       integer                :: k, ks, kc
       integer                :: l, ls, lc
-      integer                :: ixyz, jxyz, ic, nr_center
-      real(8)                :: d, u, v, tu, tv
+      integer                :: ixyz, jxyz, ic
+      real(8)                :: t1, t2, t3, t4(3), t5
 !     --------------------------------------------------------------------------
 
-      k = 0
-      do ks = 1, nr_shells
-         nr_center = shell_center(ks)
-         do kc = 1, cartesian_deg(ks)
-            k = k + 1
-            do ixyz = 1, 3
-               u = 0.0d0
-               v = 0.0d0
-               l = 0
-               do ls = 1, nr_shells
-                  do lc = 1, cartesian_deg(ls)
-                     l = l + 1
-                     tu = ao_g1(k, ixyz)*ao_g0(l)
-                     tv = 0.0
-                     do jxyz = 1, 3
-                        tv = tv + gn(jxyz)*ao_g1(k,                  ixyz )*ao_g1(l, jxyz) &
-                                + gn(jxyz)*ao_g2(k, pos((jxyz-1)*3 + ixyz))*ao_g0(l)
-                     end do
-                     d = dmat_0(l, k)
-                     u = u + tu*d
-                     v = v + tv*d
-                  end do
+      do k = 1, nr_ao
+         t1 = 0.0d0
+         do l = 1, nr_ao
+            t1 = t1 + ao_g0(l)*dmat_0(l, k)
+         end do
+         t1 = 2.0d0*t1
+
+         t2 = 0.0d0
+         do jxyz = 1, 3
+            t3 = 0.0d0
+            do l = 1, nr_ao
+               t3 = t3 + ao_g1(l, jxyz)*dmat_0(l, k)
+            end do
+            t2 = t2 + t3*gn(jxyz)
+         end do
+         t2 = 4.0d0*t2
+
+         t4 = 0.0d0
+         do ixyz = 1, 3
+            do jxyz = 1, 3
+               t5 = 0
+               do l = 1, nr_ao
+                  t5 = t5 + ao_g2(k, pos((jxyz-1)*3 + ixyz))*ao_g0(l)*dmat_0(l, k)
                end do
-               ic = 3*(nr_center - 1) + ixyz
-               g(ic) = g(ic) - 2.0d0*u*d_n - 4.0d0*v*d_z
+               t4(ixyz) = t4(ixyz) + t5*gn(jxyz)
             end do
          end do
+         t4 = 4.0d0*t4
+
+         do ixyz = 1, 3
+            ic = 3*(ao_center(k) - 1) + ixyz
+            g(ic) = g(ic) - d_n*t1*ao_g1(k, ixyz) - d_z*t2*ao_g1(k, ixyz) - d_z*t4(ixyz)
+         end do
       end do
-   
+
    end subroutine
 
    subroutine xc_geo_1_lda_c1(g,        &
@@ -160,7 +166,7 @@ contains
          nr_center = shell_center(ks)
          do kc = 1, cartesian_deg(ks)
             k = k + 1
-      
+
             t0 = 0.0d0
             t1 = 0.0d0
             l = 0
@@ -171,7 +177,7 @@ contains
                   t1 = t1 + ao(l)*(tmat_1(l, k) + tmat_1(k, l))
                end do
             end do
-      
+
             do ixyz = 1, 3
                ic = 3*(nr_center - 1) + ixyz
                g(ic) = g(ic) - 2.0d0* d_n*ao1(k, ixyz)*t1 &
@@ -179,7 +185,7 @@ contains
             end do
          end do
       end do
-   
+
    end subroutine
 
    subroutine xc_geo_2_lda_c1(g,        &
@@ -218,7 +224,7 @@ contains
          nr_center = shell_center(ks)
          do kc = 1, cartesian_deg(ks)
             k = k + 1
-      
+
             t0 = 0.0d0
             t1 = 0.0d0
             t2 = 0.0d0
@@ -231,7 +237,7 @@ contains
                   t2 = t2 + ao(l)*(tmat_2(l, k) + tmat_2(k, l))
                end do
             end do
-      
+
             do ixyz = 1, 3
                ic = 3*(nr_center - 1) + ixyz
                g(ic) = g(ic) - 4.0d0*d_nn*ao1(k, ixyz)*t1*n_t2 &
@@ -240,7 +246,7 @@ contains
             end do
          end do
       end do
-   
+
    end subroutine
 
 end module
