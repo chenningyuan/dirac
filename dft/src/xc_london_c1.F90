@@ -316,7 +316,7 @@ contains
             do l = 1, nr_ao_large
                f = ao(k)*ao(l)*dmat(l, k, 1)
                do ixyz = 1, 3
-                  q(ixyz) = q(ixyz) + (r(ixyz) - ao_center(l, ixyz))*f
+                  q(ixyz) = q(ixyz) + (r(ixyz) - ao_center_xyz(l, ixyz))*f
                end do
             end do
          end do

@@ -53,27 +53,18 @@ contains
 !     --------------------------------------------------------------------------
       integer                :: k, ks, kc
       integer                :: l, ls, lc
-      integer                :: ixyz, ic, nr_center
+      integer                :: ixyz, ic
       real(8)                :: u
 !     --------------------------------------------------------------------------
 
-      k = 0
-      do ks = 1, nr_shells
-         nr_center = shell_center(ks)
-         do kc = 1, cartesian_deg(ks)
-            k = k + 1
-            do ixyz = 1, 3
-               u = 0.0d0
-               l = 0
-               do ls = 1, nr_shells
-                  do lc = 1, cartesian_deg(ls)
-                     l = l + 1
-                     u = u + ao_g0(l)*dmat_0(l, k)*ao_g1(k, ixyz)
-                  end do
-               end do
-               ic = 3*(nr_center - 1) + ixyz
-               g(ic) = g(ic) - 2.0d0*u*d_n
-            end do
+      do k = 1, nr_ao
+         u = 0.0d0
+         do l = 1, nr_ao
+            u = u + 2.0d0*ao_g0(l)*dmat_0(l, k)
+         end do
+         do ixyz = 1, 3
+            ic = 3*(ao_center(k) - 1) + ixyz
+            g(ic) = g(ic) - d_n*u*ao_g1(k, ixyz)
          end do
       end do
    

@@ -91,7 +91,8 @@ module interface_ao
    integer, allocatable, public :: spherical_deg(:)
    integer, allocatable, public :: spherical_off(:)
    integer, allocatable, public :: sym_independent_center_deg(:)
-   real(8), allocatable, public :: ao_center(:, :)
+   integer, allocatable, public :: ao_center(:)
+   real(8), allocatable, public :: ao_center_xyz(:, :)
    real(8), allocatable, public :: ao_distance(:, :, :)
    real(8), allocatable, public :: c2s_mat(:)
    real(8), allocatable, public :: contraction_coef(:, :)
@@ -162,6 +163,7 @@ contains
       if (allocated(spherical_off                 )) deallocate(spherical_off                 )
       if (allocated(sym_independent_center_deg    )) deallocate(sym_independent_center_deg    )
       if (allocated(ao_center                     )) deallocate(ao_center                     )
+      if (allocated(ao_center_xyz                 )) deallocate(ao_center_xyz                 )
       if (allocated(ao_distance                   )) deallocate(ao_distance                   )
       if (allocated(c2s_mat                       )) deallocate(c2s_mat                       )
       if (allocated(contraction_coef              )) deallocate(contraction_coef              )
@@ -853,15 +855,11 @@ contains
 !           fixme
          end if
 
-!        limit active nr of shells
-         if (use_only_large) then
-            nr_shells = nr_shells_large
-         end if
-
          call setup_c2s_mat()
          size_c2s_mat = size(c2s_mat)
 
-         allocate(ao_center(nr_ao, 3))
+         allocate(ao_center(nr_ao))
+         allocate(ao_center_xyz(nr_ao, 3))
          allocate(ao_distance(nr_ao, nr_ao, 3))
          i = 1
          do ishell = 1, nr_shells
@@ -878,9 +876,10 @@ contains
                   pz = bitstring_parity(iand(irep_of_axes(3), irep))*sym_dependent_center_xyz(shell_center(ishell), 3)
 
                   do j = i, i + deg - 1
-                     ao_center(j, 1) = px
-                     ao_center(j, 2) = py
-                     ao_center(j, 3) = pz
+                     ao_center_xyz(j, 1) = px
+                     ao_center_xyz(j, 2) = py
+                     ao_center_xyz(j, 3) = pz
+                     ao_center(j) = shell_center(ishell)
                   end do
 
                   i = i + deg
@@ -890,7 +889,7 @@ contains
          do ixyz = 1, 3
             do l = 1, nr_ao
                do k = 1, nr_ao
-                  ao_distance(k, l, ixyz) = ao_center(k, ixyz) - ao_center(l, ixyz)
+                  ao_distance(k, l, ixyz) = ao_center_xyz(k, ixyz) - ao_center_xyz(l, ixyz)
                end do
             end do
          end do
@@ -901,6 +900,11 @@ contains
             nr_ao_large = nr_ao_large + ao_nr(irep, 1)
             nr_ao_small = nr_ao_small + ao_nr(irep, 2)
          end do
+
+!        limit active nr of shells
+         if (use_only_large) then
+            nr_shells = nr_shells_large
+         end if
 
          interface_ao_set = .true.
       end if
@@ -916,7 +920,8 @@ contains
          call xc_mpi_bcast(sum_nr_primitives         )
 
          if (.not. xc_mpi_is_master()) then
-            allocate(ao_center(nr_ao, 3))
+            allocate(ao_center(nr_ao))
+            allocate(ao_center_xyz(nr_ao, 3))
             allocate(ao_distance(nr_ao, nr_ao, 3))
             allocate(c2s_mat(size_c2s_mat))
             allocate(cartesian_deg(sum_nr_primitives))
@@ -984,6 +989,7 @@ contains
          call xc_mpi_bcast(spherical_off                 )
          call xc_mpi_bcast(sym_independent_center_deg    )
          call xc_mpi_bcast(ao_center                     )
+         call xc_mpi_bcast(ao_center_xyz                 )
          call xc_mpi_bcast(ao_distance                   )
          call xc_mpi_bcast(c2s_mat                       )
          call xc_mpi_bcast(contraction_coef              )
