@@ -54,6 +54,7 @@ C
 #include "blocks.h"
 #include "dcbgrd.h"
 #include "dcbpsi.h"
+#include "symmet.h"
 C
       CALL QENTER('RMOLGRD')
 #include "memint.h"
@@ -70,7 +71,7 @@ C
       LUMGRD = 80
       CALL OPNFIL(LUMGRD,'RMOLGRD','NEW','RMOLGRD')
 C
-      IF (dirac_cfg_hf_calculation) THEN
+      if (dirac_cfg_hf_calculation .or. dirac_cfg_dft_calculation) then
 C
 C        Initialize some variables
 C
@@ -99,6 +100,17 @@ C
             CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
      &        ' not implemented for this open-shell DHF')
          END IF
+
+         if (dirac_cfg_dft_calculation) then
+            if (nopen > 0) then
+               call quit('error in molecular gradient:' // 
+     &        ' not implemented for open-shell DFT')
+            end if
+            if (maxrep > 0) then
+               call quit('error in molecular gradient:' // 
+     &        ' not implemented for DFT with symmetry')
+            end if
+         end if
 C
          CALL SETDHF(IPRGRD)
 C
@@ -174,6 +186,8 @@ C     J. Thyssen, 2000/8/27
 C
 C*****************************************************************************
       use quaternion_algebra
+      use xc_driver
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -196,6 +210,9 @@ C
       DIMENSION WORK(*)
       LOGICAL TOBE
       CHARACTER CTMP*1, M(4)*2
+
+      real(8), allocatable :: dmat(:)
+      real(8), allocatable :: cmo(:)
 C
       DATA M /'AR','AI','BR','BI'/
 C
@@ -259,8 +276,40 @@ c        ... Calculate and add correction.
          CALL CATCORR(WORK(KH1AO),WORK(KFCAO),WORK(KDSO),
      &                WORK(KFREE),LFREE,IPRINT)
       END IF
-C
-C
+
+      gradxc = 0.0d0
+      if (dirac_cfg_dft_calculation) then
+
+         allocate(cmo(n2bbasxq))
+         cmo = 0.0d0
+         call opnfil(lucoef, 'DFCOEF', 'OLD', 'xc molecular gradient')
+         call reacmo_no_work(lucoef, 'DFCOEF', 
+     &                       cmo, dummy, dummy, dummy, 3)
+         close(lucoef, status='keep')
+       
+         allocate(dmat(n2bbasxq))
+         dmat = 0.0d0
+         call genden(dmat, cmo, 1, 0)
+         deallocate(cmo)
+
+!        in one go integrate xc potential
+!        and xc contribution to molecular gradient
+         call xc_integrator(xc_mat_dim           = ntbas(0),
+     &                      xc_nz                = nz,
+     &                      xc_dmat_0            = dmat,
+     &                      xc_nr_dmat           = 0, 
+     &                      xc_nr_fmat           = 1,
+     &                      xc_fmat              = work(kh1ao),
+     &                      xc_do_potential      = .true.,
+     &                      xc_nr_atoms          = nucdep, 
+     &                      xc_property_gradient = gradxc,
+     &                      xc_do_geo_0          = .true.)
+         deallocate(dmat)
+
+      end if
+
+
+
 C     FCao = H1ao + QCao
 C
       CALL DAXPY(N2BBASXQ,D1,WORK(KH1AO),1,WORK(KFCAO),1)
@@ -1792,6 +1841,9 @@ C
 C     Last revision: 1997/06/11 jth
 C
 C*****************************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1828,39 +1880,32 @@ C
       END DO
 C
       IF ( IPRINT .GE. 1 ) THEN
-C
-C       Kinetic energy
-C       ==============
-C
+
         CALL HEADER('Kinetic energy integral gradient',-1)
         LABEL(1) = 'Momentum'
         LABEL(2) = 'Beta mtx.'
         CALL PRIGDR(GRADKN,2,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
-C
-C       Nuclear attraction
-C       ==================
-C
+
         CALL HEADER('Nuclear attraction integral gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'SS'
         CALL PRIGDR(GRADNU,2,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
-C
-C       Reorthonormalization gradient
-C       =============================
-C
+
         CALL HEADER('Reorthonormalization gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'SS'
         CALL PRIGDR(GRADRO,2,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
-C
-C       Two-electron gradient
-C       =====================
-C
+
         CALL HEADER('Two-electron integral gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'LS'
         LABEL(3) = 'SS'
         CALL PRIGDR(GRADER,3,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
+
+        if (dirac_cfg_dft_calculation) then
+          call header('XC contribution to molecular gradient',-1)
+          call prigdr(gradxc, 0, work(kcstra), work(ksctra), label, ' ')
+        end if
 C
 C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
@@ -1900,6 +1945,9 @@ C
       CALL ADDGRD(GRADRO(1,0))
       CALL ADDGRD(GRADER(1,0))
       CALL ADDGRD(GRADNN)
+      if (dirac_cfg_dft_calculation) then
+        call addgrd(gradxc)
+      end if
       IF ( (ONECAP .AND. INTV1C.EQ.2) .OR. 
      &   ( LBIT( IGRD_INTBUF, 2 ) .AND. LBIT( IGRD_INTFLG, 3 ) .AND.
      &     .NOT. LBIT ( IGRD_INTBUF, 3 ) ) ) THEN
