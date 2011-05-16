@@ -68,7 +68,7 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip -g")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
@@ -77,7 +77,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
+            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -ftrapuv"
             )
     endif()
 
