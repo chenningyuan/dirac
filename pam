@@ -216,7 +216,7 @@ class pam_enviroment:
         self.debug = False
         self.debugger = ''  # empty, but later to be read from Makefile.config
 
-    # valgrind debugging
+        # valgrind debugging
         self.vg_debug = False
 
     # input directory (=directory with input files)
@@ -1081,9 +1081,6 @@ class pam_enviroment:
         this_dirac_exe = os.path.join(self.scratch_dir,self.dirac_exe_file)
 
         if self.parallel_run:
-            # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
-            # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-            # stefan: first try of a rudimentary correct passing of -wd/-wdir...
             if self.mpirun == None:
                 # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                 #          then self.mpirun is None and we have to stop here otherwise pam calls
@@ -1109,18 +1106,14 @@ class pam_enviroment:
         else:
             # serial run (also in debugger)
             if self.debug:
-       # TODO: adapt it for Windows
-        # self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
+                # TODO: adapt it for Windows
                 self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
                     + ' | tee ' + self.output_file_full
             elif self.vg_debug:
-                          # set command for valgrid
-      # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes
-      # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
                 self.dirac_cmd = 'valgrind -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes --log-fd=1 ' \
                     + this_dirac_exe + ' | tee ' + self.output_file_full
             else:
-            # no debug, plain run
+                # no debug, plain run
                 self.dirac_cmd = this_dirac_exe
 
     def read_makefile_config(self):
@@ -1297,8 +1290,8 @@ class pam_enviroment:
         else:
             print '...no dirac run-wrong parallel/debugger combination'
 
-    # do the profiling after the execution if wanted
         if self.profile:
+            # do the profiling after the execution if wanted
             self.profile_dirac()
 
         return return_code
