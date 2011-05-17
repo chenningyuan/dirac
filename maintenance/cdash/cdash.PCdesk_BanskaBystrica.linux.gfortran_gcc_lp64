@@ -13,7 +13,7 @@ svn up
 ./pamadm -a --xcfun 
 
 # configure step
-./setup --fc=gfortran --cc=gcc -D BUILDNAME="linux.PCdesk_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64"
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="linux.PCdesk_Miro_BanskaBystrica.gfortran_gcc_lib64.i32lp64" -D RUNTEST_TIMEOUT="00:18:00"
 
 cd $DIRAC/build
 

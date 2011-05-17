@@ -67,7 +67,8 @@ set(BUILDNAME
     "Name of build on the dashboard"
     )
 
-# set ctest timeout
+# set ctest own timeout
+
 set(DART_TESTING_TIMEOUT
     "1200"
     CACHE STRING
@@ -75,9 +76,18 @@ set(DART_TESTING_TIMEOUT
     )
 message("-- Timeout in seconds for every single test, DART_TESTING_TIMEOUT=\"${DART_TESTING_TIMEOUT}\" ")
 
+#
+# set additional runtest flags - number of CPU and runtest timeout
+#
+# Miro: for CTest you can not have more than one $-variable in the add_test $-parameter !
+#
 if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
     set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
     message("-- runtest extra flag active, RUNTEST_FLAG_NR_PROC=\"${RUNTEST_FLAG_NR_PROC}\" ")
+endif()
+if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
+    set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
+    message("-- runtest extra flag active, RUNTEST_FLAG_TIMEOUT=\"${RUNTEST_FLAG_TIMEOUT}\" ")
 endif()
 
 include(Tests)
