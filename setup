@@ -194,20 +194,20 @@ if not options.auto:
 command += ' cmake'
 
 if options.nomath:
-    command += ' -DENABLE_EXTERNAL_MATH=0'
+    command += ' -DENABLE_EXTERNAL_MATH=OFF'
 if options.math:
     command += ' -DUSERDEFINED_LIBS="%s"' % options.math
 if options.mpi:
-    command += ' -DENABLE_MPI=1'
+    command += ' -DENABLE_MPI=ON'
 if options.omp:
-    command += ' -DENABLE_OMP=1'
+    command += ' -DENABLE_OMP=ON'
 
 if options.int64:
-    command += ' -DENABLE_64BIT_INTEGERS=1'
+    command += ' -DENABLE_64BIT_INTEGERS=ON'
 if options.check:
-    command += ' -DENABLE_BOUNDS_CHECK=1'
+    command += ' -DENABLE_BOUNDS_CHECK=ON'
 if options.coverage:
-    command += ' -DENABLE_CODE_COVERAGE=1'
+    command += ' -DENABLE_CODE_COVERAGE=ON'
 if options.install:
     command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 if options.scratch:
