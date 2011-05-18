@@ -8985,15 +8985,15 @@ C
       END IF
 *. Pointers to output arrays
       NTTS = MXNTTS
-      call memmar(KPCLBT ,MXNTTS,'ADDL  ',1,'CLBT  ')
-      call memmar(KPCLEBT,MXNTTS,'ADDL  ',1,'CLEBT ')
-      call memmar(KPCI1BT,MXNTTS,'ADDL  ',1,'CI1BT ')
-      call memmar(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
-      call memmar(KPCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+      call memmar(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBTPA')
+      call memmar(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBPA')
+      call memmar(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BPA')
+      call memmar(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBTPA')
+      call memmar(KPCBLTP,  NSMST, 'ADDL  ',2,'CBLTPA')
 *.    ^ These should be preserved after exit so put mark for
 *       flushing after
 *
-      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLKF')
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'Z_BLp1')
 *
       IDUM = 0
 *
@@ -9118,7 +9118,7 @@ CSK       creation of many many batches
       END IF
       NTEST = 0
 *
-      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLKF')
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'Z_BLp1')
 *
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

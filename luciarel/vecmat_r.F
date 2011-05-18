@@ -545,7 +545,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
       END
 ***********************************************************************
 
-      subroutine rdvcdc(VE,SCR,LU,LBLK,IRILP,IPRT)
+      subroutine rdvcdc(VE,LU,LBLK,IRILP,IPRT)
 *
 * Read vector from disc to array
 *
@@ -553,7 +553,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *
 #include "implicit.inc"
 *. Output
-      DIMENSION VE(*),SCR(*)
+      DIMENSION VE(*)
 *
       NTESTL = 00
       NTEST = max(NTESTL,IPRT)
@@ -574,12 +574,11 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
  1000     continue
           call ifrmds(LENGTH,1,LBLK,LU)
           if (LENGTH.ge.0) then
-            call frmdsc(SCR,LENGTH,LBLK,LU,IMZERO,IAMPACK)
+            call frmdsc(VE(IOFF),LENGTH,LBLK,LU,IMZERO,IAMPACK)
             if (NTEST.ge.10) then
               write(6,*) ' Record read in: '
-              call wrtmat(SCR,1,LENGTH,1,LENGTH)
+              call wrtmat(VE(IOFF),1,LENGTH,1,LENGTH)
             end if
-            call copvec(SCR,VE(IOFF),LENGTH)
             IOFF = IOFF + LENGTH
           end if
           if (LENGTH.ge.0) then

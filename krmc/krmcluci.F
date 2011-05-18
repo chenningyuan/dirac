@@ -93,8 +93,13 @@ C     set "I/O node master" + "shared memory node master"
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
 #ifdef VAR_IFORT && !def INT_STAR8
-      write(lupri,*) ' '
-      call flshfo(lupri)
+      if(myproc .eq. master)then
+        luxxx = lupri
+      else
+        luxxx = luwrt
+      end if
+      write(luxxx,*) ' '
+      call flshfo(luxxx)
 #endif
       call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
      &                                orb_sym_vec,iorb,npsh,nish,
@@ -113,8 +118,8 @@ C     set "I/O node master" + "shared memory node master"
       CALL DETTYP(IPRSTR)
 
 #ifdef VAR_IFORT && !def INT_STAR8
-      write(lupri,*) ' '
-      call flshfo(lupri)
+      write(luxxx,*) ' '
+      call flshfo(luxxx)
 #endif
 !     number of string types
       CALL STRTYP_GAS_REL(IPRSTR)
@@ -1265,17 +1270,14 @@ C
 CC      CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
 CC   &                  WORK(KFCACM),N2ASHXQ,WORK(KH2AC),
 CC   &                  (2*NASHT)**4*2,
-CC   &                  DUMMY,DUMMY,2,IRIQ,
+CC   &                  2,IRIQ,
 CC   &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         REWIND LUC
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,2,MZ,
+     &                  2,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-C       release memory
-        CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C
 C
@@ -1294,10 +1296,9 @@ C   memory is too small for CREF.
 *        files. Activation flags (IO_RCIST_OUT) should be controlled
 *        from the outside, not hardwired.
         IF (IO_RCIST_OUT.EQ.1) THEN
-          CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
           CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,DUMMY,1,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KRSCR),DUMMY,1,MZ,
+     &                    1,MZ,
      &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
         END IF
       END IF
@@ -1487,14 +1488,11 @@ C
 CSK      IPROPT = 10
       IF (IO_SIGMA_IN.eq.1) THEN
         REWIND LUC
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,2,MZ,
+     &                  2,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-C       release memory
-        CALL MEMREL('LUCI_SIG 1',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 CSK      IPROPT = 0
 C
@@ -1504,25 +1502,21 @@ C
 C     Read sigma vector on file to SB array.
       IO_SIGMA_OUT = 1
       IF (IO_SIGMA_OUT.eq.1) THEN
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,SB,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,MZ,
+     &                  1,MZ,
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-        CALL MEMREL('LUCI_SIG 2',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C     ... only MASTER should do it
       CALL REWINE(LUC,-1)
       IO_C_VEC_OUT = 1
       IF (IO_C_VEC_OUT .eq. 1 ) THEN
-        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,MZ,
+     &                  1,MZ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-        CALL MEMREL('LUCI_SIG 3',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C
       IF (SAVDIA) THEN
@@ -1531,23 +1525,13 @@ C
 C       only "real part" of diagonal needed!
 C       loop over ILOOP_DIA instead of IRIQ! /SK - June 30 2007
         ILOOP_DIA = 1
-        CALL MEMGET('REAL',KDIAG,NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(0,1,0,
-     &                  DUMMY,1,WORK(KDIAG),NZCONF,
+     &                  DUMMY,1,DIAG,NZCONF,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,ILOOP_DIA,
+     &                  1,ILOOP_DIA,
      &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
-CSKold        CALL KR_LUCI_IO(0,1,0,
-CSKold     &                  DUMMY,1,WORK(KDIAG),2*NZCONF,
-CSKold     &                  DUMMY,1,DUMMY,1,
-CSKold     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
-CSKold     &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
-C       Copy "real part" of diagonal to DIAG.
-        CALL DCOPY(NZCONF,WORK(KDIAG),1,DIAG,1)
-        CALL MEMREL('LUCI_SIG D',WORK,1,KDIAG,KFREE,LFREE)
       END IF
 CSK      IPROPT = 0
-      CALL MEMREL('LUCI_SIGMA',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C
 C     close files ...
@@ -1641,19 +1625,17 @@ C
 C     Write current CI vector(s) to file
       idothishere = 1
       if(idothishere .eq. 0) goto 10
-      CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
       REWIND LUC
       CALL KR_LUCI_IO(1,0,0,CREFL,NZCONF*MZ,
      &                DUMMY,1,
      &                DUMMY,1,DUMMY,1,
-     &                WORK(KRSCR),IDUMMY,2,MZ,
+     &                2,MZ,
      &                LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
      &                CREFR,NZCONF*MZ,
      &                DUMMY,1,DUMMY,1,
-     &                WORK(KRSCR),IDUMMY,2,MZ,
+     &                2,MZ,
      &                LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-      CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
  10   CONTINUE
 #else
       IF( .NOT. NATOLCR ) THEN
@@ -1661,13 +1643,11 @@ C
 C       Write current CI vector(s) to file
         IO_DENS_IN = 1
         IF (IO_DENS_IN.EQ.1) THEN
-          CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
           CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
      &                          CREFR,NZCONF*MZ,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KRSCR),IDUMMY,2,MZ,
+     &                    2,MZ,
      &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-          CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
         END IF
       END IF
 #endif
@@ -1755,13 +1735,11 @@ C
         IO_ANAL_IN = 1
         IF (IO_ANAL_IN.EQ.1) THEN
           REWIND LUC
-          CALL MEMGET('REAL',KASCR,NZCONF*MZ,WORK,KFREE,LFREE)
           CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
      &                          DUMMY,1,
      &                    DUMMY,1,DUMMY,1,
-     &                    WORK(KASCR),IDUMMY,2,MZ,
+     &                    2,MZ,
      &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-          CALL MEMREL('LUCI_ANALYZ1',WORK,1,KASCR,KFREE,LFREE)
         END IF
       ELSE IF (NCIROOT.GT.1) THEN
         CONTINUE
@@ -1769,10 +1747,6 @@ C
 C
 C     Call LUCIAREL for analysis of CI vectors.
       CALL KRMC_LUCI(DUMMY,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
-C
-      IF (NCIROOT.EQ.1) THEN
-        CALL MEMREL('LUCI_ANALYZ',WORK,1,KFRSAV,KFREE,LFREE)
-      END IF
 C
 C     close files ...
 C
@@ -1888,7 +1862,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KR_LUCI_IO(IVA,IVB,II,VA,IDIMA,VB,IDIMB,
      &                      X1,IDIM1,X2,IDIM2,
-     &                      SCR,ISCR,IOTYPE,IRILP,
+     &                      IOTYPE,IRILP,
      &                      LU1,LU2,LU3,LU4,IPRNT)
 C***********************************************************************
 C
@@ -1917,8 +1891,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 *
-      dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2),SCR(*)
-      dimension ISCR(*)
+      dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2)
 *
       NTESTL = 00
 CSK      IPRNT = 000
@@ -1955,20 +1928,20 @@ CSK      IPRNT = 000
 *  Load vector A (ket)
         if (IVA.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Loading vector A ***'
-          call rdvcdc(VA,SCR,LU1,-1,IRILP,IPRNT)
+          call rdvcdc(VA,LU1,-1,IRILP,IPRNT)
         end if
 *
 *  Load vector B (bra)
         if (IVB.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Loading vector B ***'
-          call rdvcdc(VB,SCR,LU2,-1,IRILP,IPRNT)
+          call rdvcdc(VB,LU2,-1,IRILP,IPRNT)
         end if
 *
 *  Load 1-particle quantity
 *  Load 2-particle quantity
         if (II.eq.1) then
-          call rdvcdc(X1,SCR,LU3,-1,IRILP,IPRNT)
-          call rdvcdc(X2,SCR,LU4,-1,IRILP,IPRNT)
+          call rdvcdc(X1,LU3,-1,IRILP,IPRNT)
+          call rdvcdc(X2,LU4,-1,IRILP,IPRNT)
         end if
 *
 *===============
@@ -1979,13 +1952,13 @@ CSK      IPRNT = 000
 *  Save vector A (ket)
         if (IVA.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Saving vector A ***'
-          call savevcdc(VA,SCR,LU1,IRILP,IPRNT)
+          call savevcdc(VA,LU1,IRILP,IPRNT)
         end if
 *
 *  Save vector B (bra)
         if (IVB.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Saving vector B ***'
-          call savevcdc(VB,SCR,LU2,IRILP,IPRNT)
+          call savevcdc(VB,LU2,IRILP,IPRNT)
         end if
 *
 *  Save integral quantity
