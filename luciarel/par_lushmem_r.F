@@ -48,7 +48,7 @@ C
 #include "krmc_shmem.h"
 #include "parluci.h"
       DIMENSION IT_TTPL(*) 
-      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*), nelm_cc
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_PROC, ISLEN_ACT_BLK
       IOFF_PROC     = 0
       ISLEN_ACT_BLK = 0

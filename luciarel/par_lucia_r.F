@@ -1135,7 +1135,7 @@ C     MXNUMB: number of the current largest block
       INTEGER*8 ITEMPL, ITEMPW1, ITEMPW2
       INTEGER*8 ILEN, ITOTBLCKL, IPRODLEN
       INTEGER*8 IIWEIGHTBLK, IILENGTH, IILENGTH_MAX
-      INTEGER*8 NINT_TOT
+      INTEGER*8 NINT_TOT, nelm_cc
 C
 C     initialize    
 C    
@@ -1817,7 +1817,7 @@ C
 *
       dimension DENS(*), DENS_SCR(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
-      INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF
+      INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF, nelm_cc
 *
       ISHCOLOR = 0
       ISHKEY   = 0
@@ -1950,7 +1950,7 @@ C
 *
       dimension DENS(*), DENS_SCR(*), IT_TTPL(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
-      INTEGER*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD
+      INTEGER*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD, nelm_cc
 *
       ISHCOLOR     = 0
       ISHKEY       = 0
@@ -2079,7 +2079,7 @@ C
       DIMENSION DENS(NALLINT), DENS_SCR(*), IT_TTPL(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
       INTEGER ISHCOMM, ISHCOLOR, ISHKEY
-      INTEGER*8 NINT_TOT, NINT_TP_I8,ITB_I8
+      INTEGER*8 NINT_TOT, NINT_TP_I8,ITB_I8, nelm_cc
 *
       ISHCOLOR =   0
       ISHKEY   =   0
@@ -8709,7 +8709,7 @@ C**********************************************************************
       INTEGER IREAD_BYTE
 #endif
       INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8, ISLEN_TBL, NINT_8, N1_8
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_B, INUM_BYTE
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_T_B, INUM_BYTE, nelm_cc
 C
       N1_8       = N1_INT
       NINT_8     = N1_8 + N2ELINT

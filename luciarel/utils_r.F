@@ -368,7 +368,7 @@ C**********************************************************************
 #include "ipoist8.inc"
 #include "ctcc.inc"
       DIMENSION IT_TTPL(*)
-      INTEGER*8 J_COUNT_LEN, IILENGTH
+      INTEGER*8 J_COUNT_LEN, IILENGTH, nelm_cc
 C
       IGET_MY_T_LEN = 0
       J_COUNT_LEN   = 0

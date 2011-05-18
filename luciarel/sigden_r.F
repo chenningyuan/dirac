@@ -4573,7 +4573,7 @@ C
 
       dimension ITSPOBEX_TP(4*NGAS,*)
       INTEGER ICPL
-      INTEGER*8 ITB, ITB_BUFF, ITB_BUFF_ADD
+      INTEGER*8 ITB, ITB_BUFF, ITB_BUFF_ADD, nelm_cc
 C
       ONEM = -1.0D0
       IZERO = 0

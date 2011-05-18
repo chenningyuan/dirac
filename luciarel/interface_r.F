@@ -2553,7 +2553,7 @@ C
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
-      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF
+      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF, nelm_cc
       integer   NINT_TP
       LOGICAL   CINC_NCT0
 *
@@ -2844,7 +2844,7 @@ csk               write(LUWRT,*) ' continuing ...'
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
-      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF
+      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF, nelm_cc
 *
 !     NTESTL = 10 ! debug
       NTESTL = 00
@@ -3085,7 +3085,7 @@ csk               write(LUWRT,*) ' continuing ...'
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
       INTEGER*8 NINT_TOT, NINT_TP_I8, IRIOFF, ITB_I8
-      INTEGER*8 IRUN_XTP, IOFF_GET 
+      INTEGER*8 IRUN_XTP, IOFF_GET , nelm_cc
       INTEGER ID_GET
 *
       IRUN_XTP = 0
@@ -3348,7 +3348,7 @@ csk               write(LUWRT,*) ' continuing ...'
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
-      integer*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD
+      integer*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD, nelm_cc
 *
       NTESTL = 00
       NTEST = max(IPRNT,NTESTL)
@@ -3617,7 +3617,7 @@ csk               write(LUWRT,*) ' continuing ...'
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),IOFFKF(2,MXPNGAS,2),
      &          IREOKF(MXPORB)
-      integer*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD
+      integer*8 NINT_TOT, ITB_BUFF, ITB_BUFF_ADD, nelm_cc
       integer   NINT_TP
 *
       NTESTL = 00
@@ -3910,7 +3910,7 @@ C
       dimension INDEX(4,NALLINT),IND_R(4),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
      &          SIGN_REO(NSPOBEX_TP)
-      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF 
+      integer*8 NINT_TOT, NINT_TP_I8, IRIOFF , nelm_cc
 *
       NINT_TOT = N1ELINT + N2ELINT
       if (ISF.eq.1) then
