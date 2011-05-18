@@ -1301,7 +1301,8 @@ C
 C        Read old vector from LUBVEC
 C        
          IREC = IREC + 1
-         CALL READAC(LUBVEC,NBDIM,BVBUF,IREC)
+!        CALL READAC(LUBVEC,NBDIM,BVBUF,IREC)
+         CALL READ_DX(LUBVEC,IREC,NBDIM,BVBUF)
          IF (IB .NE. 0) THEN
             IH   = IBTYP(2,IBVEC(IB))
          ELSE
@@ -1462,7 +1463,8 @@ C
          JOFF = KBOE
          DO I = 1,NESIM
             IREC = IREC + 1
-            CALL READAC(LUBOE,NZXOPEQ,WORK(JOFF),IREC)
+!           CALL READAC(LUBOE,NZXOPEQ,WORK(JOFF),IREC)
+            CALL READ_DX(LUBOE,IREC,NZXOPEQ,WORK(JOFF))
             JOFF = JOFF + NZXOPEQ
          ENDDO
          NREST  = NREST - NESIM
@@ -1481,7 +1483,8 @@ C
          JOFF = KBOP
          DO I = 1,NPSIM
             IREC = IREC + 1
-            CALL READAC(LUBOP,NZXOPPQ,WORK(JOFF),IREC)
+!           CALL READAC(LUBOP,NZXOPPQ,WORK(JOFF),IREC)
+            CALL READ_DX(LUBOP,IREC,NZXOPPQ,WORK(JOFF))
             JOFF = JOFF + NZXOPPQ
          ENDDO
          NREST  = NREST - NPSIM
@@ -1500,7 +1503,8 @@ C
          JOFF = KBCI
          DO I = 1,NCSIM
             IREC = IREC + 1
-            CALL READAC(LUBCI,NZCONFQ,WORK(JOFF),IREC)
+!           CALL READAC(LUBCI,NZCONFQ,WORK(JOFF),IREC)
+            CALL READ_DX(LUBCI,IREC,NZCONFQ,WORK(JOFF))
             JOFF = JOFF + NZCONFQ
          ENDDO
          NREST  = NREST - NCSIM
@@ -1535,7 +1539,8 @@ C
          JOFF = 1
          DO ISIM = 1,NTSIM
             IREC = IREC + 1
-            CALL WRTDAC(LUSCI,NZCONFQ,SCVEC(JOFF),IREC + 1)            
+!           CALL WRTDAC(LUSCI,NZCONFQ,SCVEC(JOFF),IREC + 1)            
+            CALL WRIT_DX(LUSCI,IREC+1,NZCONFQ,SCVEC(JOFF))
             JOFF = JOFF + NZCONFQ
          ENDDO
       ENDIF        
@@ -1548,7 +1553,8 @@ C
          JOFF = 1
          DO ISIM = 1,NTSIM
             IREC = IREC + 1
-            CALL WRTDAC(LUSOE,NZXOPEQ,SEVEC(JOFF),IREC)            
+!           CALL WRTDAC(LUSOE,NZXOPEQ,SEVEC(JOFF),IREC)            
+            CALL WRIT_DX(LUSOE,IREC,NZXOPEQ,SEVEC(JOFF))
             JOFF = JOFF + NZXOPEQ
          ENDDO
       ENDIF        
@@ -1561,7 +1567,8 @@ C
          JOFF = 1
          DO ISIM = 1,NTSIM
             IREC = IREC + 1
-            CALL WRTDAC(LUSOP,NZXOPPQ,SPVEC(JOFF),IREC)            
+!           CALL WRTDAC(LUSOP,NZXOPPQ,SPVEC(JOFF),IREC)            
+            CALL WRIT_DX(LUSOP,IREC,NZXOPPQ,SPVEC(JOFF))
             JOFF = JOFF + NZXOPPQ
          ENDDO
       ENDIF        
@@ -1832,6 +1839,7 @@ C
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*), 
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVECR(NREDM,NFREQ),RNORM(*),RCNV(*)
+      logical old_dx
 C
       CALL QENTER('XRSINI')
       KFRSAV = KFREE
@@ -1856,22 +1864,28 @@ C     LUB* - files of b-vectors
 C     LUS* - files of sigma-vectors
 C
       IF(NZCONF.GT.0) THEN
-        OPEN(LUBCI,FILE='PAMBCI',FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
-        OPEN(LUSCI,FILE='PAMSCI',FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
+!       OPEN(LUBCI,FILE='PAMBCI',FORM='UNFORMATTED',
+!    +      ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
+!       OPEN(LUSCI,FILE='PAMSCI',FORM='UNFORMATTED',
+!    +      ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
+        call open_dx(lubci,'PAMBCI',nzconfq,'UNKNOWN',old_dx)
+        call open_dx(lusci,'PAMSCI',nzconfq,'UNKNOWN',old_dx)
       ENDIF
       IF(NZXOPE.GT.0) THEN
-        OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
-        OPEN(LUSOE,FILE='PAMSOE',FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
+!       OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
+!    +      ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
+!       OPEN(LUSOE,FILE='PAMSOE',FORM='UNFORMATTED',
+!    +      ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
+        call open_dx(luboe,'PAMBOE',NZXOPEQ,'UNKNOWN',old_dx)
+        call open_dx(lusoe,'PAMSOE',NZXOPEQ,'UNKNOWN',old_dx)
       ENDIF
       IF(NZXOPP.GT.0) THEN
-        OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
-        OPEN(LUSOP,FILE='PAMSOP',FORM='UNFORMATTED',
-     +      ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
+!       OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
+!    +      ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
+!       OPEN(LUSOP,FILE='PAMSOP',FORM='UNFORMATTED',
+!    +      ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
+        call open_dx(lubop,'PAMBOP',NZXOPPQ,'UNKNOWN',old_dx)
+        call open_dx(lusop,'PAMSOP',NZXOPPQ,'UNKNOWN',old_dx)
       ENDIF
       OPEN(LUCYCL,FILE ='PAMCYC',STATUS='UNKNOWN',
      &            ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
@@ -1932,13 +1946,17 @@ C
 C
          CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
          CALL DSCAL(NZCONFQ,DP5,WORK(KCREF),1)
-         CALL WRTDAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+!        stefan+hjaaj - fix for large-scale mcscf
+!        CALL WRTDAC(LUBCI,NZCONFQ,WORK(KCREF),1)
+         CALL WRIT_DX(LUBCI,1,NZCONFQ,WORK(KCREF))
          CALL MEMREL('XRSINI',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C        Write CI gradient to first record of PAMSCI
 C        -------------------------------------------
 C
-         CALL WRTDAC(LUSCI,NZCONFQ,GPCI,1)
+!        stefan+hjaaj - fix for large-scale mcscf
+!        CALL WRTDAC(LUSCI,NZCONFQ,GPCI,1)
+         CALL WRIT_DX(LUSCI,1,NZCONFQ,GPCI)
       END IF
 C
       CALL QEXIT ('XRSINI')
@@ -1987,7 +2005,8 @@ C     Read in old vectors and multiply with all new sigma-vectors
 C     -----------------------------------------------------------
 C
       DO IREC = 1,IERED
-        CALL READAC(LUBOE,NZXOPEQ,BVBUF,IREC)
+!       CALL READAC(LUBOE,NZXOPEQ,BVBUF,IREC)
+        CALL READ_DX(LUBOE,IREC,NZXOPEQ,BVBUF)
         I  = IBEVC(IREC)
         IH = IBTYP(2,I)
         DO JN = 1,NTSIM
@@ -2036,7 +2055,8 @@ C     Read in old vectors and multiply with all new sigma-vectors
 C     -----------------------------------------------------------
 C
       DO IREC = 1,IPRED
-        CALL READAC(LUBOP,NZXOPPQ,BVBUF,IREC)
+!       CALL READAC(LUBOP,NZXOPPQ,BVBUF,IREC)
+        CALL READ_DX(LUBOP,IREC,NZXOPPQ,BVBUF)
         I  = IBPVC(IREC)
         IH = IBTYP(2,I)
         DO JN = 1,NTSIM
@@ -2112,7 +2132,8 @@ C
 C
          DO I = 1, IZRED
             IH = IBTYP(2,I)
-            CALL READAC(LUSCI,NZCONFQ,BVBUF,I+1)
+!           CALL READAC(LUSCI,NZCONFQ,BVBUF,I+1)
+            CALL READ_DX(LUSCI,I+1,NZCONFQ,BVBUF)
             DO JN = 1, NCSIM
                J = IBCVC(JN+ICRED)
                JH = IBTYP(2,J)
@@ -2127,7 +2148,8 @@ C
             DO IN = 1,ICRED
                I = IBCVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
+!              CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
+               CALL READ_DX(LUBCI,IN+1,NZCONFQ,BVBUF)
                DO JNC = 1, NCSIM
                   J = IBCVC(JNC+ICRED)
                   JH = IBTYP(2,J)
@@ -2141,7 +2163,8 @@ C
             DO IN = 1,IERED
                I = IBEVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
+!              CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
+               CALL READ_DX(LUBOE,IN,NZXOPEQ,BVBUF)
                DO JNC = 1, NCSIM
                   J = IBCVC(JNC+ICRED)
                   JH = IBTYP(2,J)
@@ -2155,7 +2178,8 @@ C
             DO IN = 1,IPRED
                I = IBPVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
+!              CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
+               CALL READ_DX(LUBOP,IN,NZXOPPQ,BVBUF)
                DO JNC = 1, NCSIM
                   J = IBCVC(JNC+ICRED)
                   JH = IBTYP(2,J)
@@ -2198,7 +2222,8 @@ C        trial-vectors
 C        ---------------------------------------------------------------
 C        
          DO I = 1,IZRED
-            CALL READAC(LUSOE,NZXOPEQ,BVBUF,I)
+!           CALL READAC(LUSOE,NZXOPEQ,BVBUF,I)
+            CALL READ_DX(LUSOE,I,NZXOPEQ,BVBUF)
             IH = IBTYP(2,I)
             DO JN = 1,NESIM
                J  = IBEVC(JN+IERED)
@@ -2214,7 +2239,8 @@ C
             DO IN = 1,ICRED
                I = IBCVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
+!              CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
+               CALL READ_DX(LUBCI,IN+1,NZCONFQ,BVBUF)
                DO JNE = 1, NESIM
                   J = IBEVC(JNE+IERED)
                   JH = IBTYP(2,J)
@@ -2228,7 +2254,8 @@ C
             DO IN = 1,IERED
                I = IBEVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
+!              CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
+               CALL READ_DX(LUBOE,IN,NZXOPEQ,BVBUF)
                DO JNE = 1, NESIM
                   J = IBEVC(JNE+IERED)
                   JH = IBTYP(2,J)
@@ -2242,7 +2269,8 @@ C
             DO IN = 1,IPRED
                I = IBPVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
+!              CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
+               CALL READ_DX(LUBOP,IN,NZXOPPQ,BVBUF)
                DO JNE = 1, NESIM
                   J = IBEVC(JNE+IERED)
                   JH = IBTYP(2,J)
@@ -2288,7 +2316,8 @@ C        trial-vectors
 C        ----------------------------------------------------
 C        
          DO I = 1,IZRED
-            CALL READAC(LUSOP,NZXOPPQ,BVBUF,I)
+!           CALL READAC(LUSOP,NZXOPPQ,BVBUF,I)
+            CALL READ_DX(LUSOP,I,NZXOPPQ,BVBUF)
             IH = IBTYP(2,I)
             DO JN = 1,NPSIM
                J  = IBPVC(JN+IPRED)
@@ -2304,7 +2333,8 @@ C
             DO IN = 1,ICRED
                I = IBCVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
+!              CALL READAC(LUBCI,NZCONFQ,BVBUF,IN+1)
+               CALL READ_DX(LUBCI,IN+1,NZCONFQ,BVBUF)
                DO JNP = 1, NPSIM
                   J = IBPVC(JNP+IPRED)
                   JH = IBTYP(2,J)
@@ -2318,7 +2348,8 @@ C
             DO IN = 1,IERED
                I = IBEVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
+!              CALL READAC(LUBOE,NZXOPEQ,BVBUF,IN)
+               CALL READ_DX(LUBOE,IN,NZXOPEQ,BVBUF)
                DO JNP = 1, NPSIM
                   J = IBPVC(JNP+IPRED)
                   JH = IBTYP(2,J)
@@ -2332,7 +2363,8 @@ C
             DO IN = 1,IPRED
                I = IBPVC(IN)
                IH = IBTYP(2,I)
-               CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
+!              CALL READAC(LUBOP,NZXOPPQ,BVBUF,IN)
+               CALL READ_DX(LUBOP,IN,NZXOPPQ,BVBUF)
                DO JNP = 1, NPSIM
                   J = IBPVC(JNP+IPRED)
                   JH = IBTYP(2,J)
@@ -3621,7 +3653,8 @@ C           Assume it is a `+' type trial vector
             IBTYP(1,IBOFF+NVEC) = NBTYP
             IBVEC(NBPREV+NVEC)  = IBOFF + NVEC
             IVEC(NVEC)          = 1
-            CALL READAC(LUBVEC,NBDIM,BVEC(1,1,NVEC),I+IRECOFF)
+!           CALL READAC(LUBVEC,NBDIM,BVEC(1,1,NVEC),I+IRECOFF)
+            CALL READ_DX(LUBVEC,I+IRECOFF,NBDIM,BVEC(1,1,NVEC))
           END DO
           WRITE(LUPRI,'(/,1X,A,I2,3A)')
      &         '(XRSST2)',IXRSTB(NBTYP), ' trial vectors of type ',
@@ -4023,7 +4056,8 @@ C
          INDB = IBVEC(IB)
          IF(IVEC(IBNB).EQ.0) GOTO 10
          IREC = IREC + 1
-         CALL WRTDAC(LUBVEC,NBDIM,BVEC(1,IBNB),IREC+IRECOFF)        
+!        CALL WRTDAC(LUBVEC,NBDIM,BVEC(1,IBNB),IREC+IRECOFF)        
+         CALL WRIT_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVEC(1,IBNB))
          IF(IB.NE.IREC) THEN
             IND          = IBVEC(IREC)
             IBTYP(1,IND) = IBTYP(1,INDB)

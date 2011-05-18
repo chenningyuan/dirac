@@ -1149,6 +1149,7 @@ C
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),
      &     XPOZ(NZPAR,NZ,NFREQ),XPOY(NZPAR,NZ,NFREQ),
      &     RSPVEC(MZYPAR*NZ),BUF(MZYPAR*NZ),WORK(LWRK)
+      logical old_dx
 C
       CALL QENTER('LRVEC1')
 C
@@ -1178,8 +1179,9 @@ C     vectors multiplied by the eigenvectors in the reduced
 C     system. Note that the trial vectors are of the form 
 C     (Z+Y) and (Z-Y).
 C
-      OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
-     &     ACCESS='DIRECT',RECL=8*NZPAR*NZ,STATUS='OLD')
+!     OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
+!    &     ACCESS='DIRECT',RECL=8*NZPAR*NZ,STATUS='OLD')
+      call open_dx(LUBVEC,FILNAM,NZPAR*NZ,'OLD',old_dx)
       CALL DZERO(XPOZ,NZPAR*NZ*NFREQ)
       CALL DZERO(XPOY,NZPAR*NZ*NFREQ)
       CALL MEMGET('INTE',KIVECS,NFREQ,WORK,KFREE,LFREE)

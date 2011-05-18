@@ -145,6 +145,7 @@ C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1,RSPTYP*5
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),
      &          XPO(NZXPAR,NZ,NFREQ),BBUF(*)
+      logical old_dx
 C
       CALL QENTER('KRMCVEC1')
 C
@@ -176,8 +177,9 @@ C     Construct response solution vectors by summing the trial
 C     vectors multiplied by the eigenvectors in the reduced
 C     system.
 C
-      OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
-     &     ACCESS='DIRECT',RECL=8*NZXPAR*NZ,STATUS='UNKNOWN')
+!     OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
+!    &     ACCESS='DIRECT',RECL=8*NZXPAR*NZ,STATUS='UNKNOWN')
+      call open_dx(LUBVEC,FILNAM,NZXPAR*NZ,'UNKNOWN',old_dx)
       CALL DZERO(XPO,NZXPAR*NZ*NFREQ)
       CALL XRSXV1(JTIMOP,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVEC,BBUF)
       CLOSE(LUBVEC,STATUS='KEEP')

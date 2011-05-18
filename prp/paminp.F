@@ -461,7 +461,7 @@ CMI   g_tensors operator centers might be changed
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
 
-!     set compulsary default values for X2C module.
+!     set compulsory default values for X2C module.
       if(x2c)then
         DOPCT = .true.
         NOPCT = .false.
