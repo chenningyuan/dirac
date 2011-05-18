@@ -118,6 +118,7 @@ C     memory pointer for C2 vector block
       real*8,    allocatable :: T_BUFF_D(:)
 #endif /* VAR_SHMEM */
 #endif /* VAR_MPI2 */
+      integer(8)             :: NCALC_MAX_BLK, IGET_MY_T_LEN
 C
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
