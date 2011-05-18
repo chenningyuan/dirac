@@ -292,6 +292,9 @@ c        ... Calculate and add correction.
          call genden(dmat, cmo, 1, 0)
          deallocate(cmo)
 
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(4)
+#endif
 !        in one go integrate xc potential
 !        and xc contribution to molecular gradient
          call xc_integrator(xc_mat_dim           = ntbas(0),
