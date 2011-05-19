@@ -3511,6 +3511,8 @@ C
      &      NELECT_DHF,' electrons but only ',NESHT,' orbitals.'
          CALL QUIT('ERROR: Not enough eigenvalues for FNDOCC.')
       END IF
+!     no closed shell orbitals
+      IF(NELEC2GO .eq. 0) GOTO 190
 C
 C     100 loop is over electron pairs (closed shell orbitals)
 C
@@ -3537,7 +3539,7 @@ C
 C     Same procedure for the open shell (works only for one e in one open shell)
 C     we take care of degeneracies in the following...
 C
-      IF (NAELEC_DHF .gt. 0) THEN
+ 190  IF (NAELEC_DHF .gt. 0) THEN
          IEIGSYM          = 0
  200     IEIGSYM          = IEIGSYM + 1
             IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
@@ -3628,6 +3630,7 @@ C***********************************************************************
       logical              :: debug_print
 
       debug_print      = .false.
+!     debug_print      = .true.
       if(debug_print)then 
         orboff           = 0
         do i = 1, nfsym
