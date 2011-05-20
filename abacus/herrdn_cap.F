@@ -23,7 +23,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck capout */
       SUBROUTINE CAPOUT(IPRINT,
-     &  NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &  IQM,NBLCK,JCO,NUC,NRC,SEG,
      &  KATOM,KANG,KSETS,KBLOCK,
      &  KPRIM,CPRIMU,WORK,LWORK)
 C***********************************************************************
@@ -51,7 +51,7 @@ C***********************************************************************
 #include "infpar.h"
 
       LOGICAL SEG,HERMIT
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+      DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &     NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &     SEG(KBLOCK,KSETS),
      &     ALPHA(KPRIM,KBLOCK,KSETS),
@@ -153,7 +153,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
               WRITE(LUPRI,'(/A)')
      &        'Large component basis functions for CAP'
              ENDIF
-             CALL CAPWRIBAS(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
+             CALL CAPWRIBAS(IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
      &         KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
      &          LUTMP2,LUTMP,IATYP,0,IPRINT)
@@ -163,7 +163,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
                  WRITE(LUPRI,'(/A)')
      &           'Small component basis functions for CAP'
                ENDIF
-               CALL CAPWRIBAS(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
+               CALL CAPWRIBAS(IQM(1,2),NBLCK(1,2),
      &             JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
      &            KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
      &            LUTMP2,LUTMP,IATYP,NPLSH,IPRINT)
@@ -217,7 +217,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
                write(LUPRI,'(/A)') '--- large component basis set !'
              ENDIF
 
-            CALL CAPWRIBAS(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+            CALL CAPWRIBAS(IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &      NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
      &      KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
      &      LUTMP2,LUTMP,IATYP,0,IPRINT)
@@ -226,7 +226,7 @@ C             ...   write out basis functions, exponents and contraction coeffic
                IF (IPRINT.GE.3) THEN
                  write(LUPRI,'(/A)') '--- small component basis set !'
                ENDIF
-               CALL CAPWRIBAS(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
+               CALL CAPWRIBAS(IQM(1,2),NBLCK(1,2),
      &        JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
      &        KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
      &        LUTMP2,LUTMP,IATYP,NPLSH,IPRINT)
@@ -257,14 +257,14 @@ C
            CALL HEADER('CAPWRIBAS2: Contracted Orbitals again',1)
          ENDIF
 
-          CALL CAPWRIBAS2(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+          CALL CAPWRIBAS2(IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &     NUC(1,1),NRC(1,1),SEG(1,1),WORK(KIPCON),
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
      &     LUTMP3,0,IPRINT)
 
          IF (NBASIS.GT.NLARGE) THEN
 C          ... small component set
-          CALL CAPWRIBAS2(NONTYP,NONT,IQM(1,2),NBLCK(1,2),
+          CALL CAPWRIBAS2(IQM(1,2),NBLCK(1,2),
      &      JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),WORK(KIPCON),
      &      KATOM,KANG,KBLOCK,KPRIM,CPRIMU(1,1,1,2),
      &      LUTMP3,NPLSH,IPRINT)
@@ -280,7 +280,7 @@ CMI      CALL CAPSYMOUT
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wribas */
-      SUBROUTINE CAPWRIBAS(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
+      SUBROUTINE CAPWRIBAS(IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
      &     LUTMP2,LUTMP,ICENT,IPOSEXP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -310,7 +310,7 @@ C#include "nuclei.h"
       CHARACTER*1 BLNK(8)
 C     CHARACTER CHRSEG*10,DEG*2
 
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
 !    &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &     JCO(KANG,KATOM),NUC(*),NRC(*),
 !    &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
@@ -409,7 +409,7 @@ C         write(LUTMP2,*) 'TYPE:',BLNK(1+J)
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wribas2 */
-      SUBROUTINE CAPWRIBAS2(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
+      SUBROUTINE CAPWRIBAS2(IQM,NBLCK,JCO,NUC,NRC,SEG,IPCON,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,
      &     LUTMP3,IPOSEXP,IPRINT)
 C*************************************************************************
@@ -437,7 +437,7 @@ C*************************************************************************
       CHARACTER*1 BLNK(5)
       CHARACTER CHRSEG*10,DEG*2
 
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
 CMI  &      JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &      JCO(KANG,KATOM),NUC(*),NRC(*),
      &      CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)

@@ -93,8 +93,7 @@ C
  40         CONTINUE
             NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
-            DEG = '  '
-            IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
+            WRITE(DEG,'(I2)') IDEG
             IATTR(NLAB,1) = JLAB
             PLABEL(NLAB,1) = CLS(ICLS)//' '//NAMN(ICENT)(1:3)//
      &          DEG//' '//GTOTYP(ITYP)
@@ -128,8 +127,7 @@ C           Define new label
 C           ================
             NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
-            DEG = '  '
-            IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
+            WRITE(DEG,'(I2)') IDEG
             IATTR(NLAB,1) = JLAB
             PLABEL(NLAB,1) = CLS(ICLS)//' '//NAMN(ICENT)(1:3)//
      &         DEG//' '//GTOTYP(ITYP)

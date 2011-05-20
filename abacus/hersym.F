@@ -33,7 +33,7 @@ SYMADD: Completely new module to determine molecular symmetry, find the
 ===========================================================================
 #endif
 C  /* Deck symadd */
-      SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
+      SUBROUTINE SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,
      &                  CLASS,internal_file)
 C*****************************************************************************
 C
@@ -51,7 +51,7 @@ C*****************************************************************************
 #include "mxsymm.h"
 #include "priunit.h"
 #include "optinf.h"
-      DIMENSION WORK(LWORK), NONT(KATOM)
+      DIMENSION WORK(LWORK)
       CHARACTER*1 KASYM(3,3), CLASS*15
       LOGICAL :: internal_file
       IF (TOLLRN .LE. 0.0D0) TOLLRN = 5.0D-6
@@ -75,14 +75,14 @@ CSK   only MASTER needs to print the information
       LWRK = LWORK - KLAST + 1
       LENTMP = MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR)
       CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
-     &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
+     &            WORK(KTEMP),WORK(KTEMP2),NSYMOP,
      &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,
      &            internal_file,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
-     &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
+     &                         NSYMOP,KATOM,KASYM,LENTMP,
      &                         CLASS,VRML,internal_file,WORK,LWORK)
 #include "implicit.h"
 #if defined (VAR_MPI)
@@ -114,7 +114,7 @@ Caspg
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
-         DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM)
+         DIMENSION TMP2AR(6,0:MXCENT)
          LOGICAL VRML
          LOGICAL :: internal_file
          PARAMETER (D0 = 0.0D0)

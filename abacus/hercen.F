@@ -25,7 +25,7 @@
 !
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
-      SUBROUTINE CENINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,           &
+      SUBROUTINE CENINP(LUINFO,WORK,LWORK,IQM,NBLCK,                       &
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,   &
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
 !*****************************************************************************
@@ -72,7 +72,7 @@
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),     &
+      DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),                 &
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS), &
      &          SEG(KBLOCK,KSETS),                                      &
      &          ALPHA(KPRIM,KBLOCK,KSETS),                              &

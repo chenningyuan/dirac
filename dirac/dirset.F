@@ -1387,7 +1387,7 @@ C/* Deck lsqma1 */
       SUBROUTINE LSQMA1(ICLAB)
 C***********************************************************************
 C
-C     ... Make list of type (L or S) that maps each basis function
+C     Make list of type (L or S) that maps each basis function
 C     to a nuclei.
 C
 C     Written by Jesper K. Pedersen sep. 2001

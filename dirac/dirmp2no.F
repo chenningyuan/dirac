@@ -621,8 +621,9 @@ C
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                 IFRP,NSTR(IFRP,0,I))
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
-     &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
+     &                NPSH(IFRP),NESH(IFRP),
+     &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('MP2DEN.1',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
@@ -787,7 +788,8 @@ C
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                  IFRP,NSPC(IFRP,0))
-            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
+            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)

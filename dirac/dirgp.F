@@ -1890,7 +1890,7 @@ C       to an AO-basis, where the symmetry adaption is taken out.
 C       In this AO-basis looping is over
 C        - atomic type
 C         - symmetry independent center
-C          - shell
+C          - shell (exponents/contracted functions)
 C           - degeneracy of center
 C             - component
 C       [NOTE that in DALTON the looping over degeneracy and components
@@ -2680,7 +2680,7 @@ C
       NSTR(IFRP,0) = 1
       CALL NUMLST(VECREF,WORK(KVEC),NORB(IFRP),-NSTR(IFRP,2),
      &            NSTR(IFRP,1),IFRP,NSTR(IFRP,0))
-      CALL ORBCNT(WORK(KVEC),NSTR(IFRP,0),IFRP,
+      CALL ORBCNT(WORK(KVEC),NSTR(IFRP,0),NPSH(IFRP),NESH(IFRP),
      &            NSTR(IFRP,2),NSTR(IFRP,1))
       NSTR(IFRP,0) = NSTR(IFRP,1) + NSTR(IFRP,2)
       CALL MEMREL('ORBNUM',WORK,KVEC,KVEC,KFREE,LFREE)
@@ -4148,7 +4148,98 @@ C.....Approximate eigenvalue of UKB complement
       WRITE(6,*) 'RKBIMP2: transformed :',II
       RETURN
       END
-      
-
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LABCOUNT(N,LIST,NBAS,ILAB,I1,I2,I3,I4)
+C***********************************************************************
+C
+C     Do statistics or make pointers using basis function labels
+C
+C     ILAB = 1: A)AO-labels
+C     ---------------------------------------------------------------------
+C     I1   ICLS  - Basis set class: large(1), small(2) ..
+C     I2   ICENT - index of center in list of symmetry-independent centers
+C     I3   IDEG  - for given symmetry-independent center, index of degeneracy
+C     I4   ITYP  - basis function type, e.g. s, px, dxy etc.
+C
+C     ILAB = 2: SO-labels
+C     ---------------------------------------------------------------------
+C     I1   IC    - Basis set class: large(1), small(2) ....
+C     I2   ICENT - index of center in list of symmetry-independent centers
+C     I3   IRP   - index of boson irrep
+C     I4   ITYP  - basis function type, e.g. s, px, dxy
+C
+C     T. Saue Mar 31 2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "maxorb.h"
+#include "dcblab.h"
+#include "dcbibt.h"
+      DIMENSION LIST(NBAS)
+C
+C.....Initialize index array
+      CALL ICOPY(NBAS,1,0,LIST,1)
+C.....If active, search first value
+      IF(I1.GT.0) THEN
+        N=0
+        DO I = 1,NBAS
+          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
+          IVAL  = IGET(ITEMP)
+          IF(IVAL.NE.I1) THEN
+            LIST(I)=-1
+          ELSE
+            N=N+1
+          ENDIF
+        ENDDO
+      ENDIF
+C.....If active, search second value
+      IF(I2.GT.0) THEN
+        N=0
+        DO I = 1,NBAS
+        IF(LIST(I).GT.0) THEN
+          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
+          IVAL  = JGET(ITEMP)
+          IF(IVAL.NE.I2) THEN
+            LIST(I)=-1
+          ELSE
+            N=N+1
+          ENDIF
+        ENDIF
+        ENDDO
+      ENDIF
+C.....If active, search third value
+      IF(I3.GT.0) THEN
+        N=0
+        DO I = 1,NBAS
+        IF(LIST(I).GT.0) THEN
+          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
+          IVAL  = KGET(ITEMP)
+          IF(IVAL.NE.I3) THEN
+            LIST(I)=-1
+          ELSE
+            N=N+1
+          ENDIF
+        ENDIF
+        ENDDO
+      ENDIF
+C.....If active, search third value
+      IF(I4.GT.0) THEN
+        N=0
+        DO I = 1,NBAS
+        IF(LIST(I).GT.0) THEN
+          ITEMP = IATTR(IPLAB(I,ILAB),ILAB)
+          IVAL  = LGET(ITEMP)
+          IF(IVAL.NE.I4) THEN
+            LIST(I)=-1
+          ELSE
+            N=N+1
+          ENDIF
+        ENDIF
+        ENDDO
+      ENDIF
+C
+      RETURN
+      END
 

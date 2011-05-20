@@ -814,7 +814,8 @@ C
           CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
      &                 NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
      &                 IFRP,NVEC)
-          CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
+          CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,
+     &                NPSH(IFRP),NESH(IFRP),
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
@@ -1100,7 +1101,8 @@ C
           CALL NUMLST(INDSTR(ITYP,IFRP),IND,
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
      &                IFRP,NVEC)
-          CALL ORBCNT(IND,NVEC,IFRP,NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
+          CALL ORBCNT(IND,NVEC,NPSH(IFRP),NESH(IFRP),
+     &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
 C

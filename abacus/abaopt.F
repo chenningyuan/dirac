@@ -6371,7 +6371,7 @@ C
 
 C  /* Deck dobrk */
       SUBROUTINE DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,EVEC,
-     &                                        CSTEP,TMPMAT,NONT)
+     &                                        CSTEP,TMPMAT)
 C
 C     This procedure does the actual breaking of symmetry.
 C
@@ -6391,7 +6391,7 @@ C
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
-      DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
+      DIMENSION GEINFO(0:ITRMAX,6)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR)
       DIMENSION TMPMAT(NCRTOT*NCRTOT)
 #include "ibtfun.h"

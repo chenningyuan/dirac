@@ -115,7 +115,6 @@ C
                   UNCONT = .TRUE.
                GO TO 100
  11            CONTINUE
-Caspg 
 C setting NOMOVE to true disables redefinition of coordinates for automatically
 C determined symmetry
                   NOMOVE = .TRUE.
@@ -373,7 +372,7 @@ C        Number of basis sets : large, small, fit LL dens, fit SS dens
 C        Number of basis sets : regular, Huckel, fit
          KSETS = 3
       ENDIF
-      KATOM  = MXCENT
+      KATOM  = MXATOM
       KANG   = 2*MXQN+1
       KPRIM  = MAXPRI
       KBLOCK = MXSHEL
@@ -482,8 +481,7 @@ C******************************************************************************
 
 C     JHS The following local arrays are allocated at runtime to make memory
 C         management easier.
-      INTEGER,ALLOCATABLE :: NONT(:),
-     &                       JCO(:,:,:),
+      INTEGER,ALLOCATABLE :: JCO(:,:,:),
      &                       JCO2(:,:), 
      &                       IBLOCK(:),
      &                       NUC(:,:),
@@ -566,7 +564,7 @@ C***********************************************************************
        WRITE(LUPRI,*) 'Wanted format BN,A1,I4,I3,A11,A1,D10.2,6I5'
        CALL QUIT('Error in basis reading..BN,A1,I4,I3,A11,A1,D10.2,6I5')
       ENDIF
-      IF(NONTYP.GT.KATOM) GOTO 5000
+      IF(NONTYP.GT.MXATOM) GOTO 5000
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
@@ -672,7 +670,6 @@ C        In 4-component mode Cartesian Gaussians are always used.
       KANG   = 2*MXQN+1 
       KPRIM  = MAXPRI
       KCMAT  = KPRIM*KPRIM
-      ALLOCATE(NONT(NONTYP))
       ALLOCATE(IQM(KATOM,KSETS))
       ALLOCATE(NBLCK(KATOM,KSETS))
       ALLOCATE(JCO(KANG,KATOM,KSETS))
@@ -703,7 +700,7 @@ C     ************************************************
 C     ***** Read orbital and geometry input data *****
 C     ************************************************
 C
-      CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NONT,
+      CALL BASINP(LUINFO,WORK,LWORK,
      &            IQM,NBLCK,JCO,BASREF,
 #if defined (SYS_AIX) || defined (SYS_IBM) 
      &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),ISGEN,
@@ -721,8 +718,7 @@ C
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
-         CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
-     &               CLASS,.true.)
+         CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,CLASS,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
 C
@@ -736,7 +732,7 @@ C     ***************************************************
 C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
-      CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
+      CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
 #if defined (SYS_AIX) || defined (SYS_IBM) 
      &            SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,
@@ -749,7 +745,7 @@ C     *************************************************
 C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
-      CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
+      CALL BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,
 #if defined (SYS_AIX) || defined (SYS_IBM)
      &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,
      &            KANG,KSETS,
@@ -783,7 +779,7 @@ C     ***** Output on LUONEL *****************
 C     ****************************************
 C
       ALLOCATE(JCO2(KANG,KATOM))
-      IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,
+      IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
 c**************************************************************
@@ -804,7 +800,6 @@ c**************************************************************
 #endif
 c
 C     JHS The check whether the arrays are still allocated is in principle redundant.
-      IF (ALLOCATED(NONT)) DEALLOCATE(NONT)
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
       IF (ALLOCATED(JCO2)) DEALLOCATE(JCO2)
       IF (ALLOCATED(NUC)) DEALLOCATE(NUC)
@@ -822,7 +817,7 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *   ' >>> READ_MOL error, no. of atomic types    ',NONTYP,
-     *   '                     current maximum number ',KATOM
+     *   '                     current maximum number ',MXATOM
       CALL QUIT('Too many atomic types')
       END
 C  /* Deck baspar */
@@ -892,7 +887,7 @@ C
 C
       END
 C  /* Deck basinp */
-      SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
+      SUBROUTINE BASINP(LUINFO,WORK,LWORK,IQM,NBLCK,
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMTTST)
 C***********************************************************************
@@ -913,7 +908,7 @@ C***********************************************************************
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,NOFITFS,ZMTTST,CNTBAS
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+      DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &          SEG(KBLOCK,KSETS),
      &          ALPHA(KPRIM,KBLOCK,KSETS),
@@ -1058,7 +1053,7 @@ C       Read/process data on symmetry independent centers
 C       =================================================
 C
         IF (ZMTTST) THEN
-           CALL ZMAT(NONT,KATOM)
+           CALL ZMAT
            Q = CHARGE(NUCIND)
         ELSE
            IF (INPTST) THEN
@@ -1931,7 +1926,7 @@ C
          CALL QUIT('*** ERROR in READIN ***')
       END
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,QEXP,ANG)
+      SUBROUTINE CNTINP(LUINFO,NONTVC,Q,QEXP,ANG)
 C*****************************************************************************
 C
 C        Read and process data about symmetry independent centers
@@ -1984,7 +1979,7 @@ C
       END IF
       NUCSTR = NUCIND + 1
       IF (INPTST) WRITE(LUPRI,'(3X,A)') 'Symmetry independent centers:'
-      DO 100 N = 1,NONT
+      DO 100 N = 1,NONTVC
          NUCIND = NUCIND + 1
          IF (NUCIND.GT.MXCENT) GOTO 5000
 C
@@ -2057,7 +2052,7 @@ C
         CALL QUIT('*** ERROR: Atomic coordinate too large in CNTINP')
       END
 C  /* Deck baspro */
-      SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
+      SUBROUTINE BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &                  KBLOCK,KPRIM,DOOWN,blk)
 C
@@ -2081,7 +2076,7 @@ C
 
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+      DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &     NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &     SEG(KBLOCK,KSETS),
      &     ALPHA(KPRIM,KBLOCK,KSETS),CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
@@ -2138,8 +2133,7 @@ C*****************************************************************************
       IPRIMD = 0
       IORB   = 0
       IORBD  = 0
-
-      CALL ORBPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
+      CALL ORBPRO(IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
      &            NRC(1,1),SEG(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
@@ -2156,7 +2150,7 @@ CTROND      IF (DIRCON(1).AND.CNTMAT) THEN
          LDKWRK = LWORK - KDKWRK
          IF (LDKWRK .LT. NPLRG*NLARGE)
      &     CALL STOPIT('READI1 ','MAKE_CNTMAT',NPLRG*NLARGE,LDKWRK)
-         CALL MAKE_CNTMAT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+         CALL MAKE_CNTMAT(IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &              NUC(1,1),NRC(1,1),SEG(1,1),ALPHA(1,1,1),
      &              CPRIM(1,1,1,1),WORK(KLPRIM),WORK(KDKWRK),
      &              KATOM,KANG,KBLOCK,KPRIM,NPLRG,NLARGE)
@@ -2165,8 +2159,7 @@ C*****************************************************************************
 C       Process orbital data for small components
 C*****************************************************************************
       LCOMP = 2
-
-      CALL ORBPRO(NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
+      CALL ORBPRO(IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
      &            NRC(1,2),SEG(1,2),
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
      &            KATOM,KANG,KBLOCK,KPRIM,
@@ -2222,7 +2215,7 @@ C skipped because dirac does not uses atomdf
       IPRIMD_FIT = 0
       IORB_FIT   = 0
       IORBD_FIT  = 0
-      CALL FITPRO(NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),NUC(1,3),
+      CALL FITPRO(IQM(1,3),NBLCK(1,3),JCO(1,1,3),NUC(1,3),
      &            NRC(1,3),SEG(1,3),
      &            ALPHA(1,1,3),CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
      &            KATOM,KANG,KBLOCK,KPRIM,
@@ -2247,7 +2240,7 @@ C*****************************************************************************
 C       Process fit set data for secundary (SS) density fitset
 C*****************************************************************************
       LCOMP_FIT = 2
-      CALL FITPRO(NONTYP,NONT,IQM(1,4),NBLCK(1,4),JCO(1,1,4),NUC(1,4),
+      CALL FITPRO(IQM(1,4),NBLCK(1,4),JCO(1,1,4),NUC(1,4),
      &            NRC(1,4),SEG(1,4),
      &            ALPHA(1,1,4),CPRIM(1,1,1,4),CPRIMU(1,1,1,4),
      &            KATOM,KANG,KBLOCK,KPRIM,
@@ -2286,7 +2279,7 @@ C
 #if defined (DIRAC_DENSFIT_DEBUG)
       write (*,*) 'lcomp',lcomp,'iqm(',1,',',lcomp,'):',iqm(1,3)
 #endif
-         CALL ORBPRO(NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+         CALL ORBPRO(IQM(1,3),NBLCK(1,3),JCO(1,1,3),
      &               NUC(1,3),NRC(1,3),SEG(1,3),ALPHA(1,1,3),
      &               CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
      &               KATOM,KANG,KBLOCK,KPRIM,ISHELL,
@@ -2415,7 +2408,7 @@ C
         CALL QUIT('BASPRO: Too many primitive basis functions')
       END
 C  /* Deck basout */
-      SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
+      SUBROUTINE BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,
      &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
      &                  KBLOCK,KPRIM,HERMIT,blk)
 C*****************************************************************************
@@ -2434,7 +2427,7 @@ C*****************************************************************************
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+      DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &     NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &     SEG(KBLOCK,KSETS),
      &     ALPHA(KPRIM,KBLOCK,KSETS),CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
@@ -2604,14 +2597,14 @@ C
       END IF
 
 CMI   ... prepare the MNF.INP basis set input file for AMFI
-      CALL MNFOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
+      CALL MNFOUT(IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &           KATOM,KANG,KBLOCK,
      &           KPRIM,CPRIMU)
 
 #ifdef MOD_CAP
 CMI   ... prepare the basis set input files for the CAP program
-      CALL CAPOUT(IPREAD,NONTYP,NONT,IQM,NBLCK,
+      CALL CAPOUT(IPREAD,IQM,NBLCK,
      &           JCO,NUC,NRC,SEG,
      &           KATOM,KANG,KSETS,KBLOCK,
      &           KPRIM,CPRIMU,WORK,LWORK)
@@ -2641,13 +2634,13 @@ C*****************************************************************************
          IF(NLARGE.GT.0) THEN
             IF (DIRAC) CALL HEADER('Large Components Basis',-1)
             NRMPRI = .FALSE.
-            CALL ORBOUT(1,NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+            CALL ORBOUT(1,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &                  NUC(1,1),NRC(1,1),SEG(1,1),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  ALPHA,CPRIMU,NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
-               CALL ORBOUT(1,NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+               CALL ORBOUT(1,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &                     NUC(1,1),NRC(1,1),SEG(1,1),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                     ALPHA(1,1,1),CPRIMU,NRMPRI)
@@ -2659,13 +2652,13 @@ C*****************************************************************************
          IF (NBASIS.GT.NLARGE) THEN
             CALL HEADER('Small Components Basis',-1)
             NRMPRI = .FALSE.
-            CALL ORBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
+            CALL ORBOUT(2,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
      &                  NUC(1,2),NRC(1,2),SEG(1,2),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  ALPHA(1,1,2),CPRIMU(1,1,1,2),NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
-               CALL ORBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
+               CALL ORBOUT(2,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
      &                     NUC(1,2),NRC(1,2),SEG(1,2),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                     ALPHA(1,1,2),CPRIMU(1,1,1,2),NRMPRI)
@@ -2684,13 +2677,13 @@ C
 #endif
             CALL HEADER('Fit Functions, Global/Large Component',-1)
             NRMPRI = .FALSE.
-            CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+            CALL ORBOUT(3,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
      &               NUC(1,3),NRC(1,3),SEG(1,3),
      &               WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &               ALPHA(1,1,3),CPRIMU(1,1,1,3),NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
-              CALL ORBOUT(3,NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+              CALL ORBOUT(3,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
      &                  NUC(1,3),NRC(1,3),SEG(1,3),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  ALPHA(1,1,3),CPRIMU(1,1,1,3),NRMPRI)
@@ -2699,13 +2692,13 @@ C
             IF (NBASIS_FIT.GT.NLARGE_FIT) THEN 
                CALL HEADER('Fit Functions, Small Component',-1)
                NRMPRI = .FALSE.
-              CALL ORBOUT(4,NONTYP,NONT,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
+              CALL ORBOUT(4,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
      &                  NUC(1,4),NRC(1,4),SEG(1,4),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  CPRIMU(1,1,1,4),NRMPRI)
                IF (IPREAD .GT. 2) THEN
                   NRMPRI = .TRUE.
-              CALL ORBOUT(4,NONTYP,NONT,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
+              CALL ORBOUT(4,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
      &                     NUC(1,4),NRC(1,4),SEG(1,4),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                     CPRIMU(1,1,1,4),NRMPRI)
@@ -3583,7 +3576,7 @@ C    & 'CPRIMU - read contr.coeff. and CPRIM - normalized contr.coeff:'
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck orbpro */
-      SUBROUTINE ORBPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+      SUBROUTINE ORBPRO(IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &           ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
 C******************************************************************************
@@ -3607,7 +3600,7 @@ C
 C
 #include "cbirea.h"
       LOGICAL SEG,SPHER,SEGAUX
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
@@ -3805,7 +3798,7 @@ C
       CALL QUIT('Too many contracted functions per AO-block')
       END
 C  /* Deck fitpro */
-      SUBROUTINE FITPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+      SUBROUTINE FITPRO(IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &           ISHELL_FIT,IPRIM_FIT,IPRIMD_FIT,
      &           IORB_FIT,IORBD_FIT,LCOMP_FIT)
@@ -3826,7 +3819,7 @@ C******************************************************************************
 C
 #include "cbirea.h"
       LOGICAL SEG,SPHER
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
@@ -3938,7 +3931,7 @@ C
       CALL QUIT('Too many contracted functions per AO-block')
       END
 C  /* Deck orbout */
-      SUBROUTINE ORBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+      SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
       use codata
 #include "implicit.h"
@@ -3957,7 +3950,7 @@ C
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK),
      &          ALPHA(KPRIM,KBLOCK),
@@ -5711,7 +5704,7 @@ C
       END
 
 C  /* Deck wronel */
-      SUBROUTINE WRONEL(TITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,KANG)
+      SUBROUTINE WRONEL(TITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
 C
 C     Write interface records
 C
@@ -5728,7 +5721,7 @@ C
       DIMENSION QPOL(6), QQ(3), IFXYZ(3), JFXYZ(3)
       DIMENSION CHRN(MXCENT), COOO(MXCENT,3), IPRXYZ(MXCORB),
      &          INAMN(MXCORB), IGTO(MXCORB), RTITLE(24)
-      DIMENSION NONT(KATOM), IQM(KATOM), JCO2(KANG,KATOM)
+      DIMENSION IQM(KATOM), JCO2(KANG,KATOM)
       DATA TABLE1 /'********','        ','        ','ISORDK  '/,
      &     TABLE2 /'********','        ','        ','SCFINP  '/,
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
@@ -5939,7 +5932,7 @@ C
       return
       end
 C  /* Deck zmat */
-      SUBROUTINE ZMAT(NONT,KATOM)
+      SUBROUTINE ZMAT
 C
 C  Modified for incorporation in HERMIT/SIRIUS/ABACUS, K.Ruud, May-95
 C  Based on program ZMAT from CCQC/ Nov. 1988 (H.J.Aa.Jensen)
@@ -5961,7 +5954,6 @@ C
 #include "nuclei.h"
 #include "molinp.h"
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
-      DIMENSION NONT(KATOM)
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
@@ -6071,7 +6063,7 @@ C
         CALL QUIT('*** ERROR *** MXCENT exceeded in ZMAT')
       END
 C  /* Deck buildz */
-      SUBROUTINE BUILDZ(IPRINT,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,BASREF,
+      SUBROUTINE BUILDZ(IPRINT,NSYMOP,IQM,NBLCK,JCO,BASREF,
      &                NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
      &                KPRIM,DOOWN)
 C
@@ -6090,7 +6082,7 @@ C
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION A(MXCENT),B(MXCENT),CZ(MXCENT,3),D(MXCENT)
       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
+      DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
      &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
@@ -6825,7 +6817,7 @@ C
       END
 
 C  /* Deck mnfout */
-      SUBROUTINE MNFOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+      SUBROUTINE MNFOUT(IQM,NBLCK,JCO,NUC,NRC,SEG,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -6853,7 +6845,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       LOGICAL SEG
 C     CHARACTER KASYM(3,3)*1, CRT*1
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
      &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
 
@@ -6868,8 +6860,6 @@ C
       ICENT  = 0
       IBLOCK = 0
       ISYCNT = 1
-
-C     write(lupri,*) 'NONTYP=',NONTYP
 
       write(lutmp2,*)
      & 'Formatted input for AMFI - decontracted basis sets !'
@@ -7086,7 +7076,7 @@ C***********************************************************************
       RETURN
       END
 C  /* Deck dkpro */
-      SUBROUTINE MAKE_CNTMAT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+      SUBROUTINE MAKE_CNTMAT(IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           ALPHA,CPRIM,LPRIM,CONTC,KATOM,KANG,KBLOCK,KPRIM,
      &           IPRIMD,IORBD)
 C******************************************************************************
@@ -7112,7 +7102,7 @@ C******************************************************************************
 C
 #include "cbirea.h"
       LOGICAL SEG,SPHER
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+      DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK)

@@ -228,7 +228,7 @@ C
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECPRI(IFRP),WORK(KJVEC),NORB(IFRP),
      &              -NPSH(IFRP),NESH(IFRP),IFRP,NVEC)
-        CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
+        CALL ORBCNT(WORK(KJVEC),NVEC,NPSH(IFRP),NESH(IFRP),NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
 C
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
@@ -773,7 +773,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ORBCNT(JVEC,NVEC,IFRP,NPVEC,NEVEC)
+      SUBROUTINE ORBCNT(JVEC,NVEC,NNEG,NPOS,NPVEC,NEVEC)
 C***********************************************************************
 C     Find number of electronic/positronic vectors
 C
@@ -783,7 +783,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION JVEC(NVEC)
-#include "dcborb.h"
 C
       NPVEC = 0
       NEVEC = 0
@@ -791,16 +790,16 @@ C
       DO 10 I = 1,NVEC
         J = JVEC(I)
 C
-C       Positronic orbital in range [-NPSH(IFRP),-1]
+C       Positronic orbital in range [-NNEG(IFRP),-1]
 C
-        IF    (J.LT.0.AND.J.GE.(-NPSH(IFRP))) THEN
+        IF    (J.LT.0.AND.J.GE.(-NNEG)) THEN
           II       = II + 1
           JVEC(II) = J
           NPVEC    = NPVEC + 1
 C
-C       Electronic orbital in range [1,NESH(IFRP)]
+C       Electronic orbital in range [1,NPOS]
 C
-        ELSEIF (J.GT.0.AND.J.LE.NESH(IFRP)) THEN
+        ELSEIF (J.GT.0.AND.J.LE.NPOS) THEN
           II       = II + 1
           JVEC(II) = J
           NEVEC    = NEVEC + 1
@@ -1715,7 +1714,7 @@ C       Generate pointer array for bases
 C       Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-          CALL SELOWC(INUC,CMO(ICMO),IDIM(3,IFRP),NCMO,
+          CALL SELOWC(NZ,CMO(ICMO),IDIM(3,IFRP),NCMO,
      &              IDIM(1,IFRP),IDIM(2,IFRP),
      &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
      &              WORK(KVEC(IFRP)),WORK(KBAS),
@@ -1749,9 +1748,9 @@ C       Select boson irrep information
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selow2 */
-      SUBROUTINE SELOWC(INUC,CMO,KBAS,KORB,KPSH,KESH,
-     &                  CBUF,MBAS,MORB,
-     &                  JVEC,JBAS,NPVEC,NEVEC)
+      SUBROUTINE SELOWC(NZ,CMO,KBAS,KORB,KPSH,KESH,
+     &                     CBUF,MBAS,MORB,
+     &                     JVEC,JBAS,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of vectors from CMO according to array JVEC
 C
@@ -1761,10 +1760,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 C
       DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*),
      &          JBAS(*)

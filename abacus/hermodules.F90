@@ -1112,7 +1112,7 @@
      &               ALPHA(:,:,:),                                      &
      &               CPRIM(:,:,:,:),                                    &
      &               CPRIMU(:,:,:,:)
-      INTEGER,ALLOCATABLE :: NONT(:),JCO(:,:,:),JCO2(:,:),IBLOCK(:),    &
+      INTEGER,ALLOCATABLE :: JCO(:,:,:),JCO2(:,:),IBLOCK(:),            &
      &                       NUC(:,:),IQM(:,:),NRC(:,:),NBLCK(:,:),     &
      &                       ISGEN(:)
       LOGICAL,ALLOCATABLE :: SEG(:,:)
@@ -1143,7 +1143,6 @@
       
       katom=count_atoms(firstatom)
 
-      ALLOCATE(NONT(KATOM))
       ALLOCATE(JCO(KANG,KATOM,KSETS))
       ALLOCATE(JCO2(KANG,KATOM))
       ALLOCATE(IBLOCK(MXBSETS))
@@ -1160,7 +1159,6 @@
       
 !     JHS050707 TMP Initialization (NEEDED?)
 
-      NONT=0
       JCO=0
       JCO2=0
       IBLOCK=0
@@ -1421,8 +1419,7 @@
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
-         CALL SYMADD(WORK,LWORK,basindex,NSYMOP,NONT,KATOM,KASYM,       &
-     &               CLASS,.false.)
+         CALL SYMADD(WORK,LWORK,basindex,KATOM,KASYM,CLASS,.false.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
 !
@@ -1444,7 +1441,7 @@
 !     ***** Process orbital and geometry input data *****
 !     ****************************************************
 !
-      CALL BASPRO(WORK,LWORK,basindex,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,&
+      CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
 !
@@ -1453,7 +1450,7 @@
 !     *************************************************
 !
 
-      CALL BASOUT(WORK,LWORK,basindex,NONT,IQM,NBLCK,JCO,BASREF,        &
+      CALL BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,                      &
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,      &
      &            KBLOCK,KPRIM,HERMIT, blk)
 !
@@ -1469,10 +1466,8 @@
 !     ****************************************
 !
 
-      IF (HERMIT) CALL WRONEL(TTITLE,basindex,NONT,IQM,IFXYZ,KATOM,JCO2,&
-     &                        KANG)
+      IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
 
-          DEALLOCATE(NONT)
           DEALLOCATE(JCO)
           DEALLOCATE(JCO2)
           DEALLOCATE(IBLOCK)

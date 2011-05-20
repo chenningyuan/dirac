@@ -6322,3 +6322,61 @@ C* for Newton-Raphsons method
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE INDEXFILL(INDEX,N,ISTART,INC)
+C***********************************************************************
+C
+C     Fill an index according to first element and increment, see below
+C
+C***********************************************************************
+      DIMENSION INDEX(N)
+      II = ISTART
+      DO I = 1,N
+        INDEX(I)=II
+        II=II+INC
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gatmat */
+      SUBROUTINE IPMAT(NR,NC,A,LDA,B,LDB,INDR,INDC)
+C***********************************************************************
+C     This routine will transfer elements from matrix B to matrix A
+C     according to row and column pointers INDR and INDC
+C
+C	Written by T.Saue, March 2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION A(LDA,*),B(LDB,NC),INDR(NR),INDC(NC)
+      DO J = 1,NC
+        JJ = INDC(J)
+        DO I = 1,NR
+          II = INDR(I)
+          A(II,JJ)=B(I,J)
+        ENDDO
+      ENDDO
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE REVINDEX(ILIST,NI,JLIST,NJ)
+C***********************************************************************
+C     Make reverse indexing for elements of ILIST.GE.0
+C     Written by T. Saue March 31 2011
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION ILIST(NI),JLIST(NJ)
+      J = 0
+      DO I = 1,NI
+      IF(ILIST(I).GE.0) THEN
+        J = J + 1
+        IF(J.GT.NJ) CALL QUIT('REVINDEX: Out of bounds !')
+        JLIST(J) = I
+      ENDIF
+      ENDDO
+      RETURN
+      END

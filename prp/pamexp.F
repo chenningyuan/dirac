@@ -1214,13 +1214,13 @@ C
       IPB = 1
       DO 10 IFRP = 1,NFSYM
         IF(NMO(IFRP).EQ.0) GOTO 10
-        CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),D1,D0,
+        CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),NZ,D1,D0,
      &              BVEC(IPB),NFO(IFRP),NMO(IFRP),
      &              1,NISH(IFRP),NFO(IFRP))  
         ISTART = NISH(IFRP)+1
         DO IOPEN = 1,NOPEN
           NVEC = NACSH(IFRP,IOPEN)
-          CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),DF(IOPEN),D1,
+          CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),NZ,DF(IOPEN),D1,
      &                BVEC(IPB),NFO(IFRP),NMO(IFRP),
      &                ISTART,NVEC,NFO(IFRP))  
           ISTART = ISTART + NVEC

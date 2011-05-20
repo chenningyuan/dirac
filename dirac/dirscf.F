@@ -451,16 +451,23 @@ C
 C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
-C
-C     1) - using trial vectors
-C     -------------------------
-C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
 CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
 
-      IF(TRIVEC) THEN
+C
+C     1) - atomic start
+C     -------------------------
+      IF(ATOMST) THEN
+        CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
+        CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
+     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+C
+C     2) - using trial vectors
+C     ------------------------
+C
+      ELSEIF(TRIVEC) THEN
 C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
@@ -485,7 +492,7 @@ C        Generate density matrix/matrices
 C        Be aware: All density matrices are normalized to 1,
 C                  occupation is in the DF(*) factor
 C
-         CALL DENMAT(DMAT,CMO,IPRSCF)
+        CALL DENMAT(DMAT,CMO,IPRSCF)
 C
 C       Differential density matrix approach
 C
@@ -560,8 +567,6 @@ C
         TDXC = SECOND()
         TDF2 = TDXC - TDF2
 
-
-
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
  
@@ -583,12 +588,8 @@ C
      &                                (dirac_cfg_fde .and. update_vemb),
      &                        xc_do_fde_response    =
      &                                           dirac_cfg_fde_response)
-           
            tdxc = second() - tdxc
         end if
-
-
-
 C
 C       Solvent contribution
 C
@@ -635,7 +636,7 @@ C
 C     Calculate correction according to the One-center app. models 
 C     ============================================================
 C
-        IF (TRIVEC) THEN
+        IF (TRIVEC.OR.ATOMST) THEN
            IF (ONECAP.AND. .NOT.SMLV1C) THEN
               CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
            END IF 
@@ -2196,7 +2197,7 @@ C
 CTROND
       CALL DZERO(DMAT,N2BBASXQ)     
       JOFF = NPSH(IFRP) + JVEC
-      CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),D1,D0,
+      CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,
      &              CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              JOFF,NVEC,NFBAS(IFRP,0))
 C
@@ -3188,7 +3189,8 @@ C
         CALL  NUMLST(VECMVO(IFRP),WORK(KVEC(IFRP,1)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &               IFRP,NVEC(IFRP,0))
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NVEC(IFRP,0),IFRP,
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NVEC(IFRP,0),
+     &              NPSH(IFRP),NESH(IFRP),
      &              NVEC(IFRP,2),NVEC(IFRP,1))
         NVEC(IFRP,0) = NVEC(IFRP,1) + NVEC(IFRP,2)
         CALL MEMREL('DENMVO',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
@@ -3219,7 +3221,7 @@ CTROND
       CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,D1,D0,
      &              BUF(ICMV(I)+1),NFBAS(I,0),NVEC(I,0),
      &              1,NVEC(I,0),NFBAS(I,0))
    10 CONTINUE
@@ -3291,11 +3293,19 @@ C     ***************************************
 C     **** Looking for old wave function ****
 C     ***************************************
 C
+C
+C     * ATOMST: Atomic start
+C     ------------------------------------------------
+C
+      IF(ATOMST) THEN
+        BARNUC = .FALSE.
+        CACC    = 'Atomic s'
+      ENDIF
+C
 C     * TRIFCK: Looking for old 2-electron Fock matrix
 C     ------------------------------------------------
 C
       IF(TRIFCK.AND.NASHT.GT.0) THEN
-C         jth April 98
          WRITE(LUPRI,'(/A/A/)') '*** WARNING *** '//
      &      'Trial 2-electron Fock matrix not possible for open shell.',
      &      'Looking for trial vectors instead'
@@ -3342,10 +3352,7 @@ C     **** Looking for cycle history ****
 C     ***********************************
 C
       INQUIRE(FILE='DFCYCL',EXIST=TOBE)
-CMI   TOBE = TOBE.AND.(TRIVEC.OR.TRIFCK)
-
 CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
-C     IF (.NOT.FD2CMO) TOBE = TOBE.AND.(TRIVEC.OR.TRIFCK)
       IF (.NOT.RESTFCK) TOBE = TOBE.AND.(TRIVEC.OR.TRIFCK)
 
       IF(TOBE) THEN
@@ -3362,8 +3369,6 @@ C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL
 #endif
-
-C       IF (FD2CMO) THEN
         IF (RESTFCK) THEN
          IF (DO4C2C) THEN
           WRITE(LUPRI,'(/2X,A/)')
@@ -3435,7 +3440,7 @@ C
         NITER  = 1
         OPEN(LUCYCL,FILE ='DFCYCL',STATUS='UNKNOWN',
      &     ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
-        IF(TRIVEC) CALL INTCON(INTFLG,INTBUF,INTDEF,
+        IF(TRIVEC.OR.ATOMST) CALL INTCON(INTFLG,INTBUF,INTDEF,
      &                  DUMMY,CNVINT,NITER,ITRINT,DHF_INTTYP)
       ENDIF
 C
@@ -4577,7 +4582,7 @@ C
         ISTART = NPSH(I)+NISHMF(I)+1
         DO IOPEN = 1,NOPEN
           IF(OLEV(IOPEN).NE.D0) THEN
-            CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+            CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              OLEV(IOPEN),D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NACSHMF(I,IOPEN),NTMO(I))
@@ -4586,7 +4591,7 @@ C
         ENDDO
         NVEC = NESH(I) - NOCCMF(I)
         IF(DLSHIF.NE.D0) THEN
-          CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+          CALL DENST1(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &              DLSHIF,D1,
      &              CMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              ISTART,NVEC,NTMO(I))
@@ -5044,4 +5049,203 @@ C.....  Rotate orbitals into place
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for atomic start
+C     NNEG - number of positronic solutions
+C     NPOS - number of electronic solutions
+C     NBAS - number of AO-basis functions
+C
+C***********************************************************************
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "mxcent.h"
+C
+#include "dcbdhf.h"
+#include "dcbatom.h"
+#include "nuclei.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
+C.....Local variables
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      INTEGER NNEG,NPOS,NBAS
+C
+      KFRSAV=KFREE
+C.....Say hello
+      IF(IPRINT.GE.1) THEN
+        CALL HEADER('Atomic start',-1)
+      ENDIF
+C.....Initialize buffer density matrix
+      NDMAT=NTBAS(0)*NTBAS(0)*NZ
+      NDBUF=NTBAS(0)*NTBAS(0)*4
+      CALL MEMGET('REAL',KDBUF,NDBUF,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KDBUF),NDBUF)
+C.....Loop over atomic types
+      LUATOM=137
+      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      ICENT = 1
+      DO IATOM = 1,NONTYP
+C.......Find the total number of basis functions for this atom type
+        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+C.......Read atomic coefficients in C1 format
+        INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
+        IF(.NOT.TOBE) THEN
+           WRITE(LUPRI,'(A,A6,A)') 
+     &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),
+     &     ' not found !'
+           CALL QUIT
+     &     ('ATOMIC_START: Atomic coefficient file not found !')
+        ENDIF
+        CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
+        READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+C.......add test fro NSYM
+        IF(NBAS.NE.MBAS) THEN
+           WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
+     &     'ATOMIC_START: ',
+     &     'Wrong number of basis function for atomic type ',IATOM,
+     &     'Correct number          : ', MBAS,
+     &     'Number read from ',ATOMFIL(IATOM),' : '  ,NBAS
+           CALL QUIT
+     &     ('ATOMIC_START: Wrong number of basis functions !')
+        ENDIF
+        IF(IPRINT.GE.1) THEN
+          WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
+          WRITE(LUPRI,*) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+        ENDIF
+        NAORB  = NNEG+NPOS
+        NACMO  = NBAS*NAORB
+        NACMOQ = NACMO*4
+        NADEN  = NBAS*NBAS*4
+        CALL MEMGET('REAL',KADE,NADEN ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCMO,NACMOQ,WORK,KFREE,LFREE)
+        CALL READT(LUATOM,NACMOQ,WORK(KCMO))
+C.......Loop over closed/open shells and construct contribution to atomic density matrix
+        CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
+        NDIM=MAX(NAORB,NBAS)
+        CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
+        FAC = D0
+        DO ISHELL = 1,NVECATOM(IATOM)
+          NSEL=1
+          CALL NUMLS1(VECATOM(ISHELL,IATOM),WORK(KVEC),
+     &        NAORB,-NNEG,NPOS,NSEL,WORK(KIBUF))
+          CALL ORBCNT(WORK(KVEC),NSEL,NNEG,NPOS,NPVEC,NEVEC)
+          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*4,WORK,KFREE,LFREE)
+          CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
+          CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
+     &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
+     &                 NPVEC,NEVEC)
+CTROND: C1 test
+C          WRITE(LUPRI,'(A)') '* Atomic coefficients'
+C          CALL PRQMAT(WORK(KCMO),NBAS,NSEL,NBAS,NBAS,
+C     &              NZ,IPQTOQ(1,0),LUPRI)
+C          WRITE(LUPRI,'(A)') '* Selected Atomic coefficients'
+C          CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
+C     &              NZ,IPQTOQ(1,0),LUPRI)
+          CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+     &                WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+          FAC = D1
+          CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
+        ENDDO
+C.......Now we have the atomic density matrix. 
+C       Put all contributions from this atomic type into the 
+C       molecular C1 density matrix
+        CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
+     &                   NUCDEG(ICENT),
+     &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
+     &                   WORK,KFREE,LFREE)
+CTROND: C1 test
+C        CALL DCOPY(NADEN,WORK(KADE),1,DMAT,1)
+C        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+C        CALL PRQMAT(DMAT,NBAS,NBAS,NBAS,NBAS,
+C     &              NZ,IPQTOQ(1,0),LUPRI)
+C.......Release memory        
+        CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
+        CLOSE(LUATOM,STATUS='KEEP')
+        ICENT = ICENT+NONT(IATOM)
+      ENDDO
+C
+      IF(NBSYM.EQ.1) THEN
+        CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
+      ELSE
+        CALL DZERO(DMAT,NDMAT)
+        IREP = 0
+        IOFF = 0
+        NOFF = NTBAS(0)*NTBAS(0)
+        DO IZ = 1,4
+           IREPD = IRQMAT(IZ,IREP)
+           IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+           IPQ   = IQTOPQ(IQ,IREP)
+CTROND
+           WRITE(6,*) 'DTAOSO: ',IREPD,IQ,IPQ        
+           CALL DTAOSO(WORK(KDBUF+IOFF),DMAT(1,1,IPQ),NTBAS(0),
+     &                 IREPD,IPRINT)
+           IOFF = IOFF + NOFF
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NSYMIND,NDEG,
+     &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
+     &                       WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Put an atomic block into a molecular matrix
+C       NSYMIND     - number of symmetry-independent centers of this type
+C       NDEG(ICENT) - degeneracy of symmetry-independent center ICENT
+C
+C     Written by T. Saue March 31 2011
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION AMOL(NBAS,NBAS,4),ATOM(LR,LC,4),NDEG(*),
+     &          WORK(*)
+      KFRSAV=KFREE
+      ICENT=INUC
+      CALL MEMGET('INTE',KRBUF,NBAS,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
+      DO ITYP = 1,NSYMIND
+        DO IDEG = 1,NDEG(ICENT)
+          CALL LABCOUNT(N1,WORK(KRBUF),NBAS,1,IR_CLS,ICENT,IDEG,-1)
+          IF(N1.NE.NR) THEN
+            WRITE(6,'(A,2(/A,I5))') 
+     &                'PUT_AOBLOCK: Error in row number',
+     &                'Expected  : ',NR,
+     &                'Found     : ',N1
+            CALL QUIT('PUT_AOBLOCK: Error in row number !')
+          ENDIF
+          CALL REVINDEX(WORK(KRBUF),NBAS,WORK(KIBUF),NR)
+          CALL LABCOUNT(N2,WORK(KCBUF),NBAS,1,IC_CLS,ICENT,IDEG,-1)
+          IF(N2.NE.NC) THEN
+            WRITE(6,'(A,2(/A,I5))') 
+     &                'PUT_AOBLOCK: Error in column number',
+     &                'Expected  : ',NC,
+     &                'Found     : ',N2
+            CALL QUIT('PUT_AOBLOCK: Error in column number !')
+          ENDIF
+          CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
+          DO IZ = 1,4
+            CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
+     &                 WORK(KIBUF),WORK(KJBUF))
+          ENDDO
+        ENDDO
+        ICENT = ICENT + 1
+      ENDDO
+      CALL MEMREL('PUT_AOBLOCK',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
 
+
+      
+
+      

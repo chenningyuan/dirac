@@ -472,14 +472,14 @@ C             Transform Fock matrix to current orthonormal MO-basis
             ENDIF
 C...........closed shell
             ISTART=NPSHMF(I)+1
-            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+            CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &                  D1,D0,
      &                  EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                  ISTART,NISHMF(I),NTMO(I))
 C...........open shells
             ISTART = ISTART+NISHMF(I)
             DO IOPEN = 1,NOPEN
-              CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+              CALL DENST1(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
      &                    DF(IOPEN),D1,
      &                    EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                    ISTART,NACSHMF(I,IOPEN),NTMO(I))
