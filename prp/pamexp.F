@@ -977,42 +977,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck getiopen */
-      INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
-C***********************************************************************
-C     
-C     Which shell does electron orbital IORBITAL belong to?
-C
-C     Written by J. Thyssen - Feb 11 1999
-C     
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbdhf.h"
-#include "dcborb.h"
-C
-      IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN(neg)')
-C
-      IF (IORBITAL .LE. NISH(IFRP)) THEN
-         GETIOPEN = 0
-         RETURN
-      END IF
-C
-      ILOW = NISH(IFRP)+1
-      DO IOPEN = 1,NOPEN
-         IHIGH = ILOW + NACSH(IFRP,IOPEN)
-         IF ( (IORBITAL .GE. ILOW) .AND. (IORBITAL .LE. IHIGH) ) THEN
-            GETIOPEN = IOPEN
-            RETURN
-         END IF
-         ILOW = IHIGH+1
-      END DO
-      CALL QUIT('illegal value in GETIOPEN(pos)')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_nef */
       SUBROUTINE NUC_EFN(IPRINT,DOATOM,EFNNUC,GEOM)
 C***********************************************************************
@@ -1114,7 +1078,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D2=2.0D0,D0=0.0D0,DTOL=1.0D-4)
+      PARAMETER(D2=2.0D0,D0=0.0D0,DTOL=1.0D-8)
 C
 #include "dgroup.h"
 #include "dcbxpr.h"

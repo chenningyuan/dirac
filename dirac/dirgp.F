@@ -4242,4 +4242,41 @@ C.....If active, search third value
 C
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck getiopen */
+      INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
+C***********************************************************************
+C     
+C     Which shell does electron orbital IORBITAL belong to?
+C
+C     Written by J. Thyssen - Feb 11 1999
+C     
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbdhf.h"
+#include "dcborb.h"
+C
+      IF (IORBITAL .LT. 1)
+     &   CALL QUIT('illegal value in GETIOPEN(neg)')
+C
+      IF (IORBITAL .LE. NISH(IFRP)) THEN
+         GETIOPEN = 0
+         RETURN
+      END IF
+C
+      ILOW = NISH(IFRP)+1
+      DO IOPEN = 1,NOPEN
+      IF(NACSH(IFRP,IOPEN).GT.0) THEN
+         IHIGH = ILOW + NACSH(IFRP,IOPEN)
+         IF ( (IORBITAL .GE. ILOW) .AND. (IORBITAL .LE. IHIGH) ) THEN
+            GETIOPEN = IOPEN
+            RETURN
+         END IF
+         ILOW = IHIGH+1
+      ENDIF
+      END DO
+      CALL QUIT('illegal value in GETIOPEN(pos)')
+      RETURN
+      END
