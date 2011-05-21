@@ -220,10 +220,17 @@ f.close()
 class run:
      def __init__(self, test, line, kind):
          self.test = test
-         self.inp  = line.split()[0]
-         self.mol  = line.split()[1]
          self.kind = kind
          pam_flags = ''
+
+         if (line.split()[0] == 'noref'):
+             self.noref = True
+             self.inp   = line.split()[1]
+             self.mol   = line.split()[2]
+         else:
+             self.noref = False
+             self.inp   = line.split()[0]
+             self.mol   = line.split()[1]
 
          # pretty please no timeout when executed interactively
          if not executed_from_subdir:
@@ -384,6 +391,7 @@ def main(*args):
     nr_crashed       = 0
     nr_failed        = 0
     nr_without_ref   = 0
+    nr_marked_noref  = 0
     nr_bad_filter    = 0
     global_elapsed   = 0.0
 
@@ -431,8 +439,12 @@ def main(*args):
                         nr_failed += 1
 
                 else:
-                    result_text = 'NO REF'
-                    nr_without_ref += 1
+                    if task.noref:
+                        result_text = '(noref)'
+                        nr_marked_noref += 1
+                    else:
+                        result_text = 'NO REF'
+                        nr_without_ref += 1
             else:
                 result_text = 'CRASH'
                 nr_crashed += 1
@@ -475,6 +487,8 @@ def main(*args):
          print '         %5i without reference' % nr_without_ref
     if nr_bad_filter > 0:
          print '         %5i with bad filter'   % nr_bad_filter
+    if nr_marked_noref > 0:
+         print '         %5i marked as noref'   % nr_marked_noref
     print
 
     global_elapsed_str = time.strftime('%Hh%Mm%Ss', time.gmtime(global_elapsed))
