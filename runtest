@@ -466,7 +466,7 @@ def main(*args):
         testname_0 = testname_1
 
     print
-    print 'summary: %5i ok'                % nr_ok
+    print 'summary: %5i ok'                     % nr_ok
     if nr_failed > 0:
          print '         %5i failed'            % nr_failed
     if nr_crashed > 0:
@@ -481,7 +481,7 @@ def main(*args):
     print 'total time: %s\n' % global_elapsed_str
 
     # return code
-    if (nr_failed + nr_crashed) > 0 :
+    if (nr_failed + nr_crashed + nr_without_ref + nr_bad_filter) > 0 :
         return 1
     else:
         return 0
