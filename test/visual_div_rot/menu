@@ -1,4 +1,4 @@
-response_1z_bz.inp         co.mol --outcmo --get=PAMXVC
+noref response_1z_bz.inp         co.mol --outcmo --get=PAMXVC
 visual_1z_bz.inp           co.mol --incmo  --copy=PAMXVC
 visual_1z_bz_only_para.inp co.mol --incmo  --copy=PAMXVC
 visual_divj.inp            co.mol --incmo  --copy=PAMXVC
