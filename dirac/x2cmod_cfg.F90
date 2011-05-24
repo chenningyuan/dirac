@@ -27,11 +27,12 @@ module x2cmod_cfg
 
 ! parameters
 
-  integer, parameter, public :: x2c_funit    =  25    ! file unit for X2CMAT
-  integer, parameter, public :: x2c_fscru    =  26    ! file unit for x2cscr
-  integer, parameter, public :: x2c_fh1dirty =  98    ! file unit for x2c_h1_dirty
-  integer, parameter, public :: x2c_Sao_scrF =  88
-  integer, parameter, public :: x2c_famfi    =  77
+  integer, parameter, public :: x2c_funit       =  25    ! file unit for X2CMAT
+  integer, parameter, public :: x2c_fscru       =  26    ! file unit for x2cscr
+  integer, parameter, public :: x2c_fh1dirty    =  98    ! file unit for x2c_h1_dirty
+  integer, parameter, public :: x2c_Sao_scrF    =  88
+  integer, parameter, public :: x2c_lowdin_scrF =  99    ! file unit for scratch file containing the 4c-Lowdin matrix
+  integer, parameter, public :: x2c_famfi       =  77
 
 ! character block
 
@@ -75,9 +76,9 @@ module x2cmod_cfg
   integer, public :: nr_ao_all(2)
   integer, public :: nr_ao_l(2)
   integer, public :: nr_ao_s(2)
-! integer, public :: nr_mo_lw_all(2)
-! integer, public :: nr_mo_lw_l(2)
-! integer, public :: nr_mo_lw_s(2)
+  integer, public :: nr_mo_lw_all(2)
+  integer, public :: nr_mo_lw_l(2)
+  integer, public :: nr_mo_lw_s(2)
   integer, public :: ioff_aomat_x(2,2)
   integer, public :: x2c_cb_pq_to_uq(4, 0:7)
   integer, public :: x2c_cb_uq_to_pq(4, 0:7)
@@ -91,5 +92,7 @@ module x2cmod_cfg
   integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4)
   integer, public :: x2c_pointer_quat_op(0:7)
   integer, public :: x2c_max_quant_num
+  integer, public :: scf_iter_counter
+  integer, public :: diis_counter
 
 end module

@@ -76,6 +76,7 @@ contains
                                     op_bs_to_fs,            &
                                     spherical_on,           &
                                     fragment_x2c,           &
+                                    basic_h1mat,            &
                                     print_lvl)
 !**********************************************************************
 !
@@ -104,6 +105,7 @@ contains
      integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: is_fragment
      integer, intent(inout) :: is_final_ham_lvl
+     integer, intent(in)    :: basic_h1mat
      integer, intent(in)    :: add_amfi_contrib
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
@@ -191,6 +193,11 @@ contains
                          ipq_off_in,                       &
                          print_lvl)
 
+!          debug print
+           if(print_lvl > 1)then
+             call print_x2cmat(h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f,naosh_ls,nz,ipq_off_in(1,0),          &
+                               'x2c - h1_inf_2c-AO',6,.true.)
+           end if
 
          end if
 
@@ -238,38 +245,52 @@ contains
 !                                          |
 !                                          n ("no amfi") == final Hamiltonian integrals
 
-!        select LL-block of h1_inf_2c
-         call pick_LL_block_saao_bas(h1_2cinf_saao,       &
-                                     scr_mat2,            &
-                                     naosh_L,             &
-                                     naosh_all,           &
-                                     naosh_ls,            &
-                                     nr_ao_L,             &
-                                     nfsym,               &
-                                     nz,                  &
-                                     0,                   &
-                                     op_bs_to_fs)
+         if(basic_h1mat == 2)then ! basic h1-mat == 4c-fock operator
 
-!        debug print
-         if(print_lvl > 1)then
-           call print_x2cmat(scr_mat2,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - h1_inf_2c-AO',6)
-         end if
+           do i = 1, nfsym
+             nbas1_f  = naosh_all(i)
+             if(naosh_all(i) > 0)then
+               write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
+               call x2c_write(flabel,h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f*naosh_ls*nz,x2c_file_scr)
+             end if
+           end do
 
-         if(spherical_on)then
-
-!          set pointer to WORK array and allow full length for allocations
-           lwrk = is_len_wrk
-           call sel_wrk_x2c(wrk,lwrk) 
-           call sph_iotc(scr_mat2,h1_2cinf_saao,nr_sph,print_lvl,wrk,lwrk)
-!          reset pointer to WORK array
-           call desel_wrk_x2c(wrk,lwrk)
-
-           call x2c_write(flabel,h1_2cinf_saao,nr_sph**2  * nz,x2c_file_glb)
          else
-           call x2c_write(flabel,scr_mat2     ,nr_ao_L**2 * nz,x2c_file_glb)
-         end if
 
-       end if
+!          select LL-block of h1_inf_2c
+           call pick_LL_block_saao_bas(h1_2cinf_saao,       &
+                                       scr_mat2,            &
+                                       naosh_L,             &
+                                       naosh_all,           &
+                                       naosh_ls,            &
+                                       nr_ao_L,             &
+                                       nfsym,               &
+                                       nz,                  &
+                                       0,                   &
+                                       op_bs_to_fs)
+
+!          debug print
+           if(print_lvl > 1)then
+             call print_x2cmat(scr_mat2,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - h1_inf_2c-AO-LL',6)
+           end if
+
+           if(spherical_on)then
+  
+!            set pointer to WORK array and allow full length for allocations
+             lwrk = is_len_wrk
+             call sel_wrk_x2c(wrk,lwrk) 
+             call sph_iotc(scr_mat2,h1_2cinf_saao,nr_sph,print_lvl,wrk,lwrk)
+!            reset pointer to WORK array
+             call desel_wrk_x2c(wrk,lwrk)
+
+             call x2c_write(flabel,h1_2cinf_saao,nr_sph**2  * nz,x2c_file_glb)
+           else
+             call x2c_write(flabel,scr_mat2     ,nr_ao_L**2 * nz,x2c_file_glb)
+           end if
+
+         end if ! basic_h1mat
+
+       end if ! amfi contributions 
 
   end subroutine get_h1_inf_2c_saao_bas
 

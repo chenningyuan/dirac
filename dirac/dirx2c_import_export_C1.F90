@@ -90,8 +90,8 @@ contains
          call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-DIRAC-phase',6)
        end if
 
-!      b. transform hamiltonian integral elements from DIRAC-sorted AO to Hermit-sorted AO basis
-!      -----------------------------------------------------------------------------------------
+!      b. transform hamiltonian elements from DIRAC-sorted AO to Hermit-sorted AO basis
+!      --------------------------------------------------------------------------------
        call bstobu_no_work(h1_saao,nr_quat)
 
 !      debug print
@@ -239,6 +239,7 @@ contains
 
 !      a. insert quaternion phase factors
 !      ----------------------------------
+       print *,'total matrix size is ==> ',nr_ao_total_x2c*nr_ao_large_x2c
        if(nr_quat < 4)then
          do iz = 1, nr_quat
            iq = x2c_cb_pq_to_uq(iz,0)

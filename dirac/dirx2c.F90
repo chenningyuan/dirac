@@ -204,6 +204,9 @@ contains
                           prop_idummy,          &
                           prop_cdummy)
 
+!        set logical value for matrices (Lowdin and others) to be adapted for linear symmetry
+         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.x2c_linsym)
+
 !        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
          call alloc(xmat   ,nr_ao_total_x2c**2 * nr_quat)
          xmat    = x2c_d0
@@ -225,13 +228,78 @@ contains
          call get_Sao_LL_mat(xmat,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
 !                                                       ^ (compute+write if >= 0)
 !        ------------------------------------------------------------------------------
-!        step 1.2: get LOWDIN matrix for fragment "is_center_x2c"
+!        step 1.2: get LOWDIN matrix for fragment "is_center_x2c".
+!                  1.2.a. get the 4c-Lowdin matrix
+!                  1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
 !        ------------------------------------------------------------------------------
 
+!        step 1.2.a. get the 4c-Lowdin matrix
+!        ------------------------------------
          lwrk = len_wrk_f77_x2c - is_allocated_dyn
          call sel_wrk_x2c(wrk,lwrk)
          call lowdin(xmat,wrk,lwrk,x2c_prt)
          call desel_wrk_x2c(wrk,lwrk)
+
+!        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
+         j                               = nr_ao_total_x2c**2 * nr_quat
+         if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
+         call alloc(scr2mat,nr_ao_total_x2c**2 * nr_quat)
+         call alloc(scr1mat,j)
+         call alloc(eigvl  ,nr_ao_total_x2c)
+
+         scr1mat = x2c_d0
+         scr2mat = x2c_d0
+         eigvl   = x2c_d0
+
+!        set maximum allowed length of wrk array allocations
+         is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
+         lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
+
+!        step 1.2.b. get the 2c-Lowdin matrix
+!        ------------------------------------
+         if(x2c_is_defining_h1mat == 2)then
+!          construct the two-component Lowdin matrix
+!          initialize lowdin dimensions
+           call init_x2c_cb(.false.,           &
+                            atom_by_atom_x2c,  &
+                            is_center_x2c,     &
+                            prop_idummy,       &
+                            prop_idummy,       &
+                            prop_cdummy)
+
+!          open temporary scratch file for 4c-Lowdin matrix
+           open(x2c_lowdin_scrF,file='X2C_lowdin_scr',status='replace',form='unformatted',    &
+                access='sequential',action="readwrite",position='rewind')
+           call x2c_write(flabel,x2c_dummy,-1,x2c_lowdin_scrF)
+
+!          store the 4c-Lowdin matrix temporarily
+           call x2c_write('x2c-4clowdin',xmat,nr_ao_total_x2c*nr_ao_total_x2c,x2c_lowdin_scrF)
+
+           call x2c_lowd2c(xmat,               &
+                           scr1mat,            &
+                           scr2mat,            &
+                           eigvl,              &
+                           dim_pshell,         &
+                           dim_eshell,         &
+                           nr_ao_l,            &
+                           nr_ao_s,            &
+                           nr_ao_all,          &
+                           nr_mo_lw_l,         &
+                           nr_mo_lw_s,         &
+                           nr_mo_lw_all,       &
+                           nr_ao_total_x2c,    &
+                           nr_fsym,            &
+                           nr_quat,            &
+                           lwrk,               &
+                           is_center_x2c,      &
+                           x2c_funit,          &
+                           lin_aomo_mat_req)         
+
+!          recover the 4c-Lowdin matrix
+           call x2c_read('x2c-4clowdin',xmat,nr_ao_total_x2c*nr_ao_total_x2c,x2c_lowdin_scrF)
+           close(x2c_lowdin_scrF,status="delete")
+
+         end if
 
 !        ------------------------------------------------------------------------------
 !        step 1.3: construct modified dirac equation in ON basis --> retrieve AOtoMO transformation matrices.
@@ -241,24 +309,10 @@ contains
 !              out: AOtoMO transformation matrices -> xmat, scr1mat
 !                                                   + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
 !        ------------------------------------------------------------------------------
-         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.x2c_linsym)
 
-!        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
-
-         j = nr_ao_total_x2c**2 * nr_quat
-         if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
-         call alloc(scr2mat,nr_ao_total_x2c**2 * nr_quat)
-         call alloc(scr1mat,j)
-         call alloc(eigvl  ,nr_ao_total_x2c)
-         scr1mat = x2c_d0
-         scr2mat = x2c_d0
-         eigvl   = x2c_d0
-
-!        set maximum allowed length of wrk array allocations
-         is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
-         lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
          call sel_wrk_x2c(wrk,lwrk)
+
          call modham(scr1mat,                  &
                      xmat,                     &
                      scr2mat,                  &
@@ -339,6 +393,9 @@ contains
 
          close(x2c_Sao_scrF,status="delete")
 
+         if(x2c_is_defining_h1mat == 2)then 
+           call quit('bla bla... x2ctra')
+         end if
 !        --------------------------------------------------------------------------------------------------
 !        step 1.6: add AMFI contributions in case
 !                  h1 == bare-nucleus 1e Dirac-Hamiltonian (or extended Huckel guess) .and. AMFI is desired
@@ -551,17 +608,14 @@ contains
 
 !      step 2: store the hamiltonian for which the 4c-->2c transformation 
 !              should be done on file (== basic "h1_4c" in orthonormal MO basis) h1_4cON
+!               in: RKB AOtoMO transformation matrix ["SL resorted"] -> scr2mat
 !              out: - (nothing in matrices)
 !                   on file x2cscr: basic 4c-h1 in orthonormal basis under label "h1_4cON"
 !      ------------------------------------------------------------------------------
-!      for the time being, the basic "h1_4c" will always be the bare-nucleus h1 hamiltonian except 
-!      for the "4c-Dirac-Fock operator as basis" option which is not activated yet within
-!      this module. sknecht+tsaue: march 2011
-       basic_h1mat = 0
-       if(defining_h1mat == 2) then 
-         basic_h1mat = 2
-         call quit('bla bla... :)')
-       end if
+!      the basic "h1_4c" will always be the bare-nucleus h1 hamiltonian except 
+!      for the "4c-Dirac-Fock operator as basis" option. sknecht+tsaue: march 2011
+                               basic_h1mat = 0
+       if(defining_h1mat == 2) basic_h1mat = 2
        call x2c_get_h1_mat_base(xmat,                  &
                                 scr1mat,               &
                                 scr2mat,               &
@@ -664,6 +718,7 @@ contains
                                    op_bs_to_fs,             &
                                    spherical_on,            &
                                    fragment_x2c,            &
+                                   basic_h1mat,             &
                                    print_lvl)
 
 !      step 6: construct the picture-change transformation matrix in SA-AO basis
@@ -695,6 +750,34 @@ contains
                                       x2c_file_scr,        &
                                       x2c_file_glb,        &
                                       print_lvl)
+
+!      step 7: construct the Fock-operator in 2c-onMO basis 
+!
+!              in : on file x2cscr: 2c-fock operator in SA-AO basis
+!                   on file X2CMAT: 2c-Lowdin matrix
+!              out: -                         
+!                   on file X2CMAT: 2c-fock operator in onMO basis
+!                                   under the label h12cMOf
+!      ------------------------------------------------------------------------------
+#ifdef undef
+       if(basic_h1mat == 2)then
+         call construct_h1base_2c_onmo_bas(xmat,                &
+                                        scr1mat,             &
+                                        scr2mat,             &
+                                        eigvl,               &
+                                        norb_dim,            &
+                                        nesh_dim,            &
+                                        naosh_all,           &
+                                        naosh_L,             &
+                                        nfsym,               &
+                                        nz,                  &
+                                        ipq_off,             &
+                                        is_fragment,         &
+                                        x2c_file_scr,        &
+                                        x2c_file_glb,        &
+                                        print_lvl)
+       end if
+#endif
 
 !      free scratch memory
        call dealloc(eigvl)

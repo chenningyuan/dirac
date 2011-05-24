@@ -78,7 +78,7 @@ contains
 
 !             currently implemented: 
 !               - basic_h1mat == 0: case a. bare-nucleus 1-el Dirac-Hamiltonian
-!         TODO:(- basic_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
+!               - basic_h1mat == 2: case c. 4c-Fock-Dirac operator matrix
 !
 !----------------------------------------------------------------------
 !
@@ -101,86 +101,94 @@ contains
 !----------------------------------------------------------------------
      integer                :: ioff_osh1       
      integer                :: ioff_ao_o_sh1   
-     integer                :: ioff_h1_saao_mat
+     integer                :: ioff_ao_ao_sh1
      integer                :: i       
      integer                :: norb1_f       
      integer                :: nbas1_f
-     real(8)                :: mydummy(2)
+     integer                :: ndim_ao 
      character (len=12)     :: flabel
-     logical                :: skip_step1 = .false.
-     logical                :: fndlab12
      real(8), pointer       :: wrk(:)
      integer                :: lwrk
 !**********************************************************************
 
-       select case(basic_h1mat)
-
-       case(0)
-!        step 1: get the basic 4c-h1 matrix in SA-AO basis according to the value for basic_h1mat
+!      step 1: get the basic 4c-h1 matrix in SA-AO basis according to the value for basic_h1mat
 !
-!                in : basic_h1mat as integer value: 
-!                     0 == case a.; bare-nucleus 4c-h1 
-!                     2 == case c.; not defined yet --> could be 4c-Dirac-Fock matrix
-!                out: 4c-h1 matrix in SA-AO basis --> h1_saao_bas
-!        ------------------------------------------------------------------------------
-         call get_h1_4c_saao_basis(h1_saao_bas,            &
-                                   basic_h1mat,            &
-                                   linear_sym,             &
-                                   is_len_wrk,             &
-                                   print_lvl)
-!        debug print
-         if(print_lvl > 1)then
-           call print_x2cmat(h1_saao_bas,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-basic-saao',6)
+!              in : basic_h1mat as integer value: 
+!                   0 == case a.; bare-nucleus 4c-h1 
+!                   2 == case c.; 4c-Dirac-Fock matrix
+!              out: 4c-h1 matrix in SA-AO basis --> h1_saao_bas
+!      ------------------------------------------------------------------------------
+       call get_h1_4c_saao_basis(h1_saao_bas,            &
+                                 h1_onmo_bas,            &
+                                 tra_mat_4cAOMO,         &
+                                 naosh_ls,               &
+                                 naosh_all,              &
+                                 norb_dim,               &
+                                 nfsym,                  &
+                                 nz,                     &
+                                 ipq_off_in,             &
+                                 basic_h1mat,            &
+                                 linear_sym,             &
+                                 is_len_wrk,             &
+                                 x2c_file_scr,           &
+                                 print_lvl)
+
+!      step 2: transform the basic 4c-h1 to orthonormal MO basis
+!
+!              in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
+!              out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
+!      ------------------------------------------------------------------------------
+
+!      initialize matrix offsets
+       ioff_osh1      = 1
+       ioff_ao_o_sh1  = 1
+       ioff_ao_ao_sh1 = 1
+
+       do i = 1, nfsym
+ 
+!        set dimensions and special offsets for matrices accessed in the
+!        subroutine
+         nbas1_f = naosh_all(i)
+         norb1_f = norb_dim(i)
+         ndim_ao = naosh_all(i)
+
+!        the h1 matrices (1el-dirac or free-particle matrix) have a different storage mode
+!        in memory in saao basis than the 4c-fock operator
+         if(basic_h1mat /= 2)then
+           ioff_ao_ao_sh1 = ioff_aomx(i,i) + 1
+           ndim_ao        = naosh_ls
          end if
 
-!        step 2: transform the basic 4c-h1 to orthonormal MO basis
-!
-!                in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
-!                out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
-!        ------------------------------------------------------------------------------
+         if( norb_dim(i) > 0 )then
 
-!        initialize matrix offsets
-         ioff_osh1     = 1
-         ioff_ao_o_sh1 = 1
-
-         do i = 1, nfsym
-
-!          set dimensions and special offsets for matrices accessed in the subroutine
-           nbas1_f          = naosh_all(i)
-           norb1_f          = norb_dim(i)
-           ioff_h1_saao_mat = ioff_aomx(i,i)
-
-           if( norb_dim(i) > 0 )then
-
-
-             call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
-                                     h1_saao_bas(1+ioff_h1_saao_mat),   &
-                                     tra_mat_4cAOMO(ioff_ao_o_sh1),     &
-                                     naosh_ls,                          &
-                                     nbas1_f,                           &
-                                     norb1_f,                           &
-                                     nz,                                &
-                                     ipq_off_in,                        &
-                                     print_lvl)
-
+!          debug print
+           if(print_lvl > 1)then
+             call print_x2cmat(h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,nbas1_f,nz,ipq_off_in(1,0),      &
+                              'x2c - h1_4c-basic-saao',6)
            end if
 
-!          store the basic 4c-h1 in orthonormal basis on file (label == h1_4cON)
-           write(flabel,'(a7,i4,i1)') 'h1_4cON',is_fragment,i
-           call x2c_write(flabel,h1_onmo_bas(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
+           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
+                                   h1_saao_bas(ioff_ao_ao_sh1),       &
+                                   tra_mat_4cAOMO(ioff_ao_o_sh1),     &
+                                   ndim_ao,                           &
+                                   nbas1_f,                           &
+                                   norb1_f,                           &
+                                   nz,                                &
+                                   ipq_off_in,                        &
+                                   print_lvl)
 
-!          update offsets for matrices
-           ioff_ao_o_sh1 = ioff_ao_o_sh1 + nbas1_f * norb1_f * nz
-           ioff_osh1     = ioff_osh1     + norb1_f**2 * nz
+         end if
 
-         end do
+!        store the basic 4c-h1 in orthonormal basis on file (label == h1_4cON)
+         write(flabel,'(a7,i4,i1)') 'h1_4cON',is_fragment,i
+         call x2c_write(flabel,h1_onmo_bas(ioff_osh1),norb1_f**2 * nz,x2c_file_scr)
 
-       case(2)
+!        update offsets for matrices
+         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz
+         ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
+         ioff_osh1      = ioff_osh1      + norb1_f**2 * nz
 
-         call quit('*** error in x2c_get_h1: basic 4c-h1 matrix == 4c-FD not implemented yet in the new X2C module. ***')
-         
-       end select
-
+       end do
 
   end subroutine x2c_get_h1_mat_base
 

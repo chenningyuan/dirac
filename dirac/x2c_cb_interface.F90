@@ -70,6 +70,7 @@ contains
 #include "ccom.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
+#include "dcbdhf.h"
 #include "priunit.h"
 
 !   ----------------------------------------------------------------------------
@@ -112,6 +113,8 @@ contains
          if(x2c_4c_fock_mtx_defh1)then
 !          converged 4c-Fock-Dirac operator
            x2c_is_defining_h1mat  = 2
+           scf_iter_counter       = niter
+           diis_counter           = mxdiis
          else if(x2c_free_part_mtx_defh1)then
 !          free-particle matrix
            x2c_is_defining_h1mat  = 3
@@ -186,7 +189,7 @@ contains
            x2c_cspeed = cval
          end if
        else 
-!        if(is_center_x2c == -1)then
+         if(is_center_x2c == -1)then
            do i = 1, nprps
              prop_op_dgsym(i) = iprpsym(i)
              prop_op_trsym(i) = iprptim(i)
@@ -197,14 +200,14 @@ contains
 !            print'(a,2i4)','init prop: prop_op_trsym(i),iprptim(i)',prop_op_trsym(i),iprptim(i)
 !            print'(a,2a)','init prop: prop_op_name(i),prpnam(i)',prop_op_name(i),prpnam(i)
 !          end do
-!        else 
-!          do i = 1, nr_fsym
+         else 
+           do i = 1, nr_fsym
 !            orbital dimensions after LOWDIN (needed for a proper handling of 2c-LOWDIN matrix)
-!            nr_mo_lw_all(i) = nforb(i,0)
-!            nr_mo_lw_l(i)   = nforb(i,1)
-!            nr_mo_lw_s(i)   = nforb(i,2)
-!          end do
-!        end if
+             nr_mo_lw_all(i) = nforb(i,0)
+             nr_mo_lw_l(i)   = nforb(i,1)
+             nr_mo_lw_s(i)   = nforb(i,2)
+           end do
+         end if
        end if
 
   end subroutine

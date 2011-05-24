@@ -2741,16 +2741,12 @@ C         2) do picture change transformation of integrals on AOPROPER
         ELSE
 
           if(bss)then
-
 !           bss module (if asked for it can also perform an X2C transformation)
             CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
           else if(x2c)then
-
 !           optimized x2c module
             call x2c_driver(work(kfree),lfree,x2cmod_fragment_x2c,
      &                      1,.true.)
-
-!           call quit( '*** stop after x2c_driver run ***' )
           end if
 
         ENDIF
@@ -2760,6 +2756,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !       
 !       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       ------------------------------------------------------------------------------
+!       if(.false.)then
         if(.not.(twocompbss.or.x2c))then
 !       print *, 'gmotra: branch taken: Case 2.2b1'
 !         WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
@@ -2844,11 +2841,11 @@ C
         NPSHMF(IFRP) = NPSH(IFRP)
         NISHMF(IFRP) = NISH(IFRP)
         NOCCMF(IFRP) = NOCC(IFRP)
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+        I2TMT(IFRP)  = N2TMT
+        N2TMT        = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
         I2TMOT(IFRP) = N2TMOTQ
         N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
-        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
+        N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
       ENDDO
 C
 C     Copy information from NBORB to the subblock array if we have not
@@ -3100,7 +3097,11 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
 !       is_defining_h1mat is the control variable for the defining h1
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
-        if(is_defining_h1mat .gt. 3)then
+!       print *,'is_defining_h1mat is...',is_defining_h1mat
+        if(is_defining_h1mat.gt.3.or.
+     &    (is_defining_h1mat.eq.2.and.LSYMAD))then
+!       if(is_defining_h1mat.gt.3)then
+        print *,'go in here ...',ISIZE
           CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
 CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
@@ -3169,7 +3170,9 @@ C ...   always return non-linear symmetry adapted transformation matrix :
         CALL MEMREL('SLGROU1',WORK,KBUF1,KBUF1,KFREE,LFREE)
       ENDIF
 
-      IF(SLGROUP.and.(is_defining_h1mat .gt. 3))THEN
+      IF(SLGROUP.and.(is_defining_h1mat.gt.3.or.
+     &    (is_defining_h1mat.eq.2.and.LSYMAD)))THEN
+        print *,'go in here too ...'
 C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
         CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
         IF(IPRHAM.GE.5) THEN
@@ -5700,6 +5703,8 @@ C
 
 #include <memint.h>
 C
+!     iprham_save = iprham
+!     iprham      = 15
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
@@ -5726,6 +5731,7 @@ C
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRGEN)
+!    &            IPRHAM)
 
         IF (IPRHAM.GE.15) THEN
 
@@ -6075,6 +6081,7 @@ C
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
+!     iprham = iprham_save
       RETURN
  1000 FORMAT 
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')

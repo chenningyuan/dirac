@@ -75,6 +75,7 @@ C    ===========================================================================
 C    ... it's using the picture change transformation matrix obtained from the
 C    transformation of the Dirac bare nucleus or of the Fock-Dirac matrix
 C    (when USEDF=.true.)
+!     print *,'TWOCOMPBSS and I2COFK ==> ',TWOCOMPBSS , I2COFK
       IF (DO4C2C.AND..NOT.START2C) THEN
 
        IF (IPRHAM.GE.0) THEN
@@ -228,6 +229,7 @@ C     HAM2CL is the label of the two-comp. hamiltonian matrix to read
 C     ==================================================================
 C
 
+!     print *,'entered GETH2CAO, reading type  ==> ',I2COFK
 C     Select the label according to the I2COFK parameter
       IF      (I2COFK.EQ.1) THEN       
 C.... h2c from h_D(1)_4C ... DEFAULT ...    
@@ -255,6 +257,7 @@ C.... it's H1AO_DK or H1AO_DK2 in LL basis (ie pure two-component modus)
         CALL QUIT(
      &  'ONEFCK: Wrong value of the entering I2COFK!')
       ENDIF  
+!     print *,'entered GETH2CAO, reading label ==> ',HAM2CL
 
       IF (IPRINT.GE.0) THEN
        WRITE(LUPRI,'(/,2X,A,I1,A,A)')
@@ -1264,6 +1267,7 @@ C     ... initialize NORB_SUB(IB,IFRP,0),ID_SUB_BL(IB,IFRP)
 C     ... run over fermion symmetries ...
       DO I = 1, NFSYM
        CALL INIBOS(IBEIG(1+IORB(I)),I,.TRUE.,IPRINT)
+!      print *,'IBEIG(1+IORB(I)), I',IBEIG(1+IORB(I)),I
       ENDDO
 
 C    ... write the boson irreps (Trond's approach) into the BSSMAT file !
@@ -2930,6 +2934,8 @@ C      ... entering transf. marix in TMAT
       ENDIF
 
 C ... now if special case - DFFOCK2 from outside
+!       currently this cannot be activated any keyword (unless you know
+!       where to "enter" the 6...) - stefan - april 2011
         IF (CONT2C.AND.I2CHAM.EQ.6) THEN
 C      ... get transf. matrix into TMAT
           IF (FPB) THEN
@@ -3073,12 +3079,13 @@ C       ... update the offsets
       ENDIF
       ENDDO
 
-      ENDIF
+      ENDIF ! end of branching point for the three different defining h1
 
 C=====================================================================
 C     ... do extract (ee) elements from TBUF into VMAT 
 C         and eliminate SF terms to get pure SO1 matrix !
 C=====================================================================
+!     print *, 'bss: SAVESO1 ==> ',SAVESO1
       IF (SAVESO1) THEN
   
        IOFT = 1
@@ -3584,7 +3591,6 @@ C         ... do transform it to the "k" basis into TBUF !
       CALL QEXIT('DF2ONB')
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
       SUBROUTINE GET_HINF_BD(TBUF,TMAT,VMAT,IBEIG,
@@ -4053,7 +4059,7 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
      &      D0,IPQTOQ(1,0),VMAT(IBUFE),NREF,NREF,NZ)
        ENDIF
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (1): A matrix for getting R in ON basis, TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -4335,7 +4341,7 @@ C ...  make VMAT -> TBUF = (1 R)  !
        NREF2 = 2*NESH(I)
        N2EQ = NREF*NREF*NZ
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (3): R matrix read from BSSMAT, VMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -4376,7 +4382,7 @@ C      ... add 1 and O
        NREF2 = 2*NESH(I)
        N2EQ = NREF*NREF*NZ
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &'GET_HINF_R (4): (1 + R) matrix, TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -4392,7 +4398,7 @@ C      and multiply it to form X Omega+ = (1  R)t * Omega+:
      &          D0,IPQTOQ(1,0),VMAT(IBUF2E),NREF2,NREF,NZ)
 
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (4): Final U1= (1 R)t*Omega+ picture change '//
      &   'transformation matrix in ON RKB/"k" basis, VMAT',-1)
@@ -4585,7 +4591,7 @@ C ... read the Dirac Hamiltonian in the ON RKB/"k" basis into  TMAT
        NREF2 = 2*NESH(I)
        N2EQ = NREF*NREF*NZ
 
-       IF (IPRINT.GE.7) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GET_HINF_R (5): Final U1= (1 R)t*Omega+ picture change '//
      &   'transformation matrix in ON RKB/"k" basis, VMAT',-1)
@@ -5037,7 +5043,7 @@ C        ...
       ITMAT = 1
       DO I=1,NFSYM
       IF (NORB(I).GT.0) THEN
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
      & 'ON RKB/"k" H4c -> H2c, U1_ONBAS ',-1)
@@ -5063,7 +5069,7 @@ C ...   construct picture change transf. matrix,  VMAT*TBUF = TMAT
      &        D0,IPQTOQ(1,0),
      &        TMAT(ITMAT),NFBAS(I,0),NESH(I),NZ)
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
      & 'H4c SA-AO "xhi" -> H2c ON RKB/"k", TMAT',-1)
@@ -5111,7 +5117,7 @@ C ======================================================
       DO I=1,NFSYM
       IF (NORB(I).GT.0) THEN
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &   'GETPCTMAT: Final transf.matrix H2c "xhi_L" - H2c(ee) ON  '//
      &   ' (TM2CAOFP), VMAT',-1)
@@ -5139,7 +5145,7 @@ C  ...  construct picture change transf matrix, TBUF*VMAT+ = TMAT
      &          D0,IPQTOQ(1,0),
      &          TMAT(ITMAT),NORB(I),NFBAS(I,1),NZ)
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
          CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
      & 'H4c ON -> H2c SA-AO "xhi", TMAT',-1)
@@ -5183,7 +5189,7 @@ C   ... reread T4CAO2CK back into TMAT
       DO I=1,NFSYM
       IF (NORB(I).GT.0) THEN
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
 
           CALL HEADER(
      & 'GETPCTMAT: Picture change transf.matrix '//
@@ -5211,7 +5217,7 @@ C  ...  construct full picture change transfprmatin matrix, TMAT*VMAT+ = TBUF
      &          D0,IPQTOQ(1,0),
      &          TBUF(IBUF),NFBAS(I,0),NFBAS(I,1),NZ)
 
-        IF (IPRINT.GE.6) THEN
+        IF (IPRINT.GE.5) THEN
           CALL HEADER(
      & 'GETPCTMAT: Final picture change transf.matrix '//
      & '  H4c SA-AO "xhi" -> H2c SA-AO "xhi"',-1)
@@ -5615,7 +5621,507 @@ C ... then continue with electronic states
 
       ENDIF
       ENDDO
-      write(lupri,*)
+
+C ****************************************************************************
+C **
+C **    Prepare the Fock-2c matrix in Lowdin MO to be used in restarting 
+C **  the 2-component SCF. 
+C **
+C ****************************************************************************
+      IF (DO4C2C.AND..NOT.USEDF.AND.WRITEH2C.AND..NOT.START2C) THEN
+
+C      ... do prepare the FD4C_ONB 
+C .... read Lowdin matrix into TMAT
+        IF (LINEAR) THEN
+          LABELH1='VMAT2C_L'
+        ELSE
+          LABELH1='VMAT2C  '
+        ENDIF
+
+        CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
+     &               TMAT,N2BBASX,LUBSS,IPRINT)
+
+        IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A,A)')                  
+     &  'CMP_EIGVAL: Lowdin 2c transf. matrix was read'// 
+     &  ' into TMAT from the BSSMAT file,label=',LABELH1           
+        ENDIF
+
+        CALL RFBSSMAT('FDAO_DK ',.TRUE.,'CMP_EIGVAL',
+     &                 VMAT,N2BBASXQ,LUBSS,IPRINT)
+
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(/2X,A)')                  
+     &  'CMP_EIGVAL: FD2c elements (2c SA-AO basis,FDAO_DK) were read'//
+     &  ' into VMAT from the BSSMAT file.'           
+        ENDIF
+C       ... do the transformation ...
+      IBUF  = 1
+      ITMAT = 1
+      DO I = 1, NFSYM
+      IF (NORB(I).GT.0) THEN
+
+       IF (IPRINT.GE.5) THEN
+C    ... print out FH2c matrix in AO "xhi" basis
+        CALL HEADER(
+     &'CMP_EIGVAL: FD(2c)_LL in "xhi" SA-AO basis ' ,-1)
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &        '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(VMAT(1+I2BASX(I,I)),NFBAS(I,1),NFBAS(I,1),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+C    ... print out Lowdin matrix
+        CALL HEADER(
+     &  'CMP_EIGVAL: Adapted Lowd. transf. matrix (Le)'//
+     &  ' for the 2c SCF procedure:',-1)
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &        '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NESH(I),NFBAS(I,0),
+     &              NESH(I),1,IPQTOQ(1,0),LUPRI)
+
+       ENDIF
+
+C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
+       CALL QTRANS('AOMO','S',D0,NFBAS(I,1),NFBAS(I,1),
+     &               NESH(I),NESH(I),
+     &    VMAT(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &    TBUF(IBUF),NESH(I),NESH(I),NZ,IPQTOQ(1,0),
+     &    TMAT(ITMAT),NFBAS(I,0),NESH(I),1,IPQTOQ(1,0),
+     &    TMAT(ITMAT),NFBAS(I,0),NESH(I),1,IPQTOQ(1,0),
+     &     WORK(KFREE),LFREE,IPRINT)
+
+       IF (IPRINT.GE.5) THEN
+         CALL HEADER(
+     &  'CMP_EIGVAL: FD2c in (MO_ee) ON Lowdin basis "Theta" to'//
+     &  ' be diagonalized, TBUF',-1)
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &  '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(TBUF(IBUF),NESH(I),NESH(I),
+     &        NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+       IBUF = IBUF + NESH(I)*NESH(I)*NZ 
+C       ... offset for Lowdin matrix
+       ITMAT = ITMAT + NFBAS(I,0)*NESH(I)
+      ENDIF
+      ENDDO
+
+       ISIZE = NESH(1)*NESH(1)*NZ 
+       IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+       CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
+     &                TBUF,ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A)')                  
+     &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
+     &  ' into the BSSMAT file, EOFLABEL renewed.'           
+       ENDIF
+C        ... do diagonalize the FD2C_LMO ...
+      IEIG  = 1
+      IH2MO = 1
+      DO I = 1, NFSYM
+      IF (NORB(I).GT.0) THEN
+
+       CALL QDIAG(NZ,NESH(I),TBUF(IH2MO),NESH(I),NESH(I), 
+     &             EIG(IEIG),1,          
+     &             TBUF(IH2MO),NESH(I),       
+     &             NESH(I),WORK(KFREE),LFREE,IERR)
+       IF (IERR.NE.0) CALL QUIT('CMP_EIGVAL: FAILED QDIAG 1 !...')
+
+       IF (IPRINT.GE.15) THEN
+          CALL HEADER(
+     &   'CMP_EIGVAL: Eigenvectors of the diagonalized FD2c'//
+     &   ' in ON MO_ee Lowdin basis "Theta": ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IH2MO),NESH(I),NESH(I),
+     &             NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+       IF (IPRINT.GE.2) THEN
+          CALL HEADER(
+     &   'CMP_EIGVAL: Eigenvalues of the diagonalized FD2c'//
+     &   ' in ON MO_ee Lowdin basis "Theta": ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+         DO J=1,NESH(I)
+          WRITE(LUPRI,'(3X,I5,F25.10)') 
+     &    J,EIG(IEIG+J-1)
+         ENDDO
+       ENDIF
+       IEIG  = IEIG  + NESH(I)
+       IH2MO = IH2MO + (NESH(I)*NESH(I)*NZ) 
+      ENDIF
+      ENDDO
+      ENDIF
+
+      CALL QEXIT('CMP_EIGVAL')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
+C  /* Deck cmp_eigval */      
+       SUBROUTINE CMP_EIGVAL_bla(VMAT,TMAT,TBUF,EIG,IBEIG,WRITEH2C,SPFR,
+     &                       SPFR_BEG,ONLYSO1,SAVESO1,
+     &                       USEDF,DO4C2C,START2C,
+     &                       IPRINT,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C    PURPOSE:
+C   ==========
+C    Do comparison of the eigenvalues of the Dirac and H2c Hamiltonians;
+C  transform each of them to the ON basis and do the diagonalization
+C
+C  On input: arrays to be utilized inside, and flags
+C
+C  On output: VMAT reorganized for H2c                                                    
+C                                                         
+C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"                                       
+#include "priunit.h"   
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0 ) 
+#include "dcbgen.h"  
+#include "dcbbas.h"  
+#include "dcborb.h"   
+#include "dgroup.h"
+#include "dummy.h"
+   
+      DIMENSION VMAT(*),TMAT(*),
+     &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
+      DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
+      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,WRITEH2C,
+     &        PURLO,USEDF,DO4C2C,START2C,WANT_LINEAR
+      CHARACTER*8 LABELH1,LABELH2,LBL
+
+      CALL QENTER('CMP_EIGVAL')
+#include "memint.h"         
+
+C ====================================================================
+C   ... do the picture change of FD4C_ONB using 4c ONB -> 2c SA-AO
+C         picture change transformation matrix
+C ====================================================================
+      IF (DO4C2C.AND..NOT.USEDF.AND.WRITEH2C.AND..NOT.START2C) THEN
+C ...   read the pictre change matrix into TMAT
+C    ... write TMAT into the BSSMAT  
+       ISIZE = NORB(1)*NFBAS(1,1)*NZ  
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NFBAS(2,1)*NZ  
+       CALL RFBSSMAT('T4CK2CAO',.TRUE.,'CMP_EIGVAL',TMAT,
+     &               ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN   
+        WRITE(LUPRI,'(/2X,A)') 
+     &  'CMP_EIGVAL: PCTM H4c ON RKB/"k" -> H2c SA-AO "xhi"'//  
+     &  ' read from the BSSMAT file(T4CK2CAO) into TMAT.' 
+       ENDIF
+
+C     ... read the FD4C_ONB matrix which was prepared earlier
+       ISIZE = NORB(1)*NORB(1)*NZ  
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ  
+       CALL RFBSSMAT('FD4C_ONB',.TRUE.,'CMP_EIGVAL',VMAT,
+     &               ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN   
+        WRITE(LUPRI,'(/2X,A)') 
+     & 'CMP_EIGVAL: 4c Fock-Dirac(FD4C_ONB) in ON RKB/"k" was'//  
+     & ' read from the BSSMAT file(FD4C_ONB) into VMAT.' 
+       ENDIF
+
+C      =========================================================================
+C       ... do the picture change transformation  TBUF = TMAT^+ . VMAT . TMAT
+C      =========================================================================
+       IVMAT = 1
+       ITMAT = 1
+       IBUF = 1
+       DO I=1,NFSYM
+       IF (NORB(I).GT.0) THEN
+
+        IBUF = 1 + I2BASX(I,I)
+
+        CALL QTRANS('AOMO','S',D0,NORB(I),NORB(I),
+     &      NFBAS(I,1),NFBAS(I,1),    
+     &      VMAT(IVMAT),NORB(I),NORB(I),NZ,IPQTOQ(1,0), 
+     &      TBUF(IBUF),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),   
+     &      TMAT(ITMAT),NORB(I),NFBAS(I,1),NZ,IPQTOQ(1,0),    
+     &      TMAT(ITMAT),NORB(I),NFBAS(I,1),NZ,IPQTOQ(1,0),    
+     &      WORK(KFREE),LFREE,IPRINT)     
+
+        IF (IPRINT.GE.5) THEN        
+
+         CALL HEADER( 
+     &  'CMP_EIGVAL: Read 4c Fock-Dirac matrix in '//     
+     &  '4c ON RKB/FP "k" basis, VMAT',-1)    
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')    
+     &   '*** Fermion corep ',I,'/',NFSYM   
+         CALL PRQMAT(VMAT(IVMAT),NORB(I),NORB(I),    
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)   
+
+         CALL HEADER( 
+     &  'CMP_EIGVAL: Read H4c ON RKB/"k" -> H2c SA-AO "xhi" '//     
+     &  'picture change transf. mtx, TMAT',-1)    
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')    
+     &   '*** Fermion corep ',I,'/',NFSYM   
+         CALL PRQMAT(TMAT(ITMAT),NFBAS(I,1),NORB(I),    
+     &         NFBAS(I,1),NORB(I),NZ,IPQTOQ(1,0),LUPRI)   
+
+         CALL HEADER( 
+     &  'CMP_EIGVAL: Resulting pctra Fock-Dirac_2c matrix in'//     
+     &  ' 2c SA-AO "xhi", TBUF',-1)    
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')    
+     &   '*** Fermion corep ',I,'/',NFSYM   
+         CALL PRQMAT(TBUF(IBUF),NFBAS(I,1),NFBAS(I,1),    
+     &         NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)   
+        ENDIF                                        
+
+         IVMAT = IVMAT + NORB(I)*NORB(I)*NZ
+         ITMAT = ITMAT + NFBAS(I,1)*NORB(I)*NZ
+       ENDIF
+       ENDDO
+
+C     ... save Fock-Dirac matrix in 2c SA-AO "xhi" into BSSMAT
+      CALL W2BSSMAT(1,.TRUE.,'FDAO_DK ','CMP_EIGVAL',
+     &               TBUF,N2BBASXQ,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'CMP_EIGVAL: FD2c elements (FDAO_DK) were written'//
+     &  ' into the BSSMAT file, EOFLABEL renewed.'
+      ENDIF
+
+C  ======== End of handling Fock-Dirac 2c =========
+      ENDIF
+C  ======== End of handling Fock-Dirac 2c =========
+
+      WANT_LINEAR=.FALSE.
+       IF (LINEAR) THEN
+!     IF (WANT_LINEAR) THEN
+          LABELH1='VMAT2C_L'
+      ELSE
+          LABELH1='VMAT2C  '
+      ENDIF
+      CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
+     &        VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A,A)')                  
+     &  'CMP_EIGVAL: Lowdin 2c transf. matrix was read'// 
+     &  ' into VMAT from the BSSMAT file,label=',LABELH1           
+       ENDIF
+
+C ... read H_2c/FD_2c in SA-AO basis into TBUF
+      IF (WRITEH2C) THEN
+C      ... transformed  bare nucleus Dirac Hamiltonian
+       LABELH2='H1AO_DK '
+      ELSE
+C      ... transformed converged Fock-Dirac Hamiltonian (both closed/open-shell)
+       LABELH2='FDAO_DK '
+      ENDIF
+ 
+      CALL RFBSSMAT(LABELH2,.TRUE.,'CMP_EIGVAL',
+     &              TBUF,N2BBASXQ,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'CMP_EIGVAL: ',LABELH2,' was read from BSSMAT.'
+      ENDIF
+
+C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
+
+      IH2MO = 1
+      IVMAT = 1
+      IH1FP = 1
+      DO I = 1, NFSYM
+      IF (NORB(I).GT.0) THEN
+       IF (IPRINT.GE.4) THEN
+C    ... print out H2c matrix in AO "xhi" basis
+        CALL HEADER(
+     &'CMP_EIGVAL: Final H(2c)_LL in "xhi" SA-AO basis ',-1)
+        IF (WRITEH2C) THEN
+          WRITE(LUPRI,'(3X,A,/)')
+     &    'This is 2c transformed Dirac bare nucleus,'//
+     &    ' H1AO_DK.' 
+        ELSE
+          WRITE(LUPRI,'(3X,A,/)')
+     &    'This is 2c transformed Fock-Dirac Hamiltonian,'//
+     &    ' FDAO_DK.' 
+        ENDIF
+
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &        '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(TBUF(1+I2BASX(I,I)),NFBAS(I,1),NFBAS(I,1),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+C    ... print out Lowdin matrix
+        CALL HEADER(
+     &  'CMP_EIGVAL: Adapted Lowd. transf. matrix (Le)'//
+     &  ' for the 2c SCF procedure:',-1)
+        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &        '*** Fermion corep ',I,'/',NFSYM
+        CALL PRQMAT(VMAT(IVMAT),NFBAS(I,0),NESH(I),NFBAS(I,0),
+     &              NESH(I),1,IPQTOQ(1,0),LUPRI)
+
+       ENDIF
+
+C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,1),NFBAS(I,1),
+     &               NESH(I),NESH(I),
+     &    TBUF(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &    TMAT(IH2MO),NESH(I),NESH(I),NZ,IPQTOQ(1,0),
+     &    VMAT(IVMAT),NFBAS(I,0),NESH(I),1,IPQTOQ(1,0),
+     &    VMAT(IVMAT),NFBAS(I,0),NESH(I),1,IPQTOQ(1,0),
+     &        WORK(KFREE),LFREE,IPRINT)
+
+       IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &   'CMP_EIGVAL: H2c in (MO_ee) ON Lowdin basis "Theta" to'//
+     &   ' be diagonalized, TMAT',-1)
+          IF (.NOT.WRITEH2C) THEN
+            WRITE(LUPRI,'(3X,A,/)')
+     &      'This is FD2C_LMO, FD_2c in Lowdin matrix for subsequent'//
+     &      ' postDHF->BSS SCF step' 
+          ENDIF
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TMAT(IH2MO),NESH(I),NESH(I),
+     &             NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+       IH2MO = IH2MO + NESH(I)*NESH(I)*NZ 
+C       ... offset for Lowdin matrix
+       IVMAT = IVMAT + NFBAS(I,0)*NESH(I)
+       IH1FP = IH1FP + NORB(I)*NORB(I)*NZ
+      ENDIF
+      ENDDO
+
+      IF (.NOT.WRITEH2C) THEN
+C ...  save FD_2c in Lowdin MO basis to the BSSMAT file
+C ...  to be used at the post-DC-BSS-SCF level in DFSOLV !
+       ISIZE = NESH(1)*NESH(1)*NZ
+       IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
+       CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
+     &               TMAT,ISIZE,LUBSS,IPRINT)
+       IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')                  
+     &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
+     &  ' into the BSSMAT file (FD2C_LMO), EOFLABEL renewed.'  
+       ENDIF
+
+      ENDIF 
+
+C ... WE WANT THE EIGENVECTORS AS WELL .... ADD ONE MORE CYCLE ONLY 
+C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
+
+      IH2MO = 1
+      IEIG = 1
+      DO I = 1, NFSYM
+      IF (NORB(I).GT.0) THEN
+
+C      ... diagonalize the H2c in MO(ee) basis !
+!       DOJACO is defined in dcbgen.h, only for real matrixes
+       IF (DOJACO.AND.NZ.EQ.1) THEN
+!        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
+         CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
+     &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
+     &                  WORK(KFREE),LFREE)
+       ELSE
+        CALL QDIAG(NZ,NESH(I),TMAT(IH2MO),NESH(I),NESH(I), 
+     &             EIG(IEIG),1,          
+     &             TBUF(IH2MO),NESH(I),       
+     &             NESH(I),WORK(KFREE),LFREE,IERR)
+        IF (IERR.NE.0) CALL QUIT('CMP_EIGVAL: FAILED QDIAG 1 !...')
+       ENDIF
+
+       IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &   'CMP_EIGVAL: Eigenvectors of the diagonalized H2c'//
+     &   ' in ON MO_ee Lowdin basis "Theta": ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IH2MO),NESH(I),NESH(I),
+     &             NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+       IEIG  = IEIG  + NESH(I)
+       IH2MO = IH2MO + NESH(I)*NESH(I)*NZ 
+      ENDIF
+      ENDDO
+
+C .... read and diagonalize H1 in ON RKB/FP "k" basis
+C ... write the TBUF - H1 in RKB/"k" to the file...
+      ISIZE=NORB(1)*NORB(1)*NZ
+      IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
+C ... get H1_ONB into TBUF
+      LABELH1 = 'H1_ONBAS'
+      IF (SAVESO1) LABELH1 = 'H1_ONB  '
+      CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',TBUF,ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+       WRITE(LUPRI,'(/2X,A,A,A)')
+     & 'CMP_EIGVAL: ',LABELH1,' read into TBUF.'
+      ENDIF
+
+      IH1FP = 1
+      IH2MO = 1
+      IEIG4  = 1
+      IEIG2  = 1
+      DO I = 1, NFSYM
+      IF (NORB(I).GT.0) THEN
+C        ... eliminate spin-free terms utilizing IBEIG(*)...
+       IF (SPFR.AND..NOT.SPFR_BEG) THEN
+
+         IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &    'CMP_EIGVAL: H4c in ON MO basis RKB/FP "k" before '//
+     &    'elimination of SO terms (we have 2c spin-free "AFTER") ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IH1FP),NORB(I),NORB(I),
+     &             NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         ENDIF
+
+         CALL SPF_HK(TBUF(IH1FP),.TRUE.,IBEIG(IORB(I)+1),
+     &    IBEIG(IORB(I)+1),
+     &    NORB(I),NORB(I),NORB(I),NORB(I),NZ,IPRINT )
+
+       ENDIF
+
+        IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &    'CMP_EIGVAL: H4c in ON MO basis RKB/FP "k" before '//
+     &    ' the diagonalization ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(TBUF(IH1FP),NORB(I),NORB(I),
+     &             NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
+        CALL QDIAG(NZ,NORB(I),TBUF(IH1FP),NORB(I),NORB(I), 
+     &             TMAT(IEIG4),0,          
+     &             DUMMY,NORB(I),       
+     &             NORB(I),WORK(KFREE),LFREE,IERR)
+        IF (IERR.NE.0) CALL QUIT('CMP_EIGVAL: FAILED QDIAG 2!')
+
+        IF (IPRINT.GE.2) THEN
+         CALL HEADER(
+     &'CMP_EIGVAL: Eigenvalues of H4c and H2c '//
+     &' Hamiltonians - comparison',-1)
+         WRITE(LUPRI,'(8X,A,I1,A,I1/)')
+     &  '*** Fermion corep ',I,'/',NFSYM
+C ... first positronic states first
+        WRITE(LUPRI,'(3X,I5,F25.10)')
+     &  ( J-NPSH(I)-1,TMAT(IEIG4+J-1),J=1,NPSH(I))
+C ... then continue with electronic states
+        DO J = 1, NESH(I)
+          VAL2C = EIG(IEIG2+J-1)
+          VAL4C = TMAT(IEIG4+NPSH(I)+J-1)
+        DIFF =  VAL4C - VAL2C
+        WRITE(LUPRI,'(3X,I5,2F25.10,3X,D12.5)') 
+     &    J, VAL4C,VAL2C,DIFF
+        ENDDO
+        write(lupri,*)
+        ENDIF
+
+        IEIG4  = IEIG4  + NORB(I)
+        IEIG2  = IEIG2  + NESH(I)
+        IH2MO = IH2MO + NESH(I)*NESH(I)*NZ 
+        IH1FP = IH1FP + NORB(I)*NORB(I)*NZ
+
+      ENDIF
+      ENDDO
 
 C ****************************************************************************
 C **

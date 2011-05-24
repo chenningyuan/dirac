@@ -41,12 +41,14 @@ module x2c_utils
   public construct_pctmat_saao_bas
   public construct_saomo_overlap_half_tr
   public store_aomo_trafo_matrices
-! public x2c_lowd2c
+  public x2c_lowd2c
   public pick_LL_block_saao_bas
   public print_x2cmat
   public print_x2cmtx
   public read_1fock_x2c
+  public read_4cfock_operator_x2c
   public get_Sao_LL_mat
+  public get_boson_irrep_info
   public hello_dirx2c
   public goodbye_dirx2c
 
@@ -384,11 +386,10 @@ contains
          call x2c_write(flabel,mat1(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
 
          if(defining_h1mat == 2)then
-
            write(flabel,'(a7,i4,i1)') '4cAOMOo',is_fragment,i
            call x2c_write(flabel,mat2(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
 
-           if(linear_sym .eqv. .true.)then
+           if(linear_sym)then
              write(flabel,'(a7,i4,i1)') '4cMOMOl',is_fragment,i
              call x2c_write(flabel,mat3(ioff_momo),norb_dim(i)**2 * nz,x2c_file_scr)
            end if
@@ -404,7 +405,7 @@ contains
        end if
 
 !      redirect ["SL resorted"] matrix to mat3 for later reuse in
-!      x2c_get_h1_defining_mat (module x2c_def_h1_4c)
+!      x2c_get_h1_mat_base (module x2c_h1mat_base)
        ioff_aomo = 1
        do i = 1, nfsym
          call dcopy(naosh_all(i)*norb_dim(i)*nz,mat1(ioff_aomo),1,mat3(ioff_aomo),1)
@@ -436,13 +437,7 @@ contains
 !**********************************************************************
 !
 !    purpose:
-!       save RKB AO to MO transformation matrices to file
-!         1. in initial implementation SL_TM_4C: 
-!            required in general     ["SL resorted" transformation matrix] {ID == "r"}
-!         2. in initial implementation TMAT4C  : 
-!            if(4c Dirac-Fock--> 2c) ["original" transformation matrix]    {ID == "o"}
-!         3. in initial implementation TMAT_LSY: 
-!            if(4c Dirac-Fock--> 2c .and. linear == .true.) [non-linear --> linear symmetry] {ID == "l"}
+!         construct the 2c-Lowdin matrix (if requested) 
 !
 !----------------------------------------------------------------------
      real(8), intent(inout) :: lowd_mat(*)
@@ -517,11 +512,11 @@ contains
 !      label code:   ||         | |              ||   |
        i = 0
        write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,i
-       call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
 
+       if(.not.linear_sym)then
+         call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
 !      step 4: in case of linear symmetry - adapt the LOWDIN matrix
-       if(linear_sym .eqv. .true.)then
-
+       else
 !        set pointer to WORK array and allow full length for allocations
          lwrk = is_len_wrk
          call sel_wrk_x2c(wrk,lwrk)
@@ -547,7 +542,6 @@ contains
          call desel_wrk_x2c(wrk,lwrk)
 
 !        store adapted 2c-LOWDIN matrix on file
-         write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,i
          call x2c_write(flabel,scr_mat1,naosh_ls*naosh_ls,x2c_file_glb)
        end if
 
@@ -640,24 +634,32 @@ contains
                           nz,          &
                           ipq_off,     &
                           title,       &
-                          prntunit)
+                          prntunit,    &
+                          lrlc_equal)
 !**********************************************************************
 !
 !    purpose: print a matrix
 !
 !**********************************************************************
-     real(8), intent(in)      :: xmat(*)
-     integer, intent(in)      :: ndim_x
-     integer, intent(in)      :: ndim_y
-     integer, intent(in)      :: nz
-     integer, intent(in)      :: ipq_off(4,0:7)
-     integer, intent(in)      :: prntunit
-     character(*), intent(in) :: title
+     real(8), intent(in)           :: xmat(*)
+     integer, intent(in)           :: ndim_x
+     integer, intent(in)           :: ndim_y
+     integer, intent(in)           :: nz
+     integer, intent(in)           :: ipq_off(4,0:7)
+     integer, intent(in)           :: prntunit
+     logical, optional, intent(in) :: lrlc_equal
+     character(*), intent(in)      :: title
 !**********************************************************************
 !
          call header(title,-1)
-         call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
-                     ipq_off,prntunit)
+         if(.not.present(lrlc_equal))then
+           call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
+                       ipq_off,prntunit)
+         else
+           print *,' lrlc_equal ==> ',lrlc_equal
+           call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
+                       ipq_off,prntunit)
+         end if
 
   end subroutine print_x2cmat
 
@@ -693,6 +695,7 @@ contains
          enddo  
 
   end subroutine print_x2cmtx
+
 !**********************************************************************
   subroutine read_1fock_x2c(xmat,      &
                             ndim_tot,  &
@@ -761,6 +764,56 @@ contains
   end subroutine read_1fock_x2c
 
 !**********************************************************************
+  subroutine read_4cfock_operator_x2c(xmat,           &
+                                      op_mat_on_file, &
+                                      print_lvl)
+!**********************************************************************
+!
+!    purpose: read the 4c-Fock operator matrix elements from file op_mat_on_file 
+!             within the X2C module if the basic and/or the defining h1 matrix 
+!             is the 4c-Fock operator (controlled by defining_h1mat == 2).
+!
+!**********************************************************************
+     use x2cmod_cfg
+     real(8),           intent(inout) :: xmat(*)
+     character (len=6), intent(in)    :: op_mat_on_file
+     integer,           intent(in)    :: print_lvl
+#include "dcbdhf.h"
+!----------------------------------------------------------------------
+     integer                          :: real_bytes    = 8
+     integer                          :: record_number
+     integer                          :: file_unit
+     logical                          :: does_exist
+!**********************************************************************
+
+!      step 1: inquire file and set record number
+!      ------------------------------------------
+       inquire(file=op_mat_on_file,exist=does_exist)
+
+       if(.not.does_exist) & 
+         call quit('*** error in read_4cfock_operator_x2c: file with 4c-fock matrix does not exist.***')
+
+!      open file
+       file_unit = 99
+       open(file_unit,file=op_mat_on_file,status='old',form='unformatted',         &
+            access='direct',action='read',recl=real_bytes*n2tmotq)
+
+       record_number = 1
+       if(scf_iter_counter > 0)then
+         record_number = mod(scf_iter_counter-2,diis_counter-1) + 1
+         if(record_number == 0)  &
+         record_number = 1
+       end if
+
+!      step 2: read matrix elements from file
+!      --------------------------------------
+       call readac(file_unit,n2tmotq,xmat,record_number)
+
+       close(file_unit,status='keep')
+ 
+  end subroutine read_4cfock_operator_x2c
+
+!**********************************************************************
   subroutine get_Sao_LL_mat(scr_mat1,    &
                             ndim_mat,    &
                             i,           &
@@ -814,6 +867,36 @@ contains
        end if
 
   end subroutine get_Sao_LL_mat
+!**********************************************************************
+
+  subroutine get_boson_irrep_info(boson_info,  &
+                                  nfsym,       &
+                                  norb_dim,    &
+                                  print_lvl)
+!**********************************************************************
+!
+!    purpose: obtain boson irrep symmetry info.
+!
+!**********************************************************************
+     integer, intent(inout)   :: boson_info(*)
+     integer, intent(in)      :: nfsym
+     integer, intent(in)      :: norb_dim(nfsym)
+     integer, intent(in)      :: print_lvl
+!----------------------------------------------------------------------
+     integer                  :: i
+     integer                  :: ioff_orb
+!**********************************************************************
+ 
+!     initialize orbital subblock arrays norb_sub(ib,ifrp,0) and id_sub_bl(ib,ifrp)
+      call inisub
+
+      ioff_orb = 1
+      do i = 1, nfsym
+        call inibos(boson_info(ioff_orb),i,.true.,print_lvl)
+        ioff_orb = ioff_orb + norb_dim(i)
+      end do
+
+  end subroutine get_boson_irrep_info
 !**********************************************************************
 
   subroutine hello_dirx2c()
