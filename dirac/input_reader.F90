@@ -1103,6 +1103,7 @@ contains
 !     (converged) 4c-Fock operator matrix as defining h1 hamiltonian
       if (kw_matches(word, '.4cdfh1')) then
          x2c_4c_fock_mtx_defh1 = .true.
+         x2c_add_amfi          = -1
       end if
 
 !     continue scf procedure to full convergence after the X2C transformation

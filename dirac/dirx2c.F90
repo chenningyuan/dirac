@@ -89,6 +89,7 @@ module dirx2c
   use x2c_utils
   use atomic_x2c
   use x2c_h1mat_base
+  use x2c_pct_mo_coefficients
   use x2c_import_exportC1
 
   implicit none
@@ -441,6 +442,23 @@ contains
 
          call x2c_atomic_x2c_driver()
 
+       end if
+
+!      ---------------------------------------------------------------------------------------------------------------
+!      step 3: picture-change transform the 4c-MO coefficients (defining operator matrix is the 4c-Dirac Fock operator)
+!      ---------------------------------------------------------------------------------------------------------------
+       if(x2c_is_defining_h1mat == 2)then
+         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',        &
+                                                 nr_ao_all,       &
+                                                 nr_ao_l,         &
+                                                 dim_oshell,      &
+                                                 dim_eshell,      &
+                                                 dim_pshell,      &
+                                                 nr_fsym,         &
+                                                 nr_quat,         &
+                                                 x2c_cb_pq_to_uq, &
+                                                 x2c_funit,       &
+                                                 x2c_prt)
        end if
 
 !      ------------------------------------------------------------------------------------------

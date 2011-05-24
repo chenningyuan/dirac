@@ -109,23 +109,6 @@ contains
 !        set file unit on common block in dcbgen.h
          lux2c = x2c_funit
 
-!        set defining matrix wrt which the pct-mtx will be derived
-         if(x2c_4c_fock_mtx_defh1)then
-!          converged 4c-Fock-Dirac operator
-           x2c_is_defining_h1mat  = 2
-           scf_iter_counter       = niter
-           diis_counter           = mxdiis
-         else if(x2c_free_part_mtx_defh1)then
-!          free-particle matrix
-           x2c_is_defining_h1mat  = 3
-!        else if(dohuckel)then
-!          (extended) Huckel start guess
-!          x2c_is_defining_h1mat  = 1
-         else
-!          default: bare-nucleus one-electron Dirac-Hamiltonian
-           x2c_is_defining_h1mat  = 0
-         end if
-! 
          if(atom_by_atom_x2c)then
 !          nothing to be done here yet...
          else 
@@ -182,12 +165,33 @@ contains
 
 !          initialize logicals
            x2c_linsym       = linear
-           x2c_prep_bnccorr = bncron.and..not.onesys
            x2c_do_spherical = dosphe
+           x2c_prep_bnccorr = bncron.and..not.onesys
   
 !          initialize real*8
            x2c_cspeed = cval
          end if
+
+!        set defining matrix wrt which the pct-mtx will be derived
+         if(x2c_4c_fock_mtx_defh1)then
+!          converged 4c-Fock-Dirac operator
+           x2c_is_defining_h1mat  =  2
+           scf_iter_counter       = -1
+           diis_counter           = -1
+!          scf_iter_counter       = niter
+!          diis_counter           = mxdiis
+           x2c_prep_bnccorr       = .false.
+         else if(x2c_free_part_mtx_defh1)then
+!          free-particle matrix
+           x2c_is_defining_h1mat  = 3
+!        else if(dohuckel)then
+!          (extended) Huckel start guess
+!          x2c_is_defining_h1mat  = 1
+         else
+!          default: bare-nucleus one-electron Dirac-Hamiltonian
+           x2c_is_defining_h1mat  = 0
+         end if
+! 
        else 
          if(is_center_x2c == -1)then
            do i = 1, nprps
