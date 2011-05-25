@@ -1159,6 +1159,7 @@
       
 !     JHS050707 TMP Initialization (NEEDED?)
 
+      NONT=0
       JCO=0
       JCO2=0
       IBLOCK=0
@@ -1419,7 +1420,7 @@
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
-         CALL SYMADD(WORK,LWORK,basindex,KATOM,KASYM,CLASS,.false.)
+         CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,CLASS,.false.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
 !
