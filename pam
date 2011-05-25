@@ -169,7 +169,7 @@ class pam_enviroment:
         self.nodes = []
 
     # rcp, rsh for parallel, multinodes calculations
-        self.rcp = None  # default taken from Makefile.config
+        self.rcp = None 
         self.rsh = None 
 
     # dirac profiling
@@ -478,6 +478,24 @@ class pam_enviroment:
             dest='dest_suffix',
             default=self.output_suffix,
             help='file suffix for output [default: %default]',
+            metavar='STRING',
+            )
+        group.add_option(
+            '--rsh',
+            type='string',
+            action='store',
+            dest='dest_suffix',
+            default=self.rsh,
+            help='Remote shell program, typically rsh or ssh',
+            metavar='STRING',
+            )
+        group.add_option(
+            '--rcp',
+            type='string',
+            action='store',
+            dest='dest_suffix',
+            default=self.rcp,
+            help='Remote shell program, typically rcp or scp',
             metavar='STRING',
             )
         group.add_option('--noarch', action='store_true',
@@ -1020,6 +1038,12 @@ class pam_enviroment:
         This routine is called when local disks are selected
         for parallel calculations.
         """
+        if not self.rcp:
+            print_std_out_err('No rcp command specified, use --rcp= on the command line or in ~/.dirac')
+            sys.exit(-1)
+        if not self.rsh:
+            print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
+            sys.exit(-1)
         # get the list of nodes
         self.get_nodes()
 
@@ -1170,10 +1194,6 @@ class pam_enviroment:
                 self.localdisks = True
             elif name == 'MACH_FILE':
                 self.machinefile = value
-            elif name == 'RCP':
-                self.rcp = value
-            elif name == 'RSH':                
-                self.rsh = value
 
     def handle_machinefile(self):
         """
@@ -1193,51 +1213,6 @@ class pam_enviroment:
         else:
             # true file, no pointing variable
             self.machinefile_content = self.machinefile
-
-    def get_rsh_rcp(self):
-        """ 
-        get RSH/RCP by trying; either rsh/rcp or ssh/scp or error exit
-        """ 
-        from common import find_executable
-
-        def test_copy(local_rcp):
-            try:
-                for node in self.nodes:
-                    this_file_full = self.scratch_dir + '/DIRAC.INP' 
-                    command = local_rcp + ' ' + this_file_full + ' ' \
-                         + node + ':/scratch/.'
-                    #os.system(command)
-                    x= subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                    print 'try command:',command
-                    print 'stdout ?',x.communicate()[0]
-                    print 'was stderr ?',x.communicate()[1]
-                    print
-                    #return 1
-            except:
-                return 1
-
-        try:
-            local_rsh= str(find_executable('ssh'))
-            local_rcp= str(find_executable('scp'))
-            test_copy(local_rcp)
-            self.rsh=local_rsh
-            self.rcp=local_rcp
-            print 'found ssh/scp '
-            return 0
-        except:
-            print 'ssh/scp not working ! trying rsh/rcp'
-
-        try:
-            local_rsh= str(find_executable('rsh'))
-            local_rcp= str(find_executable('rcp'))
-            test_copy(local_rcp)
-            self.rsh=local_rsh
-            self.rcp=local_rcp
-            print 'found rsh/rcp '
-            return 0
-        except:
-            print 'Neither rsh/rcp working ! error exit !'
-            sys.exit(21)
 
     def get_nodes(self):
         """ 
@@ -1423,6 +1398,10 @@ class pam_enviroment:
     # take care of individual nodes if parallel run
 
         if self.nodes:
+            # ulf: on grid systems I don't think we can log into the nodes..
+            if not self.rsh:
+                print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
+                sys.exit(-1)
             for this_node in self.nodes:
                 sys.stdout.flush()
                 print 'content of the scratch_dir, slave node ', this_node, \
