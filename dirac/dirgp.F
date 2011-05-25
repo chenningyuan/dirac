@@ -4281,7 +4281,7 @@ C
       RETURN
       END
 
-     SUBROUTINE Read_and_add_FCK(IUNIT,FOCK,INFO,N)
+      SUBROUTINE Read_and_add_FCK(IUNIT,FOCK,INFO,N)
 C*****************************************************************************
 C
 C     Add AO Fock matrix read from unformatted file to contents of Fock
