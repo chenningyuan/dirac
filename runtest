@@ -27,6 +27,7 @@ import sys
 import string
 import subprocess
 import time
+import signal
 from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-8]
@@ -260,14 +261,35 @@ class run:
      def get_test_name(self):
          return string.split(self.test, '/')[-1]
      def run_and_normal_exit(self):
+         pgid = None # process group id of the "dirac" process
+         def child_signaller(signum, frame):
+             '''Pass on signals to pam to its children'''
+             if pgid is not None:
+                 print >> sys.stderr,'ruuntest: got signal',signum,'passing on to children'
+                 os.killpg(pgid,signum) # TODO: adapt for Windows
+             sys.exit()
+         if sys.platform != 'win32':
+             signal.signal(signal.SIGHUP,child_signaller)
+             signal.signal(signal.SIGPIPE,child_signaller)
+         signal.signal(signal.SIGTERM,child_signaller)
+         signal.signal(signal.SIGINT,child_signaller)
+
          os.chdir(self.test)
          # run pam
          command = '%s/pam --inp=%s --mol=%s %s' \
              % (root_directory, self.inp, self.mol, self.pam_flags)
-         p = subprocess.Popen(command,
-                              shell=True,
-                              stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE)
+         if sys.platform != 'win32':
+             p = subprocess.Popen(command,
+                                  shell=True,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  preexec_fn=os.setsid)
+             pgid = p.pid
+         else:
+             p = subprocess.Popen(command,
+                                  shell=True,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE)
          
          pam_output = p.communicate()[0]
          global pam_output_file
