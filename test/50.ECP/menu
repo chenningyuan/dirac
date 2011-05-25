@@ -1,0 +1,5 @@
+regular
+HF.inp    HI_arep.mol
+HF.inp    HI_sorep.mol
+CCSDT.inp HI_arep.mol
+CCSDT.inp HI_sorep.mol
