@@ -1306,6 +1306,7 @@ class pam_enviroment:
             sys.exit()
         if not is_windows():
             signal.signal(signal.SIGHUP,child_signaller)
+            signal.signal(signal.SIGPIPE,child_signaller)
         signal.signal(signal.SIGTERM,child_signaller)
         signal.signal(signal.SIGINT,child_signaller)
             
