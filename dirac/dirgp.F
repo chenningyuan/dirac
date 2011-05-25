@@ -4280,3 +4280,24 @@ C
       CALL QUIT('illegal value in GETIOPEN(pos)')
       RETURN
       END
+
+     SUBROUTINE Read_and_add_FCK(IUNIT,FOCK,INFO,N)
+C*****************************************************************************
+C
+C     Add AO Fock matrix read from unformatted file to contents of Fock
+C
+C*****************************************************************************
+C
+#include "dcbbas.h"
+      INTEGER IUNIT,N
+      LOGICAL INFO
+      Real*8 FOCK(N2BBASXQ*N)
+      Real*8, Allocatable :: Buffer(:)
+
+      Allocate (Buffer(N2BBASXQ*N))
+      call REAFCK(IUNIT,Buffer,INFO,N)
+      call DAXPY (N2BBASXQ*N,1.D0,Buffer,1,FOCK,1)
+      DeAllocate (Buffer)
+
+      End
+
