@@ -573,6 +573,7 @@ C
 #include "cbihr1.h"
 #include "cbisol.h"
 #include "dcbgen.h" 
+#include "dcbham.h"
 C
       CALL QENTER('NUCAT1')
 #include "memint.h"
@@ -606,12 +607,12 @@ C      **    nuc-elec attraction integrals.       **
 C      **                                         **
 C      *********************************************
       IF (ECPCALC) then
-         OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
+         OPEN(59,FORM='UNFORMATTED',FILE='RECP_INT_C')
          CALL MEMGET('REAL',KARPP,NNBBAST,WORK,KFREE,LFREE)
          CALL READT(59,NNBBAST,WORK(KARPP))
          close(59)
          DO I=0,NNBBAST-1
-            WORK(KNUCS+i)=WORK(KNUCS+i)+WORK(KARPP+i)
+            WORK(KNUCS+I)=WORK(KNUCS+I)+WORK(KARPP+I)
          ENDDO
          CALL MEMREL('NUCAT1.ECPCALC',WORK,KWORK,KARPP,KFREE,LFREE)
       ENDIF

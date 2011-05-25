@@ -1263,6 +1263,8 @@ C
 C        Check what integral types contribute
 C        ====================================
 C
+         if (ECPCALC) INTDEF = 1
+
          CALL INTCON(INTFLG,INTBUF,INTDEF,
      &               ERGVAL,CNVINT,NITER,ITRINT,DHF_INTTYP)
 C

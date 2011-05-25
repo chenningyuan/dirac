@@ -1,0 +1,19 @@
+!
+! This test calculates the CCSD(T) energy of
+! employing valence-only Hamitonian
+! for relativistic effective-core-potentials.
+! Note the keyword .ECP in **GENERAL.
+!
+**DIRAC
+.TITLE
+HI molecule with RECP
+.WAVE F
+**GENERAL
+.ECP
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.CLOSED SHELL
+8 
+*END OF DIRAC
+

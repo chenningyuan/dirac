@@ -45,7 +45,7 @@
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
-     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
+     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
      &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
@@ -55,7 +55,7 @@
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
-     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
+     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
      &                DOQJACO
 

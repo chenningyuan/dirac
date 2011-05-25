@@ -56,6 +56,7 @@ C
      &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
       CHARACTER*80 BASREF(10,KATOM)
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "cbirea.h"
 #include "ccom.h"
 #include "gencon.h"

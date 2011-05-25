@@ -8,16 +8,11 @@ c     *** basis dirac ***
      &          cont(mxatom,mxiqm,mxjco,mxnucij,mxnrcij)
       character frmt*1, bset*5, bskeyword*10, basfil(mxatom)*20,
      &          fmt1*8, fmt2*12, fmt3*7, 
-     &          bfree(mxatom,mxiqm,mxjco,mxnucij)*90
+     &          bfree(mxatom,mxiqm,mxjco,mxnucij)*80
       logical   basexpl, baslib, free(mxatom,mxiqm,mxjco)
 c
 c     *** basis argos ***
       integer   lmnp1(mxatom) 
-c
-c     *** basis lines ***
-      parameter (mxbline=150)
-      integer   nbline
-      character bline(mxbline)*90
 c
 c     *** other variables ***
       integer   bscode

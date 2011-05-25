@@ -232,6 +232,7 @@ directories_never_compiled.append('dft/xcfun/test')
 directories_never_compiled.append('dft/src/external')
 
 files_never_compiled = []
+files_never_compiled.append('argosecp/argos_input.F')
 files_never_compiled.append('utils/cube2pov.c')
 files_never_compiled.append('cbuild/MPI2_test.F')
 files_never_compiled.append('relccsd/ccdriv_nomemget.F')

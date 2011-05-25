@@ -306,11 +306,10 @@ C
       NOGENINP   = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      ECPCALC    = .FALSE.
-      SKIP2E     = .FALSE.
-      LOWJACO    = .FALSE.
-      LOGMEMGET  = .FALSE.
-      DOQJACO    = .FALSE.
+      SKIP2E = .FALSE.
+      LOWJACO = .FALSE.
+      LOGMEMGET = .FALSE.
+      DOQJACO  = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C
@@ -421,9 +420,6 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
-C&&&& ECP: do ECP calculation, non-relativistic
-            ECPCALC = .TRUE.
-            TWOCOMP = .TRUE.
             GO TO 100
   111     CONTINUE
           LOGMEMGET = .TRUE.
@@ -513,15 +509,6 @@ C
      &  ' * running in four-component mode'
       ENDIF
 
-      IF (ECPCALC) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &   '  employing effective-core-potentials (ECP)'
-#ifndef MOD_ECP
-        WRITE(LUPRI,'(//A)')
-     &   ' SORRY! .ECP is not implemented in this version.'
-        CALL QUIT('.ECP is not implemented in this version.')
-#endif
-      END IF
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
@@ -4376,7 +4363,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 60,NDIR = 8)
+      PARAMETER (NTABLE = 64,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4438,7 +4425,9 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.FDERSP','.HFXATT','.xB    ','.xC    '/
+     &            '.FDERSP','.HFXATT','.xB    ','.xC    ',
+!                   61        62        63        64
+     &            '.ECP   ','.xxxxxx','.xxxxxx','.xxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4484,6 +4473,7 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
+      ECPCALC = .FALSE.
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4581,7 +4571,8 @@ C     Keep track of number of changes and added finite field operators
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150, 
-     &                151,152,153,154,155,156,157,158,159,160),I
+     &                151,152,153,154,155,156,157,158,159,160,
+     &                161,162,163,164),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -5070,6 +5061,19 @@ C activates fde response
 ! .xC
   160     CONTINUE
           GOTO 100
+
+
+!         ECP
+  161     CONTINUE
+          ECPCALC = .TRUE.
+          TWOCOMP = .TRUE.
+          GO TO 100
+
+  162     CONTINUE
+  163     CONTINUE
+  164     CONTINUE
+          GO TO 100
+
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -5459,7 +5463,10 @@ CMI ... this is on TODO list
 
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
-      ELSE IF (TWOCOMP.AND..NOT.BSS.AND..NOT.ECPCALC) THEN
+      ELSEIF (ECPCALC) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &   '  employing effective-core-potentials (ECP)'
+      ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
      &       '   - parameter NZ set to one'
       ELSE

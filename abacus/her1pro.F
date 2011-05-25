@@ -1925,6 +1925,8 @@ C
          INTREP(3) = ISYMAX(3,2)
          ANTI = .TRUE.
          SQUARE = .TRUE. 
+      GO TO 200
+
 C                           
 C       V_dc integrals coming with CAP_d term  
 C  -------------------------------------------------    
@@ -2344,28 +2346,31 @@ C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
-      IF (INTTYP .ne. 73) then
+      IF (INTTYP .NE. 73) THEN
       CALL PR1DRV(SOINT,NELMNT,WORK,LWORK,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,DOATOM,INTADR,TRIANG,NATOM,SQUARE,
      &            IPRINT,DOINT)
       ELSE
 c
-c Read in and print the x, y, z component of ARGOS SOPP integrals
+c Read in and print the x, y, z component of ARGOS SOREP integrals
 c
         DO 601 I = 1, NOPTYP
           WRITE(RTNLBL(2)(3:4),'(I2)') INTREP(I)+1
-            if (I .eq. 1) then
-              open(60,form='unformatted',file='sox',err=5557)
+            IF (I .EQ. 1) THEN
+              OPEN(60,FORM='UNFORMATTED',FILE='RECP_INT_X',ERR=5557)
               READ(60) (SOINT(N,I),N=1,N2BBASX)
-            elseif (I .eq. 2) then
-              open(61,form='unformatted',file='soy',err=5557)
+              CLOSE(60)
+            ELSEIF (I .EQ. 2) THEN
+              OPEN(61,FORM='UNFORMATTED',FILE='RECP_INT_Y',ERR=5557)
               READ(61) (SOINT(N,I),N=1,N2BBASX)
-            elseif (I .eq. 3) then
-              OPEN(62,form='unformatted',file='soz',err=5557)
+              CLOSE(61)
+            ELSEIF (I .EQ. 3) THEN
+              OPEN(62,FORM='UNFORMATTED',FILE='RECP_INT_Z',ERR=5557)
               READ(62) (SOINT(N,I),N=1,N2BBASX)
-            end if     !  end of read in 
- 601    continue
+              CLOSE(62)
+            END IF     !  end of read in 
+ 601    CONTINUE
       END IF     !  end of SOPP    
 C
 C     *********************************************************

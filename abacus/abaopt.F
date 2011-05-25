@@ -2604,6 +2604,9 @@ C
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
+
+      print *,'yc-INIHES',iprint
+      iprint = 12
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2930,6 +2933,8 @@ C
       LOGICAL RESET, REJLST
 C
       CALL QENTER('UPDHES')
+      print *,'yc-UPDHES',iprint
+      iprint = 12
 C
 C     If redundant internal coordinates are used, we have to transform
 C     the calculated Cartesian gradient

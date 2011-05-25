@@ -1,206 +1,149 @@
-*deck argos
-      subroutine argos
+!*******************************************************************
+!
+!     ECPINT : RECP integral routine
+!
+!     This program is based on argos integral routine
+!     with the permission of R. M. Pitzer
+!     and maintained by Young Choon Park (KAIST)
+!
+!*******************************************************************
+!     PROGRAM ARGOS
+!
+!     INTEGER     LCORED
+!     PARAMETER ( LCORED = 4 500 000 )
+!     REAL*8    MEM_ALL
+!     COMMON // MEM_ALL( LCORED )
+!     LCORE  = LCORED
+!     CALL ARGOS_DRIVER( MEM_ALL(IFIRST), (LCORE) )
+!*******************************************************************
+      SUBROUTINE ECPINT(WORK,LWORK)
+
+#include "implicit.h"
+#include "argos_print.h"
+
+!     Memory allocation
+!                 |            |           |     |
+!     CALL MEMGET('REAL',KBASE,LENGTH,WORK,KFREE,LFREE)
+!                        |                 |     |
+!
+!     Memory deallocation
+!     CALL MEMREL('ARGOS',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      DIMENSION WORK(*)
+      INTEGER   LWORK
+
+!     Enter ECPINT
+      CALL QENTER('ECPINT')
+      CALL TITLER('RECP integral start','*',126)
+      CALL ARGOS_TITLE   !     Print title
+
+!     Basis setup
+      PRINT_LEVEL = 5 !10 
+      ARGOS_DEBUG = 0 !1
+
+!     RECP_INPUT generation
+      CALL ARGOSIN
+
+!     Main part
+      CALL ARGOS_DRIVER(WORK,LWORK) 
+ 
+!     Exit ECPINT
+      CALL TITLER('RECP integral end','*',126)
+      CALL QEXIT('ECPINT')
+
+      RETURN      
+      END
+
+! ------------------------------------------------
+
+      SUBROUTINE ARGOS_TITLE
+!
+!     Write title and memory info
+!
+      IMPLICIT NONE
+#include "argos_print.h"
+
+      INTEGER NLIST
+
+      NLIST = 6 ! output file
+
+      WRITE(NLIST,100)
+  100 FORMAT(/,
+     & 5x,'Relativistic Effective Core Potential Integral routine'/
+     & 5x,'Version 2011.01.18'/
+     & 5x,'This routine is based on ARGOS integral'/
+     & 5x,'with the permission of R. M. Pitzer (Ohio State University)'/
+     & 5x,'and maintained by Y. C. Park (KAIST, youngc@kaist.ac.kr)'/) 
+
+!     IF (PRINT_LEVEL .GE. 1) THEN
+!        WRITE(NLIST,200) LCORE 
+! 200    FORMAT(/' Total memory allocated for RECP integral : '
+!    &          ,i10)
+!     ENDIF
+
+      RETURN
+      END
+
+! ------------------------------------------------
+
+      SUBROUTINE ARGOS_DRIVER(WORK,LWORK)
+
       implicit logical(a-z)
-c
-c  allocate space and call the driver routine.
-c
-c  ifirst = first usable space in the the real*8 work array a(*).
-c  lcore  = length of workspace array in working precision.
-c  mem1   = additional machine-dependent memory allocation variable.
-c  a(*)   = workspace array. a(ifirst : ifirst+lcore-1) is useable.
-c
-      integer ifirst, lcore
-c
-c     # mem1 and a(*) should be declared below within mdc blocks.
-c
-c     # local...
-c     # lcored = default value for lcore.
-c     # ierr   = error return code.
-c
-      integer lcored, ierr
-c
-c     # bummer error types.
-      integer   wrnerr,  nfterr,  faterr
-      parameter(wrnerr=0,nfterr=1,faterr=2)
-c
-c     # "call pbginf" should be the first executable statement.  this
-c     # sets up any communications necessary for parallel execution,
-c     # and does nothing in the sequential case.
-c
-*mdc*if unicos
-*c
-*c     # nonstandard unicos memory allocation.
-*c     # mem1 is a pointer to the beginning of a(*).
-*c
-*      parameter (lcored = 1 800 000)
-*      pointer (mem1, a)
-*      real*8 a(2)
-*c
-*      call pbginf
-*c
-*      call getlcl( lcored, lcore, ierr )
-*      if ( ierr .ne. 0 ) then
-*         call bummer('argos: from getlcl: ierr=',ierr,faterr)
-*      endif
-*c
-*      call hpalloc( mem1, lcore, ierr, 1 )
-*      ifirst = 1
-*mdc*elseif alliant
-*c
-*c     # fortran 90 style core allocation.
-*c
-*      integer mem1
-*      parameter (lcored = 1 800 000)
-*      real*8 a(:)
-*c
-*      call pbginf
-*c
-*      call getlcl( lcored, lcore, ierr )
-*      if ( ierr .ne. 0 ) then
-*         call bummer('argos: from getlcl: ierr=',ierr,faterr)
-*      endif
-*c
-*      allocate( a(lcore) )
-*c
-*      mem1   = 0
-*      ifirst = 1
-*mdc*elseif sun iris convex
-c
-c     # nonstandard sun bsd unix memory allocation.
-c     # mem1 is a pointer to the beginning of a(*).
-c
-C      integer mem1
-C      parameter (lcored = 1 800 000)
-C      pointer (mem1, a)
-C      real*8 a(2)
-c
-c     integer  malloc
-c     external malloc
-c
-C      call pbginf
-c
-C      call getlcl( lcored, lcore, ierr )
-C      if ( ierr .ne. 0 ) then
-C         call bummer('argos: from getlcl: ierr=',ierr,faterr)
-C      endif
-c
-c     #  malloc() argument is assumed to be in bytes.
-C      mem1 = malloc( 8*lcore )
-C      if ( mem1 .eq. 0 ) then
-C         call bummer('argos: from malloc: mem1=',mem1,faterr)
-C      endif
-C      ifirst = 1
-*mdc*elseif (fps .and. obsolete)
-*c
-*c     # this code is for machines that support malloc(),
-*c     # but do not support pointer syntax.
-*c
-*      integer mem1
-*      parameter (lcored = 1 800 000)
-*c
-*      integer  malloc
-*      external malloc
-*c
-*      call pbginf
-*c
-*      call getlcl( lcored, lcore, ierr )
-*      if ( ierr .ne. 0 ) then
-*         call bummer('argos: from getlcl: ierr=',ierr,faterr)
-*      endif
-*c
-*c     #  malloc() argument is assumed to be in bytes.
-*      mem1 = malloc( 8*lcore )
-*      if ( mem1 .eq. 0 ) then
-*         call bummer('argos: from malloc: mem1=',mem1,faterr)
-*      endif
-*      ifirst = 1
-*mdc*elseif unix titan
-*c
-*c     # generic unix memory allocation using falloc() interface.
-*c     # see also $COLUMBUS/special/unix/falloc.c
-*c
-c
-c      integer mem1, offset
-c      parameter (lcored =  3 500 000)
-c      real*8 a(1)
-c*c
-c      call pbginf
-c*c
-c      call getlcl( lcored, lcore, ierr )
-c      if ( ierr .ne. 0 ) then
-c         call bummer('argos: from getlcl: ierr=',ierr,faterr)
-c      endif
-c*c
-c*c     # on return from falloc(), a(offset+1:offset+lcore) is useable.
-c      call falloc( lcore, 8, 0, a, mem1, offset )
-c      if ( mem1 .eq. 0 ) then
-c         call bummer('argos: from falloc: mem1=',mem1,faterr)
-c      endif
-c      ifirst = offset + 1
-c
-*mdc*else
-c
-c     # standard fortran workspace allocation.
-c     # mem1 is not used.  use blank common to reduce executable size.
-c
-      integer mem1
-      parameter ( lcored = 4 500 000 )
-      real*8    a
-      common // a( lcored )
-#include "argosprt.h"
-c
-      call pbginf
-c
-#ifdef ARGOS_STANDALONE
-      call getlcl( lcored, lcore, ierr )
-      if ( ierr .ne. 0 ) then
-         call bummer('argos: from getlcl: ierr=',ierr,faterr)
-      elseif ( lcore .gt. lcored ) then
-c        # make sure lcore is consistent.  this check should be
-c        # redundant with logic within getlcl(), but is included
-c        # here just to be safe.
-         call bummer('argos: (lcore-lcored)=',
-     &    (lcore-lcored), faterr )
-      endif
-#endif
-c
-      mem1   = 0
-      ifirst = 1
-*mdc*endif
-c
-c     # lcore, mem1, and ifirst should now be defined.
-c     # the values of lcore, mem1, and ifirst are passed to
-c     # driver() to be printed.
-c     # since these arguments are passed by expression, they
-c     # must not be modified within driver().
-c
-*mdc*if (fps .and. obsolete)
-*c
-*c      # for machines that support malloc()-type calls, but do not
-*c      # support pointer syntax,  the workaround is to pass the
-*c      # address of a(*) by value.
-*c
-*      call driver_argos( %val(mem1), (lcore), (mem1), (ifirst) )
-*c
-*mdc*else
-c
-      call driver_argos( a(ifirst), (lcore), (mem1), (ifirst) )
-c
-*mdc*endif
-c
-c     # return from driver() implies successful execution.
-c
-c     # message-passing cleanup: stub if not in parallel
-      call pend
-c
-c
-c      stop 'end of argos'
-      call cnvrt
-c      if (iprargos .ge. 5 ) then
-        write(6,'(/28x,a)') '********************************'
-        write(6,'(28x,a)')  '**        END of ARGOS        **'
-        write(6,'(28x,a//)')'********************************'
-c      endif
+
+#include "argos_mxvalue.h"
+#include "argos_files.h"
+#include "argos_error.h"
+#include "argos_print.h"
+
+      DIMENSION WORK(*)
+      INTEGER   LWORK
+
+      integer
+     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+      common /parmi/
+     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+
+      INTEGER     LCORED
+!     PARAMETER ( LCORED = 4 500 000 )
+      PARAMETER ( LCORED = 14 500 000 )
+      INTEGER LCORE
+      REAL*8  A
+      COMMON // A(LCORED)
+
+      integer
+     & nf(msup),      nc(msup),      ncon(mconsp),    nrcr(mconsp),
+     & lmnp1(mconsp), ntl(msfup),    ntu(msfup),      nt(msfup),
+     & mcons(msfup),  iprst(mnsfup), npair(2,mnsfup), icxst(2,mnsfup),
+     & nfct(mccup),   ngw(mccup),    icb(4,24,mccup),
+     & ica(mcup,msup,mgup),          nprir(2,mstup,mnsfup)
+
+!     # ipt(*) is used for workspace stack pointers.
+      integer ipt(55)
+
+      real*8
+     & zet(mconup,mconsp), eta(mrcrup,mconup,mconsp),
+     & COOR_X(mcup,msup), COOR_Y(mcup,msup), COOR_Z(mcup,msup)
+
+      LCORE  = LCORED
+
+      msu   = msup
+      mstu  = mstup
+      mrcru = mrcrup
+      mconu = mconup
+      mcu   = mcup
+      mccu  = mccup
+      mblu  = lcore
+
+      ipt(1) = 1    ! allocate space for lmnv
+
+      call argos_1e( WORK, LWORK, A, eta, ica,    icb,    icxst,
+     &   iprst,  ipt,    lmnp1, A(ipt(1)), mcons,  nc, ncon,
+     &   nf,     nfct,   ngw,    npair,     nprir,  nrcr,   nt,
+     &   ntl,    ntu,    COOR_X, COOR_Y, COOR_Z,     zet,    lcore )
+
       return
-c
       end
+
+

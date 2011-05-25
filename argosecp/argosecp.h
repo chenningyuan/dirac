@@ -1,6 +1,5 @@
 c *** SO index ***
-      integer   csoindex, soindex,
-     &          mcrs(mxatom), nmcrs
+      integer   csoindex, soindex, mcrs(mxatom), nmcrs
       logical   ecpchk
 c
 c *** ARPP / SOPP ***
@@ -9,5 +8,3 @@ c *** ARPP / SOPP ***
      &          ncr(mxatom,mxiqm,mxnbf), nls(mxatom,mxiqm,mxnbf)
       real*8    zcr(mxatom,mxiqm,mxnbf), ccr(mxatom,mxiqm,mxnbf),
      &          zls(mxatom,mxiqm,mxnbf), cls(mxatom,mxiqm,mxnbf)
-      character ecpline(mxatom,mxiqm,mxnbf)*90,
-     &          recpline(mxatom,mxiqm,mxnbf)*90

@@ -782,13 +782,9 @@ C
       IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,
      &                        KANG)
 
-c**************************************************************
-c**************************************************************
-c**                                                          **
-c**                This is for generating ARGOSIN            **
-c**                                                          **
-c**************************************************************
-c**************************************************************
+C     ****************************************
+C     **** This is for generating ARGOSIN ****
+C     ****************************************
 #ifdef MOD_ECP
       nsag   = NUCIND
       naordsag = blk
@@ -1953,6 +1949,7 @@ C
 #include "symmet.h"
 #include "ibtfun.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 C
       IF (GAUNUC.AND.NINT(Q).NE.0) THEN
         IF(QEXP.EQ.D0) THEN
@@ -2846,6 +2843,7 @@ C
 #include "molinp.h"
 #include "ccom.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "gencon.h"
 C
       IF(DIRAC) THEN
@@ -3049,6 +3047,7 @@ C
 #include "molinp.h"
 #include "ccom.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "gencon.h"
 C
       NBLOCK = 0
@@ -3259,6 +3258,7 @@ C  /* Deck orbinx */
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
+#include "dcbham."
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
       CHARACTER*8 FMT1
@@ -4582,14 +4582,14 @@ C
 c
 c---------------------------------------------------------------
 #ifdef MOD_ECP
-c For ARGOS
+C For ARGOS
 C
 C     Run over Nuclear Centres
 C
       blk = 0
-      do 401 ICENT = 1, NUCIND
+      do 401 ICENT = 1, NUCIND   ! run over nuclear center
          nucdega = nucdeg(ICENT)
-         DO 411 IA = 1, KMAX
+         DO 411 IA = 1, KMAX     ! run over shells
             ila = 0
             icol = 1
             MULA   = ISTBAO(IA)
@@ -4599,16 +4599,16 @@ C
             IC     = LCLASS(IA)
             ncenta = NCENT(IA)
             irowmax(icent,NHKTA) = nucdega * KHKTA
-            IF (IA-1.GE.1) THEN ! arrays boundaries fix
+CYCP        IF (IA-1.GE.1) THEN ! arrays boundaries fix
             if (ncenta .eq. ICENT) then
                if ((ncenta .ne. NCENT(IA-1)) .or.
      &             (NHKTA .ne. NHKT(IA-1))) then
                   blk = blk +1
                   IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
                   IOFF = NAORBD
-                  DO 421 NA = 1, KHKTA
+                  DO 421 NA = 1, KHKTA      ! run over components
                      ila = 0
-                     DO 431 LA = 0, MAXREP
+                     DO 431 LA = 0, MAXREP  ! run over symmetry operator
                         IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
 C
 C              If orbital contributes to this representation:
@@ -4647,7 +4647,7 @@ c     &                   'CTRANarg(',icent,NHKTA,irow,icol,') = ',soef
   421             continue
                endif
             endif
-            endif
+CYCP        ENDIF
   411    CONTINUE
   401 CONTINUE
 #endif /* ifdef MOD_ECP */
