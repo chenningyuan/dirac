@@ -169,8 +169,8 @@ class pam_enviroment:
         self.nodes = []
 
     # rcp, rsh for parallel, multinodes calculations
-        self.rcp = None 
-        self.rsh = None 
+        self.rcp = 'scp'
+        self.rsh = 'ssh'
 
     # dirac profiling
         self.profile = False
@@ -769,8 +769,8 @@ class pam_enviroment:
                         fullargs.append(a)
             except Exception:
                 pass
-        try_config_file(os.path.join(os.path.expanduser('~'),'.dirac'))
-        try_config_file('.dirac')
+        try_config_file(os.path.join(os.path.expanduser('~'),'.diracrc'))
+        try_config_file('.diracrc')
         fullargs.extend(sys.argv[1:])
         (options, args) = parser.parse_args(fullargs)
     
@@ -1039,10 +1039,10 @@ class pam_enviroment:
         for parallel calculations.
         """
         if not self.rcp:
-            print_std_out_err('No rcp command specified, use --rcp= on the command line or in ~/.dirac')
+            print_std_out_err('No rcp command specified, use --rcp= on the command line or in ~/.diracrc')
             sys.exit(-1)
         if not self.rsh:
-            print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
+            print_std_out_err('No rsh command specified, use --rsh= on the command line or in ~/.diracrc')
             sys.exit(-1)
         # get the list of nodes
         self.get_nodes()
