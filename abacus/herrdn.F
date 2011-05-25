@@ -4352,6 +4352,9 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+#ifdef MOD_ECP
+      use argos_ctran
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4586,6 +4589,13 @@ C For ARGOS
 C
 C     Run over Nuclear Centres
 C
+
+!fixme: check whether user wants .ECP
+!       if not, do not allocate and do the rest below
+
+!     allocate ctranarg
+      allocate(ctranarg(mxcent,mxqn,mxcent*mxqn,mxcent*mxqn))
+
       blk = 0
       do 401 ICENT = 1, NUCIND   ! run over nuclear center
          nucdega = nucdeg(ICENT)

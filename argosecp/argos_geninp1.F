@@ -2,6 +2,8 @@
 !
 !     read DIRAC input files and convert to ARGOS input file
 !
+
+      use argos_ctran
 #include "argosparm.h" 
 #include "argosbas.h"  
 #include "argosecp.h"    
@@ -301,6 +303,7 @@ c 43    continue
   53        continue
   52     continue
   51  continue
+      deallocate(ctranarg)
 cisl-e
 c
 c----------------------------------------------
