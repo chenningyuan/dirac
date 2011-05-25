@@ -484,7 +484,7 @@ class pam_enviroment:
             '--rsh',
             type='string',
             action='store',
-            dest='dest_suffix',
+            dest='rsh',
             default=self.rsh,
             help='Remote shell program, typically rsh or ssh',
             metavar='STRING',
@@ -493,7 +493,7 @@ class pam_enviroment:
             '--rcp',
             type='string',
             action='store',
-            dest='dest_suffix',
+            dest='rcp',
             default=self.rcp,
             help='Remote shell program, typically rcp or scp',
             metavar='STRING',
@@ -858,6 +858,9 @@ class pam_enviroment:
         self.infock = options.dest_infock
         self.outfock = options.dest_outfock
 
+        self.rcp = options.rcp
+        self.rsh = options.rsh
+        
         if options.dest_fullrestart:
             self.archive_name = options.dest_fullrestart
             self.full_restart = True
