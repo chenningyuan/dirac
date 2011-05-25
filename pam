@@ -36,6 +36,7 @@ import fileinput
 import datetime
 import platform
 import glob
+import shlex
 
 global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
@@ -444,10 +445,10 @@ class pam_enviroment:
         from optparse import OptionParser, OptionGroup
 
         usage = \
-            """
-          %prog [options] --inp=*.inp --mol=*.mol
-      or: %prog [options] --inp=*.inp --mol=*.xyz
-      or: %prog [options] --fullrestart=ARCHIVE.tgz"""
+            """%prog [options] --inp=*.inp --mol=*.mol
+   or: %prog [options] --inp=*.inp --mol=*.xyz
+   or: %prog [options] --fullrestart=ARCHIVE.tgz
+  Options are also read from ~/.dirac and .dirac"""
 
         parser = OptionParser(usage)
 
@@ -738,8 +739,22 @@ class pam_enviroment:
             metavar='TIME_STRING',
             )
         parser.add_option_group(group)
-        #   process input
-        (options, args) = parser.parse_args()
+        
+        # process arguments from config files and command line
+        # file arguments come first and hence have lowest priority
+        fullargs = []
+        def try_config_file(path):            
+            try:
+                f = open(path,'r')
+                for l in f.readlines():
+                    for a in shlex.split(l):
+                        fullargs.append(a)
+            except Exception:
+                pass
+        try_config_file(os.path.join(os.path.expanduser('~'),'.dirac'))
+        try_config_file('.dirac')
+        fullargs.extend(sys.argv[1:])
+        (options, args) = parser.parse_args(fullargs)
     
         if len(sys.argv) == 1: #   user has given no arguments: print help and exit    
             print parser.format_help().strip()
