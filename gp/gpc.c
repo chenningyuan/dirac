@@ -221,7 +221,6 @@ void sysinf_(fortran_int_t *parcal)
    printf(" External libraries: %s \n", LIBRARIES);
    printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
    printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
-   printf(" SVN URL           : %s \n", DIRAC_SVN_URL);
    printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
 
 #endif /* #ifdef THIS_IS_CMAKE_BUILD */

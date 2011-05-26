@@ -4,7 +4,6 @@
 #define ILP_DATA_MODEL     "not-set"
 #define DIRAC_BLAS         "not-set"
 #define DIRAC_LAPACK       "not-set"
-#define DIRAC_SVN_URL      "not-set"
 #define DIRAC_SVN_REVISION "not-set"
 #define FCOMP              "not-set"
 #define CCOMP              "not-set"

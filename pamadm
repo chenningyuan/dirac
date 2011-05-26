@@ -95,13 +95,8 @@ def provide_star_basisfile_names():
 sys.path.append(os.getcwd() + '/utils')
 
 from common import make_old_file, is_windows
-from common import svn_info, create_link, copy_parent
+from common import create_link, copy_parent
 from common import vacuum_cleaner
-
-# radovan: i don't think pamadm should set svn information
-#          this should be done by the makefile
-#          IMO pamadm should not contain anything svn related
-svn_object = svn_info() # object of the class
 
 # list of vital directories and files
 # these are always exported/released
@@ -622,23 +617,6 @@ for module in dirac_modules:
            flags += '-D%s ' % cppflag
        f.write(s + '\n')
 f.write(flags + '\n')
-
-# determine subversion url and revision
-is_subversion_working_copy = os.path.exists('.svn')
-if is_subversion_working_copy:
-   svn_revision = svn_object.get_svn_revision()
-   f.write("DIRAC_SVN_REVISION=%s\n" % svn_revision)
-   if options.exportfile != None:
-#     do not export svn url
-      f.write("DIRAC_SVN_URL='URL not exported in release'\n")
-   else:
-      svn_url = svn_object.get_svn_url()
-      f.write("DIRAC_SVN_URL=%s" % svn_url)
-
-else:
-   f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
-   f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
-
 f.close()
 
 # link "cbuild/Makefile.dirs" as "Makefile" over active source code directories

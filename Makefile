@@ -72,8 +72,7 @@ gp/compinfo.h:
 	@echo "#define LIBRARIES \"${LIBS}\"" >> $@
 	@echo "#define DIRAC_BLAS \"${USED_DIRAC_BLAS}\"" >> $@
 	@echo "#define DIRAC_LAPACK \"${USED_DIRAC_LAPACK}\"" >> $@
-	@echo "#define DIRAC_SVN_URL \"${DIRAC_SVN_URL}\"" >> $@
-	@echo "#define DIRAC_SVN_REVISION \"${DIRAC_SVN_REVISION}\"" >> $@
+	@echo "#define DIRAC_SVN_REVISION \"`$(INSTALL_DIR)/cmake/get-svn-revision`\"" >> $@
 
 gp/gpc.o: gp/compinfo.h
 

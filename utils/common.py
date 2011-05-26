@@ -325,32 +325,6 @@ def make_old_file(path):
     times = (atime,mtime)
     os.utime(path,times)
 
-class svn_info:
-    """
-    handle svn repository data
-    """
-    def __init__(self):
-        """
-        initialize  svn_revision, svn_url
-        """
-        import os, subprocess
-        command="svn info" # valid for both Unix,Windows
-        try:
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-            output = process.stdout.read().splitlines(False)
-            self.svn_revision=output[4].replace("Revision:","")
-            self.svn_revision=self.svn_revision.replace(" ","")
-            self.svn_url=output[2].replace("Repository Root: ","")
-        except:
-#           this is not a subversion working copy
-#           (some people are working with git)
-            self.svn_revision = 'unknown; not a subversion working copy'
-            self.svn_url      = 'unknown; not a subversion working copy'
-    def get_svn_revision(self):
-        return self.svn_revision
-    def get_svn_url(self):
-        return self.svn_url
-
 def create_link(source, dest_dir, dest_file):
     """
     create symbolic link (Unix), before make a comprehensive check
