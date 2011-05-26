@@ -265,7 +265,7 @@ class run:
          def child_signaller(signum, frame):
              '''Pass on signals to pam to its children'''
              if pgid is not None:
-                 print >> sys.stderr,'ruuntest: got signal',signum,'passing on to children'
+                 print >> sys.stderr,'runtest: got signal',signum,'passing on to children'
                  os.killpg(pgid,signum) # TODO: adapt for Windows
              sys.exit()
          if sys.platform != 'win32':
