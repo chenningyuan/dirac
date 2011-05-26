@@ -1289,13 +1289,29 @@ class pam_enviroment:
 
         return return_code
 
+    def print_all_processes(self):
+        """
+        print all remaining processes using the system command "ps"
+        TODO: adapt for Windows, maybe for Mac as well ?
+        """
+        sys.stdout.flush()
+        sys.stderr.flush()
+        # command - print all processes, to be adapted for other architectures ?
+        command="ps -fu "+self.user_name
+        process_string=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,\
+                       stdout=subprocess.PIPE).communicate()[0]
+        print_std_out_err("\n current processes left: \n--------------------------- \n"+process_string)
+
     def launch_dirac_subprocess(self):
         pgid = None # process group id of the "dirac" process
         def child_signaller(signum, frame):
             '''Pass on signals to pam to its children'''
             if pgid is not None:
-                print_std_out_err("\npam: All dirac.x subprocesses forcefully killed with signal "+str(signum))
+                print_std_out_err("\npam: All dirac.x subprocesses forcefully killed with signal "+str(signum)+\
+                                    " please wait few seconds...")
                 os.killpg(pgid,signum) # TODO: adapt for Windows
+                time.sleep(5)  # wait first that all processes die (or not), then prints 
+                self.print_all_processes()
             sys.exit()
         if not is_windows():
             signal.signal(signal.SIGHUP,child_signaller)
