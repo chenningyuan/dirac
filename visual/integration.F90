@@ -247,9 +247,10 @@ contains
          q_integral = q_integral + weight(ipoint)*q
       end do
 
+      quantity_integral = 0.0d0
       do i = 0, 3
          do imat = 1, visual_cfg_nr_dmat
-            quantity_integral(i) = q_integral(i, imat)
+            quantity_integral(i) = quantity_integral(i) + q_integral(i, imat)
          end do
       end do
 
