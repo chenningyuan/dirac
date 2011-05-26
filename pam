@@ -1307,7 +1307,7 @@ class pam_enviroment:
         def child_signaller(signum, frame):
             '''Pass on signals to pam to its children'''
             if pgid is not None:
-                print_std_out_err("\npam: All dirac.x subprocesses forcefully killed with signal "+str(signum)+\
+                print_std_out_err("\npam: All dirac.x subprocesses terminated with signal "+str(signum)+\
                                     " please wait few seconds...")
                 os.killpg(pgid,signum) # TODO: adapt for Windows
                 time.sleep(5)  # wait first that all processes die (or not), then prints 
