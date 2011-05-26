@@ -682,7 +682,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 C Used from COMMON blocks:
-C   DHFCAL: MXDIIS
+C   dcbdhf: MXDIIS
 C
 #include "dcbdhf.h"
       DIMENSION BMAT(*),EVEC(*),FOCK(*),EBUF(*),WORK(LWORK)
@@ -714,7 +714,7 @@ C*****************************************************************************
       PARAMETER(DM1 = -1.0D0,D0 = 0.0D0)
 C
 C Used from COMMON blocks:
-C   DHFCAL: LUEVEC,IPRSCF,ITDIIS,MXDIIS
+C   dcbdhf: LUEVEC,IPRSCF,ITDIIS,MXDIIS
 C
 #include "dcbham.h"
 #include "dcbdhf.h"
@@ -814,7 +814,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C Used from COMMON blocks:
-C   DHFCAL: MXDIIS
+C   dcbdhf: MXDIIS
 #include "dcbdhf.h"
       DIMENSION BMAT(*),CVEC(*),EVEC(*),EBUF(*),WORK(LWORK)
 C
@@ -852,7 +852,7 @@ C*****************************************************************************
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),
      &          KPVT(*),WORK(*)
 C Used from COMMON blocks
-C  DHFCAL: NELMBM
+C  dcbdhf: NELMBM
 C
 #include "dcbdhf.h"
 C
@@ -892,7 +892,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 C Used from COMMON blocks:
-C  DHFCAL: LUEVEC,NELMBM,ITDIIS,MXDIIS
+C  dcbdhf: LUEVEC,NELMBM,ITDIIS,MXDIIS
 C  DGROUP: NZ
 C  DCBBAS: N2VCTQ
 C
@@ -1042,7 +1042,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 C Used from COMMON blocks:
-C  DHFCAL: LUFOCK,NITER,NELMBM
+C  dcbdhf: LUFOCK,NITER,NELMBM
 C  DCIDHF: NFMAT
 C  DGROUP: NZ
 C

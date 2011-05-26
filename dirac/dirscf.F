@@ -1982,7 +1982,7 @@ C***********************************************************************
 #include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C Used from COMMON blocks:
-C  DHFCAL: NSMOTQ
+C  dcbdhf: NSMOTQ
 C
 #include "dcbdhf.h"
 #include "memint.h"

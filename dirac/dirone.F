@@ -2987,7 +2987,6 @@ C*****************************************************************************
 C
 C Used from COMMON blocks
 C  CBIPAM:
-C  DHFCAL:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
@@ -4477,7 +4476,7 @@ c
          WRITE(LUPRI,'(1X,2(A/))') 'FATAL : The bare nucleus '//
      &   'correction is only implemented for elemtents 1-118',
      &   '         You can disable BNCORR with the .NOBNCR keyword '//
-     &   'in *DHFCAL'
+     &   'in *SCF'
          CALL QUIT('BNCORR : Unsupported element!')
       ENDIF
       IF (MAXSHELL) THEN
@@ -5685,7 +5684,6 @@ C*****************************************************************************
 C
 C Used from COMMON blocks
 C  CBIPAM:
-C  DHFCAL:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:

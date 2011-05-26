@@ -14,7 +14,7 @@
 **WAVE FUNCTION
 .DHF
 .LUCITA
-*DHFCAL
+*SCF
 # here we insert the number of electrons for the closed shell
 # (if inversion for gerade and ungerade separately)
 .CLOSED SHELL

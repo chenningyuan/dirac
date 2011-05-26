@@ -560,7 +560,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
-CTOBS: Note the use of dhfcal ! Should be generalized !!!
+CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
 
@@ -607,7 +607,7 @@ C
         INTFLG = INTDEF
 Chjaaj MAERKE 01-Feb-2001: this is the best we can do now; 
 C      this assumes the user uses the same input for restart
-C      with *DHFCAL specified as in the .DHF calculation such that
+C      with *SCF specified as in the .DHF calculation such that
 C      any user-specified change of INTFLG (e.g. no SSSS) is used.
 C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C

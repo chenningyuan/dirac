@@ -3493,7 +3493,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-CTOBS: Note the use of dhfcal ! Should be generalized !!!
+CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),

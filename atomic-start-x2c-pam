@@ -209,7 +209,7 @@ class x2c_fragment_dirac_input(object):
         text  = "**WAVE FUNCTIONS\n"
         if self._rtype == 'atomic-start':
             text += ".DHF\n"
-        text += "*DHFCAL\n"
+        text += "*SCF\n"
         text += ".FOCC\n"
         return text
 

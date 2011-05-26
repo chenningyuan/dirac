@@ -843,8 +843,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dhfinp */
-      SUBROUTINE DHFINP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE SCFINP(WORD,RESET,WORK,LWORK)
 C***********************************************************************
 C
 C     Input section for DHF-module
@@ -1045,10 +1044,11 @@ C
       CALL DZERO(DF,1+MXOPEN)
       CALL DZERO(DALPHA,1+MXOPEN)
 C
-C     Process input for DHFCAL
+C     Process input for *SCF
 C     ========================
-C
-      NEWDEF = (WORD .EQ. '*DHFCAL')
+
+
+      newdef = (word == '*SCF   ' .or. word == '*DHFCAL')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -1075,9 +1075,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in DHFINP.'
+     *            '" not recognized in SCFINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in DHFINP.')
+               CALL QUIT('Illegal keyword in SCFINP.')
     1          CONTINUE
 C&&&& PROJECtion: Reduce transformation matrix by projection
                PROJEC = .TRUE.
@@ -1086,7 +1086,7 @@ C&&&& PROJECtion: Reduce transformation matrix by projection
                  WRITE(LUPRI,'(A,I5)')
      &           '* Number of fragments specified:',NFRAG,
      &           '* Current maximum              :',MFRAG
-                 CALL QUIT('DHFINP:Too many fragments !')
+                 CALL QUIT('SCFINP:Too many fragments !')
                ENDIF
                DO J = 1,NFRAG
                  READ(LUCMD,'(A6)') PRJFIL(J)
@@ -1183,7 +1183,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
      &                  'Error in SCF INTFLG reading !'//
      &                  '4 parameters needed for Gaunt term !'
                         CALL FLSHFO(LUPRI)
-                        CALL QUIT( 'DHFINP: Error in INTFLG'//
+                        CALL QUIT( 'SCFINP: Error in INTFLG'//
      &                  'reading for GAUNT=true!')
                      ENDIF
                   ELSE
@@ -1193,7 +1193,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
      &                 'Error in SCF INTFLG reading !'//
      &                 '3 integer parameters needed  !'
                        CALL FLSHFO(LUPRI)
-                       CALL QUIT('DHFINP: Error in INTFLG reading')
+                       CALL QUIT('SCFINP: Error in INTFLG reading')
                      ENDIF
                   END IF
                GO TO 100
@@ -1212,11 +1212,11 @@ C&&&& CLOSED: number of closed shell electrons
                   READ (LUCMD,*,IOSTAT=IOS) (NELEC_DHF(I),I=1,NFSYM)
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*)
-     & 'DHFINP: Error in reading .CLOSED occupation for NFSYM=',NFSYM
+     & 'SCFINP: Error in reading .CLOSED occupation for NFSYM=',NFSYM
                     WRITE(LUPRI,*) 'Values of NELEC_DHF(I),I=1,NFSYM:',
      &              (NELEC_DHF(I),I=1,NFSYM)
                    CALL QUIT(
-     &             'DHFINP: Error in reading .CLOSED occupation')
+     &             'SCFINP: Error in reading .CLOSED occupation')
                   ENDIF
                   INIOCC = .FALSE.
                GO TO 100
@@ -1224,7 +1224,7 @@ C&&&& CLOSED: number of closed shell electrons
 C&&&& EIGPRI: Print control for electron and positron solutions
                   READ(LUCMD,*,IOSTAT=IOS) IL,IS
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('DHFINP ERROR: IL,IS input error')
+                    CALL QUIT('SCFINP ERROR: IL,IS input error')
                   ENDIF
                   IPREIG = IL+2*IS
                GO TO 100
@@ -1235,13 +1235,13 @@ C             Read in number of open shells
 C
                READ(LUCMD,*,IOSTAT=IOS) NOPEN
                IF (IOS.NE.0) THEN
-                 CALL QUIT('DHFINP:open shell input error !')
+                 CALL QUIT('SCFINP:open shell input error !')
                ENDIF
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
                   WRITE(LUPRI,'(1X,A,I2,A,I2)')
-     &               'DHFINP: NOPEN must be between ',
+     &               'SCFINP: NOPEN must be between ',
      &               1,' and ',MXOPEN
-                  CALL QUIT('DHFINP ERROR: Open shell error!')
+                  CALL QUIT('SCFINP ERROR: Open shell error!')
                END IF
 C
 C              Read in number of active shells and their occ.
@@ -1258,7 +1258,7 @@ C
                   ISLASH = INDEX(LINE,'/')
                   IF (ISLASH .LE. 0) THEN
                      WRITE (LUPRI,'(/A,I2,A,I2/A/A,A)')
-     &               'ERROR for *DHFCAL .OPEN SHELL shell no.',
+     &               'ERROR for *SCF .OPEN SHELL shell no.',
      &                IOPEN,'/',NOPEN,
      &             '- the defining input line does not contain a "/":',
      &             '- the following input line is:',LINE
@@ -1266,7 +1266,7 @@ C
      &             '- Also there could be forgotten the number'//
      &             ' of open-shells before ! Check the input.'
                      CALL QUIT(
-     &               'Input error for .OPEN SHELL under *DHFCAL')
+     &               'Input error for .OPEN SHELL under *SCF')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
                   READ (TEXT,*) IELEC
@@ -1288,23 +1288,23 @@ C
 
                   IF (IPERIOD.EQ.0.AND.NFSYM.GE.2) THEN
                    WRITE(LUPRI,*)
-     &            'DHFINP: Error in open-shell input reading !'
+     &            'SCFINP: Error in open-shell input reading !'
                    WRITE(LUPRI,*) 'NOPEN:',NOPEN,' NFSYM:',NFSYM
                    WRITE(LUPRI,'(A,A)') 'text:',LINE
                    WRITE(LUPRI,*)
      &  'for NFSYM=2 has to be of the for xx/xx,xx (see the manual)'
                    CALL QUIT(
-     &             'DHFINP: Error in open-shell input reading !')
+     &             'SCFINP: Error in open-shell input reading !')
                   ELSE IF (IPERIOD.GT.0.AND.NFSYM.EQ.1) THEN
                    WRITE(LUPRI,*)
-     &        'DHFINP: Error in open-shell input reading'
+     &        'SCFINP: Error in open-shell input reading'
                    WRITE(LUPRI,*)
      &        'NFSYM is 1 (only gerade symmetry)'
                 WRITE(LUPRI,'(A,A)') 'you have specified (N/G,U):',LINE
                 WRITE(LUPRI,*)
      &        'for NFSYM=1 use N/G instead of N/G,U'
                    CALL QUIT(
-     &        'DHFINP: Error in open-shell input reading !')
+     &        'SCFINP: Error in open-shell input reading !')
                   ENDIF
 
                   IF (NFSYM .EQ. 1) IAC2 = 0
@@ -1554,9 +1554,9 @@ CTROND
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in DHFINP.'
+     *            '" not recognized in SCFINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in DHFINP.')
+               CALL QUIT('Illegal prompt in SCFINP.')
             END IF
       END IF
 
@@ -1644,10 +1644,10 @@ C
      &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
             IF (NELEC_DHF(IFRP).LT.0)
-     &         CALL QUIT('DHFINP: negative number of '//
+     &         CALL QUIT('SCFINP: negative number of '//
      &                   'closed shell electrons!')
             IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('DHFINP: odd number of '//
+     &         CALL QUIT('SCFINP: odd number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
@@ -1777,10 +1777,10 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(dirac_cfg_dft_calculation) THEN
         WRITE(LUPRI,'(A)')
-     &   ' DHFINP: Set-up for Kohn-Sham calculation:'
+     &   ' SCFINP: Set-up for Kohn-Sham calculation:'
       ELSE
         WRITE(LUPRI,'(A)')
-     &   ' DHFINP: Set-up for Hartree-Fock calculation:'
+     &   ' SCFINP: Set-up for Hartree-Fock calculation:'
       ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
 c
@@ -1807,7 +1807,6 @@ C
      &   ('Fermion irrep ',I,':',NFRO_DHF(I),I=1,NFSYM)
       ENDIF
       IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
-CMI     CALL QUIT('DHFINP: Zero electrons not allowed!')
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
@@ -1909,8 +1908,8 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
 C
       IF (NOPEN.GT.0.AND.ZORA) THEN
           WRITE(LUPRI,'(A)')
-     &       'DHFINP: Open shell ZORA is not implemented yet, sorry.. '
-          CALL QUIT('DHFINP ERROR: asked for ZORA Open shell calc.')
+     &       'SCFINP: Open shell ZORA is not implemented yet, sorry.. '
+          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
       ENDIF
 C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
@@ -2124,7 +2123,7 @@ CMI =====================================================================
          write(lupri,*)
      &  ' untransformed 2-component (electronic) MOs'
        ELSE
-        CALL QUIT('DHFINP: wrong value of INI2C (nor 1/2/3/4)!')
+        CALL QUIT('SCFINP: wrong value of INI2C (nor 1/2/3/4)!')
        ENDIF
 
       WRITE(LUPRI,'(A,I4)')
@@ -2292,7 +2291,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 17, NTABLE = 21)
+      PARAMETER (NDIR = 17, NTABLE = 22)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2310,13 +2309,13 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '.XXXXXX'/
+     &             '*SCF   '/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC'/
+     &             '.ARDUCC','.SCF   '/
 C
       NJOBS = 0
 C
@@ -2388,7 +2387,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121),I
+     &                117,118,119,120,121,122),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2400,14 +2399,17 @@ C
      *         ' Keyword ',WORD,' not recognized in PSIINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in PSIINP.')
-C&&&& DHF: Perform Hartree-Fock or Kohn-Sham calculation
-  101    CONTINUE
-            dirac_cfg_scf_calculation = .true.
-            if (.not. dirac_cfg_dft_calculation) then
-              dirac_cfg_hf_calculation = .true.
-            end if
-            NJOBS = NJOBS +1
-            GO TO 100
+
+!        .DHF kept for backwards compatibility
+  101    continue
+         print *, 'WARNING: .DHF is deprecated, please use .SCF instead'
+         dirac_cfg_scf_calculation = .true.
+         if (.not. dirac_cfg_dft_calculation) then
+            dirac_cfg_hf_calculation = .true.
+         end if
+         njobs = njobs + 1
+         go to 100
+
 C&&&& MP2: Perform second-order Moller-Plesset calculation
   102    CONTINUE
             DOMP2 = .TRUE.
@@ -2533,12 +2535,24 @@ C&&& HSFS : Do High Sect FSCC calculations (new code)
             DOHSFS = .TRUE.
             write(LUPRI,*) 'DO HSFS run !'
             GO TO 100
+
 C&&&& ARDUCC: Perform MRCC calculation
  121     CONTINUE
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOARDUC = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
+
+!        .SCF
+  122    continue
+         dirac_cfg_scf_calculation = .true.
+         if (.not. dirac_cfg_dft_calculation) then
+            dirac_cfg_hf_calculation = .true.
+         end if
+         njobs = njobs + 1
+         go to 100
+
+
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
@@ -2654,9 +2668,13 @@ C
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in PSIINP, error in prompt.')
       END IF
-    2 CONTINUE
-        CALL DHFINP(WORD,.FALSE.,WORK,LWORK)
-        GO TO 200
+
+!*DHFCAL kept for backwards compatibility
+    2 continue
+      print *, 'WARNING: *DHFCAL is deprecated, please use *SCF instead'
+      call SCFINP(word, .false., work, lwork)
+      go to 200
+
     3 CONTINUE
         CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
@@ -2731,9 +2749,12 @@ C
    16 CONTINUE
         CALL ARDINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
-   17 CONTINUE
-        GO TO 200
-C
+
+!*SCF
+   17 continue
+      call SCFINP(word, .false., work, lwork)
+      go to 200
+
     1 CONTINUE
 C
 C     For geometry optimizations to work the INPUT routines
@@ -2747,13 +2768,13 @@ C
 !             because the input routine is used to initialize its associated common block(s). 
 !             If the user hasn't specified this input module, 
 !             it still needs to be called in order to initialize with default values. 
-!             The SET / RESET code in the beginning of DHFINP takes care of that the variables 
+!             The SET / RESET code in the beginning of SCFINP takes care of that the variables 
 !             are not re-initialized if the user has specified something in input.
 !             This way of doing it goes back to Trygve in ABACUS, and was adopted by Trond. 
 !             I have usually programmed it differently, with a separate subroutine to initialize variables. 
 !             You can argue for both ways of doing it.
 
-      CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
+      CALL SCFINP(WORD,.TRUE.,WORK,LWORK)
       CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2NOINP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
@@ -2853,7 +2874,7 @@ C
 C       Input section for LUCITA module
 C
 C       Written by Timo Fleig, December 2001
-C       (modified DHFINP routine)
+C       (modified SCFINP routine)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -6910,7 +6931,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in RHO1IN.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in DHFINP.')
+               CALL QUIT('Illegal keyword in SCFINP.')
     1          CONTINUE
 C&&&& MESH; Step length for grid
                   READ(LUCMD,*) DSTEP
@@ -7178,7 +7199,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in WT1IN.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in DHFINP.')
+               CALL QUIT('Illegal keyword in SCFINP.')
     1          CONTINUE
 C&&&& MESH; Step length for grid
                   READ(LUCMD,*) DSTEP
