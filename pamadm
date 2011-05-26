@@ -642,6 +642,8 @@ else:
 f.close()
 
 # link "cbuild/Makefile.dirs" as "Makefile" over active source code directories
+#fixme: after transition to git remove this part
+#       and commit links
 
 # get position of absolute dirac directory
 dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
