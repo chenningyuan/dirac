@@ -20,7 +20,7 @@ gama(sx,rhox):=(1.0 + chi(sx,rhox)) * (lamb(sx) + nu(rhox) * nu(rhox));
 
 Fs(sx):= -1.0 + (1.0/(27.0 * AE[3])) * (sx^2/(1.0 + sx^2/4.0)) + sx^2 * hse(sx)/(2.0 * AE[3]);
 
-eGs(sx):=(2.0/5.0)*AE[3]*Fs(sx)*lamb(sx)-(4.0/15.0)*AE[2]*lamb(sx)^3-(6.0/5.0)*AE[1]*lamb(sx)^3-(4.0/5.0)*sqrt(PI)*lamb(sx)^(7/2)-(12.0/5.0)*lamb(sx)^(7/2)*(sqrt(xi(sx))-sqrt(eta(sx)));
+eGs(sx):=(2.0/5.0)*AE[3]*Fs(sx)*lamb(sx)-(4.0/15.0)*AE[2]*lamb(sx)^2-(6.0/5.0)*AE[1]*lamb(sx)^3-(4.0/5.0)*sqrt(PI)*lamb(sx)^(7/2)-(12.0/5.0)*lamb(sx)^(7/2)*(sqrt(xi(sx))-sqrt(eta(sx)));
  
 tem01(sx,rhox):=sqrt(xi(sx) + nu(rhox) * nu(rhox));
 tem02(sx,rhox):=sqrt(eta(sx)+ nu(rhox) * nu(rhox));
