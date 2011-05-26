@@ -46,7 +46,6 @@ module x2cmod_cfg
   logical, public :: x2c_do_spherical        =  .false.
   logical, public :: x2c_free_part_mtx_defh1 =  .false.
   logical, public :: x2c_4c_fock_mtx_defh1   =  .false.
-  logical, public :: x2c_4to2c_continue_scf  =  .false.
 
 ! real(8) block
   real(8), public :: x2c_cspeed
@@ -73,6 +72,7 @@ module x2cmod_cfg
   integer, public :: nr_ao_large_x2c
   integer, public :: nr_ao_small_x2c
   integer, public :: n2bastq_dim_x2c
+  integer, public :: nr_cmo_q
   integer, public :: nr_ao_all(2)
   integer, public :: nr_ao_l(2)
   integer, public :: nr_ao_s(2)

@@ -4448,7 +4448,7 @@ C
 !                   57        58        59        60
      &            '.FDERSP','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.xxxxxx','.xxxxxx','.xxxxxx'/
+     &            '.ECP   ','.X2Cmmf','.xxxxxx','.xxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4922,7 +4922,7 @@ C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
              x2c        = .true.
              x2cmod_x2c = .true.
 C            Check that we have not defined operators yet,
-C            as they need to be modified within BSS transformations
+C            as they need to be picture-changed transformed after the 2c-transformation
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
      &        'HAMINP: specify the .X2C option before .OPERAT !')
@@ -5091,6 +5091,18 @@ C activates fde response
           GO TO 100
 
   162     CONTINUE
+!         X2Cmmf: molecular mean-field approach within the X2C framework
+          noprtr                = .true.
+          x2c                   = .true.
+          x2cmod_x2c            = .true.
+          x2c_4c_fock_mtx_defh1 = .true.
+          x2c_add_amfi          = -1
+C         Check that we have not defined operators yet,
+C         as they need to be picture-changed transformed after the 2c-transformation
+          IF(I_FINFIELD .gt. 0)THEN
+            CALL QUIT(
+     &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
+          ENDIF
   163     CONTINUE
   164     CONTINUE
           GO TO 100
@@ -5177,11 +5189,10 @@ C
       ENDIF
 
 !     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
-      if(find_keyword('*X2C').and.find_keyword('.4cdfh1'))then
+      if(find_keyword('.X2Cmmf'))then
         do4c2c = .true.
-!       present default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
+!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
         usedf  = .true.
-        if(find_keyword('.2ccycle')) cont2c = .true.
       end if
       if(find_keyword('**HAMIL')) call move_to_next_star(word)
 
@@ -7519,7 +7530,8 @@ C
 C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
-     &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD') THEN
+     &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD'.OR.
+     &       WORD.EQ.'.X2Cmmf') THEN
 C............active 2-component modus
            TWOCOMP=.TRUE. 
 C............variable telling that this is a 2-component relativistic calculation
@@ -7544,7 +7556,7 @@ C............variable telling that this is a 2-component relativistic calculatio
  940  CONTINUE
 
 !     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
-      if(find_keyword('*X2C').and.find_keyword('.4cdfh1'))then
+      if(find_keyword('.X2Cmmf'))then
         isdo4c2c = .true.
       end if
 
