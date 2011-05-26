@@ -24,10 +24,10 @@
 .PRINT
 2
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
-.DHF
+.SCF
 .RELCCSD
 #.MP2
-*DHFCAL ! DHF specifications...
+*SCF ! DHF specifications...
 .CLOSED SHELL
 10  
 .INTFLG ! Specify what 2-el.integrals to include

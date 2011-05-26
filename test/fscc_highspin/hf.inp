@@ -8,9 +8,9 @@ Moelcular oxygen. Ground state.
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RESOLVE
-*DHFCAL
+*SCF
 .CLOSED SHELL
  6 8
 .OPEN SHELL

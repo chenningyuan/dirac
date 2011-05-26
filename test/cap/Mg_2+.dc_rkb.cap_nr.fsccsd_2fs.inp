@@ -28,9 +28,9 @@ Magnesium atom. Fockspace test calculations.
 5.5 7.5 10 25 100 200
 4000 2000 1000 500 200
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .EVCCNV
 1.0E-10
 .INTFLG

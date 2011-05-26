@@ -19,9 +19,9 @@ Analytical first-order MP2 properties
 .AMFICH
 0
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .FCKCNV
 1.0D-9
 **PROPERTIES

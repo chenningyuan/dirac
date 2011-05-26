@@ -15,5 +15,5 @@ LDA calculations with Jengine in non-relativistic two-component mode
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

@@ -16,10 +16,10 @@
 .X2C
 #################################
 **WAVE FUNCTION
-.DHF
+.SCF
 .KRMCSCF
 #########
-*DHFCAL
+*SCF
 .CLOSED SHELL
  4  0
 #########

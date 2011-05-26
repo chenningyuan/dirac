@@ -11,5 +11,5 @@ H2O2 molecule, integral calculations with ERI in pure one-component mode
 **INTEGRALS
 .RUNERI
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

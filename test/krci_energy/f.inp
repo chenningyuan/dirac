@@ -5,10 +5,10 @@
 .WAVE FUNCTION
 #################################
 **WAVE FUNCTION
-.DHF
+.SCF
 .KR CI
 #########
-*DHFCAL
+*SCF
 .CLOSED SHELL
   4  0
 .OPEN SHELL

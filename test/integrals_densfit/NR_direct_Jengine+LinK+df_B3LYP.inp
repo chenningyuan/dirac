@@ -17,5 +17,5 @@ B3LYP calculations with Jengine+density fitting in non-relativistic two-componen
 *READIN
 .CONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

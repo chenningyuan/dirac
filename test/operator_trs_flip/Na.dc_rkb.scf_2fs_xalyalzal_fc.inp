@@ -27,8 +27,8 @@
 .INTFLG
 1 1 0
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
-.DHF
-*DHFCAL ! DHF specifications...
+.SCF
+*SCF ! DHF specifications...
 .CLOSED SHELL
 4 6 
 .OPEN SHELL

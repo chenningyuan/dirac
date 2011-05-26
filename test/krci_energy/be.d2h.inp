@@ -3,9 +3,9 @@
  Testing KR-CI for Be in Pierloot basis
 .WAVE FUNCTION
 **WAVE FUNCTION
-.DHF
+.SCF
 .KR CI
-*DHFCAL
+*SCF
 .CLOSED SHELL
  4 0
 *KRCICALC

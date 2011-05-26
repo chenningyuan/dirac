@@ -10,8 +10,8 @@ CH3F. Simple energy calculation.
 *READIN
 .UNCONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .EVCCNV
 1.0E-8 1.0E-7
 .MAXITR

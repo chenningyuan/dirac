@@ -8,9 +8,9 @@ Moelcular oxygen. Ground and excited states (X, a, b).
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .RELCCSD
-*DHFCAL
+*SCF
 .CLOSED SHELL
  6 8
 .EVCCNV

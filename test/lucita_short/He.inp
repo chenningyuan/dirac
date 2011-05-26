@@ -9,10 +9,10 @@
 .SPINFREE
 #################################
 **WAVE FUNCTION
-.DHF
+.SCF
 .LUCITA
 #
-*DHFCAL
+*SCF
 .CLOSED SHELL
  2
 #

@@ -15,8 +15,8 @@ electric properties for frozen density embedding
 *READIN
 .CONTRACTED
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .PRINT
 2
 **PROPERTIES

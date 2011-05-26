@@ -17,5 +17,5 @@ LDA calculations with Jengine+density fitting in non-relativistic two-component 
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

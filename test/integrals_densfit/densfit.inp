@@ -25,8 +25,8 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
   15
 .CONTRACT
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .PRINT
 2
 *END OF

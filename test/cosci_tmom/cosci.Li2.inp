@@ -12,10 +12,10 @@ Li2
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .COSCI
 ######################################################################
-*DHFCAL
+*SCF
 ## total number of electrons in closed-shell (1..NFSYM)
 .CLOSED SHELL
  4 2 

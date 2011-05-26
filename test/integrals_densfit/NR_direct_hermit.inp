@@ -12,5 +12,5 @@ HF calculations with Jengine+density fitting in non-relativistic two-component m
 *READIN
 .CONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

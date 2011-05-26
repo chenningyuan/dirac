@@ -6,8 +6,8 @@
 *READIN
 .UNCONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .EVCCNV
  1.0E-5         !we use poor convergence threshold for the test
 *END OF

@@ -15,7 +15,7 @@
 **GRID
 .DEBUG                          ! very coarse grid
 **WAVE FUNCTION
-.DHF
+.SCF
 **PROPERTIES
 .SHIELDING
 .PRINT

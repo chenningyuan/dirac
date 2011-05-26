@@ -11,8 +11,8 @@
 *READIN
 .CONTRACT
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .MAXITR
  4              !we stop after 4 iterations
 .EVCCNV

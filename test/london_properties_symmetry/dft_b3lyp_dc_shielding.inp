@@ -16,8 +16,8 @@
 **GRID
 .DEBUG                          ! very coarse grid
 **WAVE FUNCTION
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .EVCCNV
 1.0E-8  1.0D-6
 **PROPERTIES

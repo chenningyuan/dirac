@@ -5,5 +5,5 @@ Find redundant internal coordinates
 *OPTIMIZE
 .FINDRE
 **WAVE FUNCTION
-.DHF
+.SCF
 *END OF 

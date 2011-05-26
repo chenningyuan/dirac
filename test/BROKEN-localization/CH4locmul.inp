@@ -9,8 +9,8 @@ Projection CH4 pour diff. bases
 .SCREEN
  1.0D-11
 **WAVE FUNCTIONS
-.DHF
-*DHFCAL
+.SCF
+*SCF
 .CLOSED SHELL
  10
 .EVCCNV

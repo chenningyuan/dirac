@@ -14,5 +14,5 @@ HF calculations with Jengine+LinK in non-relativistic two-component mode
 *READIN
 .UNCONTRACTED
 **WAVE FUNCTIONS
-.DHF
+.SCF
 *END OF

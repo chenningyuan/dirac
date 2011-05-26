@@ -12,10 +12,10 @@ H3+
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-.DHF
+.SCF
 .COSCI
 ######################################################################
-*DHFCAL
+*SCF
 .CLOSED SHELL
 2
 .MAXITR
