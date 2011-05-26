@@ -92,7 +92,7 @@ C     set "I/O node master" + "shared memory node master"
 
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
-#ifdef VAR_IFORT && !def INT_STAR8
+#if defined VAR_IFORT && !defined INT_STAR8
       if(myproc .eq. master)then
         luxxx = lupri
       else
@@ -117,7 +117,7 @@ C     set "I/O node master" + "shared memory node master"
 !     types of determinants to be included
       CALL DETTYP(IPRSTR)
 
-#ifdef VAR_IFORT && !def INT_STAR8
+#if defined VAR_IFORT && !defined INT_STAR8
       write(luxxx,*) ' '
       call flshfo(luxxx)
 #endif
