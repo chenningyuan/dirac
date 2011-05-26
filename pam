@@ -100,12 +100,14 @@ class pam_enviroment:
     # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
-    # ... variables related to the scratch directory
+        # setting default to /tmp
+        # pam exits if --scratch is not set
+        # but this default is safe to avoid bugs
+        # that try to remove undefined directories
+        self.scratch_dir = '/tmp'
 
-        self.scratch_dir = ''
-        self.scratch_path = '/tmp'  # default scratch on most servers
+        # the default is to delete the scratch after the job
         self.keep_scratch = False   # default - delete the scratch after the job
-        self.create_scratch_dir_name = True
 
     # ... current PID to have unique string for each pam run
         self.current_pid=os.getpid()
@@ -209,7 +211,8 @@ class pam_enviroment:
         self.default_memory_dynamic = 0
         self.max_memory_dynamic     = self.default_memory_dynamic
 
-    # all files from the archive.tgz are unpacked, assumed that archive file is copied into the scratch_dir
+    # all files from the archive.tgz are unpacked
+    # assumed that archive file is copied into the scratch_dir
         self.full_restart = False
         self.archive_name = ''
 
@@ -297,19 +300,6 @@ class pam_enviroment:
         print "  Dirac command       " + self.dirac_cmd
         print "  Dirac executable    " + self.dirac_exe
 
-    def set_scratch_dir_name(self):
-        ''' sets the scratch directory name according to the
-    self.output_name;  depends on self.scratch_path '''
-        root_name=self.output_name
-        if len(root_name) > 0:
-            scratch_dir_name = root_name + '.' + str(self.current_pid)
-        else:
-            scratch_dir_name = 'dirac_scratch_dir.' + str(self.current_pid)
-
-    # attach user login name to the scratch_dir name
-        scratch_dir_name = self.user_name + '.' + scratch_dir_name
-        self.scratch_dir = os.path.join(self.scratch_path,scratch_dir_name)
-
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
             os.makedirs(self.scratch_dir)
@@ -351,17 +341,6 @@ class pam_enviroment:
                 print >> stream,'dest full path:', dest
                 print >> stream,'  input dir      :', self.input_directory
                 sys.exit(13)
-
-    def process_scratch_dir_name(self,scratch_dir_string):
-        """ Process scratch_dir name - called from reading --scratch argument """
-        self.create_scratch_dir_name = False
-        # check for PID substring to be replaced with unique string
-        if 'PID' in scratch_dir_string:
-            scratch_dir_string=scratch_dir_string.replace('PID',str(self.current_pid),1)
-        else:
-            pass
-        # assign scratch_dir name
-        self.scratch_dir = scratch_dir_string
 
     def list_scratch_dir(self):
         ''' 
@@ -671,13 +650,12 @@ class pam_enviroment:
 
         group = OptionGroup(parser, 'Modify default paths and settings')
 
-        default_scratch_help='set scratch directory [default:'+self.scratch_path+'/<loginname.mol_inp>.PID]'
         group.add_option(
             '--scratch',
             type='string',
             action='store',
             dest='dest_scratch',
-            help=default_scratch_help,
+            help='scratch directory [default: not set]',
             metavar='FULL_PATH',
             )
         group.add_option(
@@ -828,7 +806,11 @@ class pam_enviroment:
             sys.exit('The installation directory is not set ! Error exit !')
 
         if options.dest_scratch:
-            self.process_scratch_dir_name(scratch_dir_string=str(options.dest_scratch))
+            self.scratch_dir = os.path.expandvars(options.dest_scratch)
+            if 'PID' in self.scratch_dir:
+                self.scratch_dir = self.scratch_dir.replace('PID', str(self.current_pid), 1)
+        else:
+            sys.exit('error: --scratch not specified. you can set --scratch in ~/.diracrc')
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -905,8 +887,6 @@ class pam_enviroment:
                     sys.exit()
 
         self.set_output_name()
-        if self.create_scratch_dir_name:
-            self.set_scratch_dir_name()
 
         if self.parallel_run and self.localdisks:
             self.distribute_files = True 
@@ -1185,8 +1165,6 @@ class pam_enviroment:
             value = os.path.expandvars(value)
             if name == 'INSTALL_DIR':
                 pass
-            elif name == 'SCRATCH_DIR':
-                self.scratch_path = value
             elif name == 'DEBUGGER':
                 self.debugger = value
             elif name == 'PROFILER':

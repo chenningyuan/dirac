@@ -536,7 +536,6 @@ usage ()  {
    echo '   --all_math_lib=LIB           : Choose the mathematical libraries with full paths, LIB'
    echo '   --memory-size=MEM-SIZE       : Set memory size to MEM-SIZE words'
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
-   echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
    echo '   --i=PRINT-LEVEL              : Set the print (verbose) level for the script to PRINT-LEVEL (default 0)'
    echo '   --pam                        : Prepares the intall-dir module for  pam(.py)/pamq(.py) dirac.x launching scripts'
 }
@@ -1978,111 +1977,6 @@ set_install_directory () {
    echo
 }
 
-set_scratchdir ()  {
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#                   SET SCRATCHDIR
-#
-#   Determine the default scratch disk space for calculations
-#
-#   The "worksp" variable could come in within argument list
-#
-#   Likewise it can be extracted from the "Makefile.config" file
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-echo
-echo 'SCRATCH DIRECTORY'
-echo
-
-if [ -z "$worksp" ]; then
-       get_worksp
-else
-   if [ ! -d $worksp -a $quick=0 ]; then
-       echo 'Scratch directory '$worksp' you does not exist! Repeat!'
-       get_worksp
-   fi
-fi
-
-$echo 'Scratch directory: '$worksp'/$USER'
-}
-
-
-get_worksp ()  {
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#      get the 'worksp' variable
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-   scr_quick=$quick
-
-   while [ -z "$worksp" ]
-   do
-
-      # first extract from Makefile.config
-      scratchguess=`./config.status SCRATCH_DIR`
-      if [ $IPRINT -ge "5" ];  then
-         echo 'get_worksp: from Makefile.config extracted scratchguess='$scratchguess
-      fi
-
-      if [ ! -z "$scratchguess" ]; then
-         worksp=$scratchguess # just assign, do not verify yet...
-      elif [ -d '/work' ]; then
-         worksp='/work'
-      elif [ -d '/scratch' ]; then
-         worksp='/scratch'
-      elif [ -d '/scr' ]; then
-         worksp='/scr'
-      elif [ -d '/temp' ]; then
-         worksp='/temp'
-      elif [ -d '/tmp' ]; then
-         worksp='/tmp'
-      elif [ -d '/var/tmp' ]; then
-         worksp='/var/tmp'
-      else
-         worksp=
-         scr_quick=0 # nothing assigned, switch to PROMPT mode
-      fi
-
-      if [ $scr_quick = 0 ]; then # in the prompt mode
-
-         if [ ! -z "$worksp" ]; then
-           if [ ! -z "$scratchguess" ]; then
-             $echo 'Found scratch space in the old Makefile.config: ' $worksp
-           else
-             $echo 'Found scratch space among the system directories: ' $worksp
-           fi
-           $echo 'Press ENTER to use this path, or type a new directory for the scratch: \c'
-         else
-           $echo 'No default directory found - type a new directory for the scratch: \c'
-         fi
-
-         read answer
-      else
-         answer=
-      fi
-      if [ ! -z "$answer" ]; then
-         worksp=$answer
-      fi
-
-      # verify the work-directory, and/or confirm
-      if [ ! -d $worksp ]; then
-         echo 'WARNING: Scratch directory '$worksp' does not exist!'
-         if [ $quick = 0 ]; then
-	     if ! ask_yesno y "- Are you sure that you want $worksp?"; then
-		 worksp=
-	     fi
-         else
-         # ... no prompt mode - check if worksp is empty...
-            if [ -z $worksp ]; then
-               worksp="ASSIGN ME"
-               $echo "...you need to fix the scratch directory in Makefile.config..."
-            fi
-         fi
-      fi
-   done
-}
-
 get_cpp_flags(){
 
   if [ "$mesp" = "mpi" ]; then
@@ -2771,8 +2665,6 @@ SRC_DIR=$SRC_DIR
 include \$(SRC_DIR)/cbuild/Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
-# scratch directory, the same as in "pam", from where it is used
-SCRATCH_DIR=$worksp
 # debugger
 DEBUGGER=$debug
 # 
@@ -3170,14 +3062,6 @@ while [ $# != 0 ]; do
          fi
          INSTALL_DIR="$val"
          ;;
-      "scratch_directory" | "scr_dir" | "scratch_dir" )
-         if [ "${valomitted}" = "yes" ]; then
-            echo  'Syntax error: Option "'${optname}'" is not allowed' \
-                  'without an argument'
-            exit 1
-         fi
-         worksp="$val"
-         ;;
       "queuing_system" )
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
@@ -3244,7 +3128,6 @@ deal_testlib
 deal_sharedmemory
 set_memsize
 set_installdir
-set_scratchdir
 make_Makefile.config
 final_words
 

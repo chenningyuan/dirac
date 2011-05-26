@@ -102,21 +102,6 @@ set(WORK_MEM_WORDS
     )
 add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
-# find a good default scratch base directory
-foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
-   if(EXISTS "${dir}/")
-       set(DEFAULT_SCRATCH_BASE_DIR ${dir})
-       break()
-   endif()
-endforeach()
-
-# set scratch directory
-set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/DIRAC_scratch"
-    CACHE STRING
-    "Default scratch directory"
-    )
-
 include(Archs)
 include(Compilers)
 
@@ -239,7 +224,6 @@ if(ENABLE_XCFUN)
 endif()
 
 # configure Makefile.config
-file(WRITE ${PROJECT_SOURCE_DIR}/Makefile.config "SCRATCH_DIR=${SCRATCH_DIR}")
 find_program(PROFILER gprof)
 find_program(DEBUGGER gdb)
 
