@@ -13,7 +13,7 @@ DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_g
 cd $DIRAC
 
 # radovan: bad idea, use svn co, not svn up
-svn up
+svn --force up
 
 ./pamadm -a --xcfun 
 

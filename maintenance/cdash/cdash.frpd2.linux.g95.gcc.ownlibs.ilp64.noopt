@@ -10,7 +10,7 @@ DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_IL
 cd $DIRAC
 
 # radovan: bad idea, use svn co, not svn up
-svn up
+svn --force up
 
 ./pamadm -a --xcfun --minus --openrsp
 

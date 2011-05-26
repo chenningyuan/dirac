@@ -8,6 +8,10 @@
 #PBS -q workq
 ##PBS -o cdash_buildup_log
 
+# crontab prescription:
+# 30 00 * * 1,2,3,4,5,6,7  svn --force up /people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk;  /usr/local/bin/qsub  /people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk/maintenance/cdash/cdash.fe6_Odense.linux.ompi_ifort12.mkl
+#
+
 # intel fortran/MKL stuff
 export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
 export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
