@@ -806,11 +806,20 @@ class pam_enviroment:
             sys.exit('The installation directory is not set ! Error exit !')
 
         if options.dest_scratch:
-            self.scratch_dir = os.path.expandvars(options.dest_scratch)
+          # self.scratch_dir = os.path.expandvars(options.dest_scratch)
+          # radovan: do not expand variables, too dangerous
+            self.scratch_dir = options.dest_scratch
+
+            # ALWAYS append user name and /DIRAC_scratch
+            # otherwise users could wipe out their home directory
+            if self.scratch_dir[-1] == '/':
+                self.scratch_dir +=       self.user_name + '/DIRAC_scratch'
+            else:
+                self.scratch_dir += '/' + self.user_name + '/DIRAC_scratch'
             if 'PID' in self.scratch_dir:
                 self.scratch_dir = self.scratch_dir.replace('PID', str(self.current_pid), 1)
         else:
-            sys.exit('error: --scratch not specified. you can set --scratch in ~/.diracrc')
+            sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc')
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
