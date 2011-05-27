@@ -1013,6 +1013,7 @@ C
 * Stefan Knecht, Feb. 06 
 *
       IMPLICIT REAL*8(A-H,O-Z)
+      use os_utils
 #include "infpar.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
@@ -1042,6 +1043,7 @@ C     character line and machinename
       CHARACTER*72 CARD,MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
       INTEGER*8 K_OFFSET, K8BASE_LUCITA
+      integer global_scratch_disk
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1120,26 +1122,30 @@ C     initialize number of process groups sharing a c-vector file
 C
 #if defined (VAR_MPI2)
 C
-C     parallel I/O mode for parallel runs / executable
+      global_scratch_disk = get_environment_integer('GLBSCR',
+     &global_scratch_disk)
+
+      call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,ierr)
+
+      if(global_scratch_disk .eq. 0)then
+
+C       parallel I/O mode for parallel runs / executable
+        IIOMOD = 1
 C
-      IIOMOD = 1
+        CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
 C
-      IF( IIOMOD .eq. 1 ) THEN
+        CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
+     &                           WORK(KPROCLIST),WORK(KPROCLENGTH))
 C
-         CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
-C
-         CALL FIND_GROUP_OF_PROCS(MACHINENAME,NAMELENGTH,
-     &                            WORK(KPROCLIST),WORK(KPROCLENGTH))
-C
-         IF( NFLGRPS .eq. 1 ) THEN 
-            CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-         END IF
-      END IF
-C     in case of a parallel filesystem, we should use it
-!     IF( IIOMOD .eq. 1 ) THEN
-!       NFLGRPS = 1
-!       CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-!     END IF
+        IF( NFLGRPS .eq. 1 ) THEN 
+           CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        END IF
+      else
+!       in case of a parallel filesystem, we should use it
+        NFLGRPS = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+      end if
 C
 C     compatibilty with LUCIAREL
 C

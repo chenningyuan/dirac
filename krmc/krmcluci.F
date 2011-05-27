@@ -267,6 +267,7 @@ C***********************************************************************
 C***********************************************************************
 *
       use symmetry_setup_krci
+      use os_utils
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
@@ -305,6 +306,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
+      integer global_scratch_disk
 C
 C*******************************************
       CALL QENTER('KRMC_LUCI2')
@@ -386,26 +388,32 @@ C
       IPARALLELIO = 1
 C
 C
-C     checking only if parallel file I/O in general is requested
+      global_scratch_disk = get_environment_integer('GLBSCR',
+     &global_scratch_disk)
+
+      call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
+     &               MASTER,MPI_COMM_WORLD,ierr)
+
+      if(global_scratch_disk .eq. 0)then
+        NAMELENGTH = 0
 C
-      IF( IPARALLELIO .eq. 1 ) THEN
-C  
-         NAMELENGTH = 0
+        CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
+
+        CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
+     &                               WORK(KPROCLIST),
+     &                               WORK(KPROCLENGTH))
 C
-         CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
-C
-         CALL FIND_GROUP_OF_PROCS_REL(MACHINENAME,NAMELENGTH,
-     &                                WORK(KPROCLIST),
-     &                                WORK(KPROCLENGTH))
-C
-C        number of groups sharing a file ( = NFLGRPS ) is determined
-C        in the subroutine above. If there is only one group
-C        than we can simulate a shared filesystem.
-C
-      END IF
-!     in case of a parallel filesystem, we should use it
-!     NFLGRPS_REL = 1
-!     CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+C       number of groups sharing a file ( = NFLGRPS ) is determined
+C       in the subroutine above. If there is only one group
+C       than we can simulate a shared filesystem.
+        IF( NFLGRPS .eq. 1 ) THEN 
+          CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+        END IF
+      else
+!       in case of a parallel filesystem, we should use it
+        NFLGRPS_REL = 1
+        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+      end if
 !
 C     no integral broadcast necessary
       IF( NFLGRPS_REL .eq. 1 ) IIOMOD_REL = 1

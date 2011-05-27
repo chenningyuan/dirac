@@ -975,6 +975,7 @@ C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input.
 C
 C***********************************************************************
+      use os_utils
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1016,11 +1017,7 @@ C
       IKRMCCNO    =  - 3
       IANACI      =    0
       IRESTRK     =    0
-      if(.true.)then
-      IDOPARIO    =    0
-      else
-      IDOPARIO    =    1
-      end if
+      IDOPARIO    = get_environment_integer('GLBSCR',IDOPARIO)
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
       NATONL      = .FALSE.

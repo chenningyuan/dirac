@@ -55,6 +55,7 @@ C                    input and start-up --> "modularize"
 C
 C***********************************************************************
       use symmetry_setup_krci
+      use os_utils
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -202,11 +203,7 @@ C
       IRESTRK_KRCI  =    0
       IKRCI_MEMFAC  =    9
 #ifdef VAR_MPI
-      if(.true.)then
-      IDOPARIO_KRCI =    0
-      else
-      IDOPARIO_KRCI =    1
-      end if
+      IDOPARIO_KRCI = get_environment_integer('GLBSCR',IDOPARIO_KRCI)
 #endif
 C     ... in "krciprop.h"
       NPROP_KRCI    =    0

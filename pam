@@ -106,6 +106,10 @@ class pam_enviroment:
         # that try to remove undefined directories
         self.scratch_dir = '/tmp'
 
+        # globally accessible scratch disk in parallel runs
+        # this variable will decide whether files are distributed over local disks
+        self.global_scratch_disk = False
+
         # the default is to delete the scratch after the job
         self.keep_scratch = False   # default - delete the scratch after the job
 
@@ -142,9 +146,6 @@ class pam_enviroment:
         #   Linux, Windows, ...
             self.mpirun = str(find_executable('mpirun'))
            
-    #   this variable will decide whether files are distributed over local disks
-    #   this variable is also read from Makefile.config and perhaps changed
-        self.localdisks = False
 
     #   restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
@@ -275,6 +276,10 @@ class pam_enviroment:
         self.infock = False
         self.outfock = False
 
+    # ... KRMCOLD/KRMCSCF
+        self.inkrmc = False
+        self.outkrmc = False
+
     # execution time-limit (in seconds; TODO: implement general time format)
         self.set_timeout_limit = False
         self.timeout = ''
@@ -291,10 +296,10 @@ class pam_enviroment:
         print "  Scratch directory   " + self.scratch_dir
         print "  Parallel build      " + str(self.parallel_build)
         if self.parallel_build:
-            print "    mpi launcher      " + str(self.mpirun)
-            print "    mpirun extra args " + str(self.mpiarg)
-            print "    Local disks       " + str(self.localdisks)
-            print "    Machine file      " + self.machinefile
+            print "    mpi launcher         " + str(self.mpirun)
+            print "    mpirun extra args    " + str(self.mpiarg)
+            print "    global scratch disk  " + str(self.global_scratch_disk)
+            print "    Machine file         " + self.machinefile
         print "  Profiler            " + self.profiler
         print "  Debugger            " + self.debugger
         print "  Dirac command       " + self.dirac_cmd
@@ -640,6 +645,14 @@ class pam_enviroment:
                          dest='dest_outfock', default=False,
                          help='get DFFCK2 from scratch directory [default: %default]'
                          )
+        group.add_option('--inkrmc', action='store_true',
+                         dest='dest_inkrmc', default=False,
+                         help='copy KRMCSCF to scratch directory as KRMCOLD [default: %default]'
+                         )
+        group.add_option('--outkrmc', action='store_true',
+                         dest='dest_outkrmc', default=False,
+                         help='get KRMCSCF from scratch directory [default: %default]'
+                         )
         group.add_option('--keep_scratch', action='store_true',
                          dest='dest_keep_scratch', default=False,
                          help='keep the scratch directory after calculation [default: delete it]'
@@ -656,6 +669,14 @@ class pam_enviroment:
             action='store',
             dest='dest_scratch',
             help='scratch directory [default: not set]',
+            metavar='FULL_PATH',
+            )
+        group.add_option(
+            '--global-scratch-disk',
+            default=False,
+            action='store_true',
+            dest='dest_global_scratch_disk',
+            help='globally accessible scratch directory (parallel calculation) [default: %default]',
             metavar='FULL_PATH',
             )
         group.add_option(
@@ -821,6 +842,9 @@ class pam_enviroment:
         else:
             sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc')
 
+        if options.dest_global_scratch_disk:
+            self.global_scratch_disk = True
+
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
 
@@ -897,7 +921,7 @@ class pam_enviroment:
 
         self.set_output_name()
 
-        if self.parallel_run and self.localdisks:
+        if self.parallel_run and not self.global_scratch_disk:
             self.distribute_files = True 
 
     def assign_mol_inp_files(self):
@@ -983,6 +1007,24 @@ class pam_enviroment:
                         '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(11)
 
+        def copy_rename_single_file(file_name_loc, file_name_scr):
+            full_file_name = os.path.join(self.input_directory,file_name_loc)
+            if os.path.isfile(full_file_name):
+                file_name_scratch = os.path.join(self.scratch_dir, file_name_scr)
+                self.copy_file(full_file_name, file_name_scratch)
+            else:
+                if self.expert_mode:
+                    for stream in [sys.stdout,sys.stderr]:
+                        print >> stream,'happens in input directory:',self.input_directory
+                        print  >> stream,'  Warning: file "', file_name_loc, \
+                        '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
+                else:
+                    for stream in [sys.stdout,sys.stderr]:
+                        print >> stream,'happens in input directory:',self.input_directory
+                        print >> stream,'Error exit: file "', file_name_loc, \
+                        '" you want to copy to scratch_dir does not exist !  '
+                    sys.exit(11)
+
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
@@ -1024,6 +1066,10 @@ class pam_enviroment:
         if self.infock:
             file_name = 'DFFCK2'
             copy_single_file(file_name)
+        if self.inkrmc:
+            file_name_loc = 'KRMCSCF'
+            file_name_scr = 'KRMCOLD'
+            copy_rename_single_file(file_name_loc,file_name_scr)
 
     def distribute_scratch_dir(self):
         """
@@ -1098,9 +1144,14 @@ class pam_enviroment:
 
         os.putenv('DIRMAX', str(int(self.max_memory_dynamic * 1000000)))
 
+
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
             os.putenv('DIRNOD', str(int(self.max_memory_work_slave * 1000000)))
+            if self.global_scratch_disk:
+                os.putenv('GLBSCR', '1')
+            else:
+                os.putenv('GLBSCR', '0')
 
     # Next line is for IBM only but will not hurt other systems
 
@@ -1176,8 +1227,6 @@ class pam_enviroment:
                 pass
             elif name == 'MPIRUN' and value != '':
                 self.parallel_build = True
-            elif name == 'LOCALDISKS' and value == 'yes':
-                self.localdisks = True
             elif name == 'MACH_FILE':
                 self.machinefile = value
 
@@ -1399,6 +1448,9 @@ class pam_enviroment:
 
         if self.outfock:
             save_single_file('DFFCK2')
+
+        if self.outkrmc:
+            save_single_file('KRMCSCF')
 
     # take care of individual nodes if parallel run
 
