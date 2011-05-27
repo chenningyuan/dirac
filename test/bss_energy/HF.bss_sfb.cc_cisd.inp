@@ -15,12 +15,8 @@
 1
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
-*TWOINT
-#.SOFOCK
 **HAMILTONIAN
 .SPINFREE
-!.LEVY-LEBLOND
-!.URKBAL
 .BSS
 109
 .CMPEIG
@@ -45,11 +41,6 @@
   SDCI
 .MULTIP
   3
-#.CNVINT
-#1.0D-4 1.0D-15
-###########################################################
-# Set up correlation step
-############################################################
 **MOLTRA
 # needed for parallel run
 .SCHEME

@@ -15,12 +15,6 @@
 *READIN
 .UNCONTRACTED
 **HAMILTONIAN
-!.SPINFREE
-!.LEVY-LEBLOND
-#.BSS
-#999
-#.ONESTEP
-#.CMPEIG
 .PRINT
 2
 !.ONESYS
@@ -31,9 +25,6 @@
 *SCF
 .CLOSED SHELL
 20  
-#.OPEN SHELL
-#1
-#1/2
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...
@@ -48,7 +39,6 @@ all
 **PROPERTIES ! Calculating of properties...
 .PRINT
 2
-#.RHONUC
 *EXPECTATION
 .ORBANA
 .PRINT 

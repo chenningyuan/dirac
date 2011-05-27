@@ -19,8 +19,6 @@
 #.SOFOCK
 **HAMILTONIAN
 .SPINFREE
-!.LEVY-LEBLOND
-!.URKBAL
 .BSS
 102
 .CMPEIG
@@ -30,7 +28,6 @@
 .SCF
 .RELCCSD
 .LUCITA
-#.MP2
 *SCF
 .CLOSED SHELL
 10  
@@ -45,11 +42,6 @@
   SDCI
 .MULTIP
   3
-#.CNVINT
-#1.0D-4 1.0D-15
-###########################################################
-# Set up correlation step
-############################################################
 **MOLTRA
 .SCHEME
 4

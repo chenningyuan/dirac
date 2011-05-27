@@ -12,12 +12,7 @@
 1
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 1
-*TWOINT
-#.SOFOCK
 **HAMILTONIAN
-!.SPINFREE
-!.LEVY-LEBLOND
-!.URKBAL
 .BSS
 999
 .CMPEIG
@@ -26,7 +21,6 @@
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
 .RELCCSD
-#.MP2
 *SCF
 .CLOSED SHELL
 10  
@@ -34,11 +28,6 @@
 1 1 0
 .EVCCNV ! Energy convergence...
 1.0E-10  1.0D-7
-#.CNVINT
-#1.0D-4 1.0D-15
-###########################################################
-# Set up correlation step
-############################################################
 **MOLTRA
 .ACTIVE
 energy   -1000    999999  0.1
