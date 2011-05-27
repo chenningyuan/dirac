@@ -3346,9 +3346,8 @@ C
             IF (IPRINT .GE. 0) THEN
                IF (MAXCIT .GE. 0) THEN
                   IF( JKRRUNTYPE .gt. 1)THEN
-                     WRITE(LUPRI,'(/A,I5,A)')
-     &                    ' (ROPTST)  KR-CI calculation ended after',
-     &                    MAXCIT,' CI iterations.'
+                     WRITE(LUPRI,'(/A)')
+     &               ' (ROPTST)  KR-CI calculation ended properly.',
                   ELSE
                      WRITE(LUPRI,'(/A,I5,A)')
      &                    ' (ROPTST)  CI start vector generated from',
