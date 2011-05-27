@@ -10,7 +10,7 @@ svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 
 cd $TMP_DIR
 ./pamadm -a
-./setup --fc=gfortran --cc=gcc -D BUILDNAME="linux-gfortran-debug"
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="ubuntu10.04-i686-gfortran4.4-int32"
 
 cd $TMP_DIR/build
 make Nightly
