@@ -2,6 +2,8 @@
 Contributing to the DIRAC Dashboard
 -----------------------------------
 
+Before you start, set --scratch=/your/scratch/path in ~/.diracrc
+
 It is very easy to contribute to the DIRAC Dashboard:
 http://repo.ctcc.no/CDash/index.php?project=DIRAC
 
