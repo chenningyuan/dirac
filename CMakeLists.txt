@@ -224,9 +224,6 @@ if(ENABLE_XCFUN)
 endif()
 
 # configure Makefile.config
-find_program(PROFILER gprof)
-find_program(DEBUGGER gdb)
-
 if(NO_SSH_ACCESS_TO_NODES)
     find_program(SCP_EXEC rcp)
     find_program(SSH_EXEC rsh)

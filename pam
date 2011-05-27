@@ -1174,10 +1174,6 @@ class pam_enviroment:
             value = os.path.expandvars(value)
             if name == 'INSTALL_DIR':
                 pass
-            elif name == 'DEBUGGER':
-                self.debugger = value
-            elif name == 'PROFILER':
-                self.profiler = value
             elif name == 'MPIRUN' and value != '':
                 self.parallel_build = True
             elif name == 'LOCALDISKS' and value == 'yes':

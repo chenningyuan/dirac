@@ -1378,98 +1378,6 @@ fi
 
 }
 
-find_profiler(){
-# search for profiler - now only gprof
-profiler=''
-if [ -n "`which gprof 2>/dev/null`" ]; then
-   # profiler="gprof"
-    profiler=`which gprof`
-fi
-# ...
-if [ -z "$profiler" ]; then
-  $echo "\n gprof profiler not found - not possible do code profiling"
-else
-  $echo "\nAssigned PROFILER tool: "$profiler
-fi
-}
-
-find_debugger(){
-###############################################################
-#
-#   search for debugger and put \"the best\" into pam
-#
-###############################################################
-
-if [ $IPRINT -ge "8" ]; then
-   echo ''
-   echo 'find_debugger...looking for debuggers'
-fi
-
-debug='dbx'
-which_debug=''
-# jhs Tmpfix for non-unix systems
-
-a=`which which 2>&1`
-if [ $IPRINT -ge "8" ]; then
-  echo 'find_debugger: variable a=exec(which which)='$a
-fi
-
-if [ ! -z "$a" ]; then
-
-  if [ $IPRINT -ge "8" ]; then
-    echo 'find_debugger - priority look for present debuggers'
-  fi
-
-  ### looking priority: idb, pgdbg, dbx, gdb ....
-  #hjaaj: should only use e.g. pgdbg if compiler is pg*
-  if [ -n "`which idb 2>/dev/null`" ]; then
-    which_debug=`which idb`
-  elif [ -n "`which pgdbg 2>/dev/null`" ]; then
-    which_debug=`which pgdbg`
-  elif [ -n "`which dbx 2>/dev/null`" ]; then
-    which_debug=`which dbx`
-  elif [ -n "`which gdb 2>/dev/null`" ]; then
-#    which_debug="gdb"
-    which_debug=`which gdb`
-  fi
-fi
-
-if [ $IPRINT -ge "8" ]; then
-  echo 'find_debugger: which_debug='$which_debug
-fi
-
-if [ -z $which_debug ]; then
-  case $machine in
-     i[3-6]86-*|x86_64-*|ia64-unknown-linux|*apple*)
-        debug=`which gdb`
-     ;;
-  esac
-else
-  debug=$which_debug
-fi
-
-if [ -z "$debug" ]; then
-   $echo "\nDebugger not set! Add it into pam manually"
-else
-   $echo "\nAssigned DEBUGGER (check it in the pam script): "$debug
-fi
-
-echo
-
-}
-
-#######  found and assign valgrind  #######
-find_valgrind(){
-
-  if [ -n "`which valgrind 2>/dev/null`" ]; then
-     valgrind_tool=`which valgrind`
-     $echo "Assigned VALGRIND debugging & checking tool (http://valgrind.org): "$valgrind_tool
-  else 
-     valgrind_tool= 
-     $echo "VALGRIND debugging & profiling tool (http://valgrind.org) not found. "
-  fi
-}
-
 setup_math_lib(){
 #
 #
@@ -2662,8 +2570,6 @@ SRC_DIR=$SRC_DIR
 include \$(SRC_DIR)/cbuild/Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
-# debugger
-DEBUGGER=$debug
 # 
 # For passing files to local disks; if empty, no copying to local disks of nodes
 #
@@ -2672,10 +2578,6 @@ RSH=$rsh
 LOCALDISKS=$localdisks
 # default machine file - either for mpirun or for copying files onto local disks or for both
 MACH_FILE=$mach_file
-#  valgrind debugging and checking tool - check it according to your machine installation
-VALGRIND=$valgrind_tool
-# profiler - check it according to your machine installation, we offer gprof :)
-PROFILER=$profiler
 EOF
 
 if [ "$mesp" = "mpi" ]; then
@@ -3114,9 +3016,6 @@ guess_system
 parallel_stuff
 safeflags_stuff
 find_compilers
-find_debugger
-find_valgrind
-find_profiler
 if [ "$mesp" = "mpi" ]; then
   find_mpi_path
 fi
