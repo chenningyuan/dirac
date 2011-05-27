@@ -1012,8 +1012,8 @@ C
 * Modifications wrt to a MPI implementation by 
 * Stefan Knecht, Feb. 06 
 *
-      IMPLICIT REAL*8(A-H,O-Z)
       use os_utils
+      IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
