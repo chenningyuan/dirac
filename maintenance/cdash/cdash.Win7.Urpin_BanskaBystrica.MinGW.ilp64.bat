@@ -18,7 +18,7 @@ svn up
 python pamadm -a --xcfun 
 
 rem configure step
-cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  -DSCRATCH_DIR="C:\Users\milias\tmp" %DIRAC%
+cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  %DIRAC%
 
 cd %DIRAC%\build
 rem make clean
