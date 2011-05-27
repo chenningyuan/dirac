@@ -9,7 +9,7 @@ mkdir -p $TMP_DIR
 svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 
 cd $TMP_DIR
-./pamadm -a --xcfun
+./pamadm -a
 ./setup --fc=gfortran --cc=gcc --debug --scratch=$SCRATCH_DIR -D BUILDNAME="linux-gfortran-debug"
 
 cd $TMP_DIR/build
