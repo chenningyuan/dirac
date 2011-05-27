@@ -1,5 +1,9 @@
 #!/bin/bash
 
+## crontab prescription ##
+# 01 00 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc; timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running cdash  buildup at "$timestamp ; /home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_ILP64_cdash/adm/trunk/maintenance/cdash/cdash.frpd2.linux.g95.gcc.ownlibs.ilp64.noopt > /home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_ILP64_cdash/adm/trunk/maintenance/cdash/cdash_buildup.log_$timestamp 2>&1 || {echo "cront initiated cdash_build.sh failed at "$timestamp}
+
+
 # miro: modified to local update&build
 source ~/.bashrc
 
@@ -15,7 +19,7 @@ svn --force up
 ./pamadm -a --xcfun --minus --openrsp
 
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs.noopt" --scratch="/var/tmp" -D RUNTEST_TIMEOUT="00:18:00"
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" --scratch="/var/tmp" -D RUNTEST_TIMEOUT="00:18:00"
 
 cd $DIRAC/build
 
