@@ -238,7 +238,6 @@ message("-- To access nodes in parallel calculations, use \"${SCP_EXEC}\" and \"
 
 find_program(VALGRIND_EXECUTABLE valgrind)
 if(ENABLE_LOCAL_DISKS)
-    add_definitions(-DSYS_LOCALDISKS)
     set(LOCALDISKS "yes")
 else()
     set(LOCALDISKS "no")

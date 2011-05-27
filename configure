@@ -1981,9 +1981,6 @@ get_cpp_flags(){
 
   if [ "$mesp" = "mpi" ]; then
     parop="-DVAR_MPI"
-    if [ "$localdisks" = "yes" ]; then
-       parop="$parop -DSYS_LOCALDISKS"
-    fi
 
     append cpp_f90 "-DPRG_DIRAC -DSYS_$sys_name -DINSTALL_WRKMEM=\${WRKMEM} $parop"
     append cpp_cc "-DSYS_$sys_name -DINSTALL_WRKMEM=\${WRKMEM} $parop"
