@@ -1016,11 +1016,11 @@ C
       IKRMCCNO    =  - 3
       IANACI      =    0
       IRESTRK     =    0
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
-      IDOPARIO    =    1
-#else
+      if(.true.)then
       IDOPARIO    =    0
-#endif
+      else
+      IDOPARIO    =    1
+      end if
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
       NATONL      = .FALSE.
@@ -1139,18 +1139,14 @@ C&&& .KTRLVL: default integral transformation level.
                GO TO 100
    17          CONTINUE
 C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                   IDOPARIO_SAVE = IDOPARIO
-#endif
                   READ(LUCMD,*) IDOPARIO
                   IDOPARIO = ABS(IDOPARIO)
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                   IF( IDOPARIO .ne. IDOPARIO_SAVE )THEN
 C                   we do not want to broadcast integrals if not
 C                   necessary! - SK- 20-03-2008
                     IDOPARIO = IDOPARIO_SAVE
                   END IF
-#endif
 #if !defined (VAR_MPI)
                   IF( IDOPARIO .ne. 0 ) THEN
                     WRITE(LUPRI,'(//3A,I6)')

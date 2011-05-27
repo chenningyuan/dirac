@@ -2516,9 +2516,7 @@ C
 C
 C     Transfer information to common block
 C
-#if defined (SYS_LOCALDISKS)
       NFLGRPS_REL = ICOUNT_GROUPS
-#endif
 C
       END
 ***********************************************************************

@@ -201,10 +201,12 @@ C
       KTRLVL_KRCI   =    3
       IRESTRK_KRCI  =    0
       IKRCI_MEMFAC  =    9
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
-      IDOPARIO_KRCI =    1
-#else
+#ifdef VAR_MPI
+      if(.true.)then
       IDOPARIO_KRCI =    0
+      else
+      IDOPARIO_KRCI =    1
+      end if
 #endif
 C     ... in "krciprop.h"
       NPROP_KRCI    =    0
@@ -386,18 +388,14 @@ C&&& .KTRLVL: default integral transformation level.
                GO TO 100
     8          CONTINUE
 C&&& .PARINT: integral handling for slaves in LUCIAREL calculations
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                IDOPARIO_SAVE = IDOPARIO_KRCI
-#endif
                READ(LUCMD,*) IDOPARIO_KRCI
                IDOPARIO_KRCI = ABS(IDOPARIO_KRCI)
-#if !defined (SYS_LOCALDISKS) && defined (VAR_MPI)
                IF( IDOPARIO_KRCI .ne. IDOPARIO_SAVE )THEN
 C                 we do not want to broadcast integrals if not 
 C                 necessary! - SK- 20-03-2008
                   IDOPARIO_KRCI = IDOPARIO_SAVE
                END IF
-#endif
 #if !defined (VAR_MPI)
                IF( IDOPARIO_KRCI .ne. 0 ) THEN
                   WRITE(LUPRI,'(//3A,I6)')

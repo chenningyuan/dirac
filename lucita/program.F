@@ -1124,7 +1124,6 @@ C     parallel I/O mode for parallel runs / executable
 C
       IIOMOD = 1
 C
-#if defined (SYS_LOCALDISKS)
       IF( IIOMOD .eq. 1 ) THEN
 C
          CALL MPI_GET_PROCESSOR_NAME(MACHINENAME,NAMELENGTH,IERR)
@@ -1136,13 +1135,11 @@ C
             CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
          END IF
       END IF
-#else
 C     in case of a parallel filesystem, we should use it
-      IF( IIOMOD .eq. 1 ) THEN
-        NFLGRPS = 1
-        CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-      END IF
-#endif
+!     IF( IIOMOD .eq. 1 ) THEN
+!       NFLGRPS = 1
+!       CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+!     END IF
 C
 C     compatibilty with LUCIAREL
 C

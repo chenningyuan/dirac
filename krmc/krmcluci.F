@@ -385,7 +385,6 @@ C     hardwired to 1, otherwise it fails...
 C
       IPARALLELIO = 1
 C
-#if defined (SYS_LOCALDISKS)
 C
 C     checking only if parallel file I/O in general is requested
 C
@@ -404,11 +403,10 @@ C        in the subroutine above. If there is only one group
 C        than we can simulate a shared filesystem.
 C
       END IF
-#else
-C     in case of a parallel filesystem, we should use it
-      NFLGRPS_REL = 1
-      CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
-#endif /* ifdef SYS_LOCALDISKS */
+!     in case of a parallel filesystem, we should use it
+!     NFLGRPS_REL = 1
+!     CALL ISETVC(WORK(KPROCLIST),1,NMPROC)
+!
 C     no integral broadcast necessary
       IF( NFLGRPS_REL .eq. 1 ) IIOMOD_REL = 1
 C
