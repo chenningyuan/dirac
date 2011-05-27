@@ -28,7 +28,7 @@
 1 1 0
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
-*SCF ! DHF specifications...
+*SCF
 .CLOSED SHELL
 20  
 #.OPEN SHELL

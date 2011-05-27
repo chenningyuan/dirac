@@ -34,7 +34,7 @@
 **WAVE FUNCTION
 .SCF
 .MP2
-*SCF ! DHF specifications...
+*SCF
 .CLOSED SHELL
 22
 .EVCCNV

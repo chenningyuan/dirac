@@ -23,7 +23,7 @@
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
 #.MP2
-*SCF ! DHF specifications...
+*SCF
 .CLOSED SHELL
 4 0 
 .INTFLG ! Specify what 2-el.integrals to include
