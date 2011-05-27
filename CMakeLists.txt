@@ -53,7 +53,7 @@ option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
 option(ENABLE_XCFUN          "Enable XCFun library"          ON)
-option(ENABLE_UTILITIES      "Enable utilities"              OFF)
+option(ENABLE_UTILITIES      "Enable utilities"              ON)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            ON)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
@@ -320,6 +320,10 @@ if(ENABLE_UTILITIES)
         ${PROJECT_SOURCE_DIR}/gp/gpjeppe.F
         ${PROJECT_SOURCE_DIR}/gp/gpsaue.F
         ${PROJECT_SOURCE_DIR}/gp/gptrygve.F
+        ${PROJECT_SOURCE_DIR}/gp/quaternion_algebra.F90
+        ${PROJECT_SOURCE_DIR}/gp/time.F
+        ${PROJECT_SOURCE_DIR}/gp/qalgebra.F
+        ${PROJECT_SOURCE_DIR}/gp/io.F
         ${PROJECT_SOURCE_DIR}/gp/memory_allocator.F90
         ${PROJECT_SOURCE_DIR}/gp/memory_control.F90
         ${PROJECT_SOURCE_DIR}/gp/memory_errorhandler.F90
