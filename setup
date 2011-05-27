@@ -91,13 +91,6 @@ group.add_option('--show',
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'Change default paths')
-group.add_option('--scratch',
-                 type='string',
-                 action='store',
-                 dest='scratch',
-                 default=None,
-                 help='set the scratch directory [default: will try /work, /scratch, /scr, /temp, /tmp]',
-                 metavar='PATH')
 group.add_option('--prefix',
                  type='string',
                  action='store',
@@ -210,8 +203,6 @@ if options.coverage:
     command += ' -DENABLE_CODE_COVERAGE=ON'
 if options.install:
     command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
-if options.scratch:
-    command += ' -DSCRATCH_DIR=' + options.scratch
 
 if options.debug:
     command += ' -DCMAKE_BUILD_TYPE=Debug'
