@@ -1,17 +1,16 @@
 #!/bin/bash
 
-source /opt/intel/bin/compilervars.sh ia32
 export PATH=$PATH':/opt/intel/mkl'
 
 TMP_DIR=/tmp/dirac
-SCRATCH_DIR=/home/bast/cdash/scratch
+SCRATCH_DIR=/home/bast/trash/dirac_scratch
 mkdir -p $TMP_DIR
 
 svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 
 cd $TMP_DIR
 ./pamadm -a
-./setup --fc=ifort    --cc=icc --debug --scratch=$SCRATCH_DIR -D BUILDNAME="linux-ifort-debug"
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="linux-gfortran-debug"
 
 cd $TMP_DIR/build
 make Nightly
