@@ -64,7 +64,7 @@ contains
                                     pz,      &
                                     ao,      &
                                     buffer,  &
-                                    q)
+                                    result)
 
 !     --------------------------------------------------------------------------
       integer, intent(in)  :: nr_dmat
@@ -75,7 +75,7 @@ contains
       real(8), intent(in)  :: pz
       real(8)              :: ao(*)
       real(8)              :: buffer(*)
-      real(8), intent(out) :: q(0:3, nr_dmat)
+      real(8), intent(out) :: result(0:3)
 !     --------------------------------------------------------------------------
       integer              :: imat, i
       real(8)              :: v(3), v2(3)
@@ -90,7 +90,7 @@ contains
 
       call get_ao(px, py, pz, ao, buffer)
 
-      q = 0.0d0
+      result = 0.0d0
       do imat = 1, nr_dmat
          if (.not. visual_cfg_skip(imat)) then
 
@@ -102,7 +102,7 @@ contains
                                D(imat)%elms,  &
                                buffer,        &
                                ao)
-               q(0, imat) = density
+               result(0) = result(0) + density
             end if
             
 !           electron density
@@ -113,7 +113,7 @@ contains
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
-               q(0, imat) = density
+               result(0) = result(0) + density
             end if
             
 !           elf: electron localization function
@@ -143,7 +143,7 @@ contains
                f = 2.87123400018819d0*(density**(5.0d0/3.0d0))
                elf_chi = (tau - b)/f
               
-               q(0, imat) = 1.0d0/(1.0d0 + elf_chi*elf_chi)
+               result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
             end if
             
 !           total electrostatic potential
@@ -154,7 +154,7 @@ contains
                           D(imat)%elms,  &
                           px,py,pz)
                          
-               q(0, imat) = esp
+               result(0) = result(0) + esp
             end if
 
 !           density of Coulomb 2-electron contribution
@@ -170,7 +170,7 @@ contains
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
-               q(0, imat) = density*esp*0.5d0
+               result(0) = result(0) + density*esp*0.5d0
 
             end if
 
@@ -217,7 +217,7 @@ contains
                   v = v + v2
                end if
 #endif
-               q(1:3, imat) = v(1:3)
+               result(1:3) = result(1:3) + v(1:3)
             end if
             
 !           spin density: \psi^\dag \Sigma \psi
@@ -228,7 +228,7 @@ contains
                           D(imat)%elms, &
                           buffer,       &
                           ao)
-               q(1:3, imat) = v(1:3)
+               result(1:3) = result(1:3) + v(1:3)
             end if
             
 !           divergence or curl of spin density
@@ -243,12 +243,12 @@ contains
                            ao,              &
                            ao(ao_start(1, 0):ao_end(1, 0)))
                if (visual_cfg_property(imat) == iq_divs) then
-                  q(0, imat) = matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
+                  result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
                end if
                if (visual_cfg_property(imat) == iq_rots) then
-                  q(1, imat) = matrix_33(3, 2) - matrix_33(2, 3)
-                  q(2, imat) = matrix_33(1, 3) - matrix_33(3, 1)
-                  q(3, imat) = matrix_33(2, 1) - matrix_33(1, 2)
+                  result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
+                  result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
+                  result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
                end if
             end if
             
@@ -265,12 +265,12 @@ contains
                            ao,           &
                            ao(ao_start(1, 0):ao_end(1, 0)))
                if (visual_cfg_property(imat) == iq_divj) then
-                  q(0, imat) = matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
+                  result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
                end if
                if (visual_cfg_property(imat) == iq_rotj) then
-                  q(1, imat) = matrix_33(3, 2) - matrix_33(2, 3)
-                  q(2, imat) = matrix_33(1, 3) - matrix_33(3, 1)
-                  q(3, imat) = matrix_33(2, 1) - matrix_33(1, 2)
+                  result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
+                  result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
+                  result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
                end if
             end if
             
@@ -287,9 +287,9 @@ contains
                ry = py - visual_cfg_gauge_origin(2)
                rz = pz - visual_cfg_gauge_origin(3)
             
-               q(1, imat) = +0.5d0*ry*density
-               q(2, imat) = -0.5d0*rx*density
-               q(3, imat) = -0.0d0           
+               result(1) = result(1) + 0.5d0*ry*density
+               result(2) = result(2) - 0.5d0*rx*density
+               result(3) = result(3) - 0.0d0
             end if
             
 !           responding operator is electric dipole
@@ -304,13 +304,13 @@ contains
                           buffer,       &
                           ao)
                if (visual_cfg_property(imat) == iq_edipx) then
-                  q(0, imat) = px*density
+                  result(0) = result(0) + px*density
                end if
                if (visual_cfg_property(imat) == iq_edipy) then
-                  q(0, imat) = py*density
+                  result(0) = result(0) + py*density
                end if
                if (visual_cfg_property(imat) == iq_edipz) then
-                  q(0, imat) = pz*density
+                  result(0) = result(0) + pz*density
                end if
             end if
             
@@ -334,13 +334,13 @@ contains
                f = -0.5d0
                
                if (visual_cfg_property(imat) == iq_bdipx) then
-                  q(0, imat) = f*(ry*v(3) - rz*v(2))
+                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
                if (visual_cfg_property(imat) == iq_bdipy) then
-                  q(0, imat) = f*(rz*v(1) - rx*v(3))
+                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
                end if
                if (visual_cfg_property(imat) == iq_bdipz) then
-                  q(0, imat) = f*(rx*v(2) - ry*v(1))
+                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if
             
@@ -398,13 +398,13 @@ contains
                f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
                
                if (visual_cfg_property(imat) == iq_ndipx) then
-                  q(0, imat) = f*(ry*v(3) - rz*v(2))
+                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
                if (visual_cfg_property(imat) == iq_ndipy) then
-                  q(0, imat) = f*(rz*v(1) - rx*v(3))
+                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
                end if
                if (visual_cfg_property(imat) == iq_ndipz) then
-                  q(0, imat) = f*(rx*v(2) - ry*v(1))
+                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
             end if
             
@@ -440,7 +440,7 @@ contains
                v2(3) = r(1)*v(2) - r(2)*v(1)
                
                f = -1.0d0/((r(1)*r(1) + r(2)*r(2) + r(3)*r(3))**1.5d0)
-               q(0, imat) = f*v2(i)
+               result(0) = result(0) + f*v2(i)
 
             end if
 
@@ -452,7 +452,7 @@ contains
          distance_to_origin = dsqrt(px*px + py*py + pz*pz)
          f = f*(distance_to_origin**2.0d0)
       end if
-      q = f*q
+      result = f*result
 
    end subroutine
 

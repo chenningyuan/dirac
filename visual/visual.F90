@@ -420,10 +420,9 @@ contains
       real(8), intent(in)  :: buffer(*)
 !     --------------------------------------------------------------------------
       real(8), allocatable :: q(:, :)
-      real(8), allocatable :: slice(:)
       real(8), allocatable :: atom_xyz(:, :)
       real(8)              :: step_3d(3, 0:3)
-      integer              :: i, j, k, l, m, istep, imat
+      integer              :: i, j, k, l, m, istep
       integer              :: icube, jcube, kcube
       integer              :: ix, iy
       real(8)              :: vx(3), vx_norm
@@ -442,7 +441,7 @@ contains
       if (visual_cfg_ncube(3) > 0) then
          i = visual_cfg_ncube(3)
       end if
-      allocate(q(0:3, visual_cfg_nr_dmat))
+      allocate(q(0:3, i))
 
       allocate(atom_xyz(4, nucdep))
 
@@ -524,19 +523,11 @@ contains
                                        buffer,                    &
                                        q)
 
-            s = 0.0d0
-            v = 0.0d0
-            do imat = 1, visual_cfg_nr_dmat
-               s      = s      + q(0,   imat)
-               v(1:3) = v(1:3) + q(1:3, imat)
-            end do
-
             write(lupri, '(3e14.6, 4e18.10)') &
                visual_cfg_xyz_list(i, 1),     &
                visual_cfg_xyz_list(i, 2),     &
                visual_cfg_xyz_list(i, 3),     &
-               s,                             &
-               v(1:3)
+               q(0:3, 1)
          end do
 
          write(lupri, *)
@@ -564,23 +555,16 @@ contains
                                        buffer,             &
                                        q)
 
-            s = 0.0d0
-            v = 0.0d0
-            do imat = 1, visual_cfg_nr_dmat
-               s      = s      + q(0,   imat)
-               v(1:3) = v(1:3) + q(1:3, imat)
-            end do
-
             write(lunit_line_scalar, '(4e18.10)') &
                r(1),                              &
                r(2),                              &
                r(3),                              &
-               s
+               q(0, 1)
             write(lunit_line_vector, '(6e18.10)') &
                r(1),                              &
                r(2),                              &
                r(3),                              &
-               v(1:3)
+               q(1:3, 1)
         
          end do
       end if
@@ -608,12 +592,8 @@ contains
                                           buffer,             &
                                           q)
 
-               s = 0.0d0
-               v = 0.0d0
-               do imat = 1, visual_cfg_nr_dmat
-                  s      = s      + q(0,   imat)
-                  v(1:3) = v(1:3) + q(1:3, imat)
-               end do
+               s      = q(0,   1)
+               v(1:3) = q(1:3, 1)
 
                write(lunit_2d_scalar, '(3e18.10)')               &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
@@ -696,8 +676,6 @@ contains
 
          do icube = 1, visual_cfg_ncube(1)
             do jcube = 1, visual_cfg_ncube(2)
-
-               allocate(slice(visual_cfg_ncube(3)))
                do kcube = 1, visual_cfg_ncube(3)
 
                   r(1) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
@@ -718,24 +696,17 @@ contains
                                              r(3),               &
                                              ao,                 &
                                              buffer,             &
-                                             q)
+                                             q(0, kcube))
 
-                  s = 0.0d0
-                  v = 0.0d0
-                  do imat = 1, visual_cfg_nr_dmat
-                     s      = s      + q(0,   imat)
-                     v(1:3) = v(1:3) + q(1:3, imat)
-                  end do
-
-                  write(lunit_3d_vector, '(6e13.5)') r(1:3), v(1:3)
-                  write(lunit_3d_scalar, '(4e13.5)') r(1:3), s
-
-                  slice(kcube) = s
+                  write(lunit_3d_vector, '(6e13.5)') &
+	             r(1:3),                         &
+	             q(1:3, kcube)
+                  write(lunit_3d_scalar, '(4e13.5)') &
+	             r(1:3),                         &
+	             q(0, kcube)
                end do
-
-               write(lunit_3d_cube, '(6e13.5)') (slice(m), m = 1, visual_cfg_ncube(3))
-               deallocate(slice)
-
+               write(lunit_3d_cube, '(6e13.5)')  &
+                  (q(0, m), m = 1, visual_cfg_ncube(3))
             end do
          end do
       end if

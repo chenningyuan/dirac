@@ -221,40 +221,30 @@ contains
      &          PY(*), &
      &          PZ(*), &
      &          buffer(*), &
-     &          WEIGHT(*)
+     &          QUANTITY_INTEGRAL(0:3), &
+     &          WEIGHT(*), &
+     &          QUANTITY(0:3)
 
-      real(8)              :: quantity_integral(0:3)
 
-      real(8), allocatable :: q(:, :)
-      real(8), allocatable :: q_integral(:, :)
+      DO IPOINT = 1,NR_POINTS
 
-      allocate(q(0:3, visual_cfg_nr_dmat))
-      allocate(q_integral(0:3, visual_cfg_nr_dmat))
-      q          = 0.0d0
-      q_integral = 0.0d0
-
-      do ipoint = 1, nr_points
            call get_quantity_in_point(visual_cfg_nr_dmat, &
-                                      d,                  &
-                                      d_0,                &
+                                      D,                  &
+                                      D_0,                &
                                       px(ipoint),         &
                                       py(ipoint),         &
                                       pz(ipoint),         &
                                       ao,                 &
                                       buffer,             &
-                                      q)
+                                      quantity)
 
-         q_integral = q_integral + weight(ipoint)*q
-      end do
+        CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
+     &                              QUANTITY_INTEGRAL,1)
+      ENDDO
 
-      quantity_integral = 0.0d0
-      do i = 0, 3
-         do imat = 1, visual_cfg_nr_dmat
-            quantity_integral(i) = quantity_integral(i) + q_integral(i, imat)
-         end do
-      end do
 
-   end subroutine
+      RETURN
+      END subroutine
 
 
       SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
