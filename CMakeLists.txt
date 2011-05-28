@@ -279,11 +279,15 @@ add_custom_target(dirac_interfaces
 
 include(Sources)
 
-add_library(
-    dirac
+set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
+    )
+
+add_library(
+    dirac
+    ${DIRAC_SOURCES}
     ${GENERATED_FILES}
     )
 
@@ -360,4 +364,47 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY
     "DIRAC ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
     )
 
+SET(EXPORT_DIR ${CMAKE_BINARY_DIR}/export)
+SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
+    "${EXPORT_DIR};/"
+    )
+
 include(CPack)
+
+file(GLOB_RECURSE H_FILES   RELATIVE ${CMAKE_SOURCE_DIR} "*.h")
+file(GLOB_RECURSE INC_FILES RELATIVE ${CMAKE_SOURCE_DIR} "*.inc")
+
+set(INCLUDE_FILES
+    ${H_FILES}
+    ${INC_FILES}
+    )
+
+add_custom_target(release
+    COMMAND mkdir -p ${EXPORT_DIR}
+    COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
+    COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
+    COMMAND rm     ${EXPORT_DIR}/sources.tar
+    COMMAND rm -rf ${EXPORT_DIR}/build
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
+    COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild             ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis              ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton       ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/test               ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils              ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/dft/xcfun          ${EXPORT_DIR}/dft
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in   ${EXPORT_DIR}/gp
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/pam                ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest            ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup              ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup.examples     ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt     ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING            ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake  ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL            ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile.config.in ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/README             ${EXPORT_DIR}
+    COMMAND make package_source
+    COMMENT "Packaging source files"
+    VERBATIM
+    )

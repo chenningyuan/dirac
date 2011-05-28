@@ -263,7 +263,6 @@ do_not_release.append('utils/prepare_dyall_fblock_basis.sh')
 do_not_release.append('utils/prepare_dyall_pblock_basis.sh')
 do_not_release.append('utils/prepare_dyall_sblock_basis.sh')
 do_not_release.append('utils/configure.py')
-do_not_release.append('utils/cppp.py')
 do_not_release.append('relccsd/ccdriv_nomemget.F')
 do_not_release.append('relccsd/ccints_nomemget.F')
 do_not_release.append('relccsd/ccsort_lowmem.F')
@@ -759,6 +758,25 @@ f.close()
 
 if ( not is_windows() ): provide_star_basisfile_names()
 
+# get delete flags
+delete_flags = ''
+for module in dirac_modules:
+    if not dirac_modules[module].is_included:
+       for cppflag in dirac_modules[module].cppflags:
+           delete_flags += '-U%s ' % cppflag
+# another exception: sometimes modules have overlapping MODs
+# now remove some -UMODs again from delete_flags
+for module in dirac_modules:
+    if dirac_modules[module].is_included:
+       for cppflag in dirac_modules[module].cppflags:
+           delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
+if delete_flags != '':
+#  remove -ULARGE_MOLECULES from delete_flags
+   delete_flags = string.replace(delete_flags, '-ULARGE_MOLECULES', '')
+f = open('maintenance/delete_flags', 'w')
+f.write(delete_flags)
+f.close()
+
 # export dirac to tar.gz file
 
 if options.exportfile != None:
@@ -794,22 +812,9 @@ if options.exportfile != None:
               shutil.copytree(directory, scratch_dir + '/' + directory)
 
 #  remove all code that is not supposed to be shipped
-   delete_flags = ''
-   for module in dirac_modules:
-       if not dirac_modules[module].is_included:
-          for cppflag in dirac_modules[module].cppflags:
-              delete_flags += '-U%s ' % cppflag
-#  another exception: sometimes modules have overlapping MODs
-#  now remove some -UMODs again from delete_flags
-   for module in dirac_modules:
-       if dirac_modules[module].is_included:
-          for cppflag in dirac_modules[module].cppflags:
-              delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
    if delete_flags != '':
       find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
-#     remove -ULARGE_MOLECULES from delete_flags
-      delete_flags = string.replace(delete_flags, '-ULARGE_MOLECULES', '')
-      command = "./utils/cppp.py %s `%s`" % (delete_flags, find_command)
+      command = "./maintenance/cppp.py %s `%s`" % (delete_flags, find_command)
       os.system(command)
 
 #  remove unreleased files
