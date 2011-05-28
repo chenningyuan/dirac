@@ -412,8 +412,6 @@ class pam_enviroment:
             else:
                 if not self.silent:
                     print '  keeping the scratch directory'
-        else:
-             print '  The scratch directory already does not exist. '
         sys.stdout.flush()
 
     def exit_function(self, returncode):
