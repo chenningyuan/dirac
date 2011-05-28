@@ -265,6 +265,18 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
+#fixme: it's cmake time, not compile time
+#       also revision numbers are cmake time
+# get compilation time
+set(COMPILATION_TIME "")
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    execute_process(
+        COMMAND date
+        TIMEOUT 1
+        OUTPUT_VARIABLE COMPILATION_TIME
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
 # configure compinfo.h
 configure_file(
     ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in

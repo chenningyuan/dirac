@@ -188,6 +188,8 @@ void sysinf_(fortran_int_t *parcal)
    printf("\n");
    printf("SVN_REVISION                : %s \n", SVN_REVISION                );
    printf("GIT_REVISION                : %s \n", GIT_REVISION                );
+   printf("\n");
+   printf("Compilation time            : %s \n", COMPILATION_TIME            );
 
 #else
 

@@ -41,3 +41,5 @@
 
 #define SVN_REVISION                "@SVN_REVISION@"
 #define GIT_REVISION                "@GIT_REVISION@"
+
+#define COMPILATION_TIME            "@COMPILATION_TIME@"
