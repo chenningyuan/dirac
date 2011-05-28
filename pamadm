@@ -626,16 +626,42 @@ f.close()
 dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
 source_dir=dirac_dir+"/cbuild/Makefile.dirs"
 
-# pick up directory names
-for directory in vital_directories:
-   directory_path = dirac_dir+"/"+directory
-   create_link(source_dir,directory_path,"Makefile")
+directories_to_link = []
+directories_to_link.append('abacus')           
+directories_to_link.append('amfi')             
+directories_to_link.append('arducca')          
+directories_to_link.append('argosecp')         
+directories_to_link.append('cap')              
+directories_to_link.append('cfun')             
+directories_to_link.append('densfit')          
+directories_to_link.append('dirac')            
+directories_to_link.append('dirrci')           
+directories_to_link.append('embedding')        
+directories_to_link.append('eri')              
+directories_to_link.append('fmm')              
+directories_to_link.append('gp')               
+directories_to_link.append('grid')             
+directories_to_link.append('hsmrcc')           
+directories_to_link.append('include')          
+directories_to_link.append('krcc')             
+directories_to_link.append('krmc')             
+directories_to_link.append('luciarel')         
+directories_to_link.append('lucita')           
+directories_to_link.append('main')             
+directories_to_link.append('matrix_operations')
+directories_to_link.append('moltra')           
+directories_to_link.append('oof')              
+directories_to_link.append('openrsp')          
+directories_to_link.append('pdpack')           
+directories_to_link.append('prp')              
+directories_to_link.append('reladc')           
+directories_to_link.append('relccsd')          
+directories_to_link.append('srdft')            
+directories_to_link.append('visual')           
 
-for module in dirac_modules:
-#  xcfun has its own Makefile, do not overwrite it with a link
-   if dirac_modules[module].directories and dirac_modules[module].is_included and (module != 'xcfun'):
-      for directory in dirac_modules[module].directories:
-        create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
+for directory in directories_to_link:
+    create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
+
 
 # prepare files for cmake
 
