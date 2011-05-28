@@ -15,7 +15,7 @@ cd %DIRAC%
 rem radovan: bad idea, use svn co, not svn up
 svn up
 
-python pamadm -a --xcfun 
+python pamadm -a
 
 rem configure step
 cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  %DIRAC%
@@ -23,6 +23,7 @@ cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  
 cd %DIRAC%\build
 rem make clean
 rem make dirac.x
+rem mingw32-make Experimental
 mingw32-make -j 2
 
 
