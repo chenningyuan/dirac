@@ -81,6 +81,13 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             )
     endif()
 
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        message("--Switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6")
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
+            )
+    endif()
+
     if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         execute_process(
             COMMAND ./get-ifort-version
