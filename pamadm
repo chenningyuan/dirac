@@ -675,6 +675,8 @@ list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))
 list_of_free_fortran_sources = set(list_of_free_fortran_sources)
 list_of_free_fortran_sources = list_of_free_fortran_sources.difference(set(files_never_compiled))
+# have to remove main.F90 as the main entry, is not part of dirac library
+list_of_free_fortran_sources = list_of_free_fortran_sources.difference('main/main.F90')
 list_of_fixed_fortran_sources = set(list_of_fixed_fortran_sources)
 list_of_fixed_fortran_sources = list_of_fixed_fortran_sources.difference(set(files_never_compiled))
 
