@@ -1323,9 +1323,21 @@ class pam_enviroment:
         Pass on signals to pam and to its all children.
         TODO: improve the killing (Miro,Ulf; on separate branch)
         '''
+        def signal_numtoname (num): # convert signal number to the name
+            name = []
+            for key in signal.__dict__.keys():
+                if key.startswith("SIG") and getattr(signal, key) == num:
+                    name.append (key)
+            if len(name) == 1:
+                return name[0]
+            else:
+                return str(num)
+
+        # interrupt dirac run
         if self.pgid is not None:
             interrupt_message="\npam: All dirac.x subprocesses terminated with signal "\
-                              + str(signum) + "!"
+                              + signal_numtoname(signum)+" (#"+str(signum) + ") !"
+                              #+ str(sig_names[signum]) + str(signum) + "!"
             print_std_out_err(interrupt_message)
             os.killpg(self.pgid,signum) # TODO: adapt for Windows
             #radovan: don't want to get my screen filled
@@ -1333,7 +1345,7 @@ class pam_enviroment:
             # time.sleep(5)  # wait first that all processes die (or not), then prints 
             #radovan: the next one does not seem to work on my computer
             # self.print_all_processes()
-            self.f.write(interrupt_message+"\n") # write interruption message
+            self.f.write(interrupt_message+"\n") # write run interruption message
         sys.exit()
 
     def launch_dirac_subprocess(self):
@@ -1344,6 +1356,9 @@ class pam_enviroment:
         if not is_windows():
             signal.signal(signal.SIGHUP,self.child_signaller)
             signal.signal(signal.SIGPIPE,self.child_signaller)
+            if self.set_timeout_limit: # set timeout alarm if selected
+                signal.signal(signal.SIGALRM, self.child_signaller)
+                signal.alarm(self.timeout)
         signal.signal(signal.SIGTERM,self.child_signaller)
         signal.signal(signal.SIGINT,self.child_signaller)
             
@@ -1362,7 +1377,7 @@ class pam_enviroment:
         # ulf: Passing the signal on to the process group should work
         if not is_windows():
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
-                                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+                           stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
             self.pgid = self.dirac_p.pid
         else:
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
@@ -1389,6 +1404,8 @@ class pam_enviroment:
         self.dirac_p.wait()
         self.f.close()
         return self.dirac_p.returncode
+
+
 
     def profile_dirac(self):
         """
