@@ -13,6 +13,8 @@ DIRAC=/home/ilias/Work/qch_software/dirac_git/ompi_gfortran_gcc_ownmath_ilp64_cd
 # go to the local DIRAC directory
 cd $DIRAC
 
+/bin/rm -rf build
+
 # radovan: bad idea, use git clone or svn co
 git svn rebase
 
@@ -22,8 +24,6 @@ git svn rebase
 ./setup --mpi --fc=mpif90 --cc=mpicc --cpp=mpiCC --int64 --nomath -D BUILDNAME="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2  -D RUNTEST_TIMEOUT="00:40:00"  -D DART_TESTING_TIMEOUT=99999 
 
 cd $DIRAC/build
-
-make clean
 
 make Experimental
 # radovan: use Nighly, not Experimental

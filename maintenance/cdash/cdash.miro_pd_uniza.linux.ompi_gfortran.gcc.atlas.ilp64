@@ -23,10 +23,8 @@ svn --force up
 
 
 cd $DIRAC/build
-make clean
 
 make Experimental
-#make -j 2
 # radovan: use Nighly, not Experimental
 
 exit 0

@@ -15,6 +15,8 @@ DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
 # go to the local DIRAC directory
 cd $DIRAC
 
+/bin/rm -rf build
+
 # radovan: bad idea, use git clone or svn co
 git svn rebase
 
@@ -25,7 +27,7 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 ./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --nomath  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 
 
 cd $DIRAC/build
-make clean
+
 make Experimental
 # radovan: use Nighly, not Experimental
 

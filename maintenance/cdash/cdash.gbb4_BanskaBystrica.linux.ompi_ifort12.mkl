@@ -26,6 +26,8 @@ echo "running dirac cdash buildup at "$timestamp
 DIRAC=/home/chemia/ucitelia/milias/work/qch/software/dirac/ompi_ifort_gcc_mkl_ILP64_cdash/adm/trunk
 cd $DIRAC
 
+/bin/rm -rf build
+
 #/people/disk2/ilias/bin/subversion/bin/svn up .
 #svn up .
 ./pamadm -a --xcfun
@@ -34,8 +36,6 @@ cd $DIRAC
 ./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64  -D DART_TESTING_TIMEOUT=99999 
 
 cd $DIRAC/build
-
-make clean
 
 make Experimental
 # radovan: run Nightly, not Experimental
