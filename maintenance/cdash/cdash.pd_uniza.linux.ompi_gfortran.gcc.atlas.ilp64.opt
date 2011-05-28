@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+# crontab prescription
+#
+#30 23 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc;  timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running dirac cdash buildup at "$timestamp ; /home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_gcc_atlas_ILP64_cdash/adm/trunk/maintenance/cdash/cdash.pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64.opt  > /home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_gcc_atlas_ILP64_cdash/adm/trunk/maintenance/cdash_buildup_log.$timestamp 2>&1 || {echo "cront initiated cdash_buildup failed at "$timestamp}
+#
+
 # for crontab&queue system you have to set up enviroment !
 export PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin:$PATH
 export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/lib:$LD_LIBRARY_PATH
@@ -18,7 +24,7 @@ svn --force up
 ./pamadm -a --xcfun 
 
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=1234  -D RUNTEST_TIMEOUT="00:40:00"
+./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00"
 
 cd $DIRAC/build
 make clean

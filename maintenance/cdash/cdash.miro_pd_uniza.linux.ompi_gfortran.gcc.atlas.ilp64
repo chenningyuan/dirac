@@ -12,12 +12,12 @@ DIRAC=/home/ilias/qch_work/qch_software/dirac/openmpi_gfortran_gcc_opt_atlas_dir
 cd $DIRAC
 
 # radovan: bad idea, use svn co, not svn up
-svn up
+svn --force up
 
 ./pamadm -a --xcfun 
 
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=/usr/local/bin/mpif90 --cc=/usr/local/bin/mpicc --cpp=/usr/local/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=1234  -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_DLAPACK=1 -D FORCE_DIRAC_ZLAPACK=1 -D FORCE_DIRAC_DLAMCH=1 
+./setup --fc=/usr/local/bin/mpif90 --cc=/usr/local/bin/mpicc --cpp=/usr/local/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=1234  -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_DLAPACK=1 -D FORCE_DIRAC_ZLAPACK=1 -D FORCE_DIRAC_DLAMCH=1 -D DART_TESTING_TIMEOUT=99999 
 
 
 cd $DIRAC/build
