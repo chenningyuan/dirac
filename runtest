@@ -163,7 +163,7 @@ if len(sys.argv) == 1:
         print parser.format_help().strip()
         sys.exit()
 
-if options.all:
+if options.all or (options.quick and not options.individual):
     file = root_directory + '/test/list_of_tests'
     if os.path.isfile(file):
         f = open(file, 'r')
