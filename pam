@@ -989,26 +989,8 @@ class pam_enviroment:
     def copy_files(self):
         '''copies file from the home directory to the scratch directory'''
 
-        def copy_single_file(file_name):
-            full_file_name = os.path.join(self.input_directory,file_name)
-            if os.path.isfile(full_file_name):
-                file_name_scratch = os.path.join(self.scratch_dir, file_name)
-                self.copy_file(full_file_name, file_name_scratch)
-            else:
-                if self.expert_mode:
-                    for stream in [sys.stdout,sys.stderr]:
-                        print >> stream,'happens in input directory:',self.input_directory
-                        print  >> stream,'  Warning: file "', file_name, \
-                        '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
-                else:
-                    for stream in [sys.stdout,sys.stderr]:
-                        print >> stream,'happens in input directory:',self.input_directory
-                        print >> stream,'Error exit: file "', file_name, \
-                        '" you want to copy to scratch_dir does not exist !  '
-                    sys.exit(11)
-
-        def copy_rename_single_file(file_name_loc, file_name_scr):
-            full_file_name = os.path.join(self.input_directory,file_name_loc)
+        def copy_single_file(file_name_local, file_name_scr):
+            full_file_name = os.path.join(self.input_directory,file_name_local)
             if os.path.isfile(full_file_name):
                 file_name_scratch = os.path.join(self.scratch_dir, file_name_scr)
                 self.copy_file(full_file_name, file_name_scratch)
@@ -1016,12 +998,12 @@ class pam_enviroment:
                 if self.expert_mode:
                     for stream in [sys.stdout,sys.stderr]:
                         print >> stream,'happens in input directory:',self.input_directory
-                        print  >> stream,'  Warning: file "', file_name_loc, \
+                        print  >> stream,'  Warning: file "', file_name_local, \
                         '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
                     for stream in [sys.stdout,sys.stderr]:
                         print >> stream,'happens in input directory:',self.input_directory
-                        print >> stream,'Error exit: file "', file_name_loc, \
+                        print >> stream,'Error exit: file "', file_name_local, \
                         '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(11)
 
@@ -1032,7 +1014,7 @@ class pam_enviroment:
 
     # restarting stuff
         if self.full_restart:
-            copy_single_file(self.archive_name)
+            copy_single_file(self.archive_name, self.archive_name)
             archive_scratch_dir = os.path.join(self.scratch_dir, self.archive_name)
             unpack_command = 'tar --directory ' + self.scratch_dir \
                 + ' -xvf ' + archive_scratch_dir
@@ -1057,19 +1039,19 @@ class pam_enviroment:
         if self.put_files is not None:
             for file_name in self.put_files:
                 for f in glob.glob(file_name):
-                    copy_single_file(f)
+                    copy_single_file(f,f)
 
     # copies files to scratch_dir
         if self.incmo:
             file_name = 'DFCOEF'
-            copy_single_file(file_name)
+            copy_single_file(file_name,file_name)
         if self.infock:
             file_name = 'DFFCK2'
-            copy_single_file(file_name)
+            copy_single_file(file_name,file_name)
         if self.inkrmc:
             file_name_loc = 'KRMCSCF'
             file_name_scr = 'KRMCOLD'
-            copy_rename_single_file(file_name_loc,file_name_scr)
+            copy_single_file(file_name_loc,file_name_scr)
 
     def distribute_scratch_dir(self):
         """
