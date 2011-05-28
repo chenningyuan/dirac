@@ -30,6 +30,10 @@ import time
 import signal
 from optparse import OptionParser, OptionGroup
 
+if sys.version < '2.6':
+    print 'pam requires python version >= 2.6'
+    sys.exit(1)
+
 root_directory = os.path.realpath(__file__)[:-8]
 current_directory = os.path.realpath('.')
 

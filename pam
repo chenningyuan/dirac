@@ -38,6 +38,10 @@ import platform
 import glob
 import shlex
 
+if sys.version < '2.6':
+    print 'pam requires python version >= 2.6'
+    sys.exit(1)
+
 global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
 install_dir = install_dir_default
