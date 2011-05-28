@@ -826,22 +826,6 @@ class pam_enviroment:
         elif install_dir_default is None:
             sys.exit('The installation directory is not set ! Error exit !')
 
-        if options.dest_scratch:
-          # self.scratch_dir = os.path.expandvars(options.dest_scratch)
-          # radovan: do not expand variables, too dangerous
-            self.scratch_dir = options.dest_scratch
-
-            # ALWAYS append user name and /DIRAC_scratch
-            # otherwise users could wipe out their home directory
-            if self.scratch_dir[-1] == '/':
-                self.scratch_dir +=       self.user_name + '/DIRAC_scratch'
-            else:
-                self.scratch_dir += '/' + self.user_name + '/DIRAC_scratch'
-            if 'PID' in self.scratch_dir:
-                self.scratch_dir = self.scratch_dir.replace('PID', str(self.current_pid), 1)
-        else:
-            sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc')
-
         if options.dest_global_scratch_disk:
             self.global_scratch_disk = True
 
@@ -923,6 +907,19 @@ class pam_enviroment:
 
         if self.parallel_run and not self.global_scratch_disk:
             self.distribute_files = True 
+
+        if options.dest_scratch:
+            self.scratch_dir = options.dest_scratch
+
+            # does scratch dir end with a "/"? if not, append it
+            if self.scratch_dir[-1] != '/':
+                self.scratch_dir += '/'
+
+            # ALWAYS append $USER/DIRAC_inp_mol_pid
+            # otherwise users could wipe out their home directory
+            self.scratch_dir += self.user_name + '/DIRAC_' + self.output_name + '_' + str(self.current_pid)
+        else:
+            sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc')
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and
