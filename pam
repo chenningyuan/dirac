@@ -122,6 +122,7 @@ class pam_enviroment:
    
     # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
         self.dirac_p=None
+        self.pgid = None # process group id of the "dirac" process
         # PIDs of all dirac-processes (list)
         self.dirac_pids=[]
         # PIDs found found pidof...
@@ -1317,25 +1318,34 @@ class pam_enviroment:
                        stdout=subprocess.PIPE).communicate()[0]
         print_std_out_err("\n current processes left: \n--------------------------- \n"+process_string)
 
+    def child_signaller(self,signum,frame):
+        '''
+        Pass on signals to pam and to its all children.
+        TODO: improve the killing (Miro,Ulf; on separate branch)
+        '''
+        if self.pgid is not None:
+            interrupt_message="\npam: All dirac.x subprocesses terminated with signal "\
+                              + str(signum) + "!"
+            print_std_out_err(interrupt_message)
+            os.killpg(self.pgid,signum) # TODO: adapt for Windows
+            #radovan: don't want to get my screen filled
+            #         with ps info after 5 seconds - annoying
+            # time.sleep(5)  # wait first that all processes die (or not), then prints 
+            #radovan: the next one does not seem to work on my computer
+            # self.print_all_processes()
+            self.f.write(interrupt_message+"\n") # write interruption message
+        sys.exit()
+
     def launch_dirac_subprocess(self):
-        pgid = None # process group id of the "dirac" process
-        def child_signaller(signum, frame):
-            '''Pass on signals to pam to its children'''
-            if pgid is not None:
-                print_std_out_err("\npam: All dirac.x subprocesses terminated with signal "
-                                  + str(signum))
-                os.killpg(pgid,signum) # TODO: adapt for Windows
-              #radovan: don't want to get my screen filled
-              #         with ps info after 5 seconds - annoying
-              # time.sleep(5)  # wait first that all processes die (or not), then prints 
-              #radovan: the next one does not seem to work on my computer
-              # self.print_all_processes()
-            sys.exit()
+        '''
+        Launches the dirac.x subprocess(-es), also takes care of killing
+        '''
+
         if not is_windows():
-            signal.signal(signal.SIGHUP,child_signaller)
-            signal.signal(signal.SIGPIPE,child_signaller)
-        signal.signal(signal.SIGTERM,child_signaller)
-        signal.signal(signal.SIGINT,child_signaller)
+            signal.signal(signal.SIGHUP,self.child_signaller)
+            signal.signal(signal.SIGPIPE,self.child_signaller)
+        signal.signal(signal.SIGTERM,self.child_signaller)
+        signal.signal(signal.SIGINT,self.child_signaller)
             
         self.f = open(self.output_file_full, 'w', 0)
 		
@@ -1353,7 +1363,7 @@ class pam_enviroment:
         if not is_windows():
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
-            pgid = self.dirac_p.pid
+            self.pgid = self.dirac_p.pid
         else:
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
