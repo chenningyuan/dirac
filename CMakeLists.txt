@@ -4,8 +4,8 @@ project(DIRAC Fortran C)
 add_definitions(-DPRG_DIRAC)
 
 # set version
-set(VERSION_MAJOR 10)
-set(VERSION_MINOR 1)
+set(VERSION_MAJOR 11)
+set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
 set(THIS_IS_CMAKE_BUILD 1)
