@@ -5,4 +5,5 @@
 # you can add other default pam flags here
 
 #--mpirun=@MPIEXEC@
+#--machfile=$PBS_NODEFILE
 #--scratch=/path/to/scratch/dir
