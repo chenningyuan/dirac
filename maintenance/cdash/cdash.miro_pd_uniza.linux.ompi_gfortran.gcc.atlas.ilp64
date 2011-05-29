@@ -11,7 +11,6 @@ DIRAC=/home/ilias/qch_work/qch_software/dirac/openmpi_gfortran_gcc_opt_atlas_dir
 # go to the local DIRAC directory
 cd $DIRAC
 
-# radovan: bad idea, use svn co, not svn up
 svn --force up
 
 ./pamadm -a --xcfun 
@@ -24,6 +23,5 @@ svn --force up
 cd $DIRAC/build
 
 make Experimental
-# radovan: use Nighly, not Experimental
 
 exit 0

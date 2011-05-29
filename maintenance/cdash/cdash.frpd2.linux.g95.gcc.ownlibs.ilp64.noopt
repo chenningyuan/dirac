@@ -15,7 +15,6 @@ cd $DIRAC
 
 /bin/rm -rf build
 
-# radovan: bad idea, use svn co, not svn up
 svn --force up
 
 ./pamadm -a --xcfun --minus --openrsp
@@ -26,6 +25,5 @@ svn --force up
 cd $DIRAC/build
 
   make Experimental
-# radovan: use Nighly, not Experimental
 
 exit 0

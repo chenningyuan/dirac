@@ -11,7 +11,6 @@ set DIRAC=C:\Users\dv6-2145ec\Dirac-Windows\trunk
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-rem radovan: bad idea, use svn co, not svn up
 svn up
 
 python pamadm -a --xcfun 

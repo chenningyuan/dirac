@@ -15,7 +15,6 @@ cd $DIRAC
 
 /bin/rm -rf build
 
-# radovan: bad idea, use git clone or svn co
 git svn rebase
 
 ./pamadm -a --xcfun 
@@ -26,6 +25,5 @@ git svn rebase
 cd $DIRAC/build
 
 make Experimental
-# radovan: use Nighly, not Experimental
 
 exit 0

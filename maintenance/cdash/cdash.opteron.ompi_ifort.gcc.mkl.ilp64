@@ -11,7 +11,6 @@ DIRAC=/home/miro/qch_software/optimized_codes/svn_dirac/ompi_intel_mkl_opt_ILP64
 # go to the local DIRAC directory
 cd $DIRAC
 
-# radovan: bad idea, use svn co, not svn up
 svn --force up
 
 ./pamadm -a 
@@ -24,6 +23,5 @@ svn --force up
 cd $DIRAC/build
 
 make Experimental
-# radovan: use Nighly, not Experimental
 
 exit 0

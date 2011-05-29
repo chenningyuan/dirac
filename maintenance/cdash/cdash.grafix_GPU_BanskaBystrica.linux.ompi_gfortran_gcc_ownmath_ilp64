@@ -17,7 +17,6 @@ cd $DIRAC
 
 /bin/rm -rf build
 
-# radovan: bad idea, use git clone or svn co
 git svn rebase
 
 ./pamadm -a --xcfun 
@@ -29,6 +28,5 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 cd $DIRAC/build
 
 make Experimental
-# radovan: use Nighly, not Experimental
 
 exit 0
