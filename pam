@@ -55,6 +55,7 @@ def append_dirac_py_modules(dirac_install_dir):
 def print_std_out_err(s):
     """
     print the entering string "s" into both stdout/stderr streams
+    this is global function
     """
     for stream in [sys.stdout,sys.stderr]:
         print  >> stream,s
@@ -1274,7 +1275,7 @@ class pam_enviroment:
 
     def child_signaller(self,signum,frame):
         '''
-        Pass on signals to pam and to its all children.
+        Pass on interrupting signals to pam and to its all children.
         TODO: improve the killing (Miro,Ulf; on separate branch)
         '''
         def signal_numtoname (num): # convert signal number to the name
@@ -1291,7 +1292,6 @@ class pam_enviroment:
         if self.pgid is not None:
             interrupt_message="\npam: All dirac.x subprocesses terminated with signal "\
                               + signal_numtoname(signum)+" (#"+str(signum) + ") !"
-                              #+ str(sig_names[signum]) + str(signum) + "!"
             print_std_out_err(interrupt_message)
             os.killpg(self.pgid,signum) # TODO: adapt for Windows
             #radovan: don't want to get my screen filled
@@ -1299,8 +1299,33 @@ class pam_enviroment:
             # time.sleep(5)  # wait first that all processes die (or not), then prints 
             #radovan: the next one does not seem to work on my computer
             # self.print_all_processes()
-            self.f.write(interrupt_message+"\n") # write run interruption message
+
+            # stamp the  general  interruption message into the output file
+            self.f.write(interrupt_message+"\n") # 
+            # flush out specific timeout interruption message
+            if signum == 14 and self.set_timeout_limit:
+                timeout_interrupt_message="\npam: This is specific timeout kill after "+str(self.timeout)+" seconds."
+                print_std_out_err(timeout_interrupt_message)
+                self.f.write(timeout_interrupt_message+"\n") 
+            #TODO: maybe specify CTRL+C interruption and  flush out message about it ?
+            # flush out the final sdterr message on details about the dirac run
+            self.stderr_message()
         sys.exit()
+
+    def stderr_message(self):
+        '''
+        flush stderr message about details of the terminated run;
+        serves for the CDash-board
+        '''
+        if not self.silent:
+            print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
+            if len(self.dirac_stderr) > 0 :
+                print >> sys.stderr,self.dirac_stderr
+            print >> sys.stderr,'directory:', self.input_directory
+            print >> sys.stderr,'   inputs:', self.input_molecule,\
+                                ' & ', self.input_dirac
+            sys.stderr.flush()
+
 
     def launch_dirac_subprocess(self):
         '''
@@ -1348,12 +1373,7 @@ class pam_enviroment:
             # attach stderr to the pam output
             self.f.write('\n ====  below this line is the stderr stream  ====' + self.dirac_stderr)
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
-            if not self.silent:
-                print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
-                print >> sys.stderr,self.dirac_stderr
-                print >> sys.stderr,'directory:', self.input_directory
-                print >> sys.stderr,'   inputs:', self.input_molecule,\
-                                    ' & ', self.input_dirac
+            self.stderr_message()
 
         self.dirac_p.wait()
         self.f.close()
