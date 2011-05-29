@@ -1318,6 +1318,8 @@ class pam_enviroment:
         serves for the CDash-board
         '''
         if not self.silent:
+            # flush out message on the existence of stderr output 
+            print >> sys.stdout, "\n  Nonzero stderr stream !"
             print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
             if len(self.dirac_stderr) > 0 :
                 print >> sys.stderr,self.dirac_stderr
@@ -1325,7 +1327,6 @@ class pam_enviroment:
             print >> sys.stderr,'   inputs:', self.input_molecule,\
                                 ' & ', self.input_dirac
             sys.stderr.flush()
-
 
     def launch_dirac_subprocess(self):
         '''
