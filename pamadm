@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# script for selecting modules, packaging, exporting, and releasing of DIRAC
+# script for selecting DIRAC modules
 # based on: old pamadm written by Trond Saue, Thomas Enevoldsen, Joern Thyssen, and others
 #           and prepare_release.sh written by Ulf Ekstrom
 #
@@ -16,10 +16,7 @@
 #           select some modules
 #           ./pamadm --foo --bar
 #
-#           select modules for release and export
-#           ./pamadm --release --export=DIRAC10
-#
-#           select modules for release without exporting them
+#           select modules for release
 #           ./pamadm --release
 
 from optparse import OptionParser
@@ -99,7 +96,7 @@ from common import create_link, copy_parent
 from common import vacuum_cleaner
 
 # list of vital directories and files
-# these are always exported/released
+# these are always packaged
 
 vital_directories = []
 vital_files = []
@@ -153,7 +150,7 @@ vital_files.append('setup')
 vital_files.append('setup.examples')
 vital_directories.append('cmake')
 
-# these tests are always exported/released
+# these tests are always packaged
 
 list_of_tests = []
 list_of_tests.append('acmoin')
@@ -459,12 +456,6 @@ dirac_modules[this_module].take_out_of_release()
 
 parser = OptionParser()
 
-parser.add_option('-e','--export',
-                  dest='exportfile',
-                  action='store',
-                  help='Export or release DIRAC to EXPORTFILE',
-                  metavar="EXPORTFILE")
-
 for module in dirac_modules:
     parser.add_option('--' + module,
                       action="callback",
@@ -533,7 +524,7 @@ for module in dirac_modules:
 print
 
 #  there are no modules
-if (len(sys.argv) == 1) or (len(sys.argv) == 2 and 'export' in sys.argv[1]):
+if (len(sys.argv) == 1):
    print 'only core functionality selected'
 else:
    print 'Active modules:'
@@ -758,7 +749,7 @@ f.close()
 
 if ( not is_windows() ): provide_star_basisfile_names()
 
-# get delete flags
+# get delete flags (used by make release)
 delete_flags = ''
 for module in dirac_modules:
     if not dirac_modules[module].is_included:
@@ -776,86 +767,3 @@ if delete_flags != '':
 f = open('maintenance/delete_flags', 'w')
 f.write(delete_flags)
 f.close()
-
-# export dirac to tar.gz file
-
-if options.exportfile != None:
-   scratch_dir = options.exportfile
-
-   print 'exporting DIRAC:'
-#  create scratch dir for copying files for export, if exists, remove it first
-   if os.path.isdir(scratch_dir):
-       print '   removed old %s directory' % scratch_dir
-       shutil.rmtree(scratch_dir)
-   else:
-       os.mkdir(scratch_dir)
-
-#  copy all vital directories and files to scratch dir
-   print '   exporting DIRAC files into newly created %s directory' % scratch_dir
-   for directory in vital_directories:
-       copytree_dest= scratch_dir + '/' + directory
-       if not os.path.isdir(copytree_dest):
-           shutil.copytree(directory, copytree_dest)
-   for file in vital_files:
-#      need to copy with parent, don't know how to do it in python
-       copy_parent(file, scratch_dir)
-
-#  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
-   for module in dirac_modules:
-       for directory in dirac_modules[module].directories:
-           shutil.rmtree(scratch_dir + '/' + directory, True)
-
-#  copy active module directories to scratch dir
-   for module in dirac_modules:
-       if dirac_modules[module].is_included:
-          for directory in dirac_modules[module].directories:
-              shutil.copytree(directory, scratch_dir + '/' + directory)
-
-#  remove all code that is not supposed to be shipped
-   if delete_flags != '':
-      find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
-      command = "./maintenance/cppp.py %s `%s`" % (delete_flags, find_command)
-      os.system(command)
-
-#  remove unreleased files
-   for module in dirac_modules:
-       if not dirac_modules[module].is_included:
-          for file in dirac_modules[module].files:
-              os.system("rm -f %s/%s" % (scratch_dir, file))
-
-#  remove reference files that can be fetched from the dirac website
-   shutil.rmtree(scratch_dir + '/basis/reference_unedited')
-
-#  copy tests to scratch dir
-   for test in list_of_tests:
-       d = 'test/' + test
-       shutil.copytree(d, scratch_dir + '/' + d)
-
-#  run the vacuum cleaner: remove all junk files in exported DIRAC
-   vacuum_cleaner(scratch_dir, '*.o')
-   vacuum_cleaner(scratch_dir, '*.r')
-   vacuum_cleaner(scratch_dir, '*.i')
-   vacuum_cleaner(scratch_dir, '*.opt')
-   vacuum_cleaner(scratch_dir, '*.s')
-   vacuum_cleaner(scratch_dir, '*.p')
-   vacuum_cleaner(scratch_dir, '*.fc')
-   vacuum_cleaner(scratch_dir, '*~')
-   vacuum_cleaner(scratch_dir, '.svn', recursive=True)
-   vacuum_cleaner(scratch_dir, '.git', recursive=True)
-
-#  remove files that are not supposed to be shipped
-   for x in do_not_release:
-       os.system("rm -rf %s/%s"  % (scratch_dir, x))
-
-#  remove copyright tags
-   for suffix in ['*.F90', '*.f90', '*.F', '*.c']:
-       command = "for file in `find %s -name '%s'`; do grep -v copyright_start $file | grep -v copyright_end > deleteme; mv -f deleteme $file; done" % (scratch_dir, suffix)
-       os.system(command)
-
-#  create tar.gz
-   command = 'tar -czf %s.tar.gz %s' % (options.exportfile, scratch_dir)
-   print '   creating export file with command: %s' % command
-   os.system(command)
-
-#  remove scratch dir
-   shutil.rmtree(scratch_dir)
