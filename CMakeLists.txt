@@ -416,3 +416,15 @@ add_custom_target(release
     )
 
 include(Report)
+
+if(EXISTS "$ENV{HOME}/.diracrc")
+    message("Configuration file $ENV{HOME}/.diracrc exists.")
+else()
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/cmake/diracrc.in
+        $ENV{HOME}/.diracrc
+        )
+    message("Configuration file $ENV{HOME}/.diracrc did not exist.")
+    message("This file was created by cmake. You should verify/edit it during/after the compilation.")
+    message("You need to set at least --scratch in $ENV{HOME}/.diracrc for runtest and make test to work.")
+endif()
