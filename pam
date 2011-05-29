@@ -1205,11 +1205,9 @@ class pam_enviroment:
         for line in fileinput.input([makefile_config]):
             (name,value) = namval(line)
             value = os.path.expandvars(value)
-            if name == 'INSTALL_DIR':
-                pass
-            elif name == 'MPIRUN' and value != '':
+            if name == 'MPIRUN' and value != '':
                 self.parallel_build = True
-            elif name == 'MACH_FILE':
+            if name == 'MACH_FILE':
                 self.machinefile = value
 
     def handle_machinefile(self):
