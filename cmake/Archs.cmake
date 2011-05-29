@@ -1,5 +1,3 @@
-message("-- Detected CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"")
-
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DSYS_LINUX)
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i686")

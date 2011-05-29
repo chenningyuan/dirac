@@ -1,5 +1,3 @@
-message("-- CMAKE_INSTALL_PREFIX is \"${CMAKE_INSTALL_PREFIX}\" ")
-
 install(
     DIRECTORY
     DESTINATION

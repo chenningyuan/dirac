@@ -1,6 +1,3 @@
-message("-- Fortran compiler is  \"${CMAKE_Fortran_COMPILER}\" (\"${CMAKE_Fortran_COMPILER_ID}\") ")
-message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_ID}\") ")
-
 # Fortran compilers
 
 set(FORTRAN_COMPILER_VERSION "")
@@ -185,5 +182,3 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_DEBUG   " ")
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
-
-message("-- Fortran flags,  CMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}")
