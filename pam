@@ -294,7 +294,7 @@ class pam_enviroment:
         print "    mpi launcher         " + str(self.mpirun)
         print "    mpirun extra args    " + str(self.mpiarg)
         print "    global scratch disk  " + str(self.global_scratch_disk)
-        print "    Machine file         " + self.machinefile
+        print "    Machine file         " + str(self.machinefile)
         print "  Profiler            " + self.profiler
         print "  Debugger            " + self.debugger
         print "  Dirac command       " + self.dirac_cmd
