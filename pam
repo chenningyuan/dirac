@@ -767,8 +767,9 @@ class pam_enviroment:
             try:
                 f = open(path,'r')
                 for l in f.readlines():
-                    for a in shlex.split(l):
-                        fullargs.append(a)
+                    if l.split()[0] != '#':
+                       for a in shlex.split(l):
+                           fullargs.append(a)
             except Exception:
                 pass
         try_config_file(os.path.join(os.path.expanduser('~'),'.diracrc'))
