@@ -1159,6 +1159,11 @@ class pam_enviroment:
         else:
             # serial run (also in debugger)
             if self.debug:
+                # first check if debugger is set
+                from common import find_executable
+                if find_executable(self.debugger) is None:
+                    print 'no debugger found in the .diracrc file !'
+                    sys.exit()
                 # TODO: adapt it for Windows
                 self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
                     + ' | tee ' + self.output_file_full
