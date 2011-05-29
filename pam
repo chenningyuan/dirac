@@ -3,8 +3,6 @@
 #
 # Python replacement of the previous bash-written pam(.sh) script
 #
-# Reads some crucial data from Makefile.config, but pam can also be standalone.
-#
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
 #
@@ -14,14 +12,6 @@
 #                Andre Gomes, France
 #
 ##########################################################################
-
-# TODO/WISHLIST:
-# 
-# defaults into ".diracrc"
-#
-# to investigate automated RSH/RCP assignment: 
-#  http://stackoverflow.com/questions/3830508/check-if-passwordless-access-has-been-setup
-#
 import os
 import sys
 import string
@@ -134,15 +124,13 @@ class pam_enviroment:
         self.dirac_stderr=''     
 
     # ... variables related to parallel calculations
-        self.parallel_build = False  # parallel build - read from Makefile.config
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = ''  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
         self.distribute_files = False # if some distribution over different nodes
 
         # depending on the operating_system, we set a default for the MPI launcher
-        # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH, therefore
-        # no reading of MPIRUN from Makefile.config
+        # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
         from common import find_executable
         if self.operating_system == 'AIX':
         #   IBM
@@ -182,7 +170,7 @@ class pam_enviroment:
 
     # dirac profiling
         self.profile = False
-        self.profiler = ''  # empty, but later read from Makefile.config
+        self.profiler = ''
         self.profiling_file = 'gmon.out'  # usuall output file
         self.profile_command = ''  # command for profiling
 
@@ -224,7 +212,7 @@ class pam_enviroment:
 
     # classic debugging (gdb, idb, dbx ...)
         self.debug = False
-        self.debugger = ''  # empty, but later to be read from Makefile.config
+        self.debugger = ''
 
         # valgrind debugging
         self.vg_debug = False
@@ -299,12 +287,11 @@ class pam_enviroment:
         print "  Install directory   " + self.dirac_home
         print "  Basis directories   " + self.basdir
         print "  Scratch directory   " + self.scratch_dir
-        print "  Parallel build      " + str(self.parallel_build)
-        if self.parallel_build:
-            print "    mpi launcher         " + str(self.mpirun)
-            print "    mpirun extra args    " + str(self.mpiarg)
-            print "    global scratch disk  " + str(self.global_scratch_disk)
-            print "    Machine file         " + self.machinefile
+        print "  Relevant for parallel builds:"
+        print "    mpi launcher         " + str(self.mpirun)
+        print "    mpirun extra args    " + str(self.mpiarg)
+        print "    global scratch disk  " + str(self.global_scratch_disk)
+        print "    Machine file         " + self.machinefile
         print "  Profiler            " + self.profiler
         print "  Debugger            " + self.debugger
         print "  Dirac command       " + self.dirac_cmd
@@ -731,7 +718,7 @@ class pam_enviroment:
             type='string',
             action='store',
             dest='dest_debugger',
-            help='set full path to debugger [default: in Makefile.config]',
+            help='set full path to debugger [default: in .diracrc]',
             metavar='FULL_PATH',
             )
         group.add_option('--valgrind', action='store_true',
@@ -767,7 +754,7 @@ class pam_enviroment:
             try:
                 f = open(path,'r')
                 for l in f.readlines():
-                    if l.split()[0] != '#':
+                    if l[0] != '#':
                        for a in shlex.split(l):
                            fullargs.append(a)
             except Exception:
@@ -1181,34 +1168,6 @@ class pam_enviroment:
                 # no debug, plain run
                 self.dirac_cmd = this_dirac_exe
 
-    def read_makefile_config(self):
-        """Read the Makefile.config to get default values of many variables.
-        Makefile.config file is the storage place for important variables
-        -  debugger, profiler, mpi-launcher... """
-        def namval(line):
-            """Return (NAME,VALUE) from lines NAME = VALUE, taking 
-            #comments into account. Return ('','') if no match"""
-            n = line.find("#")
-            if n >= 0:
-                line = line[:n]
-            n = line.find("=")
-            if n>=0:
-                return (line[:n].strip(),line[n+1:].strip())
-            else:
-                return ('','')
-
-        makefile_config = os.path.join(install_dir,'Makefile.config')
-        # if no Makefile.config present, leave with warning message
-        if not os.path.isfile(makefile_config):
-            return
-
-        # open and read line by line by avoiding #-comments
-        for line in fileinput.input([makefile_config]):
-            (name,value) = namval(line)
-            value = os.path.expandvars(value)
-            if name == 'MPIRUN' and value != '':
-                self.parallel_build = True
-
     def handle_machinefile(self):
         """
         take care of the machinefile
@@ -1568,7 +1527,6 @@ class pam_run(pam_enviroment):
         self.pam_variables = pam_enviroment()
 
     def perform(self):
-        self.pam_variables.read_makefile_config()
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
         if self.pam_variables.just_show_settings:

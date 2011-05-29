@@ -220,16 +220,6 @@ if(ENABLE_XCFUN)
         )
 endif()
 
-# configure Makefile.config
-find_program(PBS_ENVIRONMENT pbsnodes)
-if(PBS_ENVIRONMENT)
-    set(MACH_FILE "$PBS_NODEFILE")
-endif()
-configure_file(
-    ${CMAKE_SOURCE_DIR}/Makefile.config.in
-    ${CMAKE_SOURCE_DIR}/Makefile.config
-    )
-
 # get svn or git revision number
 set(SVN_REVISION "")
 set(GIT_REVISION "")
@@ -408,7 +398,6 @@ add_custom_target(release
     COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING            ${EXPORT_DIR}
     COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake  ${EXPORT_DIR}
     COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL            ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile.config.in ${EXPORT_DIR}
     COMMAND cp    ${CMAKE_SOURCE_DIR}/README             ${EXPORT_DIR}
     COMMAND make package_source
     COMMENT "Packaging source files"
