@@ -1208,8 +1208,6 @@ class pam_enviroment:
             value = os.path.expandvars(value)
             if name == 'MPIRUN' and value != '':
                 self.parallel_build = True
-            if name == 'MACH_FILE':
-                self.machinefile = value
 
     def handle_machinefile(self):
         """
