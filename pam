@@ -182,12 +182,14 @@ class pam_enviroment:
         exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
+            print ' ',self.dirac_exe_file,'taken from the dirac installation directory'
         else:
             # does not exist, try build directory
             exec_position=os.path.join(install_dir_default,"build",self.dirac_exe_file)
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
+                print ' ',self.dirac_exe_file,'taken from the dirac build directory'
             else:
                 sys.exit('No Dirac binary found, quitting.')
 
