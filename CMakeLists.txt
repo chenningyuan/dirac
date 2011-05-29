@@ -146,9 +146,17 @@ if(ENABLE_MPI)
     find_package(MPI)
     if(MPI_FOUND)
         add_definitions(-DVAR_MPI)
-        add_definitions(-DVAR_MPI2)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
         include_directories(${MPI_INCLUDE_PATH})
+
+        # test whether MPI-2 is available
+        include(MPI-2-test)
+        if(MPI_2_SUPPORT_OK)
+            add_definitions(-DVAR_MPI2)
+            message("-- MPI-2 support found, define -DVAR_MPI2")
+        else()
+            message("-- no MPI-2 support found, will try with MPI-1")
+        endif()
     endif()
 endif()
 
