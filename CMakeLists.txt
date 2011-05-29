@@ -53,12 +53,10 @@ option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
 option(ENABLE_XCFUN          "Enable XCFun library"          ON)
-option(ENABLE_LOCAL_DISKS    "Enable local disks"            ON)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(NO_SSH_ACCESS_TO_NODES "Use rsh/rcp access to nodes"  OFF)
 
 # set cdash buildname
 set(BUILDNAME
@@ -223,20 +221,6 @@ if(ENABLE_XCFUN)
 endif()
 
 # configure Makefile.config
-if(NO_SSH_ACCESS_TO_NODES)
-    find_program(SCP_EXEC rcp)
-    find_program(SSH_EXEC rsh)
-else()
-    find_program(SCP_EXEC scp)
-    find_program(SSH_EXEC ssh)
-endif()
-
-find_program(VALGRIND_EXECUTABLE valgrind)
-if(ENABLE_LOCAL_DISKS)
-    set(LOCALDISKS "yes")
-else()
-    set(LOCALDISKS "no")
-endif()
 find_program(PBS_ENVIRONMENT pbsnodes)
 if(PBS_ENVIRONMENT)
     set(MACH_FILE "$PBS_NODEFILE")
