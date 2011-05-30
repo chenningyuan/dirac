@@ -1146,22 +1146,6 @@ c
       ENDDO
 
       CLOSE(IOUNIT)
-c
-c   write out the eigenvectors of the Lanczos matrix.
-c   Since this file is normally
-c   processed immediately after this subroutine call we do
-c   not attribute a separate symmetry label to it. This file
-c   is needed only for hole population analysis and the
-c   calculation for the **long** eigenvectors.
-c
-c     OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-c     WRITE(IOUNIT) JND
-c     WRITE(IOUNIT) N
-c     DO J=1,JND 
-c       WRITE(IOUNIT) D(J)
-c       WRITE(IOUNIT) (Z(IX,J),IX=1,N)
-c     ENDDO
-c     CLOSE(IOUNIT)
 
       RETURN
       END
@@ -1498,18 +1482,6 @@ c
       ENDDO
 
       CLOSE(IOUNIT)
-c
-c   write the hole part of the short eigenvectors either
-C   tmatevc is now written out by ZBANDDIA in the *unpurged* form!
-c
-c     OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-c     WRITE(IOUNIT) JND
-c     WRITE(IOUNIT) N
-c     DO J=1,JND
-c       WRITE(IOUNIT) D(J)
-c       WRITE(IOUNIT) (Z(IX,J),IX=1,N)
-c     ENDDO
-c     CLOSE(IOUNIT)
 
       RETURN
       END
