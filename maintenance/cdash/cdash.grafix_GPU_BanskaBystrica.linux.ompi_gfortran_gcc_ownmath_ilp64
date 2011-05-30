@@ -11,15 +11,11 @@ export LD_LIBRARY_PATH=/usr/local/lib:/home/milias/bin/openmpi_ilp64/lib:/usr/lo
 # the directory where your DIRAC sits
 DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
 
-
 # go to the local DIRAC directory
 cd $DIRAC
-
 /bin/rm -rf build
-
 git svn rebase
-
-./pamadm -a --xcfun 
+./pamadm -a 
 
 OMPI=/home/milias/bin/openmpi_ilp64/bin
 # configure step
@@ -27,6 +23,7 @@ OMPI=/home/milias/bin/openmpi_ilp64/bin
 
 cd $DIRAC/build
 
+make dirac_interfaces
 make Experimental
 
 exit 0
