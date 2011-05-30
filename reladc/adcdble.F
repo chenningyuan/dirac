@@ -42,7 +42,7 @@ C
 C
 C---------------Local variables memory requirements------------------
 C
-      LOGICAL ALLOC
+      LOGICAL ALLOC,ERRFLG
       INTEGER KFRSAV,LFRSAV
       INTEGER ICOLLEN(MXREP),INTBUF
 c file names for the Lanczos
@@ -171,6 +171,11 @@ C |
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*)
+      IF(DOFULL) THEN
+        WRITE(IW,*) 'Full diagonalizer additionally requested.'
+      ELSE
+        WRITE(IW,*) 'Only Lanzcos diagonalizer will be called.'
+      ENDIF
 C |
 C |
 C |
@@ -351,9 +356,7 @@ c
         ENDIF
         CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
         CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
-
-        write(iw,*) 'memchk after build_sat'
-
+C
 C  call 2h/3h1p configuration creator, file handle is available after
 C  call
 C
@@ -386,6 +389,16 @@ C
 
         CLOSE(ITAPADC)
 c
+c  call full diagonalizer for new matrix format if requested.
+c
+        IF(DOFULL) THEN
+          IF(CARITH) THEN
+            CALL FULLDIAC2(ITAPADC, NAME2, INTBUF, NBUFS, LADC, DESREP)
+          ELSE
+            CALL FULLDIAR2(ITAPADC, NAME2, INTBUF, NBUFS, LADC, DESREP)
+          ENDIF
+        ENDIF
+c
 c  call diagonalizer.
 c
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
@@ -402,13 +415,24 @@ c  especially MULTB(64,64,2), NOOT(*) and NO(*)
 c
         IF(DOADCPOP) THEN
           IF(CARITH) THEN
-c           CALL TWOHPOP_C(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
-            STOP 'Population analysis for complex case is yet to come!'
+            CALL TWOHPOP_C(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
           ELSE
             CALL TWOHPOP_R(IW,ITAPADC,DESREP,NREP,MULTB,NO,NOOT)
           ENDIF
         ENDIF
  300  CONTINUE
+
+c
+c   perform a final DNM matrix check before we transfer back control
+c
+      IF(DOADCPOP) THEN
+        call DNMMATCHK(IW,ITAPADC,ERRFLG)
+        IF(ERRFLG) then
+          call quit('dnm matrix check failed!')
+        ELSE
+          write(iw,*) '--------  DNM matrix check passed.  -------'
+        ENDIF
+      ENDIF
 
 C |
 C |

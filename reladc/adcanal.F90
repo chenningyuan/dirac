@@ -705,6 +705,304 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FULLDIAR2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+      implicit none
+
+      INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
+      CHARACTER(len=6)              :: FILEN5
+!
+!---------------Description--------------------------------------------
+!
+!  For not too large symmetric matrices the full diagonalization is
+!  performed for debugging purposes. The required arrays are allocated
+!  dynamically in order to achieve maximal independence.
+!
+!  The only specific entities are two available file handles,
+!  the length of the write chunks and the length of the ADC matrix.  
+!
+!---------------Local variables--------------------------------------
+!
+      REAL*8                          :: S
+      CHARACTER(len=1)                :: JOBZ,UPLO
+      REAL*8                          :: AUTOEV = 27.2113957D0
+      REAL*8, allocatable             :: A(:,:),WORK(:),EVL(:),BUF(:)
+      INTEGER, allocatable            :: IOI(:),IOJ(:)
+      INTEGER                         :: LWORK,TOTELE
+      INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
+      INTEGER                         :: IROW,ICOL,INFO
+      INTEGER                         :: LUN_DIA,LUN_OFF,LUN_OUT
+      CHARACTER(len=10)               :: longfilename
+!
+!---------------Executable code--------------------------------------
+!
+!  do the allocations and
+!  construct ADC matrix by reading nonzero elements from file
+!
+
+      CALL PST('Entering (new format) REAL FULL diagonalizer+')
+
+      IF(LADC.gt.5000) THEN
+        write(*,*) 'Matrix dimension too large for direct'
+        write(*,*) 'diagonalization! Exiting from this...'
+        return
+      ENDIF
+
+      LUN_OFF=IOUNIT
+      LUN_OUT=IOUNIT+1
+
+
+
+      IF(KREP.GT.9) THEN
+        WRITE(longfilename,'(A8,I2)') 'FULLEVD.',KREP
+      ELSE
+        WRITE(longfilename,'(A7,A2,I1)') 'FULLEVD','.0',KREP
+      ENDIF
+
+      allocate(a(ladc,ladc))
+      allocate(evl(ladc))
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      lwork=10*ladc
+      allocate(work(lwork))
+      
+      A=0.0d0
+!_________________________ reading section
+!|
+!|
+!|
+!|
+      OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
+
+      REWIND(LUN_OFF)
+      TOTELE = 0
+      DO IREC = 1,NBUFS
+        READ(LUN_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF), &
+                              (IOI(IXX),IXX=1,INTBUF), &
+                              (IOJ(IXX),IXX=1,INTBUF), &
+                               NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          S    = BUF(K)
+
+          IF(ICOL.GT.IROW) CALL QUIT('ICOL.GT.IROW should not happen')
+ 
+          A(IROW,ICOL)=S
+          TOTELE=TOTELE + 1
+        ENDDO
+      ENDDO
+      WRITE(*,555) TOTELE
+      CLOSE(LUN_OFF)
+!|
+!|
+!|
+!|________________________ end reading section
+
+!
+!  call symmetric diagonalizer
+!  calculate eigenvectors being placed in A
+!
+      JOBZ='V'
+      UPLO='L'
+
+!     write(*,*) 'Calling DSYEV with lwork=',lwork
+      CALL DSYEV( JOBZ, UPLO, LADC, A, LADC, EVL, WORK, LWORK, INFO )
+!     write(*,*) 'AFTER  DSYEV with optimal lwork=',work(1)
+
+      IF(INFO.NE.0) THEN
+           write(*,*) 'Error in DSYEV. Info:',INFO
+           CALL QUIT ('*** Error in FULLDIAR (lapack dsyev) ***')
+      ENDIF
+
+      WRITE(*,*) 'Eigenvalues in eV (lowest 10):'
+      DO I=1,min(10,LADC)
+        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
+      ENDDO
+
+      WRITE(*,*) 'Writing to output file  ',longfilename
+      open(lun_out,file=longfilename,access='sequential', &
+           form='formatted')
+      do i=1,ladc
+        write(lun_out,'(A,i6,3x,f17.12,A)') &
+               '----- eigenvalue: ',i,evl(i)*autoev,'  eV'
+        do j=1,ladc
+          write(lun_out,'(i6,3x,f17.12)') j,a(j,i)
+        enddo
+      enddo
+      write(lun_out,'(A)') '     end of output'
+      close(lun_out)
+!
+!  release all memory
+!
+      deallocate(a)
+      deallocate(evl)
+      deallocate(buf)
+      deallocate(ioi)
+      deallocate(ioj)
+      deallocate(work)
+
+      RETURN
+
+ 88   STOP 'Error reading the diagonal (FULLDIAR)'
+ 99   STOP 'Unexpected end of diagonal file (FULLDIAR)'
+ 199  STOP 'Error reading off-diagonal elements (FULLDIAR)'
+
+ 555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FULLDIAC2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+      implicit none
+
+      INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
+      CHARACTER(len=6)              :: FILEN5
+!
+!---------------Description--------------------------------------------
+!
+!  For not too large Hermitian matrices the full diagonalization is
+!  performed for debugging purposes. The required arrays are allocated
+!  dynamically in order to achieve maximal independence.
+!
+!  The only specific entities are two available file handles,
+!  the length of the write chunks and the length of the ADC matrix.  
+!
+!---------------Local variables--------------------------------------
+!
+      COMPLEX*16                      :: S
+      CHARACTER(len=1)                :: JOBZ,UPLO
+      REAL*8                          :: AUTOEV = 27.2113957D0
+      COMPLEX*16,   allocatable       :: A(:,:),CWORK(:),BUF(:)
+      REAL*8,       allocatable       :: EVL(:),RWORK(:)
+      INTEGER,      allocatable       :: IOI(:),IOJ(:)
+      INTEGER                         :: LWORK,TOTELE
+      INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
+      INTEGER                         :: IROW,ICOL,INFO
+      INTEGER                         :: LUN_DIA,LUN_OFF,LUN_OUT
+      CHARACTER(len=10)                :: longfilename
+!
+!---------------Executable code--------------------------------------
+!
+!  do the allocations and
+!  construct ADC matrix by reading nonzero elements from file
+!
+
+      CALL PST('Entering (new format) FULL complex diagonalizer+')
+
+      IF(LADC.gt.5000) THEN
+        write(*,*) 'Matrix dimension too large for direct'
+        write(*,*) 'diagonalization! Exiting from this ...'
+        return
+      ENDIF
+
+      LUN_OFF=IOUNIT
+      LUN_OUT=IOUNIT+1
+
+
+
+      IF(KREP.GT.9) THEN
+        WRITE(longfilename,'(A8,I2)') 'FULLEVD.',KREP
+      ELSE
+        WRITE(longfilename,'(A7,A2,I1)') 'FULLEVD','.0',KREP
+      ENDIF
+
+      allocate(a(ladc,ladc))
+      allocate(evl(ladc))
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      lwork=10*ladc
+      allocate(rwork(lwork))
+      allocate(cwork(lwork))
+      
+      A=(0.0d0,0.0d0)
+!_________________________ reading section
+!|
+!|
+!|
+!|
+      OPEN(LUN_OFF,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
+
+      REWIND(LUN_OFF)
+      TOTELE = 0
+      DO IREC = 1,NBUFS
+        READ(LUN_OFF,ERR=199) (BUF(IXX),IXX=1,INTBUF), &
+                              (IOI(IXX),IXX=1,INTBUF), &
+                              (IOJ(IXX),IXX=1,INTBUF), &
+                               NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          S    = BUF(K)
+
+          IF(ICOL.GT.IROW) CALL QUIT('ICOL.GT.IROW should not happen')
+ 
+          A(IROW,ICOL)=S
+          TOTELE=TOTELE + 1
+        ENDDO
+      ENDDO
+      WRITE(*,555) TOTELE
+      CLOSE(LUN_OFF)
+!|
+!|
+!|
+!|________________________ end reading section
+
+!
+!  call symmetric diagonalizer
+!  calculate eigenvectors being placed in A
+!
+      JOBZ='V'
+      UPLO='L'
+
+!     write(*,*) 'Calling ZHEEV with lwork=',lwork
+      CALL ZHEEV( JOBZ, UPLO, LADC, A, LADC, EVL, CWORK, &
+                  LWORK, RWORK, INFO )
+!     write(*,*) 'AFTER  ZHEEV with optimal lwork=',cwork(1)
+
+      IF(INFO.NE.0) THEN
+           write(*,*) 'Error in ZHEEV. Info:',INFO
+           CALL QUIT ('*** Error in FULLDIAC (lapack zheev) ***')
+      ENDIF
+
+      WRITE(*,*) 'Eigenvalues in eV (lowest 10):'
+      DO I=1,min(10,LADC)
+        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
+      ENDDO
+
+      WRITE(*,*) 'Writing to output file  ',longfilename
+      open(lun_out,file=longfilename,access='sequential', &
+           form='formatted')
+      do i=1,ladc
+        write(lun_out,'(A,i6,3x,f17.12,A)') &
+               '----- eigenvalue: ',i,evl(i)*autoev,'  eV'
+        do j=1,ladc
+          write(lun_out,'(i6,3x,2f17.12)') j,a(j,i)
+        enddo
+      enddo
+      write(lun_out,'(A)') '     end of output'
+      close(lun_out)
+!
+!  release all memory
+!
+      deallocate(a)
+      deallocate(evl)
+      deallocate(buf)
+      deallocate(ioi)
+      deallocate(ioj)
+      deallocate(rwork)
+      deallocate(cwork)
+
+      RETURN
+
+ 88   STOP 'Error reading the diagonal (FULLDIAC)'
+ 99   STOP 'Unexpected end of diagonal file (FULLDIAC)'
+ 199  STOP 'Error reading off-diagonal elements (FULLDIAC)'
+
+ 555  FORMAT (1X,'Total number of elements in OD-file:',T40,I8)
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine TWOHPOP_R(lupri,io_lan,ibeta,nrep,multb,no,noot)
 !
 !  this routine performs the 2H-Mulliken analysis for
