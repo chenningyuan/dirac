@@ -1,9 +1,14 @@
-/* All user tunable parameters, including functional weights,
+/* 
+   All user tunable parameters, including functional weights,
    should be listed here.
 
    the PARAM macro to generates both and enums and strings from the
    parameter names. Add new parameters at the end of this list, but
-   keep XC_NR_PARAMS last  */
+   keep XC_NR_PARAMS last  
+
+   IMPORTANT: after editing this file run generate_interfaces.py
+   to update the C and F90 interfaces
+*/
 
   PARAM(XC_SLATERX),
   PARAM(XC_VWN5C),

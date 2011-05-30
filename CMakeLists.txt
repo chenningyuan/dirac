@@ -54,7 +54,6 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
 option(ENABLE_XCFUN          "Enable XCFun library"          ON)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
-option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 
@@ -288,17 +287,6 @@ add_executable(
     dirac.x
     main/main.F90
     )
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-    SET_TARGET_PROPERTIES(${BINARY} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
-endif()
-target_link_libraries(
-    dirac.x
-    dirac
-    ${LIBS}
-    )
-
-if(ENABLE_UTILITIES)
 add_executable(
     dirac_mointegral_export.x
     ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90
@@ -333,6 +321,7 @@ add_executable(
     )
 foreach(
     BINARY
+    dirac.x
     dirac_mointegral_export.x
     rspread.x
     labread.x
@@ -351,7 +340,6 @@ foreach(
         ${LIBS}
         )
 endforeach()
-endif()
 
 include(Install)
 include(InstallRequiredSystemLibraries)

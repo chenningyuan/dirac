@@ -18,15 +18,6 @@ src/parameters.o: src/parameters.cpp src/parameters.h src/functionals/list_of_pa
 
 src/fortran.o: src/fortran.c include/xcfun_autogen.h
 
-geninterface: src/geninterface.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-include/xcfun_autogen.h: geninterface src/functionals/list_of_parameters.h
-	./geninterface
-
-fortran/xcfun_autogen.F90: geninterface src/functionals/list_of_parameters.h
-	./geninterface
-
 funeval: test/funeval.c lib/libxcfun.a
 	$(CC) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS) 
 
