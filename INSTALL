@@ -5,12 +5,13 @@
  1. Dependencies
  2. Basic installation using the setup script
  3. Basic installation without the setup script
- 4. Running CMake using GUI
- 5. Running tests
- 6. Compiling in verbose mode
- 7. Compiling on many cores
- 8. Out of source compilation
- 9. Make install
+ 4. Linking to external math libraries
+ 5. Running CMake using GUI
+ 6. Running tests
+ 7. Compiling in verbose mode
+ 8. Compiling on many cores
+ 9. Out of source compilation
+10. Make install
 
 
  1. Dependencies
@@ -79,7 +80,20 @@ You can do this instead:
    $ make
 
 
- 4. Running CMake using GUI
+ 4. Linking to external math libraries
+    ----------------------------------
+
+Typically you will want to link to external math (BLAS and LAPACK) libraries,
+for instance provided by MKL or Atlas.
+
+The CMake configuration script will automatically find them if you define MATH_ROOT:
+   $ export MATH_ROOT='/opt/intel/mkl'
+   $ ./setup [--flags] # do not need to define --math
+   $ cd build
+   $ make
+
+
+ 5. Running CMake using GUI
     -----------------------
 
 You prefer GUI? No problem. You can configure with GUI:
@@ -90,28 +104,28 @@ You may have to install cmake-gui for it, on debian/ubuntu:
    $ sudo apt-get install cmake cmake-gui
 
 
- 5. Running tests
+ 6. Running tests
     -------------
 
 You can run the test suite with:
    $ make test
 
 
- 6. Compiling in verbose mode
+ 7. Compiling in verbose mode
     -------------------------
 
 Sometimes you want to see the actual compiler flags and definitions:
    $ make VERBOSE=1
 
 
- 7. Compiling on many cores
+ 8. Compiling on many cores
     -----------------------
 
 Yes, it works. Try:
    $ make -j4
 
 
- 8. Out of source compilation
+ 9. Out of source compilation
     -------------------------
 
 By default CMake builds out of source.
@@ -126,7 +140,7 @@ You can build several binaries with the same source:
    $ make
 
 
- 9. Make install
+10. Make install
     ------------
 
 Make install is very useful to make DIRAC available to other users on the same
