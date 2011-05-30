@@ -53,6 +53,7 @@ cd $DIRAC
 
 cd $DIRAC/build
 
+make dirac_interfaces
 make Experimental 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
