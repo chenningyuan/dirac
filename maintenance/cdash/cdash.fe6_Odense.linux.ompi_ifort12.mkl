@@ -35,6 +35,9 @@ export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
 #export INCLUDE=/people/disk2/ilias/bin/subversion/bin:$INCLUDE
 #export LD_LIBRARY_PATH=/people/disk2/ilias/bin/subversion/lib:$LD_LIBRARY_PATH
 
+#  my most recent python 2.7.1 #
+export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "running dirac cdash buildup at "$timestamp
 
