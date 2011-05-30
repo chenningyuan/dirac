@@ -3,6 +3,8 @@
 # for crontab&queue system you have to set up enviroment !
 #export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
+export PATH=/home/miro/bin/python/Python-2.7.1:$PATH
+
 echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 
 # the directory where your DIRAC sits
