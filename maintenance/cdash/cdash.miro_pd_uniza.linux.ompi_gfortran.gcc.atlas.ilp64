@@ -18,7 +18,7 @@ svn --force up
 cd $DIRAC/build
 #make Experimental
 make -j 2
-make ExperimentalSubmit
+#make ExperimentalSubmit
 ###
 ### now run the Nightly test
 ###
