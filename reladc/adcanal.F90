@@ -710,7 +710,7 @@
 !  this routine performs the 2H-Mulliken analysis for
 !  *REAL* cases, where the expansion coefficients are real.
 !
-!  the Delta_mn matrix is then written to a file 'DMN.POP'
+!  the Delta_mn matrix is then written to a file 'DADCPOP'
 !  in the format
 !              integer dimension
 !              real(:,:) dmn   :  real part, vector 1
@@ -733,7 +733,7 @@
       real*8,  allocatable  :: dmn(:,:), xmna(:,:), xmn2(:,:),xmnc(:,:)
       real*8,  allocatable  :: xmnd(:,:),thvecs(:,:),evec(:)
       real*8,  allocatable  :: cevl(:), polestr(:)
-      real*8,  allocatable  :: dmntrond(:,:,:)
+      real*8,  allocatable  :: dmnext(:,:,:)
       real*8                :: polethr = 0.001d0
       real*8                :: autoev = 27.2113957D0
       real*8                :: A0=0.0d0, A1=1.0d0
@@ -743,7 +743,7 @@
       integer               :: nocc,ipoint,no_sum
       integer               :: irp,jrp,imin,irow,jcol
       logical               :: isthere
-      character*7           :: dmn_filename='DMN.POP'
+      character*7           :: dmn_filename='DADCPOP'
 
 !  say hello and check basic information
 
@@ -825,7 +825,7 @@
 !  allocate space for Delta_mn matrix and clear matrix
 
       allocate(dmn(no_sum,no_sum))
-      allocate(dmntrond(no_sum,no_sum,2))
+      allocate(dmnext(no_sum,no_sum,2))
       allocate(xmna(no_sum,no_sum))
       allocate(xmnc(no_sum,no_sum))
       allocate(xmnd(no_sum,no_sum))
@@ -944,11 +944,11 @@
 !  write delta_mn matrix to file in the format requested by dirac conversion
 !  routine.
 
-        dmntrond=0.0d0
-        dmntrond(:,:,1)=dmn(:,:)
+        dmnext=0.0d0
+        dmnext(:,:,1)=dmn(:,:)
         dmn=0.0d0
-        dmntrond(:,:,2)=dmn(:,:)
-        write(io_lan) dmntrond
+        dmnext(:,:,2)=dmn(:,:)
+        write(io_lan) dmnext
 
       ENDDO   !ivcount
 
@@ -961,7 +961,289 @@
       deallocate(xmnd)
       deallocate(xmnc)
       deallocate(xmna)
-      deallocate(dmntrond)
+      deallocate(dmnext)
+      deallocate(dmn)
+      deallocate(no_offs)
+      deallocate(polestr)
+      deallocate(cevl)
+      deallocate(evec)
+      deallocate(thvecs)
+
+!     write(lupri,*) 'deallocation finished'
+
+      close(io_lan)
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine TWOHPOP_C(lupri,io_lan,ibeta,nrep,multb,no,noot)
+!
+!  this routine performs the 2H-Mulliken analysis for
+!  *COMPLEX* cases.
+!
+!  the Delta_mn matrix is then written to a file 'DADCPOP'
+!  in the format
+!              integer dimension
+!              real(:,:) dmn   :  real part, vector 1
+!              real(:,:) dmn   :  imaginary part, vector 2
+!                       ....
+!              real(:,:) dmn   :  real part, vector N
+!              real(:,:) dmn   :  imaginary part, vector N
+!
+      implicit none
+      integer, intent(in)  :: lupri    ! file handle for printing to stdout
+      integer, intent(in)  :: io_lan   ! file handle start
+      integer, intent(in)  :: ibeta    ! symmetry of the two-hole final state 
+      integer, intent(in)  :: nrep     ! number of ireps in the overall run
+      integer, intent(in)  :: multb(64,64,2)     ! fixed dimension multiplication table
+      integer, intent(in)  :: no(nrep)    ! number of occupied orbitals in each irep
+      integer, intent(in)  :: noot(nrep)  ! number of OO-combinations in each irep
+!
+!  local variables
+!
+      complex*16, allocatable   :: dmn(:,:),        &
+                                   xmna(:,:),       &
+                                   xmn2(:,:),       &
+                                   xmnc(:,:),       &
+                                   xmnd(:,:)
+      complex*16, allocatable   :: thvecs(:,:), evec(:)
+      real*8, allocatable       :: cevl(:), polestr(:), dmnext(:,:,:)
+      real*8                    :: dot_productz      ! is a function
+      real*8                    :: polethr = 0.001d0
+      real*8                    :: autoev = 27.2113957D0
+      complex*16                :: A0=(0.0d0,0.0d0), A1=(1.0d0,0.0d0)
+      integer, allocatable      :: no_offs(:)
+      integer                   :: i,j,ix,ivcount,iwwcount
+      integer                   :: n1,n2
+      integer                   :: nocc,ipoint,no_sum
+      integer                   :: irp,jrp,imin,irow,jcol
+      logical                   :: isthere
+      character*7               :: dmn_filename='DADCPOP'
+
+!  say hello and check basic information
+
+      call PST('Performing 2H population analysis+')
+      nocc=noot(ibeta)
+      write(lupri,*) 'Final state symmetry:',ibeta
+      write(lupri,*) 'Number of 2h states in this symm:',nocc
+
+!__________________________________________________________________
+!|
+!|  read the file of Lanczos eigenvectors and extract the 2h/2h block
+!|        ----->   in this symmetry !!  <-----
+!|  from it. 
+!|  Fill the corresponding arrays with the read vectors and determine
+!|  the polestrengths. The raw Lanc eigenvector goes to *evec* and
+!|  the 2h/2h block goes to *thvecs*
+
+      Inquire(file='TMATEVC',exist=isthere)
+      IF(.not.isthere) THEN
+        write(lupri,*) '**************'
+        write(lupri,*) '**** Attention'
+        write(lupri,*) '**************'
+        write(lupri,*) 'TMATEVC file not present.'
+        write(lupri,*) 'No population analysis possible'
+        return
+      ENDIF
+
+      OPEN(IO_LAN,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+      REWIND(IO_LAN)
+      READ(IO_LAN) N1
+      READ(IO_LAN) N2
+      WRITE(lupri,*) 'Found',N1,' Lanczos eigenvectors of length', &
+                   N2,' on TMATEVC'
+!     WRITE(lupri,*) nocc,' of them are 2H states!'
+
+      allocate(thvecs(nocc,nocc), &
+               evec(n2),          &
+               cevl(nocc),        &
+               polestr(nocc))
+
+      thvecs = A0; evec = A0; cevl = 0.0d0; polestr = 0.0d0
+
+      iwwcount = 0
+      DO I=1,nocc
+        READ(IO_LAN) cevl(i)
+        READ(IO_LAN) (evec(ix),ix=1,n2)
+        polestr(i)=dot_productz(evec(1:nocc),nocc)
+        if(polestr(i).gt.polethr) then
+              write(lupri,'(A,I5,A,2F16.6,A)')           &
+                  'Taking vector ',i,                    &
+                  ' with', cevl(i)*autoev,polestr(i),    &
+                  ' for population analysis'
+              iwwcount = iwwcount + 1
+        endif 
+        thvecs(:,i) = evec(1:nocc)
+!       write(lupri,*) thvecs(:,i)
+      ENDDO
+      write(lupri,*) iwwcount, &
+        ' vectors have enough pole strength for 2H analysis'
+      CLOSE(IO_LAN,STATUS='DELETE')
+!|
+!|
+!|
+!|
+!|_______ 2h/2h block in memory together with the polestrengths ______
+
+
+!  prepare occupied orbital offset table
+
+      allocate(no_offs(nrep+1))
+      no_offs = 0; no_sum = 0
+      DO i=1,nrep
+        no_offs(i+1) = no_offs(i) + no(i)
+        no_sum = no_sum + no(i)
+      ENDDO
+!     write(lupri,*) 'offset table:',no_offs
+!     write(lupri,*) 'total number of occupied orbitals:',no_sum
+
+!  allocate space for Delta_mn matrix and clear matrix
+
+      allocate(dmn(no_sum,no_sum))
+      allocate(dmnext(no_sum,no_sum,2))
+      allocate(xmna(no_sum,no_sum))
+      allocate(xmnc(no_sum,no_sum))
+      allocate(xmnd(no_sum,no_sum))
+      allocate(xmn2(no_sum,no_sum))
+
+!  open DMN.POP file for sequential access and write 
+!  number of matrices and corresponding matrix dimension
+!
+!  ATT We check if file exists already and append the next symmetry
+!  to it. This liberates us from writing symmetry-specific files altogether.
+ 
+      inquire(file=dmn_filename,exist=isthere)
+
+      select case(isthere)
+
+      case (.FALSE.)      ! Delta_mn file was not created
+      
+        open(unit=IO_LAN,          & 
+             file=dmn_filename,    &
+             status='new',         &
+             access='sequential',  &
+             form='unformatted')
+
+      case (.TRUE.)       ! Delta_mn file is there.
+
+        open(unit=IO_LAN,          & 
+             file=dmn_filename,    &
+             status='old',         &
+             access='sequential',  &
+             form='unformatted',   &
+             position='append')
+
+      end select
+
+!  write relevant data in this symmetry to the DNM file
+!  symmetry, # of analyzed vectors, matrix dimension
+
+      write(IO_LAN) ibeta, iwwcount, no_sum
+
+!__________________________________________________________________
+!|
+!|  Loop over all vectors in the 2h/2h block possessing high enough 
+!|  pole strength
+
+      DO ivcount=1,nocc 
+
+        IF(polestr(ivcount).lt.polethr) cycle ! too small, no POPANA
+
+        xmna = A0; xmn2 = A0; xmnc = A0; xmnd = A0
+
+        write(lupri,*) '   ** doing analysis for vector:',ivcount
+        write(lupri,*) '   ** eigenvalue: ',cevl(ivcount)*autoev
+!       write(lupri,*) '   ** NO array: ',NO
+!       write(lupri,*) '   ** NOOT array: ',NOOT
+!       write(lupri,*)
+
+!
+!  found a vector, construct Delta_mn
+!
+        ipoint = 0
+        DO 14 JRP = 1, NREP
+          IRP = MULTB(JRP,ibeta+NREP,2)
+          IF (IRP.LT.JRP) GOTO 14
+          DO J = 1, NO(JRP)
+            IMIN = 1
+            IF (IRP.EQ.JRP) IMIN = J + 1
+            DO I = IMIN, NO(IRP)
+              ipoint = ipoint + 1   ! get next eigenvector component
+              irow   = no_offs(irp) + I
+              jcol   = no_offs(jrp) + J
+              xmna(irow,jcol) = thvecs(ipoint,ivcount)
+!             write(*,'(A,4I4,A,2I4,F10.6)') & 
+!                   ' irp,jrp,i,j',irp,jrp,i,j, &
+!                   ' row/col/entry:',irow,jcol,xmna(irow,jcol)
+            ENDDO
+          ENDDO 
+  14    CONTINUE
+
+        IF( (ipoint).NE.NOOT(ibeta)) THEN
+          WRITE(lupri,*) 'ipoint,noot',ipoint,noot(ibeta)
+          CALL QUIT('Error in TWOHPOP for 2h configurations!')
+        ENDIF
+
+!  contract x_ml and x*_nl. XGEMM can be used because all irrelevant entries are
+!  filled with zeros and will not contribute to the matrix product.
+!  Second call: contract x_lm and x_ln. Transpose the first matrix.
+
+        xmn2 = transpose(xmna)  ! form x_ln from x_nl. 
+        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
+                    xmn2,no_sum,A0,xmnc,no_sum)
+        xmn2 = xmna 
+        xmna = transpose(xmna)  ! form x_ml from x_lm. 
+        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
+                    xmn2,no_sum,A0,xmnd,no_sum)
+        xmn2 = xmnc + xmnd
+
+!       write(lupri,*) 'Contributions from sum2 and sum3:'
+!       do i=1,no_sum
+!         write(lupri,'(40F10.5)') (xmn2(i,j),j=1,no_sum)
+!       enddo
+
+!  now form Delta_mn matrix. Part 1 is just one on the diagonal,
+!  part 2 is just minus the pole strength on the dagonal.
+        
+        dmn = 0.0d0
+        DO i=1,no_sum
+          dmn(i,i) = A1 - CMPLX(polestr(ivcount),0.0d0)
+        ENDDO
+        dmn = dmn + xmn2
+
+        write(lupri,*) 'Delta_mn (real part):'
+        do i=1,no_sum
+          write(lupri,'(40F10.5)') (REAL(dmn(i,j)),j=1,no_sum)
+        enddo
+        write(lupri,*) 'Delta_mn (imag part):'
+        do i=1,no_sum
+          write(lupri,'(40F10.5)') (AIMAG(dmn(i,j)),j=1,no_sum)
+        enddo
+        write(lupri,*)
+        write(lupri,'(A)') '------------------------------------------'
+        write(lupri,*)
+
+!  write delta_mn matrix to file in the format requested by dirac conversion
+!  routine. dmnext can be a real array since real part is first layer and 
+!  imaginary part is second layer written out.
+
+        dmnext=0.0d0
+        dmnext(:,:,1)=real(dmn(:,:))
+        dmnext(:,:,2)=aimag(dmn(:,:))
+        write(io_lan) dmnext
+
+      ENDDO   !ivcount
+
+!  perform all deallocations in reverse order of the allocations
+!  and close file
+
+!     write(lupri,*) 'entering deallocation section'
+
+      deallocate(xmn2)
+      deallocate(xmnd)
+      deallocate(xmnc)
+      deallocate(xmna)
+      deallocate(dmnext)
       deallocate(dmn)
       deallocate(no_offs)
       deallocate(polestr)
@@ -985,9 +1267,9 @@
 !
 !  local variables
 !
-      real*8,  allocatable  :: dmntrond(:,:,:)
+      real*8,  allocatable  :: dmnext(:,:,:)
       integer               :: i,j,ivcount,ibeta,iwwcount,no_sum
-      character*7           :: dmn_filename='DMN.POP'
+      character*7           :: dmn_filename='DADCPOP'
 
       call PST('Performing DMN matrix check+')
 
@@ -1002,23 +1284,23 @@
       errflg=.false.
  12   read(io_lan,end=800,err=900) ibeta,iwwcount,no_sum
 !     write(lupri,*) 'Record:',ibeta,iwwcount,no_sum
-      allocate(dmntrond(no_sum,no_sum,2))
-      dmntrond = 0.0d0
+      allocate(dmnext(no_sum,no_sum,2))
+      dmnext = 0.0d0
       do ivcount=1,iwwcount
-        read(io_lan) dmntrond
+        read(io_lan) dmnext
       enddo
 
 !     write(lupri,*) 'Delta_mn (real):'
 !     do i=1,no_sum
-!       write(lupri,'(40F10.5)') (dmntrond(i,j,1),j=1,no_sum)
+!       write(lupri,'(40F10.5)') (dmnext(i,j,1),j=1,no_sum)
 !     enddo
 !     write(lupri,*) 'Delta_mn (complex):'
 !     do i=1,no_sum
-!       write(lupri,'(40F10.5)') (dmntrond(i,j,2),j=1,no_sum)
+!       write(lupri,'(40F10.5)') (dmnext(i,j,2),j=1,no_sum)
 !     enddo
 
       write(lupri,*) 'Symmetry',ibeta,' passed.'
-      deallocate(dmntrond)
+      deallocate(dmnext)
       goto 12
 
  800  return
@@ -1030,13 +1312,10 @@
       FUNCTION DOT_PRODUCTZ(a,n)
       real*8 dot_productz
 !
-!  This little function computes the squared norm of the *complex*
-!  vector a according to
+!  This little function computes the squared norm of a *complex*
+!  vector according to
 !        Dot_productz = conjg(a) * a
-!  The number of components this expression should be formed over is
-!  provided by n.
-!  If one needs the norm itself one can later square root this real
-!  expression
+!  and therefore yields a real value.
 !
       integer,    intent(in)    ::  n
       complex*16, intent(in)    ::  a(n)
