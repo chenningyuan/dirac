@@ -197,10 +197,6 @@ set(GENERATED_FILES
     ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
     )
 
-set(INTERFACES_LIST
-    ${GENERATED_FILES}
-    )
-
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
@@ -217,10 +213,6 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 
 if(ENABLE_XCFUN)
     add_subdirectory(dft/xcfun)
-    set(INTERFACES_LIST
-        ${INTERFACES_LIST}
-        xcfun
-        )
     set(LIBS
         ${LIBS}
         xcfun
@@ -266,7 +258,7 @@ configure_file(
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
-    ${INTERFACES_LIST}
+    ${GENERATED_FILES}
 )
 
 include(Sources)
