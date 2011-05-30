@@ -87,9 +87,17 @@ Typically you will want to link to external math (BLAS and LAPACK) libraries,
 for instance provided by MKL or Atlas.
 
 The CMake configuration script will automatically find them if you define MATH_ROOT:
-   $ export MATH_ROOT='/opt/intel/mkl'
-   $ ./setup [--flags] # do not need to define --math
+   $ export MATH_ROOT='/opt/intel/mkl' # do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'
+                                       # cmake will append the correct paths depending on the processor
+                                       # and the default integer type
+Then:
+   $ ./setup [--flags]                 # do not need to define --math
    $ cd build
+   $ make
+
+Alternatively:
+   $ cd build
+   $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
    $ make
 
 
