@@ -20,6 +20,9 @@ export LD_LIBRARY_PATH=/home/chemia/ucitelia/milias/bin/open_mpi_ifort_ILP64/lib
 # cmake stuff
 export PATH=/home/chemia/ucitelia/milias/bin/cmake-install/cmake-2.8.4-Linux-i386/bin:$PATH
 
+# new python 2.7.1
+export PATH=/home/chemia/ucitelia/milias/bin/python/Python-2.7.1:$PATH
+
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "running dirac cdash buildup at "$timestamp
 
