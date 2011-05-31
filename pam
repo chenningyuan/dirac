@@ -811,7 +811,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if options.dest_mpi_workdir_argument:
                 self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
 
-
         if options.dest_install_dir:
             if os.path.isdir(str(options.dest_install_dir)):
                 install_dir = str(options.dest_install_dir)
@@ -1536,10 +1535,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print '  DIRAC run      :', dirac_run
             # print out more stuff regarding the parallel setting
             if self.parallel_run: 
-                print '  mpirun         :', self.mpirun
-                print '  rsh/rcp        :', self.rsh,'/',self.rcp
-                print '  machine file   :', self.machinefile
+                print '  # of CPUs      :', self.nr_proc 
                 print '  local disks    :', not self.global_scratch_disk
+                print '  rsh/rcp        :', self.rsh,' ',self.rcp
+                print '  machine file   :', self.machinefile
 
         if self.set_timeout_limit and not is_windows():
             print '  Allowed runtime:', self.timeout, \
