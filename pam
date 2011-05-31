@@ -139,7 +139,6 @@ class pam_enviroment:
         else:
         #   Linux, Windows, ...
             self.mpirun = str(find_executable('mpirun'))
-           
 
     #   restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
@@ -166,8 +165,8 @@ class pam_enviroment:
         self.nodes = []
 
     # rcp, rsh for parallel, multinodes calculations
-        self.rcp = 'scp'
         self.rsh = 'ssh'
+        self.rcp = 'scp'
 
     # dirac profiling
         self.profile = False
@@ -425,7 +424,7 @@ class pam_enviroment:
             """%prog [options] --inp=*.inp --mol=*.mol
    or: %prog [options] --inp=*.inp --mol=*.xyz
    or: %prog [options] --fullrestart=ARCHIVE.tgz
-  Options are also read from ~/.dirac and .dirac"""
+Options are also read from the ~/.dirac and .diracrc files."""
 
         parser = OptionParser(usage)
 
@@ -1511,7 +1510,7 @@ class pam_enviroment:
 
     def print_header(self):
         """
-        print nice header
+        print nice informative header after all Dirac run variables are properly setup
         """
         if self.parallel_run:
             dirac_run = 'parallel ( launcher:'+self.mpirun+')'
@@ -1533,17 +1532,32 @@ class pam_enviroment:
             print '  scratch dir    :', self.scratch_dir
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run
+            # print out more stuff regarding the parallel setting
+            if self.parallel_run: 
+                print '  mpirun         :', self.mpirun
+                print '  rsh/rcp        :', self.rsh,'/',self.rcp
+                print '  machine file   :', self.machinefile
+                print '  local disks    :', not self.global_scratch_disk
 
-        if self.set_timeout_limit:
+        if self.set_timeout_limit and not is_windows():
             print '  Allowed runtime:', self.timeout, \
                 ' seconds. Killing afterwards.'
+        elif self.set_timeout_limit and is_windows():
+           print '--timeout not (yet) working for Windows !'
         print
 
+        # add few consistency checks
         if self.parallel_run and self.mpirun==None:
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream, '\n No MPI launcher found for the parallel run !'
                 print >> stream, ' Check the PATH variable: ',os.environ['PATH']
                 sys.exit(20)
+                stream.flush()
+
+        if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream, '\n Parallel run with local disks but without machinefile ! '
+                sys.exit(21)
                 stream.flush()
 
         sys.stdout.flush()
