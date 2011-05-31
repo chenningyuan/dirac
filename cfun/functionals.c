@@ -70,6 +70,7 @@ Functional* available_functionals[] = {
     &B3P86GFunctional,
     &BLYPFunctional,
     &BP86Functional,
+    &PP86Functional,
     &BPW91Functional,
     &Camb3lypFunctional,
     &GGAKeyFunctional,

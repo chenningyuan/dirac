@@ -59,6 +59,7 @@ static int  blyp_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
 static int  b3lypgauss_read(const char* conf_line);
 static int  bp86_read(const char* conf_line);
+static int  pp86_read(const char* conf_line);
 static int  bpw91_read(const char* conf_line);
 static int  b3p86_read(const char* conf_line);
 static int  b3p86g_read(const char* conf_line);
@@ -99,6 +100,7 @@ Functional B3P86Functional =  GGA_FUNCTIONAL("B3P86",   b3p86_read);
 Functional B3P86GFunctional = GGA_FUNCTIONAL("B3P86-G", b3p86g_read);
 Functional BLYPFunctional =   GGA_FUNCTIONAL("BLYP",    blyp_read);
 Functional BP86Functional =   GGA_FUNCTIONAL("BP86",    bp86_read);
+Functional PP86Functional =   GGA_FUNCTIONAL("PP86",    pp86_read);
 Functional BPW91Functional =  GGA_FUNCTIONAL("BPW91",   bpw91_read);
 Functional GGAKeyFunctional = GGA_FUNCTIONAL("GGAKey",  gga_key_read);
 Functional KT1Functional =    GGA_FUNCTIONAL("KT1",     kt1_read);
@@ -238,6 +240,15 @@ bp86_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,  1.0);
+    fun_set_hf_weight(0);
+    return 1;
+}
+
+static int
+pp86_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PW86xFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,  1.0);
     fun_set_hf_weight(0);
     return 1;
 }

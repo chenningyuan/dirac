@@ -213,6 +213,7 @@ extern Functional B3P86Functional;
 extern Functional B3P86GFunctional;
 extern Functional BLYPFunctional;
 extern Functional BP86Functional;
+extern Functional PP86Functional;
 extern Functional BPW91Functional;
 extern Functional Camb3lypFunctional;
 extern Functional GGAKeyFunctional;
