@@ -1186,6 +1186,7 @@
       baspointer=>firstbas
       mol=>firstatom
       basindex=0
+      NONTYP=0
 
       DO
 !     Loop over all basissets
@@ -1194,6 +1195,7 @@
 
         IF (.NOT.(associated(baspointer))) EXIT
         basindex=basindex+1
+        NONTYP=NONTYP+1
         NONT(basindex)=count_atoms(firstatom,baspointer%name)
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
