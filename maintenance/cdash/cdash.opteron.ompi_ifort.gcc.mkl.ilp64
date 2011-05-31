@@ -8,7 +8,7 @@ export PATH=/home/miro/bin/python/Python-2.7.1:$PATH
 export PATH=/usr/local/bin:$PATH
 # ifort, ompi compilers
 export PATH=/usr/local/openmpi_ilp64/bin/mpif90:/opt/intel/idbe/10.1.015/bin:/opt/intel/fce/10.1.015/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/openmpi_ilp64/lib:/opt/intel/mkl/10.0.3.020/lib/em64t:/opt/intel/fce/10.1.015/lib:/usr/local/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/openmpi_ilp64/lib:/opt/intel/mkl/10.0.3.020/lib/em64t:/opt/intel/fce/10.1.015/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 
