@@ -25,8 +25,9 @@ svn --force up
 cd $DIRAC/build
 #make Experimental
 make -j 2
+
 ##
-## Nightly build
+## Do the Nightly build
 ##
 TMP_DIR=/tmp/dirac_build
 mkdir -p $TMP_DIR
@@ -34,6 +35,8 @@ svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 cd $TMP_DIR
 ./pamadm -a
 ./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00"
+cd $TMP_DIR/build
+make dirac_interfaces
 make Nightly
 rm -rf $TMP_DIR
 
