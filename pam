@@ -190,7 +190,9 @@ class pam_enviroment:
                 self.dirac_exe = exec_position
                 print ' ',self.dirac_exe_file,'taken from the dirac build directory'
             else:
-                sys.exit('No Dirac binary found, quitting.')
+                self.dirac_exe = None
+                #sys.exit('No Dirac binary found, quitting.')
+                print_std_out_err('No Dirac binary found in selected directories !')
 
     # ## put/get files (flag controlled) ###
         self.put_files = ''
@@ -1547,6 +1549,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
         print
 
         # add few consistency checks
+        if self.dirac_exe == None:
+            print_std_out_err('No Dirac binary assigned, quitting.')
+            sys.exit(29)
+
         if self.parallel_run and self.mpirun==None:
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream, '\n No MPI launcher found for the parallel run !'
