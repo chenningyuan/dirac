@@ -17,7 +17,6 @@ import sys
 import string
 import subprocess
 import optparse
-import distutils.util
 import shutil
 import signal
 import stat
@@ -28,8 +27,8 @@ import platform
 import glob
 import shlex
 
-if sys.version < '2.6':
-    print_std_out_err('pam requires python version >= 2.6')
+if sys.version < '2.4':
+    print_std_out_err('pam requires python version >= 2.4')
     sys.exit(1)
 
 global install_dir
@@ -259,7 +258,8 @@ class pam_enviroment:
             'X2CMAT',
             'matexport.m',
             'DFCOEF.BEST',
-            '*.xml'
+            '*.xml',
+            'plot*'
             ]
 
     # ... DFCOEF
