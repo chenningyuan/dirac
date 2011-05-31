@@ -197,7 +197,7 @@ class pam_enviroment:
 
     # memory allocation
         mw = 64
-        self.mw_to_mb = 2*3.81
+        self.mw_to_mb = 7.62939453
         self.default_memory_work_master = mw
         self.default_memory_work_master_mb = mw*self.mw_to_mb
 
