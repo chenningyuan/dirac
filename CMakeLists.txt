@@ -394,14 +394,30 @@ add_custom_target(release
 
 include(Report)
 
-if(EXISTS "$ENV{HOME}/.diracrc")
-    message("Configuration file $ENV{HOME}/.diracrc exists.")
+# print out enviroment variables
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    message("Actual environment variable PATH=$ENV{PATH}")
+    message("Actual environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+else()
+    message("Windows environment variables....to be added")
+endif()
+
+# handle the .diracrc file with default flags
+set(DIRACRC_FILE "$ENV{HOME}/.diracrc")
+if(EXISTS "${DIRACRC_FILE}")
+    message("Configuration file ${DIRACRC_FILE} exists.")
+    # TODO: print content of this file
 else()
     configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/diracrc.in
-        $ENV{HOME}/.diracrc
+        ${DIRACRC_FILE}
         )
-    message("Configuration file $ENV{HOME}/.diracrc did not exist.")
-    message("This file was created by cmake. You should verify/edit it during/after the compilation.")
-    message("You need to set at least --scratch in $ENV{HOME}/.diracrc for runtest and make test to work.")
+    message("Configuration file ${DIRACRC_FILE} did not exist.")
+    message("This template file was created by cmake. You should verify/edit it during/after the compilation.")
+    message("You need to set at least --scratch in ${DIRACRC_FILE} for runtest and make test to work.")
 endif()
+# read and print out content of the .diracrc file
+file (READ "${DIRACRC_FILE}" DIRACRC_CONTENT)
+message("Content of the ${DIRACRC_FILE} configuration file: \n${DIRACRC_CONTENT}" )
+
+
