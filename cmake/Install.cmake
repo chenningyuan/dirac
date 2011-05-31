@@ -10,14 +10,27 @@ install(
     dirac/utils
     )
 
-install(
-    TARGETS dirac.x
-    DESTINATION dirac
-    PERMISSIONS
-    OWNER_READ OWNER_WRITE OWNER_EXECUTE
-    GROUP_READ             GROUP_EXECUTE
-    WORLD_READ             WORLD_EXECUTE
+foreach(
+    BINARY
+    dirac.x
+    dirac_mointegral_export.x
+    rspread.x
+    labread.x
+    twofit.x
+    cfread.x
+    vibcal.x
+    polfit.x
+    mx2fit.x
     )
+    install(
+        TARGETS ${BINARY}
+        DESTINATION dirac
+        PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ             GROUP_EXECUTE
+        WORLD_READ             WORLD_EXECUTE
+        )
+endforeach()
 
 install(
     FILES
