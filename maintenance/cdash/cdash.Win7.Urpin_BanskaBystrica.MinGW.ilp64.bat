@@ -5,7 +5,7 @@ cls
 rem  http://www.robvanderwoude.com/batchfiles.php
 rem the directory where your DIRAC sits
 
-echo "hello, building up DIRAC on Urpin, KCH FPV UMB"
+echo "Hello, building up DIRAC on Windows 7 server Urpin, KCH FPV UMB"
 
 set DIRAC=C:\Users\milias\Documents\Work\QCH\svn-dirac\trunk
 
@@ -15,11 +15,12 @@ cd %DIRAC%
 svn up
 python pamadm -a 
 
-del \f %DIRAC%\build
+rem delete/recreate directory
+rmdir /S /Q %DIRAC%\build
 mkdir %DIRAC%\build
 cd %DIRAC%\build
 
-rem configure step
+rem own cmake configure step
 cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  %DIRAC%
 
 rem make clean
@@ -27,5 +28,3 @@ rem make dirac.x
 rem mingw32-make Experimental
 rem mingw32-make  clean
 mingw32-make -j 2
-
-
