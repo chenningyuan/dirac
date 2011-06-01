@@ -1,0 +1,58 @@
+
+
+    Table of contents
+    -----------------
+
+ 1. Exporting/releasing code
+ 2. What do I need to do to add/remove source files?
+ 3. How do I set compiler flags?
+ 4. Creating DEB, RPM, and other packages (currently only DIRAC)
+
+
+ 1. Exporting/releasing code
+    ------------------------
+
+Most important rule: treat unpublished code of others with respect = 
+meaning do not release code of others without asking.
+
+For CMake builds:
+   $ ./pamadm --release [perhaps other flags]
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ make release
+
+For configure builds:
+   $ ./pamadm --release [perhaps other flags]
+   $ ./configure
+   $ make cbuild/Makefile.dep
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ make release
+
+
+ 2. What do I need to do to add/remove source files?
+    ------------------------------------------------
+
+New files are automatically added by pamadm which generates cmake/Sources.list
+
+
+ 3. How do I set compiler flags?
+    ----------------------------
+
+Compiler flags are set in cmake/Compilers.cmake. These flags control
+compilation in release mode (with optimization; FLAGS_RELEASE; default in
+./setup) or debug mode (without optimization; FLAGS_DEBUG; default when calling
+cmake directly).
+
+
+ 4. Creating DEB, RPM, and other packages
+    -------------------------------------
+
+Configure and build the source, then:
+   $ cpack -G DEB
+or
+   $ cpack -G RPM
+Always use the help that is available:
+   $ cpack --help

@@ -377,17 +377,23 @@ add_custom_target(release
     COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton       ${EXPORT_DIR}
     COMMAND cp -r ${CMAKE_SOURCE_DIR}/test               ${EXPORT_DIR}
     COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils              ${EXPORT_DIR}
+    COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules            ${EXPORT_DIR}
     COMMAND cp -r ${CMAKE_SOURCE_DIR}/dft/xcfun          ${EXPORT_DIR}/dft
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in   ${EXPORT_DIR}/gp
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/pam                ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest            ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup              ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup.examples     ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt     ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING            ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake  ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL            ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/README             ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in  ${EXPORT_DIR}/gp
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup.examples    ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL           ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/config.guess      ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/config.status     ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/config.sub        ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
+    COMMAND cp    ${CMAKE_SOURCE_DIR}/README            ${EXPORT_DIR}
     COMMAND make package_source
     COMMENT "Packaging source files"
     VERBATIM
