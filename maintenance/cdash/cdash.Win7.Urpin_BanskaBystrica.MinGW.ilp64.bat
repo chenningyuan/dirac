@@ -13,9 +13,10 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 
 svn up
+python pamadm -a 
 
-python pamadm -a
-
+del \f %DIRAC%\build
+mkdir %DIRAC%\build
 cd %DIRAC%\build
 
 rem configure step
@@ -24,7 +25,7 @@ cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  
 rem make clean
 rem make dirac.x
 rem mingw32-make Experimental
-mingw32-make  clean
+rem mingw32-make  clean
 mingw32-make -j 2
 
 
