@@ -363,6 +363,7 @@ set(INCLUDE_FILES
     ${INC_FILES}
     )
 
+#miro TODO: adapt under Windows
 add_custom_target(release
     COMMAND mkdir -p ${EXPORT_DIR}
     COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
@@ -391,6 +392,12 @@ add_custom_target(release
     COMMENT "Packaging source files"
     VERBATIM
     )
+
+# add short make target for the executable's diagnostics 
+# with the  external python script
+add_custom_target(dgn
+    COMMAND ${CMAKE_SOURCE_DIR}/utils/diagn.py
+)
 
 include(Report)
 
