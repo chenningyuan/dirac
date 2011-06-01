@@ -21,3 +21,15 @@ message("BLAS_LIBRARIES             ${BLAS_LIBRARIES}             ")
 message("LAPACK_LIBRARIES           ${LAPACK_LIBRARIES}           ")
 message("SVN_REVISION               ${SVN_REVISION}               ")
 message("GIT_REVISION               ${GIT_REVISION}               ")
+
+## check integer setting of OpenMPI Fortran compiler, mpif90
+if(ENABLE_OMP)
+     message("Check that your OpenMPI Fortran compiler
+${CMAKE_Fortran_COMPILER}")
+    if(ENABLE_64BIT_INTEGERS)
+        message("is adapted from 64-bit integers !")
+    else()
+        message("is adapted from 32-bit integers !")
+    endif()
+endif()
+
