@@ -27,7 +27,7 @@
 ***********************************************************************
       SUBROUTINE CIEIG5_REL(INICI,EROOTS,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
-     &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOT,LUINCI,
+     &           NDIM,NBLK,NROOTS,MAXVEC,MXCIIT,MXROOTS,LUINCI,
      &           IPRT,NPRDET,IPNTR,NP1,NP2,NQ,
      &           SCR1,ISCR1,SCR2,T_CC,T_BUFF,
      &           EIGSHF,ICISTR,LBLK,IDIAG,THRES_E,
@@ -49,6 +49,7 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
+#include "mxpdim.inc"
 #include "wrkspc.inc"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION INIDET(100)

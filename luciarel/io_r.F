@@ -309,6 +309,7 @@ C
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "mxpdim.inc"
 #include "parluci.h"
 #include "files_r.inc"
 #include "cstate.inc"
@@ -696,6 +697,7 @@ C     last revision:
 C
 C**********************************************************************
 #include "implicit.h"
+#include "mxpdim.inc"
 #include "cstate.inc"
 #include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*14, SYMFLABEL*3

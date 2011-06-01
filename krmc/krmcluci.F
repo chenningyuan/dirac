@@ -1776,8 +1776,6 @@ C
       CHARACTER*6 CIRUN
       DIMENSION WORK(*)
 C
-#include "../luciarel/cstate.inc"
-C
       CIRUN = 'RSTRMC'
 C
 C     Introduce LUCIAREL action
