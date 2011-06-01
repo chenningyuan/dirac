@@ -396,14 +396,20 @@ include(Report)
 
 # print out enviroment variables
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message("Actual environment variable PATH=$ENV{PATH}")
-    message("Actual environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+    message("Actual Unix environment variable PATH=$ENV{PATH}")
+    message("Actual Unix environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
 else()
-    message("Windows environment variables....to be added")
+    message("Actual Windows environment variable PATH=$ENV{PATH}")
+	message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
 endif()
 
-# handle the .diracrc file with default flags
-set(DIRACRC_FILE "$ENV{HOME}/.diracrc")
+# handle the .diracrc file containing pam flags
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(DIRACRC_FILE "$ENV{HOME}/.diracrc")
+else()
+    set(DIRACRC_FILE "$ENV{UserProfile}/.diracrc")
+endif()	
+	
 if(EXISTS "${DIRACRC_FILE}")
     message("Configuration file ${DIRACRC_FILE} exists.")
     # TODO: print content of this file

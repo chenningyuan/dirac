@@ -28,3 +28,6 @@ rem make dirac.x
 rem mingw32-make Experimental
 rem mingw32-make  clean
 mingw32-make -j 2
+
+rem return back
+cd %DIRAC%\maintenance\cdash
