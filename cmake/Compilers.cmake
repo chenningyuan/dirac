@@ -64,7 +64,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT")
+    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip -g")
     if(ENABLE_64BIT_INTEGERS)
