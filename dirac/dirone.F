@@ -3117,7 +3117,6 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
         if(is_defining_h1mat.gt.3.or.
      &    (is_defining_h1mat.eq.2.and.LSYMAD))then
 !       if(is_defining_h1mat.gt.3)then
-        print *,'go in here ...',ISIZE
           CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
 CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
@@ -3188,7 +3187,6 @@ C ...   always return non-linear symmetry adapted transformation matrix :
 
       IF(SLGROUP.and.(is_defining_h1mat.gt.3.or.
      &    (is_defining_h1mat.eq.2.and.LSYMAD)))THEN
-        print *,'go in here too ...'
 C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
         CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
         IF(IPRHAM.GE.5) THEN
