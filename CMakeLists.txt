@@ -363,41 +363,45 @@ set(INCLUDE_FILES
     ${INC_FILES}
     )
 
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 #miro TODO: adapt under Windows
-add_custom_target(release
-    COMMAND mkdir -p ${EXPORT_DIR}
-    COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
-    COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
-    COMMAND rm     ${EXPORT_DIR}/sources.tar
-    COMMAND rm -rf ${EXPORT_DIR}/build
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
-    COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild             ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis              ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton       ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/test               ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils              ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules            ${EXPORT_DIR}
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/dft/xcfun          ${EXPORT_DIR}/dft
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in  ${EXPORT_DIR}/gp
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/setup.examples    ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL           ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/config.guess      ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/config.status     ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/config.sub        ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
-    COMMAND cp    ${CMAKE_SOURCE_DIR}/README            ${EXPORT_DIR}
-    COMMAND make package_source
-    COMMENT "Packaging source files"
-    VERBATIM
-    )
+#radovan: don't agree - i don't see why we should ever
+#         want to prepare the release on a windows machine
+    add_custom_target(release
+        COMMAND mkdir -p ${EXPORT_DIR}
+        COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
+        COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
+        COMMAND rm     ${EXPORT_DIR}/sources.tar
+        COMMAND rm -rf ${EXPORT_DIR}/build
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild             ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis              ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton       ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/test               ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils              ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules            ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/dft/xcfun          ${EXPORT_DIR}/dft
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in  ${EXPORT_DIR}/gp
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/setup.examples    ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL           ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.guess      ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.status     ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.sub        ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/README            ${EXPORT_DIR}
+        COMMAND make package_source
+        COMMENT "Packaging source files"
+        VERBATIM
+        )
+endif()
 
 # add short make target for the executable's diagnostics 
 # with the  external python script
