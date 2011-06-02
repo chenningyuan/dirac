@@ -289,6 +289,7 @@ contains
                            nr_mo_lw_s,         &
                            nr_mo_lw_all,       &
                            nr_ao_total_x2c,    &
+                           nr_ao_large_x2c,    &
                            nr_fsym,            &
                            nr_quat,            &
                            lwrk,               &
@@ -394,9 +395,6 @@ contains
 
          close(x2c_Sao_scrF,status="delete")
 
-         if(x2c_is_defining_h1mat == 2)then 
-           call quit('bla bla... x2ctra')
-         end if
 !        --------------------------------------------------------------------------------------------------
 !        step 1.6: add AMFI contributions in case
 !                  h1 == bare-nucleus 1e Dirac-Hamiltonian (or extended Huckel guess) .and. AMFI is desired
@@ -435,61 +433,69 @@ contains
        end do ! end of loop over (molecular fragments)/ "all centers"
 !      ------
 
-!      ------------------------------------------------------------------------------------------
-!      step 2: atom-by-atom X2C run: construct full pct-matrix + reset dimensions on common block 
-!      ------------------------------------------------------------------------------------------
+!      -------------------------------------------------------
+!      step 2: atom-by-atom X2C run: construct full pct-matrix
+!      -------------------------------------------------------
        if(atom_by_atom_x2c.and.(x2c_nuccent > 1))then
 
          call x2c_atomic_x2c_driver()
 
        end if
 
-!      ---------------------------------------------------------------------------------------------------------------
-!      step 3: picture-change transform the 4c-MO coefficients (defining operator matrix is the 4c-Dirac Fock operator)
-!      ---------------------------------------------------------------------------------------------------------------
-       if(x2c_is_defining_h1mat == 2)then
-         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',        &
-                                                 nr_ao_all,       &
-                                                 nr_ao_l,         &
-                                                 dim_oshell,      &
-                                                 dim_eshell,      &
-                                                 dim_pshell,      &
-                                                 nr_fsym,         &
-                                                 nr_quat,         &
-                                                 x2c_cb_pq_to_uq, &
-                                                 x2c_funit,       &
-                                                 x2c_prt)
-       end if
-
 !      ------------------------------------------------------------------------------------------
-!      step 4: picture-change transform all (remaining) operator:
-!              a. all 1e property operator (in DIRAC-sorted SA-AO basis)
-!              b. bare-nucleus corrected 1e Dirac-Hamiltonian (in DIRAC-sorted SA-AO basis)
+!      step 4: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):
+!              a. if(appropriate) bare-nucleus corrected 1e Dirac-Hamiltonian
+!              b. if(appropriate) 1-electron/2-electron Fock matrices
+!              c. list of 1e-property operators
 !
 !              in : i.  on file X2CMAT   (fh: x2c_funit):
 !                      (combined) picture-change transformation matrix "U"
 !                   ii. on file AOPROPER (fh: 1int_4c_file): 
 !                       all property integrals in Hermit-sorted AO basis
 !
-!              out: all (remaining) operator in picture-change transformed form on file
-!      --------------------------------------------------------------------------------
-       call pctrafo_all_op_driver(nr_ao_total_x2c,     &
-                                  nr_ao_large_x2c,     &
-                                  nr_ao_all,           &
-                                  nr_ao_l,             &
-                                  nr_fsym,             &
-                                  nr_quat,             &
-                                  x2c_cb_pq_to_uq,     &
-                                  ioff_aomat_x,        &
-                                  x2c_funit,           &
-                                  fh_1int_4c,          &
-                                  x2c_bs_to_fs,        &
-                                  all_prp_op,          &
-                                  len_wrk_f77_x2c,     &
-                                  x2c_do_spherical,    &
-                                  x2c_prep_bnccorr,    &
+!              out: all operator (listed above) in picture-change transformed form on file
+!      -----------------------------------------------------------------------------------
+       call pctrafo_all_op_driver(nr_ao_total_x2c,               &
+                                  nr_ao_large_x2c,               &
+                                  nr_ao_all,                     &
+                                  nr_ao_l,                       &
+                                  nr_fsym,                       &
+                                  nr_quat,                       &
+                                  x2c_cb_pq_to_uq,               &
+                                  ioff_aomat_x,                  &
+                                  x2c_funit,                     &
+                                  fh_1int_4c,                    &
+                                  x2c_bs_to_fs,                  &
+                                  all_prp_op,                    &
+                                  len_wrk_f77_x2c,               &
+                                  x2c_do_spherical,              &
+                                  x2c_prep_bnccorr,              &
+                                  x2c_1e_system,                 &
+                                  x2c_is_defining_h1mat,         &
+                                  nr_2e_fock_matrices,           &
+                                  file_name_1e_fock_matrix,      &
+                                  file_name_2e_fock_matrices,    &
                                   x2c_prt)
-
+!      ---------------------------------------------------------------------------------------------------------------
+!      step 3: picture-change transform the 4c-MO coefficients (defining
+!      operator matrix is the 4c-Dirac Fock operator)
+!      ---------------------------------------------------------------------------------------------------------------
+!      if(x2c_is_defining_h1mat == 2)then
+!        call x2c_pctrafo_mo_coefficients_driver('DFCOEF',        &
+!                                                nr_cmo_q,        &
+!                                                nr_ao_total_x2c, &
+!                                                nr_ao_large_x2c, &
+!                                                nr_ao_all,       &
+!                                                nr_ao_l,         &
+!                                                dim_oshell,      &
+!                                                dim_eshell,      &
+!                                                dim_pshell,      &
+!                                                nr_fsym,         &
+!                                                nr_quat,         &
+!                                                x2c_cb_pq_to_uq, &
+!                                                x2c_funit,       &
+!                                                x2c_prt)
+!      end if
 !      --------------------------------------------------------------------------------------------
 !      step 5: export picture-change transformation matrix to AO basis with nosym (C1 double group)
 !      --------------------------------------------------------------------------------------------
@@ -768,34 +774,6 @@ contains
                                       x2c_file_scr,        &
                                       x2c_file_glb,        &
                                       print_lvl)
-
-!      step 7: construct the Fock-operator in 2c-onMO basis 
-!
-!              in : on file x2cscr: 2c-fock operator in SA-AO basis
-!                   on file X2CMAT: 2c-Lowdin matrix
-!              out: -                         
-!                   on file X2CMAT: 2c-fock operator in onMO basis
-!                                   under the label h12cMOf
-!      ------------------------------------------------------------------------------
-#ifdef undef
-       if(basic_h1mat == 2)then
-         call construct_h1base_2c_onmo_bas(xmat,                &
-                                        scr1mat,             &
-                                        scr2mat,             &
-                                        eigvl,               &
-                                        norb_dim,            &
-                                        nesh_dim,            &
-                                        naosh_all,           &
-                                        naosh_L,             &
-                                        nfsym,               &
-                                        nz,                  &
-                                        ipq_off,             &
-                                        is_fragment,         &
-                                        x2c_file_scr,        &
-                                        x2c_file_glb,        &
-                                        print_lvl)
-       end if
-#endif
 
 !      free scratch memory
        call dealloc(eigvl)

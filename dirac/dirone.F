@@ -687,6 +687,7 @@ C        various modified atomic integrals of H2c AO
 C   MI/Strasbg,Febr. 2006 H2cAO Hamiltonian reading placed into separate routine
 C
 C*****************************************************************************
+      use x2cmod_cfg
       use x2c_utils, only:
      &    read_1fock_x2c
 #include "implicit.h"
@@ -738,7 +739,7 @@ CMI   ... control output ...
 !MI If BSS is active read one-electron DKn(BSS) AO integrals from the
 !   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
-      else if(x2c)then
+      else if(x2c.and..not.x2c_4c_fock_mtx_defh1)then
         call read_1fock_x2c(fock,n2bbasx,nz,i2cofk)
       else
 C
@@ -2524,8 +2525,7 @@ C*****************************************************************************
      &    set_wrk_x2c
       use x2c_pct_ao,       only:
      &    pctrafo_all_op_driver
-      use x2c_fio,          only:
-     &    x2c_write
+      use x2c_fio
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -2618,7 +2618,6 @@ C     ---------------------------------------------------
       IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run)) THEN
 C
 C
-!       print *, 'gmotra: branch taken: Case 1'
         NZT = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
@@ -2640,7 +2639,6 @@ C
 !     Case 2: relativistic 2-component Hamiltonian
 !     --------------------------------------------
       ELSE IF (is_2c_rel_run)THEN
-!       print *, 'gmotra: branch taken: Case 2'
 !
         CALL TIMER('START ',TIMSTR,TIMEND)
 
@@ -2731,6 +2729,11 @@ C         2) do picture change transformation of integrals on AOPROPER
      &                                 lfree,
      &                                 dosphe,
      &                                 .false.,
+     &                                 onesys, 
+     &                                 -1,
+     &                                 -1,
+     &                                 'undef ',
+     &                                 'undef ',
      &                                 iprham)
 
           close(lux2c,status='keep')
@@ -2757,13 +2760,27 @@ C         2) do picture change transformation of integrals on AOPROPER
 !       
 !       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       ------------------------------------------------------------------------------
-!       if(.false.)then
-        if(.not.(twocompbss.or.x2c))then
-!       print *, 'gmotra: branch taken: Case 2.2b1'
+        if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 !         WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
-          KTMAT = KVMAT
+          if(x2cmod_mmf)then
+            CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+            call dzero(work(KTMAT),N2BBASXQ)
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
+            call x2c_read('2cLWAOg   10',work(KTMAT),n2bbasx,lux2c)
+            
+            close(lux2c,status='keep')
+!           twocomp = .true.
+!           rdinpc  = .false.
+!           ipread  = ipread - 5
+!           call readin(work,lwork,.false.)
+!           call setdc1(ipread)
+!           ipread  = ipread + 5
+          else
+            KTMAT = KVMAT
+          end if
         else
-!       print *, 'gmotra: branch taken: Case 2.2b2'
 C
           if(.not.x2c)
      &    CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2810,7 +2827,6 @@ C
 C     Case 3: Transformation matrix with modified Dirac equation embedded
 C     -------------------------------------------------------------------
       ELSE
-!       print *, 'gmotra: branch taken: Case 3'
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)

@@ -764,15 +764,17 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-      LOGICAL INFO
+      LOGICAL INFO, infoc_loc
       CHARACTER TEXT*74, FILNAM*60
       DIMENSION FOCK(N2BBASXQ*N)
 C
+      infoc_loc = info
+!     infoc_loc = .true.
       REWIND IUNIT
       READ(IUNIT,END=10,ERR=20) TEXT
       READ(IUNIT) M2BBASXQ,M
-      IF (N2BBASXQ .NE. M2BBASXQ .OR. N .GT. M) INFO = .TRUE.
-      IF(INFO) THEN
+      IF (N2BBASXQ .NE. M2BBASXQ .OR. N .GT. M) INFO_loc = .TRUE.
+      IF(INFO_loc) THEN
         INQUIRE(UNIT=IUNIT, NAME=FILNAM)
         WRITE(LUPRI,'(/2A)')
      &   '* REAFCK: Fock matrix read from file ',FILNAM
@@ -785,7 +787,7 @@ C
      &      'Number of Fock matrices in this run and on file:',N,M
          CALL QUIT('REAFCK: inconsistent dimensions on file'//FILNAM)
       END IF
-      READ (IUNIT,END=10,ERR=20) FOCK
+      READ (IUNIT,END=10,ERR=30) FOCK
 C
       RETURN
 C
@@ -796,8 +798,9 @@ C     End of file
       CALL QUIT('REAFCK: End of file')
  20   CONTINUE
 C     Error reading file
+      CALL QUIT('REAFCK: ERROR reading file - text part')
  30   CONTINUE
-      CALL QUIT('REAFCK: ERROR reading file')
+      CALL QUIT('REAFCK: ERROR reading file - fock part')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wridns */

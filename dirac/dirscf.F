@@ -257,81 +257,70 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
       DO4C2C = DO4C2C_SAVE
 
-      IF (DO4C2C) THEN
-        write(lupri,'(/,4X,A)')
-     &  '*** PSIDHF: Descending to two-component'// 
-     &  ' mode after previous four-component SCF cycles. ***'
-        if(x2cmod_x2c)then
+      IF(DO4C2C) THEN
+        if(x2cmod_mmf)then
           x2c      = .true.
         else 
           BSS      = .TRUE.
-          ! needs this flag for preparing transformed data
-          CMPEIG   = .TRUE. 
+          CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
+          write(lupri,'(/A)')
+     &    '     *** PSIDHF: Descending to two-component'// 
+     &    ' mode after previous four-component SCF cycles. ***'
         end if
         TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
         TWOCOMP    = .FALSE.
 
         START2C = .FALSE.
-        if(bss)then
-          CALL TITLER('Two-component BSS/DKH SCF calculation',
-     &       '*',125)
-        else
-          CALL TITLER('X2C SCF calculation','*',125)
-        end if
+
 !
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
         CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
 
-CMI      ... DO NOT continue with SCF iterations !!!
-        IF (.NOT.CONT2C) THEN
-CMI ... consider TRMO4C2C ...
-C        ... only one iteration 
-           MAXITR = 1
-           IF (.NOT.ONESYS) THEN
-             TRIFCK_SAVE = TRIFCK
-             TRIVEC_SAVE = TRIVEC
-             TRIFCK = .FALSE.
-             TRIVEC = .FALSE.
-           ENDIF
-           DODAMP = .FALSE.
-           DODIIS = .FALSE.
-           DODSCF = .FALSE.
-           BNCRON = .FALSE.
+        IF(.NOT.CONT2C) THEN
+CMI ... consider TRMO4C2C ...???
+          DHFCONV(1)=.TRUE. 
+          DHFCONV(2)=.TRUE. 
         ELSE ! continue with 2c-SCF iterations
-           BNCRON = .FALSE.
+
+          if(BSS)then
+            CALL TITLER('Two-component BSS/DKH SCF calculation',
+     &         '*',125)
+          end if
+
+          BNCRON = .FALSE.
 C         ... need to reset them...
-           DHFCONV(1)=.FALSE.
-           DHFCONV(2)=.FALSE.
-           DHFEXIT=.FALSE.
-        ENDIF
+          DHFCONV(1)=.FALSE.
+          DHFCONV(2)=.FALSE.
+          DHFEXIT=.FALSE.
 
-CMI  ... remove some file from previous SCF cycle ...
-        INQUIRE(FILE='DFDIIS',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
-        INQUIRE(FILE='DFEVEC',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
-        INQUIRE(FILE='DFCOEF',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
+CMI    ...remove some files from the previous 4c-SCF cycle ...
+          INQUIRE(FILE='DFDIIS',EXIST=EX)
+          IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
+          INQUIRE(FILE='DFEVEC',EXIST=EX)
+          IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
+          INQUIRE(FILE='DFCOEF',EXIST=EX)
+          IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
 
-        CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
-!       IF (.NOT.TRMO4C2C) RESTFCK = .TRUE.
-        RESTFCK = .TRUE.
-        CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
-     &        WORK(KFREE),LFREE)
+!         IF (.NOT.TRMO4C2C) RESTFCK = .TRUE.
+          RESTFCK = .TRUE.
+          CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+     &          WORK(KFREE),LFREE)
 
-        CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRINT)
+          CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+     &              LFREE,IPRINT)
 
-        CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-      ENDIF
+          CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+        END IF ! continue in 2c-mode switch
+      END IF ! 4c --> 2c switch
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
 C
-      WFCONV = DHFCONV(1) .OR. DHFCONV(2)
+ 101  WFCONV = DHFCONV(1) .OR. DHFCONV(2)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PSIDHF')

@@ -124,9 +124,11 @@ contains
 !
            n2bastq_dim_x2c = n2bastq
 !
-           fullemat_dim     = 0
-           fullomat_dim     = 0
-           fulleomat_dim    = 0
+           nr_cmo_q        = ncmotq
+!
+           fullemat_dim    = 0
+           fullomat_dim    = 0
+           fulleomat_dim   = 0
            do i = 1, nr_fsym
              j               =  nesh(i)
              k               =  norb(i)
@@ -167,6 +169,7 @@ contains
            x2c_linsym       = linear
            x2c_do_spherical = dosphe
            x2c_prep_bnccorr = bncron.and..not.onesys
+           x2c_1e_system    = onesys
   
 !          initialize real*8
            x2c_cspeed = cval
@@ -175,12 +178,13 @@ contains
 !        set defining matrix wrt which the pct-mtx will be derived
          if(x2c_4c_fock_mtx_defh1)then
 !          converged 4c-Fock-Dirac operator
-           x2c_is_defining_h1mat  =  2
-           scf_iter_counter       = -1
-           diis_counter           = -1
-!          scf_iter_counter       = niter
-!          diis_counter           = mxdiis
-           x2c_prep_bnccorr       = .false.
+           x2c_is_defining_h1mat      =  2
+           scf_iter_counter           = -1
+           diis_counter               = -1
+           nr_2e_fock_matrices        = nfmat
+           file_name_1e_fock_matrix   = 'DFFCK1'
+           file_name_2e_fock_matrices = 'DFFCK2'
+           x2c_prep_bnccorr           = .false.
          else if(x2c_free_part_mtx_defh1)then
 !          free-particle matrix
            x2c_is_defining_h1mat  = 3
@@ -300,6 +304,7 @@ contains
 !**********************************************************************
   subroutine renew_x2c_cb_orb_shell_dim(ham_lvl_x2c)
 
+  use x2cmod_cfg
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -345,6 +350,7 @@ contains
 !      step 2: recalculate offsets and globally used pointers
 !      ----------------------------------------------
        call setdc2(0)
+!      if(x2c_4c_fock_mtx_defh1) call setdc1(0)
 
 !      step 3: reset integral default, overlap metric and # of transformation matrices
 !      -------------------------------------------------------------------------------

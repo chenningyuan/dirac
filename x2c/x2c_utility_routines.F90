@@ -47,6 +47,8 @@ module x2c_utils
   public print_x2cmtx
   public read_1fock_x2c
   public read_4cfock_operator_x2c
+  public read_fock_matrices_saao_basis_x2c
+  public write_fock_matrices_saao_basis_x2c
   public get_Sao_LL_mat
   public get_boson_irrep_info
   public hello_dirx2c
@@ -428,6 +430,7 @@ contains
                         norb_dim_lwd_S,      &
                         norb_dim_lwd_all,    &
                         naosh_ls,            &
+                        naosh_large,         &
                         nfsym,               &
                         nz,                  &
                         is_len_wrk,          &
@@ -453,6 +456,7 @@ contains
      integer, intent(in)    :: norb_dim_lwd_S(nfsym)
      integer, intent(in)    :: norb_dim_lwd_all(nfsym)
      integer, intent(in)    :: naosh_ls
+     integer, intent(in)    :: naosh_large
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
      integer, intent(in)    :: is_len_wrk
@@ -513,10 +517,11 @@ contains
        i = 0
        write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,i
 
-       if(.not.linear_sym)then
-         call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
+       call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
 !      step 4: in case of linear symmetry - adapt the LOWDIN matrix
-       else
+
+       if(linear_sym)then
+         write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,i
 !        set pointer to WORK array and allow full length for allocations
          lwrk = is_len_wrk
          call sel_wrk_x2c(wrk,lwrk)
@@ -769,8 +774,9 @@ contains
                                       print_lvl)
 !**********************************************************************
 !
-!    purpose: read the 4c-Fock operator matrix elements from file op_mat_on_file 
-!             within the X2C module if the basic and/or the defining h1 matrix 
+!    purpose: read the 4c-Fock operator matrix elements (in ON-MO basis) 
+!             from file op_mat_on_file within the X2C module 
+!             if the basic and/or the defining h1 matrix 
 !             is the 4c-Fock operator (controlled by defining_h1mat == 2).
 !
 !**********************************************************************
@@ -812,6 +818,99 @@ contains
        close(file_unit,status='keep')
  
   end subroutine read_4cfock_operator_x2c
+
+!**********************************************************************
+  subroutine read_fock_matrices_saao_basis_x2c(xmat,           &
+                                               ndim,           &
+                                               nr_entries,     &
+                                               fh,             &
+                                               print_lvl)
+!**********************************************************************
+!
+!    purpose: read the 4c-Fock operator matrix elements (in SA-AO basis) 
+!             from file fh within the X2C module 
+!             if the basic and/or the defining h1 matrix 
+!             is the 4c-Fock operator (controlled by defining_h1mat == 2).
+!
+!**********************************************************************
+     integer,           intent(in)    :: ndim
+     integer,           intent(in)    :: nr_entries
+     integer,           intent(in)    :: fh
+     integer,           intent(in)    :: print_lvl
+     real(8),           intent(out)   :: xmat(ndim * nr_entries)
+!----------------------------------------------------------------------
+     integer                          :: ndim_check
+     integer                          :: nr_entries_check
+     character (len=74)               :: info_text
+     character (len=72)               :: file_name
+!**********************************************************************
+
+!      step 1: inquire file name
+!      -------------------------
+       inquire(unit=fh,name=file_name)
+
+!      step 2: read matrix elements from file
+!      --------------------------------------
+       rewind fh
+       read(fh) info_text
+       read(fh) ndim_check, nr_entries_check
+       if(print_lvl > 2)then
+         print '(/2a)', ' info: fock matrix read from file ',file_name
+         print '(/2a)', ' file header :',info_text
+       end if
+       if(ndim_check /= ndim .or. nr_entries_check /= nr_entries)then
+         print *, ' mismatch of fock matrix dimensions: dimension on file = ',ndim_check,' input dimension = ',ndim
+         print *, ' mismatch of fock matrix dimensions: # entries on file = ',nr_entries_check,' input # entries = ',&
+                                                                              nr_entries
+         call quit('*** error in read_fock_matrices_saao_basis_x2c: mismatch of fock matrix dimensions.')
+       end if
+
+       read(fh) xmat
+
+  end subroutine read_fock_matrices_saao_basis_x2c
+
+!**********************************************************************
+  subroutine write_fock_matrices_saao_basis_x2c(xmat,           &
+                                                ndim,           &
+                                                nr_entries,     &
+                                                fh,             &
+                                                print_lvl)
+!**********************************************************************
+!
+!    purpose: write the 2c-Fock operator matrix elements (in SA-AO basis) 
+!             to file fh within the X2C module 
+!             if the basic and/or the defining h1 matrix 
+!             is the 4c-Fock operator (controlled by defining_h1mat == 2).
+!
+!**********************************************************************
+     integer,           intent(in)    :: ndim
+     integer,           intent(in)    :: nr_entries
+     integer,           intent(in)    :: fh
+     integer,           intent(in)    :: print_lvl
+     real(8),           intent(in)    :: xmat(ndim * nr_entries)
+!----------------------------------------------------------------------
+     character (len=74)               :: info_text
+     character (len=72)               :: file_name
+!**********************************************************************
+
+!      step 1: inquire file name
+!      -------------------------
+       inquire(unit=fh,name=file_name)
+
+!      step 2: read matrix elements from file
+!      --------------------------------------
+       rewind fh
+       write(info_text,'(a74)') 'X2C molecular-mean-field run: picture-change transformed fock matrix/ces. '
+       write(fh) info_text
+       write(fh) ndim, nr_entries
+       if(print_lvl > 2)then
+         print '(/2a)', ' info: fock matrix written to file ',file_name
+         print '(/2a)', ' file header :',info_text
+       end if
+
+       write(fh) xmat
+
+  end subroutine write_fock_matrices_saao_basis_x2c
 
 !**********************************************************************
   subroutine get_Sao_LL_mat(scr_mat1,    &

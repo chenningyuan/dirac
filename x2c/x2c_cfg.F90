@@ -35,6 +35,8 @@ module x2cmod_cfg
   integer, parameter, public :: x2c_famfi       =  77
 
 ! character block
+  character (len=6), public :: file_name_1e_fock_matrix   = 'undef '
+  character (len=6), public :: file_name_2e_fock_matrices = 'undef '
 
 ! logical block
   logical, public :: x2cmod_x2c              =  .false.
@@ -45,7 +47,11 @@ module x2cmod_cfg
   logical, public :: x2c_prep_bnccorr        =  .false.
   logical, public :: x2c_do_spherical        =  .false.
   logical, public :: x2c_free_part_mtx_defh1 =  .false.
+  logical, public :: x2c_1e_system           =  .false.
   logical, public :: x2c_4c_fock_mtx_defh1   =  .false.
+  logical, public :: x2cmod_mmf              =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
+                                                        ! but i think it's much nicer (more intuitive name for programmers) 
+                                                        ! to have this logical on the outside of the X2Cmod - stefan, may 2011
 
 ! real(8) block
   real(8), public :: x2c_cspeed
@@ -94,5 +100,6 @@ module x2cmod_cfg
   integer, public :: x2c_max_quant_num
   integer, public :: scf_iter_counter
   integer, public :: diis_counter
+  integer, public :: nr_2e_fock_matrices
 
 end module

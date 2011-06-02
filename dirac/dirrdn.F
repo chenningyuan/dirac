@@ -2176,10 +2176,6 @@ CMI =====================================================================
          WRITE(LUPRI,'(2X,A)')
      &   '...continue the two-component SCF procedure'//
      &   '.'
-       ELSE
-         WRITE(LUPRI,'(2X,A)')
-     &   '...do only 1 SCF iteration (get non-canonical orbitals)'//
-     &   '.'
        ENDIF
       ENDIF
 C
@@ -5095,6 +5091,7 @@ C activates fde response
           noprtr                = .true.
           x2c                   = .true.
           x2cmod_x2c            = .true.
+          x2cmod_mmf            = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
 C         Check that we have not defined operators yet,
@@ -5305,7 +5302,9 @@ CMI        ... instead we use GAUNT_SAVE
 !            the *AMFI input deck.
              isorder_amfi_x2c = 3
            end if
-           GAUNT = .FALSE.
+           if(.not.x2cmod_mmf)then
+             GAUNT = .FALSE.
+           end if
          ENDIF
 CMI      IF (ONESYS) THEN
 CMI        ... no AMFI contribution
@@ -5430,19 +5429,18 @@ C         .... two-step method of Barysz
            WRITE(LUPRI,'(A,/A)')
      & ' * after the four-component SCF procedure'//
      & ' perform a X2C/BSS/IOTC transformation',
-     & '   of the 4c Fock operator'//
-     & ' but DO NOT continue the SCF step at the two-component level.'
+     & '   of the 4c Fock operator.'
          ENDIF
          IF (TRMO4C2C) THEN
            WRITE(LUPRI,'(1X,A)')
      &     '* transforming 4c MO to 2c form, no extra 2c SCF iteration.'
-           ENDIF
+         END IF
         ENDIF
 
         IF (DO2C4C) THEN
          WRITE(LUPRI,'(1X,A,I1)')
-     &   '* after (few) two-component SCF iterations do'//
-     &   ' jump at the four-component level ! Code INI2C=',INI2C
+     &   '* after (few) two-component SCF iterations'//
+     &   ' switch to the four-component level ! Code INI2C=',INI2C
         ENDIF
 
         IF (TWOCOMP) THEN
@@ -5486,13 +5484,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
 
         ENDIF
         
-CMI ... this is on TODO list
-!        IF (DO2C4C) THEN
-!         WRITE(LUPRI,'(1X,A,I1)')
-!     &   '* after (few) two-component SCF iterations do'//
-!     &   ' jump at the four-component level ! Code INI2C=',INI2C
-!        ENDIF
-
       ELSE IF (GAUNT) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSEIF (ECPCALC) THEN
@@ -6102,7 +6093,7 @@ C
       IF (CAP) CALL CAPINP(WORD,.TRUE.)
 #endif
 
-      IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
+      IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.and..not.DO4C2C)THEN
          CALL AMFI_RELSCF_INP(WORD,.TRUE.)
       ENDIF
 C

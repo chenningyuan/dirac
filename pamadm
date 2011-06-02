@@ -128,6 +128,7 @@ vital_directories.append('amfi')
 vital_directories.append('krmc')
 vital_directories.append('luciarel')
 vital_directories.append('embedding')
+vital_directories.append('x2c')
 
 vital_files.append('pam')
 vital_files.append('pam.in')

@@ -209,6 +209,15 @@ C
         NTOT = NTOT + NSPC(IFRP,0)
       ENDDO
       IF(NTOT.GT.0) THEN
+
+C       Totally symmetric operator
+        ISYMOP(1) = 1
+C       Fock matrix type
+        IFCKOP(1) = 1
+C       Hermitian operator
+        IHRMOP(1) = 1
+C       Get core density matrix
+        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
 C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
@@ -220,18 +229,18 @@ C
 C
 C       Closed shell Hartree - Fock
 C       ===========================
-C       Totally symmetric operator
-        ISYMOP(1) = 1
-C       Fock matrix type
-        IFCKOP(1) = 1
-C       Hermitian operator
-        IHRMOP(1) = 1
-C       Get core density matrix
-        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
-        CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
-
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
+
+        INQUIRE(FILE='DFFCK2',EXIST=TOBE)
+        TOBE = .false.
+        if(tobe)then
+          CALL OPNFIL(LUBUF,'DFFCK2','OLD','GTCFC1')
+          CALL REAFCK(LUBUF,FMO,.TRUE.,NFMAT)
+          CLOSE(LUBUF,STATUS='KEEP')
+        else
+          CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
+     &                POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+        end if
 
         DeAllocate (POS)
       ELSE
