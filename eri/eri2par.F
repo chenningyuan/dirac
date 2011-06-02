@@ -1121,7 +1121,12 @@ C
 C
 C     Set common-block BLOCKS
 C
+!     stefan: could someone of the eri-wizards please have a look at this?
+!             for sure this call is wrong but what should be the correct
+!             setting then? june 2011
       CALL PAOVEC(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,0,.FALSE.,0)
+!     maybe like this?
+!     CALL PAOVEC(WORK,LWORK,-10000,IPRINT)
 C
 C     Get DMAT
 C
