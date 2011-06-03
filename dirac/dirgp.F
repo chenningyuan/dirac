@@ -764,11 +764,11 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-      LOGICAL INFO, infoc_loc
+      LOGICAL INFO, INFO_loc
       CHARACTER TEXT*74, FILNAM*60
       DIMENSION FOCK(N2BBASXQ*N)
 C
-      infoc_loc = info
+      info_loc = info
 !     infoc_loc = .true.
       REWIND IUNIT
       READ(IUNIT,END=10,ERR=20) TEXT
