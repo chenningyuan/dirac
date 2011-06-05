@@ -16,6 +16,7 @@ contains
 
       use dft_cfg
       use dirac_cfg
+      use sigma_prefactor_setting
 
 !     ---------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -91,7 +92,7 @@ contains
       end if
 
       if (kw_matches(word, '.BETASI')) then
-         dft_cfg_betasigma = .true.
+         sigma_prefactor = -1.0d0
       end if
 
 #ifdef PRG_DIRAC

@@ -73,8 +73,9 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 set(SOURCES
     ${PROJECT_SOURCE_DIR}/../grid/num_grid_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
+    ${PROJECT_SOURCE_DIR}/src/sigma_prefactor_setting.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
-    ${PROJECT_SOURCE_DIR}/src/ao_eval_point.F90
+    ${PROJECT_SOURCE_DIR}/src/ao_eval_sub.F90
     ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
@@ -97,13 +98,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
-    )
-
-add_custom_target(
-    dft_interfaces
-    ALL
-    DEPENDS
-    xcfun
+    ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
     )
 
 add_executable(
@@ -115,3 +110,7 @@ target_link_libraries(
     dft.x
     ${LIBS}
     )
+
+include(Tests)
+include(CTest)
+enable_testing()

@@ -57,7 +57,7 @@ contains
                           derv,            &
                           max_fun_derv,    &
                           w,               &
-                          nr_electrons,    &
+                          nr_electrons_integrated,    &
                           xc_energy        &
                          )
 
@@ -82,7 +82,7 @@ contains
       real(8)                :: derv(max_block_length, 0:derv_length)
       integer, intent(in)    :: max_fun_derv
       real(8)                :: w(*)
-      real(8)                :: nr_electrons
+      real(8)                :: nr_electrons_integrated
       real(8)                :: xc_energy
 !     --------------------------------------------------------------------------
       real(8), allocatable   :: ao_sorted(:, :)
@@ -265,7 +265,7 @@ contains
                                derv)
 
       do k = 1, block_length
-         nr_electrons = nr_electrons + w(k)*n(k, 0)
+         nr_electrons_integrated = nr_electrons_integrated + w(k)*n(k, 0)
          xc_energy    = xc_energy    + derv(k, d0000000)
       end do
 

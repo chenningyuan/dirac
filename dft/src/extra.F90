@@ -5,7 +5,6 @@ module extra
 
    implicit none
 
-   public mxma
    public gtdoav
    public timtxt
    public reacmo_no_work
@@ -15,90 +14,6 @@ module extra
    private
 
 contains
-
-
-      SUBROUTINE MXMA(A,ICA,IRA,B,ICB,IRB,C,ICC,IRC,NROW,NSUM,NCOL)
-      real(8) :: A(*),B(*),C(*), sum
-      integer :: irow, nrow, ncol, icol
-      integer :: ICA,IRA,ICB,IRB,ICC,IRC,NSUM
-      integer :: index, isum
-#if !defined (VAR_ESSL)
-      DO 100 IROW=0,NROW-1
-      DO 100 ICOL=0,NCOL-1
-         SUM=0.0d0
-         DO 110 ISUM=0,NSUM-1
-            SUM=SUM + A(1+IROW*ICA+ISUM*IRA) * B(1+ISUM*ICB+ICOL*IRB)
-110      CONTINUE
-         INDEX=1+ICC*IROW+IRC*ICOL
-         C(INDEX)=SUM
-100   CONTINUE
-#else
-      IF(NSUM.EQ.0) GOTO 600
-      IF((NROW.EQ.0).OR.(NCOL.EQ.0)) RETURN
-!  TRY TO FIT TO A STANDARD CASE AND SET SELECTOR:
-      ISEL=1
-      IF ((ICA.EQ.1).AND.(IRA.GE.NROW)) GOTO 101
-      IF ((IRA.EQ.1).AND.(ICA.GE.NSUM)) GOTO 102
-      GOTO 400
- 101  ISEL=ISEL+4
- 102  IF ((ICB.EQ.1).AND.(IRB.GE.NSUM)) GOTO 201
-      IF ((IRB.EQ.1).AND.(ICB.GE.NCOL)) GOTO 202
-      GOTO 400
- 201  ISEL=ISEL+2
- 202  IF ((ICC.EQ.1).AND.(IRC.GE.NROW)) GOTO 301
-      IF ((IRC.EQ.1).AND.(ICC.GE.NCOL)) GOTO 302
-      GOTO 400
- 301  ISEL=ISEL+1
-!  NOTE -- CASES 2 OR 7 IN COMPUTED GOTO STATEMENT BELOW ARE OF
-!  THE T-T TYPE, WHICH SOMETIMES GOES WRONG IN DGEMUL.
-!  FOR THE TIME BEING, THIS MUST BE TREATED AS A GENERAL CASE.
-!  CHANGE BACK AS SOON AS ESSL HAS BEEN PATCHED!! P-AA M 87-03-23.
-!302  GOTO (1,2,3,4,5,6,7,8) ISEL
- 302  GOTO (1,400,3,4,5,6,400,8) ISEL
-      WRITE(*,*)' SOMETHING IS VERY WRONG -- THIS SPOT SHOULD NOT BE'
-      WRITE(*,*)' REACHABLE!! MXMA STOPS.'
-
-   1  CALL DGEMUL(B,ICB,'N',A,ICA,'N',C,ICC,NCOL,NSUM,NROW)
-      RETURN
-
-!  2  CALL DGEMUL(A,ICA,'T',B,ICB,'T',C,IRC,NROW,NSUM,NCOL)
-!     RETURN
-
-   3  CALL DGEMUL(B,IRB,'T',A,ICA,'N',C,ICC,NCOL,NSUM,NROW)
-      RETURN
-
-   4  CALL DGEMUL(A,ICA,'T',B,IRB,'N',C,IRC,NROW,NSUM,NCOL)
-      RETURN
-
-   5  CALL DGEMUL(B,ICB,'N',A,IRA,'T',C,ICC,NCOL,NSUM,NROW)
-      RETURN
-
-   6  CALL DGEMUL(A,IRA,'N',B,ICB,'T',C,IRC,NROW,NSUM,NCOL)
-      RETURN
-
-!  7  CALL DGEMUL(B,IRB,'T',A,IRA,'T',C,ICC,NCOL,NSUM,NROW)
-!     RETURN
-
-   8  CALL DGEMUL(A,IRA,'N',B,IRB,'N',C,IRC,NROW,NSUM,NCOL)
-      RETURN
-
- 400  DO 520 IROW=0,NROW-1
-        DO 520 ICOL=0,NCOL-1
-          T=0.0d0
-          DO 510 ISUM=0,NSUM-1
-            T=T+A(1+IROW*ICA+ISUM*IRA)*B(1+ISUM*ICB+ICOL*IRB)
- 510      CONTINUE
-          C(1+IROW*ICC+ICOL*IRC)=T
- 520  CONTINUE
-      RETURN
-
- 600  DO 620 IROW=0,NROW-1
-        DO 620 ICOL=0,NCOL-1
-          C(1+IROW*ICC+ICOL*IRC)=0.0D00
- 620  CONTINUE
-#endif
-      RETURN
-      end subroutine
 
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
 !
@@ -1132,8 +1047,8 @@ contains
       integer :: ifac, ishell
       real(8) :: DMAT(mat_dim, mat_dim, nz, nr_dmat)
       real(8) :: fac
-      if (nr_df_open > 0) then
-        DO ISHELL = 1, nr_df_open
+      if (nr_open_shells > 0) then
+        DO ISHELL = 1, nr_open_shells
           FAC = IFAC*df_open(ISHELL)
           CALL DAXPY(mat_dim*mat_dim,FAC,                               &
      &        DMAT(1,1,1,ISHELL+1),1,DMAT,1)

@@ -91,12 +91,10 @@ module xc_driver
    real(8), allocatable :: rw(:)
    real(8), allocatable :: fde_prop1(:)
    real(8), allocatable :: fde_prop2(:)
-   real(8), allocatable :: ao(:)
-   real(8), allocatable :: buffer(:)
    real(8), allocatable :: dmat_sorted(:, :)
 
    real(8) :: tau_integral
-   real(8) :: nr_electrons
+   real(8) :: nr_electrons_integrated
    real(8) :: xc_energy
    real(8) :: xc_mat_energy
 
@@ -271,7 +269,7 @@ contains
       time_density     = 0.0d0
       time_derv        = 0.0d0
 
-      nr_electrons = 0.0d0
+      nr_electrons_integrated = 0.0d0
       xc_energy    = 0.0d0
       tau_integral = 0.0d0
 
@@ -509,7 +507,6 @@ contains
      
       call ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
-                        .false.,        &
                         .true.)
 
       if (xc_mpi_is_master()) then
@@ -519,7 +516,7 @@ contains
          end if
 
 !        get average density from open shells
-         if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
          call scale_density_matrices(2.0d0)
 
@@ -621,7 +618,7 @@ contains
 #ifdef VAR_MPI
       if (parallel_xc) then
 !        collect results from processors
-         call xc_mpi_reduce(nr_electrons)
+         call xc_mpi_reduce(nr_electrons_integrated)
          call xc_mpi_reduce(nr_points_used)
          if (do_potential) then
             call xc_mpi_reduce(xc_energy)
@@ -647,7 +644,7 @@ contains
          call scale_density_matrices(0.5d0)
 
 !        get average density from open shells
-         if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, -1)
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 !        symmetrize matrices
          if (dft_cfg_blocked .or. (use_gga                          &
@@ -854,8 +851,8 @@ contains
       logical :: us_lao_above_threshold
       logical :: ugs_lao_above_threshold
 
-      real(8), allocatable :: ao_block(:, :)
-      real(8), allocatable :: buffer_block(:, :)
+      real(8), allocatable :: ao(:, :)
+      real(8), allocatable :: buffer(:, :)
 
     type(omega_prefactor) :: u
 
@@ -872,10 +869,6 @@ contains
 
 
 
-    allocate(ao    (total_ao_vector_length))
-    ao = 0.0d0
-    allocate(buffer(total_ao_vector_length))
-    buffer = 0.0d0
 
     if (dft_cfg_blocked) then
        block_threshold = get_block_threshold(dft_cfg_small_density_threshold, mat_dim, dmat_0)
@@ -947,18 +940,18 @@ contains
       loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
 
-         allocate(ao_block(block_length,     total_ao_vector_length))
-         ao_block = 0.0d0
-         allocate(buffer_block(block_length, total_ao_vector_length))
-         buffer_block = 0.0d0
+         allocate(ao(block_length,     nr_ao_slices*nr_ao_cartesian))
+         ao = 0.0d0
+         allocate(buffer(block_length, nr_ao_slices*nr_ao_cartesian))
+         buffer = 0.0d0
 
          call get_ao(                                  &
                      block_length,                     &
                      rx(ipoint:ipoint+block_length-1), &
                      ry(ipoint:ipoint+block_length-1), &
                      rz(ipoint:ipoint+block_length-1), &
-                     ao_block,                         &
-                     buffer_block                      &
+                     ao,                         &
+                     buffer                      &
                     )
 
          call xc_contribution_blas3(                          &
@@ -969,7 +962,7 @@ contains
                                     mat_dim,                  &
                                     nz,                       &
                                     buffer,                   &
-                                    ao_block,                 &
+                                    ao,                 &
                                     nr_fmat,                  &
                                     fmat,                     &
                                     dmat_0,                   &
@@ -981,16 +974,21 @@ contains
                                     derv,                     &
                                     max_fun_derv,             &
                                     rw(ipoint),               &
-                                    nr_electrons,             &
+                                    nr_electrons_integrated,             &
                                     xc_energy                 &
                                    )
 
-         deallocate(ao_block)
-         deallocate(buffer_block)
+         deallocate(ao)
+         deallocate(buffer)
 
       end do loop_over_points_block
    else
 #endif /* ifdef MOD_UNRELEASED */
+
+      allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
+      ao = 0.0d0
+      allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
+      buffer = 0.0d0
 
    print_data_at_point = .true.
 
@@ -1000,20 +998,18 @@ contains
    do ipoint = 1, nr_points_on_this_proc
 
       time_ao_start = second()
-      call get_ao(rx(ipoint), &
+      call get_ao(1,          &
+                  rx(ipoint), &
                   ry(ipoint), &
                   rz(ipoint), &
                   ao,         &
                   buffer)
-
-
-
       time_ao = time_ao + second() - time_ao_start
 
       time_density_start = second()
       if (need_ao_order(1, 0)) then
 !        density and density gradient
-         call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
+         call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
          gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) + gn_0_pointwise(2)*gn_0_pointwise(2) + gn_0_pointwise(3)*gn_0_pointwise(3)
       else
 !        density
@@ -1050,7 +1046,7 @@ contains
                          mat_dim, &
                          dmat_0,  &
                          buffer,  &
-                         ao(ao_start(1, 0):ao_end(1, 0)))
+                         ao)
             tau_integral = tau_integral + w(1)*tau
          end if
 
@@ -1072,7 +1068,7 @@ contains
 #endif /* ifdef MOD_UNRELEASED */
 
 !       number of electrons
-        nr_electrons = nr_electrons + w(1)*n_0(1)
+        nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
 
         time_derv_start = second()
 #ifdef MOD_XCFUN
@@ -1205,10 +1201,7 @@ contains
                                            mat_dim,                           &
                                            nz,                                &
                                            fmat,                              &
-                                           ao(ao_start(0, 0):ao_end(0, 0)),   &
-                                           ao(ao_start(0, 1):ao_end(0, 1)),   &
-                                           ao(ao_start(1, 0):ao_end(1, 0)),   &
-                                           ao(ao_start(1, 1):ao_end(1, 1)),   &
+                                           ao, &
                                            rx(ipoint), ry(ipoint), rz(ipoint))
             else
               call lda_london_distribute_r(derv(1, d1000000),                 &
@@ -1217,7 +1210,6 @@ contains
                                            nz,                                &
                                            fmat,                              &
                                            ao,                                &
-                                           ao(ao_start(0, 1):ao_end(0, 1)),   &
                                            rx(ipoint), ry(ipoint), rz(ipoint))
             end if
 
@@ -1293,7 +1285,7 @@ contains
                        use_gga,                &
                        dft_cfg_no_sdft,        &
                        mat_dim, dmat,        &
-                       dmat_pg_sym,dmat_ih_sym,ao,ao(ao_start(1, 0)), &
+                       dmat_pg_sym,dmat_ih_sym,ao,&
                        n_0(1),gnn_0(1),gn_0_pointwise,w(1), &
                        buffer,             &
                   derv_length,    &
@@ -1344,8 +1336,7 @@ contains
                                           dmat_ih_sym,      &
                                           fmat_pg_sym,      &
                                           use_gga,                           &
-                                          ao(ao_start(0, 0):ao_end(0, 0)), &
-                                          ao(ao_start(1, 0):ao_end(1, 0)), &
+                                          ao, &
                                           n_0(1),                            &
                                           gn_0_pointwise,                               &
                                           rx(ipoint),                      &
@@ -1368,16 +1359,13 @@ contains
                                      gn_0_pointwise,                             &
                                      mat_dim,                         &
                                      dmat_0,                          &
-                                     ao,                              &
-                                     ao(ao_start(1, 0):ao_end(1, 0)), &
-                                     ao(ao_start(2, 0):ao_end(2, 0)))
+                                     ao)
              else
                 call xc_geo_0_lda_c1(property_gradient, &
                                      derv(1, d1000000),      &
                                      mat_dim,           &
                                      dmat_0,            &
-                                     ao,                &
-                                     ao(ao_start(1, 0):ao_end(1, 0)))
+                                     ao)
              end if
           end if
 
@@ -1390,8 +1378,7 @@ contains
                                   mat_dim,           &
                                   dmat_0,            &
                                   tmat_1,            &
-                                  ao,              &
-                                  ao(ao_start(1, 0):ao_end(1, 0)))
+                                  ao)
           end if
 
           if (do_geo_2) then
@@ -1406,8 +1393,7 @@ contains
                                   dmat_0,            &
                                   tmat_1,            &
                                   tmat_2,            &
-                                  ao,              &
-                                  ao(ao_start(1, 0):ao_end(1, 0)))
+                                  ao)
           end if
 
           if (do_london_ks) then
@@ -1419,7 +1405,6 @@ contains
                                          nz,                              &
                                          fmat,                            &
                                          ao,                              &
-                                         ao(ao_start(1, 0):ao_end(1, 0)), &
                                          (/rx(ipoint), ry(ipoint), rz(ipoint)/))
              else
                 call xc_london_c1_ks_lda(derv(1, d1000000), &
@@ -1437,7 +1422,6 @@ contains
                                                    nz,                              &
                                                    dmat,                            &
                                                    ao,                              &
-                                                   ao(ao_start(1, 0):ao_end(1, 0)), &
                                                  (/rx(ipoint),                      &
                                                    ry(ipoint),                      &
                                                    rz(ipoint)/),                    &
@@ -1504,8 +1488,7 @@ contains
                                       nz,                  &
                                       u%n(im),             &
                                       u%gn(1, im),         &
-                                      ao,                  &
-                                      ao(ao_start(1, 0)))
+                                      ao)
              else
                 if (un_above_threshold) then
 !                  F_pq += u%n \chi_p* \chi_q
@@ -1549,8 +1532,7 @@ contains
                                       nz,                  &
                                       u%s(1, im),          &
                                       u%gs(1, 1, im),      &
-                                      ao,                  &
-                                      ao(ao_start(1, 0)))
+                                      ao)
              else
                 if (us_above_threshold) then
 !                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
@@ -1578,21 +1560,21 @@ contains
                                 mat_dim,             &
                                 nz,                  &
                                 0.5d0*u%tn(im),      &
-                                ao(ao_start(1, 0)))
+                                ao(1, ao_off_g1_m0(1, 0) + 1))
                 call omega_real(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 0.5d0*u%tn(im),      &
-                                ao(ao_start(1, 0) + mat_dim))
+                                ao(1, ao_off_g1_m0(2, 0) + 1))
                 call omega_real(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 0.5d0*u%tn(im),      &
-                                ao(ao_start(1, 0) + mat_dim*2))
+                                ao(1, ao_off_g1_m0(3, 0) + 1))
              end if
 
              uts_above_threshold = .false.
@@ -1611,21 +1593,21 @@ contains
                                 mat_dim,             &
                                 nz,                  &
                                 u%ts(1, im),         &
-                                ao(ao_start(1, 0)))
+                                ao(1, ao_off_g1_m0(1, 0) + 1))
                 call omega_imag(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 u%ts(1, im),         &
-                                ao(ao_start(1, 0) + mat_dim))
+                                ao(1, ao_off_g1_m0(2, 0) + 1))
                 call omega_imag(fmat,                &
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
                                 u%ts(1, im),         &
-                                ao(ao_start(1, 0) + mat_dim*2))
+                                ao(1, ao_off_g1_m0(3, 0) + 1))
              end if
 
 !gosia:
@@ -1662,8 +1644,7 @@ contains
                                       nz,                  &
                                       u%s_lao(1, im),      &
                                       u%gs_lao(1, 1, im),  &
-                                      ao,                  &
-                                      ao(ao_start(1, 0)))
+                                      ao)
              else
                 if (us_lao_above_threshold) then
 !                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
@@ -1686,15 +1667,16 @@ contains
 
       end if !if (n_0(1) > dft_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
+
+    deallocate(ao)
+    deallocate(buffer)
+
 #ifdef MOD_UNRELEASED
    end if !if (dft_cfg_blocked) then
 #endif /* ifdef MOD_UNRELEASED */
 
     deallocate(derv)
     deallocate(derv_nadd)
-
-    deallocate(ao)
-    deallocate(buffer)
 
     deallocate(u%n)
     deallocate(u%s)
@@ -1710,8 +1692,7 @@ contains
    subroutine report()
     real(8) :: error_nr_electrons
 
-      error_nr_electrons  = nr_electrons &
-                          - nr_electrons_total
+      error_nr_electrons = nr_electrons_integrated - nr_electrons
 
       write(file_unit, *)
 
@@ -1730,12 +1711,12 @@ contains
 
       write(file_unit, '(3x, a, f26.16)')                        &
             'number of electrons from numerical integration = ', &
-            nr_electrons
+            nr_electrons_integrated
 
       if (abs(error_nr_electrons) > 1.0d-3) then
          write(file_unit, '(3x, a, i9)')                            &
                'number of electrons from orbital occupations   = ', &
-               nr_electrons_total
+               nr_electrons
          write(file_unit, '(3x, a, f26.16)')                        &
                'WARNING: error in the number of electrons      = ', &
                error_nr_electrons
@@ -1932,7 +1913,7 @@ contains
                 isym,               &
                 ih,                 &
                 allow_nonhermitian, &
-                ao_p,               &
+                ao,               &
                 n_0,                &
                 gn_0_pointwise,               &
                 gnn_0,                &
@@ -1952,7 +1933,7 @@ contains
     integer, intent(in)    :: isym(nr_mat)
     integer, intent(in)    :: ih(nr_mat)
     logical, intent(in)    :: allow_nonhermitian
-    real(8), intent(in)    :: ao_p(*)
+    real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
@@ -2009,7 +1990,7 @@ contains
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
                          buffer,  &
-                         ao_p(ao_start(1, 0)))
+                         ao)
          end if
 #endif /* ifdef MOD_UNRELEASED */
 
@@ -2021,8 +2002,7 @@ contains
                                         mat_dim,                  &
                                         dmaterturbed(1 + im_off), &
                                         buffer,                   &
-                                        ao_p,                     &
-                                        ao_p(ao_start(1, 0)))
+                                        ao)
             else
                call get_gn(r_b,                      &
                            gr_b,                     &
@@ -2030,8 +2010,7 @@ contains
                            mat_dim,                  &
                            dmaterturbed(1 + im_off), &
                            buffer,                   &
-                           ao_p,                     &
-                           ao_p(ao_start(1, 0)))
+                           ao)
             end if
          else
             call get_n(r_b,                        &
@@ -2039,7 +2018,7 @@ contains
                        mat_dim,                    &
                        dmaterturbed(1 + im_off), &
                        buffer,                     &
-                       ao_p)
+                       ao)
          end if
 
         u%n(im) = u%n(im) + derv(1, d2000000)*r_b
@@ -2080,8 +2059,7 @@ contains
                                      mat_dim,                    &
                                      dmaterturbed(1 + im_off), &
                                      buffer,                     &
-                                     ao_p,                       &
-                                     ao_p(ao_start(1, 0)))
+                                     ao)
           else
             call get_gs(s_b,                       &
                         gs_b,                       &
@@ -2089,8 +2067,7 @@ contains
                         mat_dim,                    &
                         dmaterturbed(1 + im_off), &
                         buffer,                     &
-                        ao_p,                       &
-                        ao_p(ao_start(1, 0)))
+                        ao)
           end if
         else
         call get_s(s_b,                        &
@@ -2098,7 +2075,7 @@ contains
                    mat_dim,                    &
                    dmaterturbed(1 + im_off), &
                    buffer,                     &
-                   ao_p)
+                   ao)
         end if
 #ifdef MOD_UNRELEASED
         if (fun_is_tau_mgga()) then
@@ -2107,7 +2084,7 @@ contains
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
                              buffer,  &
-                             ao_p(ao_start(1, 0)))
+                             ao)
         end if
 #endif /* ifdef MOD_UNRELEASED */
 
@@ -2146,7 +2123,7 @@ contains
   subroutine lr_sdft_lao_direct(block_length,       &
                                 mat_dim,            &
                                 nz,                 &
-                                ao_p,               &
+                                ao,               &
                                 n_0,                &
                                 gn_0_pointwise,     &
                                 gnn_0,              &
@@ -2161,7 +2138,7 @@ contains
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
-    real(8), intent(in)    :: ao_p(*)
+    real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
@@ -2187,24 +2164,14 @@ contains
 
 
     if (is_gga_qi) then
-      call get_gs_lao(s_b_lao,                           &
-                      gs_b_lao,                          &
-                      fmat_pg_sym,                       &
-                      mat_dim,                           &
-                      dmat_0,                            &
-                      buffer,                            &
-                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
-                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
-                      ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                      ao_p(ao_start(1, 1):ao_end(1, 1)), &
-                      px, py, pz)
+      print *, 'ERROR: get_gs_lao needs to be programmed'
+      stop
     else
       call get_s_lao(s_b_lao,                            &
                      fmat_pg_sym,                        &
                      mat_dim,                            &
                      dmat_0,                             &
-                     ao_p(ao_start(0, 0):ao_end(0, 0)),  &
-                     ao_p(ao_start(0, 1):ao_end(0, 1)),  &
+                     ao, &
                      px, py, pz,                         &
                      buffer)
 
@@ -2239,7 +2206,7 @@ contains
   subroutine lr_sdft_lao_reorth(block_length,       &
                                 mat_dim,            &
                                 nz,                 &
-                                ao_p,               &
+                                ao,               &
                                 n_0,                &
                                 gn_0_pointwise,     &
                                 gnn_0,              &
@@ -2255,7 +2222,7 @@ contains
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
-    real(8), intent(in)    :: ao_p(*)
+    real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
@@ -2293,15 +2260,14 @@ contains
 !                      mat_dim,                  &
 !                      tb_dmat(1 + im_off),      &
 !                      buffer,                   &
-!                      ao_p,                     &
-!                      ao_p(ao_start(1, 0)))
+!                      ao)
 !       else
 !          call get_n(r_b,                       &
 !                     isym(im) - 1,              &
 !                     mat_dim,                   &
 !                     tb_dmat(1 + im_off),       &
 !                     buffer,                    &
-!                     ao_p)
+!                     ao)
 !       end if
 !
 !       u%n(im) = u%n(im) + derv(1, d2000000)*r_b
@@ -2327,15 +2293,14 @@ contains
                          mat_dim,                   &
                          tb_dmat(1 + im_off),       &
                          buffer,                    &
-                         ao_p,                      &
-                         ao_p(ao_start(1, 0)))
+                         ao)
           else
              call get_s(s_b,                        &
                         isym(im) - 1,               &
                         mat_dim,                    &
                         tb_dmat(1 + im_off),        &
                         buffer,                     &
-                        ao_p)
+                        ao)
           end if
 
           do k = k_start, 3
@@ -2368,8 +2333,7 @@ contains
                          dtrmat, &
                          isymop, &
                          ihrmop, &
-                         gao, &
-                         gao1, &
+                         ao, &
                          n_0, &
                          gnn_0, &
                          gn_0_pointwise, &
@@ -2388,8 +2352,7 @@ contains
      real(8) ::          dtrmat(mat_dim,mat_dim,nz,3)
      integer ::          isymop(3)
      integer ::          ihrmop(3)
-     real(8) ::          gao(*)
-     real(8) ::          gao1(*)
+     real(8) ::          ao(*)
      real(8) ::          buf(*)
      real(8) ::          n_0(*)
      real(8) ::          gnn_0(*)
@@ -2462,29 +2425,27 @@ contains
      &                            mat_dim,            &
      &                            dtrmat(1, 1, 1, 1), &
      &                            buf, &
-     &                            gao, &
-     &                            gao1)
+     &                            ao)
          call get_gn_nonhermitian(r_c, &
      &                            gr_c, &
      &                            isymop(2) - 1, &
      &                            mat_dim,            &
      &                            dtrmat(1, 1, 1, 2), &
      &                            buf, &
-     &                            gao, &
-     &                            gao1)
+     &                            ao)
       else
          call get_n(r_b, &
      &              isymop(1) - 1, &
      &              mat_dim,            &
      &              dtrmat(1, 1, 1, 1), &
      &              buf, &
-     &              gao)
+     &              ao)
          call get_n(r_c, &
      &              isymop(2) - 1, &
      &              mat_dim,         &
      &              dtrmat(1, 1, 1, 2), &
      &              buf, &
-     &              gao)
+     &              ao)
       end if
 
       if (.not. no_sdft) then
@@ -2495,29 +2456,27 @@ contains
      &                               mat_dim,            &
      &                               dtrmat(1, 1, 1, 1), &
      &                               buf, &
-     &                               gao, &
-     &                               gao1)
+     &                               ao)
             call get_gs_nonhermitian(s_c, &
      &                               gs_c, &
      &                               isymop(2) - 1, &
      &                               mat_dim,            &
      &                               dtrmat(1, 1, 1, 2), &
      &                               buf, &
-     &                               gao, &
-     &                               gao1)
+     &                               ao)
          else
            call get_s(s_b, &
      &                isymop(1) - 1, &
      &                mat_dim,            &
      &                dtrmat(1, 1, 1, 1), &
      &                buf, &
-     &                gao)
+     &                ao)
            call get_s(s_c, &
      &                isymop(2) - 1, &
      &                mat_dim,            &
      &                dtrmat(1, 1, 1, 2), &
      &                buf, &
-     &                gao)
+     &                ao)
          end if
       endif
 

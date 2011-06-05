@@ -22,6 +22,7 @@
 module density_eval
 
    use interface_ao
+   use ao_eval
 
    implicit none
 
@@ -46,7 +47,6 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
-   public get_gs_lao
 
    private
 
@@ -356,8 +356,7 @@ contains
                     mat_dim, &
                     dmat,    &
                     buffer,  &
-                    ao,      &
-                    ao1)
+                    ao)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(out) :: n
@@ -366,8 +365,7 @@ contains
     integer, intent(in)  :: mat_dim
     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
     real(8), intent(in)  :: buffer(mat_dim)
-    real(8), intent(in)  :: ao(mat_dim)
-    real(8), intent(in)  :: ao1(mat_dim, 3)
+    real(8), intent(in)  :: ao(*)
 !   ----------------------------------------------------------------------------
     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
     real(8), external    :: ddot
@@ -395,9 +393,10 @@ contains
                   1)
 
        n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-       do ixyz = 1, 3
-          gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
-       end do
+
+       gn(1) = gn(1) + ddot(nr1, ao(ao_off_g1_m0(1, 0) + st1), 1, buffer, 1)
+       gn(2) = gn(2) + ddot(nr1, ao(ao_off_g1_m0(2, 0) + st1), 1, buffer, 1)
+       gn(3) = gn(3) + ddot(nr1, ao(ao_off_g1_m0(3, 0) + st1), 1, buffer, 1)
     end do
 
     gn = 2.0d0*gn
@@ -409,13 +408,12 @@ contains
                       mat_dim, &
                       dmat,    &
                       buffer,  &
-                      ao_g1)
+                      ao)
 
 !     --------------------------------------------------------------------------
 !     radovan bast 2010-04-15
 !                  this routine calculates the \tau = \nabla_i \phi_k \nabla_i \phi_k
 !     
-!                  needs ao_g1
 !                  integral approaches the kinetic energy as c -> oo
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: t
@@ -423,7 +421,7 @@ contains
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)  :: buffer(mat_dim)
-      real(8), intent(in)  :: ao_g1(mat_dim, 3)
+      real(8), intent(in)  :: ao(*)
 !     --------------------------------------------------------------------------
       integer              :: nr1, nr2, st1, st2, iblock, ixyz
       real(8), external    :: ddot
@@ -444,13 +442,13 @@ contains
                        1.0d0,                 &
                        dmat(st1, st2, iq(0)), &
                        mat_dim,               &
-                       ao_g1(st2, ixyz),      &
+                       ao(ao_off_g1_m0(ixyz, 0) + st2),      &
                        1,                     &
                        0.0d0,                 &
                        buffer,                &
                        1)
       
-            t = t + ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
+            t = t + ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
          end do
       end do
       
@@ -463,7 +461,7 @@ contains
                            mat_dim, &
                            dmat,    &
                            buffer,  &
-                           ao_g1)
+                           ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: t(3)
@@ -471,7 +469,7 @@ contains
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)  :: buffer(mat_dim)
-      real(8), intent(in)  :: ao_g1(mat_dim, 3)
+      real(8), intent(in)  :: ao(*)
 !     --------------------------------------------------------------------------
       integer              :: nr1, nr2, st1, st2, iblock, ixyz, jxyz
       real(8), external    :: ddot
@@ -493,14 +491,14 @@ contains
                           1.0d0,                    &
                           dmat(st1, st2, iq(jxyz)), &
                           mat_dim,                  &
-                          ao_g1(st2, ixyz),         &
+                          ao(ao_off_g1_m0(ixyz, 0) + st2), &
                           1,                        &
                           0.0d0,                    &
                           buffer,                   &
                           1)
          
                t(jxyz) = t(jxyz) &
-             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
+             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
             end do
          end do
       end do
@@ -585,8 +583,7 @@ contains
                                  mat_dim, &
                                  dmat,    &
                                  buffer,  &
-                                 ao,      &
-                                 ao1)
+                                 ao)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(out) :: n
@@ -595,8 +592,7 @@ contains
     integer, intent(in)  :: mat_dim
     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
     real(8), intent(in)  :: buffer(mat_dim)
-    real(8), intent(in)  :: ao(mat_dim)
-    real(8), intent(in)  :: ao1(mat_dim, 3)
+    real(8), intent(in)  :: ao(*)
 !   ----------------------------------------------------------------------------
     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
     real(8)              :: ddot
@@ -625,7 +621,7 @@ contains
 
        n = n + ddot(nr1, ao(st1), 1, buffer, 1)
        do ixyz = 1, 3
-         gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+         gn(ixyz) = gn(ixyz) + ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
        end do
 
        do ixyz = 1, 3
@@ -635,7 +631,7 @@ contains
                     1.0d0,                    &
                     dmat(st1, st2, iq(0)), &
                     mat_dim,                  &
-                    ao1(st2, ixyz),           &
+                    ao(ao_off_g1_m0(ixyz, 0) + st2), &
                     1,                        &
                     0.0d0,                    &
                     buffer,                   &
@@ -654,8 +650,7 @@ contains
                      mat_dim, &
                      dmat,    &
                      buffer,  &
-                     ao,      &
-                     ao1)
+                     ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: v(3)
@@ -665,8 +660,7 @@ contains
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)  :: buffer(mat_dim)
-      real(8), intent(in)  :: ao(mat_dim)
-      real(8), intent(in)  :: ao1(mat_dim, 3)
+      real(8), intent(in)  :: ao(*)
 !     --------------------------------------------------------------------------
       integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
       real(8), external    :: ddot
@@ -695,7 +689,7 @@ contains
   
             v(jxyz) = v(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
             do ixyz = 1, 3
-               gv(ixyz, jxyz) = gv(ixyz, jxyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+               gv(ixyz, jxyz) = gv(ixyz, jxyz) + ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
             end do
          end do
       end do
@@ -709,8 +703,7 @@ contains
                      mat_dim, &
                      dmat,    &
                      buffer,  &
-                     ao,      &
-                     ao1)
+                     ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: v(3)
@@ -719,8 +712,7 @@ contains
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
       real(8), intent(in)  :: buffer(mat_dim)
-      real(8), intent(in)  :: ao(mat_dim)
-      real(8), intent(in)  :: ao1(mat_dim, 3)
+      real(8), intent(in)  :: ao(*)
 !     --------------------------------------------------------------------------
       integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
       real(8), external    :: ddot
@@ -751,7 +743,7 @@ contains
                     + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
             do ixyz = 1, 3
                gv(ixyz, jxyz) = gv(ixyz, jxyz) &
-             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
             end do
          end do
       end do
@@ -765,8 +757,7 @@ contains
                                  mat_dim, &
                                  dmat,    &
                                  buffer,  &
-                                 ao,      &
-                                 ao1)
+                                 ao)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(out) :: s(3)
@@ -775,8 +766,7 @@ contains
     integer, intent(in)  :: mat_dim
     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
     real(8), intent(in)  :: buffer(mat_dim)
-    real(8), intent(in)  :: ao(mat_dim)
-    real(8), intent(in)  :: ao1(mat_dim, 3)
+    real(8), intent(in)  :: ao(*)
 !   ----------------------------------------------------------------------------
     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
     real(8)              :: ddot
@@ -808,7 +798,7 @@ contains
           s(jxyz) = s(jxyz) + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
           do ixyz = 1, 3
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
           end do
 
           do ixyz = 1, 3
@@ -818,7 +808,7 @@ contains
                         1.0d0,                       &
                         dmat(st1, st2, iq(jxyz)), &
                         mat_dim,                     &
-                        ao1(st2, ixyz),              &
+                        ao(ao_off_g1_m0(ixyz, 0) + st2), &
                         1,                           &
                         0.0d0,                       &
                         buffer,                      &
@@ -882,8 +872,7 @@ contains
                                nz,      &
                                u,       &
                                v,       &
-                               ao_g0,   &
-                               ao_g1)
+                               ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
@@ -893,8 +882,7 @@ contains
       integer, intent(in)    :: nz
       real(8), intent(in)    :: u
       real(8), intent(in)    :: v(3)
-      real(8), intent(in)    :: ao_g0(mat_dim)
-      real(8), intent(in)    :: ao_g1(mat_dim, 3)
+      real(8), intent(in)    :: ao(*)
 !     --------------------------------------------------------------------------
       integer                :: nr1, nr2, st1, st2, iblock, i, ii
       real(8)                :: f
@@ -908,14 +896,14 @@ contains
       
          do i = 1, nr2
             ii = st2 + i - 1
-            f =       u   *ao_g0(ii)    &
-              + 2.0d0*v(1)*ao_g1(ii, 1) &
-              + 2.0d0*v(2)*ao_g1(ii, 2) &
-              + 2.0d0*v(3)*ao_g1(ii, 3)
+            f =       u   *ao(ii) &
+              + 2.0d0*v(1)*ao(ao_off_g1_m0(1, 0) + ii) &
+              + 2.0d0*v(2)*ao(ao_off_g1_m0(2, 0) + ii) &
+              + 2.0d0*v(3)*ao(ao_off_g1_m0(3, 0) + ii)
       
             call daxpy(nr1,                      &
                        f,                        &
-                       ao_g0(st1),               &
+                       ao(st1),                  &
                        1,                        &
                        fmat(st1, ii, iq(0), im), &
                        1)
@@ -976,8 +964,7 @@ contains
                                nz,      &
                                u,       &
                                v,       &
-                               ao_g0,   &
-                               ao_g1)
+                               ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
@@ -987,8 +974,7 @@ contains
       integer, intent(in)    :: nz
       real(8), intent(in)    :: u(3)
       real(8), intent(in)    :: v(3, 3)
-      real(8), intent(in)    :: ao_g0(mat_dim)
-      real(8), intent(in)    :: ao_g1(mat_dim, 3)
+      real(8), intent(in)    :: ao(*)
 !     --------------------------------------------------------------------------
       integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
       real(8)                :: f
@@ -1004,16 +990,16 @@ contains
          
             do i = 1, nr2
                ii = st2 + i - 1
-               f =       u(   jxyz)*ao_g0(ii)    &
-                 + 2.0d0*v(1, jxyz)*ao_g1(ii, 1) &
-                 + 2.0d0*v(2, jxyz)*ao_g1(ii, 2) &
-                 + 2.0d0*v(3, jxyz)*ao_g1(ii, 3)
+               f =       u(   jxyz)*ao(ii)    &
+                 + 2.0d0*v(1, jxyz)*ao(ao_off_g1_m0(1, 0) + ii) &
+                 + 2.0d0*v(2, jxyz)*ao(ao_off_g1_m0(2, 0) + ii) &
+                 + 2.0d0*v(3, jxyz)*ao(ao_off_g1_m0(3, 0) + ii)
               
                f = llss_prefactor(iblock, jxyz, irep)*f
          
                call daxpy(nr1,                         &
                           f,                           &
-                          ao_g0(st1),                  &
+                          ao(st1),                  &
                           1,                           &
                           fmat(st1, ii, iq(jxyz), im), &
                           1)
@@ -1024,7 +1010,7 @@ contains
    end subroutine
 
 
-   subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
+   subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, cx, cy, cz)
    
 !    ----------------------------------------------------------------------------
      real(8), intent(in)    :: s
@@ -1032,8 +1018,7 @@ contains
      integer, intent(in)    :: mat_dim
      integer, intent(in)    :: nz
      real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
-     real(8), intent(in)    :: ao(mat_dim)
-     real(8), intent(in)    :: ao_b1(mat_dim, *)
+     real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
 !    ----------------------------------------------------------------------------
      integer                :: nr1, nr2, st1, st2, iblock, ii, i, a, b, c
@@ -1065,7 +1050,7 @@ contains
      
            do i = 1, nr2
              ii = st2 + i - 1
-             f  = 2.0d0*(r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*s
+             f  = 2.0d0*(r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*s
      
              call daxpy(nr1,                     &
                         f,                       &
@@ -1088,10 +1073,7 @@ contains
                                       mat_dim,  &
                                       nz,       &
                                       fmat,     &
-                                      ao_g0_b0, &
-                                      ao_g0_b1, &
-                                      ao_g1_b0, &
-                                      ao_g1_b1, &
+                                      ao, &
                                       cx,       &
                                       cy,       &
                                       cz)
@@ -1105,10 +1087,7 @@ contains
      integer, intent(in)    :: mat_dim
      integer, intent(in)    :: nz
      real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
-     real(8), intent(in)    :: ao_g0_b0(mat_dim)
-     real(8), intent(in)    :: ao_g0_b1(mat_dim, 3)
-     real(8), intent(in)    :: ao_g1_b0(mat_dim, 3)
-     real(8), intent(in)    :: ao_g1_b1(mat_dim, 3, 3)
+     real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
 !    ----------------------------------------------------------------------------
      integer                :: nr1, nr2, st1, st2, iblock, i, ii
@@ -1131,6 +1110,11 @@ contains
          case (3)
            b = 1; c = 2
        end select
+
+       do ii = 1, mat_dim
+          f_vec(ii)  = r(b)*ao(ao_off_g0_m1(0, c) + ii) &
+                     - r(c)*ao(ao_off_g0_m1(0, b) + ii)
+       end do
    
        do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
    
@@ -1139,35 +1123,36 @@ contains
          nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
          st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
    
-         f_vec(:)  = r(b)*ao_g0_b1(:, c) - r(c)*ao_g0_b1(:, b)
-   
          do i = 1, nr2
            ii = st2 + i - 1
    
-           f_temp = 2.0d0*(r(c)*ao_g0_b1(ii, b) - r(b)*ao_g0_b1(ii, c))
+           f_temp = 2.0d0*(r(c)*ao(ao_off_g0_m1(0, b) + ii) &
+                         - r(b)*ao(ao_off_g0_m1(0, c) + ii))
            f = f_temp*d_r
    
 !          so far it's lda type contribution, rest are gradient terms
    
-           f_temp = 2.0d0*(n_g1(c)*ao_g0_b1(ii, b) - n_g1(b)*ao_g0_b1(ii, c))
+           f_temp = 2.0d0*(n_g1(c)*ao(ao_off_g0_m1(0, b) + ii) &
+                         - n_g1(b)*ao(ao_off_g0_m1(0, c) + ii))
            f = f + f_temp*d_z
    
            do ixyz = 1, 3
-             f_temp = 2.0d0*(r(c)*ao_g1_b1(ii, b, ixyz) - r(b)*ao_g1_b1(ii, c, ixyz))
+             f_temp = 2.0d0*(r(c)*ao(ao_off_g1_m1(ixyz, b) + ii) &
+                           - r(b)*ao(ao_off_g1_m1(ixyz, c) + ii))
              f = f + f_temp*d_z*n_g1(ixyz)
            end do
    
-           call daxpy(nr1,                          &
-                      f,                            &
-                      ao_g0_b0(st1),                &
-                      1,                            &
-                      fmat(st1, ii, iq(0), a),      &
+           call daxpy(nr1,                     &
+                      f,                       &
+                      ao(st1),                 &
+                      1,                       &
+                      fmat(st1, ii, iq(0), a), &
                       1)
    
    
-           f_temp = 2.0d0*(n_g1(1)*ao_g1_b0(ii, 1)  &
-                  +        n_g1(2)*ao_g1_b0(ii, 2)  &
-                  +        n_g1(3)*ao_g1_b0(ii, 3))
+           f_temp = 2.0d0*(n_g1(1)*ao(ao_off_g1_m0(1, 0) + ii) &
+                         + n_g1(2)*ao(ao_off_g1_m0(2, 0) + ii) &
+                         + n_g1(3)*ao(ao_off_g1_m0(3, 0) + ii))
    
            f = f_temp*d_z
    
@@ -1185,15 +1170,14 @@ contains
    end subroutine
 
 
-   subroutine get_s_lao(s, isym, mat_dim, dmat, ao, ao_b1, cx, cy, cz, buffer)
+   subroutine get_s_lao(s, isym, mat_dim, dmat, ao, cx, cy, cz, buffer)
    
 !    ----------------------------------------------------------------------------
      real(8), intent(out) :: s(3, 3)
      integer, intent(in)  :: isym(*)
      integer, intent(in)  :: mat_dim
      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-     real(8), intent(in)  :: ao(mat_dim)
-     real(8), intent(in)  :: ao_b1(mat_dim, *)
+     real(8), intent(in)  :: ao(*)
      real(8), intent(in)  :: cx, cy, cz
      real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
@@ -1234,9 +1218,10 @@ contains
            do ii = st1, st1 + nr1 - 1
              do jj = st2, st2 + nr2 - 1
     
-               ff = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                  - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
+               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) &
+                   - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) &
+                   - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
 
                s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
     
@@ -1247,89 +1232,6 @@ contains
 
        end do    ! do jxyz = 1, jxyz_start, 3
      end do      ! do a = 1, 3
-
-   end subroutine
-
-
-
-   subroutine get_gs_lao(s,          &
-                         gs,         &
-                         isym,       &
-                         mat_dim,    &
-                         dmat,       &
-                         buffer,     &
-                         ao_g0_b0,   &
-                         ao_g1_b0,   &
-                         ao_g0_b1,   &
-                         ao_g1_b1,   &
-                         cx, cy, cz)
-   
-!    ----------------------------------------------------------------------------
-     real(8), intent(out) :: s(3, 3)
-     real(8), intent(out) :: gs(3, 3, 3)
-     integer, intent(in)  :: isym(*)
-     integer, intent(in)  :: mat_dim
-     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-     real(8), intent(in)  :: buffer(*)
-     real(8), intent(in)  :: ao_g0_b0(mat_dim)
-     real(8), intent(in)  :: ao_g1_b0(mat_dim, 3)
-     real(8), intent(in)  :: ao_g0_b1(mat_dim, 3)
-     real(8), intent(in)  :: ao_g1_b1(mat_dim, 3, 3)
-     real(8), intent(in)  :: cx, cy, cz
-!    ----------------------------------------------------------------------------
-     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
-     integer              :: a, b, c, irp1, irp2, ii, jj
-     real(8)              :: r_co(3), f(mat_dim), ff
-!    ----------------------------------------------------------------------------
-
-!gosia: fixme
-     r_co(1) = cx
-     r_co(2) = cy
-     r_co(3) = cz
-
-     gs = 0.0d0
-     s  = 0.0d0
-     f  = 0.0d0
-     ff = 0.0d0
-
-!gosia todo: do a = 1, nr_xyz_comp
-
-     do a = 1, 3   ! Bx, By, Bz
-       select case (a)
-         case (1)
-           b = 2; c = 3
-         case (2)
-           b = 3; c = 1
-         case (3)
-           b = 1; c = 2
-       end select
-    
-       do jxyz = jxyz_start, 3
-    
-         do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
-    
-           nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
-           st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
-           nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
-           st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
-
-
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-    
-               ff = (r_co(c)*ao_g0_b1(jj, b) - r_co(b)*ao_g0_b1(jj, c))*ao_g0_b0(ii) &
-                  - (r_co(c)*ao_g0_b1(ii, b) - r_co(b)*ao_g0_b1(ii, c))*ao_g0_b0(jj)
-
-
-               s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
-    
-             end do
-           end do
-
-         end do
-
-       end do
-     end do
 
    end subroutine
 

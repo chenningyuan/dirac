@@ -62,8 +62,7 @@ contains
                                       ih_d,    &
                                       isym_f,    &
                                       use_gga,   &
-                                      ao_g0_m0,  &
-                                      ao_g1_m0,  &
+                                      ao, &
                                       n_0,       &
                                       gn_0,      &
                                       px,        &
@@ -85,8 +84,7 @@ contains
     integer, intent(in)    :: ih_d(nr_dmat_p)
     integer, intent(in)    :: isym_f(*)
     logical, intent(in)    :: use_gga
-    real(8), intent(in)    :: ao_g0_m0(*)
-    real(8), intent(in)    :: ao_g1_m0(*)
+    real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0
     real(8), intent(in)    :: gn_0(3)
     real(8), intent(in)    :: px
@@ -126,8 +124,7 @@ contains
                          mat_dim,            &
                          dmat_p(1, 1, 1, i), &
                          buffer,             &
-                         ao_g0_m0,           &
-                         ao_g1_m0)
+                         ao)
           else
              call get_gn(n(i),               &
                          gn(1, i),           &
@@ -135,8 +132,7 @@ contains
                          mat_dim,            &
                          dmat_p(1, 1, 1, i), &
                          buffer,             &
-                         ao_g0_m0,           &
-                         ao_g1_m0)
+                         ao)
           end if
        else
           call get_n(n(i),               &
@@ -144,7 +140,7 @@ contains
                      mat_dim,            &
                      dmat_p(1, 1, 1, i), &
                      buffer,             &
-                     ao_g0_m0)
+                     ao)
        end if
     end do
 
@@ -216,8 +212,7 @@ contains
                              nz,            &
                              u,             &
                              2.0d0*v,       &
-                             ao_g0_m0,      &
-                             ao_g1_m0)
+                             ao)
     else
        if (u_above_threshold) then
           call omega_real(fmat,          &
@@ -226,7 +221,7 @@ contains
                           mat_dim,       &
                           nz,            &
                           u,             &
-                          ao_g0_m0)
+                          ao)
        end if
     end if
 

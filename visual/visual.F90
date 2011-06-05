@@ -25,6 +25,7 @@ module visual
   use visual_cfg
   use codata
   use ao_eval
+  use interface_ao
   use matrix_defop
   use matrix_genop, only: copy_matrix_sym
   use dirac_interface
@@ -349,11 +350,10 @@ contains
 
     call ao_eval_init(max_ao_g_order, &
                       max_ao_m_order, &
-                      .false.,        &
                       .false.)
 
-    call alloc(ao,     total_ao_vector_length)
-    call alloc(buffer, total_ao_vector_length)
+    call alloc(ao,     nr_ao_slices*nr_ao_cartesian)
+    call alloc(buffer, nr_ao_slices*nr_ao_cartesian)
 
 #ifdef MOD_UNRELEASED
     if (visual_cfg_london) then

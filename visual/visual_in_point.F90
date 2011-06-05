@@ -23,6 +23,7 @@ module visual_in_point
 
   use memory_allocator
   use vc_grid
+  use interface_ao
   use visual_cfg
   use visual_london
   use codata
@@ -88,7 +89,7 @@ contains
       real(8)              :: rx, ry, rz, r(3)
 !     --------------------------------------------------------------------------
 
-      call get_ao(px, py, pz, ao, buffer)
+      call get_ao(1, (/px/), (/py/), (/pz/), ao, buffer)
 
       result = 0.0d0
       do imat = 1, nr_dmat
@@ -123,15 +124,14 @@ contains
                             D(imat)%nrow, &
                             D(imat)%elms, &
                             buffer,       &
-                            ao(ao_start(1, 0):ao_end(1, 0)))
+                            ao)
                call get_gn(density,          &
                            density_gradient, &
                            D(imat)%irep,     &
                            D(imat)%nrow,     &
                            D(imat)%elms,     &
                            buffer,           &
-                           ao,               &
-                           ao(ao_start(1, 0):ao_end(1, 0)))
+                           ao)
               
                density_gradient_squared = density_gradient(1)*density_gradient(1) &
                                         + density_gradient(2)*density_gradient(2) &
@@ -183,8 +183,7 @@ contains
                               D(imat)%nrow, &
                               D(imat)%elms, &
                               buffer,       &
-                              ao,           &
-                              ao(ao_start(1, 0):ao_end(1, 0)))
+                              ao)
                   v = 0.5d0*v
                else
                   call get_j(v,            &
@@ -200,17 +199,13 @@ contains
                   if (levyle) then
                      call get_jblao_ll(D_0%elms,                      &
                                        ntbas(0),                      &
-                                       ao(ao_start(0,0):ao_end(0,0)), &
-                                       ao(ao_start(0,1):ao_end(0,1)), &
-                                       ao(ao_start(1,0):ao_end(1,0)), &
-                                       ao(ao_start(1,1):ao_end(1,1)), &
+                                       ao, &
                                        (/px, py, pz/),                &
                                        v2)
                   else
                      call get_jblao(D_0%elms,                      &
                                     ntbas(0),                      &
-                                    ao(ao_start(0,0):ao_end(0,0)), &
-                                    ao(ao_start(0,1):ao_end(0,1)), &
+                                    ao, &
                                     (/px, py, pz/),                &
                                     v2)
                   end if
@@ -240,8 +235,7 @@ contains
                            D(imat)%nrow,    &
                            D(imat)%elms,    &
                            buffer,          &
-                           ao,              &
-                           ao(ao_start(1, 0):ao_end(1, 0)))
+                           ao)
                if (visual_cfg_property(imat) == iq_divs) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
                end if
@@ -262,8 +256,7 @@ contains
                            D(imat)%nrow, &
                            D(imat)%elms, &
                            buffer,       &
-                           ao,           &
-                           ao(ao_start(1, 0):ao_end(1, 0)))
+                           ao)
                if (visual_cfg_property(imat) == iq_divj) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
                end if
@@ -356,8 +349,7 @@ contains
                               D(imat)%nrow, &
                               D(imat)%elms, &
                               buffer,       &
-                              ao,           &
-                              ao(ao_start(1, 0):ao_end(1, 0)))
+                              ao)
                   v = 0.5d0*v
                else
                   call get_j(v,            &
@@ -373,17 +365,13 @@ contains
                   if (levyle) then
                      call get_jblao_ll(D_0%elms,                      &
                                        ntbas(0),                      &
-                                       ao(ao_start(0,0):ao_end(0,0)), &
-                                       ao(ao_start(0,1):ao_end(0,1)), &
-                                       ao(ao_start(1,0):ao_end(1,0)), &
-                                       ao(ao_start(1,1):ao_end(1,1)), &
+                                       ao, &
                                        (/px, py, pz/),                &
                                        v2)
                   else
                      call get_jblao(D_0%elms,                      &
                                     ntbas(0),                      &
-                                    ao(ao_start(0,0):ao_end(0,0)), &
-                                    ao(ao_start(0,1):ao_end(0,1)), &
+                                    ao, &
                                     (/px, py, pz/),                &
                                     v2)
                   end if

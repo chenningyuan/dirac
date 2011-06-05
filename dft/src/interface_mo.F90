@@ -11,20 +11,21 @@ module interface_mo
 
    logical, public :: interface_mo_set
 
-   integer, public :: nr_open_shells
    integer, public :: nr_electrons_inactive
    integer, public :: nr_electrons_active
-   integer, public :: nr_electrons_total
+   integer, public :: nr_electrons
    integer, public :: nr_mo
    integer, public :: nr_mo_gerade
    integer, public :: nr_mo_gerade_negative_secondary
    integer, public :: nr_mo_gerade_positive_inactive
+   integer, public :: nr_mo_gerade_positive_active
    integer, public :: nr_mo_gerade_positive_secondary
    integer, public :: nr_mo_ungerade
    integer, public :: nr_mo_ungerade_negative_secondary
    integer, public :: nr_mo_ungerade_positive_inactive
+   integer, public :: nr_mo_ungerade_positive_active
    integer, public :: nr_mo_ungerade_positive_secondary
-   integer, public :: nr_df_open
+   integer, public :: nr_open_shells
    logical, public :: mo_eigenvalues_available
    logical, public :: mo_coef_available
 
@@ -45,20 +46,21 @@ contains
 
       interface_mo_set                  = .false.
 
-      nr_open_shells                    = 0
       nr_electrons_inactive             = 0
       nr_electrons_active               = 0
-      nr_electrons_total                = 0
+      nr_electrons                = 0
       nr_mo                             = 0
       nr_mo_gerade                      = 0
       nr_mo_gerade_negative_secondary   = 0
       nr_mo_gerade_positive_inactive    = 0
+      nr_mo_gerade_positive_active    = 0
       nr_mo_gerade_positive_secondary   = 0
       nr_mo_ungerade                    = 0
       nr_mo_ungerade_negative_secondary = 0
       nr_mo_ungerade_positive_inactive  = 0
+      nr_mo_ungerade_positive_active  = 0
       nr_mo_ungerade_positive_secondary = 0
-      nr_df_open                        = 0
+      nr_open_shells                        = 0
       mo_eigenvalues_available          = .false.
       mo_coef_available                 = .false.
 
@@ -139,65 +141,62 @@ contains
            access = 'sequential')
       rewind(file_unit)
 
-      nr_open_shells        = nasht
       nr_electrons_inactive = nelect
       nr_electrons_active   = naelec
-      nr_electrons_total    = nr_electrons_inactive + nr_electrons_active
-      nr_mo                 = norbt
 
       nr_mo_gerade_negative_secondary = npsh(1)
       nr_mo_gerade_positive_inactive  = nish(1)
+      nr_mo_gerade_positive_active    = nash(1)
       nr_mo_gerade_positive_secondary = nesh(1) - nr_mo_gerade_positive_inactive
-      nr_mo_gerade = nr_mo_gerade_negative_secondary &
-                   + nr_mo_gerade_positive_inactive  &
-                   + nr_mo_gerade_positive_secondary
 
       nr_mo_ungerade_negative_secondary = npsh(2)
       nr_mo_ungerade_positive_inactive  = nish(2)
+      nr_mo_ungerade_positive_active    = nash(2)
       nr_mo_ungerade_positive_secondary = nesh(2) - nr_mo_ungerade_positive_inactive
-      nr_mo_ungerade = nr_mo_ungerade_negative_secondary &
-                     + nr_mo_ungerade_positive_inactive  &
-                     + nr_mo_ungerade_positive_secondary
 
       if (aoc) then
-         nr_df_open = nopen
+         nr_open_shells = nopen
       else
-         nr_df_open = 0
+         nr_open_shells = 0
       end if
 
-      write(file_unit, '(4x, a)') 'nr_open_shells'
-      write(file_unit, '(4x, i6)') nr_open_shells
       write(file_unit, '(4x, a)') 'nr_electrons_inactive'
       write(file_unit, '(4x, i6)') nr_electrons_inactive
       write(file_unit, '(4x, a)') 'nr_electrons_active'
       write(file_unit, '(4x, i6)') nr_electrons_active
-      write(file_unit, '(4x, a)') 'nr_electrons_total'
-      write(file_unit, '(4x, i6)') nr_electrons_total
-      write(file_unit, '(4x, a)') 'nr_mo'
-      write(file_unit, '(4x, i6)') nr_mo
-      write(file_unit, '(4x, a)') 'nr_mo_gerade'
-      write(file_unit, '(4x, i6)') nr_mo_gerade
       write(file_unit, '(4x, a)') 'nr_mo_gerade_negative_secondary'
       write(file_unit, '(4x, i6)') nr_mo_gerade_negative_secondary
       write(file_unit, '(4x, a)') 'nr_mo_gerade_positive_inactive'
       write(file_unit, '(4x, i6)') nr_mo_gerade_positive_inactive
+      write(file_unit, '(4x, a)') 'nr_mo_gerade_positive_active'
+      write(file_unit, '(4x, i6)') nr_mo_gerade_positive_active
       write(file_unit, '(4x, a)') 'nr_mo_gerade_positive_secondary'
       write(file_unit, '(4x, i6)') nr_mo_gerade_positive_secondary
-      write(file_unit, '(4x, a)') 'nr_mo_ungerade'
-      write(file_unit, '(4x, i6)') nr_mo_ungerade
       write(file_unit, '(4x, a)') 'nr_mo_ungerade_negative_secondary'
       write(file_unit, '(4x, i6)') nr_mo_ungerade_negative_secondary
       write(file_unit, '(4x, a)') 'nr_mo_ungerade_positive_inactive'
       write(file_unit, '(4x, i6)') nr_mo_ungerade_positive_inactive
+      write(file_unit, '(4x, a)') 'nr_mo_ungerade_positive_active'
+      write(file_unit, '(4x, i6)') nr_mo_ungerade_positive_active
       write(file_unit, '(4x, a)') 'nr_mo_ungerade_positive_secondary'
       write(file_unit, '(4x, i6)') nr_mo_ungerade_positive_secondary
-      write(file_unit, '(4x, a)') 'nr_df_open'
-      write(file_unit, '(4x, i6)') nr_df_open
-      if (nr_df_open > 0) then
-         do i = 1, nr_df_open
+      write(file_unit, '(4x, a)') 'nr_open_shells'
+      write(file_unit, '(4x, i6)') nr_open_shells
+      if (nr_open_shells > 0) then
+         do i = 1, nr_open_shells
             write(file_unit, '(4x, i6, e26.16)') i, df(i)
          end do
       end if
+
+      nr_mo_gerade = nr_mo_gerade_negative_secondary &
+                   + nr_mo_gerade_positive_inactive  &
+                   + nr_mo_gerade_positive_active    &
+                   + nr_mo_gerade_positive_secondary
+      nr_mo_ungerade = nr_mo_ungerade_negative_secondary &
+                     + nr_mo_ungerade_positive_inactive  &
+                     + nr_mo_ungerade_positive_active    &
+                     + nr_mo_ungerade_positive_secondary
+      nr_mo = nr_mo_gerade + nr_mo_ungerade
 
       if (mo_eigenvalues_available) then
          write(file_unit, '(4x, a)') 'mo_eigenvalues'
@@ -262,40 +261,45 @@ contains
          rewind(file_unit)
 
          read(file_unit, *)
-         read(file_unit, *) nr_open_shells
-         read(file_unit, *)
          read(file_unit, *) nr_electrons_inactive
          read(file_unit, *)
          read(file_unit, *) nr_electrons_active
-         read(file_unit, *)
-         read(file_unit, *) nr_electrons_total
-         read(file_unit, *)
-         read(file_unit, *) nr_mo
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_gerade
          read(file_unit, *)
          read(file_unit, *) nr_mo_gerade_negative_secondary
          read(file_unit, *)
          read(file_unit, *) nr_mo_gerade_positive_inactive
          read(file_unit, *)
-         read(file_unit, *) nr_mo_gerade_positive_secondary
+         read(file_unit, *) nr_mo_gerade_positive_active
          read(file_unit, *)
-         read(file_unit, *) nr_mo_ungerade
+         read(file_unit, *) nr_mo_gerade_positive_secondary
          read(file_unit, *)
          read(file_unit, *) nr_mo_ungerade_negative_secondary
          read(file_unit, *)
          read(file_unit, *) nr_mo_ungerade_positive_inactive
          read(file_unit, *)
+         read(file_unit, *) nr_mo_ungerade_positive_active
+         read(file_unit, *)
          read(file_unit, *) nr_mo_ungerade_positive_secondary
          read(file_unit, *)
-         read(file_unit, *) nr_df_open
-         if (nr_df_open > 0) then
-            allocate(df_open(nr_df_open))
+         read(file_unit, *) nr_open_shells
+         if (nr_open_shells > 0) then
+            allocate(df_open(nr_open_shells))
             df_open = 0.0d0
-            do i = 1, nr_df_open
+            do i = 1, nr_open_shells
                read(file_unit, *) idummy, df_open(i)
             end do
          end if
+
+         nr_electrons = nr_electrons_inactive + nr_electrons_active
+         nr_mo_gerade = nr_mo_gerade_negative_secondary &
+                      + nr_mo_gerade_positive_inactive  &
+                      + nr_mo_gerade_positive_active    &
+                      + nr_mo_gerade_positive_secondary
+         nr_mo_ungerade = nr_mo_ungerade_negative_secondary &
+                        + nr_mo_ungerade_positive_inactive  &
+                        + nr_mo_ungerade_positive_active    &
+                        + nr_mo_ungerade_positive_secondary
+         nr_mo = nr_mo_gerade + nr_mo_ungerade
 
          rewind(file_unit)
          do while (.true.)
@@ -338,26 +342,27 @@ contains
 
          call xc_mpi_bcast(interface_mo_set                  )
 
-         call xc_mpi_bcast(nr_open_shells                    )
          call xc_mpi_bcast(nr_electrons_inactive             )
          call xc_mpi_bcast(nr_electrons_active               )
-         call xc_mpi_bcast(nr_electrons_total                )
+         call xc_mpi_bcast(nr_electrons                      )
          call xc_mpi_bcast(nr_mo                             )
          call xc_mpi_bcast(nr_mo_gerade                      )
          call xc_mpi_bcast(nr_mo_gerade_negative_secondary   )
          call xc_mpi_bcast(nr_mo_gerade_positive_inactive    )
+         call xc_mpi_bcast(nr_mo_gerade_positive_active    )
          call xc_mpi_bcast(nr_mo_gerade_positive_secondary   )
          call xc_mpi_bcast(nr_mo_ungerade                    )
          call xc_mpi_bcast(nr_mo_ungerade_negative_secondary )
          call xc_mpi_bcast(nr_mo_ungerade_positive_inactive  )
+         call xc_mpi_bcast(nr_mo_ungerade_positive_active  )
          call xc_mpi_bcast(nr_mo_ungerade_positive_secondary )
-         call xc_mpi_bcast(nr_df_open                        )
+         call xc_mpi_bcast(nr_open_shells                        )
          call xc_mpi_bcast(mo_eigenvalues_available          )
          call xc_mpi_bcast(mo_coef_available                 )
 
-         if (nr_df_open > 0) then
+         if (nr_open_shells > 0) then
             if (.not. xc_mpi_is_master()) then
-               allocate(df_open(nr_df_open))
+               allocate(df_open(nr_open_shells))
             end if
             call xc_mpi_bcast(df_open)
          end if

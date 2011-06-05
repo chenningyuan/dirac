@@ -9,7 +9,7 @@ program main
 
    real(8), allocatable :: dmat(:, :)
    real(8), allocatable :: fmat(:, :, :, :)
-   real(8), allocatable :: fmat_reference(:, :, :, :)
+   real(8), allocatable :: fmat_reference(:, :)
    integer, parameter   :: unit_grid = 44
 
    call read_input()
@@ -22,9 +22,6 @@ program main
 
    allocate(fmat(nr_ao, nr_ao, nr_quaternion_blocks, 1))
    fmat = 0.0d0
-
-   allocate(fmat_reference(nr_ao, nr_ao, nr_quaternion_blocks, 1))
-   fmat_reference = 0.0d0
 
    call matrix_from_file('xc_dmat0', nr_ao, dmat)
 
@@ -47,12 +44,37 @@ program main
 
    deallocate(dmat)
 
-!  call matrix_from_file('xc_fmat', fmat_reference)
+   allocate(fmat_reference(nr_ao, nr_ao))
+   call matrix_from_file('xc_fmat', nr_ao, fmat_reference)
+   call compare_matrices(nr_ao, fmat, fmat_reference)
 
    deallocate(fmat)
    deallocate(fmat_reference)
 
 contains
+
+   subroutine compare_matrices(nr_ao, mat, mat_reference)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: nr_ao
+      real(8), intent(in) :: mat(*)
+      real(8), intent(in) :: mat_reference(*)
+!     --------------------------------------------------------------------------
+      integer             :: i
+      real(8)             :: diff
+      real(8)             :: max_diff
+!     --------------------------------------------------------------------------
+
+      max_diff = 0.0d0
+      do i = 1, nr_ao*nr_ao
+         diff = abs(mat(i) - mat_reference(i))
+         if (diff > max_diff) then
+            max_diff = diff
+         end if
+      end do
+      print *, 'compare matrices: largest deviation =', max_diff
+
+   end subroutine
 
    subroutine read_input()
 

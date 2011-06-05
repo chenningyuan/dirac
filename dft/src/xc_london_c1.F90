@@ -43,6 +43,7 @@ module xc_london_c1
 
    use memory_allocator
    use interface_ao
+   use ao_eval
 
    implicit none
 
@@ -108,7 +109,6 @@ contains
                                   nz,      &
                                   fmat,    &
                                   ao,      &
-                                  ao_r,    &
                                   r)
 
 !     --------------------------------------------------------------------------
@@ -118,8 +118,7 @@ contains
       integer, intent(in)    :: mat_dim
       integer, intent(in)    :: nz
       real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-      real(8), intent(in)    :: ao(mat_dim)
-      real(8), intent(in)    :: ao_r(mat_dim, 3)
+      real(8), intent(in)    :: ao(*)
       real(8), intent(in)    :: r(3)
 !     --------------------------------------------------------------------------
       integer                :: k, l, bxyz, gxyz
@@ -134,7 +133,8 @@ contains
 
             omega = ao(k)*ao(l)
             do gxyz = 1, 3
-               nabla_omega(gxyz) = ao(k)*ao_r(l, gxyz) + ao_r(k, gxyz)*ao(l)
+               nabla_omega(gxyz) = ao(k)*ao(ao_off_g1_m0(gxyz, 0) + l) &
+                                 + ao(l)*ao(ao_off_g1_m0(gxyz, 0) + k)
             end do
 
             gnn_kl = gn_0(1)*nabla_omega(1) &
@@ -209,7 +209,6 @@ contains
                                             nz,      &
                                             dmat,    &
                                             ao,      &
-                                            ao_r,    &
                                             r,       &
                                             gn_0,    &
                                             n_b,     &
@@ -220,8 +219,7 @@ contains
       integer, intent(in)  :: mat_dim
       integer, intent(in)  :: nz
       real(8), intent(in)  :: dmat(mat_dim, mat_dim)
-      real(8), intent(in)  :: ao(mat_dim)
-      real(8), intent(in)  :: ao_r(mat_dim, 3)
+      real(8), intent(in)  :: ao(*)
       real(8), intent(in)  :: r(3)
       real(8), intent(in)  :: gn_0(3)
       real(8), intent(out) :: n_b(3)
@@ -244,7 +242,8 @@ contains
             f = -1.0d0*dmat(l, k)
             omega = ao(k)*ao(l)*f
             do gxyz = 1, 3
-               nabla_omega(gxyz) = (ao(k)*ao_r(l, gxyz) + ao_r(k, gxyz)*ao(l))*f
+               nabla_omega(gxyz) = ao(k)*ao(ao_off_g1_m0(gxyz, 0) + l) &
+                                 + ao(l)*ao(ao_off_g1_m0(gxyz, 0) + k)
             end do
 
             gnn_kl = gn_0(1)*nabla_omega(1) &

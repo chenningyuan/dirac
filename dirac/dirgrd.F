@@ -295,15 +295,32 @@ c        ... Calculate and add correction.
 #ifdef VAR_MPI
          if (parcal) call dirac_parctl(4)
 #endif
+!fixme: there is some issue with one-step - investigate later
+!       not correct for gga
 !        in one go integrate xc potential
 !        and xc contribution to molecular gradient
+!        call xc_integrator(xc_mat_dim           = ntbas(0),
+!    &                      xc_nz                = nz,
+!    &                      xc_dmat_0            = dmat,
+!    &                      xc_nr_dmat           = 0, 
+!    &                      xc_nr_fmat           = 1,
+!    &                      xc_fmat              = work(kh1ao),
+!    &                      xc_do_potential      = .true.,
+!    &                      xc_nr_atoms          = nucdep, 
+!    &                      xc_property_gradient = gradxc,
+!    &                      xc_do_geo_0          = .true.)
          call xc_integrator(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
      &                      xc_dmat_0            = dmat,
      &                      xc_nr_dmat           = 0, 
      &                      xc_nr_fmat           = 1,
      &                      xc_fmat              = work(kh1ao),
-     &                      xc_do_potential      = .true.,
+     &                      xc_do_potential      = .true.)
+         call xc_integrator(xc_mat_dim           = ntbas(0),
+     &                      xc_nz                = nz,
+     &                      xc_dmat_0            = dmat,
+     &                      xc_nr_dmat           = 0, 
+     &                      xc_nr_fmat           = 0,
      &                      xc_nr_atoms          = nucdep, 
      &                      xc_property_gradient = gradxc,
      &                      xc_do_geo_0          = .true.)

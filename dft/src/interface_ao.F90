@@ -22,14 +22,6 @@
 !                            etc     ...
 !  - ireps go from 0 to nr_boson_ireps-1
 
-!    todo and known issues
-!    ---------------------
-!  - remove shell stabilizers and refer to center stabilizers
-!  - move all symmetry related info to *** symmetry, also center degeneracy and
-!    sym independent nuclei
-!  - make it possible to read from interface_ao without *** symmetry assuming C1
-!  - remove dependency on dft_cfg_betasigma
-
 module interface_ao
 
    implicit none
@@ -49,7 +41,6 @@ module interface_ao
    integer, public :: ao_off(0:7, 2)
    integer, public :: ao_off_hermit(8, 2)
    integer, public :: ao_q(0:7, 2)
-   integer, public :: c2s_index(l_max)
    integer, public :: iq(0:3)
    integer, public :: irep_of_axes(3)
    integer, public :: irep_of_rotations(3)
@@ -73,8 +64,7 @@ module interface_ao
    integer, public :: nr_shells_large
    integer, public :: nr_shells_small
    integer, public :: nr_so_ao
-   integer, public :: nr_sym_dependent_centers
-   integer, public :: nr_sym_independent_centers
+   integer, public :: nr_centers
    integer, public :: pq_to_uq(4, 0:7)
    integer, public :: uq_to_pq(4, 0:7)
    logical, public :: basis_is_spherical
@@ -90,24 +80,24 @@ module interface_ao
    integer, allocatable, public :: shell_stabilizing_irep(:)
    integer, allocatable, public :: spherical_deg(:)
    integer, allocatable, public :: spherical_off(:)
-   integer, allocatable, public :: sym_independent_center_deg(:)
+   integer, allocatable, public :: center_deg(:)
+   integer, allocatable, public :: center_stabilizing_irep(:)
    integer, allocatable, public :: ao_center(:)
    real(8), allocatable, public :: ao_center_xyz(:, :)
    real(8), allocatable, public :: ao_distance(:, :, :)
-   real(8), allocatable, public :: c2s_mat(:)
    real(8), allocatable, public :: contraction_coef(:, :)
    real(8), allocatable, public :: f_so_ao(:)
    real(8), allocatable, public :: primitive_exp(:, :)
-   real(8), allocatable, public :: sym_dependent_center_charge(:)
-   real(8), allocatable, public :: sym_dependent_center_xyz(:, :)
-   real(8), allocatable, public :: sym_independent_center_charge(:)
-   real(8), allocatable, public :: sym_independent_center_xyz(:, :)
+   real(8), allocatable, public :: center_charge(:)
+   real(8), allocatable, public :: center_xyz(:, :)
 
    private
 
    character(*), parameter :: file_name = 'interface_ao'
    integer,      parameter :: file_unit = 137
    logical                 :: file_exists
+   integer                 :: c2s_index(l_max)
+   real(8), allocatable    :: c2s_mat(:)
 
 contains
 
@@ -120,7 +110,6 @@ contains
       ao_off                     = 0
       ao_off_hermit              = 0
       ao_q                       = 0
-      c2s_index                  = 0
       iq                         = 0
       irep_of_axes               = 0
       irep_of_rotations          = 0
@@ -144,8 +133,7 @@ contains
       nr_shells_large            = 0
       nr_shells_small            = 0
       nr_so_ao                   = 0
-      nr_sym_dependent_centers   = 0
-      nr_sym_independent_centers = 0
+      nr_centers = 0
       pq_to_uq                   = 0
       uq_to_pq                   = 0
       basis_is_spherical         = .false.
@@ -161,18 +149,16 @@ contains
       if (allocated(shell_stabilizing_irep        )) deallocate(shell_stabilizing_irep        )
       if (allocated(spherical_deg                 )) deallocate(spherical_deg                 )
       if (allocated(spherical_off                 )) deallocate(spherical_off                 )
-      if (allocated(sym_independent_center_deg    )) deallocate(sym_independent_center_deg    )
+      if (allocated(center_deg    )) deallocate(center_deg    )
+      if (allocated(center_stabilizing_irep    )) deallocate(center_stabilizing_irep    )
       if (allocated(ao_center                     )) deallocate(ao_center                     )
       if (allocated(ao_center_xyz                 )) deallocate(ao_center_xyz                 )
       if (allocated(ao_distance                   )) deallocate(ao_distance                   )
-      if (allocated(c2s_mat                       )) deallocate(c2s_mat                       )
       if (allocated(contraction_coef              )) deallocate(contraction_coef              )
       if (allocated(f_so_ao                       )) deallocate(f_so_ao                       )
       if (allocated(primitive_exp                 )) deallocate(primitive_exp                 )
-      if (allocated(sym_dependent_center_charge   )) deallocate(sym_dependent_center_charge   )
-      if (allocated(sym_dependent_center_xyz      )) deallocate(sym_dependent_center_xyz      )
-      if (allocated(sym_independent_center_charge )) deallocate(sym_independent_center_charge )
-      if (allocated(sym_independent_center_xyz    )) deallocate(sym_independent_center_xyz    )
+      if (allocated(center_charge )) deallocate(center_charge )
+      if (allocated(center_xyz    )) deallocate(center_xyz    )
 
    end subroutine
 
@@ -225,11 +211,9 @@ contains
 
       allocate(l_quantum_nr(nr_shells))
       allocate(shell_center(nr_shells))
-      allocate(shell_stabilizing_irep(nr_shells))
       do ishell = 1, nr_shells
          l_quantum_nr(ishell)           = nhkt(ishell) - 1
          shell_center(ishell)           = ncent(ishell)
-         shell_stabilizing_irep(ishell) = istbao(ishell)
       end do
 
       allocate(nr_primitives(nr_shells))
@@ -262,42 +246,15 @@ contains
 
       write(file_unit, '(a)') '*** geometry'
 
-      write(file_unit, '(4x, a)') 'nr_sym_independent_centers'
+      write(file_unit, '(4x, a)') 'nr_centers'
       write(file_unit, '(4x, i6)') nucind
 
-      write(file_unit, '(4x, a)') 'charges_and_coordinates_independent'
+      write(file_unit, '(4x, a)') 'charges_and_coordinates'
       do icent = 1, nucind
          write(file_unit, '(4f27.16)') charge(icent),  &
                                        cord(1, icent), &
                                        cord(2, icent), &
                                        cord(3, icent)
-      end do
-
-      write(file_unit, '(4x, a)') 'degeneracy_of_center'
-      do icent = 1, nucind
-         write(file_unit, '(4x, 2i6)') icent, nucdeg(icent)
-      end do
-
-      write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
-      write(file_unit, '(4x, i6)') nucdep
-
-      write(file_unit, '(4x, a)') 'charges_and_coordinates_dependent'
-      do icent = 1, nucind
-         if (mult(istbnu(icent)) == 1) then
-               write(file_unit, '(4f27.16)') charge(icent),  &
-                                             cord(1, icent), &
-                                             cord(2, icent), &
-                                             cord(3, icent)
-         else
-            do irep = 0, nr_boson_ireps - 1
-               if (iand(irep, istbnu(icent)) == 0) then
-                  write(file_unit, '(4f27.16)') charge(icent),                               &
-                                                cord(1, icent)*pt(iand(isymax(1, 1), irep)), &
-                                                cord(2, icent)*pt(iand(isymax(2, 1), irep)), &
-                                                cord(3, icent)*pt(iand(isymax(3, 1), irep))
-               end if
-            end do
-         end if
       end do
 
       write(file_unit, '(a)') '*** basis'
@@ -311,6 +268,9 @@ contains
       write(file_unit, '(4x, a)') 'is_spherical'
       write(file_unit, '(4x, l6)') basis_is_spherical
 
+      write(file_unit, '(4x, a)') 'algebra'
+      write(file_unit, '(4x, i6)') nz
+
       use_only_large = .false.
       if (mc == 1) then
          use_only_large = .true.
@@ -321,11 +281,10 @@ contains
       write(file_unit, '(4x, a)') 'nr_primitive_exp'
       write(file_unit, '(4x, i6)') sum(nr_primitives)
 
-      write(file_unit, '(4x, 5a6, 2a26)') '# cent', &
+      write(file_unit, '(4x, 4a6, 2a26)') '# cent', &
                                           'L/S',    &
                                           'shell',  &
                                           'l',      &
-                                          'irep',   &
                                           'prim',   &
                                           'coef'
       do ishell = 1, kmax
@@ -335,82 +294,83 @@ contains
             ic = 1
          end if
          do i = 1, nr_primitives(ishell)
-            write(file_unit, '(4x, i6, a6, 3i6, 2e26.16)') shell_center(ishell),           &
+            write(file_unit, '(4x, i6, a6, 2i6, 2e26.16)') shell_center(ishell),           &
                                                            ls(ic),                         &
                                                            ishell,                         &
                                                            l_quantum_nr(ishell),           &
-                                                           shell_stabilizing_irep(ishell), &
                                                            primitive_exp(ishell, i),       &
                                                            contraction_coef(ishell, i)
          end do
       end do
       deallocate(nr_primitives)
 
-      write(file_unit, '(a)') '*** symmetry'
+      if (nr_boson_ireps > 1) then
+         write(file_unit, '(a)') '*** symmetry'
 
-      write(file_unit, '(4x, a)') 'nr_boson_ireps'
-      write(file_unit, '(4x, i6)') nr_boson_ireps
+         write(file_unit, '(4x, a)') 'center_degeneracy_and_stabilizing_irep'
+         do icent = 1, nucind
+            write(file_unit, '(4x, 3i6)') icent, nucdeg(icent), istbnu(icent)
+         end do
 
-      write(file_unit, '(4x, a)') 'nr_fermion_coreps'
-      write(file_unit, '(4x, i6)') nr_fermion_coreps
+         write(file_unit, '(4x, a)') 'nr_boson_ireps'
+         write(file_unit, '(4x, i6)') nr_boson_ireps
 
-      write(file_unit, '(4x, a)') 'boson_to_fermion_mapping'
-      do irep = 0, nr_boson_ireps - 1
-         write(file_unit, '(4x, 2i8)') irep, jbtof(irep, 1)
-      end do
+         write(file_unit, '(4x, a)') 'nr_fermion_coreps'
+         write(file_unit, '(4x, i6)') nr_fermion_coreps
 
-      write(file_unit, '(4x, a)') 'irep_of_axes'
-      write(file_unit, '(4x, i6)') isymax(1, 1)
-      write(file_unit, '(4x, i6)') isymax(2, 1)
-      write(file_unit, '(4x, i6)') isymax(3, 1)
+         write(file_unit, '(4x, a)') 'irep_of_axes'
+         write(file_unit, '(4x, i6)') isymax(1, 1)
+         write(file_unit, '(4x, i6)') isymax(2, 1)
+         write(file_unit, '(4x, i6)') isymax(3, 1)
 
-      write(file_unit, '(4x, a)') 'irep_of_rotations'
-      write(file_unit, '(4x, i6)') isymax(1, 2)
-      write(file_unit, '(4x, i6)') isymax(2, 2)
-      write(file_unit, '(4x, i6)') isymax(3, 2)
+         write(file_unit, '(4x, a)') 'irep_of_rotations'
+         write(file_unit, '(4x, i6)') isymax(1, 2)
+         write(file_unit, '(4x, i6)') isymax(2, 2)
+         write(file_unit, '(4x, i6)') isymax(3, 2)
 
-      write(file_unit, '(4x, 11a8)') '# irep',  &
-                                     'nr-L',    &
-                                     'nr-S',    &
-                                     'D-off-L', &
-                                     'D-off-S', &
-                                     'jqbas-L', &
-                                     'jqbas-S', &
-                                     'jbtof-L', &
-                                     'jbtof-S', &
-                                     'H-off-L', &
-                                     'H-off-S'
-      do irep = 0, nr_boson_ireps - 1
-         write(file_unit, '(4x, 11i8)') irep,            &
-                                        nbbas(irep, 1),  &
-                                        nbbas(irep, 2),  &
-                                        ibbas(irep, 1),  &
-                                        ibbas(irep, 2),  &
-                                        jqbas(irep, 1),  &
-                                        jqbas(irep, 2),  &
-                                        jbtof(irep, 1),  &
-                                        jbtof(irep, 2),  &
-                                        icos(irep+1, 1), &
-                                        icos(irep+1, 2)
-      end do
+         write(file_unit, '(4x, a6, 10a8)') '# irep',  &
+                                            'nr-L',    &
+                                            'nr-S',    &
+                                            'D-off-L', &
+                                            'D-off-S', &
+                                            'jqbas-L', &
+                                            'jqbas-S', &
+                                            'jbtof-L', &
+                                            'jbtof-S', &
+                                            'H-off-L', &
+                                            'H-off-S'
+         do irep = 0, nr_boson_ireps - 1
+            write(file_unit, '(4x, i6, 10i8)') irep,            &
+                                               nbbas(irep, 1),  &
+                                               nbbas(irep, 2),  &
+                                               ibbas(irep, 1),  &
+                                               ibbas(irep, 2),  &
+                                               jqbas(irep, 1),  &
+                                               jqbas(irep, 2),  &
+                                               jbtof(irep, 1),  &
+                                               jbtof(irep, 2),  &
+                                               icos(irep+1, 1), &
+                                               icos(irep+1, 2)
+         end do
 
-      pq_to_uq = ipqtoq
-      uq_to_pq = iqtopq
-      write(file_unit, '(4x, a)') 'quaternion_packing'
-      do i = 1, 4
-         write(file_unit, '(8x, 8i2)') pq_to_uq(i, 0:7)
-      end do
-      do i = 1, 4
-         write(file_unit, '(8x, 8i2)') uq_to_pq(i, 0:7)
-      end do
+         pq_to_uq = ipqtoq
+         uq_to_pq = iqtopq
+         write(file_unit, '(4x, a)') 'quaternion_packing'
+         do i = 1, 4
+            write(file_unit, '(8x, 8i2)') pq_to_uq(i, 0:7)
+         end do
+         do i = 1, 4
+            write(file_unit, '(8x, 8i2)') uq_to_pq(i, 0:7)
+         end do
 
-      iq(0) = 1
-      do i = 1, 3
-         iq(i) = jm4pos(4 - i)
-         iq(i) = iqtopq(iq(i), isymax(i, 2))
-      end do
-      write(file_unit, '(4x, a)') 'quaternion_units'
-      write(file_unit, '(8x, 4i2)') iq(0:3)
+         iq(0) = 1
+         do i = 1, 3
+            iq(i) = jm4pos(4 - i)
+            iq(i) = iqtopq(iq(i), isymax(i, 2))
+         end do
+         write(file_unit, '(4x, a)') 'quaternion_units'
+         write(file_unit, '(8x, 4i2)') iq(0:3)
+      end if
 
       close(file_unit, status = 'keep')
 
@@ -421,7 +381,7 @@ contains
 
    subroutine interface_ao_read(use_mpi_if_possible)
 
-      use dft_cfg
+      use sigma_prefactor_setting
       use xc_mpi
 
 !     --------------------------------------------------------------------------
@@ -441,16 +401,16 @@ contains
       integer              :: iao, iso, iso_dirac_sorting
       integer              :: ishell, nshell
       integer              :: nround
-      integer              :: size_c2s_mat
       integer              :: ixyz
+      integer              :: nl, nt, nc, ns, kc, ks, oc, os
       integer              :: lssl_ic(2) = (/2, 1/)
       real(8)              :: f, px, py, pz
       integer, allocatable :: isymao(:, :)
       integer, allocatable :: irepao(:)
       integer, allocatable :: ipind(:)
       integer, allocatable :: kstart(:)
+      real(8), allocatable :: cs_mat(:, :)
       real(8), parameter   :: bitstring_parity(0:7) = (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)
-      integer              :: boson_to_fermion_mapping(0:7)
 !     --------------------------------------------------------------------------
 
       call interface_ao_clear()
@@ -476,41 +436,28 @@ contains
 
             if (word_contains(line, '*** geometry')) then
                read(file_unit, *)
-               read(file_unit, *) nr_sym_independent_centers
+               read(file_unit, *) nr_centers
                read(file_unit, *)
-               allocate(sym_independent_center_charge(nr_sym_independent_centers))
-               allocate(sym_independent_center_xyz(nr_sym_independent_centers, 3))
-               do i = 1, nr_sym_independent_centers
-                  read(file_unit, *) sym_independent_center_charge(i), &
-                                     sym_independent_center_xyz(i, 1:3)
-               end do
-               read(file_unit, *)
-               allocate(sym_independent_center_deg(nr_sym_independent_centers))
-               do i = 1, nr_sym_independent_centers
-                  read(file_unit, *) idummy, sym_independent_center_deg(i)
-               end do
-               read(file_unit, *)
-               read(file_unit, *) nr_sym_dependent_centers
-               read(file_unit, *)
-               allocate(sym_dependent_center_charge(nr_sym_dependent_centers))
-               allocate(sym_dependent_center_xyz(nr_sym_dependent_centers, 3))
-               do i = 1, nr_sym_dependent_centers
-                  read(file_unit, *) sym_dependent_center_charge(i), &
-                                     sym_dependent_center_xyz(i, 1:3)
+               allocate(center_charge(nr_centers))
+               allocate(center_xyz(nr_centers, 3))
+               do i = 1, nr_centers
+                  read(file_unit, *) center_charge(i), &
+                                     center_xyz(i, 1:3)
                end do
             end if
 
             if (word_contains(line, '*** symmetry')) then
                symmetry_info_found = .true.
                read(file_unit, *)
+               allocate(center_deg(nr_centers))
+               allocate(center_stabilizing_irep(nr_centers))
+               do i = 1, nr_centers
+                  read(file_unit, *) idummy, center_deg(i), center_stabilizing_irep(i)
+               end do
+               read(file_unit, *)
                read(file_unit, *) nr_boson_ireps
                read(file_unit, *)
                read(file_unit, *) nr_fermion_coreps
-               read(file_unit, *)
-               boson_to_fermion_mapping = 1
-               do irep = 0, nr_boson_ireps - 1
-                  read(file_unit, *) idummy, boson_to_fermion_mapping(irep)
-               end do
                read(file_unit, *)
                read(file_unit, *) irep_of_axes(1:3)
                read(file_unit, *)
@@ -538,12 +485,13 @@ contains
                end do
                read(file_unit, *)
                read(file_unit, *) iq(0:3)
-               nr_quaternion_blocks = maxval(iq)
             end if
 
             if (word_contains(line, '*** basis')) then
                read(file_unit, *)
                read(file_unit, *) basis_is_spherical
+               read(file_unit, *)
+               read(file_unit, *) nr_quaternion_blocks
                read(file_unit, *)
                read(file_unit, *) use_only_large
                read(file_unit, *)
@@ -555,7 +503,6 @@ contains
                allocate(shell_center(sum_nr_primitives))
                allocate(l_quantum_nr(sum_nr_primitives))
                allocate(nr_nonzero_contraction_coefs(sum_nr_primitives))
-               allocate(shell_stabilizing_irep(sum_nr_primitives))
                allocate(cartesian_deg(sum_nr_primitives))
                allocate(cartesian_off(sum_nr_primitives))
                allocate(spherical_deg(sum_nr_primitives))
@@ -574,14 +521,12 @@ contains
                                      ch,     &
                                      ishell, &
                                      l,      &
-                                     irep,   &
                                      prim,   &
                                      coef
                   if (ishell > k) then
                      j = 1
                      shell_center(ishell)           = cent
                      l_quantum_nr(ishell)           = l
-                     shell_stabilizing_irep(ishell) = irep
                      cartesian_deg(ishell) = (l+1)*(l+2)/2
                      cartesian_off(ishell) = ioff_c
                      ioff_c = ioff_c + cartesian_deg(ishell)
@@ -608,6 +553,71 @@ contains
 1        continue
 
          close(file_unit, status = 'keep')
+
+         nr_shells = nr_shells_large + nr_shells_small
+
+         if (.not. symmetry_info_found) then
+            allocate(center_deg(nr_centers))
+            allocate(center_stabilizing_irep(nr_centers))
+            center_deg              = 1
+            center_stabilizing_irep = 0
+
+            nr_boson_ireps    = 1
+            nr_fermion_coreps = 1
+            irep_of_axes      = 0
+            irep_of_rotations = 0
+
+            ao_nr            = 0
+            ao_off           = 0
+            ao_q             = 0
+            ao_fermion_corep = 0
+            ao_off_hermit    = 0
+
+            nl = 0
+            do ishell = 1, nr_shells_large
+               if (basis_is_spherical) then
+                  deg = spherical_deg(ishell)
+               else
+                  deg = cartesian_deg(ishell)
+               end if
+               nl = nl + deg
+            end do
+
+            nt = 0
+            do ishell = 1, nr_shells
+               if (basis_is_spherical) then
+                  deg = spherical_deg(ishell)
+               else
+                  deg = cartesian_deg(ishell)
+               end if
+               nt = nt + deg
+            end do
+
+            ao_nr(0, 1) = nl
+            ao_nr(0, 2) = nt - nl
+            ao_off(0, 1) = 0
+            ao_off(0, 2) = nl
+            ao_q(0, 1) = 1
+            ao_q(0, 2) = 1
+            ao_fermion_corep(0, 1) = 1
+            ao_fermion_corep(0, 2) = 1
+            ao_off_hermit(1, 1) = 0
+            ao_off_hermit(1, 2) = nl
+
+            pq_to_uq = 0
+            do i = 1, 4
+               pq_to_uq(i, 0) = i
+            end do
+            uq_to_pq = 0
+            do i = 1, 4
+               uq_to_pq(i, 0) = i
+            end do
+
+            iq(0) = 1
+            iq(1) = 4
+            iq(2) = 3
+            iq(3) = 2
+         end if
 
          if (use_only_large) then
             mc = 1
@@ -640,9 +650,8 @@ contains
                         llss_nr_ao(2, i, jxyz, irep) = nr2
                         llss_st_ao(2, i, jxyz, irep) = ao_off(irep2, ic) + 1
                         llss_prefactor(i, jxyz, irep) = 1.0d0
-!                                           fixme ugly dependency
-                        if ((ic == 2) .and. dft_cfg_betasigma) then
-                           llss_prefactor(i, jxyz, irep) = -1.0d0
+                        if (ic == 2) then
+                           llss_prefactor(i, jxyz, irep) = sigma_prefactor
                         end if
                      end if
                   end do
@@ -707,7 +716,10 @@ contains
             end do
          end if
 
-         nr_shells = nr_shells_large + nr_shells_small
+         allocate(shell_stabilizing_irep(nr_shells))
+         do ishell = 1, nr_shells
+            shell_stabilizing_irep(ishell) = center_stabilizing_irep(shell_center(ishell))
+         end do
 
          nr_ao_cartesian = 0
          nr_ao_spherical = 0
@@ -759,8 +771,43 @@ contains
             else
                deg = cartesian_deg(ishell-1)
             end if
-            kstart(ishell) = kstart(ishell - 1) + sym_independent_center_deg(shell_center(ishell-1))*deg
+            kstart(ishell) = kstart(ishell - 1) + center_deg(shell_center(ishell-1))*deg
          end do
+
+         call setup_c2s_mat()
+
+         allocate(cs_mat(nr_ao_cartesian, nr_ao))
+         cs_mat = 0.0d0
+         oc = 0
+         os = 0
+         do ishell = 1, nr_shells
+            do irep = 0, nr_boson_ireps - 1
+               if (iand(irep, shell_stabilizing_irep(ishell)) == 0) then
+                  if (basis_is_spherical) then
+                     if (l_quantum_nr(ishell) > 1) then
+                        k = c2s_index(l_quantum_nr(ishell))
+                        do kc = 1, cartesian_deg(ishell)
+                           do ks = 1, spherical_deg(ishell)
+                              cs_mat(oc + kc, os + ks) = c2s_mat(k)
+                              k = k + 1
+                           end do
+                        end do
+                     else
+                        do kc = 1, cartesian_deg(ishell)
+                           cs_mat(oc + kc, os + kc) = 1.0d0
+                        end do
+                     end if
+                  else
+                     do kc = 1, cartesian_deg(ishell)
+                        cs_mat(oc + kc, oc + kc) = 1.0d0
+                     end do
+                  end if
+                  oc = oc + cartesian_deg(ishell)
+                  os = os + spherical_deg(ishell)
+               end if
+            end do
+         end do
+         deallocate(c2s_mat)
 
          nr_so_ao = 0
          do nround = 1, 2
@@ -805,12 +852,16 @@ contains
 
                            f = bitstring_parity(iand(isym, ieor(irep, isymao(l_quantum_nr(ishell) + 1, nshell))))
 
-                           nr_so_ao = nr_so_ao + 1
-                           if (nround == 2) then
-                              i_so_ao(1, nr_so_ao) = iso_dirac_sorting
-                              i_so_ao(2, nr_so_ao) = iao
-                              f_so_ao(nr_so_ao)    = f
-                           end if
+                           do kc = 1, nr_ao_cartesian
+                              if (dabs(cs_mat(kc, iao)) > 0.0d0) then
+                                 nr_so_ao = nr_so_ao + 1
+                                 if (nround == 2) then
+                                    i_so_ao(1, nr_so_ao) = iso_dirac_sorting
+                                    i_so_ao(2, nr_so_ao) = kc
+                                    f_so_ao(nr_so_ao)    = f*cs_mat(kc, iao)
+                                 end if
+                              end if
+                           end do
 
                            if (basis_is_spherical) then
                               iao = iao + spherical_deg(ishell)
@@ -826,6 +877,7 @@ contains
             end do
          end do
 
+         deallocate(cs_mat)
          deallocate(isymao)
          deallocate(ipind)
          deallocate(kstart)
@@ -836,7 +888,7 @@ contains
             nr_ao_gerade = nr_ao
          else
             do irep = 0, nr_boson_ireps - 1
-               select case (boson_to_fermion_mapping(irep))
+               select case (ao_fermion_corep(irep, 1))
                   case (1)
                      nr_ao_gerade = nr_ao_gerade + ao_nr(irep, 1)
                      if (nr_shells_small > 0) then
@@ -851,13 +903,6 @@ contains
             end do
          end if
 
-         if (.not. symmetry_info_found) then
-!           fixme
-         end if
-
-         call setup_c2s_mat()
-         size_c2s_mat = size(c2s_mat)
-
          allocate(ao_center(nr_ao))
          allocate(ao_center_xyz(nr_ao, 3))
          allocate(ao_distance(nr_ao, nr_ao, 3))
@@ -871,9 +916,9 @@ contains
             do irep = 0, nr_boson_ireps - 1
                if (iand(irep, shell_stabilizing_irep(ishell)) == 0) then
 
-                  px = bitstring_parity(iand(irep_of_axes(1), irep))*sym_dependent_center_xyz(shell_center(ishell), 1)
-                  py = bitstring_parity(iand(irep_of_axes(2), irep))*sym_dependent_center_xyz(shell_center(ishell), 2)
-                  pz = bitstring_parity(iand(irep_of_axes(3), irep))*sym_dependent_center_xyz(shell_center(ishell), 3)
+                  px = bitstring_parity(iand(irep_of_axes(1), irep))*center_xyz(shell_center(ishell), 1)
+                  py = bitstring_parity(iand(irep_of_axes(2), irep))*center_xyz(shell_center(ishell), 2)
+                  pz = bitstring_parity(iand(irep_of_axes(3), irep))*center_xyz(shell_center(ishell), 3)
 
                   do j = i, i + deg - 1
                      ao_center_xyz(j, 1) = px
@@ -914,16 +959,13 @@ contains
 
          call xc_mpi_bcast(nr_ao                     )
          call xc_mpi_bcast(nr_so_ao                  )
-         call xc_mpi_bcast(nr_sym_dependent_centers  )
-         call xc_mpi_bcast(nr_sym_independent_centers)
-         call xc_mpi_bcast(size_c2s_mat              )
+         call xc_mpi_bcast(nr_centers)
          call xc_mpi_bcast(sum_nr_primitives         )
 
          if (.not. xc_mpi_is_master()) then
             allocate(ao_center(nr_ao))
             allocate(ao_center_xyz(nr_ao, 3))
             allocate(ao_distance(nr_ao, nr_ao, 3))
-            allocate(c2s_mat(size_c2s_mat))
             allocate(cartesian_deg(sum_nr_primitives))
             allocate(cartesian_off(sum_nr_primitives))
             allocate(contraction_coef(sum_nr_primitives, sum_nr_primitives))
@@ -936,11 +978,10 @@ contains
             allocate(shell_stabilizing_irep(sum_nr_primitives))
             allocate(spherical_deg(sum_nr_primitives))
             allocate(spherical_off(sum_nr_primitives))
-            allocate(sym_dependent_center_charge(nr_sym_dependent_centers))
-            allocate(sym_dependent_center_xyz(nr_sym_dependent_centers, 3))
-            allocate(sym_independent_center_charge(nr_sym_independent_centers))
-            allocate(sym_independent_center_deg(nr_sym_independent_centers))
-            allocate(sym_independent_center_xyz(nr_sym_independent_centers, 3))
+            allocate(center_charge(nr_centers))
+            allocate(center_deg(nr_centers))
+            allocate(center_stabilizing_irep(nr_centers))
+            allocate(center_xyz(nr_centers, 3))
          end if
 
          call xc_mpi_bcast(interface_ao_set              )
@@ -950,7 +991,6 @@ contains
          call xc_mpi_bcast(ao_off                        )
          call xc_mpi_bcast(ao_off_hermit                 )
          call xc_mpi_bcast(ao_q                          )
-         call xc_mpi_bcast(c2s_index                     )
          call xc_mpi_bcast(iq                            )
          call xc_mpi_bcast(irep_of_axes                  )
          call xc_mpi_bcast(irep_of_rotations             )
@@ -987,18 +1027,16 @@ contains
          call xc_mpi_bcast(shell_stabilizing_irep        )
          call xc_mpi_bcast(spherical_deg                 )
          call xc_mpi_bcast(spherical_off                 )
-         call xc_mpi_bcast(sym_independent_center_deg    )
+         call xc_mpi_bcast(center_deg    )
+         call xc_mpi_bcast(center_stabilizing_irep    )
          call xc_mpi_bcast(ao_center                     )
          call xc_mpi_bcast(ao_center_xyz                 )
          call xc_mpi_bcast(ao_distance                   )
-         call xc_mpi_bcast(c2s_mat                       )
          call xc_mpi_bcast(contraction_coef              )
          call xc_mpi_bcast(f_so_ao                       )
          call xc_mpi_bcast(primitive_exp                 )
-         call xc_mpi_bcast(sym_dependent_center_charge   )
-         call xc_mpi_bcast(sym_dependent_center_xyz      )
-         call xc_mpi_bcast(sym_independent_center_charge )
-         call xc_mpi_bcast(sym_independent_center_xyz    )
+         call xc_mpi_bcast(center_charge )
+         call xc_mpi_bcast(center_xyz    )
       end if
 #endif
 
@@ -1087,7 +1125,7 @@ contains
       end if
 
       m = n
-      binom = 1 
+      binom = 1
       do j = 1, k
          binom = binom*m
          binom = binom/j

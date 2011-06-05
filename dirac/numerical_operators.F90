@@ -214,7 +214,7 @@ module numoper_integrals
          call read_grid(from_file,grid,operator)
          npoint = size(grid,2)
 
-         call ao_eval_init(0, 0, .false., .false.)
+         call ao_eval_init(0, 0, .false.)
 
          ndim = n_ao
          call alloc(ao,ndim)
@@ -226,9 +226,10 @@ module numoper_integrals
 ! start numerical integration...
 
          do ipoint = 1, npoint
-            call get_ao(grid(1,ipoint), &
-                        grid(2,ipoint), &
-                        grid(3,ipoint), &
+            call get_ao(1,                  &
+                        (/grid(1,ipoint)/), &
+                        (/grid(2,ipoint)/), &
+                        (/grid(3,ipoint)/), &
                         ao, buffer)
 
             wt_oper = operator(ipoint)*grid(4,ipoint)            

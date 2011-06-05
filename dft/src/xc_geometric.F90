@@ -22,6 +22,7 @@
 module xc_geometric
 
    use interface_ao
+   use ao_eval
 
    implicit none
 
@@ -40,16 +41,14 @@ contains
                               d_n,     &
                               mat_dim, &
                               dmat_0,  &
-                              ao_g0,   &
-                              ao_g1)
+                              ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(inout) :: g(*)
       real(8), intent(in)    :: d_n
       integer, intent(in)    :: mat_dim
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
-      real(8), intent(in)    :: ao_g0(mat_dim)
-      real(8), intent(in)    :: ao_g1(mat_dim, 3)
+      real(8), intent(in)    :: ao(*)
 !     --------------------------------------------------------------------------
       integer                :: k, ks, kc
       integer                :: l, ls, lc
@@ -60,11 +59,11 @@ contains
       do k = 1, nr_ao
          u = 0.0d0
          do l = 1, nr_ao
-            u = u + 2.0d0*ao_g0(l)*dmat_0(l, k)
+            u = u + 2.0d0*ao(l)*dmat_0(l, k)
          end do
          do ixyz = 1, 3
             ic = 3*(ao_center(k) - 1) + ixyz
-            g(ic) = g(ic) - d_n*u*ao_g1(k, ixyz)
+            g(ic) = g(ic) - d_n*u*ao(ao_off_g1_m0(ixyz, 0) + k)
          end do
       end do
 
@@ -76,9 +75,7 @@ contains
                               gn,      &
                               mat_dim, &
                               dmat_0,  &
-                              ao_g0,   &
-                              ao_g1,   &
-                              ao_g2)
+                              ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(inout) :: g(*)
@@ -87,9 +84,7 @@ contains
       real(8), intent(in)    :: gn(3)
       integer, intent(in)    :: mat_dim
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
-      real(8), intent(in)    :: ao_g0(mat_dim)
-      real(8), intent(in)    :: ao_g1(mat_dim, 3)
-      real(8), intent(in)    :: ao_g2(mat_dim, 6)
+      real(8), intent(in)    :: ao(*)
 !     --------------------------------------------------------------------------
       integer                :: k, ks, kc
       integer                :: l, ls, lc
@@ -100,7 +95,7 @@ contains
       do k = 1, nr_ao
          t1 = 0.0d0
          do l = 1, nr_ao
-            t1 = t1 + ao_g0(l)*dmat_0(l, k)
+            t1 = t1 + ao(l)*dmat_0(l, k)
          end do
          t1 = 2.0d0*t1
 
@@ -108,7 +103,7 @@ contains
          do jxyz = 1, 3
             t3 = 0.0d0
             do l = 1, nr_ao
-               t3 = t3 + ao_g1(l, jxyz)*dmat_0(l, k)
+               t3 = t3 + ao(ao_off_g1_m0(jxyz, 0) + l)*dmat_0(l, k)
             end do
             t2 = t2 + t3*gn(jxyz)
          end do
@@ -119,7 +114,7 @@ contains
             do jxyz = 1, 3
                t5 = 0
                do l = 1, nr_ao
-                  t5 = t5 + ao_g2(k, pos((jxyz-1)*3 + ixyz))*ao_g0(l)*dmat_0(l, k)
+                  t5 = t5 + ao(ao_off_g2_m0(pos((jxyz-1)*3 + ixyz), 0) + k)*ao(l)*dmat_0(l, k)
                end do
                t4(ixyz) = t4(ixyz) + t5*gn(jxyz)
             end do
@@ -128,7 +123,7 @@ contains
 
          do ixyz = 1, 3
             ic = 3*(ao_center(k) - 1) + ixyz
-            g(ic) = g(ic) - d_n*t1*ao_g1(k, ixyz) - d_z*t2*ao_g1(k, ixyz) - d_z*t4(ixyz)
+            g(ic) = g(ic) - d_n*t1*ao(ao_off_g1_m0(ixyz, 0) + k) - d_z*t2*ao(ao_off_g1_m0(ixyz, 0) + k) - d_z*t4(ixyz)
          end do
       end do
 
@@ -141,8 +136,7 @@ contains
                               mat_dim,  &
                               dmat_0,   &
                               tmat_1,   &
-                              ao,       &
-                              ao1)
+                              ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(inout) :: g(*)
@@ -152,8 +146,7 @@ contains
       integer, intent(in)    :: mat_dim
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
       real(8), intent(in)    :: tmat_1(mat_dim, mat_dim)
-      real(8), intent(in)    :: ao(mat_dim)
-      real(8), intent(in)    :: ao1(mat_dim, 3)
+      real(8), intent(in)    :: ao(*)
 !     --------------------------------------------------------------------------
       integer                :: k, ks, kc
       integer                :: l, ls, lc
@@ -180,8 +173,8 @@ contains
 
             do ixyz = 1, 3
                ic = 3*(nr_center - 1) + ixyz
-               g(ic) = g(ic) - 2.0d0* d_n*ao1(k, ixyz)*t1 &
-                             - 2.0d0*d_nn*ao1(k, ixyz)*t0*n_t1
+               g(ic) = g(ic) - 2.0d0* d_n*ao(ao_off_g1_m0(ixyz, 0) + k)*t1 &
+                             - 2.0d0*d_nn*ao(ao_off_g1_m0(ixyz, 0) + k)*t0*n_t1
             end do
          end do
       end do
@@ -197,8 +190,7 @@ contains
                               dmat_0,   &
                               tmat_1,   &
                               tmat_2,   &
-                              ao,       &
-                              ao1)
+                              ao)
 
 !     --------------------------------------------------------------------------
       real(8), intent(inout) :: g(*)
@@ -210,8 +202,7 @@ contains
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
       real(8), intent(in)    :: tmat_1(mat_dim, mat_dim)
       real(8), intent(in)    :: tmat_2(mat_dim, mat_dim)
-      real(8), intent(in)    :: ao(mat_dim)
-      real(8), intent(in)    :: ao1(mat_dim, 3)
+      real(8), intent(in)    :: ao(*)
 !     --------------------------------------------------------------------------
       integer                :: k, ks, kc
       integer                :: l, ls, lc
@@ -240,9 +231,9 @@ contains
 
             do ixyz = 1, 3
                ic = 3*(nr_center - 1) + ixyz
-               g(ic) = g(ic) - 4.0d0*d_nn*ao1(k, ixyz)*t1*n_t2 &
-                             - 4.0d0*d_nn*ao1(k, ixyz)*t2*n_t1 &
-                             - 4.0d0*d_nnn*ao1(k, ixyz)*t0*n_t1*n_t2
+               g(ic) = g(ic) - 4.0d0*d_nn* ao(ao_off_g1_m0(ixyz, 0) + k)*t1*n_t2 &
+                             - 4.0d0*d_nn* ao(ao_off_g1_m0(ixyz, 0) + k)*t2*n_t1 &
+                             - 4.0d0*d_nnn*ao(ao_off_g1_m0(ixyz, 0) + k)*t0*n_t1*n_t2
             end do
          end do
       end do
