@@ -88,7 +88,6 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/interface_input.F90
     ${PROJECT_SOURCE_DIR}/src/interface_mo.F90
     ${PROJECT_SOURCE_DIR}/src/interface_file_io.F90
-    ${PROJECT_SOURCE_DIR}/src/main.F90
     ${PROJECT_SOURCE_DIR}/src/xc_ac.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
     ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
@@ -99,13 +98,19 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_autogen.F90
     )
 
+add_library(
+    xcint
+    ${SOURCES}
+    )
+
 add_executable(
     xcint.x
-    ${SOURCES}
+    src/test_driver.F90
     )
 
 target_link_libraries(
     xcint.x
+    xcint
     ${LIBS}
     )
 
