@@ -74,9 +74,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/../grid/num_grid_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/sigma_prefactor_setting.F90
-    ${PROJECT_SOURCE_DIR}/src/ao_eval_block.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_sub.F90
-    ${PROJECT_SOURCE_DIR}/src/ao_xyz_power.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
     ${PROJECT_SOURCE_DIR}/src/dft_cfg.F90
     ${PROJECT_SOURCE_DIR}/src/external/character_processing.F90
