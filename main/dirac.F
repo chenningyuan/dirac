@@ -94,11 +94,6 @@ C
       CALL PAMINP(WORK,LWORK)
 
 
-!     write info to files
-!     this is used in dft and visualization
-      call interface_ao_write()
-      call interface_mo_write()
-
 
       IF ( INPTES ) RETURN
 C
@@ -113,9 +108,16 @@ C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
 C***********************************************************************
-C
+
       CALL PAMSET(WORK,LWORK)
-C
+
+
+
+!     write info to files
+!     this is used in dft and visualization
+      call interface_ao_write()
+      call interface_mo_write()
+
 C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
 C***********************************************************************
