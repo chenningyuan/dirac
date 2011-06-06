@@ -244,6 +244,7 @@ contains
             do gxyz = 1, 3
                nabla_omega(gxyz) = ao(k)*ao(ao_off_g1_m0(gxyz, 0) + l) &
                                  + ao(l)*ao(ao_off_g1_m0(gxyz, 0) + k)
+               nabla_omega(gxyz) = f*nabla_omega(gxyz)
             end do
 
             gnn_kl = gn_0(1)*nabla_omega(1) &
