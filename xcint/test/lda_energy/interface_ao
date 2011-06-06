@@ -8,6 +8,8 @@
 *** basis
     is_spherical
          F
+    algebra
+         4
     use_only_large
          T
     nr_primitive_exp

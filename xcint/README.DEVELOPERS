@@ -105,6 +105,7 @@ interface_ao:
      - is_spherical "F" means cartesian GTO, "T" means spherical GTO
      - use_only_large "T" is what you want outside of the DIRAC code, and all primitives "L"
      - coefficients (coef) contain normalization
+     - algebra: use 1 (means real; 1, 2, 4 is for DIRAC)
 
 interface_mo:
 typically you only need to set

@@ -71,11 +71,13 @@ def main(*args):
     
     f = open(log_file, 'r')
 
-    exit_code = 0
+    exit_code = 1
     for line in f.readlines():
         if 'compare matrices' in line:
            if float(line.split()[-1]) > max_error:
-               exit_code += 1
+               exit_code = 1
+           else:
+               exit_code = 0
     f.close()
     return exit_code
 
