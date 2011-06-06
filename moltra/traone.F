@@ -300,6 +300,11 @@ C
       ENDIF
 C
       CALL DZERO(FMO,N2ORBXQ)
+#ifdef debug_mmf
+!     stefan DEBUG!!!!
+      CALL DZERO(FAO,N2BBASXQ)
+!     stefan DEBUG!!!!
+#endif
       DO 10 I = 1,NFSYM
         IF(NSTR(I,0,1).EQ.0.OR.NSTR(I,0,2).EQ.0) GOTO 10
         NRQ1 = NDMOQR(1,I,1)

@@ -403,7 +403,7 @@ contains
        end do
 
        if(defining_h1mat == 2)then
-        call set_tmt(5)
+        call set_tmt(0)
        end if
 
 !      redirect ["SL resorted"] matrix to mat3 for later reuse in

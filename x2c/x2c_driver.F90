@@ -480,22 +480,22 @@ contains
 !      step 3: picture-change transform the 4c-MO coefficients (defining
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
-!      if(x2c_is_defining_h1mat == 2)then
-!        call x2c_pctrafo_mo_coefficients_driver('DFCOEF',        &
-!                                                nr_cmo_q,        &
-!                                                nr_ao_total_x2c, &
-!                                                nr_ao_large_x2c, &
-!                                                nr_ao_all,       &
-!                                                nr_ao_l,         &
-!                                                dim_oshell,      &
-!                                                dim_eshell,      &
-!                                                dim_pshell,      &
-!                                                nr_fsym,         &
-!                                                nr_quat,         &
-!                                                x2c_cb_pq_to_uq, &
-!                                                x2c_funit,       &
-!                                                x2c_prt)
-!      end if
+       if(x2c_is_defining_h1mat == 2)then
+         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',        &
+                                                 nr_cmo_q,        &
+                                                 nr_ao_total_x2c, &
+                                                 nr_ao_large_x2c, &
+                                                 nr_ao_all,       &
+                                                 nr_ao_l,         &
+                                                 dim_oshell,      &
+                                                 dim_eshell,      &
+                                                 dim_pshell,      &
+                                                 nr_fsym,         &
+                                                 nr_quat,         &
+                                                 x2c_cb_pq_to_uq, &
+                                                 x2c_funit,       &
+                                                 x2c_prt)
+       end if
 !      --------------------------------------------------------------------------------------------
 !      step 5: export picture-change transformation matrix to AO basis with nosym (C1 double group)
 !      --------------------------------------------------------------------------------------------

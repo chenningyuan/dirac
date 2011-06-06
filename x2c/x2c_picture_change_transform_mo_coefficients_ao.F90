@@ -218,6 +218,7 @@ contains
      integer                        :: fh
      real(8)                        :: total_energy
      character (len=12)             :: flabel
+     character (len=24)             :: fdate
      character (len=74)             :: info_text
      character (len=4)              :: numstr
      integer, allocatable           :: dimension_info(:,:)
@@ -235,13 +236,21 @@ contains
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
 
+!      debug print
+       if(print_lvl > 2)then
+         ioff_pct_mat = 1
+         do i = 1, nfsym
+           write(info_text,'(a27,i1)') 'x2c - pctmat_saao - xcmo - ',i
+           call print_x2cmat(pctmat(ioff_pct_mat),naosh_all(i),naosh_L(i),nz,ipq_off_in,info_text,6)
+           ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
+         end do
+       end if
+
 !      read MO coefficients
-       print *, 'read coefficients ',nr_cmo_q
        fh = 99
        open(fh,file=mo_coeff_file_name,status='old',form='unformatted',access='sequential',position='rewind') 
        call reacmo_no_work(fh,mo_coeff_file_name,mo_coeff_4c,eigen_values,boson_irreps_jz_eigenvalues,total_energy,15)
        close(fh,status='delete')
-       print *, 'coefficients read...'
 
 !      step 3: perform pct of MO coefficients: MO_coeff_2c^++ == U+ * MO_coeff_4c
 !      --------------------------------------------------------------------------
@@ -258,13 +267,12 @@ contains
          nbasL_f          = naosh_L(i)
          ioff_mo_coeff_4c = ioff_mo_coeff_4c + nbas1_f*n1psh_f*nz
 
-         print *, 'call qgemm...',i
          if(nesh_dim(i) > 0)then
-           call qgemm(nbasL_f,                                  &
+           call qgemm(nbas1_f,                                  &
                       n1esh_f,                                  &
-                      nbas1_f,                                  &
+                      nbasL_f,                                  &
                       val_d1,                                   &
-                      'H','N',                                  &
+                      'N','N',                                  &
                       ipq_off_in,                               &
                       pctmat(ioff_pct_mat),                     &
                       nbas1_f,                                  &
@@ -274,7 +282,7 @@ contains
                       ipq_off_in,                               &
                       mo_coeff_4c(ioff_mo_coeff_4c),            &
                       nbas1_f,                                  &
-                      norb1_f,                                  &
+                      n1esh_f,                                  &
                       nz,                                       &
                       val_d0,                                   &
                       ipq_off_in,                               &
@@ -284,17 +292,17 @@ contains
                       nz)
 
 !          zero LS part of coefficients
-!          do j = 1, n1esh_f
-!            call dzero(mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbas1_f+nbasL_f)),nbas1_f-nbasL_f)
-!          end do
-           if(print_lvl > 1)then
-             print *, '4c-MO coefficients ==> '
-            do j = 1, nbas1_f*n1esh_f*nz
-              print *, ' element ==> ',mo_coeff_4c(ioff_mo_coeff_4c+j-1),'of #',ioff_mo_coeff_4c+j-1
+           do j = 1, n1esh_f
+             call dzero(mo_coeff_2c(ioff_mo_coeff_2c+((j-1)*nbas1_f+nbasL_f)),nbas1_f-nbasL_f)
+           end do
+           if(print_lvl > 2)then
+             print *, 'dimensions: nbas1_f, nbasL_f, n1esh_f, n1psh_f: ',nbas1_f, nbasL_f, n1esh_f, n1psh_f
+             print *, '4c-MO coefficients (all) ==> '
+            do j = 1, nbas1_f*norb1_f*nz
+              print *, ' element ==> ',mo_coeff_4c(j),'of #',j
             end do
              print *, '2c-MO coefficients ==> '
             do j = 1, nbas1_f*n1esh_f*nz
-!           do j = 1, nbasL_f*n1esh_f*nz
               print *, ' element ==> ',mo_coeff_2c(ioff_mo_coeff_2c+j-1),'of #',ioff_mo_coeff_2c+j-1
             end do
            end if
@@ -302,7 +310,6 @@ contains
 
 !        set new offsets in matrices
          ioff_mo_coeff_2c =  ioff_mo_coeff_2c + nbas1_f*n1esh_f*nz
-!        ioff_mo_coeff_2c =  ioff_mo_coeff_2c + nbasL_f*n1esh_f*nz
          ioff_mo_coeff_4c =  ioff_mo_coeff_4c + nbas1_f*n1esh_f*nz
          ioff_pct_mat     =  ioff_pct_mat     + nbas1_f*nbasL_f*nz
        end do
@@ -370,15 +377,8 @@ contains
        fh = 99
        open(fh,file=mo_coeff_file_name,status='new',form='unformatted',access='sequential',position='rewind') 
 
-       info_text(1:50) = ' X2Cmod - molecular-mean field 2c MOs              '
-       call gtinfo(info_text(51:74))
-       print *, 'write process started ...', ndim_2c_mo, ndim_2c_ev, ndim_2c_bj
-       if(print_lvl > 1)then
-         print *, '2c-MO coefficients ==> '
-         do i = 1, ndim_2c_mo
-           print *, ' element ==> ',mo_coeff_2c(i),'of #',i
-         end do
-       end if
+       info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
+       info_text(51:74) = fdate()
        write(fh) info_text,nfsym,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
        write(fh) (mo_coeff_2c(i),i=1,ndim_2c_mo)
        write(fh) (eigen_values(i),i=1,ndim_2c_ev)
