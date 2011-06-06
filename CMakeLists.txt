@@ -200,7 +200,7 @@ set(GENERATED_FILES
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
-    ${PROJECT_BINARY_DIR}/dft/xcfun/fortran
+    ${PROJECT_BINARY_DIR}/xcint/xcfun/fortran
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
@@ -212,7 +212,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     )
 
 if(ENABLE_XCFUN)
-    add_subdirectory(dft/xcfun)
+    add_subdirectory(xcint/xcfun)
     set(LIBS
         ${LIBS}
         xcfun
@@ -375,13 +375,13 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND rm -rf ${EXPORT_DIR}/build
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild             ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis              ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton       ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/test               ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils              ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules            ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/dft/xcfun          ${EXPORT_DIR}/dft
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild            ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis             ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton      ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/test              ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules           ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
         COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in  ${EXPORT_DIR}/gp
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}

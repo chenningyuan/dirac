@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(DFT Fortran)
+project(xcint Fortran)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -100,12 +100,12 @@ set(SOURCES
     )
 
 add_executable(
-    dft.x
+    xcint.x
     ${SOURCES}
     )
 
 target_link_libraries(
-    dft.x
+    xcint.x
     ${LIBS}
     )
 

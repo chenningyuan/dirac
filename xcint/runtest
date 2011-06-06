@@ -62,7 +62,7 @@ def main(*args):
     test_directory = root_directory + '/test/' + options.individual
     log_file = '%s/log' % test_directory
     
-    command = 'cd %s; ../../build/dft.x 1> %s 2> /dev/null' % (test_directory, log_file)
+    command = 'cd %s; ../../build/xcint.x 1> %s 2> /dev/null' % (test_directory, log_file)
     p = subprocess.Popen(command,
                          shell=True,
                          stdin=subprocess.PIPE,

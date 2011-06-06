@@ -114,7 +114,7 @@ vital_directories.append('lucita')
 vital_directories.append('utils')
 vital_directories.append('cfun')
 vital_directories.append('grid')
-vital_directories.append('dft/src')
+vital_directories.append('xcint/src')
 vital_directories.append('cbuild')
 vital_directories.append('include')
 vital_directories.append('modules')
@@ -221,9 +221,9 @@ list_of_tests.append('zora')
 
 directories_never_compiled = []
 directories_never_compiled.append('utils')
-directories_never_compiled.append('dft/xcfun/src')
-directories_never_compiled.append('dft/xcfun/test')
-directories_never_compiled.append('dft/src/external')
+directories_never_compiled.append('xcint/xcfun/src')
+directories_never_compiled.append('xcint/xcfun/test')
+directories_never_compiled.append('xcint/src/external')
 
 files_never_compiled = []
 files_never_compiled.append('argosecp/argos_input.F')
@@ -241,12 +241,12 @@ files_never_compiled.append('relccsd/ccmain.F')
 files_never_compiled.append('relccsd/quit.F')
 files_never_compiled.append('cbuild/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
-files_never_compiled.append('dft/xcfun/fortran/example.F90')
+files_never_compiled.append('xcint/xcfun/fortran/example.F90')
 files_never_compiled.append('fmm/mm_standalone_drv.f90')
 files_never_compiled.append('fmm/mm_standalone_aux.F')
 files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
 files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
-files_never_compiled.append('dft/src/main.F90')
+files_never_compiled.append('xcint/src/main.F90')
 
 do_not_release = []
 do_not_release.append('utils/add_copyright.py')
@@ -269,9 +269,9 @@ do_not_release.append('embedding/emb1int.F')
 do_not_release.append('embedding/embd.F90')
 do_not_release.append('embedding/emb_froz_orb.F90')
 do_not_release.append('embedding/emb_set.F90')
-do_not_release.append('dft/fun-srpbec.c')
-do_not_release.append('dft/fun-srvwn5.c')
-do_not_release.append('dft/fun-hjsx.c')
+do_not_release.append('cfun/fun-srpbec.c')
+do_not_release.append('cfun/fun-srvwn5.c')
+do_not_release.append('cfun/fun-hjsx.c')
 do_not_release.append('maintenance')
 
 # definition of modules
@@ -355,7 +355,7 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'xcfun'
 dirac_modules[this_module] = dirac_module('xcfun', 'XCFun module')
 dirac_modules[this_module].add_cppflag('MOD_XCFUN')
-dirac_modules[this_module].add_directory('dft/xcfun')
+dirac_modules[this_module].add_directory('xcint/xcfun')
 dirac_modules[this_module].add_test('dft_alda_xcfun')
 dirac_modules[this_module].add_test('dft_erf_xcfun')
 dirac_modules[this_module].add_test('dft_minnesota')
@@ -438,10 +438,6 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
-dirac_modules[this_module].add_file('dft/overlap_diagnostic.F90')
-dirac_modules[this_module].add_file('dft/vrg.F')
-dirac_modules[this_module].add_file('dft/xc_geometric.F90')
-dirac_modules[this_module].add_file('dft/xc_london_c1.F90')
 dirac_modules[this_module].add_test('visual_lao')
 dirac_modules[this_module].add_test('visual_lao_current')
 dirac_modules[this_module].add_test('visual_lao_shielding')
@@ -538,9 +534,9 @@ print
 if dirac_modules['xcfun'].is_included:
    print "* "
    print "* XCFun module active"
-   print "* First compile xcfun (cd dft/xcfun; make -f Makefile.gcc)"
+   print "* First compile xcfun (cd xcint/xcfun; make -f Makefile.gcc)"
    print "* Then please use (in Makefile.config)"
-   print "* LIBS=-Ldft/xcfun/lib -lxcfun"
+   print "* LIBS=-Lxcint/xcfun/lib -lxcfun"
    print "* "
    print
 
@@ -667,7 +663,7 @@ for module in dirac_modules:
             directories_with_sources.append(directory)
 # ugly fix to get xcfun, will make it nicer later:
 if dirac_modules['xcfun'].is_included:
-    directories_with_sources.append('dft/xcfun/fortran')
+    directories_with_sources.append('xcint/xcfun/fortran')
 
 directories_with_sources = set(directories_with_sources)
 
