@@ -230,8 +230,9 @@ contains
       end do
 
       if ((nr_boson_ireps > 1) .or. (nr_ao_cartesian /= nr_ao)) then
-!        transform from ao(bu) to so(bs)
-!        cartesian to spherical transformation is embedded
+!        transform from AO (Hermit sorting)
+!        to SA-AO (DIRAC sorting)
+!        and/or transform from cartesian to spherical gaussian basis
          call ao_to_so(block_length, ao, buffer)
       end if
 
