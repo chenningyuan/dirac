@@ -88,6 +88,8 @@ target_link_libraries(
     ${LIBS}
     )
 
+install(TARGETS xcint ARCHIVE DESTINATION lib)
+
 include(Tests)
 include(CTest)
 enable_testing()
