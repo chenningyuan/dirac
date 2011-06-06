@@ -28,7 +28,6 @@ module xc_driver
 !  these dependencies should be removed
    use fde_mod
 #endif
-   use num_grid_cfg
    use interface_ao
    use interface_mo
    use interface_file_io
@@ -1826,10 +1825,8 @@ contains
 
 !radovan: grid stuff will be moved outside this module
          if (xc_mpi_is_master()) then
-            if (num_grid_cfg_import_grid) then
-               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
 #ifdef MOD_UNRELEASED
-            else if (do_fde_update_vemb .or. do_fde_response) then
+            if (do_fde_update_vemb .or. do_fde_response) then
                if (parallel_xc) then
                   call my_quit('fix fde_response mpi')
                end if
@@ -1862,10 +1859,12 @@ contains
                   endif
                end do
 
-#endif
             else
+#endif
                call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
+#ifdef MOD_UNRELEASED
             end if
+#endif
          end if
 
          ibatch          = ibatch + 1
