@@ -47,9 +47,9 @@ cd $DIRAC
 
 /bin/rm -rf build
 
-./pamadm -a --xcfun
+./pamadm -a 
 
-./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.fe6_Odense.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=8 --int64 -D NO_SSH_ACCESS_TO_NODES=1 -D RUNTEST_TIMEOUT="00:18:00" 
+./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.fe6_Odense.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=8 --int64 -D NO_SSH_ACCESS_TO_NODES=1 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999
 
 cd $DIRAC/build
 
