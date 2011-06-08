@@ -104,33 +104,49 @@ def get_username():
     import getpass
     return getpass.getuser()
 
+def kill_win(pid):
+    """
+    kill function for Win32
+    http://docs.python.org/faq/windows.html#id11
+    see also http://code.activestate.com/recipes/347462-terminating-a-subprocess-on-windows/
+    """
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(1, 0, pid)
+    return (0 != kernel32.TerminateProcess(handle, 0))
+
 def get_ip():
     """
     module for getting the LAN IP-address of the computer
     from  http://stackoverflow.com/questions/166506/finding-local-ip-addresses-in-python
+	slightly modified for Windows 7
     """
     import os
     import socket
-    if os.name != "nt":
-        import fcntl
-        import struct
-        def get_interface_ip(ifname):
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            return socket.inet_ntoa(fcntl.ioctl(
-                            s.fileno(),
-                            0x8915,  # SIOCGIFADDR
-                            struct.pack('256s', ifname[:15])
-                    )[20:24])
-        ip = socket.gethostbyname(socket.gethostname())
-        if ip.startswith("127.") and os.name != "nt":
-            interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
-            for ifname in interfaces:
-                    try:
-                            ip = get_interface_ip(ifname)
-                            break;
-                    except IOError:
-                            pass
-        return ip
+    import struct
+    def get_interface_ip(ifname):
+        """
+		not for Windows due to the fcntl module
+        """
+        if not is_windows():
+            import fcntl
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(
+                        s.fileno(),
+                        0x8915,  # SIOCGIFADDR
+                        struct.pack('256s', ifname[:15])
+                )[20:24])
+    # get IP-address
+    ip = socket.gethostbyname(socket.gethostname())
+    if ip.startswith("127.") and os.name != "nt":
+        interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
+        for ifname in interfaces:
+                try:
+                        ip = get_interface_ip(ifname)
+                        break;
+                except IOError:
+                        pass
+    return ip
 
 def get_hostname():
     """
@@ -151,6 +167,7 @@ def get_full_hostname():
         #this_host=str(host[0])
     except:
         this_host="not found"
+        #this_host=str(get_ip()) 		
     return this_host
 
 def get_hostname_ip():

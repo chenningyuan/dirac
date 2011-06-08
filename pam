@@ -67,7 +67,7 @@ class pam_enviroment:
     def __init__(self):
         '''Initialize the global set of variables'''
         from common import get_username, get_hostname, get_full_hostname
-        from common import get_hostname_ip, is_windows
+        from common import get_hostname_ip
 
         # own dirac executable file 
         if is_windows():
@@ -1285,13 +1285,17 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 return name[0]
             else:
                 return str(num)
-
+        print 
         # interrupt dirac run
         if self.pgid is not None:
             interrupt_message="\npam: All dirac.x subprocesses terminated with signal "\
                               + signal_numtoname(signum)+" (#"+str(signum) + ") !"
             print_std_out_err(interrupt_message)
-            os.killpg(self.pgid,signum) # TODO: adapt for Windows
+            if not is_windows():
+                os.killpg(self.pgid,signum)
+            else:
+                from common import kill_win
+                kill_win(self.pgid)
             #radovan: don't want to get my screen filled
             #         with ps info after 5 seconds - annoying
             # time.sleep(5)  # wait first that all processes die (or not), then prints 
@@ -1329,14 +1333,21 @@ Options are also read from the ~/.dirac and .diracrc files."""
     def launch_dirac_subprocess(self):
         '''
         Launches the dirac.x subprocess(-es), also takes care of killing
+        FYI: On Windows, signal() can only be called with SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, or SIGTERM
         '''
-
         if not is_windows():
             signal.signal(signal.SIGHUP,self.child_signaller)
             signal.signal(signal.SIGPIPE,self.child_signaller)
             if self.set_timeout_limit: # set timeout alarm if selected
                 signal.signal(signal.SIGALRM, self.child_signaller)
                 signal.alarm(self.timeout)
+        else:
+            #signal.signal(signal.CTRL_C_EVENT,self.child_signaller)		
+            signal.signal(signal.SIGABRT,self.child_signaller)
+            #signal.signal(signal.CTRL_BREAK_EVENT,self.child_signaller)
+            signal.signal(signal.SIGFPE,self.child_signaller)
+            signal.signal(signal.SIGILL,self.child_signaller)
+            signal.signal(signal.SIGSEGV,self.child_signaller)
         signal.signal(signal.SIGTERM,self.child_signaller)
         signal.signal(signal.SIGINT,self.child_signaller)
             
@@ -1356,11 +1367,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if not is_windows():
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE, preexec_fn=os.setsid)
-            self.pgid = self.dirac_p.pid
         else:
             self.dirac_p = subprocess.Popen(self.dirac_cmd, shell=True, \
                                             stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
-        
+        self.pgid = self.dirac_p.pid
         if not self.silent:
             print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
 
