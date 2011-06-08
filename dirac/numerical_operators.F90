@@ -195,6 +195,7 @@ module numoper_integrals
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
          use grid_file
+         use interface_ao
          use ao_eval
 
          implicit none
@@ -214,6 +215,7 @@ module numoper_integrals
          call read_grid(from_file,grid,operator)
          npoint = size(grid,2)
 
+         call interface_ao_write()
          call ao_eval_init(0, 0, .false.)
 
          ndim = n_ao
