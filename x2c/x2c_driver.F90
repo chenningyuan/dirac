@@ -294,6 +294,7 @@ contains
 
          end if
 
+
 !        ------------------------------------------------------------------------------
 !        step 1.3: construct modified dirac equation in ON basis --> retrieve AOtoMO transformation matrices.
 !        ------------------------------------------------------------------------------
@@ -315,6 +316,10 @@ contains
                      x2c_is_defining_h1mat,                           &
                      wrk,                                             &
                      lwrk)
+
+         call prepare_so_correction_driver(nr_fsym,              &
+                                           dim_oshell,           &
+                                           x2c_prt)
 
 !        nullify pointer to work array and release matrices
          call desel_wrk_x2c(wrk,lwrk)
@@ -381,11 +386,14 @@ contains
 
          close(x2c_Sao_scrF,status="delete")
 
+
+
 !        --------------------------------------------------------------------------------------------------
 !        step 1.6: add AMFI contributions in case
 !                  h1 == bare-nucleus 1e Dirac-Hamiltonian (or extended Huckel guess) .and. AMFI is desired
 !        --------------------------------------------------------------------------------------------------
          if(x2c_add_amfi > 0)then
+
            call x2c_amfi_driver(final_ham_lvl_x2c,                 &
                                 x2c_add_amfi,                      &
                                 nr_ao_total_x2c,                   &

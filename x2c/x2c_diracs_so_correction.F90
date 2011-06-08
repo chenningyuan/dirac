@@ -29,6 +29,9 @@
 !
 module x2c_dirac_in_house_so_correction
 
+  use memory_allocator 
+  use x2c_utils
+
   implicit none
 
   public prepare_so_correction_driver
@@ -38,11 +41,36 @@ module x2c_dirac_in_house_so_correction
 contains
 
 !**********************************************************************
-  subroutine prepare_so_correction_driver()
+  subroutine prepare_so_correction_driver(nr_fsym,    &
+                                          norb_dim,   &
+                                          print_lvl)
 !**********************************************************************
+     integer, intent(in)                :: nr_fsym
+     integer, intent(in)                :: norb_dim(nr_fsym)
+     integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
-     logical                            :: fndlab12
+     integer                            :: i
+     integer                            :: j
+     integer, allocatable               :: boson_info(:)
 !**********************************************************************
+
+      j = 0
+      do i = 1, nr_fsym
+        j = j + norb_dim(i) 
+      end do
+      call alloc(boson_info,j)
+     
+      call get_boson_irrep_info(boson_info,           &
+                                nr_fsym,              &
+                                norb_dim,             &
+                                print_lvl+10)
+
+      call dealloc(boson_info)
+
+!     note: use APPBOS to get the correct boson irrep assignment of each spinor.
+!     note: if boson_info is ready take out the spin-free part from the pe-part of the fock matrix f(pe,pe,NZ) 
+!           in onMO by eliminating the symmetric (boson_irrep(i) == boson_irrep(j)) part of 
+!           fock(i,j,1).
 
   end subroutine prepare_so_correction_driver
 
