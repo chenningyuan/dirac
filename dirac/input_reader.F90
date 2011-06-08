@@ -1105,6 +1105,9 @@ contains
       if (kw_matches(word, '.diramf')) then
          x2c_add_amfi = 2
       end if
+      if (kw_matches(word, '.fockao')) then
+         x2c_fock_saao_basis = .true.
+      end if
 
       call check_whether_kw_found(word, kw_section)
 

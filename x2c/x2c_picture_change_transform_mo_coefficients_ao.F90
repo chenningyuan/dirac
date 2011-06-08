@@ -222,6 +222,11 @@ contains
      character (len=74)             :: info_text
      character (len=4)              :: numstr
      integer, allocatable           :: dimension_info(:,:)
+!#define debug_mmf
+#ifdef debug_mmf
+     real(8), allocatable           :: tmp_buf(:)
+     real(8), allocatable           :: tmp_buf2(:)
+#endif
 !**********************************************************************
 
 !      initialize offset
@@ -298,13 +303,18 @@ contains
            if(print_lvl > 2)then
              print *, 'dimensions: nbas1_f, nbasL_f, n1esh_f, n1psh_f: ',nbas1_f, nbasL_f, n1esh_f, n1psh_f
              print *, '4c-MO coefficients (all) ==> '
-            do j = 1, nbas1_f*norb1_f*nz
-              print *, ' element ==> ',mo_coeff_4c(j),'of #',j
-            end do
+             write(info_text,'(a27,i1)') 'x2c - 4c-MO (all) - xcmo - ',i
+             call print_x2cmat(mo_coeff_4c,nbas1_f,norb1_f,nz,ipq_off_in,info_text,6)
+       
+!           do j = 1, nbas1_f*norb1_f*nz
+!             print *, ' element ==> ',mo_coeff_4c(j),'of #',j
+!           end do
              print *, '2c-MO coefficients ==> '
-            do j = 1, nbas1_f*n1esh_f*nz
-              print *, ' element ==> ',mo_coeff_2c(ioff_mo_coeff_2c+j-1),'of #',ioff_mo_coeff_2c+j-1
-            end do
+             write(info_text,'(a27,i1)') 'x2c - 2c-MO (all) - xcmo - ',i
+             call print_x2cmat(mo_coeff_2c(ioff_mo_coeff_2c),nbas1_f,n1esh_f,nz,ipq_off_in,info_text,6)
+!           do j = 1, nbas1_f*n1esh_f*nz
+!             print *, ' element ==> ',mo_coeff_2c(ioff_mo_coeff_2c+j-1),'of #',ioff_mo_coeff_2c+j-1
+!           end do
            end if
          end if
 
@@ -386,6 +396,17 @@ contains
 
        close(fh,status='keep')
        call dealloc(dimension_info)
+
+#ifdef debug_mmf
+       i = naosh_ls**2*nz*50
+       allocate(tmp_buf(i))
+       allocate(tmp_buf2(i))
+       CALL NRMSTMO(mo_coeff_2c,mo_coeff_4c,tmp_buf,tmp_buf2,i,print_lvl,.FALSE.)
+       deallocate(tmp_buf)
+       deallocate(tmp_buf2)
+#endif
+
+#undef debug_mmf
 
   end subroutine x2c_pctrafo_4cto2c_mo_coefficients
 !**********************************************************************

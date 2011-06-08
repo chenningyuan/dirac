@@ -310,6 +310,7 @@ contains
 !             4c-fock_onmo (LS sorted) --> (4c-fock_onmo_nonlin LS sorted) --> 4c-fock_saao
 !
 !----------------------------------------------------------------------
+     use x2cmod_cfg
      real(8), intent(inout)       :: h1_saao_bas(*)
      real(8), intent(inout)       :: scrmat1(*)
      real(8), intent(inout)       :: scrmat2(*)
@@ -371,6 +372,7 @@ contains
                                         op_mat_on_file,    &
                                         print_lvl)
         end if
+        if(x2c_fock_saao_basis) goto 100
 
 !       step 2: 4c-fock_onmo (LS sorted) --> 4c-fock_onmo_nonlin LS sorted
 !       ------------------------------------------------------------------
@@ -434,6 +436,7 @@ contains
 
 !       step 4: 4c-fock_onmo_nonlin LS sorted --> 4c-fock_saao
 !       ------------------------------------------------------
+ 100    continue
         ioff_ao_ao_sh1 = 1
         ioff_osh1      = 1
         ioff_ao_o_sh1  = 1
@@ -442,6 +445,7 @@ contains
           norb1_f = norb_dim(i)
           if(norb1_f > 0)then
 !           h1_saao_bas = scrmat2 * scrmat1 * scrmat2^+
+            if(.not.x2c_fock_saao_basis)then
             call generic_interface_ao2mo_mo2ao(h1_saao_bas(ioff_ao_ao_sh1),    &
                                                scrmat1(ioff_osh1),             &
                                                scrmat2(ioff_ao_o_sh1),         &
@@ -453,12 +457,20 @@ contains
                                                'MOAO',                         &
                                                'S',                            &
                                                print_lvl)
+            end if
 
-!           save on file x2cscr for re-use as defining h1
-            write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
-            call x2c_write(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
 
           end if
+
+!         save on file x2cscr for re-use as defining h1
+          write(flabel,'(a7,i4,i1)') 'h14csAO',j,i
+          call x2c_write(flabel,h1_saao_bas(ioff_ao_ao_sh1),nbas1_f**2 * nz,x2c_file_scr)
+!         debug print
+          if(print_lvl > 2)then
+            write(debug_string,'(a27,i1)') 'x2c - 4c-fock_AO   - fsym = ',i
+            call print_x2cmat(h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,nbas1_f,nz,ipq_off_in,debug_string,6)
+          end if
+
           ioff_ao_ao_sh1 = ioff_ao_ao_sh1 + nbas1_f * nbas1_f * nz
           ioff_osh1      = ioff_osh1      + norb1_f * norb1_f * nz
           ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nz

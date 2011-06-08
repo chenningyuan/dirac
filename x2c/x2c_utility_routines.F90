@@ -790,7 +790,45 @@ contains
      integer                          :: record_number
      integer                          :: file_unit
      logical                          :: does_exist
+     real(8), allocatable             :: temp_mat(:)
+     character (len=28)               :: debug_string
 !**********************************************************************
+
+!      THIS IS ONLY A DEBUG OPTION!!!!!!!!!!!!!!!!!
+       if(x2c_fock_saao_basis)then
+         print *, 'read fock matrices'
+         allocate(temp_mat(nr_ao_total_x2c**2*nr_quat))
+         temp_mat = 0
+         file_unit = 99
+         open(file_unit,file='DFFCK1',status='old',form='unformatted', &
+         access='sequential',action='read')
+         call reafck(file_unit,xmat,.FALSE.,1)
+         close(file_unit, status='keep')
+!        debug print
+         if(print_lvl > 2)then
+           write(debug_string,'(a27,i1)') 'x2c - 4c-fock_AO 1e- fsym = ',0
+           call print_x2cmat(xmat,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq,debug_string,6)
+         end if
+
+         open(file_unit,file='DFFCK2',status='old',form='unformatted', &
+         access='sequential',action='read')
+         call reafck(file_unit,temp_mat,.FALSE.,1)
+         close(file_unit, status='keep')
+!        debug print
+         if(print_lvl > 2)then
+           write(debug_string,'(a27,i1)') 'x2c - 4c-fock_AO 2e- fsym = ',0
+           call print_x2cmat(temp_mat,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq,debug_string,6)
+         end if
+
+
+         call daxpy(nr_ao_total_x2c**2*nr_quat,val_d1,temp_mat,1,xmat,1)
+!        debug print
+         if(print_lvl > 2)then
+           write(debug_string,'(a27,i1)') 'x2c - 4c-fock_AO 12- fsym = ',0
+           call print_x2cmat(xmat,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq,debug_string,6)
+         end if
+         deallocate(temp_mat)
+       else
 
 !      step 1: inquire file and set record number
 !      ------------------------------------------
@@ -816,6 +854,7 @@ contains
        call readac(file_unit,n2tmotq,xmat,record_number)
 
        close(file_unit,status='keep')
+       end if
  
   end subroutine read_4cfock_operator_x2c
 

@@ -52,6 +52,7 @@ module x2cmod_cfg
   logical, public :: x2cmod_mmf              =  .false. ! this implies x2c_4c_fock_mtx_defh1 = .true. (mmf-ansatz)
                                                         ! but i think it's much nicer (more intuitive name for programmers) 
                                                         ! to have this logical on the outside of the X2Cmod - stefan, may 2011
+  logical, public :: x2c_fock_saao_basis     =  .false.
 
 ! real(8) block
   real(8), public :: x2c_cspeed
