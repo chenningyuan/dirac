@@ -51,8 +51,6 @@ module x2c_cb_interface
 contains
 
   subroutine init_x2c_cb(init_x2c_cb_blocks,   &
-                         atom_by_atom_x2c,     &
-                         is_center_x2c,        &
                          prop_op_dgsym,        &
                          prop_op_trsym,        &
                          prop_op_name)
@@ -74,12 +72,10 @@ contains
 #include "priunit.h"
 
 !   ----------------------------------------------------------------------------
-    logical, intent(in)             :: init_x2c_cb_blocks
-    logical, intent(in)             :: atom_by_atom_x2c
-    integer, intent(in)             :: is_center_x2c
-    integer, intent(inout)          :: prop_op_dgsym(*)
-    integer, intent(inout)          :: prop_op_trsym(*)
-    character (len=16), intent(out) :: prop_op_name(*)
+    logical, intent(in)                         :: init_x2c_cb_blocks
+    integer, optional, intent(out)              :: prop_op_dgsym(*)
+    integer, optional, intent(out)              :: prop_op_trsym(*)
+    character (len=16), optional, intent(out)   :: prop_op_name(*)
 !   ----------------------------------------------------------------------------
 !   local variables
 !   ----------------------------------------------------------------------------
@@ -109,71 +105,67 @@ contains
 !        set file unit on common block in dcbgen.h
          lux2c = x2c_funit
 
-         if(atom_by_atom_x2c)then
-!          nothing to be done here yet...
-         else 
 !
-!          initialize integer variables
-           num_nuclei      = nucdep
-!                           [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
-           nr_ao_total_x2c = ntbas(0)
-!                           [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
-           nr_ao_large_x2c = ntbas(1)
-!                           [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
-           nr_ao_small_x2c = ntbas(2)
+!        initialize integer variables
+         num_nuclei      = nucdep
+!                         [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
+         nr_ao_total_x2c = ntbas(0)
+!                         [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
+         nr_ao_large_x2c = ntbas(1)
+!                         [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
+         nr_ao_small_x2c = ntbas(2)
 !
-           n2bastq_dim_x2c = n2bastq
+         n2bastq_dim_x2c = n2bastq
 !
-           nr_cmo_q        = ncmotq
+         nr_cmo_q        = ncmotq
 !
-           fullemat_dim    = 0
-           fullomat_dim    = 0
-           fulleomat_dim   = 0
-           do i = 1, nr_fsym
-             j               =  nesh(i)
-             k               =  norb(i)
-             l               =  npsh(i)
-             dim_pshell(i)   =  l
-             dim_eshell(i)   =  j
-             dim_eshell2(i)  =  j*2
-             dim_e2shell(i)  =  j**2
-             dim_e2shellq(i) = (j**2)*nr_quat
-             dim_oshell(i)   =  k
-             dim_o2shellq(i) = (k**2)*nr_quat
-             fullemat_dim    = (j**2)*nr_quat + fullemat_dim 
-             fullomat_dim    = (k**2)*nr_quat + fullomat_dim 
-             fulleomat_dim   =  k* j *nr_quat + fulleomat_dim 
-!                              [  L+S  ]
-             nr_ao_all(i)    = nfbas(i,0)
-!                              [  L    ]
-             nr_ao_l(i)      = nfbas(i,1)
-!                              [    S  ]
-             nr_ao_s(i)      = nfbas(i,2)
-             do m = 1, nr_fsym
-               ioff_aomat_x(m,i) = i2basx(m,i)
-             end do
+         fullemat_dim    = 0
+         fullomat_dim    = 0
+         fulleomat_dim   = 0
+         do i = 1, nr_fsym
+           j               =  nesh(i)
+           k               =  norb(i)
+           l               =  npsh(i)
+           dim_pshell(i)   =  l
+           dim_eshell(i)   =  j
+           dim_eshell2(i)  =  j*2
+           dim_e2shell(i)  =  j**2
+           dim_e2shellq(i) = (j**2)*nr_quat
+           dim_oshell(i)   =  k
+           dim_o2shellq(i) = (k**2)*nr_quat
+           fullemat_dim    = (j**2)*nr_quat + fullemat_dim 
+           fullomat_dim    = (k**2)*nr_quat + fullomat_dim 
+           fulleomat_dim   =  k* j *nr_quat + fulleomat_dim 
+!                            [  L+S  ]
+           nr_ao_all(i)    = nfbas(i,0)
+!                            [  L    ]
+           nr_ao_l(i)      = nfbas(i,1)
+!                            [    S  ]
+           nr_ao_s(i)      = nfbas(i,2)
+           do m = 1, nr_fsym
+             ioff_aomat_x(m,i) = i2basx(m,i)
            end do
+         end do
 
-           x2c_cb_pq_to_uq(1:4, 0:7)        = ipqtoq(1:4, 0:7)
-           x2c_cb_uq_to_pq(1:4, 0:7)        = iqtopq(1:4, 0:7)
-           x2c_bs_to_fs(0:7, 1:2)           = jbtof(0:7, 1:2)
-           x2c_pointer_quat(0:7, 1:2)       = jqbas(0:7, 1:2)
-           x2c_bs_irrep_mat(1:4, 0:7)       = irqmat(1:4, 0:7)
-           x2c_iqmult_trip_q(1:4, 1:4, 1:4) = iqmult(1:4, 1:4, 1:4)
-           x2c_pointer_quat_op(0:7)         = jm4pos(0:7)
+         x2c_cb_pq_to_uq(1:4, 0:7)        = ipqtoq(1:4, 0:7)
+         x2c_cb_uq_to_pq(1:4, 0:7)        = iqtopq(1:4, 0:7)
+         x2c_bs_to_fs(0:7, 1:2)           = jbtof(0:7, 1:2)
+         x2c_pointer_quat(0:7, 1:2)       = jqbas(0:7, 1:2)
+         x2c_bs_irrep_mat(1:4, 0:7)       = irqmat(1:4, 0:7)
+         x2c_iqmult_trip_q(1:4, 1:4, 1:4) = iqmult(1:4, 1:4, 1:4)
+         x2c_pointer_quat_op(0:7)         = jm4pos(0:7)
 
-           fh_1int_4c = lu1int
-           all_prp_op = nprps
+         fh_1int_4c = lu1int
+         all_prp_op = nprps
 
-!          initialize logicals
-           x2c_linsym       = linear
-           x2c_do_spherical = dosphe
-           x2c_prep_bnccorr = bncron.and..not.onesys
-           x2c_1e_system    = onesys
+!        initialize logicals
+         x2c_linsym       = linear
+         x2c_do_spherical = dosphe
+         x2c_prep_bnccorr = bncron.and..not.onesys
+         x2c_1e_system    = onesys
   
-!          initialize real*8
-           x2c_cspeed = cval
-         end if
+!        initialize real*8
+         x2c_cspeed = cval
 
 !        set defining matrix wrt which the pct-mtx will be derived
          if(x2c_4c_fock_mtx_defh1)then
@@ -197,17 +189,13 @@ contains
          end if
 ! 
        else 
-         if(is_center_x2c == -1)then
+
+         if(present(prop_op_dgsym) .and. present(prop_op_trsym) .and.  present(prop_op_name))then
            do i = 1, nprps
              prop_op_dgsym(i) = iprpsym(i)
              prop_op_trsym(i) = iprptim(i)
              prop_op_name(i)  = prpnam(i)
            end do
-!          do i = 1, nprps
-!            print'(a,2i4)','init prop: prop_op_dgsym(i),iprpsym(i)',prop_op_dgsym(i),iprpsym(i)
-!            print'(a,2i4)','init prop: prop_op_trsym(i),iprptim(i)',prop_op_trsym(i),iprptim(i)
-!            print'(a,2a)','init prop: prop_op_name(i),prpnam(i)',prop_op_name(i),prpnam(i)
-!          end do
          else 
            do i = 1, nr_fsym
 !            orbital dimensions after LOWDIN (needed for a proper handling of 2c-LOWDIN matrix)
@@ -216,7 +204,8 @@ contains
              nr_mo_lw_s(i)   = nforb(i,2)
            end do
          end if
-       end if
+
+       end if ! initialize x2c information from Dirac common blocks
 
   end subroutine
 

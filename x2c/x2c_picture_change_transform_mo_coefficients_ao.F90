@@ -306,15 +306,9 @@ contains
              write(info_text,'(a27,i1)') 'x2c - 4c-MO (all) - xcmo - ',i
              call print_x2cmat(mo_coeff_4c,nbas1_f,norb1_f,nz,ipq_off_in,info_text,6)
        
-!           do j = 1, nbas1_f*norb1_f*nz
-!             print *, ' element ==> ',mo_coeff_4c(j),'of #',j
-!           end do
              print *, '2c-MO coefficients ==> '
              write(info_text,'(a27,i1)') 'x2c - 2c-MO (all) - xcmo - ',i
              call print_x2cmat(mo_coeff_2c(ioff_mo_coeff_2c),nbas1_f,n1esh_f,nz,ipq_off_in,info_text,6)
-!           do j = 1, nbas1_f*n1esh_f*nz
-!             print *, ' element ==> ',mo_coeff_2c(ioff_mo_coeff_2c+j-1),'of #',ioff_mo_coeff_2c+j-1
-!           end do
            end if
          end if
 

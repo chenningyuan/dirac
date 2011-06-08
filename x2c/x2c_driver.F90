@@ -91,6 +91,7 @@ module dirx2c
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients
   use x2c_import_exportC1
+  use x2c_dirac_in_house_so_correction
 
   implicit none
 
@@ -139,28 +140,20 @@ contains
      real(8), allocatable   :: scr1mat(:)
      real(8), allocatable   :: scr2mat(:)
      real(8), allocatable   :: eigvl(:)
-     integer                :: prop_idummy(2)
-     character (len=16)     :: prop_cdummy(2)
      integer                :: lwrk
      integer                :: is_allocated_dyn
      integer                :: i,j
-     integer                :: is_center_x2c
+     integer                :: z_value
      integer                :: dim1_fsym_Sao
      integer                :: dim2_fsym_Sao
      integer                :: final_ham_lvl_x2c  ! level of final hamiltonian stored on global file X2CMAT
      logical                :: op_2c_ll
-     logical                :: lin_aomo_mat_req
      character (len=12)     :: flabel             ! label for matrices on file
 !**********************************************************************
 
 !      ------------------------------------------------------------------------------
 !      step 0: initialize and print header
 !      ------------------------------------------------------------------------------
-
-!      atom-by-atom X2C run
-       if( atom_by_atom_x2c )then
-         call quit(' *** error in x2c_driver: atom-by-atom X2C code is not activated yet. ***')
-       end if
 
 !      print header
        call hello_dirx2c()
@@ -177,12 +170,28 @@ contains
             access='sequential',action='readwrite',position='rewind')
        call x2c_write(flabel,x2c_dummy,-1,x2c_funit)
 
-!      ------------------------------------------------------------------------------
-!      step 1: loop over (molecular fragments)/ "all centers"
-!      ------------------------------------------------------------------------------
+!      set the "Z" value of the current atomic center / total Z value if it is a molecule 
+!      for the time being (until i have fully implemented the atomic X2C
+!      approach) this will be Z = 1.
+       z_value = 1
 
-       do is_center_x2c = 1, x2c_nuccent
+!      ------------------------------------------------------------------------------
+!      step 1.0: initialize dimensions in Dirac-sorted SA-AO basis and symmetry settings 
+!      ------------------------------------------------------------------------------
+       call init_x2c_cb(.true.)
 
+       select case(atom_by_atom_x2c)
+
+         case(.true.) 
+
+!          atom-by-atom X2C run
+           call quit(' *** error in x2c_driver: atom-by-atom X2C code is not activated yet. ***')
+!          -----------------------------------------------
+!          atom-by-atom X2C run: construct full pct-matrix
+!          -----------------------------------------------
+           call x2c_atomic_x2c_driver()
+
+         case default ! false
 
 !        open scratch file x2cscr (data for previous fragment is erased if atom-by-atom X2C)
          open(x2c_fscru,file='x2cscr',status='replace',form='unformatted',  &
@@ -194,19 +203,6 @@ contains
               access='sequential',action="readwrite",position='rewind')
          call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
 
-!        ------------------------------------------------------------------------------
-!        step 1.0: initialize dimensions in Dirac-sorted SA-AO basis and symmetry settings 
-!        ------------------------------------------------------------------------------
-         
-         call init_x2c_cb(.true.,               &
-                          atom_by_atom_x2c,     &
-                          is_center_x2c,        &
-                          prop_idummy,          &
-                          prop_idummy,          &
-                          prop_cdummy)
-
-!        set logical value for matrices (Lowdin and others) to be adapted for linear symmetry
-         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.x2c_linsym)
 
 !        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
          call alloc(xmat   ,nr_ao_total_x2c**2 * nr_quat)
@@ -214,7 +210,7 @@ contains
          is_allocated_dyn  = nr_ao_total_x2c**2 * nr_quat
 
 !        ------------------------------------------------------------------------------
-!        step 1.1: compute 4c-Sao_LL overlap matrix for fragment "is_center_x2c"
+!        step 1.1: compute 4c-Sao_LL overlap matrix for fragment "z_value"
 !        ------------------------------------------------------------------------------
 
 !        open temporary scratch file for 4c-Sao_LL overlap matrix
@@ -227,9 +223,9 @@ contains
          if(nr_fsym == 2) dim2_fsym_Sao = nr_ao_all(nr_fsym)
 
          call get_Sao_LL_mat(xmat,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
-!                                                       ^ (compute+write if >= 0)
+!                                                     ^ (compute+write if >= 0)
 !        ------------------------------------------------------------------------------
-!        step 1.2: get LOWDIN matrix for fragment "is_center_x2c".
+!        step 1.2: get LOWDIN matrix for fragment "z_value".
 !                  1.2.a. get the 4c-Lowdin matrix
 !                  1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
 !        ------------------------------------------------------------------------------
@@ -255,18 +251,13 @@ contains
 !        set maximum allowed length of wrk array allocations
          is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
-
+  
 !        step 1.2.b. get the 2c-Lowdin matrix
 !        ------------------------------------
          if(x2c_is_defining_h1mat == 2)then
 !          construct the two-component Lowdin matrix
 !          initialize lowdin dimensions
-           call init_x2c_cb(.false.,           &
-                            atom_by_atom_x2c,  &
-                            is_center_x2c,     &
-                            prop_idummy,       &
-                            prop_idummy,       &
-                            prop_cdummy)
+           call init_x2c_cb(.false.)
 
 !          open temporary scratch file for 4c-Lowdin matrix
            open(x2c_lowdin_scrF,file='X2C_lowdin_scr',status='replace',form='unformatted',    &
@@ -293,9 +284,9 @@ contains
                            nr_fsym,            &
                            nr_quat,            &
                            lwrk,               &
-                           is_center_x2c,      &
+                           z_value,            &
                            x2c_funit,          &
-                           lin_aomo_mat_req)         
+                           (x2c_is_defining_h1mat == 2).and.x2c_linsym)
 
 !          recover the 4c-Lowdin matrix
            call x2c_read('x2c-4clowdin',xmat,nr_ao_total_x2c*nr_ao_total_x2c,x2c_lowdin_scrF)
@@ -315,14 +306,14 @@ contains
 
          call sel_wrk_x2c(wrk,lwrk)
 
-         call modham(scr1mat,                  &
-                     xmat,                     &
-                     scr2mat,                  &
-                     eigvl,                    &
-                     .true.,                   &
-                     lin_aomo_mat_req,         &
-                     x2c_is_defining_h1mat,    &
-                     wrk,                      &
+         call modham(scr1mat,                                         &
+                     xmat,                                            &
+                     scr2mat,                                         &
+                     eigvl,                                           &
+                     .true.,                                          &
+                     (x2c_is_defining_h1mat == 2).and.x2c_linsym,     &
+                     x2c_is_defining_h1mat,                           &
+                     wrk,                                             &
                      lwrk)
 
 !        nullify pointer to work array and release matrices
@@ -343,12 +334,7 @@ contains
 !        step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
 !                  these dimensions have been evaluated in MODHAM. 
 !        ------------------------------------------------------------------------------
-         call init_x2c_cb(.true.,               &
-                          atom_by_atom_x2c,     &
-                          is_center_x2c,        &
-                          prop_idummy,          &
-                          prop_idummy,          &
-                          prop_cdummy)
+         call init_x2c_cb(.true.)
 
 !        ------------------------------------------------------------------------------
 !        step 1.5: obtain 
@@ -373,7 +359,7 @@ contains
                       nr_fsym,                &
                       nr_quat,                &
                       x2c_cb_pq_to_uq,        &
-                      is_center_x2c,          &
+                      z_value,                &
                       x2c_funit,              &
                       x2c_fscru,              &
                       x2c_famfi,              &
@@ -399,7 +385,7 @@ contains
 !        step 1.6: add AMFI contributions in case
 !                  h1 == bare-nucleus 1e Dirac-Hamiltonian (or extended Huckel guess) .and. AMFI is desired
 !        --------------------------------------------------------------------------------------------------
-         if(x2c_add_amfi >0)then
+         if(x2c_add_amfi > 0)then
            call x2c_amfi_driver(final_ham_lvl_x2c,                 &
                                 x2c_add_amfi,                      &
                                 nr_ao_total_x2c,                   &
@@ -429,18 +415,8 @@ contains
 
          close(x2c_famfi,status="delete")
 
-!      ------
-       end do ! end of loop over (molecular fragments)/ "all centers"
-!      ------
 
-!      -------------------------------------------------------
-!      step 2: atom-by-atom X2C run: construct full pct-matrix
-!      -------------------------------------------------------
-       if(atom_by_atom_x2c.and.(x2c_nuccent > 1))then
-
-         call x2c_atomic_x2c_driver()
-
-       end if
+     end select ! atom-by-atom X2C switch
 
 !      ------------------------------------------------------------------------------------------
 !      step 4: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):
@@ -532,7 +508,7 @@ contains
                      nfsym,                &
                      nz,                   &
                      ipq_off,              &
-                     is_fragment,          &
+                     is_z_value,           &
                      x2c_file_glb,         &
                      x2c_file_scr,         &
                      x2c_file_amf,         &
@@ -582,7 +558,7 @@ contains
      integer, intent(in)    :: momat_orbesh_dim_4c
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: ipq_off(4,0:7)
-     integer, intent(in)    :: is_fragment
+     integer, intent(in)    :: is_z_value
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: x2c_file_amf
@@ -626,7 +602,7 @@ contains
                                       nfsym,               &
                                       nz,                  &
                                       defining_h1mat,      &
-                                      is_fragment,         &
+                                      is_z_value,          &
                                       x2c_file_scr,        &
                                       linear_sym)
 
@@ -652,7 +628,7 @@ contains
                                 ipq_off,               &
                                 basic_h1mat,           &
                                 lwrk,                  &
-                                is_fragment,           &
+                                is_z_value,            &
                                 x2c_file_scr,          &
                                 linear_sym,            &
                                 print_lvl)
@@ -673,7 +649,7 @@ contains
                                     ipq_off,               &
                                     defining_h1mat,        &
                                     lwrk,                  &
-                                    is_fragment,           &
+                                    is_z_value,            &
                                     x2c_file_scr,          &
                                     linear_sym,            &
                                     print_lvl)
@@ -690,7 +666,7 @@ contains
 !              in : defining  4c-h1 in orthonormal basis -> xmat
 !                   on file x2cscr in orthonormal basis: the basic operator "h1_4c" (label == h1_4cON)
 !              out: the basic 2c-h1 in orthonormal basis -> xmat
-!                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix for nuclei is_fragment
+!                   on file x2cscr in orthonormal basis: pct-matrix U, "R"-matrix for nuclei is_z_value
 !      ------------------------------------------------------------------------------
        call get_h1_2c_onmo_bas(xmat,                      &
                                scr1mat,                   &
@@ -702,7 +678,7 @@ contains
                                nfsym,                     &
                                nz,                        &
                                ipq_off,                   &
-                               is_fragment,               &
+                               is_z_value,                &
                                x2c_file_scr,              &
                                defining_h1mat,            &
                                print_lvl)
@@ -732,7 +708,7 @@ contains
                                    nfsym,                   &
                                    nz,                      &
                                    ipq_off,                 &
-                                   is_fragment,             &
+                                   is_z_value,              &
                                    is_final_ham_lvl,        &
                                    add_amfi_contrib,        &
                                    lwrk,                    &
@@ -755,7 +731,7 @@ contains
        if(.not. fragment_x2c) then 
          is_fragment_pctmat = 0
        else
-         is_fragment_pctmat = is_fragment
+         is_fragment_pctmat = is_z_value
        end if
 
        call construct_pctmat_saao_bas(xmat,                &
@@ -770,7 +746,7 @@ contains
                                       nz,                  &
                                       ipq_off,             &
                                       is_fragment_pctmat,  &
-                                      is_fragment,         &
+                                      is_z_value,          &
                                       x2c_file_scr,        &
                                       x2c_file_glb,        &
                                       print_lvl)

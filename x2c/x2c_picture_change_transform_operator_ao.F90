@@ -163,8 +163,6 @@ contains
 
 !      initialize property operator attributes
        call init_x2c_cb(.false.,           &
-                        .false.,           &
-                        -1,                &
                         prop_op_dgsym,     &
                         prop_op_trsym,     &
                         prop_op_name)

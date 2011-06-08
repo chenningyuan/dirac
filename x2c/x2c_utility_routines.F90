@@ -796,13 +796,17 @@ contains
 
 !      THIS IS ONLY A DEBUG OPTION!!!!!!!!!!!!!!!!!
        if(x2c_fock_saao_basis)then
-         print *, 'read fock matrices'
+
          allocate(temp_mat(nr_ao_total_x2c**2*nr_quat))
          temp_mat = 0
          file_unit = 99
-         open(file_unit,file='DFFCK1',status='old',form='unformatted', &
-         access='sequential',action='read')
-         call reafck(file_unit,xmat,.FALSE.,1)
+
+         open(file_unit,file='DFFCK1',status='old',form='unformatted',access='sequential',action='read')
+         call read_fock_matrices_saao_basis_x2c(xmat,                       &
+                                                nr_ao_total_x2c**2*nr_quat, &
+                                                1,                          &
+                                                file_unit,                  &
+                                                print_lvl)
          close(file_unit, status='keep')
 !        debug print
          if(print_lvl > 2)then
@@ -810,9 +814,12 @@ contains
            call print_x2cmat(xmat,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq,debug_string,6)
          end if
 
-         open(file_unit,file='DFFCK2',status='old',form='unformatted', &
-         access='sequential',action='read')
-         call reafck(file_unit,temp_mat,.FALSE.,1)
+         open(file_unit,file='DFFCK2',status='old',form='unformatted',access='sequential',action='read')
+         call read_fock_matrices_saao_basis_x2c(temp_mat,                   &
+                                                nr_ao_total_x2c**2*nr_quat, &
+                                                1,                          &
+                                                file_unit,                  &
+                                                print_lvl)
          close(file_unit, status='keep')
 !        debug print
          if(print_lvl > 2)then
@@ -828,7 +835,8 @@ contains
            call print_x2cmat(xmat,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq,debug_string,6)
          end if
          deallocate(temp_mat)
-       else
+
+       else ! end of DEBUG ONLY OPTION!
 
 !      step 1: inquire file and set record number
 !      ------------------------------------------
