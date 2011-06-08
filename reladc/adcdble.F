@@ -617,16 +617,6 @@ C
       REAL*8 VOOO1(*),VOOO2(*),COL(*),GIJKL(*),EPS(*)
       INTEGER DESREP,LEN_RKLM
 c
-c  variables and arrays for packed matrix strorage handling
-c  the outside program is initializing these data and keeping
-c  track. Mention: the 3h1p/3h1p block will also be appended in
-c  packed form !
-c
-c     INTEGER IBUFPOS,IBUFNUM,IBUFLEN
-c     PARAMETER (IBUFLEN=65536)
-c     INTEGER IBUFROW(IBUFLEN),IBUFCOL(IBUFLEN)
-c     REAL*8  IBUFDAT(IBUFLEN)
-c
 c  MAXOCCSP is the total number of occupied spinors over all ireps.
 C
 C---------------Common Blocks--------------------------------------
@@ -1025,16 +1015,6 @@ C
       COMPLEX*16 VOOO1(*),VOOO2(*),COL(*),GIJKL(*)
       REAL*8 ECOL(*),EPS(*)
       INTEGER DESREP,LEN_RKLM
-c
-c  variables and arrays for packed matrix strorage handling
-c  the outside program is initializing these data and keeping
-c  track. Mention: the 3h1p/3h1p block will also be appended in
-c  packed form !
-c
-c     INTEGER IBUFPOS,IBUFNUM,IBUFLEN
-c     PARAMETER (IBUFLEN=65536)
-c     INTEGER IBUFROW(IBUFLEN),IBUFCOL(IBUFLEN)
-c     REAL*8  IBUFDAT(IBUFLEN)
 c
 c  MAXOCCSP is the total number of occupied spinors over all ireps.
 C
