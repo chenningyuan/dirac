@@ -18,7 +18,7 @@ python pamadm -a
 rem delete/recreate directory
 rmdir /S /Q %DIRAC%\build
 mkdir %DIRAC%\build
-cd %DIRAC%\build
+cd %DIRAC%/build
 
 rem own cmake configure step
 cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.gfortran.gcc.ownmath.ilp64" %DIRAC%
@@ -34,4 +34,4 @@ mingw32-make -j 2
 mingw32-make ExperimentalSubmit
 
 rem return back
-cd %DIRAC%\maintenance\cdash
+rem cd %DIRAC%\maintenance\cdash
