@@ -757,15 +757,11 @@ Options are also read from the ~/.dirac and .diracrc files."""
             except Exception:
                 pass
 
-        # try $HOME
         try_config_file(os.path.join(os.path.expanduser('~'),'.diracrc'))
-
-        # try current dir
         try_config_file('.diracrc')
-
-        # try install dir
-        try_config_file(install_dir + '/.diracrc')
-
+        try_config_file('diracrc')
+        try_config_file(os.path.join(install_dir,'.diracrc'))
+        try_config_file(os.path.join(install_dir,'diracrc'))
 
         fullargs.extend(sys.argv[1:])
         (options, args) = parser.parse_args(fullargs)
