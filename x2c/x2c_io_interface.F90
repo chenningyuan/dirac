@@ -78,7 +78,9 @@ contains
 !----------------------------------------------------------------------
      logical                            :: fndlab12
      character (len=800)                :: funit_name
+     character (len=1000)               :: error_stream
      integer                            :: lfunit_name
+     integer                            :: lerror_stream
 !**********************************************************************
  
        rewind(funit)
@@ -88,9 +90,12 @@ contains
          else
            inquire(unit=funit, name=funit_name)
            lfunit_name = len_trim(funit_name)
-           print '(2x,a,a,a,a)', ' *** error in x2c_read: data with label ',flabel,' is not present in the file ',  &
-                                   funit_name(1:lfunit_name)
-           call quit('*** error in x2c_read:: data not found on the file. ***')
+           print '(a,a,a,a)', '   *** error in x2c_read: data with label ',flabel,' is not present in the file ',  &
+                                  funit_name(1:lfunit_name)
+           write(error_stream,'(a,a,a,a)') & 
+           '   *** error in x2c_read: data with label ',flabel,' is not present in the file ',funit_name(1:lfunit_name)
+           lerror_stream = len_trim(error_stream)
+           call quit(error_stream(1:lerror_stream))
          end if
        else
          print '(2x,a)', ' *** warning in x2c_read: attempt to read data array which is supposed to be zero. ***'
