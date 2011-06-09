@@ -21,7 +21,7 @@ mkdir %DIRAC%\build
 cd %DIRAC%/build
 
 rem own cmake configure step
-cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.gfortran.gcc.ownmath.ilp64" %DIRAC%
+cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.gfortran.gcc.ownmath.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%
 
 rem make clean
 rem make dirac.x
@@ -31,7 +31,7 @@ rem mingw32-make dirac_interfaces
 
 rem for now do only the compilation and submit info about it
 mingw32-make -j 2
-mingw32-make ExperimentalSubmit
+rem mingw32-make ExperimentalSubmit
 
 rem return back
 rem cd %DIRAC%\maintenance\cdash

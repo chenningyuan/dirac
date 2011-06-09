@@ -16,7 +16,7 @@ svn up
 python pamadm -a --xcfun 
 
 rem configure step
-cmake -G "MinGW Makefiles" "FC=gfortran"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug  %DIRAC%
+cmake -G "MinGW Makefiles" "FC=gfortran"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DVERBOSE_OUTPUT=ON %DIRAC%
 
 cd %DIRAC%\build
 rem make clean
