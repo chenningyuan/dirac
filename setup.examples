@@ -4,8 +4,8 @@ for users trying to install DIRAC on similar machines.
 
 stallo (x86_64 linux cluster) 2011-05-31
 ----------------------------------------
-$ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake python
-$ ./setup --fc=mpif90 --cc=mpicc --mpi --install=/global/apps/dirac/r14098
+$ module load intel-compiler/11.1 openmpi/1.4 mkl/10.2.0.013 cmake
+$ ./setup --fc=mpif90 --cc=mpicc --mpi --install=/global/apps/dirac/r14219
 $ cd build
 $ make
 $ make install
