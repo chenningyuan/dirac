@@ -740,6 +740,7 @@
 !
 
       CALL PST('Entering (new format) REAL FULL diagonalizer+')
+      write(*,*) 'Numer of buffers to read:',nbufs
 
       IF(LADC.gt.5000) THEN
         write(*,*) 'Matrix dimension too large for direct'
@@ -888,6 +889,7 @@
 !
 
       CALL PST('Entering (new format) FULL complex diagonalizer+')
+      write(*,*) 'Numer of buffers to read:',nbufs
 
       IF(LADC.gt.5000) THEN
         write(*,*) 'Matrix dimension too large for direct'
