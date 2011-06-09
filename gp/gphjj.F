@@ -1022,7 +1022,13 @@ C
       DATA LSTARS /'********'/
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
-      WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) LSTARS,LDATE,LTIME,LABEL
+#if !defined VAR_G95
+!miro: g95 does not know the "iomsg" parameter ....
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
+     &              LSTARS,LDATE,LTIME,LABEL
+#else
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
+#endif
       RETURN
 C
  1000 IF (LUERR .LT. 0) THEN
@@ -1032,7 +1038,9 @@ C
          WRITE (LUERR,'(/3A,I5/A,I7)')
      &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
+#if !defined VAR_G95
          WRITE (LUERR,'(A,A)') 'message:',msg
+#endif
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLAB: output error writing label')
       END IF
