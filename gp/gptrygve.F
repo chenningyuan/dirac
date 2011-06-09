@@ -284,6 +284,7 @@ C
 || defined (SYS_SX) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
+      CALL FLSHFO(0)
 #endif
       CALL FLSHFO(LUPRI)
 
