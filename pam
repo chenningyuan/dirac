@@ -416,6 +416,24 @@ class pam_enviroment:
         print
         sys.stdout.flush()
 
+    def get_rc_arguments(self):
+        """Look for possible rc files and return arguments collected from them."""
+        fullargs = []
+        paths = [os.path.join(os.path.expanduser('~'),'.diracrc'),
+                 '.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
+                 os.path.join(install_dir,'diracrc')]
+        for path in paths:
+            try:
+                f = open(path,'r')
+                for l in f.readlines():
+                    l = l.strip()
+                    if l[0] != '#':
+                       for a in shlex.split(l):
+                           fullargs.append(a)
+            except Exception:
+                pass
+        return fullargs
+
     def process_pam_arguments(self):
         ''' the longest method - reading and processing script flags  '''
         global install_dir
@@ -744,25 +762,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             )
         parser.add_option_group(group)
         
-        # process arguments from config files and command line
-        # file arguments come first and hence have lowest priority
-        fullargs = []
-        def try_config_file(path):            
-            try:
-                f = open(path,'r')
-                for l in f.readlines():
-                    if l[0] != '#':
-                       for a in shlex.split(l):
-                           fullargs.append(a)
-            except Exception:
-                pass
 
-        try_config_file(os.path.join(os.path.expanduser('~'),'.diracrc'))
-        try_config_file('.diracrc')
-        try_config_file('diracrc')
-        try_config_file(os.path.join(install_dir,'.diracrc'))
-        try_config_file(os.path.join(install_dir,'diracrc'))
-
+        fullargs = self.get_rc_arguments()
         fullargs.extend(sys.argv[1:])
         (options, args) = parser.parse_args(fullargs)
     
