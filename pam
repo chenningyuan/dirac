@@ -12,6 +12,11 @@
 #                Andre Gomes, France
 #
 ##########################################################################
+#
+# TODO: utilize zipping module instead of 'tar'
+# http://docs.python.org/library/zipfile.html
+# http://www.doughellmann.com/PyMOTW/zipfile/
+#
 import os
 import sys
 import string
