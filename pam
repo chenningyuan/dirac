@@ -110,6 +110,7 @@ class pam_enviroment:
    
     # ... dirac.x/dirac mpi-launcher subprocess variable (pointer)
         self.dirac_p=None
+        self.returncode=None # dirac process return code
         self.pgid = None # process group id of the "dirac" process
         # PIDs of all dirac-processes (list)
         self.dirac_pids=[]
@@ -119,11 +120,11 @@ class pam_enviroment:
         self.all_dirac_pids=[]
 
     # ... dirac error output (stderr stream), always filled
-        self.dirac_stderr=''     
+        self.dirac_stderr=None
 
     # ... variables related to parallel calculations
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
-        self.mpiarg = ''  # additional arguments for the MPIRUN
+        self.mpiarg = None  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
         self.distribute_files = False # if some distribution over different nodes
 
@@ -167,12 +168,11 @@ class pam_enviroment:
 
     # dirac profiling
         self.profile = False
-        self.profiler = ''
+        self.profiler = None
         self.profiling_file = 'gmon.out'  # usuall output file
-        self.profile_command = ''  # command for profiling
-
+        self.profile_command = None  # command for profiling
     # dirac executable command (set in own routine)
-        self.dirac_cmd = ''
+        self.dirac_cmd = None
 		
     # dirac-executable position (could be reset after flag reading)
         exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
@@ -282,21 +282,24 @@ class pam_enviroment:
         self.pam_command = os.path.join(install_dir,"pam")
 
     def show_settings(self):
-        "Print current settings to stdout"
-        print "Operating system:     " + self.operating_system
+        '''
+        Print current settings to stdout
+        TODO: do we want to show also content of the .diracrc file ?
+        '''
+        print "Operating system:     ",  self.operating_system
         print "Current settings:"
-        print "  Install directory   " + self.dirac_home
-        print "  Basis directories   " + self.basdir
-        print "  Scratch directory   " + self.scratch_dir
+        print "  Install directory   ", self.dirac_home
+        print "  Basis directories   ",  self.basdir
+        print "  Scratch directory   ",  self.scratch_dir
         print "  Relevant for parallel builds:"
-        print "    mpi launcher         " + str(self.mpirun)
-        print "    mpirun extra args    " + str(self.mpiarg)
-        print "    global scratch disk  " + str(self.global_scratch_disk)
-        print "    Machine file         " + str(self.machinefile)
-        print "  Profiler            " + self.profiler
-        print "  Debugger            " + self.debugger
-        print "  Dirac command       " + self.dirac_cmd
-        print "  Dirac executable    " + self.dirac_exe
+        print "    mpi launcher         ",  self.mpirun
+        print "    mpirun extra args    ",  self.mpiarg
+        print "    global scratch disk  ",  self.global_scratch_disk
+        print "    Machine file         ", self.machinefile
+        print "  Profiler            ",  self.profiler
+        print "  Debugger            ",  self.debugger
+        print "  Dirac command       ",  self.dirac_cmd
+        print "  Dirac executable    ",  self.dirac_exe
 
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
@@ -402,11 +405,11 @@ class pam_enviroment:
                     print '  keeping the scratch directory'
         sys.stdout.flush()
 
-    def exit_function(self, returncode):
+    def exit_function(self):
         '''prints message on the DIRAC executable exit according to the input parameter'''
         print '  exit date      :', datetime.datetime.now()
-        print '  exit code      :', returncode
-        if returncode == 0:
+        print '  exit code      :', self.returncode
+        if self.returncode == 0:
             print '  exit           : normal'
         else:
             print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
@@ -1243,20 +1246,17 @@ Options are also read from the ~/.dirac and .diracrc files."""
                         print '                   %s' \
                             % basis_set_directory_list[i]
         if not self.debug and not self.vg_debug:
-            return_code = self.launch_dirac_subprocess()
-            print '  command ended with return code:',return_code
+            self.launch_dirac_subprocess()
         elif self.parallel_run == False:
             print 'debugging dirac in plain serial run...', \
                   self.dirac_cmd
-            return_code = os.system(self.dirac_cmd)
+            self.returncode = os.system(self.dirac_cmd)
         else:
             print '...no dirac run-wrong parallel/debugger combination'
 
         if self.profile:
             # do the profiling after the execution if wanted
             self.profile_dirac()
-
-        return return_code
 
     def print_all_processes(self):
         """
@@ -1285,7 +1285,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 return name[0]
             else:
                 return str(num)
-        print 
+        print 'interrupted dirac run' 
         # interrupt dirac run
         if self.pgid is not None:
             interrupt_message="\npam: All dirac.x subprocesses terminated with signal "\
@@ -1319,16 +1319,15 @@ Options are also read from the ~/.dirac and .diracrc files."""
         flush stderr message about details of the terminated run;
         serves for the CDash-board
         '''
-        if not self.silent:
-            # flush out message on the existence of stderr output 
-            print >> sys.stdout, "\n  Nonzero stderr stream !"
-            print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
-            if len(self.dirac_stderr) > 0 :
-                print >> sys.stderr,self.dirac_stderr
-            print >> sys.stderr,'directory:', self.input_directory
-            print >> sys.stderr,'   inputs:', self.input_molecule,\
-                                ' & ', self.input_dirac
-            sys.stderr.flush()
+        # flush out message on the existence of stderr output 
+        print >> sys.stdout, "  pam, stdout info: process ended with nonzero stderr stream - check "
+        print >> sys.stderr,'\n **** dirac-executable stderr console output : **** '
+        if self.dirac_stderr :
+            print >> sys.stderr,self.dirac_stderr
+        print >> sys.stderr,'directory:', self.input_directory
+        print >> sys.stderr,'   inputs:', self.input_molecule,\
+                            ' & ', self.input_dirac
+        sys.stderr.flush()
 
     def launch_dirac_subprocess(self):
         '''
@@ -1342,9 +1341,10 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 signal.signal(signal.SIGALRM, self.child_signaller)
                 signal.alarm(self.timeout)
         else:
+            # these commented signals should work with newer versions of Python
             #signal.signal(signal.CTRL_C_EVENT,self.child_signaller)		
-            signal.signal(signal.SIGABRT,self.child_signaller)
             #signal.signal(signal.CTRL_BREAK_EVENT,self.child_signaller)
+            signal.signal(signal.SIGABRT,self.child_signaller)
             signal.signal(signal.SIGFPE,self.child_signaller)
             signal.signal(signal.SIGILL,self.child_signaller)
             signal.signal(signal.SIGSEGV,self.child_signaller)
@@ -1373,22 +1373,24 @@ Options are also read from the ~/.dirac and .diracrc files."""
         self.pgid = self.dirac_p.pid
         if not self.silent:
             print '  DIRAC command  : %s (PID=%s)' % (self.dirac_cmd,self.dirac_p.pid)
-
-        # get stderr stream to be properly distributed
+       
+        # catch the stderr stream 
         self.dirac_stderr = self.dirac_p.communicate()[1] 
 
+        self.dirac_p.wait()
+        self.returncode = self.dirac_p.returncode
+        if not self.silent:
+            print '  command ended with return code:',self.returncode
+
         # deal with the error output only if happens
-        if len(self.dirac_stderr) > 0 :
+        if self.dirac_stderr and not self.silent:
             # attach stderr to the pam output
-            self.f.write('\n ====  below this line is the stderr stream  ====' + self.dirac_stderr)
+            self.f.write('\n ====  below this line is the stderr stream  ====' + str(self.dirac_stderr))
             # flush out the entire dirac stderr; useful for non-verbose test runs (to have it on the console)
             self.stderr_message()
 
-        self.dirac_p.wait()
+        # close the dirac.x stdout file
         self.f.close()
-        return self.dirac_p.returncode
-
-
 
     def profile_dirac(self):
         """
@@ -1579,21 +1581,21 @@ class pam_run(pam_enviroment):
         self.pam_variables.set_output_file()
         if self.pam_variables.just_show_settings:
             self.pam_variables.show_settings()
-            return 0
+            sys.exit()
         self.pam_variables.print_header()
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_environment()
         self.pam_variables.set_dirac_cmd()
-        return_code = self.pam_variables.execute_dirac()
+        self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
-        self.exit_function(return_code)
+        self.pam_variables.exit_function()
 
 def main(*args):
     dirac_run = pam_run()
-    return dirac_run.perform()
+    dirac_run.perform()
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
