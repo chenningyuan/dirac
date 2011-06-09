@@ -79,6 +79,7 @@ C  /* Deck dirctl */
 
       use interface_ao
       use interface_mo
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -92,8 +93,6 @@ C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
 C***********************************************************************
 C
       CALL PAMINP(WORK,LWORK)
-
-
 
       IF ( INPTES ) RETURN
 C
@@ -134,6 +133,10 @@ C***********************************************************************
 C*****  T  E  R  M  I  N  A  T  I  O  N  *******************************
 C***********************************************************************
 C
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task') ! started om dirrdn.F
+      endif
       CALL QEXIT('DIRCTL')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

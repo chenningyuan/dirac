@@ -32,6 +32,7 @@ program dirprg
   use memory_allocator
   use os_utils
   use dft_cfg
+  use xmlout
 
   implicit none
 #include "priunit.h"
@@ -41,7 +42,6 @@ program dirprg
 #ifdef VAR_MPI
 #include "mpif.h"
 #endif
-#include "xmlout.h"	
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr
   integer(kind=8) :: maxsize = -1
@@ -163,7 +163,7 @@ program dirprg
      call stopwatch(0,mytid)
      print '(a)', '********** E N D   of   D I R A C  output  **********'
      print '(a/)','*****************************************************'
-     if (luxml.gt.0) call xmlout_end
+     if (doxml) call xml_close_file
   endif
   call dealloc(memory)
 #ifdef VAR_MPI

@@ -40,6 +40,7 @@ C***********************************************************************
       use input_reader
       use interface_functional_read
       use x2cmod_cfg
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -47,7 +48,6 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dgroup.h"
 #include "cbirea.h"
-#include "xmlout.h"
       DIMENSION WORK(*)
       character(100)     :: line 
       integer, parameter :: file_unit = 137
@@ -142,8 +142,25 @@ C
       CALL JOBINP
       CLOSE(LUCMD)
 
-C     Start the xml <calculation> and echo the input to the xml output
-      IF (LUXML.GT.0) call xmlout_begin
+C     Start the xml output and echo the input to the xml output
+      if (doxml) then
+         ! Can't begin xml output earlier because we don't know if it's on or off
+         call xml_begin('task','type="dirac-run"') ! closed in dirac.F
+         call xml_begin('input')
+         call xml_begin('program')
+         call xml_begin('name')
+         write(luxml,'(A)') 'dirac'
+         call xml_end('name')
+         call xml_begin('version')
+         write(luxml,'(A)') '2011'
+         call xml_end('version')
+         call xml_end('program')
+         call xml_embed_formatted('DIRAC.INP','dirac-input')
+         call xml_embed_formatted('MOLECULE.MOL','dirac-molecule')
+         call xml_end('input')
+         call xml_begin('output') ! closed in dirac.F
+      endif
+
 C
 C     General input
       OPEN(LUCMD,FILE = 'DIRAC.INP')
@@ -633,6 +650,7 @@ C     Written by Trond Saue May 1996
 C     Last revision: 1997/09/15 - jth (OPTIMIZE added)
 C
 C***********************************************************************
+      use xmlout
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (NTABLE = 13, NDIR = 4)
@@ -642,7 +660,6 @@ C
      &          WORD1*7
 C
 #include "dcbgen.h"
-#include "xmlout.h"
 C
       DATA TABDIR /'*END OF','*OPTIMI','*MINIMI','xXXXXXX'/
 C
@@ -744,13 +761,8 @@ Ctsaue: retained for backwards compatibility
             GOTO 100
  113     CONTINUE
 C     XMLOUT: Write output in xml format to separate file
-            LUXML = 83
-            OPEN(UNIT=LUXML,FILE='dirac.xml',STATUS='NEW', 
-     &           FORM='FORMATTED',IOSTAT=ISTAT)
-            IF (ISTAT.NE.0) THEN
-               CALL QUIT('Error opening dirac.xml for output')
-            ENDIF
-            GOTO 100
+         call xml_open_file('dirac.xml')
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE

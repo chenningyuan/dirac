@@ -1020,8 +1020,9 @@ C  Write new MOLECULE-type label to LU
 C
       CHARACTER*8 LABEL, LTIME, LDATE, LSTARS
       DATA LSTARS /'********'/
+      character*100 msg
       CALL GETDAT(LDATE,LTIME)
-      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) LSTARS,LDATE,LTIME,LABEL
       RETURN
 C
  1000 IF (LUERR .LT. 0) THEN
@@ -1031,6 +1032,7 @@ C
          WRITE (LUERR,'(/3A,I5/A,I7)')
      &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
+         WRITE (LUERR,'(A,A)') 'message:',msg
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLAB: output error writing label')
       END IF

@@ -64,7 +64,6 @@ C
 #include "orgcom.h"
 #include "dcbprp.h"
 #include "dgroup.h"
-#include "xmlout.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
@@ -88,7 +87,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.XMLOUT','.XXXXXX' /
+     &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -421,9 +420,7 @@ C&&&& EFFDEN; calculate effective electronic densities at the nuclei
             EFFDEN = .TRUE. 
             GO TO 100
   139    CONTINUE
-C&&&& XMLOUT: Turn on xml format output by opening a file
-
-            GO TO 100
+         GO TO 100
   140    CONTINUE
 C&&&& XXXXXX
             GO TO 100

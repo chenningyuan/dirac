@@ -36,6 +36,7 @@ C
 C***********************************************************************
          use dirac_cfg
          use x2cmod_cfg
+         use xmlout
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -61,6 +62,13 @@ C
 #include "memint.h"
 C
       WFCONV = .FALSE.
+      if (doxml) then
+         call xml_begin('task','type="SCF optimization"')
+         call xml_begin('input')
+         call xml_comment('method, convergence thresholds etc')
+         call xml_end('input')
+         call xml_begin('output')
+      endif
       IF(dirac_cfg_dft_calculation) THEN
         IF (BSS) THEN
           CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
@@ -323,6 +331,10 @@ C
  101  WFCONV = DHFCONV(1) .OR. DHFCONV(2)
 C
       CALL FLSHFO(LUPRI)
+      if (doxml) then
+         call xml_end('output')
+         call xml_end('task')
+      endif
       CALL QEXIT('PSIDHF')
       RETURN
 C
@@ -365,6 +377,7 @@ C*****************************************************************************
       use dft_cfg
       use fde_mod
       use num_grid_gen
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -385,7 +398,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-#include "xmlout.h"
       LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -756,12 +768,10 @@ C
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
-        if (luxml.gt.0) then
-           write(luxml,'(A,I3,A)') 
-     &          '<scf-iteration iteration="',NITER,'">'
-           write(luxml,'(A,E24.16,A)') 
-     &          '<energy unit="Hartree">',DHFERG,'</energy>'
-           write(luxml,*) '</scf-iteration>'
+        if (doxml) then
+           call xml_begin('scf-iteration')
+           call xml_quantity('SCF energy',DHFERG,'Hartree')
+           call xml_end('scf-iteration')
         endif
       ENDIF
 C
@@ -1184,6 +1194,7 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use interface_mo
+      use xmlout
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1202,7 +1213,6 @@ C
 #include "dgroup.h"
 #include "dcbreo.h"
 #include "densfit.h"
-#include "xmlout.h"
       LOGICAL   LBIT
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
@@ -1496,12 +1506,10 @@ CMI    ... we may get the DHFEXIT
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
-        if (luxml.gt.0) then
-           write(luxml,'(A,I3,A)') 
-     &          '<scf-iteration iteration="',NITER,'">'
-           write(luxml,'(A,E24.16,A)') 
-     &          '<energy unit="Hartree">',DHFERG,'</energy>'
-           write(luxml,*) '</scf-iteration>'
+        if (doxml) then
+           call xml_begin('scf-iteration')
+           call xml_quantity('SCF energy',DHFERG,'Hartree')
+           call xml_end('scf-iteration')
         endif
         CALL FLSHFO(LUPRI)
 C

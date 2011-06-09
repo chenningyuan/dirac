@@ -182,6 +182,7 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
+      use xmlout
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -200,7 +201,6 @@ C
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
-#include "xmlout.h"
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -349,8 +349,10 @@ C
 C     Output section
 C     ==============
 C
-      IF (LUXML.GT.0) THEN
-         write(luxml,*) '<point-group>'//GROUP//'</point-group>'
+      IF (doxml) THEN
+         call xml_begin('point-group')
+         write(luxml,*) GROUP
+         call xml_end('point-group')
       ENDIF
 
       IF(IPREAD.GT.0) THEN
