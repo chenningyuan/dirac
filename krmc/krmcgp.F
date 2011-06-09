@@ -1846,6 +1846,8 @@ C
       ioff1 = 0
       ioff2 = 0
       dmj_offmax = 1.0D-15
+      immax = 0
+      inmax = 0
 !
 !     loop over active orbitals in each fermion corep
       do ifsym = 1, nfsym
@@ -1868,6 +1870,11 @@ C
 !
 !             test element
               do iz = 1, nz
+                if(dabs(amat(ioff1+mjorb,ioff1+njorb,iz)).ge.dmj_offmax)
+     &          then
+                  immax = mjorb
+                  inmax = njorb
+                end if
                 dmj_offmax =
      &          max(dmj_offmax,dabs(amat(ioff1+mjorb,ioff1+njorb,iz)))
               end do
@@ -1914,11 +1921,15 @@ C
         ioff1 = ioff1 + nash(ifsym)
         ioff2 = ioff2 + norb(ifsym)
       end do
-#if defined MCSCF_DEBUG	
-      write(lupri,'(1X,A,1F14.9)') 
-     &	' * block_one_dens info: largest mj-symmetry breaking'//
-     &      ' off-diagonal element in the DV matrix is',dmj_offmax
-#endif
+!#if defined MCSCF_DEBUG	
+!     if(dmj_offmax .ne. 1.0d-15)then
+        write(lupri,'(a,1F20.15,a,i3,a,i3,a)') 
+     &        '  debug info from block_one_dens: largest mj-symmetry'//
+     &        ' breaking off-diagonal element in the DV matrix is',
+     &          dmj_offmax,
+     &        ' with indices: (',immax,',',inmax,')'
+!     end if
+!#endif
 
       end subroutine block_one_dens
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

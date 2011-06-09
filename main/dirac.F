@@ -701,6 +701,7 @@ C
       CHCKPT_WRT  = .FALSE.
       CPBLCK_FILE = .FALSE.
       CINT_LOWSRT = .FALSE.
+      cana_mcscf  = .FALSE.
 C
       CALL QEXIT('TKRMCORB')
       END
@@ -835,6 +836,7 @@ C
       CINT_REORD  = CINT_REORD_KRCI
       CINT_SPLIT  = CINT_SPLIT_KRCI
       CINT_LOWSRT = LOWSORT_KRCI
+      cana_mcscf  = domcana_krci
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = CHCKPT_KRCI
       CPBLCK_FILE = CUSE_PBLFL_KRCI
@@ -1300,6 +1302,7 @@ C at the moment no fock type orbitlas
       CINT_REORD  = .FALSE. !CINT_REORD_KRCI
       CINT_SPLIT  = .FALSE. !CINT_SPLIT_KRCI
       CINT_LOWSRT = .FALSE. !LOWSORT_KRCI
+      cana_mcscf  = .FALSE.
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
       CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI

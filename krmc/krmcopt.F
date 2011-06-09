@@ -1073,7 +1073,8 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-8 )
+!sk   PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-8 )
+      PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-7 )
 C
 #include "dcborb.h"
 #include "dcbgen.h"
@@ -3541,10 +3542,6 @@ C
 C
       IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' .AND. NATOLCR ) THEN
 C
-CTF   PROBLEM: Natural orbital generation currently works only
-CTF   for 1 vector with LUCIAREL. 
-CSK   FIXED! July 2008
-C
          WRITE(LUPRI,'(//A/A/A)') 
      &'  *************************************************************',
      &'  ************* Natural orbital occupation numbers ************',
@@ -3554,7 +3551,6 @@ C
          DO ICNON = 1, NCIROOT
 C
 C         erase old occupation numbers
-C
           CALL DZERO(WORK(KOCCNO),NORBT)
           CALL DZERO(WORK(KUNO),N2ASHXQ)
 C

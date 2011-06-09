@@ -94,7 +94,7 @@ C
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx'/
+     &            '.DIPMOM','.MCANA ','.xxxxxx','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str
@@ -212,6 +212,7 @@ C     ... in "krciprop.h"
       DOJZEXP       = .FALSE.
       DOOSCILLST    = .FALSE.
       DODIPMOM_KRCI = .FALSE.
+      DOMCANA_KRCI  = .FALSE.
       RUNXPROP      = .FALSE.
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
@@ -666,7 +667,8 @@ C              and excited states.
                dodipmom_krci = .true.
                GO TO 100
    42          CONTINUE
-C&&&  xxxxxx:  
+!&&&  MCANA :  tell luciarel that this is a analyze run where the CI vector is to be read from the MCSCF file
+               domcana_krci  = .true.
                GO TO 100
    43          CONTINUE
 C&&&  xxxxxx:  

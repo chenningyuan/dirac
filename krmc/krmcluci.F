@@ -1655,6 +1655,22 @@ C       Write current CI vector(s) to file
      &                    2,MZ,
      &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
         END IF
+      else if(cana_mcscf)then ! ci analysis of mcscf vector (restart from the file KRMCSCF)
+        print *, 'read mcscf vector from file KRMCOLD (unit 59)...'
+        CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+        CALL REAKRMC(59,'CREF    ',WORK(KRSCR),NZCONF*MZ)
+        REWIND LUC
+        xxx = 0.0d0
+        xxx = ddot(NZCONF*MZ,WORK(KRSCR),1,WORK(KRSCR),1)
+        print *, 'NZCONF is ==> ',NZCONF
+        print *, 'xxx is ==> ',xxx
+        CALL KR_LUCI_IO(1,0,0,WORK(KRSCR),NZCONF*MZ,
+     &                  DUMMY,1,
+     &                  DUMMY,1,DUMMY,1,
+     &                  2,MZ,
+     &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+      
+        CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
       END IF
 #endif
 C
@@ -1686,8 +1702,6 @@ C     FIXME: write me  ??
 C
 csk   WRITE(LUPRI,*) ' THIS IS MY RHO1'
 csk   CALL WRTMATMN(RHO1,1,L1,1,L1,LUPRI)
-C
-      CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C     close files ...
 C
