@@ -279,6 +279,14 @@ add_executable(
     dirac.x
     main/main.F90
     )
+
+# custom commands on created dirac.x executable
+add_custom_command(
+TARGET dirac.x 
+POST_BUILD COMMAND 
+../utils/diagn.py
+)
+
 add_executable(
     dirac_mointegral_export.x
     ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90
