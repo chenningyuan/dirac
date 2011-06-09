@@ -26,6 +26,7 @@ import datetime
 import platform
 import glob
 import shlex
+import zipfile
 
 if sys.version < '2.4':
     print_std_out_err('pam requires python version >= 2.4')
@@ -285,6 +286,8 @@ class pam_enviroment:
         '''
         Print current settings to stdout
         TODO: do we want to show also content of the .diracrc file ?
+        Miro: this shows setting read in from the .diracrc file, 
+        but without specifying which from where
         '''
         print "Operating system:     ",  self.operating_system
         print "Current settings:"
@@ -718,7 +721,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                             )
         group.add_option('--show', action='store_true',
                          dest='just_show_settings', default=False,
-                         help='print current settings and exit')
+                         help='print current settings (including those from .diracrc) and exit')
         group.add_option('--trond', action='store_true',
                          dest='expert_mode', default=False,
                          help='Turn off safety checks')
@@ -761,8 +764,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             metavar='TIME_STRING',
             )
         parser.add_option_group(group)
-        
 
+        # read the .diracrc file #
         fullargs = self.get_rc_arguments()
         fullargs.extend(sys.argv[1:])
         (options, args) = parser.parse_args(fullargs)
