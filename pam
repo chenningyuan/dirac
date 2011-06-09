@@ -575,20 +575,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
             metavar='STRING',
             )
 
-        help_machfile="""specify a machinefile for a parallel run 
-                         [default: %default]
-                  """
-        if self.machinefile != None:
-            help_machfile_note=''+self.machinefile+''
-        else:
-            help_machfile_note='None'
         group.add_option(
             '--machfile',
             type='string',
             action='store',
-            dest='dest_machfile',
-            help=help_machfile,
-            default=help_machfile_note,
+            dest='machfile',
+            default=None,
+            help='specify a machinefile for a parallel run [default: %default]',
             metavar='STRING',
             )
         parser.add_option_group(group)
@@ -763,8 +756,17 @@ Options are also read from the ~/.dirac and .diracrc files."""
                            fullargs.append(a)
             except Exception:
                 pass
+
+        # try $HOME
         try_config_file(os.path.join(os.path.expanduser('~'),'.diracrc'))
+
+        # try current dir
         try_config_file('.diracrc')
+
+        # try install dir
+        try_config_file(install_dir + '/.diracrc')
+
+
         fullargs.extend(sys.argv[1:])
         (options, args) = parser.parse_args(fullargs)
     
@@ -800,8 +802,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
 
-        if options.dest_machfile:
-            self.machinefile = options.dest_machfile
+        if options.machfile:
+            self.machinefile = options.machfile
 
         if options.dest_mpi_workdir_argument:
             self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
