@@ -210,7 +210,7 @@ command += ' %s' % root_directory
 build_path = options.prefix
 
 if options.show:
-    print '   CMake command: %s\n' % command
+    print '-- CMake command: %s\n' % command
     sys.exit()
 
 if os.path.isdir(build_path):

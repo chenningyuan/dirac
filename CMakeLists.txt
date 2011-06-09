@@ -417,15 +417,17 @@ add_custom_target(dgn
     COMMAND ${CMAKE_SOURCE_DIR}/utils/diagn.py
 )
 
-include(Report)
+if(VERBOSE_OUTPUT)
+    include(Report)
 
-# print out enviroment variables
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message("Actual Unix environment variable PATH=$ENV{PATH}")
-    message("Actual Unix environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-else()
-    message("Actual Windows environment variable PATH=$ENV{PATH}")
-	message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+    # print out enviroment variables
+    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        message("Actual Unix environment variable PATH=$ENV{PATH}")
+        message("Actual Unix environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+    else()
+        message("Actual Windows environment variable PATH=$ENV{PATH}")
+            message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+    endif()
 endif()
 
 # handle the .diracrc file containing pam flags
@@ -436,8 +438,7 @@ else()
 endif()	
 	
 if(EXISTS "${DIRACRC_FILE}")
-    message("Configuration file ${DIRACRC_FILE} exists.")
-    # TODO: print content of this file
+    message("-- Configuration file ${DIRACRC_FILE} exists (please check that it is correct).")
 else()
     configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/diracrc.in
@@ -447,8 +448,3 @@ else()
     message("This template file was created by cmake. You should verify/edit it during/after the compilation.")
     message("You need to set at least --scratch in ${DIRACRC_FILE} for runtest and make test to work.")
 endif()
-# read and print out content of the .diracrc file
-file (READ "${DIRACRC_FILE}" DIRACRC_CONTENT)
-message("Content of the ${DIRACRC_FILE} configuration file: \n${DIRACRC_CONTENT}" )
-
-
