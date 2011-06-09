@@ -317,9 +317,6 @@ contains
                      wrk,                                             &
                      lwrk)
 
-         call prepare_so_correction_driver(nr_fsym,              &
-                                           dim_oshell,           &
-                                           x2c_prt)
 
 !        nullify pointer to work array and release matrices
          call desel_wrk_x2c(wrk,lwrk)
@@ -340,6 +337,10 @@ contains
 !                  these dimensions have been evaluated in MODHAM. 
 !        ------------------------------------------------------------------------------
          call init_x2c_cb(.true.)
+
+         call prepare_so_correction_driver(nr_fsym,              &
+                                           dim_oshell,           &
+                                           x2c_prt)
 
 !        ------------------------------------------------------------------------------
 !        step 1.5: obtain 

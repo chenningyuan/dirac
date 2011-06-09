@@ -56,17 +56,19 @@ contains
 
       j = 0
       do i = 1, nr_fsym
-        j = j + norb_dim(i) 
+        j = j + norb_dim(i)
       end do
       call alloc(boson_info,j)
      
       call get_boson_irrep_info(boson_info,           &
                                 nr_fsym,              &
                                 norb_dim,             &
-                                print_lvl+10)
+                                print_lvl)
 
       call dealloc(boson_info)
 
+!     note: CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF') for MOs in onMO basis
+!           otherwise see PRECMOS for a template to transform to onMO basis
 !     note: use APPBOS to get the correct boson irrep assignment of each spinor.
 !     note: if boson_info is ready take out the spin-free part from the pe-part of the fock matrix f(pe,pe,NZ) 
 !           in onMO by eliminating the symmetric (boson_irrep(i) == boson_irrep(j)) part of 
