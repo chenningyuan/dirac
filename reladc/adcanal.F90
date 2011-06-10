@@ -1007,26 +1007,25 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine TWOHPOP_R(lupri,io_lan,ibeta,nrep,multb,no,noot)
 !
-!  this routine performs the 2H-Mulliken analysis for
-!  *REAL* cases, where the expansion coefficients are real.
+!  Purpose: Prepare the propagator contributions to the reduced density matrix.
 !
 !  the Delta_mn matrix is then written to a file 'DADCPOP'
 !  in the format
 !              integer dimension
 !              real(:,:) dmn   :  real part, vector 1
-!              real(:,:) dmn   :  imaginary part, vector 2
+!              real(:,:) dmn   :  imaginary part, vector 1
 !                       ....
 !              real(:,:) dmn   :  real part, vector N
 !              real(:,:) dmn   :  imaginary part, vector N
 !
       implicit none
-      integer lupri    ! file handle for printing to stdout
-      integer io_lan   ! file handle start
-      integer ibeta    ! symmetry of the two-hole final state 
-      integer nrep     ! number of ireps in the overall run
-      integer multb(64,64,2)     ! fixed dimension multiplication table
-      integer no(nrep)    ! number of occupied orbitals in each irep
-      integer noot(nrep)  ! number of OO-combinations in each irep
+      integer, intent(in)  :: lupri    ! file handle for printing to stdout
+      integer, intent(in)  :: io_lan   ! file handle start
+      integer, intent(in)  :: ibeta    ! symmetry of the two-hole final state 
+      integer, intent(in)  :: nrep     ! number of ireps in the overall run
+      integer, intent(in)  :: multb(64,64,2)     ! fixed dimension multiplication table
+      integer, intent(in)  :: no(nrep)    ! number of occupied orbitals in each irep
+      integer, intent(in)  :: noot(nrep)  ! number of OO-combinations in each irep
 !
 !  local variables
 !
@@ -1047,7 +1046,7 @@
 
 !  say hello and check basic information
 
-      call PST('Performing 2H population analysis+')
+      call PST('Performing 2H population analysis (real vectors)+')
       nocc=noot(ibeta)
       write(lupri,*) 'Final state symmetry:',ibeta
       write(lupri,*) 'Number of 2h states in this symm:',nocc
@@ -1097,9 +1096,8 @@
                   ' with', cevl(i)*autoev,polestr(i),    &
                   ' for population analysis'
               iwwcount = iwwcount + 1
+              thvecs(:,i) = evec(1:nocc)  ! copy corresponding components
         endif 
-        thvecs(:,i) = evec(1:nocc)
-!       write(lupri,*) thvecs(:,i)
       ENDDO
       write(lupri,*) iwwcount, &
         ' vectors have enough pole strength for 2H analysis'
@@ -1131,7 +1129,7 @@
       allocate(xmnd(no_sum,no_sum))
       allocate(xmn2(no_sum,no_sum))
 
-!  open DMN.POP file for sequential access and write 
+!  open DADCPOP file for sequential access and write 
 !  number of matrices and corresponding matrix dimension
 !
 !  ATT We check if file exists already and append the next symmetry
@@ -1178,12 +1176,9 @@
 
         write(lupri,*) '   ** doing analysis for vector:',ivcount
         write(lupri,*) '   ** eigenvalue: ',cevl(ivcount)*autoev
-!       write(lupri,*) '   ** NO array: ',NO
-!       write(lupri,*) '   ** NOOT array: ',NOOT
-!       write(lupri,*)
 
 !
-!  found a vector, construct Delta_mn
+!  found a vector, construct x_mn matrix
 !
         ipoint = 0
         DO 14 JRP = 1, NREP
@@ -1197,6 +1192,8 @@
               irow   = no_offs(irp) + I
               jcol   = no_offs(jrp) + J
               xmna(irow,jcol) = thvecs(ipoint,ivcount)
+!             write(*,'(A,F10.6,2I5)') '   read in components:', &
+!       thvecs(ipoint,ivcount),irow,jcol
 !             write(*,'(A,4I4,A,2I4,F10.6)') & 
 !                   ' irp,jrp,i,j',irp,jrp,i,j, &
 !                   ' row/col/entry:',irow,jcol,xmna(irow,jcol)
@@ -1209,30 +1206,49 @@
           CALL QUIT('Error in TWOHPOP for 2h configurations!')
         ENDIF
 
+!       write(lupri,*) 'Contributions from xmna:'
+!       do i=1,no_sum
+!         write(lupri,'(40F10.5)') (xmna(i,j),j=1,no_sum)
+!       enddo
+
 !  contract x_ml and x*_nl. XGEMM can be used because all irrelevant entries are
 !  filled with zeros and will not contribute to the matrix product.
 !  Second call: contract x_lm and x_ln. Transpose the first matrix.
 
+! first part: contract x_ml . x_ln* over l<m,n
+! result goes into xmnc
+! 
         xmn2 = transpose(xmna)  ! form x_ln from x_nl. 
         CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
                     xmn2,no_sum,A0,xmnc,no_sum)
-        xmn2 = xmna 
-        xmna = transpose(xmna)  ! form x_ml from x_lm. 
-        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
-                    xmn2,no_sum,A0,xmnd,no_sum)
+
+!       write(lupri,*) 'Contributions from xmnc (real):'
+!       do i=1,no_sum
+!         write(lupri,'(40F8.4)') (REAL(xmnc(i,j)),j=1,no_sum)
+!       enddo
+!
+! second part: form x_lm from x_ml (in xmna) and then
+! form x_ln* result goes into xmnd
+!
+        xmn2 = transpose(xmna) 
+        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmn2,no_sum, &
+                    xmna,no_sum,A0,xmnd,no_sum)
+        xmnd = transpose(xmnd)
         xmn2 = xmnc + xmnd
 
-!       write(lupri,*) 'Contributions from sum2 and sum3:'
+!       write(lupri,*) 'Contributions from part 1+2 (real only):'
 !       do i=1,no_sum
 !         write(lupri,'(40F10.5)') (xmn2(i,j),j=1,no_sum)
 !       enddo
+!       stop
 
 !  now form Delta_mn matrix. Part 1 is just one on the diagonal,
 !  part 2 is just minus the pole strength on the dagonal.
         
         dmn = 0.0d0
         DO i=1,no_sum
-          dmn(i,i) = a1 - polestr(ivcount)
+          dmn(i,i) = 1.0d0 - polestr(ivcount)
+!         write(*,*) 'real polestrength:',polestr(ivcount)
         ENDDO
         dmn = dmn + xmn2
 
@@ -1278,14 +1294,13 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine TWOHPOP_C(lupri,io_lan,ibeta,nrep,multb,no,noot)
 !
-!  this routine performs the 2H-Mulliken analysis for
-!  *COMPLEX* cases.
+!  Purpose: Prepare the propagator contributions to the reduced density matrix.
 !
 !  the Delta_mn matrix is then written to a file 'DADCPOP'
 !  in the format
 !              integer dimension
 !              real(:,:) dmn   :  real part, vector 1
-!              real(:,:) dmn   :  imaginary part, vector 2
+!              real(:,:) dmn   :  imaginary part, vector 1
 !                       ....
 !              real(:,:) dmn   :  real part, vector N
 !              real(:,:) dmn   :  imaginary part, vector N
@@ -1322,7 +1337,7 @@
 
 !  say hello and check basic information
 
-      call PST('Performing 2H population analysis+')
+      call PST('Performing 2H population analysis (complex vectors)+')
       nocc=noot(ibeta)
       write(lupri,*) 'Final state symmetry:',ibeta
       write(lupri,*) 'Number of 2h states in this symm:',nocc
@@ -1346,7 +1361,7 @@
         return
       ENDIF
 
-      OPEN(IO_LAN,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+      OPEN(IO_LAN,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='OLD')
       REWIND(IO_LAN)
       READ(IO_LAN) N1
       READ(IO_LAN) N2
@@ -1365,16 +1380,18 @@
       DO I=1,nocc
         READ(IO_LAN) cevl(i)
         READ(IO_LAN) (evec(ix),ix=1,n2)
-        polestr(i)=dot_productz(evec(1:nocc),nocc)
+!       write(*,*) 'cevl,evec:',cevl,'\\',evec
+!       pause
+        polestr(i)=dot_productz(evec,nocc)
         if(polestr(i).gt.polethr) then
               write(lupri,'(A,I5,A,2F16.6,A)')           &
                   'Taking vector ',i,                    &
                   ' with', cevl(i)*autoev,polestr(i),    &
                   ' for population analysis'
               iwwcount = iwwcount + 1
+              thvecs(:,i) = evec(1:nocc)   ! copy corresponding components
+!             write(*,*) 'corr ev:',evec(1:nocc)
         endif 
-        thvecs(:,i) = evec(1:nocc)
-!       write(lupri,*) thvecs(:,i)
       ENDDO
       write(lupri,*) iwwcount, &
         ' vectors have enough pole strength for 2H analysis'
@@ -1406,7 +1423,7 @@
       allocate(xmnd(no_sum,no_sum))
       allocate(xmn2(no_sum,no_sum))
 
-!  open DMN.POP file for sequential access and write 
+!  open DADCPOP file for sequential access and write 
 !  number of matrices and corresponding matrix dimension
 !
 !  ATT We check if file exists already and append the next symmetry
@@ -1453,12 +1470,9 @@
 
         write(lupri,*) '   ** doing analysis for vector:',ivcount
         write(lupri,*) '   ** eigenvalue: ',cevl(ivcount)*autoev
-!       write(lupri,*) '   ** NO array: ',NO
-!       write(lupri,*) '   ** NOOT array: ',NOOT
-!       write(lupri,*)
 
 !
-!  found a vector, construct Delta_mn
+!  found a vector, construct x_mn matrix
 !
         ipoint = 0
         DO 14 JRP = 1, NREP
@@ -1472,6 +1486,8 @@
               irow   = no_offs(irp) + I
               jcol   = no_offs(jrp) + J
               xmna(irow,jcol) = thvecs(ipoint,ivcount)
+!             write(*,*) '   read in components:',thvecs(ipoint,ivcount)
+!             write(*,*) 'check: irow,icol:',irow,jcol ! irow must always be greater than jcol
 !             write(*,'(A,4I4,A,2I4,F10.6)') & 
 !                   ' irp,jrp,i,j',irp,jrp,i,j, &
 !                   ' row/col/entry:',irow,jcol,xmna(irow,jcol)
@@ -1484,30 +1500,59 @@
           CALL QUIT('Error in TWOHPOP for 2h configurations!')
         ENDIF
 
+!       write(lupri,*) 'Contributions from xmna (real):'
+!       do i=1,no_sum
+!         write(lupri,'(40F8.4)') (REAL(xmna(i,j)),j=1,no_sum)
+!       enddo
+!       write(lupri,*) 'Contributions from xmna (imag):'
+!       do i=1,no_sum
+!         write(lupri,'(40F8.4)') (AIMAG(xmna(i,j)),j=1,no_sum)
+!       enddo
+
 !  contract x_ml and x*_nl. XGEMM can be used because all irrelevant entries are
 !  filled with zeros and will not contribute to the matrix product.
 !  Second call: contract x_lm and x_ln. Transpose the first matrix.
 
+! first part: contract x_ml . x_ln* over l<m,n
+! result goes into xmnc
+
         xmn2 = transpose(xmna)  ! form x_ln from x_nl. 
+        xmn2 = dconjg(xmn2)     ! form x_ln* from x_nl. 
         CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
                     xmn2,no_sum,A0,xmnc,no_sum)
-        xmn2 = xmna 
-        xmna = transpose(xmna)  ! form x_ml from x_lm. 
-        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmna,no_sum, &
-                    xmn2,no_sum,A0,xmnd,no_sum)
-        xmn2 = xmnc + xmnd
 
-!       write(lupri,*) 'Contributions from sum2 and sum3:'
+!       write(lupri,*) 'Contributions from xmnc (real):'
 !       do i=1,no_sum
-!         write(lupri,'(40F10.5)') (xmn2(i,j),j=1,no_sum)
+!         write(lupri,'(40F8.4)') (REAL(xmnc(i,j)),j=1,no_sum)
 !       enddo
+!
+! second part: form x_lm from x_ml (in xmna) and then
+! form x_ln* result goes into xmnd
+!
+        xmn2 = dconjg(transpose(xmna))  ! form x_ln* from x_ml. 
+        CALL XGEMM ('N','N',no_sum,no_sum,no_sum,A1,xmn2,no_sum, &
+                    xmna,no_sum,A0,xmnd,no_sum)
+        xmnd = transpose(xmnd)
+        xmn2 = xmnc + xmnd
+!
+!
+!       write(lupri,*) 'Contributions from part1+2 (real):'
+!       do i=1,no_sum
+!         write(lupri,'(40F8.4)') (REAL(xmn2(i,j)),j=1,no_sum)
+!       enddo
+!       write(lupri,*) 'Contributions from part1+2 (imag):'
+!       do i=1,no_sum
+!         write(lupri,'(40F8.4)') (AIMAG(xmn2(i,j)),j=1,no_sum)
+!       enddo
+!       stop
+
 
 !  now form Delta_mn matrix. Part 1 is just one on the diagonal,
 !  part 2 is just minus the pole strength on the dagonal.
         
         dmn = 0.0d0
         DO i=1,no_sum
-          dmn(i,i) = A1 - CMPLX(polestr(ivcount),0.0d0)
+          dmn(i,i) = A1 - DCMPLX(polestr(ivcount),0.0d0)
         ENDDO
         dmn = dmn + xmn2
 
