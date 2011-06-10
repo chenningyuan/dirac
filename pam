@@ -349,6 +349,7 @@ class pam_enviroment:
                 print >> stream,' src full path:', src
                 print >> stream,'dest full path:', dest
                 print >> stream,'  input dir      :', self.input_directory
+                stream.flush()
                 sys.exit(13)
 
     def list_scratch_dir(self):
@@ -1432,8 +1433,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         # finally copy
                 self.copy_file(full_file_name, file_name_home)
             else:
-                for stream in [sys.stdout,sys.stderr]:
-                    print >> stream, file_name, ' not found in the scratch directory.'
+                print_std_out_err(file_name+' not found in the scratch directory.')
 
         if self.archive:
             self.archive_working_files()   
@@ -1571,10 +1571,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
         if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
             print_std_out_err('\n pam: Parallel run with local disks but without machinefile ! ')
-            print_std_out_err(' for this case set --global-scratch-disk. \n ')
+            print_std_out_err(' for this case add --global-scratch-disk to your pam-flags. \n ')
             sys.exit(21)
-
-        sys.stdout.flush()
     
 class pam_run(pam_enviroment):
 
