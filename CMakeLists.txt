@@ -280,13 +280,6 @@ add_executable(
     main/main.F90
     )
 
-# custom commands on created dirac.x executable
-add_custom_command(
-TARGET dirac.x 
-POST_BUILD COMMAND 
-../utils/diagn.py
-)
-
 add_executable(
     dirac_mointegral_export.x
     ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90
@@ -428,6 +421,14 @@ if(VERBOSE_OUTPUT)
         message("Actual Windows environment variable PATH=$ENV{PATH}")
             message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
     endif()
+
+    # custom commands on created dirac.x executable
+    add_custom_command(
+    TARGET Nightly Experimental dirac.x 
+    POST_BUILD COMMAND(
+    ../utils/diagn.py )
+    )
+
 endif()
 
 # handle the .diracrc file containing pam flags
