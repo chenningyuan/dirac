@@ -404,15 +404,14 @@ if(VERBOSE_OUTPUT)
         message("Actual Windows environment variable PATH=$ENV{PATH}")
             message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
     endif()
+endif()
 
-    # custom commands on created dirac.x executable
-    add_custom_command(
+# custom commands on created dirac.x executable
+add_custom_command(
     TARGET Nightly Experimental dirac.x 
     POST_BUILD COMMAND(
     ../utils/diagn.py )
-    )
-
-endif()
+)
 
 # handle the .diracrc file containing pam flags
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
