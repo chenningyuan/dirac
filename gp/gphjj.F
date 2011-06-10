@@ -1022,8 +1022,9 @@ C
       DATA LSTARS /'********'/
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
-#if !defined VAR_G95
+#if !defined VAR_G95 || !defined VAR_IFORT
 !miro: g95 does not know the "iomsg" parameter ....
+!the same for ifort 10.1
       WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
      &              LSTARS,LDATE,LTIME,LABEL
 #else
