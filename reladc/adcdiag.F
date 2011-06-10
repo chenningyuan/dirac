@@ -1428,7 +1428,7 @@ c
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.0001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,2F12.5,1X,"(",F7.5,")",A,A22)')
+               write(iounit,'(10X,I5,A3,2F12.6,1X,"(",F7.6,")",A,A22)')
      &         iths,':  ',z(iths,j),dble(z(iths,j)*dconjg(z(iths,j))),
      &         '   conf:',field
              endif
@@ -1444,8 +1444,8 @@ c    &           (dble(z(ix,j)*dconjg(z(ix,j))),ix=1,nholes)
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
              if(ththr.gt.0.0001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(12X,I5,A3,2F12.5,A22)')
-     &            iths,':  ',z(iths,j),field
+               write(iounit,'(12X,I5,A3,2F12.6,1X," (",F7.6,")",A,A22)')
+     &            iths,':  ',z(iths,j),ththr,'  conf: ',field
              endif
            ENDDO
         ENDIF
