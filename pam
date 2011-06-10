@@ -1566,14 +1566,13 @@ Options are also read from the ~/.dirac and .diracrc files."""
             for stream in [sys.stdout,sys.stderr]:
                 print >> stream, '\n No MPI launcher found for the parallel run !'
                 print >> stream, ' Check the PATH variable: ',os.environ['PATH']
-                sys.exit(20)
                 stream.flush()
+                sys.exit(20)
 
         if self.parallel_run and not self.global_scratch_disk and self.machinefile==None:
-            for stream in [sys.stdout,sys.stderr]:
-                print >> stream, '\n Parallel run with local disks but without machinefile ! '
-                sys.exit(21)
-                stream.flush()
+            print_std_out_err('\n pam: Parallel run with local disks but without machinefile ! ')
+            print_std_out_err(' for this case set --global-scratch-disk. \n ')
+            sys.exit(21)
 
         sys.stdout.flush()
     
