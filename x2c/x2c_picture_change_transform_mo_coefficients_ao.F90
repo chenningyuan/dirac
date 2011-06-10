@@ -273,11 +273,11 @@ contains
          ioff_mo_coeff_4c = ioff_mo_coeff_4c + nbas1_f*n1psh_f*nz
 
          if(nesh_dim(i) > 0)then
-           call qgemm(nbas1_f,                                  &
+           call qgemm(nbasL_f,                                  &
                       n1esh_f,                                  &
-                      nbasL_f,                                  &
+                      nbas1_f,                                  &
                       val_d1,                                   &
-                      'N','N',                                  &
+                      'H','N',                                  &
                       ipq_off_in,                               &
                       pctmat(ioff_pct_mat),                     &
                       nbas1_f,                                  &

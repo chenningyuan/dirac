@@ -42,37 +42,51 @@ contains
 
 !**********************************************************************
   subroutine prepare_so_correction_driver(nr_fsym,    &
+                                          nr_quat,    &
                                           norb_dim,   &
-                                          print_lvl)
+                                          print_lvl,  &
+                                          xmat)
 !**********************************************************************
+     real(8), optional, intent(in)      :: xmat(*)
      integer, intent(in)                :: nr_fsym
+     integer, intent(in)                :: nr_quat
      integer, intent(in)                :: norb_dim(nr_fsym)
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i
      integer                            :: j
+     integer                            :: l
+     integer                            :: offset_boson_info
+     integer                            :: offset_mo_orbitals
+     integer                            :: file_unit
      integer, allocatable               :: boson_info(:)
+     integer, allocatable               :: scratch1(:)
+     real(8), allocatable               :: molecular_orbitals_onmo(:)
+     real(8), allocatable               :: scratch2(:)
+     real(8), allocatable               :: scratch3(:)
+     real(8), allocatable               :: scratch4(:)
+     integer                            :: nzsave
+     logical                            :: dojaco_save
+     logical                            :: sbsave
 !**********************************************************************
 
-      j = 0
-      do i = 1, nr_fsym
-        j = j + norb_dim(i)
-      end do
-      call alloc(boson_info,j)
-     
-      call get_boson_irrep_info(boson_info,           &
-                                nr_fsym,              &
-                                norb_dim,             &
-                                print_lvl)
+!     out: 4c-fock operator in SA-AO basis -> h1_saao_bas
+!     call get_4cdf_saao_basis(h1_saao_bas,        &
+!                              scrmat1,            &
+!                              scrmat2,            &
+!                              naosh_ls,           &
+!                              naosh_all,          &
+!                              norb_dim,           &
+!                              nfsym,              &
+!                              nz,                 &
+!                              ipq_off_in,         &
+!                              linear_sym,         &
+!                              lwrk,               &
+!                              x2c_file_scr,       &
+!                              print_lvl)
 
-      call dealloc(boson_info)
 
-!     note: CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF') for MOs in onMO basis
-!           otherwise see PRECMOS for a template to transform to onMO basis
-!     note: use APPBOS to get the correct boson irrep assignment of each spinor.
-!     note: if boson_info is ready take out the spin-free part from the pe-part of the fock matrix f(pe,pe,NZ) 
-!           in onMO by eliminating the symmetric (boson_irrep(i) == boson_irrep(j)) part of 
-!           fock(i,j,1).
+!     call dealloc(molecular_orbitals_onmo)
 
   end subroutine prepare_so_correction_driver
 

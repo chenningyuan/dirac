@@ -339,6 +339,7 @@ contains
          call init_x2c_cb(.true.)
 
          call prepare_so_correction_driver(nr_fsym,              &
+                                           nr_quat,              &
                                            dim_oshell,           &
                                            x2c_prt)
 
