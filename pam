@@ -184,14 +184,14 @@ class pam_enviroment:
         exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
-            print ' ',self.dirac_exe_file,'taken from the dirac installation directory'
+            print self.dirac_exe_file,'taken from the dirac installation directory'
         else:
             # does not exist, try build directory
             exec_position=os.path.join(install_dir_default,"build",self.dirac_exe_file)
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
-                print ' ',self.dirac_exe_file,'taken from the dirac build directory'
+                print self.dirac_exe_file,'taken from the dirac build directory'
             else:
                 self.dirac_exe = None
                 print_std_out_err('No Dirac binary found in selected directories !')
@@ -426,7 +426,11 @@ class pam_enviroment:
         sys.stdout.flush()
 
     def get_rc_arguments(self):
-        """Look for possible rc files and return arguments collected from them."""
+        """
+        Look for possible rc files and return arguments collected from them.
+        Inform about finding rc-file.
+        Rc-file can not have empty lines, #-serve as comments
+        """
         fullargs = []
         paths = [os.path.join(os.path.expanduser('~'),'.diracrc'),
                  '.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
@@ -434,6 +438,7 @@ class pam_enviroment:
         for path in paths:
             try:
                 f = open(path,'r')
+                print '  rc-file with pam flags:',path
                 for l in f.readlines():
                     l = l.strip()
                     if l[0] != '#':
@@ -915,7 +920,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # otherwise users could wipe out their home directory
             self.scratch_dir = os.path.join(self.scratch_dir,self.user_name,'DIRAC_' + self.output_name + '_' + str(self.current_pid))
         else:
-            sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc')
+            sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc or ./diracrc')
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and
