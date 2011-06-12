@@ -118,12 +118,6 @@ class pam_enviroment:
         self.dirac_p=None
         self.returncode=None # dirac process return code
         self.pgid = None # process group id of the "dirac" process
-        # PIDs of all dirac-processes (list)
-        self.dirac_pids=[]
-        # PIDs found found pidof...
-        self.dirac_pidof_pids=[]
-        # all PID's
-        self.all_dirac_pids=[]
 
     # ... dirac error output (stderr stream), always filled
         self.dirac_stderr=None
@@ -287,6 +281,9 @@ class pam_enviroment:
     # pam script sitting in the installation directory (TODO: better specification)
         self.pam_command = os.path.join(install_dir,"pam")
 
+    # variable for the diracrc file argument list, full path
+        self.diracrc_args = None
+
     def show_settings(self):
         '''
         Print current settings to stdout
@@ -308,6 +305,8 @@ class pam_enviroment:
         print "  Debugger            ",  self.debugger
         print "  Dirac command       ",  self.dirac_cmd
         print "  Dirac executable    ",  self.dirac_exe
+        if self.diracrc_args:
+            print "  default pam arguments from diracrc files ",self.diracrc_args
 
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
@@ -438,14 +437,23 @@ class pam_enviroment:
         for path in paths:
             try:
                 f = open(path,'r')
-                print '  rc-file with pam flags:',path
+                print 'found diracrc-file with default pam flags:',path
+                #self.diracrc=path
                 for l in f.readlines():
                     l = l.strip()
                     if l[0] != '#':
                        for a in shlex.split(l):
                            fullargs.append(a)
+                          # print 'its arguments: ',fullargs
+                          # self.diracrc_args = self.diracrc_args + str(a)
+                          # print a, self.diracrc_args
+                          # print fullargs
             except Exception:
                 pass
+        if fullargs:
+            #print 'all diracrc files arguments: ',fullargs
+            self.diracrc_args = fullargs 
+            print 'all default arguments for pam: ',self.diracrc_args
         return fullargs
 
     def process_pam_arguments(self):
@@ -1544,6 +1552,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print '  date and time  :', datetime.datetime.now()
             print '  pam command    :', self.pam_command
             print '  pam args       :', ' '.join(sys.argv[1:])
+            #if self.diracrc_args:
+            #    print '  default pam args   :',self.diracrc_args 
             print '  input dir      :', self.input_directory
             print '  scratch dir    :', self.scratch_dir
             print '  output file    :', self.output_file
