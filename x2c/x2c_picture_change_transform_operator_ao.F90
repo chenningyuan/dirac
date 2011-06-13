@@ -138,6 +138,7 @@ contains
 !      step 2: picture-change transform the 1e-/2e-Fock matrices
 !      ---------------------------------------------------------
        if(defining_h1mat == 2 .and. .not. is_1e_system)then
+#ifdef not_needed_at_all
          call pctrafo_fockmatrices_4cto2c_saao_bas(naosh_ls,                   &
                                                    nr_ao_L,                    &
                                                    naosh_all,                  &
@@ -153,6 +154,17 @@ contains
                                                    file_name_1e_fock_matrix,   &
                                                    file_name_2e_fock_matrices, &
                                                    print_lvl)
+#else
+!        the picture-change transformation of the 1e/2e-Fock matrices in AO basis
+!        is superfluous - for completeness we delete the files here.
+!        stefan - june 2011
+         open(99,file=file_name_2e_fock_matrices,status='old',form='unformatted',      &
+              access='sequential',action="readwrite",position='rewind')
+         close(99,status='delete')
+         open(99,file=file_name_1e_fock_matrix,status='old',form='unformatted',        &
+              access='sequential',action="readwrite",position='rewind')
+         close(99,status='delete')
+#endif
        end if
 
 !      step 3: picture-change transform the list of 1e property operator

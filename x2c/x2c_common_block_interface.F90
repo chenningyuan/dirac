@@ -30,6 +30,7 @@ module x2c_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
   use x2cmod_cfg
+  use memory_allocator
 
   implicit none
 
@@ -233,6 +234,7 @@ contains
      integer                :: i
      integer                :: j
      integer                :: k
+     integer                :: fh
 !**********************************************************************
 
 !      initialize
@@ -251,8 +253,15 @@ contains
            end do
          end do
 
-!      restore common block
+!      restore common block and save sub-block data on file
        else
+
+       fh = 10
+       open(fh,file='x2c-subblock-data',status='replace',form='unformatted',access='sequential',position='rewind')
+       write(fh) n_sub_bl
+       write(fh) id_sub_bl
+       write(fh) norb_sub
+       close(fh,status='keep')
 
          do i = 1, nfsym
            npsh(i) = npsh_dim(i)
@@ -321,11 +330,12 @@ contains
      integer                :: i
      integer                :: isym
      integer                :: nsym
+     integer                :: fh = 10
 !**********************************************************************
 
 !      step 1: modify shell dimension on common block
 !      ----------------------------------------------
-       nsym = 4/nz
+       nsym    = 4/nz
        do i=1, nfsym
          npsh(i) = 0
          norb(i) = nesh(i) + npsh(i)
@@ -335,6 +345,30 @@ contains
            nborb(isym,i,0) = nborb(isym,i,1) + nborb(isym,i,2)
          end do
        end do
+       if(ham_lvl_x2c == -137)then ! hidden code for mmf-approach
+         nzt     = 1
+         n2tmt   = 0
+         n2tmotq = 0
+         do i=1, nfsym
+           neshmf(i) = nesh(i)
+           npshmf(i) = npsh(i)
+           nishmf(i) = nish(i)
+           noccmf(i) = nocc(i)
+           i2tmt(i)  = n2tmt
+           n2tmt     = n2tmt + nfbas(i,0)*norb(i)*nzt
+           i2tmot(i) = n2tmotq
+           n2tmo(i)  = ntmo(i) * ntmo(i)
+           n2tmotq   = n2tmotq + n2tmo(i)*nz
+         end do
+         open(fh,file='x2c-subblock-data',status='old',form='unformatted',access='sequential',position='rewind')
+         read(fh) n_sub_bl
+         read(fh) id_sub_bl
+         read(fh) norb_sub
+         close(fh,status='delete')
+!
+!        initialize sub-block diagonalization in DFDIAG
+         sub_bl = .true.
+       end if
 
 !      step 2: recalculate offsets and globally used pointers
 !      ----------------------------------------------
@@ -353,7 +387,7 @@ contains
        mc = 1
 
 !      # of transformation matrices == 1 --> Lowdin ao2mo
-       nzt = 1
+       nzt     = 1
 
 !      final hamiltonian level for matrix stored on file X2CMAT
        i2cofk = ham_lvl_x2c

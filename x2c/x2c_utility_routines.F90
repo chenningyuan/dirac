@@ -40,6 +40,7 @@ module x2c_utils
 
   public construct_pctmat_saao_bas
   public construct_saomo_overlap_half_tr
+  public generic_interface_ao2mo_mo2ao
   public store_aomo_trafo_matrices
   public x2c_lowd2c
   public pick_LL_block_saao_bas
@@ -333,8 +334,73 @@ contains
        end do
  
   end subroutine construct_saomo_overlap_half_tr
-
 !**********************************************************************
+
+  subroutine generic_interface_ao2mo_mo2ao(scrmat1,                &
+                                           scrmat2,                &
+                                           scrmat3,                &
+                                           ndim_i,                 &
+                                           ndim_ii,                &
+                                           ndim_iii,               &
+                                           nz_12,                  &
+                                           nz_3,                   &
+                                           ipq_off_in,             &
+                                           transform_direction,    &
+                                           symmetry_property,      &
+                                           print_lvl)
+!**********************************************************************
+!
+!    purpose: generic interface to qtrans90 
+!             scrmat2 = scrmat3+ * scrmat1 * scrmat3
+!
+!----------------------------------------------------------------------
+     real(8), intent(inout)        :: scrmat1(*)
+     real(8), intent(inout)        :: scrmat2(*)
+     real(8), intent(inout)        :: scrmat3(*)
+     integer, intent(in)           :: ndim_i 
+     integer, intent(in)           :: ndim_ii
+     integer, intent(in)           :: ndim_iii
+     integer, intent(in)           :: nz_12
+     integer, intent(in)           :: nz_3
+     integer, intent(in)           :: ipq_off_in(4,0:7)
+     integer, intent(in)           :: print_lvl
+     character (len=4), intent(in) :: transform_direction
+     character (len=1), intent(in) :: symmetry_property
+!----------------------------------------------------------------------
+
+!      h1_4cON = V+ * h1_4cao * V
+       call qtrans90(transform_direction,        &
+                     symmetry_property,          &
+                     val_d0,                     &
+                     ndim_i,                     &
+                     ndim_i,                     &
+                     ndim_ii,                    &
+                     ndim_ii,                    &
+                     scrmat1,                    &
+                     ndim_iii,                   &
+                     ndim_iii,                   &
+                     nz_12,                      &
+                     ipq_off_in(1,0),            &
+                     scrmat2,                    &
+                     ndim_ii,                    &
+                     ndim_ii,                    &
+                     nz_12,                      &
+                     ipq_off_in(1,0),            &
+                     scrmat3,                    &
+                     ndim_i,                     &
+                     ndim_ii,                    &
+                     nz_3,                       &
+                     ipq_off_in(1,0),            &
+                     scrmat3,                    &
+                     ndim_i,                     &
+                     ndim_ii,                    &
+                     nz_3,                       &
+                     ipq_off_in(1,0),            &
+                     print_lvl)
+
+  end subroutine generic_interface_ao2mo_mo2ao
+!**********************************************************************
+
   subroutine store_aomo_trafo_matrices(mat1,                &
                                        mat2,                &  
                                        mat3,                &
@@ -518,8 +584,17 @@ contains
        write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,i
 
        call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
-!      step 4: in case of linear symmetry - adapt the LOWDIN matrix
 
+!      we always want to call the common block manipulation routines as the sub-block
+!      data (taken from dcborb.h) is written in there 
+       call reset_x2c_cb_lin_lwdmat(1,                    &
+                                    npsh_dim,             &
+                                    nesh_dim,             &
+                                    nfsym,                &
+                                    nz,                   &
+                                    nborb_dim)
+
+!      step 4: in case of linear symmetry - adapt the LOWDIN matrix
        if(linear_sym)then
          write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,i
 !        set pointer to WORK array and allow full length for allocations
@@ -527,21 +602,7 @@ contains
          call sel_wrk_x2c(wrk,lwrk)
 
 !        get LOWDIN matrix in linear symmetry
-         call reset_x2c_cb_lin_lwdmat(1,                    &
-                                      npsh_dim,             &
-                                      nesh_dim,             &
-                                      nfsym,                &
-                                      nz,                   &
-                                      nborb_dim)
-
          call linsym(scr_mat1,lowd_mat,scr_mat2,scr_mat3,wrk,lwrk)
-
-         call reset_x2c_cb_lin_lwdmat(-1,                   &
-                                      npsh_dim,             &
-                                      nesh_dim,             &
-                                      nfsym,                &
-                                      nz,                   &
-                                      nborb_dim)
 
 !        reset pointer to WORK array
          call desel_wrk_x2c(wrk,lwrk)
@@ -549,6 +610,13 @@ contains
 !        store adapted 2c-LOWDIN matrix on file
          call x2c_write(flabel,scr_mat1,naosh_ls*naosh_ls,x2c_file_glb)
        end if
+
+       call reset_x2c_cb_lin_lwdmat(-1,                   &
+                                    npsh_dim,             &
+                                    nesh_dim,             &
+                                    nfsym,                &
+                                    nz,                   &
+                                    nborb_dim)
 
   end subroutine x2c_lowd2c
 
@@ -661,7 +729,6 @@ contains
            call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
                        ipq_off,prntunit)
          else
-           print *,' lrlc_equal ==> ',lrlc_equal
            call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
                        ipq_off,prntunit)
          end if

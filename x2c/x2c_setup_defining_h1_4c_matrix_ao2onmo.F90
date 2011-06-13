@@ -35,7 +35,8 @@ module x2c_def_h1_4c
       reset_x2c_cb_onefck
   use x2c_utils,        only:         &
       print_x2cmat,                   &
-      read_4cfock_operator_x2c
+      read_4cfock_operator_x2c,       &
+      generic_interface_ao2mo_mo2ao
   use x2c_import_exportC1
 
   implicit none
@@ -401,6 +402,7 @@ contains
                                                  norb1_f,                   &
                                                  norb1_f,                   &
                                                  nz,                        &
+                                                 nz,                        &
                                                  ipq_off_in,                &
                                                  'MOAO',                    &
                                                  'S',                       &
@@ -452,6 +454,7 @@ contains
                                                nbas1_f,                        &
                                                norb1_f,                        &
                                                nbas1_f,                        &
+                                               nz,                             &
                                                nz,                             &
                                                ipq_off_in,                     &
                                                'MOAO',                         &
@@ -528,75 +531,13 @@ contains
                                           norb1_f,               &
                                           naosh_ls,              &
                                           nz,                    &
+                                          nz,                    &
                                           ipq_off_in,            &
                                           'AOMO',                &
                                           'S',                   &
                                           print_lvl) 
 
   end subroutine get_h1_4c_on_basis
-!**********************************************************************
-
-  subroutine generic_interface_ao2mo_mo2ao(scrmat1,                &
-                                           scrmat2,                &
-                                           scrmat3,                &
-                                           ndim_i,                 &
-                                           ndim_ii,                &
-                                           ndim_iii,               &
-                                           nz,                     &
-                                           ipq_off_in,             &
-                                           transform_direction,    &
-                                           symmetry_property,      &
-                                           print_lvl)
-!**********************************************************************
-!
-!    purpose: generic interface to qtrans90 
-!             scrmat2 = scrmat3+ * scrmat1 * scrmat3
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout)        :: scrmat1(*)
-     real(8), intent(inout)        :: scrmat2(*)
-     real(8), intent(inout)        :: scrmat3(*)
-     integer, intent(in)           :: ndim_i 
-     integer, intent(in)           :: ndim_ii
-     integer, intent(in)           :: ndim_iii
-     integer, intent(in)           :: nz
-     integer, intent(in)           :: ipq_off_in(4,0:7)
-     integer, intent(in)           :: print_lvl
-     character (len=4), intent(in) :: transform_direction
-     character (len=1), intent(in) :: symmetry_property
-!----------------------------------------------------------------------
-
-!      h1_4cON = V+ * h1_4cao * V
-       call qtrans90(transform_direction,        &
-                     symmetry_property,          &
-                     val_d0,                     &
-                     ndim_i,                     &
-                     ndim_i,                     &
-                     ndim_ii,                    &
-                     ndim_ii,                    &
-                     scrmat1,                    &
-                     ndim_iii,                   &
-                     ndim_iii,                   &
-                     nz,                         &
-                     ipq_off_in(1,0),            &
-                     scrmat2,                    &
-                     ndim_ii,                    &
-                     ndim_ii,                    &
-                     nz,                         &
-                     ipq_off_in(1,0),            &
-                     scrmat3,                    &
-                     ndim_i,                     &
-                     ndim_ii,                    &
-                     nz,                         &
-                     ipq_off_in(1,0),            &
-                     scrmat3,                    &
-                     ndim_i,                     &
-                     ndim_ii,                    &
-                     nz,                         &
-                     ipq_off_in(1,0),            &
-                     print_lvl)
-
-  end subroutine generic_interface_ao2mo_mo2ao
 !**********************************************************************
 
 end module x2c_def_h1_4c

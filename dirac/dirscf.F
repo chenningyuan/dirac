@@ -3934,7 +3934,7 @@ C
 
 
 C ... control print out of the matrix to be diagonalized
-         IF (DODBG.AND.IPRHAM.GE.7) THEN
+         IF (DODBG.AND.IPRHAM.GE.5) THEN
           CALL HEADER(
      &   'DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -3971,7 +3971,7 @@ C
      &      (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
          ENDIF
          IF (DODBG) THEN
-          IF (IPRHAM.GE.7) THEN
+          IF (IPRHAM.GE.3) THEN
            CALL HEADER(
      &     'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -3980,7 +3980,7 @@ C
      &     (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
           ENDIF
 C
-          IF (IPRHAM.GE.9) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER(
      &     'DFDIAG: Eigenvectors :',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -4066,7 +4066,7 @@ C
             ENDIF
 
             IF (DODBG) THEN
-             IF (IPRHAM.GE.7) THEN
+             IF (IPRHAM.GE.3) THEN
              CALL HEADER(
      &       'DFDIAG: Eigenvalues (special_subbblock) :',-1)
              WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
@@ -4075,7 +4075,7 @@ C
              WRITE(LUPRI,'(I5,F25.10)') (IX,EIG(IX),IX=IEIG,IEIG+NBO-1) 
              ENDIF
 
-             IF (IPRHAM.GE.9) THEN
+             IF (IPRHAM.GE.5) THEN
               CALL HEADER(
      &       'DFDIAG: Eigenvectors(special_subblock)',-1)
              WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
@@ -4104,7 +4104,7 @@ C
      &                 FMO(I2TMOT(I)+1),WORK(KIDUM),IPRHAM)
           CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
 
-          IF (DODBG.AND.IPRHAM.GE.8) THEN
+          IF (DODBG.AND.IPRHAM.GE.3) THEN
            write(lupri,'(/,2x,a)') 'DFDIAG(subbl) - IBEIG values'
            write(lupri,'(2x,a,i3,a)') 'IBEIG sym',I,' >: '
            do K=1,NTMO(I)

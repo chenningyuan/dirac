@@ -251,7 +251,12 @@ contains
              nbas1_f  = naosh_all(i)
              if(naosh_all(i) > 0)then
                write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
-               call x2c_write(flabel,h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f*naosh_ls*nz,x2c_file_scr)
+               call x2c_write(flabel,h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f*naosh_ls*nz,x2c_file_glb)
+!              debug print
+               if(print_lvl > 1)then
+                 call print_x2cmat(h1_2cinf_saao(1+ioff_aomx(i,i)),nbas1_f,naosh_ls,nz,ipq_off_in(1,0),      &
+                                  'x2c - h1_2nd_2c-AO',6,.true.)
+               end if
              end if
            end do
 

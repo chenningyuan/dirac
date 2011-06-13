@@ -2526,6 +2526,8 @@ C*****************************************************************************
       use x2c_pct_ao,       only:
      &    pctrafo_all_op_driver
       use x2c_fio
+      use x2c_pct_mo_coefficients, only: 
+     &    x2c_molecular_mean_field_mos
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -2761,7 +2763,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       ------------------------------------------------------------------------------
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
-!         WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
+
           if(x2cmod_mmf)then
             CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
             call dzero(work(KTMAT),N2BBASXQ)
@@ -2771,13 +2773,8 @@ C         2) do picture change transformation of integrals on AOPROPER
             call x2c_read('2cLWAOg   10',work(KTMAT),n2bbasx,lux2c)
             
             close(lux2c,status='keep')
-!           twocomp = .true.
-!           rdinpc  = .false.
-!           ipread  = ipread - 5
-!           call readin(work,lwork,.false.)
-!           call setdc1(ipread)
-!           ipread  = ipread + 5
           else
+!           WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
             KTMAT = KVMAT
           end if
         else
@@ -2942,9 +2939,28 @@ C
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
       CALL ORBDAT
       CLOSE(LUTMAT,STATUS='KEEP')
+!
+      if(x2c.and.x2cmod_mmf)then
+
+!       perform the final step for the molecular mean-field procedure within the X2C-module
+!       ------------------------------------------------------------------------------------
+
+!       purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
+!                and renew the coefficient file DFCOEF
+!                a potential issue could be frozen orbitals - test me!
+        call memget('REAL',kcmomat,ncmotq,work,kfree,lfree)
+        call memget('REAL',kscratch,norbt,work,kfree,lfree)
+        call dzero(work(ktbuf),   n2bbasxq)
+        call dzero(work(kcmomat), ncmotq)
+        call dzero(work(kscratch),norbt)
+        call x2c_molecular_mean_field_mos(work(ktmat),work(ktbuf),
+     &                                    work(kcmomat),work(kscratch),
+     &                                    i2tmt,i2tmot,icmoq,ntmo,
+     &                                    nfbas,nesh,nz,nzt,nfsym,
+     &                                    nesht,ipqtoq,iprham)
+      end if ! x2cmod_mmf .equiv. .true.
 C
 C     Memory deallocation
-C
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
  10   CONTINUE
       CALL QEXIT('GMOTRA')
@@ -3119,9 +3135,11 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
 !       if(is_defining_h1mat.gt.3)then
           CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
 CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
+!       print *,'SLSORT branch 1...',is_defining_h1mat
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
         else
 !         return the SL resorted matrix in vmat
+!       print *,'SLSORT branch 2...',is_defining_h1mat
           call dzero(vmat,n2bbasxq)
           CALL SLSORT(TMAT,vmat,IPRHAM,WORK(KFREE),LFREE)
         end if
@@ -5743,7 +5761,7 @@ C
      &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-     &            WORK,LWORK,IPRGEN)
+     &            WORK,LWORK,IPRHAM)
 !    &            IPRHAM)
 
         IF (IPRHAM.GE.15) THEN

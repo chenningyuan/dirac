@@ -143,12 +143,15 @@ contains
      integer                :: lwrk
      integer                :: is_allocated_dyn
      integer                :: i,j
+     integer                :: dimension_for_2mat
      integer                :: z_value
      integer                :: dim1_fsym_Sao
      integer                :: dim2_fsym_Sao
-     integer                :: final_ham_lvl_x2c  ! level of final hamiltonian stored on global file X2CMAT
+     integer                :: pct_mocoeff_strategy_mmf ! strategy for the picture-change transformation of the
+                                                        ! MO coefficients in the molecular-mean-field-approach (mmf)
+     integer                :: final_ham_lvl_x2c        ! level of final hamiltonian stored on global file X2CMAT
      logical                :: op_2c_ll
-     character (len=12)     :: flabel             ! label for matrices on file
+     character (len=12)     :: flabel                   ! label for matrices on file
 !**********************************************************************
 
 !      ------------------------------------------------------------------------------
@@ -205,9 +208,13 @@ contains
 
 
 !        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
-         call alloc(xmat   ,nr_ao_total_x2c**2 * nr_quat)
+         dimension_for_2mat = nr_ao_total_x2c**2 * nr_quat
+         do i = 1, nr_fsym
+           dimension_for_2mat = max(dimension_for_2mat,ioff_aomat_x(i,i)+1+nr_ao_total_x2c*nr_ao_all(i)*nr_quat)
+         end do
+         call alloc(xmat,dimension_for_2mat)
          xmat    = x2c_d0
-         is_allocated_dyn  = nr_ao_total_x2c**2 * nr_quat
+         is_allocated_dyn  = dimension_for_2mat
 
 !        ------------------------------------------------------------------------------
 !        step 1.1: compute 4c-Sao_LL overlap matrix for fragment "z_value"
@@ -238,7 +245,7 @@ contains
          call desel_wrk_x2c(wrk,lwrk)
 
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
-         j                               = nr_ao_total_x2c**2 * nr_quat
+         j                               = dimension_for_2mat
          if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
          call alloc(scr2mat,nr_ao_total_x2c**2 * nr_quat)
          call alloc(scr1mat,j)
@@ -324,7 +331,7 @@ contains
          if(x2c_is_defining_h1mat < 1)then
            call dealloc(scr1mat)
 !          reallocate with full size
-           call alloc(scr1mat,nr_ao_total_x2c**2 * nr_quat)
+           call alloc(scr1mat,dimension_for_2mat)
            scr1mat = x2c_d0
          end if
 !
@@ -441,6 +448,7 @@ contains
 !
 !              out: all operator (listed above) in picture-change transformed form on file
 !      -----------------------------------------------------------------------------------
+       if(.true.)then
        call pctrafo_all_op_driver(nr_ao_total_x2c,               &
                                   nr_ao_large_x2c,               &
                                   nr_ao_all,                     &
@@ -462,24 +470,32 @@ contains
                                   file_name_1e_fock_matrix,      &
                                   file_name_2e_fock_matrices,    &
                                   x2c_prt)
+       end if
 !      ---------------------------------------------------------------------------------------------------------------
 !      step 3: picture-change transform the 4c-MO coefficients (defining
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
        if(x2c_is_defining_h1mat == 2)then
-         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',        &
-                                                 nr_cmo_q,        &
-                                                 nr_ao_total_x2c, &
-                                                 nr_ao_large_x2c, &
-                                                 nr_ao_all,       &
-                                                 nr_ao_l,         &
-                                                 dim_oshell,      &
-                                                 dim_eshell,      &
-                                                 dim_pshell,      &
-                                                 nr_fsym,         &
-                                                 nr_quat,         &
-                                                 x2c_cb_pq_to_uq, &
-                                                 x2c_funit,       &
+!        for the time being we pursue strategy 2 - diagonalization of the pct Fock operator
+!        stefan - june 2011
+         pct_mocoeff_strategy_mmf = 2
+         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
+                                                 pct_mocoeff_strategy_mmf,  &
+                                                 nr_cmo_q,                  &
+                                                 nr_ao_total_x2c,           &
+                                                 nr_ao_large_x2c,           &
+                                                 nr_ao_all,                 &
+                                                 nr_ao_l,                   &
+                                                 ioff_aomat_x,              &
+                                                 dimension_for_2mat,        &
+                                                 dim_oshell,                &
+                                                 dim_eshell,                &
+                                                 dim_pshell,                &
+                                                 nr_fsym,                   &
+                                                 nr_quat,                   &
+                                                 x2c_cb_pq_to_uq,           &
+                                                 x2c_funit,                 &
+                                                 x2c_linsym,                &
                                                  x2c_prt)
        end if
 !      --------------------------------------------------------------------------------------------
