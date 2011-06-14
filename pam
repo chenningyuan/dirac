@@ -438,21 +438,15 @@ class pam_enviroment:
             try:
                 f = open(path,'r')
                 print 'found diracrc-file with default pam flags:',path
-                #self.diracrc=path
                 for l in f.readlines():
                     l = l.strip()
                     if len(l) > 0:
                         if l[0] != '#':
                            for a in shlex.split(l):
                                fullargs.append(a)
-                              # print 'its arguments: ',fullargs
-                              # self.diracrc_args = self.diracrc_args + str(a)
-                              # print a, self.diracrc_args
-                              # print fullargs
             except Exception:
                 pass
         if fullargs:
-            #print 'all diracrc files arguments: ',fullargs
             self.diracrc_args = fullargs 
             print 'all default arguments for pam: ',self.diracrc_args
         return fullargs
