@@ -5,10 +5,12 @@ bss.ci.inp F.mol
 
 regular 
 
+bss_blockd.ci.inp F.mol  
 ci.inp                        F.mol  
 bss_sfBso1.ci.inp             F.mol  
 bss_sfEso1.ci.inp             F.mol  
 bss_rkb.ci.inp                F.mol  
+bss_rkb_blockd.ci.inp         F.mol  
 dc2bss_rkb_df.ci.inp          F.mol  
 bss+mfsso.ci.inp              F.mol  
 bss_sfBso1+mfsso.ci.inp       F.mol  
@@ -22,7 +24,8 @@ dkh2sfBso1.ci.inp             F.mol
 dkh2sfEso1.ci.inp             F.mol  
 
 ci.inp                        Z86_Flike.mol 
-bss.ci.inp                    Z86_Flike.mol  
+bss.ci.inp                    Z86_Flike.mol 
+bss_blockd.ci.inp             Z86_Flike.mol 
 dkh2.ci.inp                   Z86_Flike.mol 
 bss_rkb.ci.inp                Z86_Flike.mol 
 dkh2+mfsso_Flike.ci.inp       Z86_Flike.mol 
