@@ -441,13 +441,14 @@ class pam_enviroment:
                 #self.diracrc=path
                 for l in f.readlines():
                     l = l.strip()
-                    if l[0] != '#':
-                       for a in shlex.split(l):
-                           fullargs.append(a)
-                          # print 'its arguments: ',fullargs
-                          # self.diracrc_args = self.diracrc_args + str(a)
-                          # print a, self.diracrc_args
-                          # print fullargs
+                    if len(l) > 0:
+                        if l[0] != '#':
+                           for a in shlex.split(l):
+                               fullargs.append(a)
+                              # print 'its arguments: ',fullargs
+                              # self.diracrc_args = self.diracrc_args + str(a)
+                              # print a, self.diracrc_args
+                              # print fullargs
             except Exception:
                 pass
         if fullargs:
