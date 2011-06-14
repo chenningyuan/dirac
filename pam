@@ -437,7 +437,6 @@ class pam_enviroment:
         for path in paths:
             try:
                 f = open(path,'r')
-                print 'found diracrc-file with default pam flags:',path
                 for l in f.readlines():
                     l = l.strip()
                     if len(l) > 0:
@@ -448,7 +447,6 @@ class pam_enviroment:
                 pass
         if fullargs:
             self.diracrc_args = fullargs 
-            print 'all default arguments for pam: ',self.diracrc_args
         return fullargs
 
     def process_pam_arguments(self):
