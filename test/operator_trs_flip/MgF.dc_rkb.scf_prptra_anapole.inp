@@ -42,10 +42,12 @@ all
 **MOLTRA
 .SCHEME
 6
+# pick up only the valence  open-shell spinor of interest
 .ACTIVE
 11
 .PRPTRA
 *PRPTRA
+# we need this print level to get matrix elements
 .PRINT
 3
 .OPERATOR
