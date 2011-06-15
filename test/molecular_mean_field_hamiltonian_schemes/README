@@ -8,8 +8,8 @@
 ! 
 ! Following the nomenclature given in Table I in the above paper the Hamiltonian models tested here are:
 !
-! ^4DCG*          ==> input name: fo_4dcg_star.inp
-! ^4DCG**         ==> input name: fo_4dcg_star_star.inp
-! ^2DCG^M(U_mol)  ==> input name: fo_2dcg_mmf.inp
-! ^2DCG^A(U_nuc)  ==> input name: fo_2dcg_x2c.inp
+! ^4DCG*          ==> input name: 4dcg_x.inp
+! ^4DCG**         ==> input name: 4dcg_xx.inp
+! ^2DCG^M(U_mol)  ==> input name: 2dcg_mmf.inp
+! ^2DCG^A(U_nuc)  ==> input name: 2dcg_x2c.inp
 !

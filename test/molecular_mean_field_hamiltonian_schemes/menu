@@ -1,5 +1,5 @@
 regular   
-fo_4dcg_star.inp      fo.mol --mw=110 --aw=120
-fo_4dcg_star_star.inp fo.mol --mw=110 --aw=120
-fo_2dcg_x2c.inp       fo.mol --mw=110 --aw=120
-fo_2dcg_mmf.inp       fo.mol --mw=110 --aw=120
+4dcg_x.inp         fo.mol --mw=110 --aw=120
+4dcg_xx.inp        fo.mol --mw=110 --aw=120
+2dcg_x2c.inp       fo.mol --mw=110 --aw=120
+2dcg_mmf.inp       fo.mol --mw=110 --aw=120
