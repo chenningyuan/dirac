@@ -25,7 +25,7 @@ Program TEST_SEC_QUANT
 subroutine TEST_SEC_QUANT
 #endif
 
-!#if !defined (VAR_IFC)
+#if !defined (VAR_IFORT)
  use Operators_string
  use  Evaluate_strings
 
@@ -188,9 +188,9 @@ subroutine TEST_SEC_QUANT
  !call process_strings(HL)
 ! call process_strings(HL)
 
-!#else
-! write(6,*) "Deactivated for ifort compiler"
-!#endif
+#else
+ write(6,*) "Deactivated for ifort compiler version lower than 10.1.015 "
+#endif
 
 #if defined STANDALONE_SECQUANT
 End Program TEST_SEC_QUANT

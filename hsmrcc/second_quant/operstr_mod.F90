@@ -19,9 +19,10 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-!#if !defined (VAR_IFC)
 
 Module Operators_string
+! deactivated for ifort 10.1.015, higher versions working...
+#if !defined (VAR_IFORT)
 !
 ! ... string of operators ... 
 ! ... kronecker deltas, creation/anihilation operators, indexed terms
@@ -2219,6 +2220,5 @@ endif
 call QExit('equal_elements')
 end function equal_elements
 
+#endif
 End Module Operators_string
-
-!#endif

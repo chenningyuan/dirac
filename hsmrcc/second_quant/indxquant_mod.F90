@@ -19,8 +19,8 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-!#if !defined (VAR_IFC)
 Module Indexed_Quantities
+#if !defined (VAR_IFORT)
 !----------------------------------------------------------------------------
 !
 !       Module for handling various indexed tems (quantities)
@@ -402,6 +402,5 @@ endif
 
 call QExit('equal_IndxTerms')
 end function equal_IndxTerms
-
+#endif
 End Module Indexed_Quantities
-!#endif

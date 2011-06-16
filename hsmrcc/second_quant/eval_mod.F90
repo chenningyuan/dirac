@@ -19,9 +19,9 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-!#if !defined (VAR_IFC)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module Evaluate_strings
+#if !defined (VAR_IFORT)
 !------------------------------------------------------------------------
 !
 !     Module for evaluating expect. value of all strings
@@ -258,5 +258,5 @@ endif
 call QExit('evaluate_string_exp_val')
 end subroutine Xevaluate_string_exp_val
 
+#endif
 end module Evaluate_strings
-!#endif
