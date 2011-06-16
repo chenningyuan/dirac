@@ -2041,8 +2041,8 @@ get_f90_flags(){
       opt_1="-O1 -ip"
       opt_2="-O2 -ip"
       opt_3="-O3 -ip "
-      cpp_f90="$cpp_f90 -DVAR_IFC"
-      cpp_cc="$cpp_cc -DVAR_IFC"
+      cpp_f90="$cpp_f90 -DVAR_IFORT"
+      cpp_cc="$cpp_cc -DVAR_IFORT"
       mod="-module $MODULE_DIR"
       if [ "$par" = "yes" ]; then
        ldflag="-i_dynamic" # activate it only for ifort-parallel 

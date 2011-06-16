@@ -325,7 +325,7 @@ int csystem_(const char *cmd, fortran_int_t cmdlen)
   return i;
 }
 
-#ifdef VAR_IFC
+#ifdef VAR_IFORT
  /* extra routines needed by intel's ifc compiler which does not
  * provide them itself.
  * Pawel Salek, pawsa@theochem.kth.se, 2002.01.31
@@ -372,7 +372,7 @@ void system_(char* str, fortran_int_t len)
     char *buf = alloca(len+1);
     buf[len] = 0;
     strncpy(buf,str,len);
-    printf("VAR_IFC defined. Ignoring call system(%s)\n",buf);
+    printf("VAR_IFORT defined. Ignoring call system(%s)\n",buf);
 }
 
 void flush_(fortran_int_t* lu)
@@ -417,7 +417,7 @@ double* malloc_(fortran_int_t cnt)
 {
   return malloc(cnt);
 }
-#endif /* VAR_IFC */
+#endif /* VAR_IFORT */
 
 /* Try to cause a segmentation fault, to enable debuggers to
    trap this and inspect the program.
