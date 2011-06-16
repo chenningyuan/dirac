@@ -77,7 +77,7 @@ for line in data_as_lists:
 data_as_lists.sort(key=lambda data_as_lists:data_as_lists[2:3], reverse=True)
 
 # selected printing
-i=1; imax=600
+i=1; imax=100
 for el in data_as_lists : 
   if (len(el) >= 8) :
     # avoid printing duplicities, limits the size of the output by imax #
