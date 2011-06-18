@@ -13,10 +13,6 @@
 #
 ##########################################################################
 #
-# TODO: utilize zipping module instead of 'tar'
-# http://docs.python.org/library/zipfile.html
-# http://www.doughellmann.com/PyMOTW/zipfile/
-#
 import os
 import sys
 import string
@@ -41,14 +37,24 @@ global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
 install_dir = install_dir_default
 
-
-# common functionalities used throughout the DIRAC python scripts 
+# common functionalities for pam run first
 
 def is_windows():
     """
     returns true if this machine is Windows operating system
     """
     return sys.platform == "win32"
+
+def kill_win(pid):
+    """
+    kill process on  Win32
+    http://docs.python.org/faq/windows.html#id11
+    see also http://code.activestate.com/recipes/347462-terminating-a-subprocess-on-windows/
+    """
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(1, 0, pid)
+    return (0 != kernel32.TerminateProcess(handle, 0))
 
 def process_time_string_core(time_string):
     """
@@ -69,18 +75,14 @@ def process_time_string_core(time_string):
     h_pos=time_string.find("h"); 
     m_pos=time_string.find("m"); 
     s_pos=time_string.find("s"); 
-    #print 'd,h,m,s positions:',d_pos,is_d, h_pos,is_h, m_pos,is_m, s_pos, is_s
 
     positions=[s_pos,m_pos,h_pos,d_pos]; j=0
     num=[0,0,0,0]
-    #print 'positions: ', positions
     for i in positions:
         if i >-1 :
             num_str=''
-            #print 'active pos:',i
             i=i-1
             while (i>=0 and time_string[i] >= '0' and time_string[i] <= '9' ):
-                #print  'number=',time_string[i]
                 num_str+=str(time_string[i])
                 i=i-1
             # revert string to get proper order of numbers
@@ -120,17 +122,6 @@ def get_username():
     import getpass
     return getpass.getuser()
 
-def kill_win(pid):
-    """
-    kill function for Win32
-    http://docs.python.org/faq/windows.html#id11
-    see also http://code.activestate.com/recipes/347462-terminating-a-subprocess-on-windows/
-    """
-    import ctypes
-    kernel32 = ctypes.windll.kernel32
-    handle = kernel32.OpenProcess(1, 0, pid)
-    return (0 != kernel32.TerminateProcess(handle, 0))
-
 def get_ip():
     """
     module for getting the LAN IP-address of the computer
@@ -142,7 +133,7 @@ def get_ip():
     import struct
     def get_interface_ip(ifname):
         """
-		not for Windows due to the fcntl module
+        not for Windows due to the fcntl module
         """
         if not is_windows():
             import fcntl
@@ -274,7 +265,8 @@ def backup_file(some_file,upto):
     epf.get_path_file(some_file)
 
 def find_executable(executable, path=None):
-    """Try to find 'executable' in the directories listed in 'path' (a
+    """
+    Try to find 'executable' in the directories listed in 'path' (a
     string listing directories separated by 'os.pathsep'; defaults to
     os.environ['PATH']).  Returns the complete filename or None if not
     found
@@ -1263,19 +1255,20 @@ Options are also read from the ~/.dirac and .diracrc files."""
     # restarting stuff
         if self.full_restart:
             copy_single_file(self.archive_name, self.archive_name)
-            archive_scratch_dir = os.path.join(self.scratch_dir, self.archive_name)
-            unpack_command = 'tar --directory ' + self.scratch_dir \
-                + ' -xvf ' + archive_scratch_dir
-            print 'Unpacking the archive file into the scratch directory, command ', \
-                unpack_command
-            os.system(unpack_command)
+            print '  Unpacking the archive file into the scratch directory using python tarfile module:'
+            tar = tarfile.open(self.archive_name)
+            print ' ',tar.getnames()
+            for tar_member in tar.getnames():
+                # TarFile.extractall is from python version 2.5, but we lean on version 2.4
+                tar.extract(tar_member,path=self.scratch_dir)
+            tar.close()
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
         if self.input_file_molecule:
             if self.xyz_molecule_input == True:
                 self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.XYZ')) 
             else:
-                self.copy_file(self.input_file_molecule, os.path.join(self.scratch_dir,'MOLECULE.MOL'))
+                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.MOL'))
         else:
             print '  No molecule input file provided, assuming it is obtained from the restart file.'
 
@@ -1740,19 +1733,19 @@ Options are also read from the ~/.dirac and .diracrc files."""
         """
         archive (pack) working files at the end of the DIRAC program run
         """
-        # set name of the archive file; TODO: Windows packing adaptation
+        # set name of the archive file
 
         archive_name = self.output_name + '.tgz'
         archive_full_name = os.path.join(self.input_directory,archive_name) 
+        tar = tarfile.open(archive_full_name,"w")
 
       # select existing files in self.archive_files for the archive
 
-        existing_archive_files = ''
+        existing_archive_files = []
         for p in self.archive_files:
             for archfile in glob.glob(p):
                 if os.path.isfile(archfile):
-                    existing_archive_files = existing_archive_files \
-                        + ' ' + archfile
+                    existing_archive_files.append(archfile)
 
         print '  creating archive file ', archive_name
         print '  archived working files:',existing_archive_files 
@@ -1762,10 +1755,9 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if not self.nobackup:
             backup_file(some_file=archive_full_name, upto=None)
 
-      # own packing (Linux, TODO: adapt for Windows)
-        archive_command = 'tar c ' + existing_archive_files \
-            + ' | gzip > ' + archive_full_name
-        os.system(archive_command)
+        for filename in existing_archive_files:
+            tar.add(filename)
+        tar.close()
 
     def print_header(self):
         """
