@@ -192,68 +192,6 @@ def get_hostname_ip():
     """
     return get_ip()
 
-
-def children_pid(pid):
-    """
-    get the list of the children pids of the entering pid (linux only)
-    windows solution: http://mail.python.org/pipermail/python-win32/2005-March/002991.html
-    http://web.archiveorange.com/archive/v/MFLkXe0JXTy7BRtHxfbo    
-    see also:
-    http://www.damonkohler.com/2008/03/how-to-check-if-process-is-still.html
-    http://stackoverflow.com/questions/4669754/python-kill-all-processes-owned-by-user
-    """
-    import subprocess as SP
-    proc = SP.Popen('ps -o pid,ppid ax | grep "%d"' % pid, shell=True, stdout=SP.PIPE)
-    pidppid = [x.split() for x in proc.communicate()[0].split("\n") if x]
-    return list(int(p) for p, pp in pidppid if int(pp) == pid)
-
-def get_pid_label(input_pid):
-    """
-    get process identification based on its input_pid
-    TODO: adapt for Windows
-    """
-    import subprocess
-    # Linux solution
-    command="ps -l -F -p "+str(input_pid)
-    return subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE).communicate()[0]
-
-def get_all_children(input_pid):
-    """
-    get PIDs of all childrens processes of the process "input_pid"
-    (http://www.linuxquestions.org/questions/linux-general-1/trying-to-kill-a-process-and-all-of-its-children-and-grandchildren-how-680123/)
-    TODO: adapt for Windows
-    http://mail.python.org/pipermail/python-win32/2005-February/002943.html
-    """
-    import os, sys
-    # get the pid, pgid, ppid of our current processes:
-    command = "ps eo pid,pgid,ppid"
-    psraw = os.popen(command).readlines()
-    psList = []
-    childrenList = []
-    for ps in psraw[1:]: # 1: gets rid of header
-        psList.append(map(int,ps.split()))
-    pgid = 0
-
-    # find the pgid (parent) of the spawned subprocess:
-    for ps in psList:
-        if int(input_pid) in ps:
-            pgid = ps[1]
-            break
-
-    if pgid == 0:
-        print >>sys.stderr, "Something screwed up trying to find pids. Using other routine."
-        # use different routine, and return
-        childrenList=children_pid(input_pid)
-        return childrenList
-
-    # get a list of all pids in the pgid except the group owner:
-    for ps in psList:
-        if pgid in ps and pgid != ps[0]:  # check [0] so we don't kill ourselves
-            childrenList.append(ps[0])
-
-    # return the list
-    return childrenList
-
 class disk_space:
     """
     extracts disk space data - capacity, available, used -  in GB
