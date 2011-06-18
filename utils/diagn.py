@@ -34,7 +34,14 @@ def hex2dec(s):
   else :  # no proper hex number - return 0
    return 0
 
-dirac_exe="dirac.x"
+def is_windows():
+    return sys.platform == "win32"
+
+if is_windows():
+    dirac_exe="dirac.x.exe"
+    sys.exit("This executable diagnostics is not adapted for Windows 7 !")
+else:
+    dirac_exe="dirac.x"
 
 if not os.path.isfile(dirac_exe):
    print '\nExecutable dirac.x does not exist for analyze! Exit\n'
@@ -53,7 +60,9 @@ else :
   print 'can not determine'; sys.exit('exit!')
 
 #### Process readelf ####
-
+#
+# Windows7 problem: exe is not in ELF format
+#
 print 'Sizes of  individual objects:'
 
 command = " readelf -s "+dirac_exe+" 2> /dev/null || echo 'can not be determined, readelf not present'"
