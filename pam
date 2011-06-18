@@ -216,9 +216,8 @@ class disk_space:
 
 class extract_path_file:
     """
-    general class which can separate the pure file name from its path
+    general class which can separate the pure file name from its path;
     used (not only) for the backup procedure
-    TODO: replace with Python os stuff !!!
     """
     def __init__(self):
         self.pure_file_name = ''
@@ -229,25 +228,18 @@ class extract_path_file:
         """
         extracts file name and it's path (directory) by splitting string
         """
-        from string import rfind
-        if is_windows():
-            string_to_find='\\' # Windows
-        else: 
-            string_to_find='/' # Unix
-        position = full_file_name.rfind(string_to_find)
-        if (position+1 < len(full_file_name)) :
-            self.pure_file_name=full_file_name[position+1:len(full_file_name)]
-            self.pure_file_path=full_file_name[0:position]
+        try:
+            self.pure_file_name=os.path.basename(full_file_name)
+            self.pure_file_path=os.path.dirname(full_file_name)
             self.extracted=True
-        else: 
-            print 'can not extract' 
+        except:
             self.extracted=False
 
+        # shorten the path string by placing "..."
         if (len(self.pure_file_path) > 20):
            max_len=12
            temp_path=self.pure_file_path
            len_tp=len(temp_path)
-           #print  temp_path 
            self.short_file_path=temp_path[0:max_len]+'...'+temp_path[len_tp-max_len:len_tp]
  
 def backup_file(some_file,upto):
@@ -327,6 +319,10 @@ def print_std_out_err(s):
         stream.flush()
 
 class pam_enviroment:
+    """
+    after the section of general purpose routines we are here with
+    own pam class for handling the pam-launched dirac run
+    """
 
     global install_dir
 
