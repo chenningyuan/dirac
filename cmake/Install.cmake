@@ -43,14 +43,6 @@ install(
     WORLD_READ             WORLD_EXECUTE
     )
 
-# radovan: apparently not needed by pam anymore
-#install(
-#    FILES
-#    ${PROJECT_SOURCE_DIR}/utils/common.py
-#    DESTINATION
-#    dirac/utils
-#    )
-
 install(
     DIRECTORY
     ${PROJECT_SOURCE_DIR}/basis
