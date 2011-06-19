@@ -43,12 +43,13 @@ install(
     WORLD_READ             WORLD_EXECUTE
     )
 
-install(
-    FILES
-    ${PROJECT_SOURCE_DIR}/utils/common.py
-    DESTINATION
-    dirac/utils
-    )
+# radovan: apparently not needed by pam anymore
+#install(
+#    FILES
+#    ${PROJECT_SOURCE_DIR}/utils/common.py
+#    DESTINATION
+#    dirac/utils
+#    )
 
 install(
     DIRECTORY
