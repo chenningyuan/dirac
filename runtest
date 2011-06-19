@@ -4,12 +4,6 @@
 report bugs/suggestions to: radovan.bast@uit.no
 (this is for users - developers, please simply develop without asking)
 
-philosophy: keep this script as self contained as possible
-            do not introduce additional dependencies to DIRAC
-            infrastructure (e.g. common.py)
-            because it would be nice to be able to use this script
-            also outside DIRAC
-
 menu format: free form
              blank lines are ignored
              lines starting with "#" are ignored
