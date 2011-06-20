@@ -91,9 +91,48 @@ def provide_star_basisfile_names():
 # import external functions, assuming you are always in trunk/ directory
 sys.path.append(os.getcwd() + '/utils')
 
-from common import make_old_file, is_windows
-from common import create_link, copy_parent
-from common import vacuum_cleaner
+def make_old_file(path):
+    """
+    Create (if not already there) a file at path,
+    set the date ("time stamp") in the past.
+    """
+    import os, datetime, time
+    if not os.path.isfile(path):
+        f = open(path,'w')
+        f.close
+    today = datetime.datetime.now()
+    pastday = today - datetime.timedelta(days=11)
+    atime = int(time.mktime(pastday.timetuple()))
+    mtime = atime
+    times = (atime,mtime)
+    os.utime(path,times)
+
+def create_link(source, dest_dir, dest_file):
+    """
+    create symbolic link (Unix), before make a comprehensive check
+    """
+    import os
+    if not os.path.exists(source):
+        print "create_link error ! source does not exist:"+source
+        sys.exit(source+' does not exist ! No linking possible, error exit !')
+    
+    if not os.path.exists(dest_dir):
+        print "create_link error ! destination dir does not exist :"+dest_dir
+    
+    dest = dest_dir+"/"+dest_file
+    
+    # always remove old stuff (file or link) before
+    if os.path.isfile(dest) or os.path.islink(dest):
+        os.remove(dest)
+    
+    if sys.platform != "win32":
+        try:
+            os.symlink(source,dest)
+        except (OSError, ValueError):
+            print "*** linking error !!! "
+            print "source : ",source
+            print "destination : ",dest
+            sys.exit("Linking error ! Check source and destination !")
 
 # list of vital directories and files
 # these are always packaged
@@ -746,7 +785,7 @@ f.close()
 
 # generate *-provided basis set files
 
-if ( not is_windows() ): provide_star_basisfile_names()
+if sys.platform != "win32": provide_star_basisfile_names()
 
 # get delete flags (used by make release)
 delete_flags = ''
