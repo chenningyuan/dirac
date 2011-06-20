@@ -2549,17 +2549,27 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
-      LOGICAL TWOBUF,GOFAST,TOBE,FNDLAB,FNDLAB12
-      logical is_2c_rel_run
-      integer is_defining_h1mat
       DIMENSION WORK(LWORK)
+      logical, intent(in) :: GOFAST
+!     local scratch
+      logical             :: TWOBUF, TOBE, FNDLAB, FNDLAB12
+      logical             :: is_2c_rel_run
+      integer             :: is_defining_h1mat
+      integer             :: ndim_lowmat
+      integer             :: lulmat = 99
+
       CALL QENTER('GMOTRA')
+
       IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
 #include "memint.h"
       KFRSAV = KFREE
 C
 !     set file unit number for X2CMAT
       lux2c = 40
+
+!     set local 2c-relativistic run flag
+      is_2c_rel_run = .false.
+      is_2c_rel_run = bss.or.x2c
 
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
@@ -2572,32 +2582,39 @@ C     =================================
 C
       IF (ONECAP.AND.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)) 
      &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
+
+!     we use N2BBASXQ instead of N2BBASX for BSS...to be checked
+      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Get Lowdin canonical orthonormalization matrix
 C     ==============================================
-C
-!     SK- 2010-07-30: this step has been moved inside the x2c module if(x2c == .true.)
-      if(.not.x2c)then
-C aspg, timing
+ 
+      inquire(exist=TOBE,file='LOWDMAT')
+      call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
+      rewind lulmat
+
+      if(tobe)then
+        call readi(lulmat,1,ndim_lowmat)
+        call readt(lulmat,ndim_lowmat,work(kvmat))
+      else
         CALL TIMER('START ',TIMSTR,TIMEND)
-C.....  we use N2BBASXQ instead of N2BBASX for BSS...to be checked
-        CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
         CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
-C aspg, timing
-      else
-!       IOTC = .false.
-!       BSS = .false.
-!       NOPRTR = .false.
-!       IBSS = 2999
-!       TWOCOMPBSS = .false.
-!       TWOCOMP = .true.
+
+!       save LOWDIN matrix on file
+        ndim_lowmat = 0
+        do i = 1, nfsym
+          ndim_lowmat = ndim_lowmat + nforb(i,0)*nfbas(i,0)
+        end do
+        call writi(lulmat,1,ndim_lowmat)
+        call writt(lulmat,ndim_lowmat,work(kvmat))
       end if
 
-!     set up local 2c-relativistic run flag
-      is_2c_rel_run = .false.
-      is_2c_rel_run = bss.or.x2c
-C
+      close(lulmat,status='keep')
+
+!     release memory when we invoke the x2c module
+      if(x2c) call memrel('x2cfre',work,kwork,kwork,kfree,lfree)
+
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
 C     =========================================================
 C
@@ -2795,11 +2812,20 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
-C aspg, timing
           CALL TIMER('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
           CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
-C aspg, timing
+
+!         save new 2c-LOWDIN matrix on file
+          call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
+          rewind lulmat
+          ndim_lowmat = 0
+          do i = 1, nfsym
+            ndim_lowmat = ndim_lowmat + nforb(i,0)*nfbas(i,0)
+          end do
+          call writi(lulmat,1,ndim_lowmat)
+          call writt(lulmat,ndim_lowmat,work(kvmat))
+          close(lulmat,status='keep')
 
 !         reset orbital dimensions
           NZT = 1
@@ -2828,6 +2854,7 @@ C     -------------------------------------------------------------------
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
+        print *, 'go in here ... branch 3'
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value (the true value
 !       needs to be checked though)

@@ -41,7 +41,19 @@ module x2c_import_exportC1
 contains
 
 !**********************************************************************
-  subroutine x2c_export_mat2C1(h1_saao)
+  subroutine x2c_export_mat2C1(h1_saao,                                &
+                               naosh_ls,                               &
+                               nz,                                     &
+                               ipq_off_in,                             &
+                               iqp_off_in,                             &
+                               boson_to_fermion_sym_operator,          &
+                               boson_irrep_in_matrix,                  &
+                               quaternion_multiplication_table,        &
+                               quaternion_pointer,                     &
+                               quaternion_pointer_operator,            &
+                               do_read_write,                          &
+                               fh,                                     &
+                               print_lvl)                               
 !----------------------------------------------------------------------
 !
 !    purpose: export (defining h1) matrix in symmetry (quaternion packed)
@@ -49,87 +61,100 @@ contains
 !
 !----------------------------------------------------------------------
      real(8), intent(inout)          :: h1_saao(*)
+     integer, intent(in)             :: naosh_ls
+     integer, intent(in)             :: nz
+     integer, intent(in)             :: ipq_off_in(4,0:7)
+     integer, intent(in)             :: iqp_off_in(4,0:7)
+     integer, intent(in)             :: boson_to_fermion_sym_operator(0:7,1:2)
+     integer, intent(in)             :: boson_irrep_in_matrix(4,0:7)
+     integer, intent(in)             :: quaternion_multiplication_table(4,4,4)
+     integer, intent(in)             :: quaternion_pointer(0:7,2)
+     integer, intent(in)             :: quaternion_pointer_operator(0:7)
+     integer, intent(in)             :: print_lvl
+     logical, intent(in)             :: do_read_write
+     integer, intent(in)             :: fh
 !--------------------------------------------------------------
-     real(8), allocatable            :: scr1_mat(:)
      integer                         :: i
      integer                         :: iq
      integer                         :: ipq
      integer                         :: iz
      integer                         :: irepd
      character (len=12)              :: flabel
+     real(8), allocatable            :: scr1_mat(:)
 !**********************************************************************
 
 !      initialize dimensions and pointers which might be used outside this module in dirac calls
        call setdc2(0)
 
 !      open file with 4c-h1
-       open(x2c_fh1dirty,file='x2ch1dirty',status='unknown',form='unformatted', &
-            access='sequential',action='readwrite',position='rewind')
-
-       call dzero(h1_saao,nr_quat*nr_ao_total_x2c**2)
-       i = 0
-       write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
-       call x2c_read(flabel,h1_saao,nr_ao_total_x2c*nr_ao_total_x2c*nr_quat,x2c_fh1dirty)
+       if(do_read_write)then
+         open(fh,file='x2ch1dirty',status='unknown',form='unformatted', &
+              access='sequential',action='readwrite',position='rewind')
+         call dzero(h1_saao,nz*naosh_ls**2)
+         i = 0
+         write(flabel,'(a7,i4,i1)') 'h1_4cao',0,0
+         call x2c_read(flabel,h1_saao,naosh_ls*naosh_ls*nz,fh)
+       end if
 
 !      debug print
-       if(x2c_prt > 2)then
-         call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-DIRAC',6)
+       if(print_lvl > 2)then
+         call print_x2cmat(h1_saao,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-SO-DIRAC',6)
        end if
 
 !      a. insert quaternion phase factors
 !      ----------------------------------
-       if(nr_quat < 4)then
-         do iz = 1, nr_quat
-           iq = x2c_cb_pq_to_uq(iz,0)
-           call q2bphase('F',iq,1,h1_saao(1+(nr_ao_total_x2c*nr_ao_total_x2c*(iz-1))))
+       if(nz < 4)then
+         do iz = 1, nz
+           iq = ipq_off_in(nz,0)
+           call q2bphase('F',iq,1,h1_saao(1+(naosh_ls*naosh_ls*(iz-1))))
          end do
        end if
 
 !      debug print
-       if(x2c_prt > 2)then
-         call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-DIRAC-phase',6)
+       if(print_lvl > 2)then
+         call print_x2cmat(h1_saao,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-SO-DIRAC-phase',6)
        end if
 
 !      b. transform hamiltonian elements from DIRAC-sorted AO to Hermit-sorted AO basis
 !      --------------------------------------------------------------------------------
-       call bstobu_no_work(h1_saao,nr_quat)
+       call bstobu_no_work(h1_saao,nz)
 
 !      debug print
-       if(x2c_prt > 2)then
-         call print_x2cmat(h1_saao,nr_ao_total_x2c,nr_ao_total_x2c,nr_quat,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-SO-Hermit-sorted',6)
+       if(print_lvl > 2)then
+         call print_x2cmat(h1_saao,naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - h1_4c-SO-Hermit-sorted',6)
        end if
 
 !      allocate scratch matrix
-       call alloc(scr1_mat,nr_ao_total_x2c*nr_ao_total_x2c*4)
-       call dzero(scr1_mat,nr_ao_total_x2c*nr_ao_total_x2c*4)
+       call alloc(scr1_mat,naosh_ls*naosh_ls*4)
+       call dzero(scr1_mat,naosh_ls*naosh_ls*4)
 
 !      c. transform from SO-AO basis to AO-basis (nosym)
 !      -------------------------------------------------
-       i = x2c_bs_to_fs(0,1)
+       i = boson_to_fermion_sym_operator(0,1)
        do iz = 1, 4
-         irepd = x2c_bs_irrep_mat(iz,0)
-         iq    = x2c_iqmult_trip_q(1,x2c_pointer_quat(irepd,i),iz)
-         ipq   = x2c_cb_uq_to_pq(iq,0)
-         call mtsoao(h1_saao( 1+(nr_ao_total_x2c*nr_ao_total_x2c*(ipq-1))),    &
-                     scr1_mat(1+(nr_ao_total_x2c*nr_ao_total_x2c*(iz-1))),     &
-                     nr_ao_total_x2c,                                          &
-                     irepd,                                                    &
-                     x2c_prt)
-!                    10)
+         irepd = boson_irrep_in_matrix(iz,0)
+         iq    = quaternion_multiplication_table(1,quaternion_pointer(irepd,i),iz)
+         ipq   = iqp_off_in(iq,0)
+         call mtsoao(h1_saao( 1+(naosh_ls*naosh_ls*(ipq-1))),    &
+                     scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
+                     naosh_ls,                                   &
+                     irepd,                                      &
+                     print_lvl)
        end do
-      
-!      d. write h4c (nosym) in AO basis to file 
-!      ----------------------------------------
-       call x2c_write('h1_4caoNOSYM',scr1_mat,nr_ao_total_x2c*nr_ao_total_x2c*4,x2c_fh1dirty)
 
 !      debug print
-       if(x2c_prt > 2)then
-         call print_x2cmat(scr1_mat,nr_ao_total_x2c,nr_ao_total_x2c,4,x2c_cb_pq_to_uq(1,0),'x2c - h1_4c-AO-nosym',6)
+       if(print_lvl > 2)then
+         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,4,ipq_off_in(1,0),'x2c - h1_4c-AO-nosym',6)
+       end if
+      
+       if(do_read_write)then
+!        d. write h4c (nosym) in AO basis to file 
+!        ----------------------------------------
+         call x2c_write('h1_4caoNOSYM',scr1_mat,naosh_ls*naosh_ls*4,x2c_fh1dirty)
+         close(x2c_fh1dirty, status='keep')
        end if
 
        call dealloc(scr1_mat)
-
-       close(x2c_fh1dirty, status='keep')
 
   end subroutine x2c_export_mat2C1
 

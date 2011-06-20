@@ -85,8 +85,8 @@ contains
 !                              x2c_file_scr,       &
 !                              print_lvl)
 
+!     call x2c_export_mat2C1
 
-!     call dealloc(molecular_orbitals_onmo)
 
   end subroutine prepare_so_correction_driver
 

@@ -72,6 +72,7 @@ module x2cmod_cfg
   integer, public :: fullemat_dim
   integer, public :: fullomat_dim
   integer, public :: fulleomat_dim
+  integer, public :: fulllowdmat_dim
   integer, public :: nr_quat
   integer, public :: nr_fsym
   integer, public :: mfsym

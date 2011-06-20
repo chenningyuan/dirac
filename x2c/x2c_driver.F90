@@ -150,6 +150,7 @@ contains
      integer                :: pct_mocoeff_strategy_mmf ! strategy for the picture-change transformation of the
                                                         ! MO coefficients in the molecular-mean-field-approach (mmf)
      integer                :: final_ham_lvl_x2c        ! level of final hamiltonian stored on global file X2CMAT
+     integer                :: fulllowdmat_dim_tmp
      logical                :: op_2c_ll
      character (len=12)     :: flabel                   ! label for matrices on file
 !**********************************************************************
@@ -231,18 +232,6 @@ contains
 
          call get_Sao_LL_mat(xmat,dim1_fsym_Sao,nr_fsym,dim2_fsym_Sao)
 !                                                     ^ (compute+write if >= 0)
-!        ------------------------------------------------------------------------------
-!        step 1.2: get LOWDIN matrix for fragment "z_value".
-!                  1.2.a. get the 4c-Lowdin matrix
-!                  1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
-!        ------------------------------------------------------------------------------
-
-!        step 1.2.a. get the 4c-Lowdin matrix
-!        ------------------------------------
-         lwrk = len_wrk_f77_x2c - is_allocated_dyn
-         call sel_wrk_x2c(wrk,lwrk)
-         call lowdin(xmat,wrk,lwrk,x2c_prt)
-         call desel_wrk_x2c(wrk,lwrk)
 
 !        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
          j                               = dimension_for_2mat
@@ -258,21 +247,30 @@ contains
 !        set maximum allowed length of wrk array allocations
          is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
+
+!        ------------------------------------------------------------------------------
+!        step 1.2: get LOWDIN matrix for fragment "z_value".
+!                  1.2.a. get the 4c-Lowdin matrix
+!                  1.2.b. get the 2c-Lowdin matrix (only needed if the defining Hamiltonian is the 4c-Fock operator)
+!        ------------------------------------------------------------------------------
+
+!        a. read/get the 4c-Lowdin matrix
+!        --------------------------------
+         open(x2c_lowdin_scrF,file='LOWDMAT',status='old',form='unformatted',    &
+              access='sequential',action="readwrite",position='rewind')
+
+         call readi(x2c_lowdin_scrF,1,fulllowdmat_dim_tmp)
+         call readt(x2c_lowdin_scrF,fulllowdmat_dim,xmat)
+
+!        consistency check for LOWDIN matrix
+         if(fulllowdmat_dim_tmp /= fulllowdmat_dim)then
+           call quit('error in x2c-driver: dimension of existing LOWDIN matrix does not match'// & 
+                     ' the present LOWDIN dimensions.')
+         end if
   
-!        step 1.2.b. get the 2c-Lowdin matrix
-!        ------------------------------------
+!        b. construct the two-component Lowdin matrix
+!        --------------------------------------------
          if(x2c_is_defining_h1mat == 2)then
-!          construct the two-component Lowdin matrix
-!          initialize lowdin dimensions
-           call init_x2c_cb(.false.)
-
-!          open temporary scratch file for 4c-Lowdin matrix
-           open(x2c_lowdin_scrF,file='X2C_lowdin_scr',status='replace',form='unformatted',    &
-                access='sequential',action="readwrite",position='rewind')
-           call x2c_write(flabel,x2c_dummy,-1,x2c_lowdin_scrF)
-
-!          store the 4c-Lowdin matrix temporarily
-           call x2c_write('x2c-4clowdin',xmat,nr_ao_total_x2c*nr_ao_total_x2c,x2c_lowdin_scrF)
 
            call x2c_lowd2c(xmat,               &
                            scr1mat,            &
@@ -296,12 +294,14 @@ contains
                            (x2c_is_defining_h1mat == 2).and.x2c_linsym)
 
 !          recover the 4c-Lowdin matrix
-           call x2c_read('x2c-4clowdin',xmat,nr_ao_total_x2c*nr_ao_total_x2c,x2c_lowdin_scrF)
-           close(x2c_lowdin_scrF,status="delete")
+           xmat = 0.0d0
+           rewind x2c_lowdin_scrF
+           call readi(x2c_lowdin_scrF,1,fulllowdmat_dim)
+           call readt(x2c_lowdin_scrF,fulllowdmat_dim,xmat)
 
          end if
 
-
+         close(x2c_lowdin_scrF,status="delete")
 !        ------------------------------------------------------------------------------
 !        step 1.3: construct modified dirac equation in ON basis --> retrieve AOtoMO transformation matrices.
 !        ------------------------------------------------------------------------------
@@ -310,7 +310,6 @@ contains
 !              out: AOtoMO transformation matrices -> xmat, scr1mat
 !                                                   + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
 !        ------------------------------------------------------------------------------
-
 
          call sel_wrk_x2c(wrk,lwrk)
 
@@ -394,8 +393,6 @@ contains
          call dealloc(xmat)
 
          close(x2c_Sao_scrF,status="delete")
-
-
 
 !        --------------------------------------------------------------------------------------------------
 !        step 1.6: add AMFI contributions in case

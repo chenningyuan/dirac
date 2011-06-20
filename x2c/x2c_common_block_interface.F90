@@ -123,6 +123,7 @@ contains
          fullemat_dim    = 0
          fullomat_dim    = 0
          fulleomat_dim   = 0
+         fulllowdmat_dim = 0
          do i = 1, nr_fsym
            j               =  nesh(i)
            k               =  norb(i)
@@ -143,6 +144,15 @@ contains
            nr_ao_l(i)      = nfbas(i,1)
 !                            [    S  ]
            nr_ao_s(i)      = nfbas(i,2)
+
+!          orbital dimensions after the LOWDIN step
+           nr_mo_lw_all(i) = nforb(i,0)
+           nr_mo_lw_l(i)   = nforb(i,1)
+           nr_mo_lw_s(i)   = nforb(i,2)
+
+!          LOWDIN matrix dimension
+           fulllowdmat_dim = fulllowdmat_dim + nr_ao_all(i) * nr_mo_lw_all(i)
+
            do m = 1, nr_fsym
              ioff_aomat_x(m,i) = i2basx(m,i)
            end do
@@ -191,18 +201,12 @@ contains
 ! 
        else 
 
+!        initialize the property operator arrays
          if(present(prop_op_dgsym) .and. present(prop_op_trsym) .and.  present(prop_op_name))then
            do i = 1, nprps
              prop_op_dgsym(i) = iprpsym(i)
              prop_op_trsym(i) = iprptim(i)
              prop_op_name(i)  = prpnam(i)
-           end do
-         else 
-           do i = 1, nr_fsym
-!            orbital dimensions after LOWDIN (needed for a proper handling of 2c-LOWDIN matrix)
-             nr_mo_lw_all(i) = nforb(i,0)
-             nr_mo_lw_l(i)   = nforb(i,1)
-             nr_mo_lw_s(i)   = nforb(i,2)
            end do
          end if
 
