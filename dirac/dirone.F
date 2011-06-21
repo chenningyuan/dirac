@@ -2589,7 +2589,16 @@ C
 C     Get Lowdin canonical orthonormalization matrix
 C     ==============================================
  
-      inquire(exist=TOBE,file='LOWDMAT')
+      inquire(exist=tobe,file='LOWDMAT')
+!     delete existing LOWDIN matrix file when performing a geometry
+!     optimization - it could be the one from a previous geometry.
+!     stefan - june 2011
+      if(tobe.and.optimi)then
+        call opnfil(lulmat,'LOWDMAT','OLD','gmodel')
+        close(lulmat,status='delete')
+        tobe = .false.
+      end if
+
       call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
       rewind lulmat
 
@@ -2861,6 +2870,7 @@ C     -------------------------------------------------------------------
         is_defining_h1mat = 4
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &             .FALSE.,.FALSE.,is_defining_h1mat,WORK(KFREE),LFREE)
+!    &       x2cmod_mmf,.false.,is_defining_h1mat,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
         IF (IPRHAM.GE.5) THEN
@@ -2897,8 +2907,11 @@ C
          SUB_BL = .TRUE.
       ENDIF
       IF (LINEAR) THEN
+!     if(linear.and..not.gmotra_case3)then
 C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
+!       in:  KTMAT + KTBUF
+!       out: KTMAT
         CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
       ENDIF
 C
@@ -2923,9 +2936,38 @@ C
         CALL SETDC2(0)
       ENDIF
 C
-C     Output
+C     Write transformation matrices
 C
+      CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
+      CALL ORBDAT
+      CLOSE(LUTMAT,STATUS='KEEP')
+!
+      if(x2c.and.x2cmod_mmf)then
+
+!       perform the final step for the molecular mean-field procedure within the X2C-module
+!       ------------------------------------------------------------------------------------
+
+!       purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
+!                and renew the coefficient file DFCOEF
+!                a potential issue could be frozen orbitals - test me!
+        call memget('REAL',kcmomat,ncmotq,work,kfree,lfree)
+        call memget('REAL',kscratch,norbt,work,kfree,lfree)
+        call dzero(work(ktbuf),   n2bbasxq)
+        call dzero(work(kcmomat), ncmotq)
+        call dzero(work(kscratch),norbt)
+        call x2c_molecular_mean_field_mos(work(ktmat),work(ktbuf),
+     &                                    work(kcmomat),work(kscratch),
+     &                                    i2tmt,i2tmot,icmoq,ntmo,
+     &                                    nfbas,nesh,nz,nzt,nfsym,
+     &                                    nesht,ipqtoq,iprham)
+      end if ! x2cmod_mmf .equiv. .true.
+
+!     final output
+!     ------------
       CALL TITLER('Orbital dimensions','*',125)
+
       IF ( NFSYM .EQ. 1 ) THEN
          WRITE(LUPRI,'(A,I5)')
      &        'No. of positive energy orbitals (NESH): ',NESH(1)
@@ -2959,40 +3001,13 @@ C
      &        (NORB(I),I=1,NFSYM),J
       END IF
 C
-C     Write transformation matrices
-C
-      CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
-      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-      CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
-      CALL ORBDAT
-      CLOSE(LUTMAT,STATUS='KEEP')
-!
-      if(x2c.and.x2cmod_mmf)then
-
-!       perform the final step for the molecular mean-field procedure within the X2C-module
-!       ------------------------------------------------------------------------------------
-
-!       purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
-!                and renew the coefficient file DFCOEF
-!                a potential issue could be frozen orbitals - test me!
-        call memget('REAL',kcmomat,ncmotq,work,kfree,lfree)
-        call memget('REAL',kscratch,norbt,work,kfree,lfree)
-        call dzero(work(ktbuf),   n2bbasxq)
-        call dzero(work(kcmomat), ncmotq)
-        call dzero(work(kscratch),norbt)
-        call x2c_molecular_mean_field_mos(work(ktmat),work(ktbuf),
-     &                                    work(kcmomat),work(kscratch),
-     &                                    i2tmt,i2tmot,icmoq,ntmo,
-     &                                    nfbas,nesh,nz,nzt,nfsym,
-     &                                    nesht,ipqtoq,iprham)
-      end if ! x2cmod_mmf .equiv. .true.
-C
 C     Memory deallocation
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
  10   CONTINUE
+
       CALL QEXIT('GMOTRA')
+
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
