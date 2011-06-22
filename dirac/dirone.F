@@ -3266,11 +3266,11 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
      &     access='sequential',action='readwrite',
      &     position='rewind')
 !     remember: in linear symmetry NZ ==> 1
-      ISIZE  = NFBAS(1,0)*NORB(1)*1
-      ISIZE2 = NORB(1)*NORB(1)*1
+      ISIZE  = NFBAS(1,0)*NORB(1)*NZ
+      ISIZE2 = NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2)then
-        ISIZE  = ISIZE  + NFBAS(2,0) * NORB(2)*1
-        ISIZE2 = ISIZE2 + NORB(2)    * NORB(2)*1
+        ISIZE  = ISIZE  + NFBAS(2,0) * NORB(2)*NZ
+        ISIZE2 = ISIZE2 + NORB(2)    * NORB(2)*NZ
       END IF
 
       IF(LSYMAD)THEN

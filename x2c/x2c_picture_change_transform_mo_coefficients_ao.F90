@@ -839,7 +839,7 @@ contains
                      ntmo(i),                                &
                      nzt,                                    &
                      print_lvl)
-         ndim_2c_mo_ao = ndim_2c_mo_ao + nfbas(i,0) * nesh_dim(i)
+         ndim_2c_mo_ao = ndim_2c_mo_ao + nfbas(i,0) * nesh_dim(i) * nz
        end do
 
 !      write the new DFCOEF file

@@ -336,12 +336,12 @@ contains
 
 !            b. read the SL-resorted AO2MO transformation matrix
 !            ---------------------------------------------------
-             open(11,file='AOMOSLR',status='old',form='unformatted', &
+             open(9,file='AOMOSLR',status='old',form='unformatted', &
                   access='sequential',action="readwrite",position='rewind')
 
-             call readt(11,fullao2momat_dim,xmat)
+             call readt(9,fullao2momat_dim,xmat)
 
-             close(11,status='delete')
+             close(9,status='delete')
 
            case default
 

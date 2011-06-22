@@ -329,7 +329,7 @@ contains
          end do
        end do
        if(ham_lvl_x2c == -137)then ! hidden code for mmf-approach
-         nzt     = 1
+         nzt     = nz
          n2tmt   = 0
          n2tmotq = 0
          do i=1, nfsym
@@ -350,7 +350,7 @@ contains
          close(fh,status='delete')
 !
 !        initialize sub-block diagonalization in DFDIAG
-         sub_bl = .true.
+         if(linear) sub_bl = .true.
        end if
 
 !      step 2: recalculate offsets and globally used pointers

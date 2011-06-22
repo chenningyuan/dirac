@@ -592,14 +592,14 @@ contains
 
 !        a. read the linear-symmetry adapted MO2MO transformation matrix
 !        -----------------------------------------------------------------
-         open(11,file='JzMOLLb',status='old',form='unformatted', &
+         open(8,file='JzMOLLb',status='old',form='unformatted', &
               access='sequential',action="readwrite",position='rewind')
 
 !        MO2MO linear symmetry <--> nonlinear symmetry transformation matrix
          ilowdmat = 1
          do i = 1, nfsym
 
-           call readt(11,nesh_dim(i)**2,scr_mat1(ilowdmat))
+           call readt(8,nesh_dim(i)**2,scr_mat1(ilowdmat))
 
 !          debug print
            if(print_lvl > 2)then
@@ -609,7 +609,7 @@ contains
            ilowdmat = ilowdmat + nesh_dim(i)**2
          end do
 
-         close(11,status='delete')
+         close(8,status='delete')
 
 !        transformation step: non-linear-symmetry LOWDIN --> linear-symmetry LOWDIN
          ilowdmat     = 1
