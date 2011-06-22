@@ -12,18 +12,26 @@ DIRAC=/home/ilias/Work/qch/qch_software/dirac/svn_dirac/g95_gcc_noopt_ownlibs_IL
 
 # go to the local DIRAC directory
 cd $DIRAC
-
 /bin/rm -rf build
-
 svn --force up
-
 ./pamadm -a --xcfun --minus --openrsp
-
 # configure step
 ./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
-
 cd $DIRAC/build
+make Experimental
 
-  make Experimental
+###
+### now run the Nightly test suite
+###
+TMP_DIR=/var/tmp/dirac_build
+mkdir -p $TMP_DIR
+svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
+cd $TMP_DIR
+./pamadm -a --minus --openrsp
+# configure step
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+cd $DIRAC/build
+make Nightly
+rm -rf $TMP_DIR
 
 exit 0
