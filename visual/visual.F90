@@ -427,9 +427,11 @@ contains
       integer              :: ix, iy
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
+      real(8)              :: vz(3), vz_norm
       real(8)              :: r(3), v(3), s
       integer              :: lunit_2d_scalar
       integer              :: lunit_2d_vector
+      integer              :: lunit_2d_flow
       integer              :: lunit_3d_cube
       integer              :: lunit_3d_scalar
       integer              :: lunit_3d_vector
@@ -447,11 +449,12 @@ contains
 
       lunit_2d_scalar   = 14
       lunit_2d_vector   = 15
-      lunit_3d_cube     = 16
-      lunit_3d_scalar   = 17
-      lunit_3d_vector   = 18
-      lunit_line_scalar = 19
-      lunit_line_vector = 20
+      lunit_2d_flow     = 16
+      lunit_3d_cube     = 17
+      lunit_3d_scalar   = 18
+      lunit_3d_vector   = 19
+      lunit_line_scalar = 20
+      lunit_line_vector = 21
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar,           &
@@ -461,6 +464,11 @@ contains
               form   = 'formatted')
          open(lunit_2d_vector,           &
               file   = 'plot.2d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
+         open(lunit_2d_flow,             &
+              file   = 'plot.2d.flow',   &
               status = 'new',            &
               access = 'sequential',     &
               form   = 'formatted')
@@ -574,8 +582,13 @@ contains
          vx = (visual_cfg_2d_p_right - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
          vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
 
+         vz(1) = vx(2)*vy(3) - vx(3)*vy(2)
+         vz(2) = vx(3)*vy(1) - vx(1)*vy(3)
+         vz(3) = vx(1)*vy(2) - vx(2)*vy(1)
+
          vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
          vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
+         vz_norm = dsqrt(vz(1)*vz(1) + vz(2)*vz(2) + vz(3)*vz(3))
 
          i = 0
          do ix = 0, visual_cfg_2d_nr_right
@@ -605,6 +618,12 @@ contains
                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
                   (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
                   (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
+
+               write(lunit_2d_flow, '(3e18.10)')                  &
+                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
+                  (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+
             end do
          end do
       end if
@@ -711,13 +730,14 @@ contains
          end do
       end if
 
-      if (visual_cfg_2d)   close(lunit_2d_scalar, status = 'keep')
-      if (visual_cfg_2d)   close(lunit_2d_vector, status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_cube,   status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_scalar, status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_vector, status = 'keep')
-      if (visual_cfg_line) close(lunit_line_scalar,     status = 'keep')
-      if (visual_cfg_line) close(lunit_line_vector,     status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_scalar,   status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_vector,   status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_flow,     status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_cube,     status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_scalar,   status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_vector,   status = 'keep')
+      if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
+      if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
 
       deallocate(q)
       deallocate(atom_xyz)
