@@ -284,7 +284,7 @@ contains
          v_13 = visual_cfg_2d_p_top   - visual_cfg_2d_p_origin
          s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
          if (s > tiny(0.0d0)) then
-            call quit('.2D: lines connectiong points 1-2 and 1-3 do not enclose 90 degrees')
+            call quit('.2D: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
          end if
       end if
 
@@ -301,7 +301,7 @@ contains
          v_13 = visual_cfg_2d_integration_p_top   - visual_cfg_2d_integration_p_origin
          s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
          if (s > tiny(0.0d0)) then
-            call quit('.2D_INT: lines connectiong points 1-2 and 1-3 do not enclose 90 degrees')
+            call quit('.2D_INT: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
          end if
       end if
 
