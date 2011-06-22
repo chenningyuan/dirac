@@ -6,7 +6,7 @@
  1. Exporting/releasing code
  2. What do I need to do to add/remove source files?
  3. How do I set compiler flags?
- 4. Creating DEB, RPM, and other packages (currently only DIRAC)
+ 4. Creating DEB, RPM, and other packages
 
 
  1. Exporting/releasing code
@@ -35,7 +35,9 @@ For configure builds:
  2. What do I need to do to add/remove source files?
     ------------------------------------------------
 
-New files are automatically added by pamadm which generates cmake/Sources.list
+New files are automatically added by pamadm which generates cmake/Sources.list.
+This also means that you need to rerun pamadm if the list of source files to
+compile changes.
 
 
  3. How do I set compiler flags?
