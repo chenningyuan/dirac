@@ -32,9 +32,7 @@ module x2c_utils
 
   use x2c_fio
   use x2c_cb_interface, only:  &
-      sel_wrk_x2c,             &
-      desel_wrk_x2c,           &
-      reset_x2c_cb_lin_lwdmat
+      set_x2c_subblock_data
 
   implicit none
 
@@ -486,7 +484,6 @@ contains
   subroutine x2c_lowd2c(lowd_mat,            &
                         scr_mat1,            &  
                         scr_mat2,            &  
-                        scr_mat3,            &  
                         npsh_dim,            &
                         nesh_dim,            &
                         naosh_L,             &
@@ -496,23 +493,27 @@ contains
                         norb_dim_lwd_S,      &
                         norb_dim_lwd_all,    &
                         naosh_ls,            &
-                        naosh_large,         &
                         nfsym,               &
                         nz,                  &
-                        is_len_wrk,          &
+                        ipq_off_in,          &
                         is_fragment,         &
                         x2c_file_glb,        &
+                        print_lvl,           &
                         linear_sym)
 !**********************************************************************
 !
 !    purpose:
-!         construct the 2c-Lowdin matrix (if requested) 
+!         construct the 2c-Lowdin matrix (only needed in the x2c-mmf approach). 
+!         in case of linear symmetry we transform the 2c-Lowdin matrix 
+!         by means of the <j_z>_LL eigenvectors.
+!
+!         out:                          regular 2c-LOWDIN matrix on file X2CMAT
+!              if linear_sym == .true.: linear  2c-LOWDIN matrix on file X2CMAT
 !
 !----------------------------------------------------------------------
      real(8), intent(inout) :: lowd_mat(*)
      real(8), intent(inout) :: scr_mat1(*)
      real(8), intent(inout) :: scr_mat2(*)
-     real(8), intent(inout) :: scr_mat3(*)
      integer, intent(in)    :: npsh_dim(nfsym)
      integer, intent(in)    :: nesh_dim(nfsym)
      integer, intent(in)    :: naosh_L(nfsym)
@@ -522,16 +523,14 @@ contains
      integer, intent(in)    :: norb_dim_lwd_S(nfsym)
      integer, intent(in)    :: norb_dim_lwd_all(nfsym)
      integer, intent(in)    :: naosh_ls
-     integer, intent(in)    :: naosh_large
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
-     integer, intent(in)    :: is_len_wrk
+     integer, intent(in)    :: ipq_off_in(4,0:7)
      integer, intent(in)    :: is_fragment
      integer, intent(in)    :: x2c_file_glb
+     integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
-     integer                :: lwrk
      integer                :: i
      integer                :: j
      integer                :: nbasL_f
@@ -547,6 +546,7 @@ contains
        ilowdmat = 1
 
 !      step 1: zero out L-S terms
+!      --------------------------
        do i = 1, nfsym
 
 !        initialize
@@ -571,52 +571,77 @@ contains
 
 !      step 2: reorder the L blocks for nfsym > 1:
 !              L for nfsym==1 followed by L for nfsym==2                        
+!      -------------------------------------------------
        if(nfsym == 2)then
          ilowdmat_tmp = 1 + naosh_all(1) * norb_dim_lwd_all(1)
          ilowdmat     = 1 + naosh_all(1) * nesh_dim(1)
          call dcopy(naosh_all(2)*nesh_dim(2),lowd_mat(ilowdmat_tmp),1,lowd_mat(ilowdmat),1)
        end if
 
-!      step 3: store 2c-adapted Lowdin matrix in AO basis on global file (tag i = 0: marks data storage of "g+u" (if nfsym > 1))
+!      step 3: store 2c-adapted Lowdin matrix in AO2MO basis on global file (tag i = 0: marks data storage of "g+u" (if nfsym > 1))
 !                    ^^         ^ ^              ^^ ("g" == general case)
 !      label code:   ||         | |              ||   |
-       i = 0
-       write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,i
+       write(flabel,'(a7,i4,i1)') '2cLWAOg',is_fragment,0
 
-       call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
+       call x2c_write(flabel,lowd_mat,(naosh_all(1)*nesh_dim(1)+naosh_all(2)*nesh_dim(2)),x2c_file_glb)
 
-!      we always want to call the common block manipulation routines as the sub-block
-!      data (taken from dcborb.h) is written in there 
-       call reset_x2c_cb_lin_lwdmat(1,                    &
-                                    npsh_dim,             &
-                                    nesh_dim,             &
-                                    nfsym,                &
-                                    nz,                   &
-                                    nborb_dim)
 
-!      step 4: in case of linear symmetry - adapt the LOWDIN matrix
+!      step 4: transform 2c-adapted Lowdin matrix in AO2MO basis to account for linear symmetry
+!      ----------------------------------------------------------------------------------------
        if(linear_sym)then
-         write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,i
-!        set pointer to WORK array and allow full length for allocations
-         lwrk = is_len_wrk
-         call sel_wrk_x2c(wrk,lwrk)
 
-!        get LOWDIN matrix in linear symmetry
-         call linsym(scr_mat1,lowd_mat,scr_mat2,scr_mat3,wrk,lwrk)
+!        a. read the linear-symmetry adapted MO2MO transformation matrix
+!        -----------------------------------------------------------------
+         open(11,file='JzMOLLb',status='old',form='unformatted', &
+              access='sequential',action="readwrite",position='rewind')
 
-!        reset pointer to WORK array
-         call desel_wrk_x2c(wrk,lwrk)
+!        MO2MO linear symmetry <--> nonlinear symmetry transformation matrix
+         ilowdmat = 1
+         do i = 1, nfsym
 
+           call readt(11,nesh_dim(i)**2,scr_mat1(ilowdmat))
+
+!          debug print
+           if(print_lvl > 2)then
+             call print_x2cmat(scr_mat1(ilowdmat),nesh_dim(i),nesh_dim(i),1,ipq_off_in(1,0),'trafo-lin',6)
+           end if
+
+           ilowdmat = ilowdmat + nesh_dim(i)**2
+         end do
+
+         close(11,status='delete')
+
+!        transformation step: non-linear-symmetry LOWDIN --> linear-symmetry LOWDIN
+         ilowdmat     = 1
+         ilowdmat_tmp = 1
+         do i = 1, nfsym
+           call bcktra(scr_mat2(ilowdmat),naosh_all(i),nesh_dim(i),     &
+                       scr_mat1(ilowdmat_tmp),nesh_dim(i),nesh_dim(i),  &
+                       nesh_dim(i),1,                                   &
+                       nesh_dim(i),1,naosh_all(i),                      &
+                       lowd_mat(ilowdmat),naosh_all(i),nesh_dim(i),1,   &
+                       print_lvl)
+
+!          debug print
+           if(print_lvl > 2)then
+             call print_x2cmat(scr_mat2(ilowdmat),naosh_all(i),nesh_dim(i),1,ipq_off_in(1,0),'lowd-lin',6)
+           end if
+
+           ilowdmat     = ilowdmat     + naosh_all(i)*nesh_dim(i)
+           ilowdmat_tmp = ilowdmat_tmp + nesh_dim(i)**2
+         end do
+ 
 !        store adapted 2c-LOWDIN matrix on file
-         call x2c_write(flabel,scr_mat1,naosh_ls*naosh_ls,x2c_file_glb)
+         write(flabel,'(a7,i4,i1)') '2cLWAOl',is_fragment,0
+         call x2c_write(flabel,scr_mat2,(naosh_all(1)*nesh_dim(1)+naosh_all(2)*nesh_dim(2)),x2c_file_glb)
+
        end if
 
-       call reset_x2c_cb_lin_lwdmat(-1,                   &
-                                    npsh_dim,             &
-                                    nesh_dim,             &
-                                    nfsym,                &
-                                    nz,                   &
-                                    nborb_dim)
+
+!      we always want to call the common block manipulation routines as the sub-block
+!      data (taken from dcborb.h) is written in there
+       call set_x2c_subblock_data(nfsym,                &
+                                  nz)
 
   end subroutine x2c_lowd2c
 
@@ -1118,7 +1143,7 @@ contains
     print '(/18x,a)', ' *****************************************************************'
     print '( 18x,a)', ' *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***'
     print '( 18x,a)', ' ***          written by Stefan Knecht and Trond Saue,         ***'
-    print '( 18x,a)', ' ***              University of Strasbourg, 2010.              ***'
+    print '( 18x,a)', ' *** Universities of Strasbourg, Toulouse and Odense 2010-2011 ***'
     print '(18x,a/)', ' *****************************************************************'
 
   end subroutine

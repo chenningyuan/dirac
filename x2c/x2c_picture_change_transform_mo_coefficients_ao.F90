@@ -32,8 +32,7 @@ module x2c_pct_mo_coefficients
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &
-      renew_x2c_cb_orb_shell_dim,      &
-      reset_x2c_cb_lin_lwdmat
+      renew_x2c_cb_orb_shell_dim
 
   implicit none
 
@@ -558,7 +557,7 @@ contains
 !      b. 2c-Lowdin transformation matrix
        write(flabel,'(a7,i4,i1)') '2cLWAOg',1,0
        if(linear_sym) write(flabel,'(a7,i4,i1)') '2cLWAOl',1,0
-       call x2c_read(flabel,scratch3,naosh_ls*naosh_ls,x2c_file_glb)
+       call x2c_read(flabel,scratch3,(naosh_all(1)*nesh_dim(1)+naosh_all(2)*nesh_dim(2)),x2c_file_glb)
 
 !      debug print
        if(print_lvl > 2)then

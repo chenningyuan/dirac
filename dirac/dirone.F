@@ -2552,7 +2552,7 @@ C   PAMIOU: LUTMAT
       DIMENSION WORK(LWORK)
       logical, intent(in) :: GOFAST
 !     local scratch
-      logical             :: TWOBUF, TOBE, FNDLAB, FNDLAB12
+      logical             :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
       logical             :: is_2c_rel_run
       integer             :: is_defining_h1mat
       integer             :: ndim_lowmat
@@ -2570,6 +2570,10 @@ C
 !     set local 2c-relativistic run flag
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
+
+!     logical flag for keeping track of whether case 3 in gmotra has
+!     been entered
+      gmotra_case3 = .false.
 
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
@@ -2796,9 +2800,20 @@ C         2) do picture change transformation of integrals on AOPROPER
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
      &           access='sequential',action='readwrite',
      &           position='rewind')
-            call x2c_read('2cLWAOg   10',work(KTMAT),n2bbasx,lux2c)
+            ndim_lowdinmat   = 0
+            do i = 1, nfsym
+              ndim_lowdinmat = ndim_lowdinmat + nfbas(i,0)*nesh(i)
+            end do
+
+            if(linear)then
+              gmotra_case3 = .true.
+            else
+              call x2c_read('2cLWAOg   10',work(KTMAT),
+     &                      ndim_lowdinmat,lux2c)
+            end if
             
             close(lux2c,status='keep')
+            sub_bl = .false.
           else
 !           WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
             KTMAT = KVMAT
@@ -2863,14 +2878,19 @@ C     -------------------------------------------------------------------
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
-        print *, 'go in here ... branch 3'
 !       defining h1 matrix control variable (in the X2C module) -
-!       set here for consistency to the maximum value (the true value
-!       needs to be checked though)
+!       set here for consistency to the maximum value
         is_defining_h1mat = 4
+
+!        in: LOWDIN matrix                   --> KVMAT
+
+!       out: AO2MO                           --> KTMAT
+!       out: AO2MO SL resorted               --> KVMAT
+!       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &             .FALSE.,.FALSE.,is_defining_h1mat,WORK(KFREE),LFREE)
-!    &       x2cmod_mmf,.false.,is_defining_h1mat,WORK(KFREE),LFREE)
+     &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),linear,
+     &              is_defining_h1mat,WORK(KFREE),LFREE)
+
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
         IF (IPRHAM.GE.5) THEN
@@ -2878,6 +2898,8 @@ C     -------------------------------------------------------------------
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
+
+        gmotra_case3 = .true.
 
       ENDIF
 C
@@ -2903,21 +2925,57 @@ C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
 C
       IF (.NOT.SUB_BL) CALL INISUB
-      IF (SPINFR) THEN
+      IF (SPINFR.or.(x2c.and.x2cmod_mmf)) THEN
          SUB_BL = .TRUE.
       ENDIF
-      IF (LINEAR) THEN
-!     if(linear.and..not.gmotra_case3)then
+
+      if(linear.and..not.gmotra_case3)then
 C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
 !       in:  KTMAT + KTBUF
 !       out: KTMAT
-        CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KFREE),LFREE)
-      ENDIF
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
+
+!        in: AO2MO                         --> KTBUF
+
+!       out: AO2MO linear symmetry adapted --> KTMAT
+!       out: AO2MO                         --> KTBUF
+!       out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
+        CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &              WORK(KFREE),LFREE)
+
+        CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
+      else if(linear)then
+        if(x2c.and.x2cmod_mmf)then
+          open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &         access='sequential',action='readwrite',
+     &         position='rewind')
+          call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
+          close(lux2c,status='keep')
+        else
+          open(99,file='AOMOlin',status='old',form='unformatted',
+     &         access='sequential',action='readwrite',
+     &         position='rewind')
+!         skip rec # 1
+          read(99)
+          call readt(99,N2TMT,work(KTMAT))
+!         file is needed in the 4c-2c transformation after the 4c-SCF
+!         in order to ensure numerical stability (avoiding double
+!         diagonalization, etc.)
+          if(x2cmod_mmf)then
+            close(99,status='keep')
+          else
+            close(99,status='delete')
+          end if
+        end if
+      end if
 C
 C     Construct right index transformed overlap matrix Saomo = Sao T
 C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
 C
+!      in: AO2MO (linear symmetry adapted if linsym = T)--> KTMAT
+!     out: right index transformed overlap matrix Saomo --> KTBUF
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
      &              IPRHAM,WORK(KFREE),LFREE)
 C
@@ -2939,9 +2997,13 @@ C
 C     Write transformation matrices
 C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
+!     right index transformed overlap matrix Saomo
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
+!     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
+
       CLOSE(LUTMAT,STATUS='KEEP')
 !
       if(x2c.and.x2cmod_mmf)then
@@ -3041,7 +3103,7 @@ C
 C     On output:
 C   ==============
 C
-C  TMAT - total 4c AO -> MO transformation matrix (may be also linear-symmetry adapted!)
+C  TMAT - total 4c AO -> MO transformation matrix
 C
 C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
 C         matrix with SL-resorted columns
@@ -3172,27 +3234,46 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
 !       print *,'is_defining_h1mat is...',is_defining_h1mat
+        open(99,file='AOMOSLR',status='replace',form='unformatted',
+     &       access='sequential',action='readwrite',
+     &       position='rewind')
         if(is_defining_h1mat.gt.3.or.
      &    (is_defining_h1mat.eq.2.and.LSYMAD))then
 !       if(is_defining_h1mat.gt.3)then
           CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
-CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
-!       print *,'SLSORT branch 1...',is_defining_h1mat
+!         in:  AO2MO transformation matrix             --> TMAT
+!         out: AO2MO transformation matrix             --> TMAT
+!              AO2MO transformation matrix SL resorted --> WORK(KBUF)
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
+          call writt(99,ISIZE, WORK(KBUF))
+!         print *,'SLSORT branch 1...'
         else
-!         return the SL resorted matrix in vmat
-!       print *,'SLSORT branch 2...',is_defining_h1mat
-          call dzero(vmat,n2bbasxq)
-          CALL SLSORT(TMAT,vmat,IPRHAM,WORK(KFREE),LFREE)
+          call dzero(VMAT,n2bbasxq)
+!         in:  AO2MO transformation matrix             --> TMAT
+!         out: AO2MO transformation matrix             --> TMAT
+!              AO2MO transformation matrix SL resorted --> VMAT
+          CALL SLSORT(TMAT,VMAT,IPRHAM,WORK(KFREE),LFREE)
+          call writt(99,ISIZE, vmat)
+!         print *,'SLSORT branch 2...'
         end if
+        close(99,status='keep')
       ENDIF
 
-CMI   ... adaptation for the linear symmetry 
-!     lsymad is only relevant if the defining h1 matrix for the X2C/BSS
-!     module will be the 4c-Dirac-Fock matrix - s. knecht march 2011
+!     adapt the MO part of the AO2MO transformation matrix wrt linear symmetry by 
+!     using the eigenvectors of <j_z> in MO basis as transformation matrix
+!     ---------------------------------------------------------------------------
+      open(99,file='AOMOlin',status='replace',form='unformatted',
+     &     access='sequential',action='readwrite',
+     &     position='rewind')
+!     remember: in linear symmetry NZ ==> 1
+      ISIZE  = NFBAS(1,0)*NORB(1)*1
+      ISIZE2 = NORB(1)*NORB(1)*1
+      IF (NFSYM.EQ.2)then
+        ISIZE  = ISIZE  + NFBAS(2,0) * NORB(2)*1
+        ISIZE2 = ISIZE2 + NORB(2)    * NORB(2)*1
+      END IF
+
       IF(LSYMAD)THEN
-        ISIZE = NFBAS(1,0)*NORB(1)*NZ
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
         CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
         CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
         CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
@@ -3214,8 +3295,27 @@ CMI   ... adaptation for the linear symmetry
 
         CALL DZERO(TMAT,N2BBASXQ)
         CALL DZERO(TBUF,N2BBASXQ)
-        CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-C ...   always return non-linear symmetry adapted transformation matrix :
+        IF (.NOT.SUB_BL) CALL INISUB
+        IF (SPINFR) THEN
+          SUB_BL = .TRUE.
+        ENDIF
+
+!       in:  VMAT
+
+!       out: AO2MO linear symmetry adapted --> TMAT
+!       out: AO2MO                         --> VMAT
+!       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
+        CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+
+!       save matrices on file to be re-used in the x2c-module
+!       MO2MO lin
+        call writt(99,ISIZE2,TBUF)
+!       AO2MO lin
+        call writt(99,ISIZE, TMAT)
+!       AO2MO
+        call writt(99,ISIZE, WORK(KBUF1))
+
+!       by default: return the unmodified AO2MO transformation matrix
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
 
         IF(IPRHAM.GE.5) THEN
@@ -3229,7 +3329,7 @@ C ...   always return non-linear symmetry adapted transformation matrix :
               WRITE(LUPRI,'(A,I1,A,I1)')
      &        '* Fermion ircop no.',I,'/',NFSYM
               CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
               WRITE(LUPRI,'(/5X,A/)')
      &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
      &        '  matrix (TBUF).'
@@ -3237,13 +3337,17 @@ C ...   always return non-linear symmetry adapted transformation matrix :
      &        '* Fermion ircop no.',I,'/',NFSYM
               CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
      &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-              IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-              IBUF = IBUF + NORB(I)*NORB(I)*NZ
+              IMAT = IMAT + NFBAS(I,0)*NORB(I)*1
+              IBUF = IBUF + NORB(I)*NORB(I)*1
             ENDIF
           ENDDO
         ENDIF
         CALL MEMREL('SLGROU1',WORK,KBUF1,KBUF1,KFREE,LFREE)
-      ENDIF
+      else
+!       AO2MO transformation matrix
+        call writt(99,ISIZE, TMAT)
+      endif
+      close(99,status='keep')
 
       IF(SLGROUP.and.(is_defining_h1mat.gt.3.or.
      &    (is_defining_h1mat.eq.2.and.LSYMAD)))THEN
@@ -5662,7 +5766,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck glinsm */
-      SUBROUTINE GLINSM(TMAT,VMAT,WORK,LWORK)
+      SUBROUTINE GLINSM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
 C     This routine makes an additional transformation from the
@@ -5685,13 +5789,10 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION WORK(LWORK),TMAT(*),VMAT(*)
+      DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GLINSM')
 
 #include <memint.h>
-      KFRSAV = KFREE
-      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -5713,17 +5814,15 @@ C
          RETURN
       ENDIF
 C
-      CALL LINSYM(TMAT,VMAT,WORK(KTBUF),WORK(KEIG),WORK(KFREE),LFREE)
+      CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
       SUB_BL = .TRUE.
 
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A/)')
-     &'GLINSM: TMAT and Saomo were adapted for the linear symmatry.'
+     &'GLINSM: TMAT and Saomo were adapted for the linear symmetry.'
       ENDIF
       CALL FLSHFO(LUPRI)
 
-C     ... release all allocated memmory in this routine (from the position KFRSAV)
-      CALL MEMREL('GLINSM',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GLINSM')
       RETURN
 C
@@ -5844,6 +5943,15 @@ C
 
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
       WRITE (LUPRI,1000)
+
+!     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
+!                         this block is needed to transform the 2c-LOWDIN matrix 
+!                         in the x2c-mmf approach (thus ensuring numerical stability by not re-doing this step).
+      if(do4c2c)then
+        open(13,file='JzMOLLb',status='replace',form='unformatted',
+     &       access='sequential',action='readwrite',
+     &       position='rewind')
+      end if
 C
       IOFT = 1
       DO 20 I = 1,NFSYM
@@ -6075,11 +6183,22 @@ C
      &               WORK(KVLL),NL,NL,1,
      &               TBUF(IOFT),NT,NT,1)
 
+        if(do4c2c)then ! x2c-mmf approach
+          call writt(13,NL**2,WORK(KVLL))
+        end if
+
         IF (IPRHAM.GE.15) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1) 
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
+     &   IPQTOQ(1,0),LUPRI)
+         CALL FLSHFO(LUPRI)
+
+         CALL HEADER('LINSYM: MO vectors in buffer space,LL',-1) 
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &   IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
@@ -6107,6 +6226,10 @@ C
         IOFT = IOFT + NORB(I)*NORB(I)
 C
    20 CONTINUE
+
+      if(do4c2c)then ! x2c-mmf approach
+        close(13,status='keep')
+      end if
 C
 C     Generate transformation matrix in non-orthogonal basis
 C     ======================================================

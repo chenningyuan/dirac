@@ -38,7 +38,7 @@ module x2c_cb_interface
   public set_wrk_x2c
   public sel_wrk_x2c
   public desel_wrk_x2c
-  public reset_x2c_cb_lin_lwdmat
+  public set_x2c_subblock_data
   public reset_x2c_cb_onefck
   public renew_x2c_cb_orb_shell_dim
 
@@ -104,26 +104,27 @@ contains
          end if
 
 !        set file unit on common block in dcbgen.h
-         lux2c = x2c_funit
-
-!
+         lux2c            = x2c_funit
+ 
 !        initialize integer variables
-         num_nuclei      = nucdep
-!                         [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
-         nr_ao_total_x2c = ntbas(0)
-!                         [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
-         nr_ao_large_x2c = ntbas(1)
-!                         [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
-         nr_ao_small_x2c = ntbas(2)
+         num_nuclei       = nucdep
+!                          [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
+         nr_ao_total_x2c  = ntbas(0)
+!                          [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
+         nr_ao_large_x2c  = ntbas(1)
+!                          [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
+         nr_ao_small_x2c  = ntbas(2)
 !
-         n2bastq_dim_x2c = n2bastq
+         n2bastq_dim_x2c  = n2bastq
 !
-         nr_cmo_q        = ncmotq
+         nr_cmo_q         = ncmotq
 !
-         fullemat_dim    = 0
-         fullomat_dim    = 0
-         fulleomat_dim   = 0
-         fulllowdmat_dim = 0
+         fullemat_dim     = 0
+         fullomat_dim     = 0
+         fulleomat_dim    = 0
+         fulllowdmat_dim  = 0
+         fullao2momat_dim = 0
+         fullmo2momat_dim = 0
          do i = 1, nr_fsym
            j               =  nesh(i)
            k               =  norb(i)
@@ -151,7 +152,11 @@ contains
            nr_mo_lw_s(i)   = nforb(i,2)
 
 !          LOWDIN matrix dimension
-           fulllowdmat_dim = fulllowdmat_dim + nr_ao_all(i) * nr_mo_lw_all(i)
+           fulllowdmat_dim  = fulllowdmat_dim + nr_ao_all(i) * nr_mo_lw_all(i)
+!          AO2MO transformation matrix dimension
+           fullao2momat_dim = fullao2momat_dim + nr_ao_all(i) * k * nr_quat
+!          MO2MO transformation matrix dimension (linear symmetry --> non-linear symmetry)
+           fullmo2momat_dim = fullmo2momat_dim + k * k * nr_quat
 
            do m = 1, nr_fsym
              ioff_aomat_x(m,i) = i2basx(m,i)
@@ -215,12 +220,8 @@ contains
   end subroutine
 
 !**********************************************************************
-  subroutine reset_x2c_cb_lin_lwdmat(set_cb_blocks,        &
-                                     npsh_dim,             &
-                                     nesh_dim,             &
-                                     nfsym,                &
-                                     nz,                   &
-                                     nborb_dim)
+  subroutine set_x2c_subblock_data(nfsym,                &
+                                   nz)
 #include "dcborb.h"
 !**********************************************************************
 !   
@@ -228,12 +229,8 @@ contains
 !             for "call linsym" inside the X2C module
 !
 !**********************************************************************
-     integer, intent(in)    :: set_cb_blocks
-     integer, intent(in)    :: npsh_dim(nfsym)
-     integer, intent(in)    :: nesh_dim(nfsym)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
-     integer, intent(inout) :: nborb_dim(4,2,0:2)
 !-----------------------------------------------------------------------
      integer                :: i
      integer                :: j
@@ -244,40 +241,22 @@ contains
 !      initialize
        j = 4/nz
 
-!      modify common block
-       if(set_cb_blocks == 1)then
-
-         do i = 1, nfsym
-           npsh(i) = 0
-           norb(i) = nesh_dim(i) + npsh(i)
-           do k = 1, j
-             nborb_dim(k,i,2) = nborb(k,i,2)
-             nborb(k,i,2)     = 0
-             nborb(k,i,0)     = nborb(k,i,1) + nborb(k,i,2)
-           end do
-         end do
-
-!      restore common block and save sub-block data on file
-       else
+!      save sub-block data on file
 
        fh = 10
        open(fh,file='x2c-subblock-data',status='replace',form='unformatted',access='sequential',position='rewind')
+       do i = 1, nfsym
+         do k = 1, n_sub_bl(i)
+           norb_sub(k,i,2) = 0
+           norb_sub(k,i,0) = norb_sub(k,i,1) + norb_sub(k,i,2)
+         end do
+       end do
        write(fh) n_sub_bl
        write(fh) id_sub_bl
        write(fh) norb_sub
        close(fh,status='keep')
 
-         do i = 1, nfsym
-           npsh(i) = npsh_dim(i)
-           norb(i) = nesh_dim(i) + npsh(i)
-           do k = 1, j
-             nborb(k,i,2) = nborb_dim(k,i,2)
-             nborb(k,i,0) = nborb(k,i,1) + nborb(k,i,2)
-           end do
-         end do
-       end if
-
-  end subroutine reset_x2c_cb_lin_lwdmat
+  end subroutine set_x2c_subblock_data
 
 !**********************************************************************
   subroutine reset_x2c_cb_onefck(x2c_run_vl_tmp)
@@ -377,7 +356,6 @@ contains
 !      step 2: recalculate offsets and globally used pointers
 !      ----------------------------------------------
        call setdc2(0)
-!      if(x2c_4c_fock_mtx_defh1) call setdc1(0)
 
 !      step 3: reset integral default, overlap metric and # of transformation matrices
 !      -------------------------------------------------------------------------------

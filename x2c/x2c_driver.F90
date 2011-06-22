@@ -102,8 +102,7 @@ module dirx2c
 
   save
 
-  real(8), parameter :: x2c_d0       =  0.0D0
-  real(8), parameter :: x2c_dummy(2) =  0.0D0
+  real(8), parameter :: x2c_dummy(2) =  0.0d0
 
 contains
 
@@ -214,7 +213,7 @@ contains
            dimension_for_2mat = max(dimension_for_2mat,ioff_aomat_x(i,i)+1+nr_ao_total_x2c*nr_ao_all(i)*nr_quat)
          end do
          call alloc(xmat,dimension_for_2mat)
-         xmat    = x2c_d0
+         xmat    = 0.0d0
          is_allocated_dyn  = dimension_for_2mat
 
 !        ------------------------------------------------------------------------------
@@ -240,9 +239,9 @@ contains
          call alloc(scr1mat,j)
          call alloc(eigvl  ,nr_ao_total_x2c)
 
-         scr1mat = x2c_d0
-         scr2mat = x2c_d0
-         eigvl   = x2c_d0
+         scr1mat = 0.0d0
+         scr2mat = 0.0d0
+         eigvl   = 0.0d0
 
 !        set maximum allowed length of wrk array allocations
          is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
@@ -275,7 +274,6 @@ contains
            call x2c_lowd2c(xmat,               &
                            scr1mat,            &
                            scr2mat,            &
-                           eigvl,              &
                            dim_pshell,         &
                            dim_eshell,         &
                            nr_ao_l,            &
@@ -285,13 +283,13 @@ contains
                            nr_mo_lw_s,         &
                            nr_mo_lw_all,       &
                            nr_ao_total_x2c,    &
-                           nr_ao_large_x2c,    &
                            nr_fsym,            &
                            nr_quat,            &
-                           lwrk,               &
+                           x2c_cb_pq_to_uq,    &
                            z_value,            &
                            x2c_funit,          &
-                           (x2c_is_defining_h1mat == 2).and.x2c_linsym)
+                           x2c_prt,            &
+                           x2c_linsym)
 
 !          recover the 4c-Lowdin matrix
            xmat = 0.0d0
@@ -310,40 +308,82 @@ contains
 !              out: AOtoMO transformation matrices -> xmat, scr1mat
 !                                                   + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
 !        ------------------------------------------------------------------------------
+         select case(x2c_is_defining_h1mat)
 
-         call sel_wrk_x2c(wrk,lwrk)
+           case(2) ! defining h1 hamiltonian is the 4c-fock operator obtained in a preceeding 4c-SCF run
 
-         call modham(scr1mat,                                         &
-                     xmat,                                            &
-                     scr2mat,                                         &
-                     eigvl,                                           &
-                     .true.,                                          &
-                     (x2c_is_defining_h1mat == 2).and.x2c_linsym,     &
-                     x2c_is_defining_h1mat,                           &
-                     wrk,                                             &
-                     lwrk)
+             scr1mat = 0.0d0
+             scr2mat = 0.0d0
+             xmat    = 0.0d0
 
+!            a. read the (linear-symmetry adapted) AO2MO transformation matrix
+!            -----------------------------------------------------------------
+             open(11,file='AOMOlin',status='old',form='unformatted', &
+                  access='sequential',action="readwrite",position='rewind')
 
-!        nullify pointer to work array and release matrices
-         call desel_wrk_x2c(wrk,lwrk)
+             if(x2c_linsym)then
+!              MO2MO linear symmetry --> nonlinear symmetry transformation matrix
+               call readt(11,fullmo2momat_dim,scr2mat)
+!              AO2MO linear symmetry --> nonlinear symmetry transformation matrix
+!              skip the record as it is not needed here
+               read(11)
+             end if
+
+!            AO2MO transformation matrix
+             call readt(11,fullao2momat_dim,scr1mat)
+
+             close(11,status='delete')
+
+!            b. read the SL-resorted AO2MO transformation matrix
+!            ---------------------------------------------------
+             open(11,file='AOMOSLR',status='old',form='unformatted', &
+                  access='sequential',action="readwrite",position='rewind')
+
+             call readt(11,fullao2momat_dim,xmat)
+
+             close(11,status='delete')
+
+           case default
+
+             call sel_wrk_x2c(wrk,lwrk)
+
+             call modham(scr1mat,                                         &
+                         xmat,                                            &
+                         scr2mat,                                         &
+                         eigvl,                                           &
+                         .true.,                                          &
+                         .false.,                                         &
+                         x2c_is_defining_h1mat,                           &
+                         wrk,                                             &
+                         lwrk)
+
+!            nullify pointer to work array and release matrices
+             call desel_wrk_x2c(wrk,lwrk)
+
+!            ------------------------------------------------------------------------------------
+!            step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
+!                      these dimensions have been evaluated in MODHAM. 
+!            ------------------------------------------------------------------------------------
+             call init_x2c_cb(.true.)
+
+         end select
+
+!        free top-level scratch memory and possibly re-allocate scr1mat with appropriate size
+!        ------------------------------------------------------------------------------------
          call dealloc(eigvl)
          if(x2c_is_defining_h1mat < 1)then
            call dealloc(scr1mat)
 !          reallocate with full size
            call alloc(scr1mat,dimension_for_2mat)
-           scr1mat = x2c_d0
+           scr1mat = 0.0d0
          end if
 !
 !        recalculate the new maximum allowed length of wrk array allocations to be used in the subroutines.
          is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c - j + nr_ao_total_x2c**2 * nr_quat
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
-!        ------------------------------------------------------------------------------
-!        step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
-!                  these dimensions have been evaluated in MODHAM. 
-!        ------------------------------------------------------------------------------
-         call init_x2c_cb(.true.)
-
+!        prepare DIRACs in-house SO-correction based on the 4c-fock SO-elements for each atom type
+!        -----------------------------------------------------------------------------------------
          call prepare_so_correction_driver(nr_fsym,              &
                                            nr_quat,              &
                                            dim_oshell,           &
@@ -613,9 +653,9 @@ contains
 !              in : AOtoMO transformation matrices
 !              out: ["SL resorted"] matrix -> scr2mat
 !              on file x2cscr: 
-!                 a. AOtoMO transformation matrix ["SL resorted"] under the label 4cAOMOr
-!                 b. AOtoMO transformation matrix under the label 4cAOMOo
-!                 c. MOtoMO non-linear -> linear symmetry transformation matrix under the label 4cMOMOl
+!                 a. AOtoMO transformation matrix ["SL resorted"] under the label 4cAOMOr               --> xmat
+!                 b. AOtoMO transformation matrix under the label 4cAOMOo                               --> scr1mat
+!                 c. MOtoMO non-linear -> linear symmetry transformation matrix under the label 4cMOMOl --> scr2mat
 !      ------------------------------------------------------------------------------
        call store_aomo_trafo_matrices(xmat,                &
                                       scr1mat,             &
@@ -679,7 +719,7 @@ contains
  
 !      allocate scratch matrix with appropriate dimension
        call alloc(eigvl  ,max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c))
-       eigvl   = x2c_d0
+       eigvl   = 0.0d0
 
 !      set new maximum allowed length of wrk array allocations
        lwrk = lwrk - max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c)

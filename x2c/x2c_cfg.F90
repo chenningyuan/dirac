@@ -58,50 +58,52 @@ module x2cmod_cfg
   real(8), public :: x2c_cspeed
 
 ! integer block
-  integer, public :: x2c_prt                =  0 ! print level
-  integer, public :: x2c_is_defining_h1mat  = -1 ! no defining h1 hamiltonian: decision is made within the program
-  integer, public :: x2c_add_amfi           =  1 ! current default: use the 'old' AMFI by B. Schimmelpfennig
-  integer, public :: x2c_amfi_order         =  2 ! default (if AMFI is turned on): spin-same orbit contributions
-  integer, public :: dim_pshell(2)
-  integer, public :: dim_eshell(2)
-  integer, public :: dim_eshell2(2)
-  integer, public :: dim_e2shell(2)
-  integer, public :: dim_e2shellq(2)
-  integer, public :: dim_oshell(2)
-  integer, public :: dim_o2shellq(2)
-  integer, public :: fullemat_dim
-  integer, public :: fullomat_dim
-  integer, public :: fulleomat_dim
-  integer, public :: fulllowdmat_dim
-  integer, public :: nr_quat
-  integer, public :: nr_fsym
-  integer, public :: mfsym
-  integer, public :: nr_ao_total_x2c
-  integer, public :: nr_ao_large_x2c
-  integer, public :: nr_ao_small_x2c
-  integer, public :: n2bastq_dim_x2c
-  integer, public :: nr_cmo_q
-  integer, public :: nr_ao_all(2)
-  integer, public :: nr_ao_l(2)
-  integer, public :: nr_ao_s(2)
-  integer, public :: nr_mo_lw_all(2)
-  integer, public :: nr_mo_lw_l(2)
-  integer, public :: nr_mo_lw_s(2)
-  integer, public :: ioff_aomat_x(2,2)
-  integer, public :: x2c_cb_pq_to_uq(4, 0:7)
-  integer, public :: x2c_cb_uq_to_pq(4, 0:7)
-  integer, public :: x2c_bs_to_fs(0:7, 2)
-  integer, public :: x2c_tot_charge_for_mfsum
-  integer, public :: fh_1int_4c
-  integer, public :: all_prp_op
-  integer, public :: num_nuclei
-  integer, public :: x2c_pointer_quat(0:7, 1:2)
-  integer, public :: x2c_bs_irrep_mat(1:4, 0:7)
-  integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4)
-  integer, public :: x2c_pointer_quat_op(0:7)
-  integer, public :: x2c_max_quant_num
-  integer, public :: scf_iter_counter
-  integer, public :: diis_counter
-  integer, public :: nr_2e_fock_matrices
+  integer, public :: x2c_prt                          =  0 ! print level
+  integer, public :: x2c_is_defining_h1mat            = -1 ! no defining h1 hamiltonian: decision is made within the program
+  integer, public :: x2c_add_amfi                     =  1 ! current default: use the 'old' AMFI by B. Schimmelpfennig
+  integer, public :: x2c_amfi_order                   =  2 ! default (if AMFI is turned on): spin-same orbit contributions
+  integer, public :: dim_pshell(2)                    =  0
+  integer, public :: dim_eshell(2)                    =  0
+  integer, public :: dim_eshell2(2)                   =  0
+  integer, public :: dim_e2shell(2)                   =  0
+  integer, public :: dim_e2shellq(2)                  =  0
+  integer, public :: dim_oshell(2)                    =  0
+  integer, public :: dim_o2shellq(2)                  =  0
+  integer, public :: fullemat_dim                     =  0
+  integer, public :: fullomat_dim                     =  0
+  integer, public :: fulleomat_dim                    =  0
+  integer, public :: fulllowdmat_dim                  =  0
+  integer, public :: fullao2momat_dim                 =  0
+  integer, public :: fullmo2momat_dim                 =  0
+  integer, public :: nr_quat                          =  0
+  integer, public :: nr_fsym                          =  0
+  integer, public :: mfsym                            =  0
+  integer, public :: nr_ao_total_x2c                  =  0
+  integer, public :: nr_ao_large_x2c                  =  0
+  integer, public :: nr_ao_small_x2c                  =  0
+  integer, public :: n2bastq_dim_x2c                  =  0
+  integer, public :: nr_cmo_q                         =  0
+  integer, public :: nr_ao_all(2)                     =  0
+  integer, public :: nr_ao_l(2)                       =  0
+  integer, public :: nr_ao_s(2)                       =  0
+  integer, public :: nr_mo_lw_all(2)                  =  0
+  integer, public :: nr_mo_lw_l(2)                    =  0
+  integer, public :: nr_mo_lw_s(2)                    =  0
+  integer, public :: ioff_aomat_x(2,2)                =  0
+  integer, public :: x2c_cb_pq_to_uq(4, 0:7)          =  0
+  integer, public :: x2c_cb_uq_to_pq(4, 0:7)          =  0
+  integer, public :: x2c_bs_to_fs(0:7, 2)             =  0
+  integer, public :: x2c_tot_charge_for_mfsum         =  0
+  integer, public :: fh_1int_4c                       =  0
+  integer, public :: all_prp_op                       =  0
+  integer, public :: num_nuclei                       =  0
+  integer, public :: x2c_pointer_quat(0:7, 1:2)       =  0
+  integer, public :: x2c_bs_irrep_mat(1:4, 0:7)       =  0
+  integer, public :: x2c_iqmult_trip_q(1:4, 1:4, 1:4) =  0
+  integer, public :: x2c_pointer_quat_op(0:7)         =  0
+  integer, public :: x2c_max_quant_num                =  0
+  integer, public :: scf_iter_counter                 =  0
+  integer, public :: diis_counter                     =  0
+  integer, public :: nr_2e_fock_matrices              =  0
 
 end module
