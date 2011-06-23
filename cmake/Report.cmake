@@ -25,13 +25,33 @@ message("GIT_REVISION               ${GIT_REVISION}               ")
 ## check integer setting of OpenMPI Fortran compiler, mpif90
 ## TODO: do the real check, not only print warning message !
 if(ENABLE_MPI)
-     message("Please check whether your MPI library library ")
+     message("\nPlease check whether your MPI library library ")
     if(ENABLE_64BIT_INTEGERS)
         message("is configured to work with Fortran 64-bit integers (integer size 8):")
     else()
         message("is configured to work with Fortran 32-bit integers (integer size 4):")
     endif()
-    message("example for OpenMPI: <OMPI path>/ompi_info -a | grep 'Fort integer size'
-")
+    message("example for OpenMPI: <OMPI path>/ompi_info -a | grep 'Fort integer size'")
+# python script to perform the OpenMPI check of integer
+message("results is:")
+EXECUTE_PROCESS(COMMAND python -c "
+import sys
+import os
+import string
+mpi_path=os.path.dirname('${CMAKE_Fortran_COMPILER}'); 
+ompi_info=os.path.join(mpi_path,'ompi_info'); 
+if os.path.isfile(ompi_info):
+    command=ompi_info+' -a | grep \"Fort integer size\" '
+    print command
+    sys.stdout.flush()
+    os.system(command)
+    sys.exit(0)
+else:
+    print >> stderr,'can not determine ompi_info !'
+    sys.exit(-1)
+"
+RESULT_VARIABLE ret_var
+)
+#message("ret_var=${ret_var}")
 endif()
 
