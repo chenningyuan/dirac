@@ -194,7 +194,7 @@ contains
 !          -----------------------------------------------
            call x2c_atomic_x2c_driver()
 
-         case default ! false
+         case(.false.) ! false
 
 !        open scratch file x2cscr (data for previous fragment is erased if atom-by-atom X2C)
          open(x2c_fscru,file='x2cscr',status='replace',form='unformatted',  &
@@ -205,7 +205,6 @@ contains
          open(x2c_famfi,file='X2Camfi_scr',status='replace',form='unformatted',  &
               access='sequential',action="readwrite",position='rewind')
          call x2c_write(flabel,x2c_dummy,-1,x2c_famfi)
-
 
 !        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
          dimension_for_2mat = nr_ao_total_x2c**2 * nr_quat
@@ -485,7 +484,6 @@ contains
 !
 !              out: all operator (listed above) in picture-change transformed form on file
 !      -----------------------------------------------------------------------------------
-       if(.true.)then
        call pctrafo_all_op_driver(nr_ao_total_x2c,               &
                                   nr_ao_large_x2c,               &
                                   nr_ao_all,                     &
@@ -507,7 +505,6 @@ contains
                                   file_name_1e_fock_matrix,      &
                                   file_name_2e_fock_matrices,    &
                                   x2c_prt)
-       end if
 !      ---------------------------------------------------------------------------------------------------------------
 !      step 3: picture-change transform the 4c-MO coefficients (defining
 !      operator matrix is the 4c-Dirac Fock operator)
