@@ -409,7 +409,9 @@ endif()
 # custom commands on created dirac.x executable
 add_custom_command(
     TARGET Nightly Experimental dirac.x 
-    POST_BUILD COMMAND ../utils/diagn.py
+    if(VERBOSE_OUTPUT)
+        POST_BUILD COMMAND ../utils/diagn.py
+    endif()
 )
 
 # handle the .diracrc file containing pam flags
