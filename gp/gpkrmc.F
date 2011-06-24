@@ -1624,22 +1624,71 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
+      real(8), parameter :: threshold = 1.0d-12
 C
+!     print *, 'MATGAT_symm start is_symm ==> ',is_symm
       DO IZ = 1, NZ
          do 5 J = 1, NCB
             JJ = IDX(J)
+!           print *, ' JJ jz ==> ',JJ, ibeig(jj)
             if(IBEIG(JJ).ne.is_symm) goto 5
             do 10 K = 1, NRB
                KK = IDX(K)
+!              print *, ' KK jz ==> ',JJ, ibeig(KK)
                if(IBEIG(kk).ne.is_symm) goto 10
-               BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
+               if(abs(AMAT(KK,JJ,IZ)).lt.threshold)then
+                 BMAT(K,J,IZ) = 0.0d0
+               else
+                 BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
+               end if
  10         continue
   5      continue
       END DO
+!     print *, 'MATGAT_symm end  is_symm ==> ',is_symm
       RETURN
       END
+!***********************************************************************
+
+      subroutine create_jzbos_sym_vec(jzbos_vec,nvjz,jzbos_tot,nvjz_tot,
+     &                                idx,joffset)
+!***********************************************************************
+!
+!     Construct a jz/boson irrep sub-block vector out of the total 
+!     jz/boson irrep vector (jzbos_tot) using the IDX array and starting 
+!     at a given offset.
+!
+!     written by S. Knecht - june 2011
+!
+!***********************************************************************
+      implicit none
+
+      integer, intent(in)  :: nvjz, nvjz_tot
+      integer, intent(out) :: jzbos_vec(nvjz) 
+      integer, intent(in)  :: jzbos_tot(nvjz_tot)
+      integer, intent(in)  :: idx(*)
+      integer, intent(in)  :: joffset
+
+      integer              :: j, jj
+!----------------------------------------------------------------------
+
+      call izero(jzbos_vec,nvjz)
+#ifdef MCSCF_debug
+      print *, 'create_jzbos_sym_vec start   ==> ',joffset
+      print *, 'create_jzbos_sym_vec total # ==> ',nvjz_tot
+      print *, 'create_jzbos_sym_vec sub   # ==> ',nvjz
+#endif
+
+      do j = 1, nvjz
+        jj           = idx(j+joffset)
+        jzbos_vec(j) = jzbos_tot(jj)
+#ifdef MCSCF_debug
+        print *, ' j JJ jz ==> ',j,jj, jzbos_tot(jj)
+#endif
+      end do
+
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck matgatx */
+
       SUBROUTINE MATGATX(AMAT,NDIMA,BMAT,NDIMB,ISKIP,NZ)
 C***********************************************************************
 C
@@ -1715,10 +1764,20 @@ C
       DO IZ = 1, NZ
          DO 5 J = 1, NCB
             JJ = IDX(J)
+#ifdef MCSCF_debug
+            print *, ' JJ jz ==> ',JJ, ibeig(jj)
+#endif
             if(ibeig(jj).ne.is_symm) goto 5
             DO 10 K = 1, NRB
                KK = IDX(K)
+#ifdef MCSCF_debug
+               print *, ' KK jz ==> ',KK,ibeig(KK)
+#endif
                if(ibeig(KK).ne.is_symm) goto 10
+#ifdef MCSCF_debug
+      print *,' put in b(k,j) value in a(KK,JJ) ==> ', 
+     &                   k,j,BMAT(K,J,IZ),kk,jj
+#endif
                AMAT(KK,JJ,IZ) = BMAT(K,J,IZ)
  10         continue
   5      continue

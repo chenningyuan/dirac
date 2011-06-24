@@ -1691,7 +1691,7 @@ C***********************************************************************
 C
 C     diagonalize square matrix AM, return eigenvectors and eigenvalues.
 C
-C     C controls which type of matrix is diagonalized - dimension NDIM2
+C     C controls which type of matrix is diagonalized - dimension NDIMI
 C
 C     Written by S. Knecht - July 2008
 C
@@ -1713,62 +1713,9 @@ C
 C
       CALL QENTER('DIAGC')
 C
-      IOFF2 = 1
-C
-C     special matrix X
-      IF (C .EQ. 'X') GOTO 100
-C
-      DO IFSYM = 1, NFSYM
-C
-        IF (C .EQ. 'E') THEN
-           NDIM2 = NESH(IFSYM)
-        ELSE IF (C .EQ. 'P') THEN
-           NDIM2 = NPSH(IFSYM)
-        ELSE IF (C .EQ. 'I') THEN
-           NDIM2 = NISH(IFSYM)
-        ELSE IF (C .EQ. 'A') THEN
-           NDIM2 = NASH(IFSYM)
-        ELSE IF (C .EQ. 'V') THEN
-           NDIM2 = NVSH(IFSYM)
-        ELSE
-           WRITE(LUPRI,'(2A)')
-     &          '*** ERROR in DIAGC *** Unknown control character: ',C
-           CALL QUIT('*** ERROR in DIAGC *** Unknown control character')
-        END IF
-C
-C       diagonalize AM
-C
-C
-        IF( NZ .eq. 1 ) THEN
-C          ... calculate eigenvalues and eigenvectors
-           IJOB   = 1
-C          ... ascending order
-           IORDER = 1
-           IPACK  = 0
-           CALL RSJACO(NDIM,NDIM2,NDIM2,AM(IOFF2,IOFF2,1),
-     &                 EIG(IOFF2),IJOB,IORDER,IPACK,
-     &                 EIGVEC(IOFF2,IOFF2,1),WORK(KFREE),LFREE)
-        ELSE
-C          ... calculate eigenvalues and eigenvectors
-           MATZ = 1
-           CALL QDIAG(NZ,NDIM2,AM(IOFF2,IOFF2,1),NDIM,NDIM,
-     &                EIG(IOFF2),MATZ,EIGVEC(IOFF2,IOFF2,1),NDIM,NDIM2,
-     &                WORK(KFREE),LFREE,IERR)
-           IF( IERR .ne. 0 ) THEN
-                  WRITE(LUPRI,'(/,1X,4A,I4)')
-     &                 '*** ERROR in DIAGC ***: ',
-     &                 '*** ERROR for control parameter: ',C,
-     &                 'QDIAG failed with error code ',IERR
-                  CALL QUIT('*** ERROR in DIAGC: block diag ***')
-           END IF
-        ENDIF
-C       ... new offset
-        IOFF2 = IOFF2 + NDIM2
-      ENDDO
-C
-C     special matrix X
- 100  IF (C .EQ. 'X') THEN
-        NDIM2 = NDIM
+C     routine only for the special matrix X
+      IF (C .EQ. 'X') THEN
+        NDIMI = NDIM
 C
 C       ... calculate eigenvalues and eigenvectors
         IF (NZ .EQ. 1) THEN
@@ -1776,12 +1723,12 @@ C       ... calculate eigenvalues and eigenvectors
 C          ... no sorting
            IORDER = 0
            IPACK  = 0
-           CALL RSJACO(NDIM,NDIM2,NDIM2,AM,EIG,IJOB,IORDER,IPACK,
+           CALL RSJACO(NDIM,NDIMI,NDIM,AM,EIG,IJOB,IORDER,IPACK,
      &                 EIGVEC,WORK(KFREE),LFREE)
         ELSE
            MATZ = 1
-           CALL   QDIAG(NZ,NDIM2,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
-     &                  NDIM,NDIM2,WORK(KFREE),LFREE,IERR)
+           CALL   QDIAG(NZ,NDIMI,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
+     &                  NDIM,NDIMI,WORK(KFREE),LFREE,IERR)
            IF (IERR .NE. 0) THEN
               WRITE(LUPRI,'(/,1X,4A,I4)')
      &        '*** ERROR in DIAGC ***: ',
@@ -1794,37 +1741,213 @@ C          ... no sorting
 C
       CALL QEXIT('DIAGC')
       END
+C***********************************************************************
+
+      SUBROUTINE DIAG_piv2fock(C,AM,EIG,EIGVEC,idx,ibeig,WORK,LWORK)
+C***********************************************************************
+C
+C     diagonalize square matrix AM, return eigenvectors and eigenvalues.
+C
+C     C controls which type of matrix is diagonalized - dimension NDIMI
+C
+C     AM is destroyed!
+C
+C     Written by S. Knecht - July 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "maxorb.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+C
+      CHARACTER C*1
+      DIMENSION EIG(*), EIGVEC(*), AM(*), idx(*), ibeig(*)
+      DIMENSION WORK(LWORK)
+      integer :: nshell_tmp(nfsym), nshellt_tmp
+C
+#include "memint.h"
+C
+      CALL QENTER('DIApiv')
+
+      IF (C .EQ. 'E') THEN
+         nshell_tmp(1:nfsym) = NESH(1:nfsym)
+         nshellt_tmp     = NESHT
+      ELSE IF (C .EQ. 'P') THEN
+         nshell_tmp(1:nfsym) = NPSH(1:nfsym)
+         nshellt_tmp     = NPSHT
+      ELSE IF (C .EQ. 'I') THEN
+         nshell_tmp(1:nfsym) = NISH(1:nfsym)
+         nshellt_tmp     = NISHT
+      ELSE IF (C .EQ. 'A') THEN
+         nshell_tmp(1:nfsym) = NASH(1:nfsym)
+         nshellt_tmp     = NASHT
+      ELSE IF (C .EQ. 'V') THEN
+         nshell_tmp(1:nfsym) = NVSH(1:nfsym)
+         nshellt_tmp     = NVSHT
+      ELSE
+         WRITE(LUPRI,'(2A)')
+     &        '*** ERROR in DIApiv *** Unknown control character: ',C
+         CALL QUIT('*** ERROR in DIApiv *** Unknown control character')
+      END IF
+
+      CALL MEMGET('INTE',KJZBOS,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KVECTM,nshellt_tmp**2*nz,WORK,KFREE,LFREE)
+      call izero(work(kjzbos),norbt)
+      call dzero(work(kvectm),nshellt_tmp**2*nz)
+
+C
+C     ... pointers to first fermion symmetry (updated at end of DO IFSYM loop)
+      JOFF2    = 1
+      JOFF_eig = 1
+      joffset  = 0
+
+      DO IFSYM = 1, NFSYM
+C
+        NDIMI = nshell_tmp(ifsym)
+        NDIM  = nshellt_tmp
+
+C       diagonalize AM
+C
+        if(NDIMI .gt. 0)then
+
+#ifdef MCSCF_debug
+          CALL HEADER('DIAG_piv2fock:: full amat :',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',IFSYM,'/',NFSYM
+          CALL PRQMAT(am(1),
+     &                NDIM,NDIM,NDIM,NDIM,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#endif
+ 
+!         make possibly a square matrix (relevant only when nfsym == 2)
+          if(NDIMI .ne. NDIM)then
+            do iz = 1, nz
+              JOFF_mat = JOFF2
+              do i = 1, NDIMI
+                call dcopy(NDIMI,AM(JOFF_mat+((iz-1)*NDIM**2)),1,
+     &                     am(((iz-1)*NDIM**2)+(i-1)*NDIMI+1),1)
+                JOFF_mat = JOFF_mat + NDIM
+              end do
+            end do
+          end if
+
+#ifdef MCSCF_debug
+          CALL HEADER('DIAG_piv2fock:: sub matrix :',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',IFSYM,'/',NFSYM
+          CALL PRQMAT(am,
+     &                NDIMI,NDIMI,NDIMI,NDIMI,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+
+          IF( NZ .eq. 1 ) THEN
+!            calculate eigenvalues and eigenvectors
+             IJOB   = 1
+!            -------------------------------------------------------------
+!            no sorting: in case of linear symmetry / spinfree
+!            calculations we must avoid any solely eigenvalue based 
+!            sorting in order to NOT destroy the j_z / boson irrep sorting
+!            in the orbital rotation matrix. 
+!            we achieve the sub-block sorting in a second step 
+!            below by taking into account a given j_z / boson irrep value.
+!            stefan + hans joergen - june 2011. 
+!            -------------------------------------------------------------
+             IORDER = 0
+!            full matrix
+             IPACK  = 0
+
+!            step 1: diagonalize
+             CALL RSJACO(NDIMI,NDIMI,NDIMI,am,
+     &                   EIG(JOFF_eig),IJOB,IORDER,IPACK,
+     &                   work(kvectm),WORK(KFREE),LFREE)
+
+#ifdef MCSCF_debug
+             CALL HEADER('DIAG_piv2fock: eigenvalues:',-1)
+             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFSYM,'/',NFSYM
+             WRITE(LUPRI,'(I5,F25.10)')
+     &             (J,EIG(JOFF_eig+J-1),J=1,NDIMI)
+C
+             CALL HEADER('DIAG_piv2fock:: eigenvectors :',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFSYM,'/',NFSYM
+             CALL PRQMAT(work(kvectm),
+     &                   NDIMI,NDIMI,NDIMI,NDIMI,
+     &                   NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+
+!            step 2: sort in ascending order with respect to a given j_z / boson irrep value
+             call create_jzbos_sym_vec(work(kjzbos),ndimi,ibeig,norbt,
+     &                                 idx,joffset)
+
+             call ordrss(work(kvectm),eig(joff_eig),work(kjzbos),
+     &                   ndimi,ndimi)
+
+#ifdef MCSCF_debug
+             CALL HEADER('DIAG_piv2fock:: eigenvectors (reordered):',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFSYM,'/',NFSYM
+             CALL PRQMAT(work(kvectm),
+     &                   NDIMI,NDIMI,NDIMI,NDIMI,
+     &                   NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+
+          ELSE
+C            ... calculate eigenvalues and eigenvectors
+             MATZ = 1
+             CALL QDIAG(NZ,NDIMI,AM,NDIMI,NDIMI,
+     &                  EIG(JOFF_eig),MATZ,work(kvectm),NDIMI,NDIMI,
+     &                  WORK(KFREE),LFREE,IERR)
+             IF( IERR .ne. 0 ) THEN
+                    WRITE(LUPRI,'(/,1X,4A,I4)')
+     &                   '*** ERROR in  DIAG_piv2fock ***: ',
+     &                   '*** ERROR for control parameter: ',C,
+     &                   'QDIAG failed with error code ',IERR
+                CALL QUIT('*** ERROR in DIAG_piv2fock: block diag ***')
+             END IF
+          ENDIF
+
+!         return eigenvectors in full matrix (nothing happens here if nfsym == 1)
+          do iz = 1, nz
+            JOFF_mat = JOFF2
+            do i = 1, NDIMI
+              call dcopy(NDIMI,
+     &                   work(kvectm+(iz-1)*NDIM**2+(i-1)*NDIMI),1,
+     &                   EIGVEC(JOFF_mat+((iz-1)*NDIM**2)),1)
+              JOFF_mat = JOFF_mat + NDIM
+            end do
+          end do
+
+#ifdef MCSCF_debug
+          CALL HEADER('DIAG_piv2fock:: full eigenvectors (re):',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',IFSYM,'/',NFSYM
+          CALL PRQMAT(EIGVEC(1),
+     &                NDIM,NDIM,NDIM,NDIM,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+        end if ! ndimi > 0
+
+        JOFF2    = JOFF2    + NDIM * NDIMI + NDIMI
+        JOFF_eig = JOFF_eig +        NDIMI
+        joffset  = joffset  +        NDIMI
+      END DO
+C 
+
+      CALL MEMREL('DIApiv',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      CALL QEXIT('DIApiv')
+      END
 !***********************************************************************
-!     SUBROUTINE ONEDENS_DIAG_BLOCK(WORK,LWORK)
-!***********************************************************************
-!
-!     diagonalize matrix in terms of mj-blocks, 
-!     return eigenvectors and eigenvalues.
-!
-!
-!     written by S. Knecht - April 2010
-!
-!***********************************************************************
-!#include "implicit.h"
-!#include "priunit.h"
-!
-!     DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
-!     DIMENSION WORK(*)
-!
-!#include "memint.h"
-!     IOFF2 = 1
-!
-!     ... calculate eigenvalues and eigenvectors
-!     IJOB   = 1
-!     ... no ordering
-!     IORDER = 0
-!     IPACK  = 0
-!     CALL RSJACO(NDIM,NDIM2,NDIM2,AM(IOFF2,IOFF2,1),
-!    &            EIG(IOFF2),IJOB,IORDER,IPACK,
-!    &            EIGVEC(IOFF2,IOFF2,1),WORK(KFREE),LFREE)
-!
-!     END
-!***********************************************************************
+
       subroutine block_one_dens(mjvector,amat)
 !***********************************************************************
 !
@@ -3043,19 +3166,19 @@ C
       DO IFSYM = 1, NFSYM
 C
         IF (C .EQ. 'E') THEN
-           NDIM2 = NESH(IFSYM)
+           NDIMI = NESH(IFSYM)
            IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
         ELSE IF (C .EQ. 'P') THEN
-           NDIM2 = NPSH(IFSYM)
+           NDIMI = NPSH(IFSYM)
            IOFF1 = IORB(IFSYM) + 1
         ELSE IF (C .EQ. 'I') THEN
-           NDIM2 = NISH(IFSYM)
+           NDIMI = NISH(IFSYM)
            IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
         ELSE IF (C .EQ. 'A') THEN
-           NDIM2 = NASH(IFSYM)
+           NDIMI = NASH(IFSYM)
            IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM) + 1
         ELSE IF (C .EQ. 'V') THEN
-           NDIM2 = NVSH(IFSYM)
+           NDIMI = NVSH(IFSYM)
            IOFF1 = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+NASH(IFSYM)+1
         ELSE
            WRITE(LUPRI,'(2A)')
@@ -3065,7 +3188,7 @@ C
         END IF
 C
         INUM_S = 0
-        DO I = 1, NDIM2
+        DO I = 1, NDIMI
            SUMDIAG = SUMDIAG + AMAT(IOFF1+INUM_S,IOFF1+INUM_S,1)
            INUM_S = INUM_S + 1
         END DO
