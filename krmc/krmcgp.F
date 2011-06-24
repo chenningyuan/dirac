@@ -2102,7 +2102,7 @@ C***********************************************************************
 #include "krciprop.h"
 C
       CHARACTER*6 CIRUN
-      logical isopen, ex_mcdf
+      logical isopen, ex_mcdf, ex_mcol
 !     scratch
       integer, allocatable  :: orb_sym_vec(:)
       integer               :: orb_sym_fh
@@ -2138,10 +2138,26 @@ C
             end if
             if(.not.isopen) close(lukrmc,status="keep")
           else
-            call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
-            call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,orb_sym_vec,
-     &                          dummy,8)
-            close(lucoef,status='KEEP')
+            inquire(file="KRMCOLD",opened=isopen,exist=ex_mcol,
+     &              number=luxxxx)
+            if(ex_mcol)then
+              if(.not.isopen) then 
+                luxxxx = 99
+                open(luxxxx,status="old",form="unformatted")
+              end if
+              rewind(luxxxx)
+              if(linear)then
+                call ireakrmc(luxxxx,'MJVEC   ',orb_sym_vec,norbt)
+              else if(spinfr)then
+                call ireakrmc(luxxxx,'IBEIG   ',orb_sym_vec,norbt)
+              end if
+              if(.not.isopen) close(luxxxx,status="keep")
+            else
+              call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
+              call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,
+     &                            orb_sym_vec,dummy,8)
+              close(lucoef,status='KEEP')
+            end if
           end if
         end if
 !       communicate data
