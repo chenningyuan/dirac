@@ -16,7 +16,6 @@ cbuild/Makefile.moddef
 cbuild/Makefile.obj
 cbuild/dontbuild
 cbuild/gen_fortran_interface_h
-build/*
 cmake/Definitions.cmake
 cmake/Sources.cmake
 cmake/Tests.cmake

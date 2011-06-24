@@ -52,7 +52,6 @@ DIRAC (see 5. Running tests).
     -------------------------------------------
 
 Quick start:
-   $ mkdir build
    $ cd build
    $ cmake ..
    $ make
@@ -62,7 +61,6 @@ environment variables and flags. The two following strategies are completely
 equivalent:
 
 Using CMake directly:
-   $ mkdir build
    $ cd build
    $ FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release ..
    $ make
