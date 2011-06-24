@@ -81,6 +81,7 @@ contains
       integer              :: imat, i
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
+      real(8)              :: temp_33(3, 3)
       real(8)              :: elf_chi, tau
       real(8)              :: density, esp
       real(8)              :: density_gradient(3)
@@ -249,6 +250,12 @@ contains
 !           divergence or curl of current density
             if ((visual_cfg_property(imat) == iq_divj) .or. &
                 (visual_cfg_property(imat) == iq_rotj)) then
+
+               if (levyle) then
+                  print *, 'error: Levy-Leblond divj and rotj not implemented'
+                  stop
+               end if
+
                call get_gj(v,            &
                            matrix_33,    &
                            cval,         &
@@ -257,6 +264,25 @@ contains
                            D(imat)%elms, &
                            buffer,       &
                            ao)
+
+#ifdef MOD_UNRELEASED
+               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
+                  if (levyle) then
+                     print *, 'error: Levy-Leblond divj and rotj not implemented'
+                     stop
+                  else
+                     call get_gjblao(visual_cfg_london_component, &
+                                     cval,                        &
+                                     D_0%elms,                    &
+                                     ntbas(0),                    &
+                                     ao,                          &
+                                     (/px, py, pz/),              &
+                                     temp_33)
+                  end if
+                  matrix_33 = matrix_33 + temp_33
+               end if
+#endif
+
                if (visual_cfg_property(imat) == iq_divj) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
                end if
