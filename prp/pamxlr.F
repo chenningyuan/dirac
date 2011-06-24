@@ -203,13 +203,11 @@ c.......direct contribution
 
         if (.not.notwol) then
           call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-!          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
         end if
 
 c.......reorthonormalization contribution
         if ((.not. noonei) .or. (.not. noorth)) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-!old code         call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
         end if
 
         call dealloc(cmo)
