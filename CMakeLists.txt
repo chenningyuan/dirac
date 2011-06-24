@@ -348,15 +348,12 @@ set(INCLUDE_FILES
     )
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-#miro TODO: adapt under Windows
-#radovan: don't agree - i don't see why we should ever
-#         want to prepare the release on a windows machine
+#fixme: ${EXPORT_DIR}/build is not empty
     add_custom_target(release
         COMMAND mkdir -p ${EXPORT_DIR}
         COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
         COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
         COMMAND rm     ${EXPORT_DIR}/sources.tar
-        COMMAND rm -rf ${EXPORT_DIR}/build
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild            ${EXPORT_DIR}
@@ -381,6 +378,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/README            ${EXPORT_DIR}
+        COMMAND rm -rf ${EXPORT_DIR}/build/*
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
