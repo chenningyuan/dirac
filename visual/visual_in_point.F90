@@ -197,13 +197,13 @@ contains
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
-                     call get_jblao_ll(D_0%elms,                      &
+                     call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
                                        ntbas(0),                      &
                                        ao, &
                                        (/px, py, pz/),                &
                                        v2)
                   else
-                     call get_jblao(D_0%elms,                      &
+                     call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
                                     ntbas(0),                      &
                                     ao, &
                                     (/px, py, pz/),                &
@@ -363,13 +363,13 @@ contains
 #ifdef MOD_UNRELEASED
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
-                     call get_jblao_ll(D_0%elms,                      &
+                     call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
                                        ntbas(0),                      &
                                        ao, &
                                        (/px, py, pz/),                &
                                        v2)
                   else
-                     call get_jblao(D_0%elms,                      &
+                     call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
                                     ntbas(0),                      &
                                     ao, &
                                     (/px, py, pz/),                &

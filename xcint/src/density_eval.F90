@@ -47,6 +47,10 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
+#ifdef MOD_UNRELEASED
+   public get_jblao
+   public get_jblao_ll
+#endif
 
    private
 
@@ -1234,5 +1238,119 @@ contains
      end do      ! do a = 1, 3
 
    end subroutine
+
+#ifdef MOD_UNRELEASED
+   subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
+
+!     --------------------------------------------------------------------------
+      character, intent(in)  :: perturbation_component
+      real(8),   intent(in)  :: cval
+      integer,   intent(in)  :: mat_dim
+      real(8),   intent(in)  :: D_0(mat_dim, mat_dim, *)
+      real(8),   intent(in)  :: ao(*)
+      real(8),   intent(in)  :: r(3)
+      real(8),   intent(out) :: j(3)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
+      real(8)                :: f
+!     --------------------------------------------------------------------------
+
+      select case (perturbation_component)
+         case ('X')
+            b = 2
+            c = 3
+         case ('Y')
+            b = 3
+            c = 1
+         case ('Z')
+            b = 1
+            c = 2
+      end select
+    
+      j = 0.0d0
+
+      do ixyz = 1, 3
+         do iblock = 1, lssl_nr_density_blocks(ixyz, 0)
+            nr1 = lssl_nr_ao(1, iblock, ixyz, 0)
+            st1 = lssl_st_ao(1, iblock, ixyz, 0)
+            nr2 = lssl_nr_ao(2, iblock, ixyz, 0)
+            st2 = lssl_st_ao(2, iblock, ixyz, 0)
+            do k = st1, st1 + nr1 - 1
+               do l = st2, st2 + nr2 - 1
+                  f = (r(c)*ao(ao_off_g0_m1(0, b) + l) &
+                     - r(b)*ao(ao_off_g0_m1(0, c) + l))*ao(k) &
+                    - (r(c)*ao(ao_off_g0_m1(0, b) + k) &
+                     - r(b)*ao(ao_off_g0_m1(0, c) + k))*ao(l)
+                  
+                  j(ixyz) = j(ixyz) + f*D_0(l, k, iq(ixyz))
+               end do
+            end do
+         end do
+      end do
+
+      j = -0.5d0*cval*j
+
+   end subroutine
+
+   subroutine get_jblao_ll(perturbation_component, &
+                           D_0,                    &
+                           mat_dim,                &
+                           ao,                     &
+                           r,                      &
+                           j)
+
+!     --------------------------------------------------------------------------
+      character, intent(in)  :: perturbation_component
+      integer,   intent(in)  :: mat_dim
+      real(8),   intent(in)  :: D_0(mat_dim, mat_dim, *)
+      real(8),   intent(in)  :: ao(*)
+      real(8),   intent(in)  :: r(3)
+      real(8),   intent(out) :: j(3)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
+      real(8)                :: f
+!     --------------------------------------------------------------------------
+
+      select case (perturbation_component)
+         case ('X')
+            b = 2
+            c = 3
+         case ('Y')
+            b = 3
+            c = 1
+         case ('Z')
+            b = 1
+            c = 2
+      end select
+    
+      j = 0.0d0
+
+      do iblock = 1, llss_nr_density_blocks(0, 0)
+         nr1 = llss_nr_ao(1, iblock, 0, 0)
+         st1 = llss_st_ao(1, iblock, 0, 0)
+         nr2 = llss_nr_ao(2, iblock, 0, 0)
+         st2 = llss_st_ao(2, iblock, 0, 0)
+         do k = st1, st1 + nr1 - 1
+            do l = st2, st2 + nr2 - 1
+               do ixyz = 1, 3
+                  f = (r(c)*ao(ao_off_g0_m1(0, b) + l) &
+                     - r(b)*ao(ao_off_g0_m1(0, c) + l))*ao(ao_off_g1_m0(ixyz, 0) + k) &
+                    + (r(c)*ao(ao_off_g0_m1(0, b) + k) &
+                     - r(b)*ao(ao_off_g0_m1(0, c) + k))*ao(ao_off_g1_m0(ixyz, 0) + l) &
+                    - (r(c)*ao(ao_off_g1_m1(ixyz, b) + l) &
+                     - r(b)*ao(ao_off_g1_m1(ixyz, c) + l))*ao(k) &
+                    - (r(c)*ao(ao_off_g1_m1(ixyz, b) + k) &
+                     - r(b)*ao(ao_off_g1_m1(ixyz, c) + k))*ao(l)
+
+                  j(ixyz) = j(ixyz) + f*D_0(l, k, iq(0))
+               end do
+            end do
+         end do
+      end do
+
+      j = -0.5d0*j
+
+   end subroutine
+#endif /* #ifdef MOD_UNRELEASED */
 
 end module
