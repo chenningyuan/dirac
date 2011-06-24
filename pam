@@ -1,7 +1,6 @@
 #! /usr/bin/env python
-#########################################################################
-#
-# Python replacement of the previous bash-written pam(.sh) script
+
+# Python replacement of the previous bash pam script
 #
 # Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
@@ -11,8 +10,10 @@
 #                Stefan Knecht, Denmark
 #                Andre Gomes, France
 #
-##########################################################################
-#
+# Purpose: Given one single input (consisting of a mol/xyz and a inp file)
+#          run Dirac once at a known place and bring back output and restart data to the (also known) starting directory.
+#          No more no less. 
+
 import os
 import sys
 import string
