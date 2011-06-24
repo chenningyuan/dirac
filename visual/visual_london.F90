@@ -40,24 +40,10 @@ module visual_london
   private
 
 #include "priunit.h"
-#include "dcborb.h"
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbham.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
-#include "shells.h"
-#include "orgcom.h"
-
-#include "dcbprl.h"
 
 
 ! information about property integrals read from AOPROPER file:
