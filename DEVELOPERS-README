@@ -17,6 +17,7 @@ meaning do not release code of others without asking.
 
 For CMake builds:
    $ ./pamadm --release [perhaps other flags]
+   $ mkdir build
    $ cd build
    $ cmake ..
    $ make release
@@ -25,6 +26,7 @@ For configure builds:
    $ ./pamadm --release [perhaps other flags]
    $ ./configure
    $ make cbuild/Makefile.dep
+   $ mkdir build
    $ cd build
    $ cmake ..
    $ make release
