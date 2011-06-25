@@ -916,7 +916,7 @@ C         left hand-side vector on LUSC62
 C
           GOTO 895
 C
-        END IF
+        END IF ! natural orbital occupation numbers
 C
 C       prepare vector files for pure dens. matrix calc. run (parallel)
 C       ---------------------------------------------------------------
@@ -977,6 +977,8 @@ C
         end if
 C
 C
+!       IPRDEN_save = IPRDEN
+!       IPRDEN      = 500
         if (IPRDEN .ge. 500 .and. .not. NOOCCN_DENS_RUN) then
           IF( MYPROC .eq. MASTER )THEN
             write(LUWRT,*) 'Current vector',JROOT_SCR,' on unit',LUSC61
@@ -985,6 +987,7 @@ C
             call wrtvcdc(WORK(KVEC2),LUSC62,1,IRC,LBLK)
           END IF
         end if
+!       IPRDEN = IPRDEN_save
 C
         NTERMS = NALLINT
         if (CIRUN.eq.'DENS1 ') NTERMS = N1ELINT
@@ -1302,13 +1305,13 @@ csk             END IF
             END IF
           END IF
 C
-csk       WRITE(LUWRT,*) ' MY updated densities'
-csk       WRITE(LUWRT,*) '           F1        '
-csk       CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
-C         IF (.NOT. NOOCCN_DENS_RUN )THEN
-C           WRITE(LUWRT,*) '           F2        '
-C           CALL WRTMATMN8(F2,1,N2ELINT,1,N2ELINT,LUWRT)
-C         END IF
+!         WRITE(LUWRT,*) ' MY updated densities'
+!         WRITE(LUWRT,*) '           F1        '
+!         CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
+!         IF (.NOT. NOOCCN_DENS_RUN )THEN
+!           WRITE(LUWRT,*) '           F2        '
+!           CALL WRTMATMN8(F2,1,N2ELINT,1,N2ELINT,LUWRT)
+!         END IF
 C
 C
 #if defined (VAR_MPI2)  

@@ -1029,6 +1029,11 @@ C
       CRDFO_MAT   = .FALSE.
       CWRTFO_MAT  = .FALSE.
       COMPFAC     = 0.01D00
+
+      if(IDOPARIO .ne. 0 .or. IDOPARIO.ne. 1)then
+!       fall back to default: 0
+        IDOPARIO = 0
+      end if
 C
 C
 C     Process input for *OPTIMIZE

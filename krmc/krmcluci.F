@@ -391,8 +391,14 @@ C
       global_scratch_disk = get_environment_integer('GLBSCR',
      &global_scratch_disk)
 
+      if(global_scratch_disk .ne. 0 .or. global_scratch_disk.ne. 1)then
+!       fall back to default: 0
+        global_scratch_disk = 0
+      end if
+
       call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
      &               MASTER,MPI_COMM_WORLD,ierr)
+
 
       if(global_scratch_disk .eq. 0)then
         NAMELENGTH = 0
@@ -1586,7 +1592,7 @@ C
 #include "dgroup.h"
 #include "krmcluci_inf.h"
 C
-      LOGICAL CALCR1,CALCR2
+      LOGICAL CALCR1,CALCR2, natolcr_temp
       CHARACTER*6 CIRUN
 C
       DIMENSION WORK(*),RHO1(*),RHO2(*),CREFL(*),CREFR(*)
@@ -1607,6 +1613,10 @@ C
       else
         call quit('Check CALCR setting in LUCI_DENS')
       end if
+
+!     check for natural orbital occupation number flag
+      natolcr_temp = natolcr 
+      if(calcr2) natolcr = .false.
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
@@ -1627,10 +1637,9 @@ C     Initialize density matrices to zero
 C
       LF2_ZERO = L2
 C
-#if defined MCSCF_DEBUG
-C     Write current CI vector(s) to file
+#ifdef MCSCF_DEBUG
+C     Write current CI vector(s) to file - debug version
       idothishere = 1
-      if(idothishere .eq. 0) goto 10
       REWIND LUC
       CALL KR_LUCI_IO(1,0,0,CREFL,NZCONF*MZ,
      &                DUMMY,1,
@@ -1642,28 +1651,54 @@ C     Write current CI vector(s) to file
      &                DUMMY,1,DUMMY,1,
      &                2,MZ,
      &                LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
- 10   CONTINUE
 #else
-      IF( .NOT. NATOLCR ) THEN
-C       
-C       Write current CI vector(s) to file
-        IO_DENS_IN = 1
-        IF (IO_DENS_IN.EQ.1) THEN
+!     print *, 'decide branch: natolcr    ==> ',natolcr
+!     print *, 'decide branch: cana_mcscf ==> ',cana_mcscf
+!     print *, 'decide branch: calcr1     ==> ',calcr1
+!     print *, 'decide branch: calcr2     ==> ',calcr2
+      if(natolcr .or. calcr1 .or. calcr2)then ! 
+
+        if(natolcr)then ! natural orbital occupation numbers
+          REWIND LUC
+          CALL KR_LUCI_IO(1,0,0,CREFL,NZCONF*MZ,
+     &                    DUMMY,1,
+     &                    DUMMY,1,DUMMY,1,
+     &                    2,MZ,
+     &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        else ! mcscf 1-/2-particle density matrix calculation
+
+!         print *, 'decide branch: calcr2     ==> ',calcr2
+!         xxx = 0.0d0
+!         print *, 'NZCONF is ==> ',NZCONF
+!         xxx = ddot(NZCONF*MZ,CREFL,1,CREFL,1)
+!         print *, 'xxx lhs is ==> ',xxx
+!         xxx = ddot(NZCONF*MZ,CREFR,1,CREFR,1)
+!         print *, 'xxx hhs is ==> ',xxx
+      
+!         Write current CI vector(s) to file - choice 1: MCSCF run setup:
+!         lhs --> LUSC61
+!         rhs --> LUSC62
           CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
-     &                          CREFR,NZCONF*MZ,
+     &                    CREFR,NZCONF*MZ,
      &                    DUMMY,1,DUMMY,1,
      &                    2,MZ,
      &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-        END IF
-      else if(cana_mcscf)then ! ci analysis of mcscf vector (restart from the file KRMCSCF)
+        end if ! natolcr_temp
+      end if ! mcscf run setup
+
+      if(cana_mcscf)then ! ci analysis of mcscf vector (restart from the file KRMCOLD)
+!       Write current CI vector(s) to file - choice 1: MCSCF run setup:
+!       vector --> LUC 
+!       internally we copy the 
+!       lhs --> LUSC61
+!       rhs --> LUSC62
         print *, 'read mcscf vector from file KRMCOLD (unit 59)...'
         CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
         CALL REAKRMC(59,'CREF    ',WORK(KRSCR),NZCONF*MZ)
         REWIND LUC
-        xxx = 0.0d0
-        xxx = ddot(NZCONF*MZ,WORK(KRSCR),1,WORK(KRSCR),1)
-        print *, 'NZCONF is ==> ',NZCONF
-        print *, 'xxx is ==> ',xxx
+!       xxx = 0.0d0
+!       xxx = ddot(NZCONF*MZ,WORK(KRSCR),1,WORK(KRSCR),1)
+!       print *, 'xxx is ==> ',xxx
         CALL KR_LUCI_IO(1,0,0,WORK(KRSCR),NZCONF*MZ,
      &                  DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
@@ -1674,40 +1709,19 @@ C       Write current CI vector(s) to file
       END IF
 #endif
 C
-C     Density run of LUCIAREL only
-C
 C     RHO1 and RHO2 are always allocated in the calling routines.
 C     RHO2 is essential for communication in parallel runs.
 C     / SK June 29 2007.
 C
-CSK      if (CALCR2) then
-        CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
-CSK      else
-CSK        CALL KRMC_LUCI(RHO1,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
-CSK      end if
-C
-C     Write CI densities to file or keep the arrays
-C     Currently, densities are directly passed up to LUCI_DENS.
-c     IO_DENS_OUT = 0
-c     IF (IO_DENS_OUT.EQ.1) then
-c       CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-c       CALL KR_LUCI_IO(0,0,1,
-c    &                  DUMMY,1,DUMMY,1,
-c    &                  WORK(KRSCR),IDUMMY,1,IRIQ,
-c    &                  LUDUM,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-c     END IF
-C
-C     Do symmetrizations.
-C     FIXME: write me  ??
-C
-csk   WRITE(LUPRI,*) ' THIS IS MY RHO1'
-csk   CALL WRTMATMN(RHO1,1,L1,1,L1,LUPRI)
+      CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
+
+!
+!     possibly re-set the natural orbital occupation number flag to its entry value
+      natolcr = natolcr_temp
 C
 C     close files ...
-C
       CALL LUCI_CLOSEDOWN()
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_ANAL(CREF,WORK,KFREE,LFREE)

@@ -1125,6 +1125,11 @@ C
       global_scratch_disk = get_environment_integer('GLBSCR',
      &global_scratch_disk)
 
+      if(global_scratch_disk .ne. 0 .or. global_scratch_disk.ne. 1)then
+!       fall back to default: 0
+        global_scratch_disk = 0
+      end if
+
       call mpi_bcast(global_scratch_disk,1,my_MPI_INTEGER,
      &               MASTER,MPI_COMM_WORLD,ierr)
 

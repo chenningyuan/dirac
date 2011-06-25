@@ -220,6 +220,11 @@ C
 C     some scratch
       IKRCI_SYMSEL   = 0 
       NOMEGASEL_KRCI = 0
+
+      if(IDOPARIO_KRCI .ne. 0 .or. IDOPARIO_KRCI.ne. 1)then
+!       fall back to default: 0
+        IDOPARIO_KRCI = 0
+      end if
  
 C
 C     Process input for *KRCICALC

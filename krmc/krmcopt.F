@@ -313,6 +313,9 @@ C
 C
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
       CHARACTER SZTRA(2,4)*200
+#ifdef mcscf_fast_debug
+      logical blabla
+#endif
 C
 C
       CALL QENTER('PSIOP1')
@@ -528,9 +531,17 @@ C
 C
 C           *** Now do the transformation
 C
-            print*,'CALL RTRACTL 1'
-            CALL RTRACTL(WORK(KCMO),work(kibeig),SZTRA,
-     &                   WORK(KFREE),LFREE)
+#ifdef mcscf_fast_debug
+            inquire(file="4INDINFO", exist=blabla)
+            if(blabla)then
+              print*,'skip RTRACTL ... ;)'
+            else
+#endif
+              CALL RTRACTL(WORK(KCMO),work(kibeig),SZTRA,
+     &                     WORK(KFREE),LFREE)
+#ifdef mcscf_fast_debug
+            end if
+#endif
 C
 C           *** Throw away CMO again
 C
@@ -1126,9 +1137,10 @@ C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
 C
 C        Transform to X+, x++ format for DV and PV
 C
-CSK      IPROPT = 40
+!        IPROPT = 40
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
+!        IPROPT = 00
          IF (CALCPV) THEN
             CALL M2DNZ3(.FALSE.,.TRUE.,.TRUE.,
      &           WORK(KPVMOLF),PV,IPROPT)
@@ -1220,7 +1232,10 @@ C     IF (... debug check of DV,PV trace ...) THEN
                      IPROPT = 10
                      GOTO 100
                   END IF
-                 CALL QUIT('*** ERROR in RMAKDM ***')
+                  WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
+                  CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,
+     &                        IPQTOQ(1,0),LUPRI)
+                  CALL QUIT('*** ERROR in RMAKDM ***')
  200              CONTINUE
                END IF
             END DO
@@ -3686,7 +3701,6 @@ C
          IF (MCTYPE .GE. JMCMIN) THEN
             JTRLVL = KTRLVL
             CALL INISZT(JTRLVL,SZTRA,.TRUE.,NOROTC)
-            print*,'CALL RTRACTL 4'
             CALL RTRACTL(CMO,IBEIG,SZTRA,WORK(KFREE),LFREE)
          END IF
 C
