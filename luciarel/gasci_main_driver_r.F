@@ -929,12 +929,12 @@ C       right hand-side vector on LUSC61
         CALL COP_REST_VEC_REL(WORK(KVEC1),LUSC61,ILU1,MY_LU1_OFF,
      &                        WORK(KILU1LIST),
      &                        WORK(KNODELIST),WORK(KBLOCKLIST),
-     &                        NUM_BLOCKS,NROOT,IRC)
+     &                        NUM_BLOCKS,1,IRC)
 C       left hand-side vector on LUSC62
         CALL COP_REST_VEC_REL(WORK(KVEC1),LUSC62,ILU2,MY_LU2_OFF,
      &                        WORK(KILU2LIST),
      &                        WORK(KNODELIST),WORK(KBLOCKLIST),
-     &                        NUM_BLOCKS,NROOT,IRC)
+     &                        NUM_BLOCKS,1,IRC)
 C
 C       files are in place now... say hello
         WRITE(LUWRT,*) ' '
@@ -1000,12 +1000,12 @@ C
           call DZERO8(WORK(KT_CC),NALLINT)
         END IF
 C
-csk    WRITE(LUWRT,*) ' start: MY T (BUFF) array'
-csk    IF( SPLIT_IJKL )THEN
-csk      CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
-csk    ELSE
-csk      CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
-csk    END IF
+!      WRITE(LUWRT,*) ' start: MY T (BUFF) array : ',NALLINT
+!      IF( SPLIT_IJKL )THEN
+!        CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
+!      ELSE
+!        CALL WRTMATMN8(WORK(KT_CC),1,NALLINT,1,NALLINT,LUWRT)
+!      END IF
 C
 #if defined (VAR_MPI2)
 C       erase old LUCLIST
@@ -1074,30 +1074,14 @@ C
 C         FIXME!!!       HAS TO BE CHANGED AS SOON AS THE COMPLETE
 C                        KR-MCSCF IS RUNNING IN PARALLEL!
 C
-          IF( MYPROC .eq. MASTER )THEN
-            IF( NOOCCN_DENS_RUN ) THEN
-              WRITE(LUWRT,*) ' '
-              WRITE(LUWRT,*) ' Allocating 4-index array of length',
-     &                         NTERMS*4
-              WRITE(LUWRT,*) ' '
-C
-              call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
-              call IZERO8(WORK(KINDEX),NTERMS*4)
-C
-            ELSE
-              WRITE(LUWRT,*) ' Allocating 4-index array of length',
-     &                         NALLINT*4
-              WRITE(LUWRT,*) ' '
-C
-              call memmar_i8(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
-              call IZERO8(WORK(KINDEX),NALLINT*4)
-C
-            END IF
-C
+          IF(MYPROC .eq. MASTER)THEN
+            WRITE(LUWRT,'(/a,i16/)')
+     &      ' Allocating 4-index array of length',NTERMS*4
+            call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
+            call IZERO8(WORK(KINDEX),NTERMS*4)
             call read_indices(WORK(KINDEX),NTERMS)
-C
-          END IF
-C         ^ MASTER !!!
+          END IF ! MASTER
+
           IPRDEN = 1
 C
 #if defined (VAR_MPI2)
@@ -1126,13 +1110,13 @@ C
             L_MAX_DENS_BLK = 0
             L_MAX_DENS_BLK = NCALC_MAX_BLK(IRC)
 C
-            IF( NOOCCN_DENS_RUN .or. SPLIT_IJKL )THEN
+            IF(CIRUN .eq.'DENS1 ' .or. SPLIT_IJKL)THEN
               CALL MEMMAR_I8(KMAX_DENS_BLK,L_MAX_DENS_BLK,'ADDL  ',
      &                       1,'KDMBLK')
               CALL DZERO8(WORK(KMAX_DENS_BLK),L_MAX_DENS_BLK)
             END IF
 C
-            IF( NOOCCN_DENS_RUN ) THEN
+            IF(CIRUN .eq. 'DENS1 ')THEN
               IF( SPLIT_IJKL ) THEN
                 CALL COLLECT_DENS_MAT_SPLIT(WORK(KMAX_DENS_BLK),T_BUFF,
      &                                      IT_TTPL,IRC)
@@ -1147,10 +1131,9 @@ C
 
                 CALL COLLECT_DENS_MAT(F2,WORK(KT_CC),IRC,ISHARE_DENSM)
               END IF
-            END IF
-C           ^ NO run?
-C         MPI one-sided based T split
-          ELSE 
+            END IF ! 1- or 2-particle density matrix run
+
+          ELSE ! MPI one-sided based T split
 #if defined VAR_SHMEM
 C
 C           make sure each CPU gets here before starting T block 
@@ -1239,7 +1222,7 @@ C
 C         local or global T distribution
           IF( IT_SHL .ge. 0 )THEN
 #if defined (VAR_MPI2)
-            IF( NOOCCN_DENS_RUN )THEN
+            IF(CIRUN .eq. 'DENS1 ')THEN
 C
               call trnsfdens_no_sm(F1,T_BUFF,IT_TTPL,IT_TTOL,
      &                             WORK(KINDEX),
@@ -1258,12 +1241,12 @@ csk     &                       WORK(KINDEX),
 csk     &                       WORK(KLABEXTP),WORK(KLIHIND),
 csk     &                       WORK(KSIGNNHX),WORK(KLOP_REO),
 csk     &                       WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
-              CALL Abend2( ' IMPLEMENT ME! ' )
+              call quit('GASCI_REL: missing a density transfer routine')
             END IF
 #endif
 C         T split / no T distribution
           ELSE
-            IF( NOOCCN_DENS_RUN )THEN
+            IF(CIRUN .eq. 'DENS1 ')THEN
               IF( SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
                 call trnsfdens_no_split(F1,T_BUFF,WORK(KMAX_DENS_BLK),
@@ -1278,9 +1261,8 @@ C         T split / no T distribution
      &                            WORK(KSIGNNHX),WORK(KLOP_REO),
      &                            WORK(KSIOPREO),IRC,NTOOB2,IPRDEN)
               END IF
-            ELSE
-C             ... two-particle density matrix
-              IF( IDEN12 .eq. 2 ) CALL DZERO(F2,LF2_ZERO)
+            ELSE ! ... two-particle (+ one-particle) density matrix
+              CALL DZERO(F2,LF2_ZERO)
 C
               IF( SPLIT_IJKL )THEN
 #if defined (VAR_MPI2)
@@ -1302,16 +1284,18 @@ csk             END IF
      &                        WORK(KSIGNNHX),WORK(KLOP_REO),
      &                        WORK(KSIOPREO),IRC,NTOOB2,IDEN12,IPRDEN)
               END IF
-            END IF
+            END IF ! 1-/2-particle density matrix switch
           END IF
 C
-!         WRITE(LUWRT,*) ' MY updated densities'
-!         WRITE(LUWRT,*) '           F1        '
-!         CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
-!         IF (.NOT. NOOCCN_DENS_RUN )THEN
-!           WRITE(LUWRT,*) '           F2        '
-!           CALL WRTMATMN8(F2,1,N2ELINT,1,N2ELINT,LUWRT)
-!         END IF
+#ifdef LUCI_DEBUG
+          WRITE(LUWRT,*) ' MY updated densities'
+          WRITE(LUWRT,*) '           F1        '
+          CALL WRTMATMN(F1,1,N1ELINT,1,N1ELINT,LUWRT)
+          IF(.NOT. CIRUN .eq. 'DENS1 ')THEN
+            WRITE(LUWRT,*) '           F2        '
+            CALL WRTMATMN8(F2,1,N2ELINT,1,N2ELINT,LUWRT)
+          END IF
+#endif
 C
 C
 #if defined (VAR_MPI2)  
