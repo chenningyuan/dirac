@@ -1656,34 +1656,26 @@ C     Write current CI vector(s) to file - debug version
 !     print *, 'decide branch: cana_mcscf ==> ',cana_mcscf
 !     print *, 'decide branch: calcr1     ==> ',calcr1
 !     print *, 'decide branch: calcr2     ==> ',calcr2
-      if(natolcr .or. calcr1 .or. calcr2)then ! 
+      if((calcr1.and..not.natolcr.and..not.cana_mcscf) .or. calcr2)then ! 
 
-        if(natolcr)then ! natural orbital occupation numbers
-          REWIND LUC
-          CALL KR_LUCI_IO(1,0,0,CREFL,NZCONF*MZ,
-     &                    DUMMY,1,
-     &                    DUMMY,1,DUMMY,1,
-     &                    2,MZ,
-     &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-        else ! mcscf 1-/2-particle density matrix calculation
+        ! mcscf 1-/2-particle density matrix calculation
 
-!         print *, 'decide branch: calcr2     ==> ',calcr2
-!         xxx = 0.0d0
-!         print *, 'NZCONF is ==> ',NZCONF
-!         xxx = ddot(NZCONF*MZ,CREFL,1,CREFL,1)
-!         print *, 'xxx lhs is ==> ',xxx
-!         xxx = ddot(NZCONF*MZ,CREFR,1,CREFR,1)
-!         print *, 'xxx hhs is ==> ',xxx
+!       print *, 'decide branch: calcr2     ==> ',calcr2
+!       xxx = 0.0d0
+!       print *, 'NZCONF is ==> ',NZCONF
+!       xxx = ddot(NZCONF*MZ,CREFL,1,CREFL,1)
+!       print *, 'xxx lhs is ==> ',xxx
+!       xxx = ddot(NZCONF*MZ,CREFR,1,CREFR,1)
+!       print *, 'xxx hhs is ==> ',xxx
       
-!         Write current CI vector(s) to file - choice 1: MCSCF run setup:
-!         lhs --> LUSC61
-!         rhs --> LUSC62
-          CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
-     &                    CREFR,NZCONF*MZ,
-     &                    DUMMY,1,DUMMY,1,
-     &                    2,MZ,
-     &                    LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
-        end if ! natolcr_temp
+!       Write current CI vector(s) to file - choice 1: MCSCF run setup:
+!       lhs --> LUSC61
+!       rhs --> LUSC62
+        CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
+     &                  CREFR,NZCONF*MZ,
+     &                  DUMMY,1,DUMMY,1,
+     &                  2,MZ,
+     &                  LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
       end if ! mcscf run setup
 
       if(cana_mcscf)then ! ci analysis of mcscf vector (restart from the file KRMCOLD)
