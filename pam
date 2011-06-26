@@ -833,6 +833,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
         self.outcmo = options.dest_outcmo
         self.infock = options.dest_infock
         self.outfock = options.dest_outfock
+        self.outkrmc = options.dest_outkrmc
+        self.inkrmc = options.dest_inkrmc
 
         self.rcp = options.rcp
         self.rsh = options.rsh
