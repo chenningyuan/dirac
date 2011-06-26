@@ -6318,6 +6318,8 @@ C--------------------------------------------------------------------
          CALL DZERO(TMPMAT,NCMAT)
          CALL DZERO(PMAT,NCMAT)
 C  ...  get the expect. value {T,h(mK)} reorthonormalization term
+!todo from Trond's email:
+!check the use of GETCON in  PRP_SHIELD1(pamprp.F). Can it be completely removed ?
          CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
      &               WORK,KFREE,LFREE,IPRPRP)
 CMI   ...  sign convention !!!
