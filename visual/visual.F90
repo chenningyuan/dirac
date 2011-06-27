@@ -190,6 +190,11 @@ contains
        call read_mo_coef(cmo_from_file)
     end if
 
+!warning: when reading from KRMCSCF many assumptions below are either incorrect
+!         or become a hack (occupation 2, only inactive and secondary)
+!         it's ok if you plot a single orbital but not ok for many things
+!         need to add careful checks
+
     call get_c(C,   cmo_from_file, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
     call get_c(Cig, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
     call get_c(Csg, cmo_from_file, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
