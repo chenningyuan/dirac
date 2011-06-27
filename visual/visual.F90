@@ -127,30 +127,6 @@ contains
 
     write(LUPRI,'(/,2x,a)') '*** Visualisation module ***'
 
-
-!   find occupation
-!   ===============
-
-    call alloc(eigenvalues, norbt)
-    eigenvalues = 0.0d0
-
-    call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
-    call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
-
-    close(file_unit, status = 'keep')
-    write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
-
-    call fndocc(eigenvalues, .true.)
-    call dealloc(eigenvalues)
-
-
-!   get orbital string
-!   ==================
-
-    call alloc(occupation, norbt)
-    call setup_orbital_string(occupation)
-
-
 !   get coefficients
 
     allocate(cmo_from_file(n2bbasxq))
@@ -187,8 +163,30 @@ contains
        close(file_unit)
     else
 !      read from DFCOEF       
+
        call read_mo_coef(cmo_from_file)
+
+!      find occupation
+      
+       call alloc(eigenvalues, norbt)
+       eigenvalues = 0.0d0
+      
+       call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
+       call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
+      
+       close(file_unit, status = 'keep')
+       write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
+
+!fixme verify whether this is really needed      
+!      when i introduced it i needed it so that certain arrays were properly set
+!      when restarting from DFCOEF
+       call fndocc(eigenvalues, .true.)
+       call dealloc(eigenvalues)
     end if
+
+!   get orbital string
+    call alloc(occupation, norbt)
+    call setup_orbital_string(occupation)
 
 !warning: when reading from KRMCSCF many assumptions below are either incorrect
 !         or become a hack (occupation 2, only inactive and secondary)
