@@ -1437,7 +1437,6 @@ C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 
-
       IF (IPRINT .GE. 6) THEN
          WRITE (LUPRI,'(/,4X,A/2A/A,I5/A,I5/A,1P,3(D20.10))')
      &   '*** XPRADD called for specifying PCOMB ***',
