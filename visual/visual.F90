@@ -74,6 +74,7 @@ contains
     real(8), allocatable :: occupation(:)
     real(8), allocatable :: ao(:)
     real(8), allocatable :: buffer(:)
+    real(8), allocatable :: cmo_from_file(:)
 
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
@@ -147,9 +148,12 @@ contains
 
 !   get coefficients
 
-    call get_c(C,   i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
-    call get_c(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
-    call get_c(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+    allocate(cmo_from_file(n2bbasxq))
+    call read_mo_coef(cmo_from_file)
+
+    call get_c(C,   cmo_from_file, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+    call get_c(Cig, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
+    call get_c(Csg, cmo_from_file, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
     if (debug_me) then
        call print_mat(C,   label='debug C')
        call print_mat(Cig, label='debug Cig')
@@ -157,13 +161,14 @@ contains
     end if
 
     if (nfsym == 2) then
-       call get_c(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
-       call get_c(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Ciu, cmo_from_file, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Csu, cmo_from_file, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
        if (debug_me) then
           call print_mat(Ciu, label='debug Ciu')
           call print_mat(Csu, label='debug Csu')
        end if
     end if
+    deallocate(cmo_from_file)
 
     call init_mat(D_mo, norbt, norbt)
 

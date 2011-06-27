@@ -699,25 +699,24 @@ contains
 
    end subroutine
 
-  subroutine get_C(C, i, s, g, u)
+  subroutine get_C(C, cmo_from_file, i, s, g, u)
 
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: C
-    real(8),      intent(in)    :: i, s, g, u
+    type(matrix)        :: C
+    real(8), intent(in) :: cmo_from_file(*)
+    real(8), intent(in) :: i, s, g, u
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: C_file
-
-    integer                     :: nr_g_mo_ns
-    integer                     :: nr_g_mo_pi
-    integer                     :: nr_g_mo_ps
-    integer                     :: nr_u_mo_ns
-    integer                     :: nr_u_mo_pi
-    integer                     :: nr_u_mo_ps
-    integer                     :: nr_g_mo
-    integer                     :: nr_u_mo
-    integer                     :: nr_g_ao
-    integer                     :: nr_u_ao
-    integer                     :: k, l, m, n, ir, iw1, iw2, iz
+    integer             :: nr_g_mo_ns
+    integer             :: nr_g_mo_pi
+    integer             :: nr_g_mo_ps
+    integer             :: nr_u_mo_ns
+    integer             :: nr_u_mo_pi
+    integer             :: nr_u_mo_ps
+    integer             :: nr_g_mo
+    integer             :: nr_u_mo
+    integer             :: nr_g_ao
+    integer             :: nr_u_ao
+    integer             :: k, l, m, n, ir, iw1, iw2, iz
 !   ----------------------------------------------------------------------------
 
     nr_g_mo_ns = npsh(1)
@@ -734,10 +733,6 @@ contains
     if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
     C%elms = 0.0d0
 
-    call init_mat(C_file, ntbas(0), norbt)
-    C_file%elms = 0.0d0
-    call read_mo_coef(C_file%elms)
-
     ir = 0
 
     do iz = 1, nz
@@ -750,7 +745,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*g*s
+          C%elms(iw2) = cmo_from_file(ir)*g*s
         end do
       end do
 
@@ -759,7 +754,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*g*i
+          C%elms(iw2) = cmo_from_file(ir)*g*i
         end do
       end do
 
@@ -768,7 +763,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*g*s
+          C%elms(iw2) = cmo_from_file(ir)*g*s
         end do
       end do
 
@@ -786,7 +781,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*u*s
+          C%elms(iw2) = cmo_from_file(ir)*u*s
         end do
       end do
 
@@ -795,7 +790,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*u*i
+          C%elms(iw2) = cmo_from_file(ir)*u*i
         end do
       end do
 
@@ -804,13 +799,12 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*u*s
+          C%elms(iw2) = cmo_from_file(ir)*u*s
         end do
       end do
 
     end do
     end if !if (nfsym == 2) then
-    C_file = 0
 
   end subroutine
 
