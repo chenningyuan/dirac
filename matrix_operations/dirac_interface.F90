@@ -759,12 +759,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! radovan: will check this soon for g95
-        !          now reactivating gfortran
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-             C%elms(iw2) = C_file%elms(ir)*g*i
-        ! endif
+          C%elms(iw2) = C_file%elms(ir)*g*i
         end do
       end do
 
@@ -773,10 +768,7 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-             C%elms(iw2) = C_file%elms(ir)*g*s
-        ! endif
+          C%elms(iw2) = C_file%elms(ir)*g*s
         end do
       end do
 
@@ -794,10 +786,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-           C%elms(iw2) = C_file%elms(ir)*u*s
-        ! endif
+          C%elms(iw2) = C_file%elms(ir)*u*s
         end do
       end do
 
@@ -806,10 +795,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-        ! if (associated(C%elms).and.associated(C_file%elms) ) then
-            C%elms(iw2) = C_file%elms(ir)*u*i
-        ! endif
+          C%elms(iw2) = C_file%elms(ir)*u*i
         end do
       end do
 
@@ -818,10 +804,7 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          ! mi fix for g95
-    !     if (associated(C%elms).and.associated(C_file%elms) ) then
-           C%elms(iw2) = C_file%elms(ir)*u*s
-    !     endif
+          C%elms(iw2) = C_file%elms(ir)*u*s
         end do
       end do
 
