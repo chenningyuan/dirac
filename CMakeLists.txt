@@ -56,6 +56,7 @@ option(ENABLE_XCFUN          "Enable XCFun library"          ON)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"  OFF)
 
 # set cdash buildname
 set(BUILDNAME
@@ -253,9 +254,9 @@ set(DIRAC_SOURCES
     )
 
 add_library(
-    dirac
-    ${DIRAC_SOURCES}
-    ${GENERATED_FILES}
+    dirac 
+    ${DIRAC_SOURCES} 
+    ${GENERATED_FILES} 
     )
 
 add_executable(
