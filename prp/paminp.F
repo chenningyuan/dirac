@@ -85,7 +85,7 @@ C
 !                    29        30        31        32
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
 !                    33        34        35        36
-     &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
+     &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.XXXXXX','.XXXXXX' /
 
@@ -138,7 +138,6 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
-      DORKBIMP     = .FALSE.
       BXLAO        = .FALSE.
       BYLAO        = .FALSE.
       BZLAO        = .FALSE.
@@ -393,8 +392,6 @@ C&&&& .C6 - evaluate C6 dispersion coefficients
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
-C&&&& RKBIMPort; read RKB coefficients and add complementary UKB space
-            DORKBIMP = .TRUE.
             GO TO 100
   135    CONTINUE 
 C&&&& BXLAO 
@@ -478,17 +475,6 @@ CMI   g_tensors operator centers might be changed
         WRITE (LUPRI,'(1X,A)')
      &  '* do NOT perform the picture change transformation of the'//
      &  ' four-component property operators'
-      ENDIF
-      IF(DORKBIMP) THEN
-        IF(URKBAL) THEN
-          WRITE(LUPRI,'(1X,A,A)')
-     &    '* Read RKB coefficients ',
-     &    'and extended with complementary UKB space'
-        ELSE
-          DORKBIMP = .FALSE.
-          WRITE(LUPRI,'(1X,A)') 
-     &      '*** WARNING! RKBIMPort ignored since no URKBAL'
-        ENDIF
       ENDIF
 C
 C     Process input for various program sections

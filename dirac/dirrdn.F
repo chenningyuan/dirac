@@ -314,7 +314,7 @@ C
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.PCMOI3','.FAMILY',
-     &             '.SKIP2E','.LOWJAC','.XXXXXX','.XXXXXX',
+     &             '.SKIP2E','.LOWJAC','.RKBIMP','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP
@@ -468,6 +468,8 @@ C&&&& FAMILY: Family basis (Not yet implemented)
             LOWJACO = .TRUE.
             GO TO 100
   119    CONTINUE
+C&&&& RKBIMP: import RKB coefficients
+            DORKBIMP=.TRUE.
             GO TO 100
   120    CONTINUE
             GO TO 100
@@ -585,6 +587,11 @@ C
       IF(DOACIN) WRITE(LUPRI,'(1X,A,A)')
      &     '* MO-coefficients imported in C1 format from',
      &     ' unformatted file DFACMO'
+      IF(DORKBIMP) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &    '* Read RKB coefficients ',
+     &    'and extended with complementary UKB space'
+      ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
       IF(NOSET) WRITE(LUPRI,'(1X,A)')
@@ -4300,6 +4307,7 @@ C
       DOPUT    = .FALSE.
       DOACUT   = .FALSE.
       DOACIN   = .FALSE.
+      DORKBIMP = .FALSE.
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
@@ -5375,6 +5383,15 @@ C
           SPINFR = .TRUE.
         ENDIF
       ENDIF
+C.....Check RKBIMP
+      IF(DORKBIMP) THEN
+        IF(.NOT.URKBAL) THEN
+          DORKBIMP = .FALSE.
+          WRITE(LUPRI,'(1X,A)') 
+     &      '*** WARNING! RKBIMPort ignored since no URKBAL'
+        ENDIF
+      ENDIF
+
 C
 C     Print section
 C     =============

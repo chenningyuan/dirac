@@ -169,6 +169,10 @@ C
       IF(DOPIN.or.dopin_i3) CALL PCMOIN(WORK,LWORK)
       IF(DOACIN) CALL ACMOIN(WORK,LWORK)
 C
+C     Extend RKB coeffcients with complementary UKB space
+C
+      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK)
+C
 C***********************************************************************
 C*****  G E T    W A V E    F U N C T I O N   **************************
 C***********************************************************************

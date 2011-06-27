@@ -3926,13 +3926,12 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL TOBE
-      CHARACTER TEXT*74,CMOFIL*6
+      CHARACTER TEXT*74
       DIMENSION WORK(LWORK)
       DIMENSION IDIM(3,2)
 #include "memint.h"
 C     Check for the presence of coefficient file
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      CMOFIL='DFCOEF'
       IF(TOBE) THEN
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RKBIMP')
 C       IDIM(1,IFRP) - number of positronic solutions
@@ -3959,9 +3958,9 @@ C.........Read coefficients, eigenvalues and boson irreps
           CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KBEIG,NORBT ,WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KIBOS,NORBT ,WORK,KFREE,LFREE)
-          CALL REACMO(LUCOEF,CMOFIL,WORK(KCMO),WORK(KEIG),
+          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &                WORK(KBEIG),TOTERG,IOPT,WORK,KFREE,LFREE)
-C.........Zero IBEIG is no subblovks; this allows to treat linear systems
+C.........Zero IBEIG if no subblocks; this allows to treat linear systems
 C         that are presently not handled in URKBAL
           IF(.NOT.SUB_BL) CALL ICOPY(NORBT,0,0,WORK(KBEIG),1)
 C.........At this point the first columns of the negative energy solutions
@@ -4091,7 +4090,12 @@ C.....Project out positive energy solutions
       CALL MEMREL('RKBIMP_1',WORK,1,KCF,KFREE,LFREE)
 C.....
       NDEL = NQ(1)+NQ(2)
-      WRITE(6,*) '*RKBIMP : solutions deleted:',NDEL,NQ(1),NQ(2)
+      WRITE(6,'(A)') 
+     & '* RKBIMP: Import of RKB coefficients (pre/post):'
+      WRITE(6,'(3X,A,2I6)')
+     &   'Number of RKB electronic solutions: ',NERKB,NQ(1),
+     &   'Number of RKB positronic solutions: ',NPRKB,NQ(2),
+     &   'UKB complement                    : ',NR,NORB-NDEL
       CALL MEMREL('RKBIMP_1.pos',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -4148,7 +4152,6 @@ C.....Approximate eigenvalue of UKB complement
         CALL PRQMAT(CMO(1,1,1),NBAS,II,NBAS,NORB,
      &              NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      WRITE(6,*) 'RKBIMP2: transformed :',II
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

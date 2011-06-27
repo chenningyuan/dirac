@@ -29,7 +29,7 @@
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,                               &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
-     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,DORKBIMP,        &
+     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
      &        BXLAO, BYLAO, BZLAO, EFFDEN
 
       INTEGER MXPRPWF,EXCPRPTYP
@@ -42,7 +42,7 @@
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
-     &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,DORKBIMP,   &
+     &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,            &
      &                BXLAO, BYLAO, BZLAO, EFFDEN
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &

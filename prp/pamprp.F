@@ -154,10 +154,6 @@ C     Make sure common block dcbidx is set
 C
       CALL SETDCBIDX()
 C
-C     Extend RKB coeffcients with complementary UKB space
-C
-      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK)
-C
 C***********************************************************************
 C*****  M O L E C U L A R    G R A D I E N T ***************************
 C***********************************************************************
