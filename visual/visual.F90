@@ -75,14 +75,19 @@ contains
     real(8), allocatable :: ao(:)
     real(8), allocatable :: buffer(:)
     real(8), allocatable :: cmo_from_file(:)
+    real(8), allocatable :: occ_from_file(:)
 
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
     integer              :: ioff, imat, iq, iz, m, ivector
+    integer, parameter   :: file_unit = 137
 
     logical              :: debug_me = .false.
+    logical              :: krmcscf_found
+    logical              :: natorb_found
+    logical, external    :: fndlab
 
-    integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e
+    integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
     type(matrix) :: D_mo_dagger, TP, TM, T
 !   ----------------------------------------------------------------------------
 
@@ -149,7 +154,41 @@ contains
 !   get coefficients
 
     allocate(cmo_from_file(n2bbasxq))
-    call read_mo_coef(cmo_from_file)
+    cmo_from_file = 0.0d0
+    allocate(occ_from_file(norbt))
+    occ_from_file = 0.0d0
+
+    inquire(file='KRMCSCF', exist=krmcscf_found)
+
+    if (krmcscf_found) then
+!      read from KRMCSCF
+
+       call opnfil(file_unit, 'KRMCSCF', 'OLD', 'visual.F90')
+       rewind(file_unit)
+
+       natorb_found = .FALSE.
+       natorb_found = fndlab('MCCINATO', file_unit)
+       rewind(file_unit)
+       jrdmo = -1
+
+       IF (natorb_found) THEN
+          call rreadmo(cmo_from_file, jrdmo, 4, file_unit)
+          call reakrmc(file_unit, 'MCNATOCC', occ_from_file, norbt)
+          if (jrdmo == 0) then
+             print *, 'orbitals read from label mccinato on file krmcscf'
+          end if
+       else
+          call rreadmo(cmo_from_file, jrdmo, 1, file_unit)
+          if (jrdmo == 0) then
+             print *, 'orbitals read from label neworb on file krmcscf'
+          end if
+       end if
+
+       close(file_unit)
+    else
+!      read from DFCOEF       
+       call read_mo_coef(cmo_from_file)
+    end if
 
     call get_c(C,   cmo_from_file, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
     call get_c(Cig, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
@@ -169,6 +208,7 @@ contains
        end if
     end if
     deallocate(cmo_from_file)
+    deallocate(occ_from_file)
 
     call init_mat(D_mo, norbt, norbt)
 
