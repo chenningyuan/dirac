@@ -4045,7 +4045,6 @@ C
       DIMENSION NQ(2)
       KFRSAV = KFREE
       IPRINT = 0
-      PRJTHR  = 1.0D-10
 C     Initialize unit matrix (transformation matrix in MO-basis)
       CALL DUNIT2(CBUF,NORB,NORB,NORB,NZ)
       IF(SUB_BL) THEN
@@ -4067,6 +4066,7 @@ C.....Transform negative energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NPRKB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
 C.....Project out negative energy solutions
+      PRJTHR  = 1.0D-5
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NPRKB,
      &            PRJTHR,THRMAX,NORB,NORB,
@@ -4083,6 +4083,7 @@ C.....Transform positive energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NERKB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
 C.....Project out positive energy solutions
+      PRJTHR  = 1.0D-5
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NERKB,
      &            PRJTHR,THRMAX,NORB,NORB,
@@ -4090,14 +4091,21 @@ C.....Project out positive energy solutions
       CALL MEMREL('RKBIMP_1',WORK,1,KCF,KFREE,LFREE)
 C.....
       NDEL = NQ(1)+NQ(2)
+      NUKB = NORB-NDEL
       WRITE(6,'(A)') 
      & '* RKBIMP: Import of RKB coefficients (pre/post):'
       WRITE(6,'(3X,A,2I6)')
      &   'Number of RKB electronic solutions: ',NERKB,NQ(1),
      &   'Number of RKB positronic solutions: ',NPRKB,NQ(2),
-     &   'UKB complement                    : ',NR,NORB-NDEL
+     &   'UKB complement                    : ',NR,NUKB
       CALL MEMREL('RKBIMP_1.pos',WORK,1,KFRSAV,KFREE,LFREE)
-      RETURN
+      IF(NR.NE.NUKB) THEN
+        WRITE(6,'(A)')
+     &  '*** ERROR: RKBIMPort failed !',
+     &  '  You may want to tune the threshold PRJTHR of RKBIMP.'
+        CALL QUIT('RKBIMP: UKB complement not recovered !')
+      ENDIF
+ 5    RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_2 */
