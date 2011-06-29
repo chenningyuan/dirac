@@ -11,7 +11,6 @@ bss_sfBso1.ci.inp             F.mol
 bss_sfEso1.ci.inp             F.mol  
 bss_rkb.ci.inp                F.mol  
 bss_rkb_blockd.ci.inp         F.mol  
-dc2bss_rkb_df.ci.inp          F.mol  
 bss+mfsso.ci.inp              F.mol  
 bss_sfBso1+mfsso.ci.inp       F.mol  
 bss_sfEso1+mfsso.ci.inp       F.mol  
