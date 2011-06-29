@@ -401,10 +401,12 @@ class pam_enviroment:
         Rc-file can not have empty lines, #-serve as comments
         """
         fullargs = []
-        paths = [os.path.join(os.path.expanduser('~'),'.diracrc'),
-                 '.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
-                 os.path.join(install_dir,'diracrc')]
+        paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
+                 os.path.join(install_dir,'diracrc'),
+                 os.path.join(os.path.expanduser('~'),'.diracrc')]
+        diracrc_read=False
         for path in paths:
+            if diracrc_read: break # exit the loop early...  
             try:
                 f = open(path,'r')
                 for l in f.readlines():
@@ -415,6 +417,7 @@ class pam_enviroment:
                                for envval in os.environ.items():
                                    a = a.replace('$'+envval[0],envval[1])
                                fullargs.append(a)
+                               diracrc_read=True
             except Exception:
                 pass
         if fullargs:
