@@ -1022,6 +1022,7 @@ C
       DATA LSTARS /'********'/
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
+
 #if !defined VAR_G95 && !defined VAR_IFORT
 !miro: g95 does not know the "iomsg" parameter ....
 !the same for ifort 10.1
@@ -1039,7 +1040,9 @@ C
          WRITE (LUERR,'(/3A,I5/A,I7)')
      &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
-#if !defined VAR_G95
+         WRITE(LUERR,*) 'LSTARS=',LSTARS
+         WRITE(LUERR,*) 'LDATE=',LDATE,' LTIME=',LTIME
+#if !defined VAR_G95  && !defined VAR_IFORT
          WRITE (LUERR,'(A,A)') 'message:',msg
 #endif
          CALL QTRACE(LUERR)
@@ -1063,7 +1066,7 @@ C
          RETURN
       ELSE
          WRITE (LUERR,'(/3A,I5/A,I7)')
-     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
+     &      ' NEWLAB2: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLB2: output error writing label')
