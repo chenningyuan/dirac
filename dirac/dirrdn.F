@@ -7559,6 +7559,7 @@ C............variable telling that this is a 2-component relativistic calculatio
            CNTMAT=.TRUE.
          ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
+         IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN
            ISDO2C4C =.TRUE.
