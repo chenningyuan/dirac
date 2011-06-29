@@ -29,6 +29,7 @@ void xcint_setup_functionals()
 #endif
   SETUP(setup_ktx);
   SETUP(setup_tfk);
+  SETUP(setup_pw86x);
   SETUP(setup_pw91x);
   SETUP(setup_pw91k);
   SETUP(setup_pw92c);
