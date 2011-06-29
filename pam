@@ -370,9 +370,10 @@ class pam_enviroment:
             if not self.silent:
                 self.list_scratch_dir()
             if not self.keep_scratch:
+                # leave the scratch dir to be able to remove it (Windows demand)
+                os.chdir(self.input_directory) 
                 if not self.silent:
                     print '  deleting the scratch directory'
-                    os.chdir(self.input_directory) # go away from the scratch dir (Windows demand)
                 try:
                     shutil.rmtree(self.scratch_dir)
                 except:
