@@ -34,6 +34,9 @@ C     Loop over wave functions and call PAMPR1 for each of them.
 C
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -42,6 +45,8 @@ C Used in common blocks:
 C dcbprp.h: NPRPWF, PRPWF(*)
 C
 #include "dcbprp.h"
+#include "dcbgen.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -69,7 +74,17 @@ C
      &     3X,'Joern Thyssen',//,
      &     3X,'Additional contributions from:',/,
      &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
-C
+
+      if (.not. (dopsi .and. dirac_cfg_scf_calculation)) then
+         if (nfsym == 2) then
+            print *, 'error: this is a property calculation restarting'
+            print *, 'from a previous run and skipping the SCF step'
+            print *, 'auto-occupation does not work if NFSYM == 2'
+            print *, 'please specify the orbital occupation explicitly'
+            call quit('please specify occupation explicitly')
+         end if
+      end if
+
       DO I = 1, NPRPWF
          WF = PRPWF(I)
 C
