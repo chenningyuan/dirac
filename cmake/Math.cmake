@@ -6,15 +6,15 @@ set(LAPACK_FOUND FALSE)
 if(NOT ENABLE_HANDCODED_MATH)
 
     # user sets
-    set(USERDEFINED_LIBS
-        "${USERDEFINED_LIBS}"
+    set(USERDEFINED_MATH
+        "${USERDEFINED_MATH}"
         CACHE STRING
         "User set math libraries"
         FORCE
         )
-    if(NOT "${USERDEFINED_LIBS}" STREQUAL "")
+    if(NOT "${USERDEFINED_MATH}" STREQUAL "")
         set(MATH_LIBS
-            "${USERDEFINED_LIBS}"
+            "${USERDEFINED_MATH}"
             CACHE STRING
             "User set math libraries"
             FORCE
