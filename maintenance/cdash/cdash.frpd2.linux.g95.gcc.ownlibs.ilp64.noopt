@@ -16,7 +16,7 @@ cd $DIRAC
 svn --force up
 ./pamadm -a --xcfun --minus --openrsp
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
 cd $DIRAC/build
 make Experimental
 
@@ -29,7 +29,7 @@ svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
 cd $TMP_DIR
 ./pamadm -a --minus --openrsp
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --nomath  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+./setup  --fc=g95  --cc=gcc-4.2  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
 cd $DIRAC/build
 make Nightly
 rm -rf $TMP_DIR

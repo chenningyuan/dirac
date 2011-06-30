@@ -17,7 +17,7 @@ cd $DIRAC
 git svn rebase
 ./pamadm -a 
 # configure step
-./setup --mpi --fc=mpif90 --cc=mpicc --cpp=mpiCC --int64 --nomath -D BUILDNAME="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2  -D RUNTEST_TIMEOUT="00:40:00"  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+./setup --mpi --fc=mpif90 --cc=mpicc --cpp=mpiCC --int64 --internal-math -D BUILDNAME="linux.PCdesk_Miro_BanskaBystrica.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2  -D RUNTEST_TIMEOUT="00:40:00"  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
 cd $DIRAC/build
 make Experimental
 

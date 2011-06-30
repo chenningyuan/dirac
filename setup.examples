@@ -33,13 +33,13 @@ $ make
 
 ilias@frpd2.utcpd.sk (linux x86_64) 2011-02-21
 ----------------------------------------------
-$ ./setup --fc=g95 --cc=gcc-4.2 --int64 --nomath
+$ ./setup --fc=g95 --cc=gcc-4.2 --int64 --internal-math
 $ cd build
 $ cmake ..
 $ make
 
 ilias@miro.pd.uniza.sk (linux x86_64) 2011-03-08
 ------------------------------------------------
-$ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --nomath --mpi
+$ ./setup --fc=mpi90 --cc=mpicc --cpp=mpiCC --int64 --internal-math --mpi
 $ cd build
 $ make

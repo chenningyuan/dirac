@@ -24,7 +24,7 @@ usage = '''
     ./%prog --fc=gfortran --debug
     ./%prog --fc=ifort --cc=icc --build=/path/to/build/dir/
     ./%prog --fc=mpif90 --cc=mpicc --mpi
-    ./%prog --fc=pgf90 --cc=pgcc --nomath
+    ./%prog --fc=pgf90 --cc=pgcc --internal-math
     ./%prog --auto'''
 
 # initialize parser
@@ -67,11 +67,11 @@ group.add_option('--math',
                  default=None,
                  help='provide math library to link [default: pick automatically or based on MATH_ROOT=...]',
                  metavar='STRING')
-group.add_option('--nomath',
+group.add_option('--internal-math',
                  action='store_true',
                  dest='nomath',
                  default=False,
-                 help='force the use of own math library [default: %default]')
+                 help='force the use of internal math library [default: %default]')
 group.add_option('--mpi',
                  action='store_true',
                  dest='mpi',
