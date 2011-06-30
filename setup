@@ -251,8 +251,12 @@ def gen_reconfigure_script(command, build_path):
     os.system('chmod 700 %s' % file_name)
 
 def setup_build_path(build_path):
-        if not os.path.isdir(build_path):
-                os.makedirs(build_path, 0755)
+    if os.path.isdir(build_path):
+        print 'aborting setup - build directory %s exists already' % build_path
+        print 'please first remove it and then rerun setup'
+        sys.exit()
+    else:
+        os.makedirs(build_path, 0755)
 
 def run_cmake(command, build_path):
         topdir = os.getcwd()
