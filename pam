@@ -395,18 +395,13 @@ class pam_enviroment:
         sys.stdout.flush()
 
     def get_rc_arguments(self):
-        """
-        Look for possible rc files and return arguments collected from them.
-        Inform about finding rc-file.
-        Rc-file can not have empty lines, #-serve as comments
-        """
+        """Look for possible rc files and return arguments collected from them.
+        #-serve as comments."""
         fullargs = []
         paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
                  os.path.join(install_dir,'diracrc'),
                  os.path.join(os.path.expanduser('~'),'.diracrc')]
-        diracrc_read=False
         for path in paths:
-            if diracrc_read: break # exit the loop early...  
             try:
                 f = open(path,'r')
                 for l in f.readlines():
@@ -417,7 +412,7 @@ class pam_enviroment:
                                for envval in os.environ.items():
                                    a = a.replace('$'+envval[0],envval[1])
                                fullargs.append(a)
-                               diracrc_read=True
+                break
             except Exception:
                 pass
         if fullargs:
