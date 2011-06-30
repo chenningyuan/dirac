@@ -225,6 +225,12 @@ def gen_cmake_command():
 def configure_host(host):
         if host == 'stallo':
                 configure_stallo()
+        elif host == 'larry':
+                configure_larry()
+        elif host == 'titan':
+                configure_titan()
+        elif host == 'thor':
+                configure_thor()
         else:
                 print "Unknown host/system: {0}".format(host)
                 sys.exit(1)
@@ -295,6 +301,32 @@ def configure_stallo():
                 options.fc = 'ifort'
         if not options.cc:
                 options.cc = 'icc'
+        if options.mpi:
+                options.fc = 'mpif90'
+                options.cc = 'mpicc'
+def configure_titan():
+        if not options.fc:
+                options.fc = 'ifort'
+        if not options.cc:
+                options.cc = 'icc'
+        if not options.math:
+                options.math = '-L/site/Goto-library/AuthenticAMD-x86_64/ifort/ -lblas -L/site/Goto-library/AuthenticAMD-x86_64/ifort/ -llapack'
+        if options.mpi:
+                options.fc = 'mpif90'
+                options.cc = 'mpicc'
+def configure_larry():
+        if not options.fc:
+                options.fc = 'ifort'
+        if not options.cc:
+                options.cc = 'icc'
+        if options.mpi:
+                options.fc = 'mpif90'
+                options.cc = 'mpicc'
+def configure_thor():
+        if not options.fc:
+                options.fc = 'gfortran'
+        if not options.cc:
+                options.cc = 'gcc'
         if options.mpi:
                 options.fc = 'mpif90'
                 options.cc = 'mpicc'

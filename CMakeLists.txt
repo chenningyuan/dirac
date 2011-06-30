@@ -368,7 +368,6 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/setup.examples    ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}

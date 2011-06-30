@@ -187,7 +187,6 @@ vital_files.append('COPYING')
 vital_files.append('CTestConfig.cmake')
 vital_files.append('INSTALL')
 vital_files.append('setup')
-vital_files.append('setup.examples')
 vital_directories.append('cmake')
 
 # these tests are always packaged
