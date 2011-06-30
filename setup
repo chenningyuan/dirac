@@ -1,7 +1,8 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 # primitive frontend to cmake
-# radovan bast <radovan.bast@uit.no> 2011-04-15
+# radovan bast <radovan.bast@uit.no> 
+# jonas juselius <jonas.juselius@uit.no>
 
 import os
 import sys
@@ -14,8 +15,7 @@ if sys.version < '2.4':
     sys.exit(1)
 
 root_directory = os.path.realpath(__file__)[:-5]
-
-default_path = root_directory + 'build'
+default_path = root_directory + 'build/'
 
 # define example usage
 
@@ -77,11 +77,6 @@ group.add_option('--mpi',
                  dest='mpi',
                  default=False,
                  help='build using MPI parallelization [default: %default]')
-group.add_option('--omp',
-                 action='store_true',
-                 dest='omp',
-                 default=False,
-                 help='build using OpenMP parallelization [default: %default]')
 group.add_option('--int64',
                  action='store_true',
                  dest='int64',
@@ -133,111 +128,89 @@ group.add_option('-D',
                  default=[],
                  help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1)',
                  metavar='STRING')
+group.add_option('--host',
+                 type='string',
+                 action='store',
+                 dest='host',
+                 default=None,
+                 help="use predefined defaults for 'host'",
+                 metavar='STRING')
 parser.add_option_group(group)
 
 # process input
 
 (options, args) = parser.parse_args()
 
-def cmake_is_available():
+def check_cmake_exists():
     p = subprocess.Popen('cmake --version',
                          shell=True,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE)
-    return ('cmake version' in p.communicate()[0])
+    if not ('cmake version' in p.communicate()[0]):
+        print '   This code is built using CMake'
+        print
+        print '   CMake is not found'
+        print '   get CMake at http://www.cmake.org/'
+        print '   on many clusters CMake is installed'
+        print '   but you have to load it first:'
+        print '   $ module load cmake'
+        sys.exit()
 
-if not cmake_is_available():
-    # there is no cmake
-    # print info
-    print '   This code is built using CMake'
-    print
-    print '   CMake is not found'
-    print '   get CMake at http://www.cmake.org/'
-    print '   on many clusters CMake is installed'
-    print '   but you have to load it first:'
-    print '   $ module load cmake'
-    # and exit
-    sys.exit()
+def gen_cmake_command():
+    # create cmake command from flags
 
-if len(sys.argv) == 1:
-    # user has given no arguments: print help and exit
-    print parser.format_help().strip()
-    sys.exit()
+    command = ''
+    
+    if not options.auto:
+        if options.fc:
+            command += ' FC=%s' % options.fc
+        if options.cc:
+            command += ' CC=%s' % options.cc
+        if options.cpp:
+            command += ' CXX=%s' % options.cpp
+    
+    command += ' cmake'
+    
+    if options.nomath:
+        command += ' -DENABLE_EXTERNAL_MATH=OFF'
+    if options.math:
+        command += ' -DUSERDEFINED_LIBS="%s"' % options.math
+    if options.mpi:
+        command += ' -DENABLE_MPI=ON'
+    
+    if options.int64:
+        command += ' -DENABLE_64BIT_INTEGERS=ON'
+    if options.check:
+        command += ' -DENABLE_BOUNDS_CHECK=ON'
+    if options.coverage:
+        command += ' -DENABLE_CODE_COVERAGE=ON'
+    if options.install:
+            command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 
-# create cmake command from flags
+    if options.debug:
+        command += ' -DCMAKE_BUILD_TYPE=Debug'
+    else:
+        command += ' -DCMAKE_BUILD_TYPE=Release'
+    
+    if options.cmake:
+        for definition in options.cmake:
+            command += ' -D%s' % definition
 
-command = ''
+    command += ' %s' % root_directory
+    
+    print '%s\n' % command
+    if options.show:
+            sys.exit()
+    return command
 
-if not options.auto:
-    if options.fc:
-        command += ' FC=%s' % options.fc
-    if options.cc:
-        command += ' CC=%s' % options.cc
-    if options.cpp:
-        command += ' CXX=%s' % options.cpp
+def configure_host(host):
+        if host == 'stallo':
+                configure_stallo()
+        else:
+                print "Unknown host/system: {0}".format(host)
+                sys.exit(1)
 
-command += ' cmake'
-
-if options.nomath:
-    command += ' -DENABLE_EXTERNAL_MATH=OFF'
-if options.math:
-    command += ' -DUSERDEFINED_LIBS="%s"' % options.math
-if options.mpi:
-    command += ' -DENABLE_MPI=ON'
-if options.omp:
-    command += ' -DENABLE_OMP=ON'
-
-if options.int64:
-    command += ' -DENABLE_64BIT_INTEGERS=ON'
-if options.check:
-    command += ' -DENABLE_BOUNDS_CHECK=ON'
-if options.coverage:
-    command += ' -DENABLE_CODE_COVERAGE=ON'
-if options.install:
-    command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
-
-if options.debug:
-    command += ' -DCMAKE_BUILD_TYPE=Debug'
-else:
-    command += ' -DCMAKE_BUILD_TYPE=Release'
-
-if options.cmake:
-    for definition in options.cmake:
-        command += ' -D%s' % definition
-
-command += ' %s' % root_directory
-
-build_path = options.prefix
-
-if options.show:
-    print '-- CMake command: %s\n' % command
-    sys.exit()
-
-if os.path.isdir(build_path):
-    print 'aborting setup - build directory %s exists already' % build_path
-    print 'please first remove it and then rerun setup'
-    sys.exit()
-
-print '   CMake command: %s\n' % command
-
-if not os.path.isdir(build_path):
-    # if you change this to proper python make it mkdir *with parent*
-    os.system('mkdir -p %s' % build_path)
-os.chdir(build_path)
-
-p = subprocess.Popen(command,
-                     shell=True,
-                     stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE)
-
-s = p.communicate()[0]
-print s
-
-normal_cmake_termination = True
-if 'Configuring incomplete' in s:
-    normal_cmake_termination = False
-
-if normal_cmake_termination:
+def print_build_help(build_path):
     print '   configure step is done'
     print '   now you need to compile the sources'
     print
@@ -250,3 +223,58 @@ if normal_cmake_termination:
     print '   $ ccmake ' + root_directory
     print '   $ make'
 
+def gen_reconfigure_script(command, build_path):
+    file_name = os.path.join(build_path, 'reconfigure')
+    f = open(file_name, 'w')
+    f.write('#!/bin/sh \n')
+    f.write('%s' % command)
+    f.close()
+    os.system('chmod 700 %s' % file_name)
+
+def setup_build_path(build_path):
+        if not os.path.isdir(build_path):
+                os.makedirs(build_path, 0755)
+
+def run_cmake(command, build_path):
+        topdir = os.getcwd()
+        os.chdir(build_path)
+        p = subprocess.Popen(command,
+                                                 shell=True,
+                                                 stdin=subprocess.PIPE,
+                                                 stdout=subprocess.PIPE)
+        s = p.communicate()[0]
+        print s
+        os.chdir(topdir)
+        return s
+
+def main():
+        if len(sys.argv) == 1:
+                # user has given no arguments: print help and exit
+                print parser.format_help().strip()
+                sys.exit()
+
+        check_cmake_exists()
+        build_path = options.prefix
+        setup_build_path(build_path)
+        if options.host:
+                configure_host(options.host)
+        command = gen_cmake_command()
+        status = run_cmake(command, build_path)
+
+        if not 'Configuring incomplete' in status:
+                gen_reconfigure_script(command, build_path)
+                print_build_help(build_path)
+
+# host/system specific configurations
+
+def configure_stallo():
+        if not options.fc:
+                options.fc = 'ifort'
+        if not options.cc:
+                options.cc = 'icc'
+        if options.mpi:
+                options.fc = 'mpif90'
+                options.cc = 'mpicc'
+
+if __name__ == '__main__':
+        main()
