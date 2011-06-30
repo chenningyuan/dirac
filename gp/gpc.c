@@ -162,7 +162,7 @@ void sysinf_(fortran_int_t *parcal)
    printf("\n");
    printf("CMAKE_SYSTEM_NAME           : %s \n", CMAKE_SYSTEM_NAME           );
    printf("\n");
-   printf("ENABLE_EXTERNAL_MATH        : %s \n", ENABLE_EXTERNAL_MATH        );
+   printf("ENABLE_HANDCODED_MATH       : %s \n", ENABLE_HANDCODED_MATH       );
    printf("ENABLE_64BIT_INTEGERS       : %s \n", ENABLE_64BIT_INTEGERS       );
    printf("ENABLE_MPI                  : %s \n", ENABLE_MPI                  );
    printf("ENABLE_XCFUN                : %s \n", ENABLE_XCFUN                );

@@ -172,7 +172,7 @@ def gen_cmake_command():
     command += ' cmake'
     
     if options.nomath:
-        command += ' -DENABLE_EXTERNAL_MATH=OFF'
+        command += ' -DENABLE_HANDCODED_MATH=ON'
     if options.math:
         command += ' -DUSERDEFINED_LIBS="%s"' % options.math
 
