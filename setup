@@ -256,11 +256,12 @@ def gen_reconfigure_script(command, build_path):
     f.close()
     os.system('chmod 700 %s' % file_name)
 
-def setup_build_path(build_path):
+def setup_build_path(build_path, only_show_command):
     if os.path.isdir(build_path):
-        print 'aborting setup - build directory %s exists already' % build_path
-        print 'please first remove it and then rerun setup'
-        sys.exit()
+        if not only_show_command:
+            print 'aborting setup - build directory %s exists already' % build_path
+            print 'please first remove it and then rerun setup'
+            sys.exit()
     else:
         os.makedirs(build_path, 0755)
 
@@ -284,7 +285,7 @@ def main():
 
         check_cmake_exists()
         build_path = options.build
-        setup_build_path(build_path)
+        setup_build_path(build_path, options.show)
         if options.host:
                 configure_host(options.host)
         command = gen_cmake_command()
