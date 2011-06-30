@@ -21,11 +21,14 @@ default_path = root_directory + 'build/'
 
 usage = '''
   Examples:
+    ./%prog --auto
     ./%prog --fc=gfortran --debug
-    ./%prog --fc=ifort --cc=icc --build=/path/to/build/dir/
-    ./%prog --fc=mpif90 --cc=mpicc --mpi
+    ./%prog --fc=ifort --build=/path/to/build/dir/
+    ./%prog --fc=g95 --math-dir=/usr/local/lib/atlas
     ./%prog --fc=pgf90 --cc=pgcc --internal-math
-    ./%prog --auto'''
+    ./%prog --fc=mpif90 --cc=mpicc --mpi 
+    ./%prog --fc=ifort --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+    '''
 
 # initialize parser
 
@@ -60,6 +63,13 @@ group.add_option('--cpp',
                  default=None,
                  help='set the C++ compiler [default: pick automatically or based on CXX=...]',
                  metavar='STRING')
+group.add_option('--math-dir',
+                 type='string',
+                 action='store',
+                 dest='mathdir',
+                 default=None,
+                 help='directiry containing math libraries [default: pick automatically]',
+                 metavar='PATH')
 group.add_option('--internal-math',
                  action='store_true',
                  dest='nomath',
@@ -173,9 +183,13 @@ def gen_cmake_command():
     
     if options.nomath:
         command += ' -DENABLE_HANDCODED_MATH=ON'
-    if options.math:
-        command += ' -DUSERDEFINED_MATH="%s"' % options.math
-
+    elif options.math:
+            command += ' -DUSERDEFINED_MATH="%s"' % options.math
+    elif options.mathdir:
+            if not os.path.exists(options.mathdir):
+                    print "Specified MATH directory does not exist!"
+                    sys.exit(1)
+            command += ' -DMATH_ROOT="%s"' % options.mathdir
 
     # if fc starts with 'mpi' turn on MPI
     if options.fc and (options.fc[:3] == 'mpi' or options.fc[:3] == 'MPI'):
