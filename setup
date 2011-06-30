@@ -175,6 +175,11 @@ def gen_cmake_command():
         command += ' -DENABLE_EXTERNAL_MATH=OFF'
     if options.math:
         command += ' -DUSERDEFINED_LIBS="%s"' % options.math
+
+
+    # if fc starts with 'mpi' turn on MPI
+    if options.fc and (options.fc[:3] == 'mpi' or options.fc[:3] == 'MPI'):
+            options.mpi = True
     if options.mpi:
         command += ' -DENABLE_MPI=ON'
     
