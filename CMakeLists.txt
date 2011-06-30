@@ -46,7 +46,7 @@ endif()
 
 include(Definitions)
 
-option(ENABLE_HANDCODED_MATH "Enable handcoded math library" OFF)
+option(ENABLE_INTERNAL_MATH "Enable handcoded math library" OFF)
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)

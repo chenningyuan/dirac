@@ -1,6 +1,6 @@
 message("Report of configuration settings:")
 message("CMAKE_SYSTEM_NAME          ${CMAKE_SYSTEM_NAME}          ")
-message("ENABLE_HANDCODED_MATH      ${ENABLE_HANDCODED_MATH}      ")
+message("ENABLE_INTERNAL_MATH      ${ENABLE_INTERNAL_MATH}      ")
 message("ENABLE_64BIT_INTEGERS      ${ENABLE_64BIT_INTEGERS}      ")
 message("ENABLE_MPI                 ${ENABLE_MPI}                 ")
 message("ENABLE_XCFUN               ${ENABLE_XCFUN}               ")

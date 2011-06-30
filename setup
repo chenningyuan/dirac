@@ -182,7 +182,7 @@ def gen_cmake_command():
     command += ' cmake'
     
     if options.nomath:
-        command += ' -DENABLE_HANDCODED_MATH=ON'
+        command += ' -DENABLE_INTERNAL_MATH=ON'
     elif options.math:
             command += ' -DUSERDEFINED_MATH="%s"' % options.math
     elif options.mathdir:
