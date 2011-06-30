@@ -139,11 +139,11 @@ Yes, it works. Try:
 By default CMake builds out of source.
 You can build several binaries with the same source:
    $ cd /sourcepath
-   $ ./setup --fc=gfortran --cc=gcc --prefix=/gfortran-buildpath
+   $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
    $ cd /gfortran-builddir
    $ make
    $ cd /sourcepath
-   $ ./setup --fc=ifort --cc=icc --prefix=/ifort-buildpath
+   $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath
    $ cd /ifort-buildpath
    $ make
 
