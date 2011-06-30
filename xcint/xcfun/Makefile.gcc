@@ -9,7 +9,7 @@ CFLAGS=-g
 
 # C++ compiler and flags
 CXX=g++
-CXXFLAGS=$(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS=$(CFLAGS) -fno-rtti -fno-exceptions -DINT_STAR8 -Wall -W
 
 # Fortran compiler and flags (used for fortran/example.F90)
 FC=gfortran
