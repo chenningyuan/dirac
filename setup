@@ -60,13 +60,6 @@ group.add_option('--cpp',
                  default=None,
                  help='set the C++ compiler [default: pick automatically or based on CXX=...]',
                  metavar='STRING')
-group.add_option('--math',
-                 type='string',
-                 action='store',
-                 dest='math',
-                 default=None,
-                 help='provide math library to link [default: pick automatically or based on MATH_ROOT=...]',
-                 metavar='STRING')
 group.add_option('--internal-math',
                  action='store_true',
                  dest='nomath',
@@ -107,6 +100,13 @@ group.add_option('--install',
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'Advanced options')
+group.add_option('--math',
+                 type='string',
+                 action='store',
+                 dest='math',
+                 default=None,
+                 help='explicit linker specification for math library',
+                 metavar='STRING')
 group.add_option('--debug',
                  action='store_true',
                  dest='debug',
