@@ -188,6 +188,7 @@ C     EXPPLC = Exponent placeholder
      &          LABINT(15*MXCENT)*8
       LOGICAl DOINT(4), DOATOM(NUCIND)
       INTEGER ITYP
+      real*8 prefac2(4)
       DIMENSION WORK(LWORK), GEXPEFFDEN(4), INTREP(9*MXCENT)
 #include "memint.h"
       CALL QENTER('EFFECTIVE_DENS_NUC')
@@ -232,16 +233,28 @@ C           Calculate the integrals
           ENDDO
           GNUEXP(K) = EXPPLC
 C         Create total property matrix with correct prefactor
-          WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
-     &    (
-     &            WORK(KONEIN          :KONEIN+  NNBBASX-1) 
-     &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
-     &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
-     &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
-     &    )
+          CALL MEMGET('REAL',KHELP,NNBBASX,WORK,KFREE,LFREE)
+          prefac2(1) = +1.0d0
+          prefac2(2) = -8.0d0
+          prefac2(3) = +8.0d0
+          prefac2(4) = -1.0d0
+          call dscal(NNBBASX,PREFACTOR*prefac2(1),WORK(KONEIN),1)
+          do l = 2, 4
+          call dcopy(NNBBASX,WORK(KONEIN+(L-1)*NNBBASX),1,work(KHELP),1)
+          call daxpy(NNBBASX,PREFACTOR*prefac2(l),work(KHELP),1,
+     &               WORK(KONEIN),1)
+          end do
+!         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
+!    &    (
+!    &            WORK(KONEIN          :KONEIN+  NNBBASX-1) 
+!    &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
+!    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
+!    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
+!    &    )
+          CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KHELP,KFREE,LFREE)
 C         Store matrix in AOproper file 
           ITYP = ITYP + 1
-          CALL WRTPRO(WORK(KONEIN),NNBBASX,LABINT(ITYP),RTNLBL,IPRINT)
+          CALL WRTPRO(WORK(KONEIN),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
         ENDIF
       ENDDO
 
