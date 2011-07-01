@@ -75,16 +75,15 @@ C
      &     3X,'Additional contributions from:',/,
      &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 
-!radovan: also need to check whether occ has not been specified
-!     if (.not. (dopsi .and. dirac_cfg_scf_calculation)) then
-!        if (nfsym == 2) then
-!           print *, 'error: this is a property calculation restarting'
-!           print *, 'from a previous run and skipping the SCF step'
-!           print *, 'auto-occupation does not work if NFSYM == 2'
-!           print *, 'please specify the orbital occupation explicitly'
-!           call quit('please specify occupation explicitly')
-!        end if
-!     end if
+      if (.not. (dopsi .and. dirac_cfg_scf_calculation)) then
+         if (nfsym == 2) then
+            print *, 'error: this is a property calculation restarting'
+            print *, 'from a previous run and skipping the SCF step'
+            print *, 'auto-occupation does not work if NFSYM == 2'
+            print *, 'please specify the orbital occupation explicitly'
+            call quit('please specify occupation explicitly')
+         end if
+      end if
 
       DO I = 1, NPRPWF
          WF = PRPWF(I)
