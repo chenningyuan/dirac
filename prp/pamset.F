@@ -1447,6 +1447,7 @@ C
         NVEC = 0
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
+        nvec_inactive = nvec
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Inactive orbitals  : No electrons'
@@ -1461,6 +1462,7 @@ C
         NVEC = 0
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
+        nvec_active = nvec
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Active orbitals    : No electrons'
@@ -1483,9 +1485,15 @@ C
      &       '- Secondary orbitals : ', INDSTR(3,I)
         ENDIF
       ENDDO
-C
+
+      if ((nvec_inactive + nvec_active) == 0) then 
+         print *, 'error: nvec_inactive + nvec_active is zero'
+         print *, 'please specify the orbital occupation explicitly'
+         call quit('please specify occupation explicitly')
+      end if
+
       CALL QEXIT('OSTRING')
-      RETURN
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */
