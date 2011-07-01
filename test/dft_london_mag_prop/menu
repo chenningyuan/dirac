@@ -3,18 +3,7 @@ sdft_lda_dc_nc_rkb_g987.inp             hehe.mol
 sdft_lda_dc_sc_rkb.inp                  hehe.mol
 sdft_lda_dc_sc_rkb_g987.inp             hehe.mol
 
-sdft_lda_dc_nc_rkbimp.inp               hehe.mol
-sdft_lda_dc_nc_rkbimp_g987.inp          hehe.mol
-sdft_lda_dc_sc_rkbimp.inp               hehe.mol
-sdft_lda_dc_sc_rkbimp_g987.inp          hehe.mol
-
 sdft_b3lyp_dc_nc_rkb.inp                hehe.mol
 sdft_b3lyp_dc_nc_rkb_g987.inp           hehe.mol
 sdft_b3lyp_dc_sc_rkb.inp                hehe.mol
 sdft_b3lyp_dc_sc_rkb_g987.inp           hehe.mol
-
-sdft_b3lyp_dc_nc_rkbimp.inp             hehe.mol
-sdft_b3lyp_dc_nc_rkbimp_g987.inp        hehe.mol
-sdft_b3lyp_dc_sc_rkbimp.inp             hehe.mol
-sdft_b3lyp_dc_sc_rkbimp_g987.inp        hehe.mol
-
