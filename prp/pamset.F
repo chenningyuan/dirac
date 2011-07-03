@@ -1424,6 +1424,8 @@ C
       ENDIF
 C
 C
+      nvec_inactive = 0
+      nvec_active   = 0
 C
 C      Definition of orbital classes
 C      -----------------------------
@@ -1447,7 +1449,7 @@ C
         NVEC = 0
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
-        nvec_inactive = nvec
+        nvec_inactive = nvec_inactive + nvec
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Inactive orbitals  : No electrons'
@@ -1462,7 +1464,7 @@ C
         NVEC = 0
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
-        nvec_active = nvec
+        nvec_active = nvec_active + nvec
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Active orbitals    : No electrons'
