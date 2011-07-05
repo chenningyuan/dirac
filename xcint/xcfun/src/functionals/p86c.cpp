@@ -34,7 +34,7 @@ static num energy(const densvars<num> &d)
 
 void setup_p86c(functional &f)
 {
-  f.describe(XC_PBEC, XC_GGA,
+  f.describe(XC_P86C, XC_GGA,
              "P86C GGA correlation",  
              "J.P. Density-functional approximation for the correlation energy\n"
              "of the inhomogeneous electron , Phys. Rev. B, 33(12):8822gasPerdew,\n" 
