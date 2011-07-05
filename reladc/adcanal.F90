@@ -301,7 +301,7 @@
         read(io1) eval(J)
         read(io1) (evec(ix),ix=1,LADCX)
         enorm=dot_productz(evec,ladcx)
-        evec=evec/cmplx(sqrt(enorm),0.0d0)
+        evec=evec/dcmplx(sqrt(enorm),0.0d0)
         write(*,*) 'Normchk: ',enorm
         polestr=dot_productz(evec,nocc)
         write(*,'(A,2F16.8)') 'found eigenvector for', &
@@ -357,7 +357,7 @@
         enorm=dot_productz(evec,ladcx)
         write(*,*) 'norm of eigenvector:',enorm
         write(*,*) 'renormalizing eigenvector.'
-        evec=evec/cmplx(sqrt(enorm),0.0d0)
+        evec=evec/dcmplx(sqrt(enorm),0.0d0)
         polestr=dot_productz(evec,nocc)
         write(io3,'(A,F16.10)') 'Pole strength: ',polestr
         write(io3,'(A)') ' '
