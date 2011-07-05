@@ -1,1 +1,4 @@
-pp86.inp ne.mol
+pp86.inp        ne.mol
+pp86_ggakey.inp ne.mol
+pw86x.inp       ne.mol
+p86c.inp        ne.mol
