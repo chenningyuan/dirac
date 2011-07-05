@@ -159,6 +159,11 @@ contains
            f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
            hfx_out = hfx_out + 0.2d0*w
         end if
+
+        w = get_weight(word_array(i), 'pw86x')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_PW86X) = f%w(XC_PW86X) + w
+        end if
       
         w = get_weight(word_array(i), 'm05')
         if (dabs(w) > tiny(0.0d0)) then
