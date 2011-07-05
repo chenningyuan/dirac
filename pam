@@ -183,7 +183,7 @@ class pam_enviroment:
 
     # classic debugging (gdb, idb, dbx ...)
         self.debug = False
-        self.debugger = ''
+        self.debugger = None
 
         # valgrind debugging
         self.vg_debug = False
@@ -252,6 +252,8 @@ class pam_enviroment:
     # pam script sitting in the installation directory (TODO: better specification)
         self.pam_command = os.path.join(install_dir,"pam")
 
+    #  read diracrc file, full path 
+        self.diracrc_file = None
     # variable for the diracrc file argument list, full path
         self.diracrc_args = None
 
@@ -276,8 +278,10 @@ class pam_enviroment:
         print "  Debugger            ",  self.debugger
         print "  Dirac command       ",  self.dirac_cmd
         print "  Dirac executable    ",  self.dirac_exe
+        if self.diracrc_file:
+            print "  sole diracrc file, which was read ",self.diracrc_file
         if self.diracrc_args:
-            print "  default pam arguments from diracrc files ",self.diracrc_args
+            print "  default pam arguments from this file ",self.diracrc_args
 
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
@@ -383,9 +387,12 @@ class pam_enviroment:
         sys.stdout.flush()
 
     def get_rc_arguments(self):
-        """Look for possible rc files and return arguments collected from them.
-        #-serve as comments."""
+        """
+        Look for possible rc files and return arguments collected from the first found.
+        #-serve as comments.
+        """
         fullargs = []
+        # hierarchy - from closest to the farthest
         paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
                  os.path.join(install_dir,'diracrc'),
                  os.path.join(os.path.expanduser('~'),'.diracrc')]
@@ -403,8 +410,9 @@ class pam_enviroment:
                 break
             except Exception:
                 pass
-        if fullargs:
+        if fullargs: # save info about the diracrc file
             self.diracrc_args = fullargs 
+            self.diracrc_file = path
         return fullargs
 
     def process_pam_arguments(self):
