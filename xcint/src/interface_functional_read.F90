@@ -164,6 +164,11 @@ contains
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_PW86X) = f%w(XC_PW86X) + w
         end if
+
+        w = get_weight(word_array(i), 'p86c')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_P86C) = f%w(XC_P86C) + w
+        end if
       
         w = get_weight(word_array(i), 'm05')
         if (dabs(w) > tiny(0.0d0)) then

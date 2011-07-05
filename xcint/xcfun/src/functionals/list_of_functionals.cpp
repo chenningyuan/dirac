@@ -30,6 +30,7 @@ void xcint_setup_functionals()
   SETUP(setup_ktx);
   SETUP(setup_tfk);
   SETUP(setup_pw86x);
+  SETUP(setup_p86c);
   SETUP(setup_pw91x);
   SETUP(setup_pw91k);
   SETUP(setup_pw92c);
