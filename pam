@@ -1202,13 +1202,15 @@ Options are also read from the ~/.dirac and .diracrc files."""
                            stdin=subprocess.PIPE, stdout=self.f)
 
     def grep_for_warnings(self):
-        print 'output lines containing warnings:'
         file = open(self.output_file_full, 'r')
-        s = file.readlines()
-        for line in s:
+        warnings = ''
+        for line in file.readlines():
             if 'warning' in line.lower():
-                print line
+                warnings += line
         file.close()
+        if warnings != '':
+            print 'output lines containing warnings:'
+            print warnings
 
     def execute_dirac(self):
         ''' 
