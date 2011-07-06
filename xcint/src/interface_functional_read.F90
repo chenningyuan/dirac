@@ -160,16 +160,12 @@ contains
            hfx_out = hfx_out + 0.2d0*w
         end if
 
-        w = get_weight(word_array(i), 'pw86x')
+        w = get_weight(word_array(i), 'pp86')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_PW86X) = f%w(XC_PW86X) + w
+           f%w(XC_P86C)  = f%w(XC_P86C)  + w
         end if
 
-        w = get_weight(word_array(i), 'p86c')
-        if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_P86C) = f%w(XC_P86C) + w
-        end if
-      
         w = get_weight(word_array(i), 'm05')
         if (dabs(w) > tiny(0.0d0)) then
            h = 0.28d0
@@ -232,6 +228,16 @@ contains
       
 !       "atomic" functionals
 !       ====================
+
+        w = get_weight(word_array(i), 'pw86x')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_PW86X) = f%w(XC_PW86X) + w
+        end if
+
+        w = get_weight(word_array(i), 'p86c')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_P86C) = f%w(XC_P86C) + w
+        end if
       
         w = get_weight(word_array(i), 'kin_pw91')
         if (dabs(w) > tiny(0.0d0)) then
