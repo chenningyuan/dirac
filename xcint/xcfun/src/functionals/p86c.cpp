@@ -22,14 +22,13 @@ static num Pg(const densvars<num> &d)
 template<class num>
 static num dz(const densvars<num> &d) 
 { 
-  return cbrt(2)*sqrt(pow(d.a,5.0/3.0) + pow(d.b,5.0/3.0))*pow(d.n,-5.0/6.0);
+  return cbrt(2.0)*sqrt(pow(d.a,5.0/3.0) + pow(d.b,5.0/3.0))*pow(d.n,-5.0/6.0);
 }
 
 template<class num>
 static num energy(const densvars<num> &d) 
 { 
-  return d.n*pz81eps::pz81eps(d) + 
-  	      exp(-Pg(d))*Cg(d.r_s)*d.gnn/(pow(d.n,4.0/3.0)*dz(d));
+  return d.n*pz81eps::pz81eps(d) + exp(-Pg(d))*Cg(d.r_s)*d.gnn/(pow(d.n,4.0/3.0)*dz(d));
 }
 
 void setup_p86c(functional &f)
