@@ -1602,6 +1602,8 @@ C           singularities
          END IF
          IF(ALFAI(I).NE.D0) THEN
             WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
+            WRITE(LUPRI,'(A,E7.1)')
+     &   'The corresponding eigenvalue is set to :',COMPLX
 C
 C SET EIGENVALUE EQUAL TO a very large factor 
 C COMPLX IN ORDER TO BE ABLE TO SKIP
@@ -1611,10 +1613,10 @@ C
             ALFAR(I) = COMPLX
          END IF
   10  CONTINUE
- 1010 FORMAT(/' WARNING *** SINGULARITY IN REDUCED PP MATRIX:'
+ 1010 FORMAT(/' WARNING *** Singularity in reduced PP matrix:'
      &      ,/'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
- 1020 FORMAT(/' WARNING *** COMPLEX EIGENVALUE IN REDUCED PP MATRIX :'
-     &      ,/'     REAL AND IMAGINARY PART :',I8,1P,2D20.8)
+ 1020 FORMAT(/' WARNING *** Complex eigenvalue in reduced PP matrix :'
+     &      ,/'     Real and imaginary part :',I8,1P,2D20.8)
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
