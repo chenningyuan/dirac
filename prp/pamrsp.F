@@ -833,25 +833,26 @@ C
       NPSIM = 0
       NCSIM = 0
 C
-      IF(LINEQ) THEN
+      IFAC = 1
+      IF(.NOT.STATIC) IFAC = 2
+C.....Generate complete set of trial functions
+      IF(E2CHEK) THEN
+        IFAC = NZ*IFAC
+        NESIM = NZXOPE*IFAC
+        NPSIM = NZXOPP*IFAC
+        NCSIM = NZCONF*IFAC
+      ELSEIF(LINEQ) THEN
 C       ... linear response
         IF(DIAGHE.OR.RSREST.OR.UNCOUP) THEN
           NVEC = NFREQ
         ELSE
           NVEC = 1
         ENDIF
-        IFAC = 1
-        IF(.NOT.STATIC) IFAC = 2
         IF(NZXOPE.GT.0) NESIM = NVEC*IFAC
         IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC
         IF(NZCONF.GT.0) NCSIM = NVEC*IFAC
-        IF(E2CHEK) THEN
-          IFAC = NZ*IFAC
-          NESIM = NZXOPE*IFAC
-          NPSIM = NZXOPP*IFAC
-          NCSIM = NZCONF*IFAC
-        ENDIF
       ELSE
+        IFAC=2
 C       ... linear response single residue; excitation energies
 CHJ TODO nov.2000:
 C       In this version prefer conf start vectors,
@@ -883,7 +884,7 @@ C.....Check for out of bounds
       IF(NZCONF.GT.0) NBUF = NBUF + 1
       NTOT = NZRED+NTSIM+NSIM*NBUF
       IF(NTOT.GT.NREDM) THEN
-        WRITE(LUPRI,'(A,I6)') 
+        WRITE(LUPRI,'(A,I12)') 
      &    '* Current number of trial vectors       :',NZRED,
      &    '* Requested number of new trial vectors :',NTSIM,
      &    '* Solution vectors generated in XRSNEX  :',NSIM*NBUF,
@@ -3497,7 +3498,24 @@ C
          CALL QUIT('XRSST2: Unknown NBTYP !')
       ENDIF
       call memchk('XRSST2  5',WORK,1)
-      IF(LINEQ) THEN
+      IF(E2CHEK) THEN
+        IB = 0
+        DO IVAR = 1,NVAR
+          DO IZ = 1,NZ
+            IXX  = IPX
+            DO IH = 1,2
+              IB = IB + 1
+              CALL DZERO(BVEC(1,1,IB),NBDIM)
+              BVEC(IVAR,IZ,IB) = D1
+              IBTYP(1,IBOFF+IB)     = NBTYP
+              IBTYP(2,IBOFF+IB)     = IXX
+              IBVEC(NBPREV+IB)      = IBOFF + IB
+              IVEC(IB)              = 1
+              IXX = IMX
+            ENDDO
+          ENDDO
+        ENDDO
+      ELSEIF(LINEQ) THEN
 C        
 C        L I N E A R   R E S P O N S E   F U N C T I O N S
 C        =================================================
@@ -3545,24 +3563,7 @@ C
 
         call memchk('XRSST2 3',WORK,1)
 
-        IF(E2CHEK) THEN
-          IB = 0
-          DO IVAR = 1,NVAR
-            DO IZ = 1,NZ
-              IXX  = IPX
-              DO IH = 1,2
-                IB = IB + 1
-                CALL DZERO(BVEC(1,1,IB),NBDIM)
-                BVEC(IVAR,IZ,IB) = D1
-                IBTYP(1,IBOFF+IB)     = NBTYP
-                IBTYP(2,IBOFF+IB)     = IXX
-                IBVEC(NBPREV+IB)      = IBOFF + IB
-                IVEC(IB)              = 1
-                IXX = IMX
-              ENDDO
-            ENDDO
-          ENDDO
-        ELSEIF(DIAGHE) THEN
+        IF(DIAGHE) THEN
            call memchk('XRSST2.diaghe 1 ',WORK,1)
           GPTMP = DNRM2(NBDIM,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
