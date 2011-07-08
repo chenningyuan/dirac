@@ -572,12 +572,23 @@ for module in dirac_modules:
        print '       ' + dirac_modules[module].message
 print
 if dirac_modules['xcfun'].is_included:
-   print "* "
-   print "* XCFun module active"
-   print "* First compile xcfun (cd xcint/xcfun; make -f Makefile.gcc)"
-   print "* Then please use (in Makefile.config)"
-   print "* LIBS=-Lxcint/xcfun/lib -lxcfun"
-   print "* "
+   print "  XCFun module is active"
+   print "  If you use configure:"
+   print "     First compile xcfun:"
+   print "     $ cd xcint/xcfun"
+   print "     $ make -f Makefile.gcc"
+   print "     $ cd ../.."
+   print "     Then please use (in Makefile.config)"
+   print "     LIBS=-Lxcint/xcfun/lib -lxcfun"
+   print "     Then compile DIRAC:"
+   print "     $ make"
+   print "  If you use CMake:"
+   print "     $ ./setup [--flags]"
+   print "     $ cd build"
+   print "     $ make"
+   print "  If you do not want XCFun:"
+   print "     $ ./pamadm -a --minus --xcfun"
+   print "     $ make"
    print
 
 # prepare dontbuild
