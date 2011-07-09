@@ -65,8 +65,8 @@ set(BUILDNAME
     "Name of build on the dashboard"
     )
 
-# set ctest own timeout
-
+# set ctest's own timeout
+#miro: this is not properly working as no stdout/err is displayed on CDashboard!
 set(DART_TESTING_TIMEOUT
     "1200"
     CACHE STRING
@@ -103,6 +103,7 @@ include(Archs)
 include(Compilers)
 
 set(LIBS)
+#set(LIBS ${LIBS} STATIC IMPORTED)
 
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
 option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
@@ -259,54 +260,41 @@ add_library(
     ${GENERATED_FILES} 
     )
 
-add_executable(
-    dirac.x
-    main/main.F90
-    )
+### collect pairs of main source codes & names of executables produced out of them ###
+set(standalone_executables   ${standalone_executables}   dirac.x                      main/main.F90)
+set(standalone_executables   ${standalone_executables}   dirac_mointegral_export.x    ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90)
+set(standalone_executables   ${standalone_executables}   rspread.x                    ${PROJECT_SOURCE_DIR}/utils/rspread.F)
+set(standalone_executables   ${standalone_executables}   labread.x                    ${PROJECT_SOURCE_DIR}/utils/labread.F)
+set(standalone_executables   ${standalone_executables}   twofit.x                     ${PROJECT_SOURCE_DIR}/utils/twofit.F)
+set(standalone_executables   ${standalone_executables}   cfread.x                     ${PROJECT_SOURCE_DIR}/utils/cfread.F)
+set(standalone_executables   ${standalone_executables}   vibcal.x                     ${PROJECT_SOURCE_DIR}/utils/vibcal.F)
+set(standalone_executables   ${standalone_executables}   polfit.x                     ${PROJECT_SOURCE_DIR}/utils/polfit.F)
+set(standalone_executables   ${standalone_executables}   mx2fit.x                     ${PROJECT_SOURCE_DIR}/utils/mx2fit.F)
 
-add_executable(
-    dirac_mointegral_export.x
-    ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90
+message("---- List of standalone executables and their source codes:")
+set( i "0")
+foreach(code ${standalone_executables})
+ math( EXPR i "${i} + 1 ")
+ math( EXPR i1 "2*(${i}/2)")
+ set(this_src ${code})
+ set(this_exec ${this_exec1})
+ if ("${i1}" STREQUAL "${i}")
+    # if i even, get exec and src
+    message ("      ${this_exec}  ${this_src}")
+    add_executable(
+    ${this_exec}
+    ${this_src}
     )
-add_executable(
-    rspread.x
-    ${PROJECT_SOURCE_DIR}/utils/rspread.F
-    )
-add_executable(
-    labread.x
-    ${PROJECT_SOURCE_DIR}/utils/labread.F
-    )
-add_executable(
-    twofit.x
-    ${PROJECT_SOURCE_DIR}/utils/twofit.F
-    )
-add_executable(
-    cfread.x
-    ${PROJECT_SOURCE_DIR}/utils/twofit.F
-    )
-add_executable(
-    vibcal.x
-    ${PROJECT_SOURCE_DIR}/utils/vibcal.F
-    )
-add_executable(
-    polfit.x
-    ${PROJECT_SOURCE_DIR}/utils/polfit.F
-    )
-add_executable(
-    mx2fit.x
-    ${PROJECT_SOURCE_DIR}/utils/mx2fit.F
-    )
+    set(executables ${executables}  ${this_exec})
+ endif()
+ # shift 
+ set(this_exec1 ${this_src})
+endforeach(code)
+
+
 foreach(
     BINARY
-    dirac.x
-    dirac_mointegral_export.x
-    rspread.x
-    labread.x
-    twofit.x
-    cfread.x
-    vibcal.x
-    polfit.x
-    mx2fit.x
+    ${executables}
     )
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
         SET_TARGET_PROPERTIES(${BINARY} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
