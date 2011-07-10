@@ -245,7 +245,6 @@ C
             JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
           ENDDO
           call dealloc(kc)
-        TEST = .FALSE.
         ELSE
           READ (IUNIT,END=30,ERR=40) CMO
         ENDIF
@@ -309,9 +308,7 @@ C
  50   CONTINUE
       CALL QUIT('REACMO: END OF FILE reading eigenvalues')
  60   CONTINUE
-c     CALL QUIT('REACMO: ERROR reading eigenvalues')
-      WRITE(LUPRI,'(/A)') 'REACMO: WARNING !!! No eigenvalues read'
-      RETURN
+      CALL QUIT('REACMO: ERROR reading eigenvalues')
  70   CONTINUE
       CALL QUIT('REACMO: END OF FILE reading irrep identification')
  80   CONTINUE
@@ -494,9 +491,7 @@ C
  50   CONTINUE
       CALL QUIT('REACMO: END OF FILE reading eigenvalues')
  60   CONTINUE
-c     CALL QUIT('REACMO: ERROR reading eigenvalues')
-      WRITE(LUPRI,'(/A)') 'REACMO: WARNING !!! No eigenvalues read'
-      RETURN
+      CALL QUIT('REACMO: ERROR reading eigenvalues')
  70   CONTINUE
       CALL QUIT('REACMO: END OF FILE reading irrep identification')
  80   CONTINUE
