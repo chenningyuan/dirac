@@ -1420,16 +1420,25 @@ C     ***************************************************
 C     *** Get 2-electron Fock matrices ******************
 C     ***************************************************
 C
-C     idea: call twofck twice:
-C                             - coulomb{^lr} + exchange^{lr}
-C                             - coulomb^{sr} (and calculate EJKVSR = tr(DAO * J^{sr} * DVAO) see DALTON for more info)
+C
+C     Manu: if MCSCF-srDFT then lr coulomb+exchange integrals
+C           will be calculated (this will be specified in twofck
+C           with dirac_cfg_srint=.FALSE.)  
+C
       CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &            WORK(KFAO),WORK(KDAO),
      &            NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
 C
+CCCCCCCCCCCCCCCCC
+C     Manu: some old comments based on DALTON implementation ...
+C     idea: call twofck twice:
+C                             - coulomb{^lr} + exchange^{lr}
+C                             - coulomb^{sr} 
+C     EJKVSR = tr(DAO * J^{sr} * DVAO) see DALTON for more info)
 C     now call xcfun... with the (inactive+active)DAO to obtain V_{xc}^{sr}
 C     and E_{xc}^{sr} 
 C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) - 1/2 tr(V_{xc}^{sr} * DCAO) 
+CCCCCCCCCCCCCCCCC
 C
 C     ***************************************************
 C     *** Get 1-electron Fock matrix ********************
@@ -1484,6 +1493,19 @@ C
 
 #ifdef DEBUG_SRDFT
 C 
+C     If MCSCF-srDFT calculation: add the srH
+C     potential Jsr . D  to the inactive Fock operator
+C     FCAO, where D = DC + DV is the total density matrix.
+C     Note that, in addition, the srH correction
+C     1/2 tr (D * Jsr * D) - tr (DV * Jsr * D)   
+C     is added to the inactive energy. The second term relates
+C     to the active energy contribution tr(FC*DV) which will be
+C     calculated later on with the MCSCF-srDFT inactive Fock operator
+C     that contains Jsr * D.
+C
+C     call addsrh ... 
+C
+C
 C     If MCSCF-srDFT calculation: add the srxc
 C     potential V^{sr}_{xc}[D] to the inactive Fock operator
 C     FCAO, where D = DC + DV is the total density matrix.
