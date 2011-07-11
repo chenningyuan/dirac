@@ -4078,6 +4078,7 @@ C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
       use quaternion_algebra
+      use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
 #include "priunit.h"    
       PARAMETER (D0 = 0.0D0)
@@ -4136,12 +4137,16 @@ C         An anti-symmetric matrix gives no Coulomb contributions
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
 C
-C Manu: the next two lines are fine for HF-srDFT calculations but NOT
-C       for MCSCF-srDFT. For example, when building the long-range active Fock operator, 
-C       we need both coulomb and exchange long-range integrals. 
+C         No Coulomb contributions if ... 
 C
-C         No Coulomb contributions if HFXMU.NE.0
-          IF (HFXMU.NE.D0) IC = 0
+C         ...   HFXMU.NE.0 and if this is NOT an MCSCF-srDFT calculation
+C
+C         Indeed, when building the long-range active Fock operator, 
+C         we need both coulomb and exchange long-range integrals. 
+C
+C         IF (HFXMU.NE.D0) IC = 0
+          IF ((HFXMU.NE.D0).and.
+     &       (.not.dirac_cfg_mcsrdft_calculation)) IC = 0
           IY   = IC + IE
           IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)
