@@ -3938,8 +3938,8 @@ C.......Check that the number of negative energy solutions is smaller than UKB
 C.......and calculate space needed to store UKB complement in orthonormal basis
         NBUF = 0
         DO IFRP = 1,NFSYM
-          NR = NPSH(IFRP)-IDIM(1,IFRP)
-          IF(NR.GT.0) THEN
+          NUKBP = NPSH(IFRP)-IDIM(1,IFRP)
+          IF(NUKBP.GT.0) THEN
             TOBE = .TRUE.
             NBUF = NBUF + NORB(IFRP)*NORB(IFRP)*NZ
           ENDIF
@@ -3960,18 +3960,19 @@ C         that are presently not handled in URKBAL
           IF(.NOT.SUB_BL) CALL ICOPY(NORBT,0,0,WORK(KBEIG),1)
 C.........At this point the first columns of the negative energy solutions
 C         corresponding to the UKB complement has been zeroed out by REACMO
-C.........Read AO-to-MO-transformation matrix
           CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
           CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','RKBIMP')
+C.........skip record with AO-to-MO transformation matrix
           READ(LUTMAT)
+C.........Read MO-to-AO-transformation matrix
           CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
           IOFF = 0
           DO IFRP = 1,NFSYM
-            NR=NPSH(IFRP)-IDIM(1,IFRP)
-            IF(NR.GT.0) THEN
+            NUKBP=NPSH(IFRP)-IDIM(1,IFRP)
+            IF(NUKBP.GT.0) THEN
               IADR=IORB(IFRP)
               CALL RKBIMP_1(IFRP,NFBAS(IFRP,0),NORB(IFRP),
-     &                      IDIM(1,IFRP),IDIM(2,IFRP),NR,
+     &                      IDIM(1,IFRP),IDIM(2,IFRP),NUKBP,
      &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
      &                      WORK(KIBOS),IADR,
      &                      WORK(KCBUF+IOFF),WORK(KTMAT+I2TMT(IFRP)),
@@ -3984,8 +3985,8 @@ C.........Backtransform UKB complement
           CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
           IOFF = 0
           DO IFRP = 1,NFSYM
-            NR=NPSH(IFRP)-IDIM(1,IFRP)
-            IF(NR.GT.0) THEN
+            NUKBP=NPSH(IFRP)-IDIM(1,IFRP)
+            IF(NUKBP.GT.0) THEN
               IADR=IORB(IFRP)
               CALL RKBIMP_2(IFRP,NFBAS(IFRP,0),NORB(IFRP),
      &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
@@ -4018,7 +4019,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_1 */
-      SUBROUTINE RKBIMP_1(IFRP,NBAS,NORB,NPRKB,NERKB,NR,
+      SUBROUTINE RKBIMP_1(IFRP,NBAS,NORB,NPRKB,NERKB,NUKBP,
      &                    CMO,IBEIG,IBOS,IADR,CBUF,TINV,NZT,
      &                    WORK,KFREE,LFREE)
 C***********************************************************************
@@ -4051,14 +4052,14 @@ C       Spin-orbit coupling: Fill array with zeros..
       ENDIF
 C
 C.....Transform negative energy coefficients to orthonormal basis
-      IP = 2
-      ICOL = 1 + NR
-      IV = IADR + ICOL
+      IP   = 2
+      ICOL = 1 + NUKBP
+      IV   = IADR + ICOL
       NDIM = NORB*NPRKB*NZ
       CALL MEMGET('REAL',KCF,NDIM,WORK,KFREE,LFREE)
       CALL QGEMM(NORB,NPRKB,NBAS,D1,
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
-     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NPRKB,NZ,
+     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
 C.....Project out negative energy solutions
       PRJTHR  = 1.0D-5
@@ -4069,13 +4070,13 @@ C.....Project out negative energy solutions
       CALL MEMREL('RKBIMP_1.neg',WORK,1,KCF,KFREE,LFREE)
 C.....Transform positive energy coefficients to orthonormal basis
       IP = 1
-      ICOL = 1 + NR + NPRKB
+      ICOL = 1 + NUKBP + NPRKB
       IV = IADR + ICOL
       NDIM = NORB*NERKB*NZ
       CALL MEMGET('REAL',KCF,NDIM,WORK,KFREE,LFREE)
       CALL QGEMM(NORB,NERKB,NBAS,D1,
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
-     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NERKB,NZ,
+     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
 C.....Project out positive energy solutions
       PRJTHR  = 1.0D-5
@@ -4092,9 +4093,9 @@ C.....
       WRITE(6,'(3X,A,2I6)')
      &   'Number of RKB electronic solutions: ',NERKB,NQ(1),
      &   'Number of RKB positronic solutions: ',NPRKB,NQ(2),
-     &   'UKB complement                    : ',NR,NUKB
+     &   'UKB complement                    : ',NUKBP,NUKB
       CALL MEMREL('RKBIMP_1.pos',WORK,1,KFRSAV,KFREE,LFREE)
-      IF(NR.NE.NUKB) THEN
+      IF(NUKBP.NE.NUKB) THEN
         WRITE(6,'(A)')
      &  '*** ERROR: RKBIMPort failed !',
      &  '  You may want to tune the threshold PRJTHR of RKBIMP.'
