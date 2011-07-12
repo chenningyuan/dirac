@@ -403,7 +403,8 @@ class pam_enviroment:
                     l = l.strip()
                     if len(l) > 0:
                         if l[0] != '#':
-                            fullargs.append(os.path.expandvars(l))
+                            for a in shlex.split(l):
+                                fullargs.append(os.path.expandvars(a))
                 break
             except Exception:
                 pass
