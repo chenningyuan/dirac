@@ -403,10 +403,7 @@ class pam_enviroment:
                     l = l.strip()
                     if len(l) > 0:
                         if l[0] != '#':
-                           for a in shlex.split(l):
-                               for envval in os.environ.items():
-                                   a = a.replace('$'+envval[0],envval[1])
-                               fullargs.append(a)
+                            fullargs.append(os.path.expandvars(l))
                 break
             except Exception:
                 pass
