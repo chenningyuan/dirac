@@ -94,7 +94,7 @@ C
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.xxxxxx','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.MCANA ','.xxxxxx','.xxxxxx','.xxxxxx'/
+     &            '.DIPMOM','.MCANA ','.GAS SH','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: tmp_symmetry_str
@@ -107,6 +107,8 @@ C
       integer                         :: ascii_lchar
       integer                         :: double_group
       integer, allocatable            :: multb_tmp(:,:)
+      character(len=400)              :: input_line
+      integer                         :: ios, islash
 C
 #include "ibtfun.h"
 #include "memint.h"
@@ -675,7 +677,76 @@ C              and excited states.
                domcana_krci  = .true.
                GO TO 100
    43          CONTINUE
-C&&&  xxxxxx:  
+
+C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
+!              and Diracs opens-shell AOC Hartree-Fock format
+               IF(NKRCIGAS .GT. 0)THEN
+                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
+     &            'You cannot specify both GAS SH and '//
+     &            '(.GASSH/GASSPC or .CASSCF)')
+               END IF
+
+!              step 1: read the # of GA spaces
+               READ(LUCMD,*) NKRCIGAS
+               IF(NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
+                 CALL QUIT('*** ERROR in *KRCICALC *** ' //
+     &                     'illegal value of NKRCIGAS')
+               END IF
+
+!              process the min max occupation / per orbital occupation in each GAS shell
+               do i = 1, nkrcigas
+
+                 read(lucmd,'(a)') input_line
+                 call upcase(input_line)
+                 islash = index(input_line,'/')
+
+!                check for correct input format: 
+!                min e- max e- / #orbs_fermion_irrep1 #orbs_fermion_irrep2
+                 if(islash <= 1)then
+
+                   write(lupri,'(/a,i2,a,i2/a/2a)') 
+     &             'ERROR for *KRCICALC .GAS SHELL shell no.',
+     &             i,'/',NKRCIGAS,
+     &             '- the defining input line does not contain a "/":',
+     &             '- the bad line : ',input_line
+
+                   write(lupri,'(a)') 
+     &             '- Or the specification of the number of GAS-'//
+     &             'shells might be wrong! Check the input.'
+                   call quit('Input error for .GAS SHELL under'//
+     &                       ' *KRCICALC')
+                 end if
+                
+!                step 2: min max occupation
+                 read(input_line(1:islash-1),*,iostat=ios) 
+     &           nkrcigsp(1,i), nkrcigsp(2,i)
+
+                 if(ios /= 0)then
+                   write(lupri,'(/a,i2,a,i2/a/2a)') 
+     &             'ERROR for *KRCICALC .GAS SHELL shell no.',
+     &             i,'/',NKRCIGAS, 
+     &             '- the input line does not contain correct'//
+     &             ' min max electrons','- the bad line : ',input_line
+                   call quit('Input error for .GAS SHELL under '//
+     &                       '*KRCICALC')
+                 end if
+!                step 3: GAS shell orbital occupation
+                 read(input_line(islash+1:),*,iostat=ios) 
+     &           (NKRCIGSH(j,i), j=1,nfsym)
+
+                 if(ios /= 0)then
+                   write(lupri,'(/a,i2,a,i2/a,i2,a/2a)') 
+     &             'ERROR for *KRCICALC .GAS SHELL shell no.',
+     &             i,'/',NKRCIGAS,
+     &             '- the input line does not contain',nfsym,
+     &             ' occupations','- the bad line : ',input_line
+                   call quit('Input error for .GAS SHELL under '//
+     &                       '*KRCICALC')
+                 end if
+               END DO
+!              step 4: set # of active electrons ==> max occupation in last GAS space
+               nkrciaelec = nkrcigsp(2,nkrcigas)
+
                GO TO 100
    44          CONTINUE
 C&&&  xxxxxx:  
