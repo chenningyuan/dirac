@@ -276,6 +276,7 @@ if(VERBOSE_OUTPUT)
 endif()
 set( i "0")
 foreach(code ${standalone_executables})
+ # radovan: what is this math stuff and why is it so complicated?
  math( EXPR i "${i} + 1 ")
  math( EXPR i1 "2*(${i}/2)")
  set(this_src ${code})
