@@ -7,6 +7,9 @@ In each subdirectory you will find the routine menu that functions as a
 template for the execution of a particular test. Have a look at present menu
 files to get inspirations and to see working examples.
 
+The whole test suite or part of the test suite is run with the 'runtest' command
+in the ../ directory. Do a "../runtest --help" for information about options.
+
 2. The filtering
 
 Once the execution of DIRAC is filtered you can compare the new output with
