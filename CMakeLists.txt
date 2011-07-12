@@ -271,31 +271,7 @@ set(standalone_executables   ${standalone_executables}   vibcal.x               
 set(standalone_executables   ${standalone_executables}   polfit.x                     ${PROJECT_SOURCE_DIR}/utils/polfit.F)
 set(standalone_executables   ${standalone_executables}   mx2fit.x                     ${PROJECT_SOURCE_DIR}/utils/mx2fit.F)
 
-if(VERBOSE_OUTPUT)
-    message("-- List of standalone executables and their source codes:")
-endif()
-set( i "0")
-foreach(code ${standalone_executables})
- # radovan: what is this math stuff and why is it so complicated?
- math( EXPR i "${i} + 1 ")
- math( EXPR i1 "2*(${i}/2)")
- set(this_src ${code})
- set(this_exec ${this_exec1})
- if ("${i1}" STREQUAL "${i}")
-    # if i even, get exec and src
-    if(VERBOSE_OUTPUT)
-        message ("      ${this_exec}  ${this_src}")
-    endif()
-    add_executable(
-    ${this_exec}
-    ${this_src}
-    )
-    set(executables ${executables}  ${this_exec})
- endif()
- # shift 
- set(this_exec1 ${this_src})
-endforeach(code)
-
+include(AddStandaloneExecutables)
 
 foreach(
     BINARY

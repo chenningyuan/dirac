@@ -12,15 +12,7 @@ install(
 
 foreach(
     BINARY
-    dirac.x
-    dirac_mointegral_export.x
-    rspread.x
-    labread.x
-    twofit.x
-    cfread.x
-    vibcal.x
-    polfit.x
-    mx2fit.x
+    ${executables}
     )
     install(
         TARGETS ${BINARY}
