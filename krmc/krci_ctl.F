@@ -126,7 +126,6 @@ C     Initialize /CBLKRCI/
 C     ===================
 C
       KRCI_UCIBOS       = .FALSE.
-      KRCI_MKCNST       = .FALSE.
       CRDFO_MAT_KRCI    = .FALSE.
       CWRTFO_MAT_KRCI   = .FALSE.
       CSHMEMO_KRCI      = .FALSE.
@@ -159,11 +158,11 @@ C
       IKRCI_ITRINT(1) = 0
       IKRCI_ITRINT(2) = 0
 
-      NKRCIGAS        = 0
-      NKRCI_MK2REF    = 0
-      NKRCI_MK2DEL    = 0
-      NKRCI_MINMK2    = 0
-      NKRCI_MAXMK2    = 0
+      NKRCIGAS        = -9999
+      NKRCI_MK2REF    = -9999
+      NKRCI_MK2DEL    = -9999
+      NKRCI_MINMK2    = -9999
+      NKRCI_MAXMK2    = -9999
 C
 C     Initialize /CBRKRCI/
 C     ===================
@@ -835,23 +834,15 @@ C
 C        MINMK2/MAXMK2 explicitly set
 C
       ELSE
-         IF (IKWSET(27) .EQ. 1 .AND. IKWSET(28) .EQ. 1) THEN
-C
-C           MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
-C
-            KRCI_MKCNST = .TRUE.
-            NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
-            NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
-C
-         ELSE
-C
-C           Assign default values for MINMK2/MAXMK2
-C
-            NKRCI_MAXMK2 = 2*MIN(NKRCIAELEC,NKRCIASHT) - NKRCIAELEC
-            NKRCI_MINMK2 = NKRCIAELEC-2*MIN(NKRCIAELEC,NKRCIASHT)
-            NKRCI_MK2REF = 0
-            NKRCI_MK2DEL = NKRCI_MAXMK2
-         END IF
+        IF(IKWSET(27) .EQ. 0 .AND. IKWSET(28) .EQ. 0)THEN
+!         Assign default values for MINMK2/MAXMK2
+          NKRCI_MK2REF = 0
+          NKRCI_MK2DEL = NKRCIAELEC
+        END IF
+
+!       assign MINMK2/MAXMK2 defaults
+        NKRCI_MINMK2 = NKRCI_MK2REF - NKRCI_MK2DEL
+        NKRCI_MAXMK2 = NKRCI_MK2REF + NKRCI_MK2DEL
       END IF
 C
 C     boson or fermion symmetries in the CI expansion

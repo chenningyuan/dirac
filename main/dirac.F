@@ -574,7 +574,6 @@ C
       OPT_SKIPEP     = DHF_SKIPEP
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = .FALSE.
-      OPT_MKCNST     = .FALSE.
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
 C
@@ -677,7 +676,6 @@ C
       OPT_SKIPEP     = KRMC_SKIPEP
       OPT_NOCI       = KRMC_NOCI
       OPT_UCIBOS     = KRMC_UCIBOS
-      OPT_MKCNST     = KRMC_MKCNST
       OPT_CHCKJZ     = KRMC_CHCKJZ
 C
       DO I = 1, NOPTFLAGS
@@ -796,7 +794,6 @@ C
       if(npsht .eq. 0) OPT_SKIPEP = .TRUE.
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = KRCI_UCIBOS
-      OPT_MKCNST     = KRCI_MKCNST
       OPT_CHCKJZ     = .FALSE.
 !     required for KR-CI in linear symmetry set-up
       if(linear) opt_chckjz = .true.
