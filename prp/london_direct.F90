@@ -481,7 +481,7 @@ contains
     call bstobu_no_work(dmat, nr_qu)
 
     if (nr_qu .lt. 4) then
-      irep  = isymop(1) - 1
+      irep  = irep_2el_lao(1)
       do iz = 1, nr_qu
         iq = p_ipqtoq(iz, irep)
         call q2phase('D', iq, 1, dmat(1, iz))
@@ -489,7 +489,7 @@ contains
     end if
 
     call dzero(dmat_4, mat_dim_ao*mat_dim_ao*nr_mat)
-    irep  = isymop(1) - 1
+    irep  = irep_2el_lao(1)
     ipari = p_jbtof(irep, 1)
     do iz = 1, nr_mat
       irepd = p_irqmat(iz, irep)
