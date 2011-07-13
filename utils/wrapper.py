@@ -1,91 +1,141 @@
 # Universal wrapper, by Ulf Ekstrom 2011
-import os, subprocess, shutil, glob, signal, optparse, sys, shlex
+import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile
 
-def _main_():
-        usage = \
-            """%prog [options] """
-        parser =optparse.OptionParser(usage)
+def main():
+    usage = \
+	"""%prog [options] """
+    parser =optparse.OptionParser(usage)
 
-        group = optparse.OptionGroup(parser, 'General options')
-        group.add_option('-v','--verbose', action='store_true', dest="verbose",
-                         help='Print more information')
-        group.add_option('-j','--jobname', type='string', default=None,dest="jobname",
-                         help='Name of job, used as base for temporary directory and output files',metavar="JOBNAME")
-        group.add_option('-t','--tmpbase', type='string', default=None,dest="tmpbase",
-                         help='Base directory for temporary directory, default $TMPDIR',metavar="PATH")
-        parser.add_option_group(group)
+    parser.add_option('-v','--verbose', action='store_true', dest="verbose",
+		     help='Print more information')
+    parser.add_option('-j','--jobname', type='string', default=None,dest="jobname",
+		     help='Name of job, used as base for temporary directory and output files',metavar="JOBNAME")
+    parser.add_option('-t','--tmpbase', type='string', default=None,dest="tmpbase",
+		     help='Base directory for temporary directory, default $TMPDIR',metavar="PATH")
 
-        group = optparse.OptionGroup(parser, 'Input options')
-        infiles=[]
-        def infilecb(option, opt, value, parser):
-            if '=' in value:
-                ff = value.split('=')
-                if len(ff) != 2:
-                    print "Illegal argument to",opt
-                    sys.exit(1)
-                infiles.append([ff[1],ff[0]])
-            else:
-                infiles.append([value])
-        def replacecb(option, opt, value, parser):
-            if '=' in value:
-                ff = value.split('=')
-                ff = [ff[0],'='.join(ff[1:])]
-                if len(infiles) == 0:
-                    print option,"given before any -i/--infile was specified"
-                    sys.exit(1)
-            else:
-                print "Illegal argument to",opt," expected NAME=VALUE"
+    group = optparse.OptionGroup(parser, 'Input options')
+    infiles=[]
+    def infilecb(option, opt, value, parser):
+	if '=' in value:
+	    ff = value.split('=')
+	    if len(ff) != 2:
+		print >> sys.stderr, "Illegal argument to",opt
+		sys.exit(1)
+	    infiles.append([ff[1],ff[0]])
+	else:
+	    infiles.append([value])
+    def replacecb(option, opt, value, parser):
+	if '=' in value:
+	    ff = value.split('=')
+	    ff = [ff[0],'='.join(ff[1:])]
+	    if len(infiles) == 0:
+		print >> sys.stderr, option,"given before any -i/--infile was specified"
+		sys.exit(1)
+	else:
+	    print >> sys.stderr, "Illegal argument to",opt," expected NAME=VALUE"
+	    sys.exit(1)
+	infiles[-1].extend(ff)
+    group.add_option('-i','--infile', type='string', action='callback',callback=infilecb,
+		     help='Copy file to TMPDIR/NAME',metavar='[NAME=]FILE')
+    group.add_option('-r','--replace', type='string', action='callback',callback=replacecb,
+		     help='Replace NAME by VALUE in the previous --infile.',metavar="NAME=VALUE")
+    parser.add_option_group(group)
+
+    group = optparse.OptionGroup(parser, 'Command options')
+    commands=[]
+    env = os.environ.copy()
+    def definecb(option, opt, value, parser):
+	if '=' in value:
+	    ff = value.split('=')
+            env[ff[0]] = ff[1]
+	else:
+	    print >> sys.stderr, "Illegal argument to",opt," expected NAME=VALUE"
+	    sys.exit(1)
+    def commandcb(option, opt, value, parser):
+	commands.append(shlex.split(value))
+    def pendcb(option, opt, value, parser):
+	if len(commands) == 0:
+		print >> sys.stderr, option,"given before any -c/--command was specified"
+		sys.exit(1)
+	if opt in ['-a','--append']:
+	    commands[-1].extend(shlex.split(value))
+	else:
+	    commands[-1] = shlex.split(value) + commands[-1]
+    group.add_option('-c','--command', type='string', action='callback',callback=commandcb,
+		     help='Add a new command to execute',metavar='COMMAND')
+    group.add_option('--append', type='string', action='callback',callback=pendcb,
+		     help='add ARGS last on the previous command line given by -c/--command',metavar='ARGS')
+    group.add_option('--prepend', type='string', action='callback',callback=pendcb,
+		     help='add ARGS first on the previous command line given by -c/--command',metavar='ARGS')
+    group.add_option('-D','--define', type='string', action='callback',callback=definecb,
+		     help='Define NAME=VALUE in the environment of the commands',metavar='NAME=VALUE')
+    parser.add_option_group(group)
+
+    outfiles=[]
+    def getfilecb(option, opt, value, parser):
+	if '=' in value:
+	    ff = value.split('=')
+	    if len(ff) != 2:
+		print >> sys.stderr, "Illegal argument to",opt
+		sys.exit(1)
+	    outfiles.append(ff)
+	else:
+	    outfiles.append([value])
+    group = optparse.OptionGroup(parser, 'Output options')
+    group.add_option('-g','--getfile', type='string', action='callback',callback=getfilecb,
+		     help='Copy from to TMPDIR/NAME to FILE (NB argument order)',metavar='[NAME=]FILE')
+    group.add_option('-o','--stdout', type='string', action='store',default=None,dest="stdout",
+		     help='Write stdout to FILE',metavar="FILE")
+    group.add_option('-e','--stderr', type='string', action='store',default=None,dest="stderr",
+		     help='Write stderr to FILE',metavar="FILE")
+    group.add_option('-a','--archive', type='string', action='store',default=None,dest="archive",
+		     help='Path to output archive file',metavar="FILE")
+    group.add_option('-A','--archive-files', type='string', action='append',default=[],dest="archfiles",
+		     help='Files matching this pattern will be achived',metavar="PATTERN")
+    parser.add_option_group(group)
+
+    (options, args) = parser.parse_args(sys.argv[1:])
+
+    if options.verbose:
+	print 'DEBUG: infiles',infiles
+	print 'DEBUG: outfiles',outfiles
+	print 'DEBUG: commands',commands
+    if options.jobname is None:
+	print >> sys.stderr, "No job name (-j) given, quitting"
+	sys.exit(1)
+    if options.tmpbase is None:
+	for d in ['TMPDIR','TMP']:
+	    if os.environ.has_key(d):
+		options.tmpbase = os.environ[d]
+		break
+    tmppath = os.path.join(options.tmpbase,options.jobname+'.'+str(os.getpid()))
+
+    try:
+        if options.stdout is not None:
+            try:
+                stdout = open(options.stdout,"w")
+            except:
+                print >> sys.stderr, "Cannot create output file",options.stdout,"quitting."
                 sys.exit(1)
-            infiles[-1].extend(ff)
-        group.add_option('-i','--infile', type='string', action='callback',callback=infilecb,
-                         help='Copy file to TMPDIR/NAME',metavar='[NAME=]FILE')
-        group.add_option('-r','--replace', type='string', action='callback',callback=replacecb,
-                         help='Replace NAME by VALUE in the previous --infile.',metavar="NAME=VALUE")
-        parser.add_option_group(group)
-
-        group = optparse.OptionGroup(parser, 'Command options')
-        commands=[]
-        def commandcb(option, opt, value, parser):
-            commands.append(shlex.split(value))
-        def pendcb(option, opt, value, parser):
-            if len(commands) == 0:
-                    print option,"given before any -c/--command was specified"
-                    sys.exit(1)
-            if opt in ['-a','--append']:
-                commands[-1].extend(shlex.split(value))
-            else:
-                commands[-1] = shlex.split(value) + commands[-1]
-        group.add_option('-c','--command', type='string', action='callback',callback=commandcb,
-                         help='Add a new command to execute',metavar='COMMAND')
-        group.add_option('-a','--append', type='string', action='callback',callback=pendcb,
-                         help='add ARGS last on the previous command line given by -c/--command',metavar='ARGS')
-        group.add_option('-p','--prepend', type='string', action='callback',callback=pendcb,
-                         help='add ARGS first on the previous command line given by -c/--command',metavar='ARGS')
-        parser.add_option_group(group)
-
-        (options, args) = parser.parse_args(sys.argv[1:])
-        
-	if options.verbose:
-            print 'DEBUG: infiles',infiles
-	    print 'DEBUG: commands',commands
-        if options.jobname is None:
-            print "No job name (-j) given, quitting"
-            sys.exit(1)
-        if options.tmpbase is None:
-            for d in ['TMPDIR','TMP']:
-                if os.environ.has_key(d):
-                    options.tmpbase = os.environ[d]
-                    break
-        tmppath = os.path.join(options.tmpbase,options.jobname+'.'+str(os.getpid()))
-        try:
-            run_wrapped(tmppath,commands,copyin=infiles,verbose=options.verbose)
-        except:
-            print "Something went wrong, re-raising Python error.."
-            raise
+        else:
+            stdout = None
+        if options.stderr is not None:
+            try:
+                stderr = open(options.stderr,"w")
+            except:
+                print >> sys.stderr, "Cannot create error output file",options.stderr,"quitting."
+                sys.exit(1)
+        else:
+            stderr = None
+	run_wrapped(tmppath,commands,copyin=infiles,copyout=outfiles,verbose=options.verbose,env=env,
+                    stdout=stdout,stderr=stderr,archive=options.archive,archfiles=options.archfiles)
+    except:
+	print >> sys.stderr, "DEBUG: Something went wrong, re-raising Python error.."
+	raise
 
 def run_wrapped(tmppath, cmdlines, stdin=None, stdout=None, stderr=None,
                 copyin=[], copyout=[], verbose=False, 
-                delete_tmp=True):
+                delete_tmp=True,env=None,archive=None,archfiles=[]):
     """Create tmpdir, cd there and execute cmdlines, a list of arguments
     to Popen.
     cmdlines is a list of command lines in list form, ex: cmdlines=[['ls','-l'],[..]]
@@ -93,7 +143,7 @@ def run_wrapped(tmppath, cmdlines, stdin=None, stdout=None, stderr=None,
     copyin=[(frompath,localname,rep1,with1,rep2,with2,..)] where rep1 will be 
     replaced by with1 during the copy.
     localname can be omitted, then the basename of frompath will be used.
-    copyout is similar but no replacement is done
+    copyout is similar but no replacement is done. [(topath,localname),..]
     """
     # Create temporary directory
     workdir = os.getcwd()
@@ -102,9 +152,10 @@ def run_wrapped(tmppath, cmdlines, stdin=None, stdout=None, stderr=None,
         if verbose: print "Temporary directory '%s' already there" % tmppath
     else:
         try:
+            if verbose: print "Creating Temporary directory '%s'" % tmppath
             os.makedirs(tmppath)
         except:
-            print "Cannot create temporary directory '%s', quitting." % tmppath
+            print >> sys.stderr, "Cannot create temporary directory '%s', quitting." % tmppath
             raise
         old_tmpdir = False        
     try: # Need to delete the tmp dir after this        
@@ -120,7 +171,7 @@ def run_wrapped(tmppath, cmdlines, stdin=None, stdout=None, stderr=None,
             try:
                 copy_with_replacement(src,dst,rep,verbose=verbose)
             except:
-                print "File copy failed, quitting."
+                print >> sys.stderr, "File copy failed, quitting."
                 raise
         try: # Run commands, stop if one fails
             os.chdir(tmppath)
@@ -137,23 +188,37 @@ def run_wrapped(tmppath, cmdlines, stdin=None, stdout=None, stderr=None,
                     if verbose:
                         print "Executing",cmd
                     p = subprocess.Popen(cmd,stdin=stdin,stdout=stdout,stderr=stderr,shell=True,
-                                         preexec_fn=os.setsid)
+                                         preexec_fn=os.setsid,env=env)
                     pgid = p.pid
                     p.wait() # OSError will be raised here if killed
                     if p.returncode != 0:
                         raise subprocess.CalledProcessError(p.returncode,cmd)
                 except subprocess.CalledProcessError, e:
-                    print "Command "+cmd+" failed with returncode",e.returncode
+                    print >> sys.stderr, "Command "+cmd+" failed with returncode",e.returncode
                     raise e
                 except OSError, e: # Typically signal
-                    print "Got OSError %i while executing" % e.errno,cmd
+                    print >> sys.stderr, "Got OSError %i while executing" % e.errno,cmd
                     raise e
                 finally: # restore signal handlers
                     if len(oldhand) > 0:
                         for s,h in zip(catch,oldhand):
                             signal.signal(s,h)
-        finally: # Copy back files, always do this even if a command fails.
+        finally: # Copy back files & create archive, always do this even if a command fails.
+            # Create archive
+            if archive is not None:
+                try:
+                    archive = os.path.join(workdir,archive)
+                    if verbose: print "Creating archive",archive
+                    t = tarfile.open(archive,'w:gz')
+                    for p in archfiles:
+                        for f in glob.glob(p):
+                            t.add(f)
+                    t.close()
+                except:
+                   print >> sys.stderr, "Error creating tar archive"
+                   raise
             os.chdir(workdir)
+            # Copy back files
             for f in copyout:
                 src = os.path.join(tmppath,f[0])
                 if os.path.isfile(src): # It's ok if the file is not there
@@ -164,11 +229,9 @@ def run_wrapped(tmppath, cmdlines, stdin=None, stdout=None, stderr=None,
                     try:
                         copy_with_replacement(src,dst,[],verbose=verbose)
                     except:
-                        print "File copy out of '%s' to '%s' failed, continuing" % (src,dst)
+                        print >> sys.stderr, "File copy out of '%s' to '%s' failed, continuing" % (src,dst)
                 elif verbose: # Just give a warning
                     print "When copying out, file",src,"not found."
-
-            # Archive TODO
 
     finally:  # Delete temporary directory
         if delete_tmp and not old_tmpdir: # If tmpdir was there already don't delete it
@@ -193,8 +256,7 @@ def copy_with_replacement(src,dst,rep=[],verbose=False):
                 of.write(l)
             of.close()
     except IOError,e:
-        print "Error copying file '"+src+"'"
+        print >> sys.stderr, "Error copying file '"+src+"'"
         raise        
 
-_main_()
-
+main()
