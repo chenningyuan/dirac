@@ -40,9 +40,6 @@ module london_direct_hb
   integer          :: memory_usage  = 0 ! Amount of work array used
   integer          :: mem_wrk_count = 0 ! Counts
 
-  integer :: mat_dim_ao
-  integer :: mat_dim_mo
-
   integer, parameter :: max_nr_xyz_comp = 3
 ! there should be nr_mat=nzc1 (which is 4 except 2component spinfree... see dirac/dirrdn.F, grep for NZC1)
   integer, parameter :: nr_mat = 4
@@ -60,19 +57,6 @@ module london_direct_hb
   logical :: it_is_master, it_is_slave
 
 
-  real(8), pointer               :: fmat_p(:, :, :)
-
-  real(8), pointer               :: fmat_help(:, :)
-  real(8), allocatable, target   :: fmat_help_work(:, :)
-
-  real(8), pointer               :: fmat(:, :, :)
-  real(8), allocatable, target   :: fmat_work(:, :, :)
-
-  real(8), pointer               :: dmat(:, :)
-  real(8), allocatable, target   :: dmat_work(:, :)
-
-  real(8), pointer               :: dmat_4(:, :)
-  real(8), allocatable, target   :: dmat_4_work(:, :)
 
   integer :: ierr
   logical :: test_sdft_lao
@@ -94,25 +78,16 @@ contains
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
 
+    integer :: icomp
+    real(8), allocatable   :: dmat_work(:, :)
+    real(8), allocatable   :: dmat_4_work(:, :)
+    real(8), allocatable, target   :: fmat_work(:, :, :)
+    real(8), allocatable   :: fmat_help_work(:, :)
+    real(8), pointer               :: fmat_p(:, :, :)
+
 ! gosia:
 ! *) this is the main subroutine that calculates the 
 !    2-electron lao contribution to property gradient (dH/dB|_0)
-!
-! *) this 2-el lao contribution is written to TWOLON file 
-!
-! *) it is an analogue of old TWOLON subroutine (pammag.F) but:
-!    - we work with packed fock matrices, what let us add (also packed)
-!      dft contribution on top and therefore let us work with nz<4
-!    - less calls to some subroutines:
-!       ** no call to rsklond, so we save some memory:
-!          -- in old TWOLON we used 4*3*n2bbasx for fmat and additional
-!             4*n2bbasx for 'sklton' (in rsklond). 
-!          -- now, if we calculate without symmetry we use 
-!             only 4*3*n2bbasx for fmat but if we calculate with symmetry 
-!             then there is nz*n2bbasx of additional memory allocated
-!          
-!       ** no call to gtcnvd, but the memory used is the same as in TWOLON
-!          ... i think it is simpler and does not need work array
 !-----------------------------------------------------------------------
 
     call set_f77_work(work, lwork)
@@ -121,64 +96,42 @@ contains
 
 !   density matrix
 !   --------------
-    nullify(dmat_4)
-    call alloc(dmat_4_work, mat_dim_ao*mat_dim_ao, nr_mat)
-    dmat_4         => dmat_4_work
-
-    nullify(dmat)
-    call alloc(dmat_work, mat_dim_ao*mat_dim_ao, nr_qu)
-    dmat => dmat_work
-
-    call call_gtcnvd(cmo, ibeig)
-
-    nullify(dmat)
+    call alloc(dmat_4_work, nr_ao_total*nr_ao_total, nr_mat)
+    call alloc(dmat_work, nr_ao_total*nr_ao_total, nr_qu)
+    call call_gtcnvd(cmo, ibeig, dmat_work, dmat_4_work)
     call dealloc(dmat_work)
 
 
 !   fock matrix
 !   -----------
-    nullify(fmat)
-    call alloc(fmat_work, mat_dim_ao*mat_dim_ao, nr_mat, max_nr_xyz_comp)
-    fmat  => fmat_work
+    call alloc(fmat_work, nr_ao_total*nr_ao_total, nr_mat, max_nr_xyz_comp)
 
 !   get 2-electron lao-integrals 
 !   ----------------------------
-    call get_ao_fock_2el_lao(cmo, ibeig)
+    call get_ao_fock_2el_lao(cmo, ibeig, fmat_work, dmat_4_work)
 
-    nullify(dmat_4)
     call dealloc(dmat_4_work)
 
 !   if calculations with symmetry we have to 'pack' fmat
 !   before we add dft-lao contribution
-!   gosia:
-!   i need to allocate additional memory...
-!   for a moment i'm happy that symmetry works, but maybe it was unnecessary
-!   work, as it seems that it is much cheaper to work without symmetry
-!   and for large jobs this subroutine is still a bottleneck
 !   --------------------------------------------------------------------
     if (p_maxrep .gt. 0) then
 
-      call sym_antisym_fock_2el_lao()
+      call sym_antisym_fock_2el_lao(fmat_work)
       
-      nullify(fmat_help)
-      call alloc(fmat_help_work, mat_dim_ao*mat_dim_ao, nr_qu)
-      fmat_help => fmat_help_work
+      call alloc(fmat_help_work, nr_ao_total*nr_ao_total, nr_qu)
       
-      call ao_to_so_fock_2el_lao()
+      call ao_to_so_fock_2el_lao(fmat_help_work, fmat_work)
       
-      nullify(fmat_help)
       call dealloc(fmat_help_work)
 
-!     gosia: this is a pointer to a pointer
-!     i run valgrind with memcheck (and search for "indirectly lost" comments)
-!     and it is ok, but i will change this messy structure anyway...
       nullify(fmat_p)
-      fmat_p => fmat(:, 1:nr_qu, :)
+      fmat_p => fmat_work(:, 1:nr_qu, :)
 
     else
       
       nullify(fmat_p)
-      fmat_p => fmat
+      fmat_p => fmat_work
       
     end if
 
@@ -187,18 +140,9 @@ contains
 !   ---------------------------------------
     if (dirac_cfg_dft_calculation) then
     
-      nullify(dmat)
-      call alloc(dmat_work, mat_dim_ao*mat_dim_ao, nr_qu)
-      dmat => dmat_work
-
-!test sdft
-!      call test_sdft_lao_direct(mat_dim_ao, fmat_p, dmat, isym_2el_lao, cmo)
-!      call quit('bla')
-!end of sdft test
-
-      call xc_contrib_2el_lao(cmo)
+      call alloc(dmat_work, nr_ao_total*nr_ao_total, nr_qu)
+      call xc_contrib_2el_lao(cmo, dmat_work, fmat_p)
     
-      if (associated(dmat))       nullify(dmat)
       if (allocated(dmat_work))   call dealloc(dmat_work)
 
     end if
@@ -206,20 +150,20 @@ contains
 
 !   transform from ao to mo basis
 !   -----------------------------
-    call ao_to_mo_2el_lao(cmo, ibeig)
+    call ao_to_mo_2el_lao(cmo, ibeig, fmat_p)
 
 
 !   clean
 !   -----
     if (associated(fmat_p))   nullify(fmat_p)
-    if (associated(fmat))     nullify(fmat)
     if (allocated(fmat_work)) call dealloc(fmat_work)
 
   end subroutine
 
 
-  subroutine sym_antisym_fock_2el_lao()
+  subroutine sym_antisym_fock_2el_lao(fmat)
 !   --------------------------------------------------------------------
+    real(8), intent(inout) :: fmat(nr_ao_total*nr_ao_total, nr_mat, max_nr_xyz_comp)
     integer :: n, h(4), icomp, i, j, ioff1, ioff2
     real(8) :: f
 !   --------------------------------------------------------------------
@@ -229,10 +173,10 @@ contains
 
     do icomp = 1, max_nr_xyz_comp
       do n = 1, nr_mat
-        do i = 1, mat_dim_ao
+        do i = 1, nr_ao_total
           do j = 1, i
-            ioff1 = (i - 1)*mat_dim_ao + j
-            ioff2 = (j - 1)*mat_dim_ao + i
+            ioff1 = (i - 1)*nr_ao_total + j
+            ioff2 = (j - 1)*nr_ao_total + i
             f = 0.5d0*(fmat(ioff2, n, icomp) + h(n)*fmat(ioff1, n, icomp))
             fmat(ioff2, n, icomp) =      f
             fmat(ioff1, n, icomp) = h(n)*f
@@ -245,14 +189,16 @@ contains
   end subroutine
 
 
-  subroutine ao_to_so_fock_2el_lao()
+  subroutine ao_to_so_fock_2el_lao(fmat_help, fmat)
 !   --------------------------------------------------------------------
+    real(8), intent(inout) :: fmat_help(nr_ao_total*nr_ao_total, nr_qu)
+    real(8), intent(inout) :: fmat(nr_ao_total*nr_ao_total, nr_mat, max_nr_xyz_comp)
     integer :: i, icomp, iq, iz, ipq, irepd, irep, ipari, ioff, itim, ih
 !   --------------------------------------------------------------------
 
     do icomp = 1, max_nr_xyz_comp
 
-      call dzero(fmat_help, mat_dim_ao*mat_dim_ao*nr_qu)
+      call dzero(fmat_help, nr_ao_total*nr_ao_total*nr_qu)
 
       irep  = p_isymax(icomp, 2)
       ipari = p_jbtof(irep, 1)
@@ -263,8 +209,8 @@ contains
         irepd = p_irqmat(iz, irep)
         iq    = p_iqmult(1, p_jqbas(irepd, ipari), iz)
         ipq   = p_iqtopq(iq, irep)
-        ioff  = (iz - 1)*mat_dim_ao*mat_dim_ao + 1
-        call mtaoso(fmat(1, iz, icomp), fmat_help(1, ipq), mat_dim_ao, irepd, prp_iprint)
+        ioff  = (iz - 1)*nr_ao_total*nr_ao_total + 1
+        call mtaoso(fmat(1, iz, icomp), fmat_help(1, ipq), nr_ao_total, irepd, prp_iprint)
       end do
 
 !     transform fmat from Hermit-sorted to DIRAC-sorted AO basis
@@ -280,7 +226,7 @@ contains
         end do
       end if
 
-      call dcopy(mat_dim_ao*mat_dim_ao*nr_qu, fmat_help, 1, fmat(1, 1, icomp), 1)
+      call dcopy(nr_ao_total*nr_ao_total*nr_qu, fmat_help, 1, fmat(1, 1, icomp), 1)
 
     end do
 
@@ -302,9 +248,6 @@ contains
     it_is_master = .true.
     it_is_slave  = .false.
 
-      mat_dim_ao = nr_ao_total
-      mat_dim_mo = p_norbt
-      
 !     symmetry info for 2-el LAO integrals
       do i = 1, max_nr_xyz_comp
       
@@ -330,8 +273,10 @@ contains
   end subroutine
 
 
-  subroutine get_ao_fock_2el_lao(cmo, ibeig)
+  subroutine get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat_4)
 !   --------------------------------------------------------------------
+    real(8), intent(inout)    :: fmat(nr_ao_total*nr_ao_total, nr_mat, max_nr_xyz_comp)
+    real(8), intent(inout)    :: dmat_4(nr_ao_total*nr_ao_total, nr_mat)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -397,7 +342,7 @@ contains
            call dirac_parctl(1)
 
            lwork = len_f77_work
-           !lwork = max_nr_xyz_comp*nr_mat*mat_dim_ao*mat_dim_ao*2
+           !lwork = max_nr_xyz_comp*nr_mat*nr_ao_total*nr_ao_total*2
            call select_wrk(work, lwork)
 
            call her_pardrv(work,lwork,fmat,dmat_4,nr_mat,irepdm,                   &
@@ -459,8 +404,10 @@ contains
   end subroutine
 
 
-  subroutine call_gtcnvd(cmo, ibeig)
+  subroutine call_gtcnvd(cmo, ibeig, dmat, dmat_4)
 !   --------------------------------------------------------------------
+    real(8), intent(inout)    :: dmat(nr_ao_total*nr_ao_total, nr_qu)
+    real(8), intent(inout)    :: dmat_4(nr_ao_total*nr_ao_total, nr_mat)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
     real(8), pointer       :: work(:)
@@ -471,13 +418,13 @@ contains
 #include "dcbdhf.h"
 !   --------------------------------------------------------------------
 
-!    lwork = mat_dim_ao*mat_dim_ao*nr_qu*2
+!    lwork = nr_ao_total*nr_ao_total*nr_qu*2
 !    call select_wrk(work, lwork)
 !    call gtcnvd(dmat_4, cmo, ibeig, prp_iprint, work, lwork)
 !    call deselect_wrk(work, lwork)
 
     call genden(dmat, cmo, 1, prp_iprint)
-    call dscal(mat_dim_ao*mat_dim_ao*nr_qu, 2.0d0, dmat, 1)
+    call dscal(nr_ao_total*nr_ao_total*nr_qu, 2.0d0, dmat, 1)
     call bstobu_no_work(dmat, nr_qu)
 
     if (nr_qu .lt. 4) then
@@ -488,23 +435,28 @@ contains
       end do
     end if
 
-    call dzero(dmat_4, mat_dim_ao*mat_dim_ao*nr_mat)
     irep  = irep_2el_lao(1)
     ipari = p_jbtof(irep, 1)
     do iz = 1, nr_mat
       irepd = p_irqmat(iz, irep)
       iq    = p_iqmult(1, p_jqbas(irepd, ipari), iz)
       ipq   = p_iqtopq(iq, irep)
-      call dtsoao(dmat(1, ipq), dmat_4(1, iz), mat_dim_ao, irepd, prp_iprint)
+      write(*, *) 'alaola irep,irepd,ipari,iq,ipq=', &
+                          irep,irepd,ipari,iq,ipq
+      CALL OUTPUT(dmat(1,ipq),1,nr_ao_total,1,nr_ao_total,&
+                  nr_ao_total,nr_ao_total,-1,p_lupri)
+      call dtsoao(dmat(1, ipq), dmat_4(1, iz), nr_ao_total, irepd, prp_iprint)
     end do
 
   end subroutine
 
 
-  subroutine xc_contrib_2el_lao(cmo)
+  subroutine xc_contrib_2el_lao(cmo, dmat, fmat)
     use xc_driver
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
+    real(8), intent(inout)    :: dmat(nr_ao_total*nr_ao_total, nr_qu)
+    real(8), intent(inout)    :: fmat(nr_ao_total*nr_ao_total, nr_qu, max_nr_xyz_comp)
 
     integer :: icomp
     logical :: debug_me
@@ -512,15 +464,15 @@ contains
 
     call genden(dmat, cmo, 1, prp_iprint)
 
-    debug_me = .false.
-    if (debug_me) then
-      do icomp = 1, max_nr_xyz_comp
-        write(p_lupri, *) 'london_direct: fmat before xc_integrator, icomp = ', icomp
-        call prqmat(fmat_p(1, 1, icomp), &
-                    mat_dim_ao, mat_dim_ao, mat_dim_ao, mat_dim_ao,  &
-                    nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
-      end do
-    end if
+    !debug_me = .false.
+    !if (debug_me) then
+    !  do icomp = 1, max_nr_xyz_comp
+    !    write(p_lupri, *) 'london_direct: fmat before xc_integrator, icomp = ', icomp
+    !    call prqmat(fmat_p(1, 1, icomp), &
+    !                nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total,  &
+    !                nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+    !  end do
+    !end if
 
 
 !   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
@@ -532,43 +484,44 @@ contains
             if (parcal) call dirac_parctl(4)
 #endif
     if (dft_cfg_no_sdft) then
-      call xc_integrator(xc_mat_dim              = mat_dim_ao,   &
+      call xc_integrator(xc_mat_dim              = nr_ao_total,   &
                          xc_nz                   = nr_qu,        &
                          xc_dmat_0               = dmat,         &
                          xc_nr_dmat              = 0,            &
                          xc_nr_fmat              = max_nr_xyz_comp,  &
-                         xc_fmat                 = fmat_p,         &
+                         xc_fmat                 = fmat,         &
                          xc_fmat_pg_sym          = isym_2el_lao, &
                          xc_do_london_rhs_direct = .true.)
     else
-      call xc_integrator(xc_mat_dim              = mat_dim_ao,      &
+      call xc_integrator(xc_mat_dim              = nr_ao_total,      &
                          xc_nz                   = nr_qu,           &
                          xc_dmat_0               = dmat,            &
                          xc_nr_dmat              = 0,               &
                          xc_nr_fmat              = max_nr_xyz_comp,     &
-                         xc_fmat                 = fmat_p,         &
+                         xc_fmat                 = fmat,         &
                          xc_fmat_pg_sym          = isym_2el_lao,    &
                          xc_do_london_rhs_direct = .true.,       &
                          xc_response_order_mo    = 1)
     end if
 
-    if (debug_me) then
-      do icomp = 1, max_nr_xyz_comp
-        write(p_lupri, *) 'london_direct: fmat after xc_integrator, icomp = ', icomp
-        call prqmat(fmat_p(1, 1, icomp), &
-                    mat_dim_ao, mat_dim_ao, mat_dim_ao, mat_dim_ao,  &
-                    nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
-      end do
-    end if
+    !if (debug_me) then
+    !  do icomp = 1, max_nr_xyz_comp
+    !    write(p_lupri, *) 'london_direct: fmat after xc_integrator, icomp = ', icomp
+    !    call prqmat(fmat_p(1, 1, icomp), &
+    !                nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total,  &
+    !                nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+    !  end do
+    !end if
 
 
   end subroutine
 
 
-  subroutine ao_to_mo_2el_lao(cmo, ibeig)
+  subroutine ao_to_mo_2el_lao(cmo, ibeig, fmat)
 !   --------------------------------------------------------------------
     real(8), intent(in) :: cmo(*)
     integer, intent(in) :: ibeig(*)
+    real(8), intent(inout) :: fmat(nr_ao_total*nr_ao_total, nr_mat, max_nr_xyz_comp)
 
     real(8), pointer       :: work(:)
     integer                :: lwork
@@ -605,9 +558,9 @@ contains
                     p_nfbas(jj, 0),                    &
                     p_norb(ii),                        &
                     p_norb(jj),                        &
-                    fmat_p(p_i2basx(ii, jj) + 1, 1, icomp), &
-                    mat_dim_ao,                        &
-                    mat_dim_ao,                        &
+                    fmat(p_i2basx(ii, jj) + 1, 1, icomp), &
+                    nr_ao_total,                        &
+                    nr_ao_total,                        &
                     nr_qu,                             &
                     p_ipqtoq(1, irep_2el_lao(icomp)),  &
                     gmat(p_i2orbx(ii, jj) + 1),        &
