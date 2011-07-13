@@ -2359,36 +2359,89 @@ C
 #include "dcbprl.h"
 #include "krciprop.h"
 #include "krmcluci_inf.h"
+#include "dcbkrci.h"
 #include "mxpdim.inc"
       DIMENSION WORK(*)
       CHARACTER REPVOP_KRCI*3, FILELAB*8
+      integer, allocatable :: nroots_temp(:)
 C
 #include "memint.h"
-      MZ = MIN(NZ,2)
+
       CALL QENTER('GET_PRPOPSYM_KRCI')
-C
-C     allocate for VOP matrix
-C
+      MZ = MIN(NZ,2)
+
+!     consistency check for property runs (TDM/perm. dipmom) + linear symmetry
+!
+!     check for either all roots being the unbarred or barred Kramers partner of 
+!     a Kramers pair - if mixed we might get funny results 
+!     for the (x,y) (unbarred/barred-classified) operators.
+!      
+      if(linsym.and.(dooscillst.or.dodipmom_krci))then
+        allocate(nroots_temp(nirr_dg))
+        call icopy(nirr_dg,nkrci_ciroots,1,nroots_temp,1)
+
+        nr_unbarred = 0
+        nr_barred   = 0
+        if(mod(nkrciaelec,2).eq.0)then ! even # e-
+          nr_unbarred = nr_unbarred + nroots_temp(1)
+          nroots_temp(1) = 0
+          if(nfsym.eq.2) 
+     &    nr_unbarred = nr_unbarred + nroots_temp((nirr_dg/4)+1)
+          nroots_temp((nirr_dg/4)+1) = 0
+          do i = 2, nirr_dg, 2
+            nr_unbarred = nr_unbarred + nroots_temp(i)
+          end do
+          do i = 3, nirr_dg, 2
+            nr_barred = nr_barred + nroots_temp(i)
+          end do
+        else ! odd # e-
+          nr_unbarred = nr_unbarred + nroots_temp((nirr_dg/2)+1)
+          nroots_temp((nirr_dg/2)+1) = 0
+          if(nfsym.eq.2) 
+     &    nr_unbarred = nr_unbarred + nroots_temp((nirr_dg/4)*3+1)
+          nroots_temp((nirr_dg/4)*3+1) = 0
+          do i = 1, nirr_dg, 2
+            nr_unbarred = nr_unbarred + nroots_temp(i)
+          end do
+          do i = 2, nirr_dg, 2
+            nr_barred = nr_barred + nroots_temp(i)
+          end do
+        end if
+        deallocate(nroots_temp)
+
+        if(nr_unbarred.ne.0.and.nr_barred.ne.0)then
+          print *, ' *** warning: unbarred/barred roots have been'//
+     &             ' mixed in a TDM/perm. dipmom run. do not'//
+     &             ' necessarily trust the x/y components;'
+          print *, ' this is because of symmetry instability with the'//
+     &             ' x/y operators which due to numerical noise might'
+          print *, ' be wrongly classified as *unbarred*/*barred* '//
+     &             '(u/b) or vice versa instead of ub/ub or b/b.'
+            sym_xy = 2 ! unbarred x/y as default
+            if(nr_unbarred.lt.nr_barred) sym_xy = 1
+        end if
+      end if
+!
+!     allocate for VOP matrix
       CALL MEMGET('REAL',KVOP,4*N2ASHX*MZ,WORK,KFREE,LFREE)
-C
+!
       IASP_DC       = 0
       IBSP_DC       = 0
       IASP_KRCI_SYM = 0
       IBSP_KRCI_SYM = 0
-C
-C     loop over list of operators  
-C
+!
+!     loop over list of operators  
       DO 20 I = 1, NPROP_KRCI
-C
+ 
         CALL DZERO(WORK(KVOP),  4*N2ASHX*MZ)
-C
-C       read VOP matrix from file
-C
+!
+!       read VOP matrix from file
         INDXPR  = LPROP_KRCI(I)
         FILELAB = PRPNAM(INDXPR)(1:8)
+
 !       print *,'FILELAB is ==> ',FILELAB
 !       print *,'INDXPR  is ==> ',INDXPR
-C
+ 
         CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KVOP),
      &                    4*N2ASHX*MZ,1)
 C   
@@ -2418,9 +2471,24 @@ C    &                      AMAT,NROW,NCOL,LRQ,LCQ,JZ,IQP,NTEST)
 !
 !       compute symmetry of operator IVOP and store in ISYMOPPRP_KRCI
         ISYMOPPRP_KRCI(I)=IDBGMULT(INVELM(IASP_KRCI_SYM),IBSP_KRCI_SYM)
+        if((PRPNAM(INDXPR)(1:8).eq.'X dipole'.or.
+     &      PRPNAM(INDXPR)(1:8).eq.'Y dipole').and.linear)then
+!         # of unbarred > #   barred roots - ensure 'unbarred' x/y
+          if(sym_xy.eq.2)then
+            if(mod(ISYMOPPRP_KRCI(I),2).ne.0)then 
+              ISYMOPPRP_KRCI(I) = ISYMOPPRP_KRCI(I) - 1
+            end if
+!         # of   barred > # unbarred roots - ensure '  barred' x/y
+          else
+            if(mod(ISYMOPPRP_KRCI(I),2).eq.0)then 
+              ISYMOPPRP_KRCI(I) = ISYMOPPRP_KRCI(I) + 1
+            end if
+          end if
+        end if
+
         if(ntest.gt.0)then
-        print *, ' final double group irrep of property operator ==>',
-     &             IDBGMULT(INVELM(IASP_KRCI_SYM),IBSP_KRCI_SYM)
+          print *, ' final double group irrep of property operator ==>',
+     &               ISYMOPPRP_KRCI(I)
         end if
  20   CONTINUE
 C
