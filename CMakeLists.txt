@@ -240,6 +240,13 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/gp/compinfo.h
     )
 
+# copy pam to build dir
+configure_file(
+    ${CMAKE_SOURCE_DIR}/pam
+    ${CMAKE_BINARY_DIR}/pam
+    COPYONLY
+    )
+
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
