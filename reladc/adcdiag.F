@@ -888,7 +888,7 @@ C
 
       CHARACTER*8 SPECFILE
       REAL*8 THTHR,WTHR
-      CHARACTER*22 FIELD
+      CHARACTER*44 FIELD
 C
 C---------------Executable code--------------------------------------
 C
@@ -1062,7 +1062,7 @@ c
         write(SPECFILE,'(a5,a2,i1)') NMSPEC,'.0',irrep
       endif
       OPEN(IOUNIT,FILE=SPECFILE,FORM='FORMATTED',STATUS='UNKNOWN')
-      
+
       cntev=0
       DO J = 1, JND 
 c
@@ -1087,27 +1087,41 @@ c  together with their pole strengths and error estimates are written
 c  to the XSPEC.XX files.
 c
         IF(IONIZLEVEL.EQ.1) THEN
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)')
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of single ionizations
+c
+           isipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) isipcount = isipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount
+           DO iths=1,nholes
+             ththr=z(iths,j)*z(iths,j)
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A,A11)')
+               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A8,A22)')
      &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'   conf:',field
              endif
            ENDDO
-c          write(iounit,'(8x,500I12)')   (ix,ix=1,nholes)
-c          write(iounit,'(8x,500F12.6)') (z(ix,j),ix=1,nholes)
-c          write(iounit,'(8x,500F12.6)') (z(ix,j)*z(ix,j),ix=1,nholes)
+
         ELSE
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)') 
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of double ionizations
+c
+           idipcount=0
            DO iths=1,nholes
              ththr=z(iths,j)*z(iths,j)
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) idipcount = idipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)') 
+     &        d(j)*AUEV,x1,y1,'@',idipcount
+           DO iths=1,nholes
+             ththr=z(iths,j)*z(iths,j)
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A,A22)') 
+               write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A8,A44)') 
      &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'   conf:',field
              endif
            ENDDO          
@@ -1987,7 +2001,7 @@ C
       INTEGER lcount
       CHARACTER*44 FIELD44
       INTEGER bl_conf
-      CHARACTER*4 bl_irna
+      CHARACTER*4 bl_irna,bl_abs
       
 C
 C---------------Executable code--------------------------------------
@@ -2008,6 +2022,7 @@ c counter.
       IRECL = 44
       BL_CONF = 0
       BL_IRNA = '    '
+      BL_ABS  = 'abs.'
       OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
       LCOUNT = 1
@@ -2028,7 +2043,7 @@ c ** start with 1h configurations
           koff=io(DESREP)+k
           WRITE(FIELD44,381) 
      &            k,repna(DESREP),
-     &            bl_conf,bl_irna,
+     &            koff,bl_abs,
      &            bl_conf,bl_irna,
      &            bl_conf,bl_irna 
           WRITE(LUN,REC=lcount) FIELD44
@@ -2097,11 +2112,16 @@ C|
             IF (IRP.EQ.JRP) IMIN = J + 1
             DO I = IMIN, NO(IRP)
 c
+c  -- additionally determine absolute spinor numbers
+c  -- in the active space for mulpop
+c
+              ISPINOR=IO(IRP)+I
+              JSPINOR=IO(JRP)+J
               WRITE(FIELD44,381)
      &           I,REPNA(IRP),
      &           J,REPNA(JRP),
-     &           BL_CONF,BL_IRNA,
-     &           BL_CONF,BL_IRNA 
+     &           ISPINOR,BL_ABS,
+     &           JSPINOR,BL_ABS 
               WRITE(LUN,REC=LCOUNT) FIELD44
               LCOUNT = LCOUNT + 1
 c
