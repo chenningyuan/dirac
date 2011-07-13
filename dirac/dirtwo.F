@@ -41,6 +41,7 @@ C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
       use quaternion_algebra
+      use srdft_cfg ! for MCSCF-srDFT calculation
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -156,11 +157,6 @@ C             contributions should be calculated since long-range and
 C             short-range coulomb terms cannot be recombined
 C             straightforwardly due to the active density matrix
 C             contribution !!!
-C       Manu: this part should be modified so that srH contributions to
-C             the inactive Fock operator and the inactive energy can be
-C             computed. We could for example, when DOSRINT=.TRUE., 
-C             calculate coulomb integrals over 1/r12 and then coulomb
-C             integrals over - erf(mu r12)/r12 and add them.      
 C
 C       Trond:  Gaunt-integrals should be turned off !
 C
@@ -168,18 +164,20 @@ C
      &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
         HFXFAC = HFXTMP
       END IF
-CCCCCCCCCC
 C
-C        If this is not an MCSCF-srDFT calculation then ... proceed as
-C        usual ... 
-C         if (.not.dirac_cfg_mcsrdft_calculation) then 
+C        Manu: if no need for long-range coulomb integrals (because they 
+C              can be recombined with the short-range ones or we not need them) 
+C              then proceed as usual (compute full range integrals). If needed 
+C              (for the MCSCF-srDFT for example), they have already been calculated. 
+C              The call to FOCKBUILD is then skipped.  
 C
-CCCCCCCCCC
-      HFXTMP = HFXMU
-      HFXMU = D0
-      CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
-      HFXMU = HFXTMP
+      if (.not.srdft_cfg_lrcoulomb_int) then
+         HFXTMP = HFXMU
+         HFXMU = D0
+         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                 IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+         HFXMU = HFXTMP
+      end if 
 C
 C     ===========================
       IF (ONECAP.AND.SMLV1C) THEN
@@ -4078,7 +4076,7 @@ C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
       use quaternion_algebra
-      use dirac_cfg ! for MCSCF-srDFT calculations
+      use srdft_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
 #include "priunit.h"    
       PARAMETER (D0 = 0.0D0)
@@ -4146,7 +4144,7 @@ C         we need both coulomb and exchange long-range integrals.
 C
 C         IF (HFXMU.NE.D0) IC = 0
           IF ((HFXMU.NE.D0).and.
-     &       (.not.dirac_cfg_mcsrdft_calculation)) IC = 0
+     &       (.not.srdft_cfg_lrcoulomb_int)) IC = 0
           IY   = IC + IE
           IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)
