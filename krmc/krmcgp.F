@@ -2118,6 +2118,16 @@ C
       character (len=11)    :: orb_sym_fn
       character (len= 4)    :: mynum_str
  
+!     check consistency of # of GA spaces in KR-CI/KR-MC
+      if(MXPNGAS .ne. MXMCGAS)then
+        write(lupri,'(/a,i3,a,i3)') 
+     &  ' *** programming error: maximum # of '//
+     &  'GA spaces in KR-CI (set in luciarel/mxpdim.inc)'// 
+     &  ' and KR-MC (set in mxmcgas.h)'//
+     &  ' must match. you have (KR-CI):',
+     &  MXPNGAS,' vs. (KR-MC):', MXMCGAS
+      end if
+
 !     basic symmetry information
 #ifdef VAR_MPI
       if(isync_nodes .eq. 1)then
