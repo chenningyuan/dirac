@@ -820,17 +820,6 @@ C
 C     read integrals from 4IND*: out --> work(kh2ac)
 C     ==============================================
 
-!     get dimensions for scracth matrices
-      call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-      call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-      call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-      call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-      call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-      call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-      call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-
       call memget('INTE',kibeig,norbt,work,kfree,lfree)
 
       call izero(work(kibeig),norbt)
@@ -840,10 +829,8 @@ C     ==============================================
         call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
       end if
 
-      call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &             work(khmat),work(kh2xy),work(kh2yx),
-     &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             work(kibeig),.true.,iprint,lupri)
+      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &            .true.,.true.,work(kfree),lfree)
 C
 C     Transform integrals to Molfdir format:
 C
@@ -1798,17 +1785,6 @@ C
 C     read integrals from 4IND*: out --> work(kh2ac)
 C     ==============================================
 
-!     get dimensions for scracth matrices
-      call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-      call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-      call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-      call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-      call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-      call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-      call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-
       call memget('INTE',kibeig,norbt,work,kfree,lfree)
 
       call izero(work(kibeig),norbt)
@@ -1818,11 +1794,8 @@ C     ==============================================
         call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
       end if
 
-      call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &             work(khmat),work(kh2xy),work(kh2yx),
-     &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             work(kibeig),.true.,iprint,lupri)
-
+      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &            .true.,.true.,work(kfree),lfree)
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
 C     (DNZ32M only DZERO'es real part for NZ = 1)

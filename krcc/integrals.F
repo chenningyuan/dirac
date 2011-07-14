@@ -660,29 +660,16 @@ c     NNASHX = NASHT * (NASHT+1) / 2
       print*,'NNASHX',NNASHX
       CALL MEMGET('REAL', KH2AC, LEN_ALL_INT, WORK, KFREE, LFREE)
 
-!     a. get dimensions and offset for scratch matrices
-      call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-      call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-      call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-      call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-      call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-      call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-      call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-C
 C     orbital symmetry info array
       call memget('INTE',kibeig, norbt,work,kfree,lfree)
       call izero(work(kibeig),norbt)
 
-!     b. read integrals into WORK(KH2AC)
-      call rgeth21(.false.,.true.,dummy,dummy,WORK(KH2AC),
-     &             work(khmat),work(kh2xy),work(kh2yx),
-     &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             work(kibeig),.true.,ipropt,lupri)
+!     read integrals into WORK(KH2AC)
+      call RGETH2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &            .true.,.true.,work(kfree),lfree)
 
       CALL MEMCHK('cemory3',WORK,KCMO)
-      call memrel('rgeth2',work,1,khmat,kfree,lfree)
+      call memrel('rgeth2',work,kwork,kwork,kfree,lfree)
 *
       CALL QEXIT('KRCC_INT')
 *

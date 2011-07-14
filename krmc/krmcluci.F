@@ -962,23 +962,12 @@ C
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 
-!       get dimensions for scracth matrices
-        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-   
         stop 'FIXME: this interface is not complete'
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+        call izero(work(kibeig),norbt)
 
-        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &               work(khmat),work(kh2xy),work(kh2yx),
-     &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               .true.,ipropt,lupri)
+        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &              .true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -1160,23 +1149,12 @@ C
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 
-!       get dimensions for scracth matrices
-        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
-
         stop 'FIXME: this interface is not complete'
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+        call izero(work(kibeig),norbt)
 
-        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &               work(khmat),work(kh2xy),work(kh2yx),
-     &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               .true.,ipropt,lupri)
+        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &              .true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -2182,22 +2160,13 @@ C
 !       if the integral files are not available to the co-workers... 
 !       @ Timo: before continuing (if ever) we have to think about how
 !       to handle this issue properly.
-        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
-
-        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
-        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
-
-        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
-        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
-        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
 
         stop 'FIXME: this interface is not complete'
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+        call izero(work(kibeig),norbt)
 
-        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
-     &               work(khmat),work(kh2xy),work(kh2yx),
-     &               work(kdxkr12),work(kdxb12),work(kdxb34),
-     &               .true.,0,luwrt)
+        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+     &              .true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C

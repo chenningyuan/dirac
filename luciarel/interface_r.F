@@ -449,14 +449,11 @@ C
           call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
 
           call memmar(kdumx12,idum,'MARK  ',idum,'geth12')
-!         allocate scratch matrices
-          call memmar(khmat,ndim_h12_tmp,'ADDL  ',2,'hmat12')
-          call memmar(kh2xy,ndim_h12_tmp,'ADDL  ',2,'h12xy ')
-          call memmar(kh2yx,ndim_h12_tmp,'ADDL  ',2,'h12yx ')
+!         allocate space for scratch matrices (+ dummy space)
+          is_space_req = 3*ndim_h12_tmp + 4*ndim_ij + 2*ndim_kl + 100
 
-          call memmar(kdxb12, 2*ndim_ij,'ADDL  ', 1,'idxb12')
-          call memmar(kdxb34, 2*ndim_kl,'ADDL  ', 1,'idxb34')
-          call memmar(kdxkr12,2*ndim_ij,'ADDL  ', 1,'idxk12')
+          call memmar(khmat,is_space_req,'ADDL  ',2,'hmat12')
+          lfree = is_space_req - 2
 
 !         make sure we always read from the integral file(s) associated
 !         with the master process
@@ -464,10 +461,8 @@ C
      &                              .or. myproc .eq. master
 
 !         get integrals on work(kinti12)
-          call rgeth21(.false.,.true.,dummy,dummy,work(kinti12),
-     &                 work(khmat),work(kh2xy),work(kh2yx),
-     &                 work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                 ibeig,int_file_is_master_file,ntest,luwrt)
+          call rgeth2(dummy,work(kinti12),dummy,ibeig,.false.,
+     &                .true.,int_file_is_master_file,work(khmat),lfree)
 
 !         release scratch space
           call memmar(kdumx12,idum,'FLUSM ',idum,'geth12')

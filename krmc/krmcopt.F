@@ -822,6 +822,8 @@ C
       DIMENSION DFAC(2)
 C
       LOGICAL FND,FNDLAB,SAVEDFGEN
+      LOGICAL dofq, doh2ac
+
 C
 #include "dcbopt.h"
 #include "dcbgen.h"
@@ -883,7 +885,10 @@ C        Calculate FQ matrix and two-electron integrals
 C        with active orbital indices (H2AC).
 C        FQ and H2AC are written to KRMC FOCK.
 C
-         CALL RGETH2(FQ,H2AC,PV,ibeig,WORK(KFREE),LFREE)
+         dofq   = .true.
+         doh2ac = .true.
+         CALL RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,
+     &               .true.,WORK(KFREE),LFREE)
 C
 C        Active energy.
 C

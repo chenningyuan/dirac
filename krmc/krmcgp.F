@@ -2128,6 +2128,14 @@ C
      &  MXPNGAS,' vs. (KR-MC):', MXMCGAS
       end if
 
+!     introduce CI program
+#ifdef VAR_MPI
+      if(isync_nodes .eq. 1)then
+       CALL MPI_BCAST(OPT_CIPROGRAM, 8,MPI_CHARACTER,MASTER,
+     &                MPI_COMM_WORLD,IERR)
+      end if
+#endif
+
 !     basic symmetry information
 #ifdef VAR_MPI
       if(isync_nodes .eq. 1)then

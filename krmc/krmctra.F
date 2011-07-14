@@ -975,7 +975,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,WORK,LWORK)
+      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,read_master_file,
+     &                  WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate FQ and get H2AC (two-electron integrals
@@ -1005,6 +1006,9 @@ C
       DIMENSION H2AC(*)
       DIMENSION PV(*), ibeig(*)
       DIMENSION WORK(*)
+      logical, intent(in) :: dofq 
+      logical, intent(in) :: doh2ac
+      logical, intent(in) :: read_master_file
 C
 C
 #include "memint.h"
@@ -1033,10 +1037,10 @@ C        =========================================
          call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
 
 !        b. read integrals and construct fq
-         call rgeth21(.true.,.true.,pv,fq,h2ac,
+         call rgeth21(dofq,doh2ac,pv,fq,h2ac,
      &                work(khmat),work(kh2xy),work(kh2yx),
      &                work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                ibeig,.true.,ipropt,lupri)
+     &                ibeig,read_master_file,ipropt,lupri)
 
          call memrel('rgeth2',work,1,khmat,kfree,lfree)
 C
