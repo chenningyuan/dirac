@@ -1257,7 +1257,6 @@ Options are also read from the ~/.dirac and .diracrc files."""
     def child_signaller(self,signum,frame):
         '''
         Pass on interrupting signals to pam and to its all children.
-        TODO: improve the killing (Miro,Ulf; on separate branch)
         '''
         def signal_numtoname (num): # convert signal number to the name
             name = []
@@ -1268,14 +1267,21 @@ Options are also read from the ~/.dirac and .diracrc files."""
                 return name[0]
             else:
                 return str(num)
-        print 'interrupted dirac run' 
+        signum_kill=2 # for killing, prepare the strongest ammo
         # interrupt dirac run
         if self.pgid is not None:
-            interrupt_message="\npam: All dirac.x subprocesses terminated with signal "\
-                              + signal_numtoname(signum)+" (#"+str(signum) + ") !"
+            if signum != signum_kill:
+                interrupt_message="\npam: Caught signal #"+str(signum)+"("+signal_numtoname(signum)+")"\
+                " but dirac.x process group is going to be terminated"+\
+                " with stronger ammunution - signal #"+\
+                str(signum_kill)+" ("+signal_numtoname(signum_kill)+"). "
+            else:
+                interrupt_message="\npam: Caught signal #"+str(signum)+" ("+signal_numtoname(signum)+")"\
+                " -  dirac.x process group is going to be terminated with this signal."
             print_std_out_err(interrupt_message)
             if not is_windows():
-                os.killpg(self.pgid,signum)
+                # Always kill with the strongest ammunution - SIGINT, as signum=14(SIGALARM) was leaving zombie!
+                os.killpg(self.pgid,signum_kill)
             else:
                 kill_win(self.pgid)
             #radovan: don't want to get my screen filled
