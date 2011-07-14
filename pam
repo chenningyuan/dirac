@@ -1302,7 +1302,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             self.stderr_message()
             # clean the working directory and exit
             self.remove_scratch_dir()
-            self.returncode = signum
+            self.returncode = signum_kill
             self.exit_function()
         sys.exit()
 
