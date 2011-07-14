@@ -2364,6 +2364,7 @@ C
       DIMENSION WORK(*)
       CHARACTER REPVOP_KRCI*3, FILELAB*8
       integer, allocatable :: nroots_temp(:)
+      integer              :: sym_xy
 C
 #include "memint.h"
 
@@ -2376,7 +2377,7 @@ C
 !     a Kramers pair - if mixed we might get funny results 
 !     for the (x,y) (unbarred/barred-classified) operators.
 !      
-      if(linsym.and.(dooscillst.or.dodipmom_krci))then
+      if(linear.and.(dooscillst.or.dodipmom_krci))then
         allocate(nroots_temp(nirr_dg))
         call icopy(nirr_dg,nkrci_ciroots,1,nroots_temp,1)
 
@@ -2409,6 +2410,9 @@ C
         end if
         deallocate(nroots_temp)
 
+        sym_xy = 2 ! unbarred x/y as default
+        if(nr_unbarred.lt.nr_barred) sym_xy = 1
+
         if(nr_unbarred.ne.0.and.nr_barred.ne.0)then
           print *, ' *** warning: unbarred/barred roots have been'//
      &             ' mixed in a TDM/perm. dipmom run. do not'//
@@ -2417,8 +2421,6 @@ C
      &             ' x/y operators which due to numerical noise might'
           print *, ' be wrongly classified as *unbarred*/*barred* '//
      &             '(u/b) or vice versa instead of ub/ub or b/b.'
-            sym_xy = 2 ! unbarred x/y as default
-            if(nr_unbarred.lt.nr_barred) sym_xy = 1
         end if
       end if
 !
@@ -2471,8 +2473,10 @@ C    &                      AMAT,NROW,NCOL,LRQ,LCQ,JZ,IQP,NTEST)
 !
 !       compute symmetry of operator IVOP and store in ISYMOPPRP_KRCI
         ISYMOPPRP_KRCI(I)=IDBGMULT(INVELM(IASP_KRCI_SYM),IBSP_KRCI_SYM)
+
         if((PRPNAM(INDXPR)(1:8).eq.'X dipole'.or.
      &      PRPNAM(INDXPR)(1:8).eq.'Y dipole').and.linear)then
+
 !         # of unbarred > #   barred roots - ensure 'unbarred' x/y
           if(sym_xy.eq.2)then
             if(mod(ISYMOPPRP_KRCI(I),2).ne.0)then 
