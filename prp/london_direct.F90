@@ -409,6 +409,9 @@ contains
       call dtsoao(dmat(1, ipq), dmat_ao(1, iz), nr_ao_total, irepd, prp_iprint)
     end do
 
+    call dealloc(dmat)
+
+
   end subroutine
 
 
