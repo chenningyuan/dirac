@@ -42,6 +42,7 @@ module london_prp_cfg
   integer, parameter, public :: max_prp_operators = 400
   integer, parameter, public :: mxqn = 10
   integer, parameter, public :: mxaqn = mxqn*(mxqn+1)/2 
+  integer, parameter, public :: p_mfmat = 10
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
   integer, parameter, public :: p_irat = 1
 #else
@@ -94,6 +95,7 @@ module london_prp_cfg
   integer, public :: p_jqbas(0:7, 2)
   integer, public :: p_ihqmat(4, -1:1)
   integer, public :: p_ipar(0:7)
+  integer, public :: p_isymop(p_mfmat)
 
   integer, parameter, public :: p_noptyp = 21
   integer, public :: p_jm4(3, p_noptyp)
@@ -128,6 +130,7 @@ module london_prp_cfg
 #include "shells.h"
 #include "symmet.h"
 #include "cbihr2.h"
+#include "dcbdhf.h"
 
 
 
@@ -306,6 +309,10 @@ contains
       p_jm4pos(i) = jm4pos(i)
     end do
 
+    p_isymop = 0
+    do i = 1, p_mfmat
+      p_isymop(i) = isymop(i)
+    end do
 
   end subroutine
 
@@ -365,6 +372,7 @@ contains
       call dirac_mpi_bcast(nr_xyz_comp )
       call dirac_mpi_bcast(p_levyle    )
       call dirac_mpi_bcast(p_nlrgsh    )
+      call dirac_mpi_bcast(p_isymop    )
 !parameters:
       call dirac_mpi_bcast(p_noptyp    )
       call dirac_mpi_bcast(fcklon_unit )
@@ -374,6 +382,7 @@ contains
       call dirac_mpi_bcast(mxqn        )
       call dirac_mpi_bcast(mxaqn       )
       call dirac_mpi_bcast(p_irat      )
+      call dirac_mpi_bcast(p_mfmat       )
     end if
 #endif
 
