@@ -269,14 +269,14 @@ add_library(
 
 ### collect pairs of main source codes & names of executables produced out of them ###
 set(standalone_executables   ${standalone_executables}   dirac.x                      main/main.F90)
-set(standalone_executables   ${standalone_executables}   dirac_mointegral_export.x    ${PROJECT_SOURCE_DIR}/utils/dirac_mointegral_export.F90)
-set(standalone_executables   ${standalone_executables}   rspread.x                    ${PROJECT_SOURCE_DIR}/utils/rspread.F)
-set(standalone_executables   ${standalone_executables}   labread.x                    ${PROJECT_SOURCE_DIR}/utils/labread.F)
-set(standalone_executables   ${standalone_executables}   twofit.x                     ${PROJECT_SOURCE_DIR}/utils/twofit.F)
-set(standalone_executables   ${standalone_executables}   cfread.x                     ${PROJECT_SOURCE_DIR}/utils/cfread.F)
-set(standalone_executables   ${standalone_executables}   vibcal.x                     ${PROJECT_SOURCE_DIR}/utils/vibcal.F)
-set(standalone_executables   ${standalone_executables}   polfit.x                     ${PROJECT_SOURCE_DIR}/utils/polfit.F)
-set(standalone_executables   ${standalone_executables}   mx2fit.x                     ${PROJECT_SOURCE_DIR}/utils/mx2fit.F)
+set(standalone_executables   ${standalone_executables}   dirac_mointegral_export.x    utils/dirac_mointegral_export.F90)
+set(standalone_executables   ${standalone_executables}   rspread.x                    utils/rspread.F)
+set(standalone_executables   ${standalone_executables}   labread.x                    utils/labread.F)
+set(standalone_executables   ${standalone_executables}   twofit.x                     utils/twofit.F)
+set(standalone_executables   ${standalone_executables}   cfread.x                     utils/cfread.F)
+set(standalone_executables   ${standalone_executables}   vibcal.x                     utils/vibcal.F)
+set(standalone_executables   ${standalone_executables}   polfit.x                     utils/polfit.F)
+set(standalone_executables   ${standalone_executables}   mx2fit.x                     utils/mx2fit.F)
 
 include(AddStandaloneExecutables)
 
