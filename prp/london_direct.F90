@@ -405,7 +405,6 @@ contains
       irepd = p_irqmat(iz, irep)
       iq    = p_iqmult(1, p_jqbas(irepd, ipari), iz)
       ipq   = p_iqtopq(iq, irep)
-      write(*, *) 'buba:irep,ipari,iz,irepd,iq,ipq=',irep,ipari,iz,irepd,iq,ipq
       call dtsoao(dmat(1, ipq), dmat_ao(1, iz), nr_ao_total, irepd, prp_iprint)
     end do
 
