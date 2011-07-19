@@ -964,8 +964,15 @@ C  We therefore test, if there is enough memspace for these buffers
 C  when it comes to a real allocation.
 C
       IF(ICALC.EQ.1) THEN
+        write(IW,*)  ' *** Overview memory pointers: ***'
+        write(IW,*)  ' *** KFREE:    ',KFREE
+        write(IW,*)  ' *** LFREE:    ',LFREE
+        write(IW,*)  ' *** NDIMTV:   ',NDIMTV
+        write(IW,*)  ' *** IVMAX:    ',IVMAX
         MXCORR=KFREE+IVMAX
+        write(IW,*)  ' *** MXCORR:   ',MXCORR
         VREMAIN = NDIMTV - IVMAX
+        write(IW,*)  ' *** VREMAIN:  ',VREMAIN
         WRITE(IW,*) 'MWORDS allocated for the <VV|VV>/<VO|VV> class:',
      &             IVMAX/(1024*1024)
         WRITE(IW,*) 'MWORDS available for additional buffering:',
