@@ -2,10 +2,9 @@
 import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, tempfile, zipfile
 
 def wrap_dirac():
-    usage = """%prog [options] 
-Creates a temporary directory, copy in files, execute one or several 
-commands and copy back results.
-"""
+    usage = """%prog [options] MOLECULE.{mol,xyz} INPUT.inp [ARCHIVE.tgz] [FILE ..] 
+Run dirac starting from the given mol and inp files. Additional files will be copied
+to the temporary directory, archives will be extracted."""
     W = Wrapper()
     parser = optparse.OptionParser(usage)
 
@@ -13,8 +12,10 @@ commands and copy back results.
 		     help='Print more information')
 
     group = optparse.OptionGroup(parser, 'Dirac specific options')
-    group.add_option('--mb', type='string', default=None, dest="mb",
-                     help='Amount of memory for Dirac, in MB',metavar="MEGABYTES")
+#    group.add_option('--mb', type='string', default=None, dest="mb",
+#                     help='Amount of memory for Dirac, in MB',metavar="MEGABYTES")
+    group.add_option('--dirac', type='string', default=None, dest="dirac",
+                     help='Path to Dirac executable',metavar="FILE")
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Temporary directory options')
@@ -27,21 +28,21 @@ commands and copy back results.
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Input options')
-    group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
-		     help='Copy file to TMPDIR/NAME',metavar='[NAME=]FILE')
-    group.add_option('-r','--replace', type='string', action='callback',callback=W.replace_callback,
-		     help='Replace NAME by VALUE in the previous --infile.',metavar="NAME=VALUE")
-    group.add_option('-x','--extract', type='string', action='append',default=[],dest="extract",
-		     help='Extract archive FILE (tar, tgz, zip) in the temporary directory',metavar='FILE')
+#    group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
+#		     help='Copy file to TMPDIR/NAME',metavar='[NAME=]FILE')
+    group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
+		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
+#    group.add_option('-x','--extract', type='string', action='append',default=[],dest="extract",
+#		     help='Extract archive FILE (tar, tgz, zip) in the temporary directory',metavar='FILE')
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Command options')
-    group.add_option('-c','--command', type='string', action='callback',callback=W.command_callback,
-		     help='Add a new command to execute',metavar='COMMAND')
-    group.add_option('--append', type='string', action='callback',callback=W.modcmd_callback,
-		     help='add ARGS last on the previous command line given by -c/--command',metavar='ARGS')
-    group.add_option('--prepend', type='string', action='callback',callback=W.modcmd_callback,
-		     help='add ARGS first on the previous command line given by -c/--command',metavar='ARGS')
+#    group.add_option('-c','--command', type='string', action='callback',callback=W.command_callback,
+#		     help='Add a new command to execute',metavar='COMMAND')
+#    group.add_option('--append', type='string', action='callback',callback=W.modcmd_callback,
+#		     help='add ARGS last on the previous command line given by -c/--command',metavar='ARGS')
+#    group.add_option('--prepend', type='string', action='callback',callback=W.modcmd_callback,
+#		     help='add ARGS first on the previous command line given by -c/--command',metavar='ARGS')
     group.add_option('-D','--define', type='string', action='callback',callback=W.define_callback,
 		     help='Define NAME=VALUE in the environment of the commands',metavar='NAME=VALUE')
     parser.add_option_group(group)
@@ -50,31 +51,95 @@ commands and copy back results.
     group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
 		     help='Copy from to TMPDIR/NAME to FILE (NB argument order). Wildcards are allowed if no FILE is given.',
                      metavar='NAME[=FILE]')
-    group.add_option('-o','--stdout', type='string', action='store',default=None,dest="stdout",
-		     help='Write stdout to FILE',metavar="FILE")
-    group.add_option('-e','--stderr', type='string', action='store',default=None,dest="stderr",
-		     help='Write stderr to FILE',metavar="FILE")
-    group.add_option('--stdin', type='string', action='store',default=None,dest="stdin",
-		     help='Read stdin from FILE',metavar="FILE")
+#    group.add_option('-o','--stdout', type='string', action='store',default=None,dest="stdout",
+#		     help='Write stdout to FILE',metavar="FILE")
+#    group.add_option('-e','--stderr', type='string', action='store',default=None,dest="stderr",
+#		     help='Write stderr to FILE',metavar="FILE")
+#    group.add_option('--stdin', type='string', action='store',default=None,dest="stdin",
+#		     help='Read stdin from FILE',metavar="FILE")
     group.add_option('-a','--archive', type='string', action='store',default=None,dest="archive",
 		     help='Path to output archive (tgz) file',metavar="FILE")
     group.add_option('-A','--archive-files', type='string', action='append',default=[],dest="archpatterns",
 		     help='Files matching these pattern(s) will be achived',metavar="PATTERN")
     parser.add_option_group(group)
 
-    (options, args) = parser.parse_args(sys.argv[1:])
+    # Read .rc files
+    rcargs = []
+    rcpaths = ['.wrapperrc','wrapperrc',
+               os.path.join(os.path.expanduser('~'),'.wrapperrc')]
+    for path in rcpaths:
+        try:
+            f = open(path,'r')
+            for l in f.readlines():
+                l = l.strip()
+                if len(l) > 0:
+                    if l[0] != '#':
+                        for a in shlex.split(l):
+                            rcargs.append(os.path.expandvars(a))
+            break
+        except Exception:
+            pass
+
+    (options, args) = parser.parse_args(rcargs+sys.argv[1:])
     W.verbose = options.verbose
     W.tmppath = options.tmppath
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
-    W.archive = options.archive
-    W.archpatterns = options.archpatterns
-    if options.stdout is not None:
-        W.stdout = open(options.stdout,'w')
-    if options.stderr is not None:
-        W.stderr = open(options.stderr,'w')
-    if options.stdin is not None:
-        W.stdin = open(options.stdin,'r')
+    W.archpatterns = ['*.xml','DFCOEF']
+
+    if options.dirac is None:
+        print >> sys.stderr,"Wrapper: No dirac executable given (with --dirac=), aborting."
+        sys.exit(-1)
+    else:
+        W.copyin.append([options.dirac,'dirac.x'])
+        W.cmdlines.append(['./dirac.x'])
+
+    # Detect file types in args from the file names, set up job name
+    molpath = None
+    inppath = None
+    jobname = None
+    def stripsuffix(a,ss):
+        "If a ends in one of the strings in ss, return a with the suffix removed, else return None"
+        for s in ss:
+            if a[-len(s):] == s:
+                return a[:-len(s)]
+        return None
+    for f in args:
+        if stripsuffix(f,['.mol','.xyz']):
+            if molpath is not None:
+                print >> sys.stderr, "Wrapper: Multiple molecule files given, aborting."
+                sys.exit(-1)
+            molpath = f
+        elif stripsuffix(f,['.inp']):
+            if inppath is not None:
+                print >> sys.stderr, "Wrapper: Multiple .inp files given, aborting."
+                sys.exit(-1)
+            inppath = f
+        elif stripsuffix(f,['.tgz','.tar.gz','.zip']):
+            W.extract.append(f)
+            jobname = stripsuffix(os.path.basename(f),['.tgz','.tar.gz','.zip'])
+        else: # Just copy in unknown files
+            W.copyin.append([f])
+    if molpath is not None and inppath is not None:
+        jobname = (stripsuffix(os.path.basename(inppath),['.inp']) + '_' +
+                   stripsuffix(os.path.basename(molpath),['.mol','.xyz']))
+    elif jobname is None:
+        print >> sys.stderr, "Wrapper: Need either molecule and input files or archive, aborting."
+        sys.exit(-1)
+    replacements = reduce(list.__add__,[x.split("=") for x in options.replace],[])
+    if molpath is not None:
+        if stripsuffix(molpath,['.mol']):
+            W.copyin.append([molpath,'MOLECULE.MOL']+replacements)
+        else:
+            W.copyin.append([molpath,'MOLECULE.XYZ']+replacements)
+    if inppath is not None:
+        W.copyin.append([inppath,'DIRAC.INP'])
+    W.stdout = open(jobname+'.out','w')
+    W.stderr = open(jobname+'.err','w')
+    W.stdin = None
+    W.archive = jobname+'.tgz'
+
+    # Now start the real work
     W.setup()
     try:
         W.stagein()
@@ -84,6 +149,10 @@ commands and copy back results.
             W.stageout()
     finally:
         W.cleanup()
+        W.stderr.close()
+        if os.path.getsize(jobname+'.err') == 0:
+            os.remove(jobname+'.err')
+        W.stdout.close()
 
 class Wrapper:
     def __init__(self):
@@ -177,7 +246,31 @@ class Wrapper:
             raise
 
     def stagein(self):
-        "Copy in files and extract archives. Stay in cwd"
+        "Copy in files and extract archives. Stay in cwd. Extract first to allow copyin to override archive files."
+        # Extract archives, stop if problem
+        def hassuffixes(a,ss):
+            for s in ss:
+                if a[-len(s):] == s:
+                    return True
+            return False
+        for a in self.extract:
+            if self.verbose: print "Wrapper: Extracting archive",a
+            try:
+                if hassuffixes(a,['.tar']):
+                    t = tarfile.open(a,'r')
+                elif hassuffixes(a,['.tgz','.tar.gz']):
+                    t = tarfile.open(a,'r:gz')
+                elif hassuffixes(a,['.tbz','.tar.bz2']):
+                    t = tarfile.open(a,'r:bz2')
+                elif hassuffixes(a,['.zip']):
+                    t = zipfile.ZipFile(a)
+                else:
+                    print >> sys.stderr, "Wrapper: Cannot determine type of archive file",a,"quitting."
+                    sys.exit(1)
+                    t.extractall(path=self.tmppath)
+            except:
+                print >> sys.stderr, "Wrapper: Error extracting files from '"+a+"', quitting."
+                raise
         # Copy in files, stop if problem
         for f in self.copyin: 
             src = f[0]
@@ -192,31 +285,6 @@ class Wrapper:
                 self.copy_with_replacement(src,dst,rep)
             except:
                 print >> sys.stderr, "Wrapper: File copy failed, quitting."
-                raise
-        # Extract archives, stop if problem
-        def hassuffixes(a,ss):
-            for s in ss:
-                i = a.rfind(s)
-                if i > 0 and i == len(a) - len(s):
-                    return True
-            return False
-        for a in self.extract:
-            if self.verbose: print "Wrapper: Extracting archive",a
-            if hassuffixes(a,['.tar']):
-                t = tarfile.open(a,'r')
-            elif hassuffixes(a,['.tgz','.tar.gz']):
-                t = tarfile.open(a,'r:gz')
-            elif hassuffixes(a,['.tbz','.tar.bz2']):
-                t = tarfile.open(a,'r:bz2')
-            elif hassuffixes(a,['.zip']):
-                t = zipfile.ZipFile(a)
-            else:
-                print >> sys.stderr, "Wrapper: Cannot determine type of archive file",a,"quitting."
-                sys.exit(1)
-            try:
-                t.extractall(path=self.tmppath)
-            except:
-                print >> sys.stderr, "Wrapper: Error extracting files from",a,"quitting."
                 raise
 
     def copy_with_replacement(self,src,dst,rep=[]):
@@ -243,7 +311,7 @@ class Wrapper:
         os.chdir(self.tmppath)
         if self.archive is not None:
             try:
-                self.archive = os.path.join(self.workdir,archive)
+                self.archive = os.path.join(self.workdir,self.archive)
                 if self.verbose: print "Wrapper: Creating archive",self.archive
                 t = tarfile.open(self.archive,'w:gz')
                 for p in self.archpatterns:
@@ -252,9 +320,10 @@ class Wrapper:
                 t.close()
             except:
                print >> sys.stderr, "Wrapper: Error creating tar archive"
-               raise # Should try to copy out files as well
+               raise # TODO: Should try to copy out files as well
+            finally:
+                os.chdir(self.workdir)
         # Copy back files
-        os.chdir(self.workdir)
         def cpout(src,dst=None):
             if self.verbose: print "Wrapper: Copying back",src
             if os.path.isfile(src):
@@ -279,6 +348,7 @@ class Wrapper:
                 raise # TODO: Must try to copy out all files
 
     def cleanup(self):
+        os.chdir(self.workdir)
         if not self.keeptmp:
             shutil.rmtree(self.tmppath)
             if self.verbose: print "Wrapper: Temporary directory deleted"
