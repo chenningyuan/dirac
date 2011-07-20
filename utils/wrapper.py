@@ -149,6 +149,7 @@ class Wrapper:
         self.copyin = []
         self.copyout = []
         self.extract = []
+        self.infiles = []
         self.archive = None
         self.archpatterns = []
         self.verbose = False
