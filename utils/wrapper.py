@@ -40,6 +40,13 @@ to the temporary directory, archives will be extracted."""
 		     help="Keep temporary directory, default if it's preexisting.")
     parser.add_option_group(group)
 
+    group = optparse.OptionGroup(parser, 'Parallel options')
+    group.add_option('--mpi', type='string', default=None,dest="mpi",
+		     help='Command to start mpi, i.e. "mpirun -np 2"',metavar="COMMAND")
+    group.add_option('--host', type='string', default=None,dest="host",
+		     help='Comma separated list of hosts with separate file systems',metavar='"NODE[,NODE, ..]"')
+    parser.add_option_group(group)
+
     # Read .rc files
     rcargs = []
     rcpaths = ['.wrapperrc','wrapperrc',
@@ -63,13 +70,6 @@ to the temporary directory, archives will be extracted."""
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
     W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP']
-
-    if options.dirac is None:
-        print >> sys.stderr,"Wrapper: No dirac executable given (with --dirac=), aborting."
-        sys.exit(-1)
-    else:
-        W.copyin.append([options.dirac,'dirac.x'])
-        W.cmdlines.append(['./dirac.x'])
 
     # Detect file types in args from the file names, set up job name
     molpath = None
@@ -119,6 +119,20 @@ to the temporary directory, archives will be extracted."""
     if not options.noarchive:
         W.archive = jobname+'.tgz'
 
+    # Set up remote tmp directory creation
+
+    # Append dirac itself to the commands to be run
+    if options.dirac is None:
+        print >> sys.stderr,"Wrapper: No dirac executable given (with --dirac=), aborting."
+        sys.exit(-1)
+    else:
+        W.copyin.append([options.dirac,'dirac.x'])
+        if options.mpi is None:
+            W.cmdlines.append(['./dirac.x'])
+        else:
+            W.cmdlines.append(shlex.split(options.mpi)+['./dirac.x'])
+    if options.host is not None:
+        W.remote_hosts = options.host.split(',')
     # Now start the real work
     W.setup()
     try:
@@ -138,7 +152,7 @@ to the temporary directory, archives will be extracted."""
 
 class Wrapper:
     def __init__(self):
-        # User modifyable variables
+        # User modifiable variables
         self.tmpbase = None
         self.tmppath = None
         self.keeptmp = False
@@ -155,6 +169,9 @@ class Wrapper:
         self.verbose = False
         self.workdir = None
         self.env = os.environ.copy()
+        self.remote_hosts = [] # Duplicate tmpdir and stage in on these hosts
+        self.rsh = 'ssh'
+        self.rcp = 'scp'
 
     def define_callback(self, option, opt, value, parser):
 	if '=' in value:
@@ -213,6 +230,7 @@ class Wrapper:
     def setup(self):
         try:
             if self.tmppath is not None:
+                self.tmppath = os.path.abspath(self.tmppath)
                 if os.path.isdir(self.tmppath):
                     self.keeptmp = True
                 else:
@@ -224,6 +242,16 @@ class Wrapper:
                     self.tmppath = tempfile.mkdtemp(dir=self.tmpbase)
             if self.verbose: print "Wrapper: Using temporary directory '%s'" % self.tmppath
             self.workdir = os.getcwd()
+            if self.remote_hosts: # Create remote tmp dirs in parallel
+                procs = []
+                for h in self.remote_hosts:
+                    if self.verbose: print "Wrapper: Creating temporary directory on host",h
+#                    procs.append(subprocess.Popen([self.rsh,'mkdir','-p',self.tmppath]))
+                for p in procs:
+                    if p.wait() != 0:
+                        print >> sys.stderr,"Wrapper: Failed creating temporary directory on host "+h+",quitting."
+                        print >> sys.stderr,"Wrapper: Warning, temporary directories may remain on some hosts"
+                        sys.exit(-1)
         except:
             print >> sys.stderr, "Wrapper: Cannot create temporary directory '%s', quitting." % self.tmppath
             raise
@@ -269,6 +297,17 @@ class Wrapper:
             except:
                 print >> sys.stderr, "Wrapper: File copy failed, quitting."
                 raise
+        # Copy files to remote hosts
+        if self.remote_hosts: # Copy in parallel, maybe limit this somehow?
+            procs = []
+            for h in self.remote_hosts:
+                if self.verbose: print "Wrapper: Copying files to host",h
+#                procs.append(subprocess.Popen([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath]))
+            for p in procs:
+                if p.wait() != 0:
+                    print >> sys.stderr,"Wrapper: Failed copying files to host "+h+", quitting."
+                    print >> sys.stderr,"Wrapper: Warning, files may remain on some hosts"
+                    sys.exit(-1)
 
     def copy_with_replacement(self,src,dst,rep=[]):
         try:
@@ -335,6 +374,15 @@ class Wrapper:
         if not self.keeptmp:
             shutil.rmtree(self.tmppath)
             if self.verbose: print "Wrapper: Temporary directory deleted"
+            if self.remote_hosts:
+                procs = []
+                for h in self.remote_hosts:
+                    if self.verbose: print "Wrapper: Deleting temporary directory on host",h
+#                    procs.append(subprocess.Popen([self.rsh,'rm','-rf',self.tmppath]))
+                for p in procs:
+                    if p.wait() != 0:
+                        print >> sys.stderr,"Wrapper: Failed deleting temporary directory on host "+h
+                        print >> sys.stderr,"Wrapper: Warning, temporary directories may remain on some hosts"            
         else:
             if self.verbose: print "Wrapper: Temporary directory kept:",tmppath
 
