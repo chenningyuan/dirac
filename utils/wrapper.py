@@ -213,7 +213,7 @@ class Wrapper:
     def setup(self):
         try:
             if self.tmppath is not None:
-                if os.path.isdir(tmppath):
+                if os.path.isdir(self.tmppath):
                     self.keeptmp = True
                 else:
                     os.makedirs(self.tmppath)
