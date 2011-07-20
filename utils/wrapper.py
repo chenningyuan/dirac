@@ -21,7 +21,7 @@ to the temporary directory, archives will be extracted."""
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
 
-    group.add_option('-i','--infile', type='string', action='callback',callback=W.getfile_callback,
+    group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
                      metavar='[NAME=]FILE]')
     group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
