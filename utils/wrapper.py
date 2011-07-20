@@ -11,11 +11,24 @@ to the temporary directory, archives will be extracted."""
     parser.add_option('-v','--verbose', action='store_true', dest="verbose",
 		     help='Print more information')
 
-    group = optparse.OptionGroup(parser, 'Dirac specific options')
+    group = optparse.OptionGroup(parser, 'General options')
 #    group.add_option('--mb', type='string', default=None, dest="mb",
 #                     help='Amount of memory for Dirac, in MB',metavar="MEGABYTES")
     group.add_option('--dirac', type='string', default=None, dest="dirac",
                      help='Path to Dirac executable',metavar="FILE")
+
+
+    group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
+		     help="Do not create an archive file.")
+
+    group.add_option('-i','--infile', type='string', action='callback',callback=W.getfile_callback,
+		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
+                     metavar='[NAME=]FILE]')
+    group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
+		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
+    group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
+		     help='Copy FILE from temporary directory after the calculation',
+                     metavar='NAME[=FILE]')
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Temporary directory options')
@@ -25,42 +38,6 @@ to the temporary directory, archives will be extracted."""
 		     help='Full path to temporary directory. Will be created if not there.',metavar="PATH")
     group.add_option('-k','--keep-tmp', action='store_true', dest="keeptmp",default=False,
 		     help="Keep temporary directory, default if it's preexisting.")
-    parser.add_option_group(group)
-
-    group = optparse.OptionGroup(parser, 'Input options')
-#    group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
-#		     help='Copy file to TMPDIR/NAME',metavar='[NAME=]FILE')
-    group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
-		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
-#    group.add_option('-x','--extract', type='string', action='append',default=[],dest="extract",
-#		     help='Extract archive FILE (tar, tgz, zip) in the temporary directory',metavar='FILE')
-    parser.add_option_group(group)
-
-    group = optparse.OptionGroup(parser, 'Command options')
-#    group.add_option('-c','--command', type='string', action='callback',callback=W.command_callback,
-#		     help='Add a new command to execute',metavar='COMMAND')
-#    group.add_option('--append', type='string', action='callback',callback=W.modcmd_callback,
-#		     help='add ARGS last on the previous command line given by -c/--command',metavar='ARGS')
-#    group.add_option('--prepend', type='string', action='callback',callback=W.modcmd_callback,
-#		     help='add ARGS first on the previous command line given by -c/--command',metavar='ARGS')
-    group.add_option('-D','--define', type='string', action='callback',callback=W.define_callback,
-		     help='Define NAME=VALUE in the environment of the commands',metavar='NAME=VALUE')
-    parser.add_option_group(group)
-
-    group = optparse.OptionGroup(parser, 'Output options')
-    group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
-		     help='Copy from to TMPDIR/NAME to FILE (NB argument order). Wildcards are allowed if no FILE is given.',
-                     metavar='NAME[=FILE]')
-#    group.add_option('-o','--stdout', type='string', action='store',default=None,dest="stdout",
-#		     help='Write stdout to FILE',metavar="FILE")
-#    group.add_option('-e','--stderr', type='string', action='store',default=None,dest="stderr",
-#		     help='Write stderr to FILE',metavar="FILE")
-#    group.add_option('--stdin', type='string', action='store',default=None,dest="stdin",
-#		     help='Read stdin from FILE',metavar="FILE")
-    group.add_option('-a','--archive', type='string', action='store',default=None,dest="archive",
-		     help='Path to output archive (tgz) file',metavar="FILE")
-    group.add_option('-A','--archive-files', type='string', action='append',default=[],dest="archpatterns",
-		     help='Files matching these pattern(s) will be achived',metavar="PATTERN")
     parser.add_option_group(group)
 
     # Read .rc files
@@ -85,7 +62,7 @@ to the temporary directory, archives will be extracted."""
     W.tmppath = options.tmppath
     W.tmpbase = options.tmpbase
     W.keeptmp = options.keeptmp
-    W.archpatterns = ['*.xml','DFCOEF']
+    W.archpatterns = ['*.xml','DFCOEF','MOLECULE.*','DIRAC.INP']
 
     if options.dirac is None:
         print >> sys.stderr,"Wrapper: No dirac executable given (with --dirac=), aborting."
@@ -126,6 +103,8 @@ to the temporary directory, archives will be extracted."""
     elif jobname is None:
         print >> sys.stderr, "Wrapper: Need either molecule and input files or archive, aborting."
         sys.exit(-1)
+    jobname = "_".join([jobname]+options.replace)
+
     replacements = reduce(list.__add__,[x.split("=") for x in options.replace],[])
     if molpath is not None:
         if stripsuffix(molpath,['.mol']):
@@ -137,7 +116,8 @@ to the temporary directory, archives will be extracted."""
     W.stdout = open(jobname+'.out','w')
     W.stderr = open(jobname+'.err','w')
     W.stdin = None
-    W.archive = jobname+'.tgz'
+    if not options.noarchive:
+        W.archive = jobname+'.tgz'
 
     # Now start the real work
     W.setup()
@@ -147,6 +127,8 @@ to the temporary directory, archives will be extracted."""
             W.run()
         finally:
             W.stageout()
+    except:
+        pass
     finally:
         W.cleanup()
         W.stderr.close()
@@ -210,9 +192,9 @@ class Wrapper:
 	    if len(ff) != 2:
 		print >> sys.stderr, "Wrapper: Illegal argument to",opt
 		sys.exit(1)
-	    self.outfiles.append(ff)
+	    self.copyout.append(ff)
 	else:
-	    self.outfiles.append([value])
+	    self.copyout.append([value])
 
     def command_callback(self, option, opt, value, parser):
 	self.cmdlines.append(shlex.split(value))
