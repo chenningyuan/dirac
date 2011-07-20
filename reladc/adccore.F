@@ -434,7 +434,7 @@ C
       NAMELIST/RELADC/ ADCLEVEL,ADCPRINT,ADCPRINTNM,
      &                 DOSIPS,DODIPS,XREPS,READQKL,
      &                 DOCONST,DOADCPOP,DOFULL,VCONV
-      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,SIPPRNT,DIPPRNT
+      NAMELIST/LANINP/ SIPITER,DIPITER,SIPEIGV,DIPEIGV,SIPPRNT,DIPPRNT
 c
 c  set input default values and read ADC input
 c  from ADC namelist input.
@@ -503,6 +503,7 @@ c
       DIPPRNT = 50.0d0
       DO J=1,32
         SIPEIGV(J) = 0
+        DIPEIGV(J) = 0
       ENDDO
       REWIND (5)
       CALL LOCATE('LANINP',5,ITEST)

@@ -128,7 +128,7 @@ C
       CALL MEMOPT('REAL',BORIJK,NDIM,CC,KFREE,LFREE,ALLOC)
 C
       NDIM = IO(NREP+1)*2
-      CALL MEMOPT('REAL',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('INTE',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC)
 C
       M = IO(NREP+1)
       NDIM = (M*M*M*IV(NREP+1) + NOOTMAX)*RCW
@@ -331,6 +331,8 @@ c
         CALL MEMOPT('INTE',BUFIOJ,NDIM,CC,KFREE,LFREE,ALLOC)
         NDIM = INTBUF*RCW
         CALL MEMOPT('REAL',BUFBUF,NDIM,CC,KFREE,LFREE,ALLOC)
+        NDIM = IO(NREP+1)*2
+        CALL MEMOPT('INTE',BIROOO,NDIM,CC,KFREE,LFREE,ALLOC)
 
         IF(CARITH) THEN
           CALL BUILD_SAT_C(CC(BFOOOO),CC(BFVOVO),CC(BSPTRO),IO(NREP+1),
@@ -343,38 +345,41 @@ c
      &                     CC(BLKUPO),CC(BLKUPV),DESREP,
      &                     CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF),INTBUF)
         ENDIF
-        CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
-        CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
 C
-C  call 2h/3h1p configuration creator, file handle is available after
-C  call
+C  call 2h/3h1p configuration creator, file handle is available
+C  afterwards
 C
         LADC = NOOT(DESREP) + LENSATBL
-        CALL WCONDAT(ITAPADC,NAME3,IRECL,DESREP,LADC,EPS,IONIZLEVEL)
+        CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC,EPS,
+     &                 IO(NREP+1),CC(BIROOO))
         WRITE(IW,*) 'Record length as determined by WCONDAT:',IRECL
+c
+c  release all memory needed for satellite construction.
+c
+        CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
+        CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
 C
 C  write general matrix control file and perform Lanczos diagonalization
 C  for each symmetry immediately.
 C
         OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
 
-        WRITE(ITAPADC,'(I1)')  IONIZLEVEL      !IONIZLEVEL
-        WRITE(ITAPADC,'(I2)')  DESREP          !KREP
-        WRITE(ITAPADC,'(I1)')  RCW             !RCW
+        WRITE(ITAPADC,'(I1)')  IONIZLEVEL        !IONIZLEVEL
+        WRITE(ITAPADC,'(I2)')  DESREP            !KREP
+        WRITE(ITAPADC,'(I1)')  RCW               !RCW
         N=2
-        WRITE(ITAPADC,'(I1)')  N               !IOLDNEW
-        WRITE(ITAPADC,'(I12)') LADC            !LADC
-        WRITE(ITAPADC,'(A6)')  NAME2           !FILEADC
-        WRITE(ITAPADC,'(A6)')  '      '        !FILEDIA
-        WRITE(ITAPADC,'(A6)')  NAME3           !FILECNF
-        WRITE(ITAPADC,'(A5)')  NMSPECF         !Name of SPEC
-        WRITE(ITAPADC,'(I9)')  IRECL           !IRECL of config
-        WRITE(ITAPADC,'(I9)')  DIPITER         !NITER
-        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)    !2h space size
-        WRITE(ITAPADC,'(I9)')  NBUFS           !NBUFS
-        N=0                                    !NO evecs in dble case
-        WRITE(ITAPADC,'(I9)')  N               !NEIGENV
-        WRITE(ITAPADC,'(F10.1)') DIPPRNT       !EVLLIM
+        WRITE(ITAPADC,'(I1)')  N                 !IOLDNEW
+        WRITE(ITAPADC,'(I12)') LADC              !LADC
+        WRITE(ITAPADC,'(A6)')  NAME2             !FILEADC
+        WRITE(ITAPADC,'(A6)')  '      '          !FILEDIA
+        WRITE(ITAPADC,'(A6)')  NAME3             !FILECNF
+        WRITE(ITAPADC,'(A5)')  NMSPECF           !Name of SPEC
+        WRITE(ITAPADC,'(I9)')  IRECL             !IRECL of config
+        WRITE(ITAPADC,'(I9)')  DIPITER           !NITER
+        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)      !2h space size
+        WRITE(ITAPADC,'(I9)')  NBUFS             !NBUFS
+        WRITE(ITAPADC,'(I9)')  DIPEIGV(DESREP)   !NEIGENV
+        WRITE(ITAPADC,'(F10.1)') DIPPRNT         !EVLLIM
 
         CLOSE(ITAPADC)
 c

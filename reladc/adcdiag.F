@@ -318,10 +318,10 @@ c
       IF(NEIGENV.GT.0) THEN
         IF(CARITH) THEN
           CALL ZADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
-     &                            nocc,irecl,filecnf)
+     &                            nocc,irecl,filecnf,ionizlevel)
         ELSE
           CALL RADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
-     &                            nocc,irecl,filecnf)
+     &                            nocc,irecl,filecnf,ionizlevel)
         ENDIF
       ENDIF
 
@@ -2176,8 +2176,135 @@ C|____________________________________________________________
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM,EPS,
+     &                     MAXOCCSP,IROOO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Writes explicit irep names and spinor numbers for the various
+C     final state configurations belonging to  symmetry DESREP.
+C     Avoiding too complicated things we fix IRECL in this routine
+c     no matter which value is transferred to this routine. Therefore
+c     IRECL is an OUTPUT parameter.
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*6 FILENAME
+      INTEGER LUN,IRECL,DESREP,LENADCM
+      REAL*8  EPS(*)
+      INTEGER MAXOCCSP,IROOO(MAXOCCSP,2)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER lcount
+      CHARACTER*44 FIELD44
+      INTEGER bl_conf
+      CHARACTER*4 bl_irna,bl_abs
+      
+C
+C---------------Executable code--------------------------------------
+C
+C  Do the hole space configuration analysis for the
+C  DIP case exclusively in this routine.
+c  Initialize arrays:
+c
+      IX=1
+      Do KRP=1,NREP
+        Do K=1,NO(KRP)
+          IROOO(IX,1)=K
+          IROOO(IX,2)=KRP
+          IX = IX + 1
+        Enddo
+      Enddo
+C
+c fix record length for the direct access file and set some
+c blank variables. Then open file and initialize configuration
+c counter.
+ 
+      IRECL = 44
+      BL_CONF = 0
+      BL_IRNA = '    '
+      BL_ABS  = 'abs.'
+      OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+      LCOUNT = 1
 
+C____________ START WITH DIPS ______________________________
+C|
+C|
+C|
+      WRITE(IW,*) 'Writing DIP configs to ',FILENAME
+      WRITE(IW,*) 'Final state symmetry: ',DESREP
 
+      DO 14 JRP = 1, NREP
+        IRP = MULTB(JRP,DESREP+NREP,2)
+        IF (IRP.LT.JRP) GOTO 14
+        DO J = 1, NO(JRP)
+          IMIN = 1
+          IF (IRP.EQ.JRP) IMIN = J + 1
+          DO I = IMIN, NO(IRP)
+c
+c  -- additionally determine absolute spinor numbers
+c  -- in the active space for mulpop
+c
+            ISPINOR=IO(IRP)+I
+            JSPINOR=IO(JRP)+J
+            WRITE(FIELD44,381)
+     &         I,REPNA(IRP),
+     &         J,REPNA(JRP),
+     &         ISPINOR,BL_ABS,
+     &         JSPINOR,BL_ABS 
+            WRITE(LUN,REC=LCOUNT) FIELD44
+            LCOUNT = LCOUNT + 1
+c
+          ENDDO
+        ENDDO
+  14  CONTINUE
+      IF( (LCOUNT-1).NE.NOOT(DESREP)) THEN
+        WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,NOOT(DESREP)
+        CALL QUIT('Error in WCONDAT_D!')
+      ENDIF
+c
+c  determine satellite configurations
+c
+      DO K=1,MAXOCCSP
+        KSP = IROOO(K,1)
+        KRP = IROOO(K,2)
+        DO J=K+1,MAXOCCSP
+          JSP = IROOO(J,1)
+          JRP = IROOO(J,2)
+          JKRP = MULTB(JRP,KRP,1)
+          DO I=J+1,MAXOCCSP
+            ISP = IROOO(I,1)
+            IRP = IROOO(I,2)
+            IJKRP = MULTB(IRP,JKRP+NREP,1)
+            RRP = MULTB(DESREP+NREP,IJKRP,2)
+            DO RSP = 1,NV(RRP)
+            WRITE(FIELD44,381) ISP,REPNA(IRP),
+     &                         JSP,REPNA(JRP),
+     &                         KSP,REPNA(KRP),
+     &                         RSP,REPNA(RRP)
+            WRITE(LUN,REC=LCOUNT) FIELD44
+            LCOUNT = LCOUNT + 1
 
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      CLOSE(LUN)
+C|
+C|
+C|____________________________________________________________
 
+ 381  FORMAT(4(I3,'(',A4,')  '))
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

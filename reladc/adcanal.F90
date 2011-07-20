@@ -4,20 +4,22 @@
 !  ************************************************************
 !  *******   ADCANAL                                 **********
 !  *******   In this file all the analysis routines  **********
-!  *******   for RELADC are combined.                **********
+!  *******   for RELADC are combined that make use   **********
+!  *******   of F90 features.                        **********
 !  *******                                           **********
 !  ************************************************************
 !  ************************************************************
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine RADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, & 
-                                    irecl,filecnf)
+                                    irecl,filecnf,ionizlevel)
 
       implicit none
 !
 ! transferred variables
 !
       integer, intent(in) :: io1,io2,io3,desrep,ladc,nocc,irecl
+      integer, intent(in) :: ionizlevel
       character*6, intent(in) :: filecnf
 !
 ! local variables
@@ -202,13 +204,14 @@
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine ZADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, & 
-                                    irecl,filecnf)
+                                    irecl,filecnf,ionizlevel)
 
       implicit none
 !
 ! transferred variables
 !
       integer, intent(in) :: io1,io2,io3,desrep,ladc,nocc,irecl
+      integer, intent(in) :: ionizlevel
       character*6, intent(in) :: filecnf
 !
 ! local variables
