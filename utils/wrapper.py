@@ -246,7 +246,7 @@ class Wrapper:
                 procs = []
                 for h in self.remote_hosts:
                     if self.verbose: print "Wrapper: Creating temporary directory on host",h
-                    procs.append(subprocess.Popen([self.rsh,'mkdir','-p',self.tmppath]))
+                    procs.append(subprocess.Popen([self.rsh,h,'mkdir -p "'+self.tmppath+'"']))
                 for p in procs:
                     if p.wait() != 0:
                         print >> sys.stderr,"Wrapper: Failed creating temporary directory on host "+h+",quitting."
@@ -378,7 +378,7 @@ class Wrapper:
                 procs = []
                 for h in self.remote_hosts:
                     if self.verbose: print "Wrapper: Deleting temporary directory on host",h
-                    procs.append(subprocess.Popen([self.rsh,'rm','-rf',self.tmppath]))
+                    procs.append(subprocess.Popen([self.rsh,h,'rm -rf "'+self.tmppath+'"']))
                 for p in procs:
                     if p.wait() != 0:
                         print >> sys.stderr,"Wrapper: Failed deleting temporary directory on host "+h
