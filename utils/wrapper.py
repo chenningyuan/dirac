@@ -170,7 +170,6 @@ class Wrapper:
         self.stdout = None
         self.stderr = None
         self.cmdlines = []
-        self.cleanup_cmdlines = [] # Always execute these
         self.copyin = []
         self.copyout = []
         self.extract = []
@@ -215,12 +214,6 @@ class Wrapper:
     def command_callback(self, option, opt, value, parser):
 	self.cmdlines.append(shlex.split(value))        
 
-    def handle_remote_dirs(self,hosts,path):
-        for h in self.remote_hosts:
-            if self.verbose: print "Wrapper: Creating temporary directory on host",h
-            self.cmdlines.append([self.rsh,h,'mkdir -p "'+self.tmppath+'"'])
-            self.cleanup_cmdlines.append([self.rsh,h,'rm -rf "'+self.tmppath+'"'])
-
     def setup(self):
         try:
             if self.tmppath is not None:
@@ -236,9 +229,19 @@ class Wrapper:
                     self.tmppath = tempfile.mkdtemp(dir=self.tmpbase)
             if self.verbose: print "Wrapper: Using temporary directory '%s'" % self.tmppath
             self.workdir = os.getcwd()
-            self.handle_remote_dirs(self.remote_hosts,self.tmppath)
         except:
             print >> sys.stderr, "Wrapper: Cannot create temporary directory '%s', quitting." % self.tmppath
+            raise
+        try:
+            for h in self.remote_hosts:
+                self.run_cmd([self.rsh,h,'mkdir -p "'+self.tmppath+'"'])
+        except subprocess.CalledProcessError:
+            print >> sys.stderr, "Wrapper: Cannot create remote temporary directory on %s, quitting." % h
+            for hh in self.remote_hosts:
+                try:
+                    self.run_cmd([self.rsh,hh,'rm -rf "'+self.tmppath+'"'],silent=True)
+                except subprocess.CalledProcessError:
+                    pass
             raise
 
     def stagein(self):
@@ -282,17 +285,11 @@ class Wrapper:
             except:
                 print >> sys.stderr, "Wrapper: File copy failed, quitting."
                 raise
-        # Copy files to remote hosts
-        if self.remote_hosts: # Copy in parallel, maybe limit this somehow?
-            procs = []
-            for h in self.remote_hosts:
-                if self.verbose: print "Wrapper: Copying files to host",h
-                procs.append(subprocess.Popen([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath]))
-            for p in procs:
-                if p.wait() != 0:
-                    print >> sys.stderr,"Wrapper: Failed copying files to host "+h+", quitting."
-                    print >> sys.stderr,"Wrapper: Warning, files may remain on some hosts"
-                    sys.exit(-1)
+        for h in self.remote_hosts:
+            try:
+                self.run_cmd([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath])
+            except subprocess.CalledProcessError:
+                print >> sys.stderr, "Wrapper: Cannot copy files to host",h
 
     def copy_with_replacement(self,src,dst,rep=[]):
         try:
@@ -355,33 +352,26 @@ class Wrapper:
                 raise # TODO: Must try to copy out all files
 
     def cleanup(self):
-        os.chdir(self.tmppath)
-        for cmd in self.cleanup_cmdlines:
-            if self.run_cmd(cmd) != 0:
-                print >> sys.stderr, "Wrapper: Cleanup command '"+cmd+"' failed"
-                break
         os.chdir(self.workdir)
         if not self.keeptmp:
             shutil.rmtree(self.tmppath)
             if self.verbose: print "Wrapper: Temporary directory deleted"
             if self.remote_hosts:
-                procs = []
                 for h in self.remote_hosts:
-                    if self.verbose: print "Wrapper: Deleting temporary directory on host",h
-                    procs.append(subprocess.Popen([self.rsh,h,'rm -rf "'+self.tmppath+'"']))
-                for p in procs:
-                    if p.wait() != 0:
-                        print >> sys.stderr,"Wrapper: Failed deleting temporary directory on host "+h
-                        print >> sys.stderr,"Wrapper: Warning, temporary directories may remain on some hosts"            
+                    try:
+                        self.run_cmd([self.rsh,h,'rm -rf "'+self.tmppath+'"'])
+                    except subprocess.CalledProcessError:
+                        pass
+                
         else:
-            if self.verbose: print "Wrapper: Temporary directory kept:",tmppath
+            if self.verbose: print "Wrapper: Temporary directory kept:",self.tmppath
 
-    def run_cmd(self,cmd):
-        "Run command line cmd, return exit code"
+    def run_cmd(self,cmd,silent=False):
+        "Run command line cmd (a list of arguments), return exit code"
         pgid = None
         oldhand = []
         try:
-            cmd = "'"+"' '".join(cmd)+"'"
+            cmd = "'"+"' '".join(cmd)+"'" # Need this because we run with shell=True
             def handler(signum,frame):
                 if pgid is not None: 
                     if signum == signal.SIGALRM: signum = signal.SIGTERM
@@ -395,12 +385,16 @@ class Wrapper:
                                  preexec_fn=os.setsid,env=self.env)
             pgid = p.pid
             p.wait() # OSError will be raised here if killed
+            if p.returncode != 0:
+                raise subprocess.CalledProcessError(p.returncode,cmd)
         except subprocess.CalledProcessError, e:
-            print >> sys.stderr, "Wrapper: Command "+cmd+" failed with returncode",e.returncode
-            return e.returncode
+            if not silent:
+                print >> sys.stderr, "Wrapper: Command "+str(cmd)+" failed with returncode",e.returncode
+            raise
         except OSError, e: # Typically signal
-            print >> sys.stderr, "Wrapper: Got OSError %i while executing" % e.errno,cmd
-            return e.errno
+            if not silent:
+                print >> sys.stderr, "Wrapper: Got OSError %i while executing" % e.errno,cmd
+            raise subprocess.CalledProcessError(e.errno,cmd)
         finally: # restore signal handlers
             if len(oldhand) > 0:
                 for s,h in zip(catch,oldhand):
@@ -410,9 +404,7 @@ class Wrapper:
         try:
             os.chdir(self.tmppath)
             for cmd in self.cmdlines:
-                if self.run_cmd(cmd) != 0:
-                    print >> sys.stderr, "Wrapper: Command '"+cmd+"' failed, aborting."
-                    raise subprocess.CalledProcessError(returncode,cmd)
+                self.run_cmd(cmd)
         finally:
             os.chdir(self.workdir)
 
