@@ -199,18 +199,6 @@ class Wrapper:
 	else:
 	    self.infiles.append([value])
 
-    def replace_callback(self, option, opt, value, parser):
-	if '=' in value:
-	    ff = value.split('=')
-	    ff = [ff[0],'='.join(ff[1:])]
-	    if len(self.infiles) == 0:
-		print >> sys.stderr, "Wrapper:",option,"given before any infile was specified"
-		sys.exit(1)
-	else:
-	    print >> sys.stderr, "Wrapper: Illegal argument to",opt," expected NAME=VALUE"
-	    sys.exit(1)
-	self.infiles[-1].extend(ff)
-
     def getfile_callback(self, option, opt, value, parser):
 	if '=' in value:
 	    ff = value.split('=')
