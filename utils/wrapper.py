@@ -170,7 +170,6 @@ class Wrapper:
         self.copyin = []
         self.copyout = []
         self.extract = []
-        self.infiles = []
         self.archive = None
         self.archpatterns = []
         self.verbose = False
@@ -195,9 +194,9 @@ class Wrapper:
                 parser.error("Illegal argument to "+opt)
 		print >> sys.stderr, "Wrapper: Illegal argument to",opt
 		sys.exit(1)
-	    self.infiles.append([ff[1],ff[0]])
+	    self.copyin.append(ff)
 	else:
-	    self.infiles.append([value])
+	    self.copyin.append([value])
 
     def getfile_callback(self, option, opt, value, parser):
 	if '=' in value:
