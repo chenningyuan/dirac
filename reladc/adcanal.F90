@@ -13,6 +13,14 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine RADCVECANALYZE_F90(io1,io2,io3,desrep,ladc,nocc, & 
                                     irecl,filecnf,ionizlevel)
+!
+! purpose: reads in and analyzes long eigenvectors of 
+! single/double ionization calculations depending on
+! the value of ionizlevel.
+! Since eigenvectors can be *very* long we restrict the
+! printout to eigenvector components largen than 0.001.
+! Smaller ones are not considered to be relevant.
+!
 
       implicit none
 !
@@ -27,22 +35,35 @@
       CHARACTER*10                :: LEVECFN,ANALOUT
       CHARACTER*44                :: field
       CHARACTER*11                :: blankf='           '
+      CHARACTER*11                :: ostr='    OCC    '
+      CHARACTER*11                :: vstr='    VIR    '
       logical                     :: isthere
       integer                     :: neigenv,j,ix,ladcx,ivcount,nv,idum
       integer, allocatable        :: indarr(:), indarr2(:)
       real*8, allocatable         :: evec(:),eval(:)
       real*8                      :: enorm,polestr,polethr,diffthr,seval
-      real*8                      :: autoev = 27.2113957d0
+      real*8                      :: autoev  = 27.2113957d0
+      real*8                      :: coefthr = 0.01d0
 !
 ! ------------------------ execution starts ----------------------
 !
       call pst('Analyzer for long ADC real eigenvectors+')
+      SELECT CASE (ionizlevel)
+        CASE (1)
+          write(*,*) 'Analyzing single ionizations.'   
+        CASE (2)
+          write(*,*) 'Analyzing double ionizations.'   
+        CASE DEFAULT
+          call quit('Error in selector (RADCVECANALYZE)')
+      END SELECT
+      write(*,*)
       write(*,*) 'Calling arguments:'
       write(*,*) 'Symmetry of final state:',DESREP
       write(*,*) 'Length of ADC matrix:   ',LADC
       write(*,*) 'Length of main space:   ',NOCC
       write(*,*) 'Record length of config file:',IRECL
       write(*,*) 'Generic config file  name: ',FILECNF
+!     write(*,*) 'File handles: ',io1,io2,io3
 
 ! constructing eigenvector and analysis output file name
 
@@ -167,22 +188,43 @@
         write(io3,'(A,F16.10)') 'Pole strength: ',polestr
         write(io3,'(A)') ' '
         write(io3,'(A)') ' '
-        write(io3,'(A8,2X,A33,A20)') &
-          'No.',' 1h  and  2h1p configurations  ',' Coeff(real)'
+!
+! branch according to ionizlevel
+!
+        IF(ionizlevel.eq.1) then
+          write(io3,'(A8,2X,3A11,A20)') &
+            'No.',ostr,ostr,vstr,' Coeff(real)'
+        ELSE
+          write(io3,'(A8,2X,4A11,A20)') &
+            'No.',ostr,ostr,ostr,vstr,'Coeff(real)'
+        ENDIF
         write(io3,'(A)') ' '
-
-        DO ix=1,ladcx
-          read(io2,REC=ix) field
-          IF(ix.gt.nocc) then
-!           write(*,'(I8,A33,F20.12)') ix,field,evec(ix)
-            write(io3,'(I8,2X,A33,F20.12)') ix,field,evec(ix)
-          ELSE
-!           write(*,'(I8,3A11,F20.12)') ix,field,blankf,blankf, &
-!                                        evec(ix)
-            write(io3,'(I8,2X,3A11,F20.12)') ix,field,blankf,blankf, &
-                                             evec(ix)
-          ENDIF
-        ENDDO
+!
+! branch according to ionizlevel
+!
+        IF(ionizlevel.eq.1) then
+          DO ix=1,ladcx
+            read(io2,REC=ix) field
+            if(dabs(evec(ix)).gt.coefthr) then 
+              IF(ix.gt.nocc) then
+                write(io3,'(I8,2X,A33,F20.12)') ix,field,evec(ix)
+              ELSE
+                write(io3,'(I8,2X,3A11,F20.12)') ix,field,blankf,blankf,evec(ix)
+              ENDIF
+            endif
+          ENDDO
+        ELSE
+          DO ix=1,ladcx
+            read(io2,REC=ix) field
+            if(dabs(evec(ix)).gt.coefthr) then
+              IF(ix.gt.nocc) then
+                write(io3,'(I8,2X,A44,F20.12)') ix,field,evec(ix)
+              ELSE
+                write(io3,'(I8,2X,A22,2A11,F20.12)') ix,field,blankf,blankf,evec(ix)
+              ENDIF
+            endif
+          ENDDO
+        ENDIF
         ivcount = ivcount + 1
         write(io3,'(A)') ' '
         write(io3,'(A)') '--------------------------------------------'

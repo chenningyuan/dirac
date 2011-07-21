@@ -350,7 +350,7 @@ C  call 2h/3h1p configuration creator, file handle is available
 C  afterwards
 C
         LADC = NOOT(DESREP) + LENSATBL
-        CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC,EPS,
+        CALL WCONDAT_D(ITAPADC,NAME3,IRECL,DESREP,LADC,
      &                 IO(NREP+1),CC(BIROOO))
         WRITE(IW,*) 'Record length as determined by WCONDAT:',IRECL
 c

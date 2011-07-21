@@ -315,6 +315,14 @@ c
 c  All the memory is released and we do the analysis with a F90 routine.
 c  irecl still contains the record length of the configuration file.
 c
+      itap1=infohandle+1
+      itap2=infohandle+2
+      itap3=infohandle+3
+c
+c  call long vector analyzer
+c  handles 1-3 are exclusively used there, all files are closed
+c  on exit.
+c
       IF(NEIGENV.GT.0) THEN
         IF(CARITH) THEN
           CALL ZADCVECANALYZE_F90(itap1,itap2,itap3,krep,ladc,
@@ -1973,14 +1981,14 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WCONDAT(LUN,FILENAME,IRECL,DESREP,LENADCM,EPS,IZLEVEL)
+      SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
 C     Writes explicit irep names and spinor numbers for the various
-C     final state configurations belonging to  symmetry DESREP.
+C     final state configurations belonging to symmetry DESREP.
 C     Avoiding too complicated things we fix IRECL in this routine
 c     no matter which value is transferred to this routine. Therefore
 c     IRECL is an OUTPUT parameter.
@@ -1988,8 +1996,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       CHARACTER*6 FILENAME
-      INTEGER LUN,IRECL,DESREP,LENADCM,IZLEVEL
-      REAL*8  EPS(*)
+      INTEGER LUN,IRECL,DESREP,LENADCM
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2006,14 +2013,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-C  Do the hole space configuration analysis for the
-C  SIP and DIP case (determined by IZLEVEL). For this purpose the
-C  1h/2h1p configs are written into the direct access file in the SIP case
-C  and the
-C  2h/3h1p configs for the DIP case 
-C
-c
-c
+C  Code for ** single ionization **:  1h/2h1p
 C
 c fix record length for the direct access file and set some
 c blank variables. Then open file and initialize configuration
@@ -2031,9 +2031,6 @@ C_________________________ SIPS ______________________________
 C|
 C|
 C|
-
-      IF(IZLEVEL.EQ.1) THEN
-
         WRITE(IW,*) 'Writing SIP configs to ',FILENAME
         WRITE(IW,*) 'Final state symmetry: ',DESREP
 
@@ -2089,94 +2086,16 @@ C ** correct configuration counter
           WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,LENADCM
           CALL QUIT('Error in WCONDAT for single ionizations')
         ENDIF
-
-c ** SIP part is done. we return from this subroutine
 C|
 C|
 C|____________________________________________________________
-
-      ELSE IF(IZLEVEL.EQ.2) THEN
-
-C_________________________ DIPS ______________________________
-C|
-C|
-C|
-        WRITE(IW,*) 'Writing DIP configs to ',FILENAME
-        WRITE(IW,*) 'Final state symmetry: ',DESREP
-
-        DO 14 JRP = 1, NREP
-          IRP = MULTB(JRP,DESREP+NREP,2)
-          IF (IRP.LT.JRP) GOTO 14
-          DO J = 1, NO(JRP)
-            IMIN = 1
-            IF (IRP.EQ.JRP) IMIN = J + 1
-            DO I = IMIN, NO(IRP)
-c
-c  -- additionally determine absolute spinor numbers
-c  -- in the active space for mulpop
-c
-              ISPINOR=IO(IRP)+I
-              JSPINOR=IO(JRP)+J
-              WRITE(FIELD44,381)
-     &           I,REPNA(IRP),
-     &           J,REPNA(JRP),
-     &           ISPINOR,BL_ABS,
-     &           JSPINOR,BL_ABS 
-              WRITE(LUN,REC=LCOUNT) FIELD44
-              LCOUNT = LCOUNT + 1
-c
-            ENDDO
-          ENDDO
-  14    CONTINUE
-        IF( (LCOUNT-1).NE.NOOT(DESREP)) THEN
-          WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,NOOT(DESREP)
-          CALL QUIT('Error in WCONDAT for 2h configurations!')
-        ENDIF
-c|
-c| ATT** No 3h1p config information for the DIP case!
-c| This is because we will not calculate long eigenvectors
-c| belonging to the 3h1p case. This is only required for the
-c| SIP case! We therefore comment out original code.
-c|
-c|
-c       DO K=1,MAXOCCSP
-c         KSP = IROOO(K,1)
-c         KRP = IROOO(K,2)
-c         DO J=K+1,MAXOCCSP
-c           JSP = IROOO(J,1)
-c           JRP = IROOO(J,2)
-c           JKRP = MULTB(JRP,KRP,1)
-c           DO I=J+1,MAXOCCSP
-c             ISP = IROOO(I,1)
-c             IRP = IROOO(I,2)
-c             IJKRP = MULTB(IRP,JKRP+NREP,1)
-c             RRP = MULTB(DESREP+NREP,IJKRP,2)
-c             DO RSP = 1,NV(RRP)
-c
-c             WRITE(FIELD44,382) RSP,REPNA(RRP),ISP,REPNA(IRP),
-c    &                         JSP,REPNA(JRP),KSP,REPNA(KRP)
-c             WRITE(LUN,REC=LCOUNT) FIELD44
-c             LCOUNT = LCOUNT + 1
-c
-c             ENDDO
-c           ENDDO
-c         ENDDO
-c       ENDDO
-        CLOSE(LUN)
-C|
-C|
-C|____________________________________________________________
-
-      ELSE
-        CALL QUIT('Illegal tag in WCONDAT')
-      ENDIF
 
  381  FORMAT(4(I3,'(',A4,')  '))
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM,EPS,
+      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM,
      &                     MAXOCCSP,IROOO)
 C
       IMPLICIT INTEGER (A-Z)
@@ -2193,7 +2112,6 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*6 FILENAME
       INTEGER LUN,IRECL,DESREP,LENADCM
-      REAL*8  EPS(*)
       INTEGER MAXOCCSP,IROOO(MAXOCCSP,2)
 C
 C---------------Common Blocks--------------------------------------

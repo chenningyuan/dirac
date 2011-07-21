@@ -1478,8 +1478,8 @@ C  File handle ITAPADC+2 is available. closed after sub call!
 C
         WRITE(IW,*) 'ADC hole space configurations written to ',FILEN2
         WRITE(IW,*) 'Number of chunks in ADC matfile:         ',NBUFS
-        CALL WCONDAT(ITAPADC+2,FILEN2,IRECL,KREP,LADC,EPS,IONIZLEVEL)
-        WRITE(IW,*) 'Record length determined by WCONDAT:     ',IRECL
+        CALL WCONDAT_S(ITAPADC+2,FILEN2,IRECL,KREP,LADC)
+        WRITE(IW,*) 'Record length determined by WCONDAT_S:     ',IRECL
 C
 C -------------------------------------------------------------
 C ---- from here ADC matrix construction has terminated   -----
