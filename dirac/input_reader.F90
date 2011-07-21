@@ -473,6 +473,10 @@ contains
       if (kw_matches(word, '.NOREOR')) then
          visual_cfg_london_skip_ro = .true.
       end if
+
+      if (kw_matches(word, '.NOKAPP')) then
+         visual_cfg_london_skip_kappa = .true.
+      end if
 #endif
 
       call check_whether_kw_found(word, kw_section)

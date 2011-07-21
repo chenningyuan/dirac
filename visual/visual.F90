@@ -347,6 +347,12 @@ contains
     do imat = 1, visual_cfg_nr_dmat
 #ifdef MOD_UNRELEASED
        if (visual_cfg_london) then
+          if (visual_cfg_london_skip_kappa) then
+!            zero out kappa contribution
+!            this is useful to isolate direct and/or reortho contributions
+             D(imat) = tiny(0.0d0)*D(imat)
+          end if
+
           if (.not. visual_cfg_london_skip_ro) then
 !            dirty trick add D_con on top of D
 !            on trunk we will have to check that this only

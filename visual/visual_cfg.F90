@@ -107,6 +107,7 @@ module visual_cfg
    logical,       public :: visual_cfg_force_small_ao     = .false.
 
    logical,      public :: visual_cfg_london               = .false.
+   logical,      public :: visual_cfg_london_skip_kappa    = .false.
    logical,      public :: visual_cfg_london_skip_direct   = .false.
    logical,      public :: visual_cfg_london_skip_ro       = .false.
    logical,      public :: visual_cfg_london_natural       = .true.

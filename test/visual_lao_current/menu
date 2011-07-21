@@ -1,10 +1,13 @@
-noref dc_symmetric.inp      h2o.mol --outcmo --get="PAMXVC AOPROPER property_info"
-vis_jbz_dc_symmetric.inp    h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
-vis_jbz_dc_none.inp         h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
-vis_divjbz_dc_nolao.inp     h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
-vis_divjbz_dc_symmetric.inp h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+noref dc_symmetric.inp               h2o.mol --outcmo --get="PAMXVC AOPROPER property_info"
+vis_jbz_dc_symmetric.inp             h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+vis_jbz_dc_none.inp                  h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+vis_divjbz_dc_nolao.inp              h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+vis_divjbz_dc_symmetric.inp          h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+vis_jbz_dc_symmetric_onlydirect.inp  h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+vis_jbz_dc_symmetric_onlyreortho.inp h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+vis_jbz_dc_symmetric_onlykappa.inp   h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
 
-noref dc_natural.inp        h2o.mol --outcmo --get="PAMXVC AOPROPER property_info"
-vis_jbz_dc_natural.inp      h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
+noref dc_natural.inp                 h2o.mol --outcmo --get="PAMXVC AOPROPER property_info"
+vis_jbz_dc_natural.inp               h2o.mol --incmo --copy="PAMXVC AOPROPER property_info"
 
 sh rm DFCOEF PAMXVC property_info AOPROPER
