@@ -3,13 +3,15 @@ import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, temp
 
 def wrap_dirac():
     usage = """%prog [options] MOLECULE.{mol,xyz} INPUT.inp [ARCHIVE.tgz] [FILE ..] 
-Run dirac starting from the given mol and inp files. Additional files will be copied
+Run Dirac starting from the given mol and inp files. Additional files will be copied
 to the temporary directory, archives will be extracted.
 
 If a list of remote hosts is given, either with --host or --hostfile, a temporary
 directory will be created on all unique hosts, all files will be copied there,
 and the directories will be deleted together with the main tmpdir. No files are
 saved from the remote hosts.
+
+Use --launcher="mpirun OPTIONS" with the appropriate OPTIONS to run an mpi job.
 """
     W = Wrapper()
     parser = optparse.OptionParser(usage)
@@ -129,7 +131,7 @@ saved from the remote hosts.
     if not options.noarchive:
         W.archive = jobname+'.tgz'
 
-    # Append dirac itself to the commands to be run
+    # Append executable itself to the commands to be run
     if options.executable is None:
         print >> sys.stderr,"Wrapper: No executable given (with --executable=), aborting."
         sys.exit(-1)
@@ -151,7 +153,10 @@ saved from the remote hosts.
         W.remote_hosts.remove(socket.gethostname())
 
     # Now start the real work
-    W.setup()
+    try:
+        W.setup()
+    except:
+        raise # TODO: when bug free just exit with an error code
     try:
         W.stagein()
         try:
@@ -159,14 +164,13 @@ saved from the remote hosts.
         finally:
             W.stageout()
     except:
-        pass
+        raise # TODO: when bug free just exit with an error code
     finally:
         W.cleanup()
         W.stderr.close()
         if os.path.getsize(jobname+'.err') == 0:
             os.remove(jobname+'.err')
         W.stdout.close()
-
 
 class Wrapper:
     def __init__(self):
@@ -297,7 +301,8 @@ class Wrapper:
             try:
                 self.run_cmd([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath])
             except subprocess.CalledProcessError:
-                print >> sys.stderr, "Wrapper: Cannot copy files to host",h
+                print >> sys.stderr, "Wrapper: Cannot copy files to host",h,"quitting."
+                raise
 
     def copy_with_replacement(self,src,dst,rep=[]):
         try:
@@ -364,13 +369,11 @@ class Wrapper:
         if not self.keeptmp:
             shutil.rmtree(self.tmppath)
             if self.verbose: print "Wrapper: Temporary directory deleted"
-            if self.remote_hosts:
-                for h in self.remote_hosts:
-                    try:
-                        self.run_cmd([self.rsh,h,'rm -rf "'+self.tmppath+'"'])
-                    except subprocess.CalledProcessError:
-                        pass
-                
+            for h in self.remote_hosts:
+                try:
+                    self.run_cmd([self.rsh,h,'rm -rf "'+self.tmppath+'"'])
+                except subprocess.CalledProcessError:
+                    pass                
         else:
             if self.verbose: print "Wrapper: Temporary directory kept:",self.tmppath
 
