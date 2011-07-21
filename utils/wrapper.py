@@ -1,10 +1,16 @@
 # Universal wrapper, by Ulf Ekstrom 2011
-import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, tempfile, zipfile
+import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, tempfile, zipfile, socket
 
 def wrap_dirac():
     usage = """%prog [options] MOLECULE.{mol,xyz} INPUT.inp [ARCHIVE.tgz] [FILE ..] 
 Run dirac starting from the given mol and inp files. Additional files will be copied
-to the temporary directory, archives will be extracted."""
+to the temporary directory, archives will be extracted.
+
+If a list of remote hosts is given, either with --host or --hostfile, a temporary
+directory will be created on all unique hosts, all files will be copied there,
+and the directories will be deleted together with the main tmpdir. No files are
+saved from the remote hosts.
+"""
     W = Wrapper()
     parser = optparse.OptionParser(usage)
 
@@ -141,7 +147,9 @@ to the temporary directory, archives will be extracted."""
         for items in [l.split() for l in open(options.hostfile,'r').readlines()]:
             if items:
                 W.remote_hosts.add(items[0])
-        
+    if socket.gethostname() in W.remote_hosts: # Don't copy to this machine
+        W.remote_hosts.remove(socket.gethostname())
+
     # Now start the real work
     W.setup()
     try:
