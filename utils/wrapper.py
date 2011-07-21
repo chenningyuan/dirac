@@ -138,7 +138,7 @@ to the temporary directory, archives will be extracted."""
     if options.hostfile is not None:
         for items in [l.split() for l in open(options.hostfile,'r').readlines()]:
             if items:
-                W.remote_hosts.add(l.items[0])
+                W.remote_hosts.add(items[0])
         
     # Now start the real work
     W.setup()
