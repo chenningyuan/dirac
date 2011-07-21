@@ -114,7 +114,7 @@ to the temporary directory, archives will be extracted."""
         else:
             W.copyin.append([molpath,'MOLECULE.XYZ']+replacements)
     if inppath is not None:
-        W.copyin.append([inppath,'DIRAC.INP'])
+        W.copyin.append([inppath,'DIRAC.INP']+replacements)
     W.stdout = open(jobname+'.out','w')
     W.stderr = open(jobname+'.err','w')
     W.stdin = None
