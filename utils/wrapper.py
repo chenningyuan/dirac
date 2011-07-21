@@ -45,6 +45,8 @@ to the temporary directory, archives will be extracted."""
 		     help='Command to start mpi, i.e. "mpirun -np 2"',metavar="COMMAND")
     group.add_option('--host', type='string', default=None,dest="host",
 		     help='Comma separated list of hosts with separate file systems',metavar='"NODE[,NODE, ..]"')
+    group.add_option('--hostfile', type='string', default=None,dest="hostfile",
+		     help='File to read host list from, one host per line',metavar='FILE')
     parser.add_option_group(group)
 
     # Read .rc files
@@ -132,7 +134,11 @@ to the temporary directory, archives will be extracted."""
         else:
             W.cmdlines.append(shlex.split(options.mpi)+['./dirac.x'])
     if options.host is not None:
-        W.remote_hosts = options.host.split(',')
+        W.remote_hosts = set(options.host.split(','))
+    if options.hostfile is not None:
+        for l in open(options.hostfile,'r').readlines():
+            W.remote_hosts.add(l.strip())
+        
     # Now start the real work
     W.setup()
     try:
@@ -169,7 +175,7 @@ class Wrapper:
         self.verbose = False
         self.workdir = None
         self.env = os.environ.copy()
-        self.remote_hosts = [] # Duplicate tmpdir and stage in on these hosts
+        self.remote_hosts = set() # Duplicate tmpdir and stage in on these hosts
         self.rsh = 'ssh'
         self.rcp = 'scp'
 
