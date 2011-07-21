@@ -14,9 +14,11 @@ to the temporary directory, archives will be extracted."""
     group = optparse.OptionGroup(parser, 'General options')
 #    group.add_option('--mb', type='string', default=None, dest="mb",
 #                     help='Amount of memory for Dirac, in MB',metavar="MEGABYTES")
-    group.add_option('--dirac', type='string', default=None, dest="dirac",
-                     help='Path to Dirac executable',metavar="FILE")
-
+    group.add_option('--executable', type='string', default=None, dest="executable",
+                     help='Path to main executable',metavar="FILE")
+    group.add_option('-D','--define', type='string', action='callback',callback=W.define_callback,
+		     help='Define the environment variable NAME as VALUE',
+                     metavar='NAME=VALUE')
 
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
@@ -41,8 +43,8 @@ to the temporary directory, archives will be extracted."""
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Parallel options')
-    group.add_option('--mpi', type='string', default=None,dest="mpi",
-		     help='Command to start mpi, i.e. "mpirun -np 2"',metavar="COMMAND")
+    group.add_option('--launcher', type='string', default=None,dest="launcher",
+		     help='Command used to launch the main executable, i.e. "mpirun -np 2"',metavar="COMMAND")
     group.add_option('--host', type='string', default=None,dest="host",
 		     help='Comma separated list of hosts with separate file systems',metavar='"NODE[,NODE, ..]"')
     group.add_option('--hostfile', type='string', default=None,dest="hostfile",
@@ -121,18 +123,18 @@ to the temporary directory, archives will be extracted."""
     if not options.noarchive:
         W.archive = jobname+'.tgz'
 
-    # Set up remote tmp directory creation
-
     # Append dirac itself to the commands to be run
-    if options.dirac is None:
-        print >> sys.stderr,"Wrapper: No dirac executable given (with --dirac=), aborting."
+    if options.executable is None:
+        print >> sys.stderr,"Wrapper: No executable given (with --executable=), aborting."
         sys.exit(-1)
     else:
-        W.copyin.append([options.dirac,'dirac.x'])
-        if options.mpi is None:
-            W.cmdlines.append(['./dirac.x'])
+        exename = os.path.basename(options.executable)
+        W.copyin.append([options.executable,exename])
+        if options.launcher is None:
+            W.cmdlines.append(['./'+exename])
         else:
-            W.cmdlines.append(shlex.split(options.mpi)+['./dirac.x'])
+            W.cmdlines.append(shlex.split(options.launcher)+['./'+exename])
+    # Parse remote host specifications
     if options.host is not None:
         W.remote_hosts = set(options.host.split(','))
     if options.hostfile is not None:
@@ -157,6 +159,7 @@ to the temporary directory, archives will be extracted."""
             os.remove(jobname+'.err')
         W.stdout.close()
 
+
 class Wrapper:
     def __init__(self):
         # User modifiable variables
@@ -167,6 +170,7 @@ class Wrapper:
         self.stdout = None
         self.stderr = None
         self.cmdlines = []
+        self.cleanup_cmdlines = [] # Always execute these
         self.copyin = []
         self.copyout = []
         self.extract = []
@@ -184,7 +188,7 @@ class Wrapper:
 	    ff = value.split('=')
             self.env[ff[0]] = '='.join(ff[1:])
 	else:
-	    print >> sys.stderr, "Wrapper: Illegal argument to",opt," expected NAME=VALUE"
+	    print >> sys.stderr, "Wrapper: Illegal argument to",opt,"expected NAME=VALUE"
 	    sys.exit(1)
 
     def infile_callback(self, option, opt, value, parser):
@@ -209,17 +213,13 @@ class Wrapper:
 	    self.copyout.append([value])
 
     def command_callback(self, option, opt, value, parser):
-	self.cmdlines.append(shlex.split(value))
+	self.cmdlines.append(shlex.split(value))        
 
-    def modcmd_callback(self, option, opt, value, parser):
-        "Accepts both --append and --prepend"
-	if len(self.cmdlines) == 0:
-		print >> sys.stderr, "Wrapper:",option,"given before any -c/--command was specified"
-		sys.exit(1)
-	if opt in ['-a','--append']:
-	    self.cmdlines[-1].extend(shlex.split(value))
-	else:
-	    self.cmdlines[-1] = shlex.split(value) + self.cmdlines[-1]
+    def handle_remote_dirs(self,hosts,path):
+        for h in self.remote_hosts:
+            if self.verbose: print "Wrapper: Creating temporary directory on host",h
+            self.cmdlines.append([self.rsh,h,'mkdir -p "'+self.tmppath+'"'])
+            self.cleanup_cmdlines.append([self.rsh,h,'rm -rf "'+self.tmppath+'"'])
 
     def setup(self):
         try:
@@ -236,16 +236,7 @@ class Wrapper:
                     self.tmppath = tempfile.mkdtemp(dir=self.tmpbase)
             if self.verbose: print "Wrapper: Using temporary directory '%s'" % self.tmppath
             self.workdir = os.getcwd()
-            if self.remote_hosts: # Create remote tmp dirs in parallel
-                procs = []
-                for h in self.remote_hosts:
-                    if self.verbose: print "Wrapper: Creating temporary directory on host",h
-                    procs.append(subprocess.Popen([self.rsh,h,'mkdir -p "'+self.tmppath+'"']))
-                for p in procs:
-                    if p.wait() != 0:
-                        print >> sys.stderr,"Wrapper: Failed creating temporary directory on host "+h+",quitting."
-                        print >> sys.stderr,"Wrapper: Warning, temporary directories may remain on some hosts"
-                        sys.exit(-1)
+            self.handle_remote_dirs(self.remote_hosts,self.tmppath)
         except:
             print >> sys.stderr, "Wrapper: Cannot create temporary directory '%s', quitting." % self.tmppath
             raise
@@ -364,6 +355,11 @@ class Wrapper:
                 raise # TODO: Must try to copy out all files
 
     def cleanup(self):
+        os.chdir(self.tmppath)
+        for cmd in self.cleanup_cmdlines:
+            if self.run_cmd(cmd) != 0:
+                print >> sys.stderr, "Wrapper: Cleanup command '"+cmd+"' failed"
+                break
         os.chdir(self.workdir)
         if not self.keeptmp:
             shutil.rmtree(self.tmppath)
@@ -380,40 +376,44 @@ class Wrapper:
         else:
             if self.verbose: print "Wrapper: Temporary directory kept:",tmppath
 
+    def run_cmd(self,cmd):
+        "Run command line cmd, return exit code"
+        pgid = None
+        oldhand = []
+        try:
+            cmd = "'"+"' '".join(cmd)+"'"
+            def handler(signum,frame):
+                if pgid is not None: 
+                    if signum == signal.SIGALRM: signum = signal.SIGTERM
+                    os.killpg(pgid,signum)
+            catch = [signal.SIGTERM, signal.SIGHUP, signal.SIGINT, signal.SIGALRM]
+            for s in catch:
+                oldhand.append(signal.signal(s,handler))
+            if self.verbose:
+                print "Wrapper: Executing",cmd
+            p = subprocess.Popen(cmd,stdin=self.stdin,stdout=self.stdout,stderr=self.stderr,shell=True,
+                                 preexec_fn=os.setsid,env=self.env)
+            pgid = p.pid
+            p.wait() # OSError will be raised here if killed
+        except subprocess.CalledProcessError, e:
+            print >> sys.stderr, "Wrapper: Command "+cmd+" failed with returncode",e.returncode
+            return e.returncode
+        except OSError, e: # Typically signal
+            print >> sys.stderr, "Wrapper: Got OSError %i while executing" % e.errno,cmd
+            return e.errno
+        finally: # restore signal handlers
+            if len(oldhand) > 0:
+                for s,h in zip(catch,oldhand):
+                    signal.signal(s,h)
+
     def run(self):
-        "Run cmdlines, stop if one fails."
-        for cmd in self.cmdlines:
-            pgid = None
-            oldhand = []
-            try:
-                os.chdir(self.tmppath)
-                cmd = "'"+"' '".join(cmd)+"'"
-                def handler(signum,frame):
-                    if pgid is not None: 
-                        if signum == signal.SIGALRM: signum = signal.SIGTERM
-                        os.killpg(pgid,signum)
-                catch = [signal.SIGTERM, signal.SIGHUP, signal.SIGINT, signal.SIGALRM]
-                for s in catch:
-                    oldhand.append(signal.signal(s,handler))
-                if self.verbose:
-                    print "Wrapper: Executing",cmd
-                p = subprocess.Popen(cmd,stdin=self.stdin,stdout=self.stdout,stderr=self.stderr,shell=True,
-                                     preexec_fn=os.setsid,env=self.env)
-                pgid = p.pid
-                p.wait() # OSError will be raised here if killed
-                if p.returncode != 0:
-                    raise subprocess.CalledProcessError(p.returncode,cmd)
-            except subprocess.CalledProcessError, e:
-                print >> sys.stderr, "Wrapper: Command "+cmd+" failed with returncode",e.returncode
-                raise e
-            except OSError, e: # Typically signal
-                print >> sys.stderr, "Wrapper: Got OSError %i while executing" % e.errno,cmd
-                raise e
-            finally: # restore signal handlers
-                if len(oldhand) > 0:
-                    for s,h in zip(catch,oldhand):
-                        signal.signal(s,h)
-                os.chdir(self.workdir)
-        
+        try:
+            os.chdir(self.tmppath)
+            for cmd in self.cmdlines:
+                if self.run_cmd(cmd) != 0:
+                    print >> sys.stderr, "Wrapper: Command '"+cmd+"' failed, aborting."
+                    raise subprocess.CalledProcessError(returncode,cmd)
+        finally:
+            os.chdir(self.workdir)
 
 wrap_dirac()
