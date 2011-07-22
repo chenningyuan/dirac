@@ -1554,7 +1554,8 @@ C but not the length of the original ADC matrix!
 C In the original formulation only
 C the first and last NP components were available and the whole
 C eigenvector was calculated by inverse iteration. We do not pursue this
-C direction due to problems with the inverse interation
+C direction due to serious problems with the inverse interation
+C algorithm
 C
 C N is the dimension of the band matrix (not the number of sidebands!)
 
@@ -1571,7 +1572,7 @@ C N is the dimension of the band matrix (not the number of sidebands!)
 
       WRITE(IW,*)
       WRITE(IW,*) '---------------------------------------------------'
-      WRITE(IW,*) 'First 20 RAW Lanczos EVAL/EVECS + intensity.'
+      WRITE(IW,*) 'First 60 RAW Lanczos EVAL/EVECS + intensity.'
       WRITE(IW,*) '---------------------------------------------------'
       WRITE(IW,*)
       WRITE(IW,*) ' No.         (a.u.)      (eV)'
@@ -1579,7 +1580,7 @@ C N is the dimension of the band matrix (not the number of sidebands!)
 
       AUEV=27.2113957D0
 
-      DO I=1,MIN(20,N)
+      DO I=1,MIN(60,N)
         Y = 0.0D0
         DO J=1,NP
           Y = Y + Z(J,I)*Z(J,I)
@@ -1659,7 +1660,7 @@ C
 
       WRITE(IW,*)
       WRITE(IW,*) '---------------------------------------------------'
-      WRITE(IW,*) 'First 20 RAW Lanczos EVAL/EVECS + intensity.'
+      WRITE(IW,*) 'First 60 RAW Lanczos EVAL/EVECS + intensity.'
       WRITE(IW,*) '---------------------------------------------------'
       WRITE(IW,*)
       WRITE(IW,*) ' No.         (a.u.)      (eV)'
@@ -1667,7 +1668,7 @@ C
 
       AUEV=27.2113957D0
 
-      DO I=1,MIN(20,N)
+      DO I=1,MIN(60,N)
         Y = (0.0D0,0.0D0)
         DO J=1,NP
           Y = Y + Z(J,I)*DCONJG(Z(J,I))
@@ -2084,7 +2085,7 @@ C ** correct configuration counter
         LCOUNT = LCOUNT - 1
         IF(LCOUNT.NE.LENADCM) THEN
           WRITE(IW,*) 'LCOUNT,LENADCM:',LCOUNT,LENADCM
-          CALL QUIT('Error in WCONDAT for single ionizations')
+          CALL QUIT('Error in WCONDAT_S for single ionizations')
         ENDIF
 C|
 C|
@@ -2191,6 +2192,10 @@ c
       ENDIF
 c
 c  determine satellite configurations
+c  Since we work in a Kramers-paired formalism (closed shell)
+c  then number of virtuals in RRP is equal to the number in its
+c  Kramers irrep (RRP*). For the output RRP has to be the Kramers
+c  partner since internally the cc of this orbital is used !
 c
       DO K=1,MAXOCCSP
         KSP = IROOO(K,1)
@@ -2204,11 +2209,13 @@ c
             IRP = IROOO(I,2)
             IJKRP = MULTB(IRP,JKRP+NREP,1)
             RRP = MULTB(DESREP+NREP,IJKRP,2)
+c determine Kramers-partner of RRP (is cc of RRP)
+            RRPKR = MULTB(RRP,1+NREP,2)
             DO RSP = 1,NV(RRP)
             WRITE(FIELD44,381) ISP,REPNA(IRP),
      &                         JSP,REPNA(JRP),
      &                         KSP,REPNA(KRP),
-     &                         RSP,REPNA(RRP)
+     &                         RSP,REPNA(RRPKR)
             WRITE(LUN,REC=LCOUNT) FIELD44
             LCOUNT = LCOUNT + 1
 

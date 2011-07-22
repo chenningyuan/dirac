@@ -19,21 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-C      ****  D H F - A D C   M O D U L E  ****
-C
-C      ****  COMPLEX GROUP VERSION  ****
-C
-C      ****  BUILT-IN LANCZOS DIAGONALIZERS  ****
-C      ****     FOR REAL/COMPLEX  CASE       ****
-C
-C      ****  USABLE FOR SINGLE IONIZATION    ****
-C      ****              AND                 ****
-C      ****    DOUBLE IONIZATION SPECTRA     ****
-C
-C      ****  AUTHOR: M.Pernpointner
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMADC (CC,MAXCOR)
 C
 C---------------Description-----------------------------------------------
