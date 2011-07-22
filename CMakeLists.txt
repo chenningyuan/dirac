@@ -392,21 +392,52 @@ add_custom_command(
     endif()
 )
 
-# handle the .diracrc file containing pam flags
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(DIRACRC_FILE "$ENV{HOME}/.diracrc")
-else()
-    set(DIRACRC_FILE "$ENV{UserProfile}/.diracrc")
-endif()	
-	
-if(EXISTS "${DIRACRC_FILE}")
-    message("-- Configuration file ${DIRACRC_FILE} exists (please check that it is correct).")
-else()
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/cmake/diracrc.in
-        ${DIRACRC_FILE}
-        )
-    message("Configuration file ${DIRACRC_FILE} did not exist.")
-    message("This template file was created by cmake. You should verify/edit it during/after the compilation.")
-    message("You need to set at least --scratch in ${DIRACRC_FILE} for runtest and make test to work.")
-endif()
+# handle the "diracrc" files containing pam flags
+# keep the priority orders as is stated in the "pam" script
+EXECUTE_PROCESS(COMMAND python -c "
+#! /usr/bin/env python
+#
+import sys
+import os
+import string
+import glob
+import shlex
+import shutil
+def handle_diracrc():
+    install_dir = '${CMAKE_SOURCE_DIR}'
+    fullargs = []
+    rc_file_found=None
+    ret_var=None
+# hierarchy - from closest to the farthest
+    paths = ['.diracrc','diracrc',os.path.join(install_dir,'.diracrc'),
+          os.path.join(install_dir,'diracrc'),
+          os.path.join(os.path.expanduser('~'),'.diracrc')]
+    for path in paths:
+        try:
+            f = open(path,'r')
+            rc_file_found=path
+            for l in f.readlines():
+                l = l.strip()
+                if len(l) > 0:
+                    if l[0] != '#':
+                        for a in shlex.split(l):
+                            fullargs.append(os.path.expandvars(a))
+            break
+        except Exception:
+            pass
+    if rc_file_found:
+        print '-- cmake python script found DIRAC configuration file:',rc_file_found
+    if fullargs: # save info about the diracrc file
+        print '-- DIRAC config file contains these flags for pam:',fullargs
+    else:
+        if rc_file_found:
+            print '-- but this file contains no active flags for pam - fix it !'
+        else:
+            dest='${CMAKE_SOURCE_DIR}/cmake/diracrc.in'
+            src='${CMAKE_SOURCE_DIR}/diracrc'
+            print '-- no dirac cofiguration file found - created default template:',src
+            shutil.copy(dest,src)
+# launch
+handle_diracrc()
+"
+)
