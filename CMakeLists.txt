@@ -415,6 +415,7 @@ def handle_diracrc():
     for path in paths:
         try:
             f = open(path,'r')
+            read_args=False
             rc_file_found=path
             for l in f.readlines():
                 l = l.strip()
@@ -422,7 +423,9 @@ def handle_diracrc():
                     if l[0] != '#':
                         for a in shlex.split(l):
                             fullargs.append(os.path.expandvars(a))
-            break
+                            read_args=True
+            if read_args:
+                break
         except Exception:
             pass
     if rc_file_found:
