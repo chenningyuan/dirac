@@ -885,3 +885,225 @@ C       IF(IEND.GE.ISTART) STOP
 *
       RETURN
       END
+*
+      SUBROUTINE IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
+*
+* Subroutine that wil dimension and allocate arrays for the
+* intermediates.
+* First version all possible intermediates will be allocated even if
+* they are not reached ==> wasting memory
+* For the final version only intermediates reached should be allocated
+* for and an intermediate should only be in memory when needed. Meaning
+* this routine should be obsolete and the context mergged into
+* CC_VEC_FNC_KRCC.
+*                               Lasse 2011
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "ctcc.inc"
+#include "tempint.inc"
+*
+      DIMENSION WORK(*)
+*
+* Totally symmetric
+*
+      ISYMINT = 1
+*
+      NTEST = 100
+      IDUM = 0
+*
+      MX_ST_TSOSO_INI = MX_ST_TSOSO
+      MX_ST_TSOSO_BLK_INI = MX_ST_TSOSO_BLK
+      MX_TBLK_INI = MX_TBLK
+      MX_SBSTR_INI = MX_SBSTR
+*
+*  Have to check these does not exceed those for T by simply comparing against them 
+*  MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK. Largest will be choosen!
+*
+* Setup and allocate for M01
+*
+      CALL MEMGET('INTE',KLLSOBEX_M01,NINTER01,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIBSOBEX_M01,NINTER01,WORK,KFREE,LFREE)
+*
+      CALL IDIM_TCC_KRCC(WORK(KINTM01),NINTER01,ISYMINT,
+*                        actual operator, number,sym
+     &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
+     &     WORK(KLLSOBEX_M01),WORK(KLIBSOBEX_M01),LEN_M01_VEC_CC,
+* output   number of elements, offset, total length. Names needs to be
+* found
+     &     IDUM,MX_SBSTR_INT,
+* seems to be dummy/not used
+     &     IDUM,IDUM,-1,IDUM,IDUM,
+* all not in use
+     &     IDUM)
+*
+      CALL MEMGET('REAL',KM01,IMULTFAC*LEN_M01_VEC_CC,
+     &            WORK,KFREE,LFREE)
+*
+* Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
+* (at least for now)
+*
+      IF(MX_ST_TSOSO_INT.GT.MX_ST_TSOSO) THEN
+        MX_ST_TSOSO = MX_ST_TSOSO_INT
+      END IF
+      IF(MX_ST_TSOSO_BLK_INT.GT.MX_ST_TSOSO_BLK) THEN
+        MX_ST_TSOSO_BLK = MX_ST_TSOSO_BLK_INT
+      END IF
+      IF(MX_TBLK_INT.GT.MX_TBLK) THEN
+        MX_TBLK = MX_TBLK_INT
+      END IF
+      IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
+        MX_SBSTR = MX_SBSTR_INT
+      END IF
+*
+* Setup and allocate for M10
+*
+      CALL MEMGET('INTE',KLLSOBEX_M10,NINTER10,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIBSOBEX_M10,NINTER10,WORK,KFREE,LFREE)
+*
+      CALL IDIM_TCC_KRCC(WORK(KINTM10),NINTER10,ISYMINT,
+     &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
+     &     WORK(KLLSOBEX_M10),WORK(KLIBSOBEX_M10),LEN_M10_VEC_CC,
+     &     IDUM,MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM,
+     &     IDUM)
+*
+      CALL MEMGET('REAL',KM10,IMULTFAC*LEN_M10_VEC_CC,
+     &            WORK,KFREE,LFREE)
+*
+* Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
+* (at least for now)
+*
+      IF(MX_ST_TSOSO_INT.GT.MX_ST_TSOSO) THEN
+        MX_ST_TSOSO = MX_ST_TSOSO_INT
+      END IF
+      IF(MX_ST_TSOSO_BLK_INT.GT.MX_ST_TSOSO_BLK) THEN
+        MX_ST_TSOSO_BLK = MX_ST_TSOSO_BLK_INT
+      END IF
+      IF(MX_TBLK_INT.GT.MX_TBLK) THEN
+        MX_TBLK = MX_TBLK_INT
+      END IF
+      IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
+        MX_SBSTR = MX_SBSTR_INT
+      END IF
+*
+* Setup and allocate for M02
+*
+      CALL MEMGET('INTE',KLLSOBEX_M02,NINTER02,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIBSOBEX_M02,NINTER02,WORK,KFREE,LFREE)
+*
+      CALL IDIM_TCC_KRCC(WORK(KINTM02),NINTER02,ISYMINT,
+     &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
+     &     WORK(KLLSOBEX_M02),WORK(KLIBSOBEX_M02),LEN_M02_VEC_CC,
+     &     IDUM,MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM,
+     &     IDUM)
+*
+      CALL MEMGET('REAL',KM02,IMULTFAC*LEN_M02_VEC_CC,
+     &            WORK,KFREE,LFREE)
+*
+* Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
+* (at least for now)
+*
+      IF(MX_ST_TSOSO_INT.GT.MX_ST_TSOSO) THEN
+        MX_ST_TSOSO = MX_ST_TSOSO_INT
+      END IF
+      IF(MX_ST_TSOSO_BLK_INT.GT.MX_ST_TSOSO_BLK) THEN
+        MX_ST_TSOSO_BLK = MX_ST_TSOSO_BLK_INT
+      END IF
+      IF(MX_TBLK_INT.GT.MX_TBLK) THEN
+        MX_TBLK = MX_TBLK_INT
+      END IF
+      IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
+        MX_SBSTR = MX_SBSTR_INT
+      END IF
+*
+* Setup and allocate for M11
+*
+      CALL MEMGET('INTE',KLLSOBEX_M11,NINTER11,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIBSOBEX_M11,NINTER11,WORK,KFREE,LFREE)
+*
+      CALL IDIM_TCC_KRCC(WORK(KINTM11),NINTER11,ISYMINT,
+     &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
+     &     WORK(KLLSOBEX_M11),WORK(KLIBSOBEX_M11),LEN_M11_VEC_CC,
+     &     IDUM,MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM,
+     &     IDUM)
+*
+      CALL MEMGET('REAL',KM11,IMULTFAC*LEN_M11_VEC_CC,
+     &            WORK,KFREE,LFREE)
+*
+* Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
+* (at least for now)
+*
+      IF(MX_ST_TSOSO_INT.GT.MX_ST_TSOSO) THEN
+        MX_ST_TSOSO = MX_ST_TSOSO_INT
+      END IF
+      IF(MX_ST_TSOSO_BLK_INT.GT.MX_ST_TSOSO_BLK) THEN
+        MX_ST_TSOSO_BLK = MX_ST_TSOSO_BLK_INT
+      END IF
+      IF(MX_TBLK_INT.GT.MX_TBLK) THEN
+        MX_TBLK = MX_TBLK_INT
+      END IF
+      IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
+        MX_SBSTR = MX_SBSTR_INT
+      END IF
+*
+* Setup and allocate for M12
+*
+      CALL MEMGET('INTE',KLLSOBEX_M12,NINTER12,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLIBSOBEX_M12,NINTER12,WORK,KFREE,LFREE)
+*
+      CALL IDIM_TCC_KRCC(WORK(KINTM12),NINTER12,ISYMINT,
+     &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
+     &     WORK(KLLSOBEX_M12),WORK(KLIBSOBEX_M12),LEN_M12_VEC_CC,
+     &     IDUM,MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM,
+     &     IDUM)
+*
+      CALL MEMGET('REAL',KM12,IMULTFAC*LEN_M12_VEC_CC,
+     &            WORK,KFREE,LFREE)
+*
+* Make sure MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR are the largest possible
+* (at least for now)
+*
+      IF(MX_ST_TSOSO_INT.GT.MX_ST_TSOSO) THEN
+        MX_ST_TSOSO = MX_ST_TSOSO_INT
+      END IF
+      IF(MX_ST_TSOSO_BLK_INT.GT.MX_ST_TSOSO_BLK) THEN
+        MX_ST_TSOSO_BLK = MX_ST_TSOSO_BLK_INT
+      END IF
+      IF(MX_TBLK_INT.GT.MX_TBLK) THEN
+        MX_TBLK = MX_TBLK_INT
+      END IF
+      IF(MX_SBSTR_INT.GT.MX_SBSTR) THEN
+        MX_SBSTR = MX_SBSTR_INT
+      END IF
+*
+      IF(NTEST.GE.100) THEN
+        IF(MX_ST_TSOSO_INI.NE.MX_ST_TSOSO) THEN
+          WRITE(6,*) 'Increased MX_ST_TSOSO from ',
+     &                MX_ST_TSOSO_INI,' to ',MX_ST_TSOSO
+        END IF
+        IF(MX_ST_TSOSO_BLK_INI.NE.MX_ST_TSOSO_BLK) THEN
+          WRITE(6,*) 'Increased MX_ST_TSOSO_BLK from ',
+     &                MX_ST_TSOSO_BLK_INI,' to ',MX_ST_TSOSO_BLK
+        END IF
+        IF(MX_TBLK_INI.NE.MX_TBLK) THEN
+          WRITE(6,*) 'Increased MX_TBLK from ',
+     &                MX_TBLK_INI,' to ',MX_TBLK
+        END IF
+        IF(MX_SBSTR_INI.NE.MX_SBSTR) THEN
+          WRITE(6,*) 'Increased  MX_SBSTR from ',
+     &                MX_SBSTR_INI,' to ',MX_SBSTR
+        END IF
+      END IF
+      CALL MEMCHK_KRCC(WORK)
+*
+      RETURN
+      END
+*
+
+
+

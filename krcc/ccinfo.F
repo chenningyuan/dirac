@@ -2616,6 +2616,7 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
       print*,'JCMBSPC',JCMBSPC
       NTEST = 10
       NELTOT2 = IGSOCCX(NGAS,2,JCMBSPC)
+      print*,'NELTOT2',NELTOT2
       DO IGAS=1,NGAS
         IDIFF = IGSOCCX(IGAS,2,JCMBSPC) - IGSOCCX(IGAS,1,JCMBSPC)
         IF(IDIFF.eq.0.and.IGAS.ne.1) THEN
@@ -4747,7 +4748,7 @@ C#include "wrkspc.inc"
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 005
+      NTEST = 000
       NTEST = MAX(NTEST,IPRCC)
 *
       IF(NTEST.GE.100) THEN
@@ -4762,11 +4763,6 @@ C#include "wrkspc.inc"
       MX_SBSTR = 0
       MX_TBLK_AS = 0
 *
-      DO J=1,4*NGAS
-      DO I = 1,NTSOSO_TP
-        print*,'ITSOSO_TP',ITSOSO_TP(J,I)
-      END DO
-      END DO
       DO ITSS_TP = 1, NTSOSO_TP
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP
 *. Occupation to group translation
@@ -4823,8 +4819,9 @@ C#include "wrkspc.inc"
 *
              LENGTH = LENGTH + LEN_CA*LEN_CB*LEN_AA*LEN_AB
              LENGTH2 = LENGTH2 + LEN_CA*LEN_CB*LEN_AA*LEN_AB
-             if (NTEST.ge.2000) then
+             if (NTEST.ge.1000) then
                write(6,*) 'LENGTH ',LEN_CA*LEN_CB*LEN_AA*LEN_AB
+               write(6,*) 'LENGTH2 ',LENGTH2
              end if
 *
              MX_ST_TSOSO =
@@ -4834,13 +4831,15 @@ C#include "wrkspc.inc"
      &                           LEN_AA*NEL_CA,LEN_AB*NEL_CB)
              MX_TBLK = MAX(MX_TBLK,LEN_CA*LEN_CB*LEN_AA*LEN_AB)
              MX_SBSTR = MAX(MX_SBSTR,LEN_CA,LEN_CB,LEN_AA,LEN_AB)
+C            print*,'MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR',
+C    &               MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,MX_SBSTR
           END DO
         END DO
        END DO
-      IF(ILTTWO.NE.-1) THEN
+C     IF(ILTTWO.NE.-1) THEN
       LTSOSO_TP(ITSS_TP) = LENGTH2
       MX_TBLK_AS = MAX(MX_TBLK_AS,LENGTH2)
-      END IF
+C     END IF
       END DO
 *
       IDIM_T = LENGTH
@@ -4860,8 +4859,10 @@ C#include "wrkspc.inc"
         WRITE(6,*) ' Largest symmetry block of T ', MX_TBLK
         WRITE(6,*) ' Largest block of T ', MX_TBLK_AS
         WRITE(6,*) ' Largest substring : ', MX_SBSTR
-        WRITE(6,*) ' Number of 1e intergrals ', N1ELINT
-        WRITE(6,*) ' Number of 2e intergrals ', N2ELINT
+        IF(ILTTWO.NE.-1) THEN
+          WRITE(6,*) ' Number of 1e intergrals ', N1ELINT
+          WRITE(6,*) ' Number of 2e intergrals ', N2ELINT
+        END IF
       END IF
 *
       IF(NTEST.GE.5) THEN
@@ -4886,6 +4887,7 @@ C#include "wrkspc.inc"
 * Intermediate operators will be setup according to (P,H)
 * There are 5 possible intermediates (when assuming P>H)
 * namely (1,2),(1,1),(1,0),(0,2),(0,1)
+* Can be extended if so desire...
 *
 * Lasse 2010
 *
@@ -6833,14 +6835,12 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 *
       IF(IFORM.EQ.1) THEN
         ZERO = 0.0D0
-          CALL SETVEC(CC,ZERO,IMULTFAC*N_CC_AMP)
+        CALL SETVEC(CC,ZERO,IMULTFAC*N_CC_AMP)
         WRITE(6,*) ' Initial set of amplitudes set to zero '
-*
-C       WRITE(6,*) ' Playing around in INI_CC_AMP'
-C       WRITE(6,*) ' Playing around in INI_CC_AMP'
-C       WRITE(6,*) ' Playing around in INI_CC_AMP'
-C       WRITE(6,*) ' Playing around in INI_CC_AMP'
-C       WRITE(6,*) ' Playing around in INI_CC_AMP'
+C       DO I=1,N_CC_AMP
+C         CC(I) = I
+C         print*,'CC,I',CC(I),I
+C       END DO
 *
       ELSE IF(IFORM.EQ.2) THEN
         ZERO = 0.0D0
@@ -6848,7 +6848,7 @@ C       WRITE(6,*) ' Playing around in INI_CC_AMP'
         WRITE(6,*) ' Reading in CC amplitudes from ', LU_CCAMP
         IF(I_FORMATTED.EQ.1) THEN
 *. Formatted
-      OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
+          OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
      &     Form='FORMATTED')
           CALL REWINO(LU_CCAMP)
           READ(LU_CCAMP,*) N_CC_AMPP
@@ -6858,7 +6858,7 @@ C       WRITE(6,*) ' Playing around in INI_CC_AMP'
           END DO
         ELSE
 *. Unformatted
-      OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
+          OPEN(Unit=LU_CCAMP,File='CCAMP',Status='UNKNOWN',
      &     Form='UNFORMATTED')
           CALL REWINO(LU_CCAMP)
           READ(LU_CCAMP) N_CC_AMPP
@@ -6877,7 +6877,6 @@ C       WRITE(6,*) ' Playing around in INI_CC_AMP'
         WRITE(6,*) ' Initial set of amplitudes '
         WRITE(6,*) ' ========================= '
         WRITE(6,*)
-C            WRT_CC_VEC(CC,LU)
         CALL WRT_CC_VEC(CC,6)
       END IF
 *
@@ -7135,7 +7134,7 @@ C     DIMENSION NSTSGP(NSMST,*)
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
+!#include "wrkspc.inc"
 *. Input
       DIMENSION IGRP(NIGRP)
 *.Output

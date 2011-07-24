@@ -1,4 +1,5 @@
-      SUBROUTINE ANA_GENCC_CC_KRCC(T,ISM)
+      SUBROUTINE ANA_GENCC_CC_KRCC(T,ISM,
+     &                             WORK,KFREE,LFREE)
 *
 * Analyze T-coefficients of general coupled cluster wavefunction
 *
@@ -22,21 +23,21 @@
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "cprnt.inc"
 #include "ctcc.inc"
 #include "cc_exc.inc"
 *
+      DIMENSION WORK(*)
+*
       CALL QENTER('ANAGC')
-      CALL MEMMAR(KLOFF,DUMMY,'MARK  ',DUMMY,'ANAGCC')
 *
 *. Four blocks of string occupations
-      CALL MEMMAR(KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC1')
-      CALL MEMMAR(KLSTR2_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC2')
-      CALL MEMMAR(KLSTR3_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC3')
-      CALL MEMMAR(KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC4')
+      CALL MEMGET('INTE',KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSTR2_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSTR3_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)      
 *. Number of terms to be printed
       IF(IPRNCIV.EQ.0) THEN
         THRES = 0.02
@@ -48,13 +49,12 @@
       END IF
 *Numbers and weight of spinorbital excitation type
       LENGTH_SOX = NSPOBEX_TP_CC*10
-      CALL MEMMAR(KNCPMT_SOX,LENGTH_SOX,'ADDL  ',1,'KNCPMT')
-      CALL MEMMAR(KWCPMT_SOX,LENGTH_SOX,'ADDL  ',2,'KWCPMT')
+      CALL MEMGET('INTE',KNCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KWCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
 *. Number and weight of orbital excitation type
       LENGTH_OX = NOBEX_TP*10
-      CALL MEMMAR(KNCPMT_OX,LENGTH_OX,'ADDL  ',1,'KNCPMT')
-* changed from integer to real and from KNCPMT to KWCPMT by lasse 11/05/04
-      CALL MEMMAR(KWCPMT_OX,LENGTH_OX,'ADDL  ',2,'KWCPMT')
+      CALL MEMGET('INTE',KNCPMT_OX,LENGTH_OX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KWCPMT_OX,LENGTH_OX,WORK,KFREE,LFREE)
       IUSLAB = 0
 *
 *. Occupation of strings of given sym and supergroup
@@ -63,12 +63,13 @@
      &            THRES,MAXTRM,
      &            WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
      &            WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
-     &            IUSLAB,
-     &            IDUMMY,WORK(KNCPMT_SOX),WORK(KWCPMT_SOX),
+     &            IUSLAB,IDUMMY,
+     &            WORK(KNCPMT_SOX),WORK(KWCPMT_SOX),
      &            WORK(KNCPMT_OX),WORK(KWCPMT_OX),
-     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX),MSCOMB_CC)
+     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX),MSCOMB_CC,
+     &            WORK,KFREE,LFREE)
 
-      CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'ANAGCC')
+      CALL MEMREL('ANALYZE',WORK,KLSTR1_OCC,KLSTR1_OCC,KFREE,LFREE)
       CALL QEXIT('ANAGC')
 *
       RETURN
@@ -78,10 +79,11 @@
      &                 NSPOBEX_TP,NOBEX_TP,ISM,
      &                 THRES,MAXTRM,
      &                 IOCC_CA, IOCC_CB, IOCC_AA, IOCC_AB,
-     &                 IUSLAB,
-     &                 IOBLAB,NCPMT_SOX,WCPMT_SOX,
-     &                        NCPMT_OX, WCPMT_OX,
-     &                 NORB,IPRNCIV,ISOX_TO_OX,MSCOMB_CC)
+     &                 IUSLAB,IOBLAB,
+     &                 NCPMT_SOX,WCPMT_SOX,
+     &                 NCPMT_OX, WCPMT_OX,
+     &                 NORB,IPRNCIV,ISOX_TO_OX,MSCOMB_CC,
+     &                 WORK,KFREE,LFREE)
 *
 * Analyze T-CC vector :
 *
@@ -107,6 +109,8 @@
 #include "csm.inc"
 #include "orbinp.inc"
 #include "symm.inc"
+*
+      DIMENSION WORK(*)
 *. Specific input
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
       INTEGER IOBEX_TP(2*NGAS,NOBEX_TP)
@@ -186,35 +190,16 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
        NEL_CB = IELSUM(ISPOBEX_TP(1+1*NGAS,ITSS),NGAS)
        NEL_AA = IELSUM(ISPOBEX_TP(1+2*NGAS,ITSS),NGAS)
        NEL_AB = IELSUM(ISPOBEX_TP(1+3*NGAS,ITSS),NGAS)
-*. Diagonal restricted type of spinorbital excitation ?
-       IF(MSCOMB_CC.EQ.1) THEN
-         CALL DIAG_EXC_KRCC(
-     &        ISPOBEX_TP(1+0*NGAS,ITSS),ISPOBEX_TP(1+1*NGAS,ITSS),
-     &        ISPOBEX_TP(1+2*NGAS,ITSS),ISPOBEX_TP(1+3*NGAS,ITSS),
-     &        NGAS,IDIAG)
-       ELSE
-         IDIAG = 0
-       END IF
 *
        DO ISM_C = 1, NSMST
-C        ISM_A = MULTD2H(ISM,ISM_C)
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
         DO ISM_CA = 1, NSMST
-C         ISM_CB = MULTD2H(ISM_C,ISM_CA)
          ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
          DO ISM_AA = 1, NSMST
-C          ISM_AB =  MULTD2H(ISM_A,ISM_AA)
           ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
 C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
           ISM_ALPHA = (ISM_AA-1)*NSMST + ISM_CA
           ISM_BETA  = (ISM_AB-1)*NSMST + ISM_CB
-*
-          IF(IDIAG.EQ.1.AND.ISM_ALPHA.LT.ISM_BETA) GOTO 777
-          IF(IDIAG.EQ.1.AND.ISM_ALPHA.EQ.ISM_BETA) THEN
-           IRESTRICT_LOOP = 1
-          ELSE
-           IRESTRICT_LOOP = 0
-          END IF
 *. obtain strings
           IUB = 1
           CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
@@ -238,18 +223,10 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
      &         WORK,KFREE,LFREE)
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           DO I_AB = 1, NSTR_AB
-           IF(IRESTRICT_LOOP.EQ.1) THEN
-             I_AA_MIN = I_AB
-           ELSE
              I_AA_MIN = 1
-           END IF
            DO I_AA = I_AA_MIN, NSTR_AA
             DO I_CB = 1, NSTR_CB
-             IF(IRESTRICT_LOOP.EQ.1.AND.I_AA.EQ.I_AB) THEN
-               I_CA_MIN = I_CB
-             ELSE
                I_CA_MIN = 1
-             END IF
              DO I_CA = I_CA_MIN, NSTR_CA
               IT = IT + 1
 C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
