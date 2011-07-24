@@ -882,15 +882,12 @@ C    &                  IREORD,STRING,IOC,IOTYP,IPRNT)
           CALL ISETVC(WORK(KSTSTM(IGRP,1)),IZERO,NGSOBP*NSTINI)
           CALL ISETVC(WORK(KSTSTM(IGRP,2)),IZERO,NGSOBP*NSTINI)
           JGRP = ISTAC(IGRP,2)
-          print*,'IGAS,NGSOBP,IGSOB ,IEL,NSTINI,JGRP',
-     &            IGAS,NGSOBP,IGSOB ,IEL,NSTINI,JGRP
           CALL CRESTR_GAS_KRCC(WORK(KOCSTR(IGRP)),NSTFGP(IGRP),
      &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,WORK(KZ(JGRP)),
      &         WORK(KSTREO(JGRP)),0,IDUM,IDUM,
      &         WORK(KSTSTM(IGRP,1)),WORK(KSTSTM(IGRP,2)),NACOB,IPRNT)
         END IF
       END DO
-      print*,'after CRESTR_GAS_KRCC'
 *
       IF(PNTGRP.GE.5) THEN
 *. Mappings for spin-down groups
@@ -1201,7 +1198,6 @@ C
       IDUMMY = 0
 C     call memmar(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       CALL MEMGET('INTE',KSTINF,IDUMMY,WORK,KFREE,LFREE)
-      print*,'KSTINF',KSTINF
 
       NTEST = 10
       IF(NTEST.NE.0)
@@ -1209,7 +1205,6 @@ C     call memmar(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
 *
 *.  Offsets for occupation and reorder array of strings
 *
-      print*,'PNTGRP',PNTGRP
       DO IGRP = 1, NGRP
         NSTRIN = NSTFGP(IGRP)
         LSTRIN = NSTRIN*NELFGP(IGRP)
@@ -1217,17 +1212,12 @@ C       call memmar(KOCSTR(IGRP),LSTRIN,'ADDS  ',1,'OCSTR ')
 C       call memmar(KSTREO(IGRP),NSTRIN,'ADDS  ',1,'STREO ')
         CALL MEMGET('INTE',KOCSTR(IGRP),LSTRIN,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KSTREO(IGRP),NSTRIN,WORK,KFREE,LFREE)
-        print*,'KOCSTR(IGRP),KSTREO(IGRP),IGRP',
-     &          KOCSTR(IGRP),KSTREO(IGRP),IGRP
         IF(PNTGRP.GE.5) THEN
 C       call memmar(KOCSTR2(IGRP),LSTRIN,'ADDS  ',1,'OCSTR2')
 C       call memmar(KSTREO2(IGRP),NSTRIN,'ADDS  ',1,'STREO2')
         CALL MEMGET('INTE',KOCSTR2(IGRP),LSTRIN,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KSTREO2(IGRP),NSTRIN,WORK,KFREE,LFREE)
-        print*,'KOCSTR2(IGRP),KSTREO2(IGRP),IGRP',
-     &          KOCSTR2(IGRP),KSTREO2(IGRP),IGRP
         END IF
-        print*,'NSTRIN,LSTRIN',NSTRIN,LSTRIN
         CALL ISETVC(WORK(KOCSTR(IGRP)),0,LSTRIN)
         CALL ISETVC(WORK(KSTREO(IGRP)),0,NSTRIN)
         IF(PNTGRP.GE.5) THEN
@@ -1256,8 +1246,6 @@ C       call memmar(KISTSGP2(1),NSMST*NGRP,'ADDS  ',1,'ISTSGP')
         CALL ISETVC(WORK(KNSTSGP2(1)),0,NSMST*NGRP)
         CALL ISETVC(WORK(KISTSGP2(1)),0,NSMST*NGRP)
       END IF
-      print*,'KNSTSGP(1),KISTSGP(1)',KNSTSGP(1),KISTSGP(1)
-      print*,'NSMST,NGRP,LFREE',NSMST,NGRP,LFREE
 
 *
 *. Number of strings per symmetry and offset for strings of given sym
@@ -1270,7 +1258,6 @@ C       call memmar(KISTSO(ITP),NSPGPFTP(ITP)*NSMST,'ADDS  ',1,'ISTSO ')
      &              WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KISTSO(ITP),NSPGPFTP(ITP)*NSMST,
      &              WORK,KFREE,LFREE)
-        print*,'KNSTSO(ITP),KISTSO(ITP),ITP',KNSTSO(ITP),KISTSO(ITP),ITP
       END DO
       IF(PNTGRP.GE.5) THEN
        DO ITP = 1, NSTTP
@@ -1283,8 +1270,6 @@ C        call memmar(KISTSO2(ITP),LEN_T,'ADDS  ',1,'ISTSO2')
      &              WORK,KFREE,LFREE)
        END DO
       END IF
-      print*,'KISTSO2',KISTSO2(1)
-      print*,'after initial'
 *
 **. Lexical adressing of arrays : use array indeces for complete active space
 *
@@ -1338,7 +1323,6 @@ C     call memmar(KIFSJO,NACOB*NSMSX,'ADDS  ',1,'Ifsjo ')
       CALL MEMGET('INTE',KNIFSJ,NACOB*NSMSX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFSJ,NACOB**2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFSJO,NACOB*NSMSX,WORK,KFREE,LFREE)
-      print*,'KIFSJO',KIFSJO
 *
 *. Symmetry of excitation connecting  strings of given symmetry
 *
@@ -1349,13 +1333,11 @@ C     call memmar(KSTSTX,NSMST*NSMST,'ADDS  ',1,'Ststx ')
 *
 C     call memmar(KIOCLS,NMXOCCLS*NGAS,'ADDS  ',1,'IOCLS ')
       CALL MEMGET('INTE',KIOCLS,NMXOCCLS*NGAS,WORK,KFREE,LFREE)
-      print*,'KIOCLS',KIOCLS
 *. Annihilation/Creation map of supergroup types
 C     call memmar(KSPGPAN,NTSPGP*NGAS,'ADDS  ',1,'SPGPAN')
 C     call memmar(KSPGPCR,NTSPGP*NGAS,'ADDS  ',1,'SPGPCR')
       CALL MEMGET('INTE',KSPGPAN,NTSPGP*NGAS,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KSPGPCR,NTSPGP*NGAS,WORK,KFREE,LFREE)
-      print*,'KSPGPCR',KSPGPCR
 *
 *. Last word of string information
 *
@@ -1845,7 +1827,7 @@ C    &              NOSPIR(MXPIRR),IOSPIR(MXPOBS,MXPIRR),
 C    &              NINOBS(MXPOBS),NR0OBS(1,MXPOBS),NRSOBS(MXPOBS,3),
 C    &              NR4OBS(MXPR4T,MXPOBS),NACOBS(MXPOBS),NOCOBS(MXPOBS),
 C    &              NTOOBS(MXPOBS),NDEOBS(MXPOBS),NRS4TO(MXPR4T),
-C    &              IREOTS(MXPORB),IREOST(MXPORB),ISMFTO(MXPORB),
+C    &              ISMFTO(MXPORB),
 C    &              ITPFSO(MXPORB)
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -1951,8 +1933,6 @@ C    &              ITPFSO(MXPORB)
       ISYM = 1
       DO IEL = 1, NEL
         ISYM = IDBGMULT(ISYM,ISMFTO(STRING(IEL)))
-      print*,'ISMFTO(STRING(IEL))',ISMFTO(STRING(IEL))
-      print*,'STRING(IEL),IEL,ISYM',STRING(IEL),IEL,ISYM
       END DO
 *
       ISYMSDG_KRCC = ISYM
@@ -2163,10 +2143,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 *. First symmetry combination
       DO IGAS = 1, NGAS
          ISM(IGAS) = MNSM(IGAS)
-         print*,'MNSM(IGAS)',MNSM(IGAS)
-         print*,'MXSM(IGAS)',MXSM(IGAS)
       END DO
-      print*,'before continue'
 *. Loop over symmetries in each gas space
       IFIRST = 1
       NCOUNT = 0
@@ -2185,7 +2162,6 @@ C       NXTNUM3(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 *. Symmetry of current combination and number of strings in this supergroup
         ISMSPGP = ISM(1)
         NST = NSTSGP(ISM(1),ISPGRP(1))
-C       print*,'NST,ISMSPGP',NST,ISMSPGP
         DO JGRP = 2, NGAS
           CALL SYMCOM_KRCC(3,7,ISMSPGP,ISM(JGRP),ISMSPGPO)
           ISMSPGP = ISMSPGPO
@@ -2198,7 +2174,6 @@ C       print*,'NST,ISMSPGP',NST,ISMSPGP
         NSTSSPGP(ISMSPGP,IGRP) = NSTSSPGP(ISMSPGP,IGRP) + NST
         GOTO 1000
       END IF
-      print*,'after continue'
 *
       MXNSTR = -1
       DO ISTRSM = 1, NSMST
@@ -2255,11 +2230,6 @@ C       print*,'NST,ISMSPGP',NST,ISMSPGP
           CALL IWRTMA(NELFSPGP(1,IBSPGP),NGAS,NSPGP,MXPNGAS,NSPGP)
         END DO
       END IF
-C      DO I= 1,NSTTP
-C        DO J=1,NGAS
-C          print*,'NELFSPGP,I,J',NELFSPGP(J,I),I,J
-C        END DO
-C      END DO
 *
       RETURN
       END
@@ -2308,8 +2278,6 @@ C     call memmar(KLSOBEX_TEMP,4*NGAS,'ADDL  ',1,'SPOBET')
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
-      print*,'exit GET_HX_RELA_KRCC'
-C      print*,'NSPOBEX_TP',NSPOBEX_TP
 *
 *. and the actual spin-orbital excitations
 C
@@ -2324,24 +2292,20 @@ C      call memmar(KSIOPREO,NSPOBEX_TP,'ADDL  ',2,'SIOPRE')
 C Will be allocated here again for KRCC since there is a new structure
 C All arrays will be keept since they will be needed
       CALL MEMGET('INTE',KLSOBEX,4*NGAS*NSPOBEX_TP,WORK,KFREE,LFREE)
-      print*,'KLSOBEX',KLSOBEX
       CALL MEMGET('INTE',KLIHIND,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSIGNNHX,NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLABEXTP,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLOP_REO,4*NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSIOPREO,NSPOBEX_TP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINC_HX,NHX,WORK,KFREE,LFREE)
+      IZERO = 0
+      CALL ISETVC(WORK(KINC_HX),IZERO,NHX)
       IFLAG = 0
-      CALL MEMCHK('LIL2',WORK,KINT1)
       CALL GET_HX_RELA_KRCC(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),
      &                 WORK(KSIOPREO),JCMBSPC,IPRNT)
-C     print*,'KLSOBEX',KLSOBEX
-C     print*,'KLIHIND',KLIHIND
-C     DO I=1,4*NGAS*NSPOBEX_TP
-C     print*,'WORK(KLSOBEX+I)',WORK(KLSOBEX+I),' I ',I
-C     END DO
 C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 *
 *. Space for info in the different parts of Hamiltonian
@@ -2349,11 +2313,8 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 * KLIBSOBEX : Offset for this block
 * KLSPOBEX_AC : Is this spinorbital excitation active
 *
-C     call memmar(KLLSOBEX,NSPOBEX_TP,'ADDL  ',1,'LSPOBX')
-C     call memmar(KLIBSOBEX,NSPOBEX_TP,'ADDL  ',1,'LSPOBY')
       CALL MEMGET('INTE',KLLSOBEX,NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLIBSOBEX,NSPOBEX_TP,WORK,KFREE,LFREE)
-      CALL MEMCHK('LIL3',WORK,KINT1)
       ITOP_SM = 1
       print*,'ITOP_SM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,LEN_T_VEC',
      &        ITOP_SM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,LEN_T_VEC
@@ -2365,11 +2326,6 @@ C     call memmar(KLIBSOBEX,NSPOBEX_TP,'ADDL  ',1,'LSPOBY')
      &     MSCOMB,MX_SBSTR,
      &     IFTONE,IFTTWO,-1,N1ELINT,N2ELINT,
      &     IPRCC)
-C     print*,'KLSOBEX',KLSOBEX
-C     DO I=1,10
-C     print*,'WORK(KLSOBEX+I)',WORK(KLSOBEX+I),' I ',I
-C     END DO
-C     stop
       CALL MEMCHK('LIL4',WORK,KINT1)
 *
 C TEMP DO NOT KNOW IF THIS IS CORRECT
@@ -2470,7 +2426,7 @@ C     LEN_T_VEC = IFTONE + IFTTWO
       SUBROUTINE GET_HX_RELA_KRCC(IFLAG,IHTYPE,NOBPT,NHX,
      &                       IFTONE,IFTTWO,ILTTWO,IHX_LOC,IHX,IHINDX,
      &                       SIGN_NHX,I2DIATP,LABEL,IOP_REO,SIGN_OPREO,
-     &                       JCMBSPC,IPRNT)
+     &                       INCLUDED_HX,JCMBSPC,IPRNT)
 *
 *      CALL GET_HX_RELA(IFLAG,IHTYPE,NOBPT,NHX,
 *     &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
@@ -2905,7 +2861,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
 *
 * one-electron spin orbit
 *
-      IF (IHTYPE.GT.2) THEN
+      IF (IHTYPE.GT.20) THEN
 *
 * operator:
 * a+i alpha  j beta
@@ -3363,7 +3319,7 @@ C No the sign is not so confusing
           write(6,*) ' Max. no of electrons per GAS:'
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
           WRITE(6,*) ' The excitation types '
-          CALL WRT_SPOX_TP(IHX,NHX)
+          CALL WRT_SPOX_TP_CC_KRCC(IHX,NHX)
 C              WRT_SPOX_TP(IEX_TP,NEX_TP)
         end if
         write(6,*)
@@ -3832,7 +3788,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
         END DO
       END DO
 *
-      if (IHTYPE.ge.4) then
+      if (IHTYPE.ge.40) then
 *
 * operator:
 *. a+i alpha  a+j beta  a k alpha  a l beta
@@ -4208,7 +4164,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
           write(6,*) ' Max. no of electrons per GAS:'
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
           WRITE(6,*) ' The excitation types '
-          CALL WRT_SPOX_TP(IHX,NHX)
+          CALL WRT_SPOX_TP_CC_KRCC(IHX,NHX)
 C              WRT_SPOX_TP(IEX_TP,NEX_TP)
         write(6,*)
         WRITE(6,*) ' Number of excitation types ', NHX
@@ -4272,8 +4228,6 @@ C     INTEGER NSTFGS(MXPNGAS), IBSTFGS(MXPNGAS), ISTRNM(MXPNGAS)
       DO IGAS = 1, NGAS
         NSTFGS(IGAS)  = NNSTSGP(ISMFGS(IGAS),IGAS)
         IBSTFGS(IGAS) = IISTSGP(ISMFGS(IGAS),IGAS)
-C       print*,'ISMFGS(IGAS),IGAS',ISMFGS(IGAS),IGAS
-C       print*,'NNSTSGP(ISMFGS(IGAS),IGAS)',NNSTSGP(ISMFGS(IGAS),IGAS)
       END DO
 *
       NTEST = 000
@@ -4345,15 +4299,12 @@ CTI  Set following stuff to zero in such cases.
           ELSE
             KOCSTR_ADD = KOCSTR2(ITPFGS(IGAS))
           END IF
-          print*,'KOCSTR_ADD',KOCSTR_ADD
 *
           call memchk_KRCC(WORK)
 *
           NSTI = NSTFGS(IGAS)
-          print*,'before ADD_STR_GROUP_KRCC'
           CALL ADD_STR_GROUP_KRCC(NSTI,IBSTFGS(IGAS),WORK(KOCSTR_ADD),
      &                       NSTB,NSTA,ISTROC,NELB+1,NELI,NEL)
-          print*,'after ADD_STR_GROUP_KRCC'
 *. Loop over strings in IGAS
         END IF
       END DO
@@ -4376,6 +4327,19 @@ CTI  Set following stuff to zero in such cases.
         WRITE(6,*) ' Strings generated '
         CALL PRTSTR(ISTROC,NEL,NSTR)
       END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE SOME_DUMB_PRINT_FOR_WORK(AARRAY,NDIM)
+* Dumb routine to print work
+*
+#include "implicit.inc"
+*
+      DIMENSION AARRAY(*)
+*
+      WRITE(6,*) ' Will write something from work '
+      CALL IWRTMA(AARRAY,1,NDIM,1,NDIM)
 *
       RETURN
       END
@@ -4409,7 +4373,6 @@ C#include "ipoist8.inc"
 *. Input and output
       DIMENSION ISTRING(NELTOT,*)
 *
-      print*,'NSTA,NSTB,NELADD',NSTA,NSTB,NELADD
       IF(NSTA.GT.1) THEN
         DO IISTR = 1,NSTADD
 *. Address of A(1,IISTR,1)
@@ -4442,7 +4405,7 @@ C#include "ipoist8.inc"
         END DO
       END IF
 *
-      NTEST = 0000
+      NTEST = 000
       if (NTEST.ge.1000) then
         write(6,*) 'ADD_STR_GROUP speaking: Input string array'
         call iwrtma(ISTADD,NELADD,IOFADD-1+NSTADD,
@@ -4615,12 +4578,12 @@ C#include "wrkspc.inc"
       DIMENSION WORK(*)
 *
       CALL QENTER('GETST')
-      NTEST = 000
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
-        WRITE(6,*) ' ============================== '
-        WRITE(6,*) ' Welcome to GETSTR_TOTSM_SPGP_REL '
-        WRITE(6,*) ' ============================== '
+        WRITE(6,*) ' ================================= '
+        WRITE(6,*) ' Welcome to GETSTR_TOTSM_SPGP_KRCC '
+        WRITE(6,*) ' ================================= '
         WRITE(6,*)
         WRITE(6,'(A)')  ' Strings to be obtained : '
         WRITE(6,'(A)')  ' ======================== '
@@ -4638,6 +4601,7 @@ C#include "wrkspc.inc"
           CALL IWRTMA(IZ,NORBT,NEL,NORBT,NEL)
         END IF
       END IF
+      call memchk_KRCC(WORK)
 *. Absolut number of this supergroup
 *. Occupation per gasspace
 *. Largest occupied space
@@ -4650,7 +4614,6 @@ C#include "wrkspc.inc"
       END DO
       IF(NGASL.EQ.0) NGASL = 1
 *. Number of strings per GAS space and offsets for strings of given sym
-      print*,'before copy'
       DO IGAS = 1, NGAS
         if (IUB.eq.1) then
           CALL ICOPVE2(WORK(KNSTSGP(1)),(ITPFGS(IGAS)-1)*NSMST+1,NSMST,
@@ -4664,7 +4627,6 @@ C#include "wrkspc.inc"
      &                 IISTSGP(1,IGAS))
         end if
       END DO
-      print*,'after copy'
 *
       IF(NTEST.GE.200) THEN
         WRITE(6,*) ' Write out NNSTSGP '
@@ -4674,6 +4636,7 @@ C#include "wrkspc.inc"
            print*,'NNSTSGP,I,J',NNSTSGP(I,J),I,J
          END DO
         END DO
+        call memchk_KRCC(WORK)
       END IF
 *
       DO IGAS = 1, NGAS
@@ -4690,6 +4653,7 @@ C#include "wrkspc.inc"
          CALL IWRTMA(ITPFGS,1,NGAS,1,NGAS)
          WRITE(6,*) ' Number of elecs per GAS space '
          CALL IWRTMA(NELFGS,1,NGAS,1,NGAS)
+         call memchk_KRCC(WORK)
       END IF
 *
 *. Loop over symmetries of each GAS
@@ -4728,13 +4692,13 @@ C#include "wrkspc.inc"
         IF(NTEST.GE.200) THEN
           WRITE(6,*) ' Next symmetry distribution '
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
+          call memchk_KRCC(WORK)
         END IF
 *. Obtain all strings of this symmetry
         CALL GETSTRN_GASSM_SPGP_KRCC(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
      &                              NSTR,NEL,
      &                              NNSTSGP,IISTSGP,IUB,
      &                              WORK,KFREE,LFREE)
-        print*,'after GETSTRN_GASSM_SPGP_KRCC'
 *. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
@@ -4774,7 +4738,6 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           CALL IWRTMA(IREO,1,NSTR,1,NSTR)
         END IF
       END IF
-      print*,'about to exit'
 *
       CALL QEXIT('GETST')
       RETURN
@@ -4852,15 +4815,6 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
         WRITE(6,*) ' Included = ',INCLUDED
       END IF
-C     DO I=1,NGAS
-C       print*,' NGPSTR ',NGPSTR(I),' IGAS ',I
-C     END DO
-C     DO I=1,NGAS
-C       print*,' IBGPSTR ',IBGPSTR(I),' IGAS ',I
-C     END DO
-C     DO I=1,50
-C       print*,' NELFGP ',NELFGP(I),' IGAS ',I
-C     END DO
 *
       RETURN
       END
@@ -5287,7 +5241,7 @@ C     END DO
 #include "implicit.inc"
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
+!#include "wrkspc.inc"
 #include "cgas.inc"
 *. Specific input
       INTEGER IHTP(NGAS,4)
@@ -5369,7 +5323,6 @@ C     END DO
           DO J = 1,NA
             ICOUNT = ICOUNT + 1
 * Copy creators
-            print*,'ICOUNT',ICOUNT
             WRITE(6,*) (ITEMP(K,I),K=1,NGAS)
             CALL ICOPVE(ITEMP(1,I),IOBEX_TP_KRCC(1,ICOUNT),NGAS)
             WRITE(6,*) (IOBEX_TP_KRCC(K,ICOUNT),K=1,NGAS)
