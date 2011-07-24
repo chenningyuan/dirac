@@ -132,15 +132,13 @@ C     ELSE
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
-      IAMTOIMPLEMENT = 0
-      IF(IAMTOIMPLEMENT.EQ.1) THEN
+! should be since this is the starting!!
       print*,'call GENCC_F_DIAG_M_KRCC'
-      CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,CCVEC1,
+! not NSPOBEX_TP_CC but NSPOBEX_TPE since identity will be first!
+      CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,CCVEC1,
      &      1,KDUM,KDUM,MX_ST_TSOSO_MX,
      &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
      &      WORK,KFREE,LFREE)
-      stop 'after GENCC_F_DIAG_M_KRCC' 
-      END IF
 C     END IF
 *
 *
@@ -198,8 +196,8 @@ C NOTE perhaps CCVEC6 should be added, Done
 C ADD ECC1_IMG ?
         CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,
      &                       WORK,KFREE,LFREE)
-        stop 'after CC_VEC_FNC_KRCC'
-        call rmemchk               
+C       stop 'after CC_VEC_FNC_KRCC'
+        CALL MEMCHK_KRCC(WORK)
 C**************************************************************
 *. Save on LUHC
 C Save real and imagenary if complex algebra otherwise just real
@@ -245,7 +243,7 @@ C Norm of real + imagenary
         END IF
           XNORM = SQRT(INPROD(CCVEC1,CCVEC1,IMULTFAC*N_CC_AMP))
 C        print*,'after XNORM',XNORM
-        call rmemchk
+         CALL MEMCHK_KRCC(WORK)
 ****************************************
 ****************************************
 **  Convergence threshold
@@ -291,7 +289,7 @@ C Both real and imagenary
 C          print*,'before VEC_FROM_DISC'
           CALL VEC_FROM_DISC(CCVEC2,IMULTFAC*N_CC_AMP,1,LBLK,LUDIA)
 C          print*,'after VEC_FROM_DISC'
-          call rmemchk
+          CALL MEMCHK_KRCC(WORK)
 C          print*,'after rmemchk'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1,CCVEC2',CCVEC1(i),CCVEC2(i),i
@@ -301,7 +299,7 @@ C          print*,'after DIAVC2'
 C          do i=1,IMULTFAC*N_CC_AMP
 C            print*,'CCVEC1',CCVEC1(i),CCVEC2(i),i
 C          end do
-          call rmemchk
+          CALL MEMCHK_KRCC(WORK)
 C          stop
 C          print*,'after 2'
           ONEM = -1.0D0

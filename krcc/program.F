@@ -101,6 +101,7 @@ C assumes totally symmetric hamiltonian
 !!!!!May need updating to elminate obsolete operators!!!!!
       ISYM_T = 1
       CALL SET_HOP_DBG_FOR_NEWCCV(4,1,WORK,KFREE,LFREE)
+C     CALL SET_HOP_DBG_KRCC(4,1,WORK,KFREE,LFREE)
       CALL MEMCHK('LULU2',WORK,KLOOK)
 C      CALL MEMCHK_KRCC(WORK)
       print*,'after SET_HOP_DBG_KRCC'
@@ -627,12 +628,31 @@ CLasse      END DO
       IF(IPRNT.GE.5) WRITE(6,*) ' LEN_T_VEC_MX = ', LEN_T_VEC_MX
 C      stop 'after IDIM'
 *
+*
+* Cluster operator setup is now finshed
+* Find the number of holes and particles to be contracted for a given H
+* operator
+*
+      CALL HTYPE_PH_CONTRACTIONS_MASTER(WORK,KFREE,LFREE)
+*
+* Start setting up intermediates
+*
+      CALL SET_INTERMEDIATES_MASTER(WORK,KFREE,LFREE)
+*
+* Sort Cluster operator and intermediates according to 
+* N, delta Mk, Mub
+* for easy solution of equations
+*
+      CALL SORT_OP_MASTER(WORK,KFREE,LFREE)
+*
+* Not so pretty temp solution (need to dimension T after sort!)
+*
 *. And dimensions for symmetry 1
       ITOP_SM = 1
 *
 *
 * NOT SURE IDIM_TCC_KRCC WORKS AS IT SHOULD!!!! LASSE
-*
+* Should be moved since T is resorted!!!!! Lasse 2011 dont ignore
       CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,ITOP_SM,
      &     MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
      &     WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),LEN_T_VEC_CC,
@@ -652,14 +672,17 @@ C  ISTVC2(IVEC,IBASE,IFACT,NDIM)
 C
       CALL ISTVC3(WORK(KLLSOBEX_CC),NSPOBEX_TPE,IONE,1)
       N_CC_AMPP1 = N_CC_AMP + 1
-      CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
+*. Why is this done???
+C     CALL ISTVC3(WORK(KLIBSOBEX_CC),NSPOBEX_TPE,N_CC_AMPP1,1)
       IF(IPRNT.GE.5)
      &WRITE(6,*) ' LUCIA_GENCC : N_CC_AMP = ', N_CC_AMP
 *
 *. Pointers to KVEC1 and KVEC2, transferred through GLBBAS
-!radovan: kvec1 and kvec2 not set
+      CALL GET_3BLKS_GCC_REL(KVEC1,KVEC2,KVEC3,MXCJ,
+     &                       WORK,KFREE,LFREE)
        KVEC1P = KVEC1
        KVEC2P = KVEC2
+       print*,'KVEC1,KVEC2,KVEC1P,KVEC2P',KVEC1,KVEC2,KVEC1P,KVEC2P
        WRITE(6,*) ' KVEC3 after GET_3BLKS.. ', KVEC3
 *. and two CC vectors , extra element for unexcited SD at end of vectors
        N_SD_INT = 1
@@ -667,24 +690,12 @@ C
        LEN_T_VEC_MX = LEN_T_VEC_CC
 *
        LENNY = LEN_T_VEC_MX + N_SD_INT
+       print*,'LENNY',LENNY
       CALL MEMGET('REAL',KCC1,IMULTFAC*LENNY,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)
 *
-* Cluster operator setup is now finshed
-* Find the number of holes and particles to be contracted for a given H
-* operator
+* End not so pretty temp solution
 *
-      CALL HTYPE_PH_CONTRACTIONS_MASTER(WORK,KFREE,LFREE)
-*
-* Start setting up intermediates
-*
-      CALL SET_INTERMEDIATES_MASTER(WORK,KFREE,LFREE)
-*
-* Sort Cluster operator and intermediates according to 
-* N, delta Mk, Mub
-* for easy solution of equations
-*
-      CALL SORT_OP_MASTER(WORK,KFREE,LFREE)
 *
 * Now that operators are found and sorted it is time to solve the cc
 * equations. This will be done by first finding all possible
@@ -692,6 +703,11 @@ C
 * process calculate permutation factors and signs for contractions
 *
       CALL CONTRACTION_SOLVER(WORK,KFREE,LFREE)
+*
+* Now to dimension and setup arrays for intermediates.
+* This should later be moved to CC_VEC_FNC_KRCC to save space
+*
+      CALL IDIM_INT(WORK,KFREE,LFREE,IMULTFAC)
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs
@@ -709,7 +725,7 @@ C Now with automated restart. Lasse
       CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),WORK(KDIA),
      &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
      &                   WORK,KFREE,LFREE)
-      STOP 'CC ENERGY HAS BEEN OPTIMIZED'
+C     STOP 'CC ENERGY HAS BEEN OPTIMIZED'
 *
 * ===========================
 * Calculate density matrices
@@ -744,8 +760,10 @@ C       CALL ONE_EL_PROP(1,0,WORK(KLDUM))
 * ======================
 *
       WRITE(6,*) ' KVEC3 before ANA_GCC ', KVEC3
-      CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1)
+      CALL ANA_GENCC_CC_KRCC(WORK(KCC1),1,
+     &                       WORK,KFREE,LFREE)
       WRITE(6,*) ' KVEC3 after ANA_GCC ', KVEC3
+      STOP 'AFTER ANALYZE'
 *
 *
 * =========================
@@ -838,7 +856,6 @@ C     END IF
       I_TEST_JACO = 0
       IF(I_TEST_JACO.EQ.1) THEN
         WRITE(6,*) ' Control will be transferred to TEST_JACO'
-!radovan:
         call quit('subroutine JACO_TEST missing')
 !       CALL JACO_TEST(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
 !    &                 WORK(KCC2))
@@ -862,46 +879,6 @@ C
 C       CALL CC_EXC_E_REL(WORK(KVEC1),WORK(KVEC2),WORK(KCC1),
 C    &                WORK(KCC2),WORK(KCC3),WORK(KCC4),
 C    &                WORK(KDIA),II_RES_EXC,ECC)
-      END IF
-*
-* =====================================
-* Reform CC to CI form and store on LUC
-* =====================================
-*
-      I_TRANS_WF = 0
-      IF(I_TRANS_WF.EQ.1) THEN
-*. CI will be used in the following,
-*. Regenerate inactive Fock matrix - different definition of
-*. inactive Fock matrix may have been used in CC calculation
-        CALL COPVEC(WORK(KINT1O),WORK(KINT1),NINT1)
-        ICC_EXC = 0
-        I_USE_SIMTRH = 0
-        CALL FI(WORK(KINT1),ECCX,1)
-        ECORE = ECORE_INI
-
-        WRITE(6,*) ' cc wf is normalized and transferred to LUC '
-        MX_TERM = 100
-        ICC_EXC = 1
-        XCONV = 1.0D-20
-        I_USE_SIMTRH = 0
-*
-        ICSPC = IETSPC
-        ISSPC = IETSPC
-*
-C       CALL EXPT_REF(LUC,LUSC1,LUHC,LUSC2,LUSC3,XCONV,MX_TERM,
-C    &               WORK(KVEC1),WORK(KVEC2),CCTYPE)
-        CC = INPRDD(WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC1 ,1,LBLK)
-        XNORM = SQRT(CC)
-        FACTOR = 1.0D0/XNORM
-        CALL SCLVCD(LUSC1,LUC,FACTOR,WORK(KVEC1),1,-1)
-      END IF
-*
-      II_DO_CMPCCI = 0
-      IF(II_DO_CMPCCI.EQ.1) THEN
-*. Compare the expanded CI vector with the CI vector on LU17
-C ANADIFF(C1,C2,INSPC,LUC1,LUC2,ICISTR)
-        LU17 = 17
-C       CALL ANADIFF(WORK(KVEC1),WORK(KVEC2),ICISPC,ISM,LU17,LUC)
       END IF
 *
       WRITE(6,*)  ' Returning from LUCIA_GENCC_REL '
