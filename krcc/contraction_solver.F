@@ -131,9 +131,9 @@
       CALL MEMGET('INTE',KFACNH22TOM12,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOM12,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOM12,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOM12,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -215,9 +215,9 @@
       CALL MEMGET('INTE',KFACNH22TOM20,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOM20,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOM20,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOM20,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -299,9 +299,9 @@
       CALL MEMGET('INTE',KFACNH22TOM11,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOM11,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOM11,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOM11,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -383,9 +383,9 @@
       CALL MEMGET('INTE',KFACNH22TOM02,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOM02,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOM02,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOM02,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -467,9 +467,9 @@
       CALL MEMGET('INTE',KFACNH22TOM10,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOM10,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOM10,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOM10,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -551,9 +551,9 @@
       CALL MEMGET('INTE',KFACNH22TOM01,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOM01,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOM01,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOM01,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -635,9 +635,9 @@
       CALL MEMGET('INTE',KFACNH22TOT,4*NH22,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH22TOT,4*NH22,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH22TOT,NH22,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH22TOT,NH22,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -725,9 +725,9 @@
       CALL MEMGET('INTE',KFACNH21TOM11,4*NH21,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH21TOM11,4*NH21,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH21TOM11,NH21,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH21TOM11,NH21,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -809,9 +809,9 @@
       CALL MEMGET('INTE',KFACNH21TOM10,4*NH21,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH21TOM10,4*NH21,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH21TOM10,NH21,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH21TOM10,NH21,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -893,9 +893,9 @@
       CALL MEMGET('INTE',KFACNH21TOM01,4*NH21,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH21TOM01,4*NH21,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH21TOM01,NH21,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH21TOM01,NH21,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -977,9 +977,9 @@
       CALL MEMGET('INTE',KFACNH21TOT,4*NH21,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH21TOT,4*NH21,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH21TOT,NH21,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH21TOT,NH21,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1067,9 +1067,9 @@
       CALL MEMGET('INTE',KFACNH12TOM02,4*NH12,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH12TOM02,4*NH12,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH12TOM02,NH12,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH12TOM02,NH12,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1151,9 +1151,9 @@
       CALL MEMGET('INTE',KFACNH12TOM10,4*NH12,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH12TOM10,4*NH12,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH12TOM10,NH12,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH12TOM10,NH12,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1235,9 +1235,9 @@
       CALL MEMGET('INTE',KFACNH12TOM01,4*NH12,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH12TOM01,4*NH12,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH12TOM01,NH12,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH12TOM01,NH12,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1319,9 +1319,9 @@
       CALL MEMGET('INTE',KFACNH12TOT,4*NH12,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH12TOT,4*NH12,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH12TOT,NH12,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH12TOT,NH12,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1409,9 +1409,9 @@
       CALL MEMGET('INTE',KFACNH20TOM10,4*NH20,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH20TOM10,4*NH20,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH20TOM10,NH20,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH20TOM10,NH20,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1493,9 +1493,9 @@
       CALL MEMGET('INTE',KFACNH20TOT,4*NH20,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH20TOT,4*NH20,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH20TOT,NH20,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH20TOT,NH20,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1583,9 +1583,9 @@
       CALL MEMGET('INTE',KFACNH11TOM01,4*NH11,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH11TOM01,4*NH11,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH11TOM01,NH11,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH11TOM01,NH11,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1667,9 +1667,9 @@
       CALL MEMGET('INTE',KFACNH11TOT,4*NH11,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH11TOT,4*NH11,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH11TOT,NH11,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH11TOT,NH11,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1757,9 +1757,9 @@
       CALL MEMGET('INTE',KFACNH02TOM01,4*NH02,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH02TOM01,4*NH02,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH02TOM01,NH02,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH02TOM01,NH02,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1841,9 +1841,9 @@
       CALL MEMGET('INTE',KFACNH02TOT,4*NH02,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH02TOT,4*NH02,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH02TOT,NH02,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH02TOT,NH02,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -1931,9 +1931,9 @@
       CALL MEMGET('INTE',KFACNH10TOT,4*NH10,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH10TOT,4*NH10,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH10TOT,NH10,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH10TOT,NH10,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2021,9 +2021,9 @@
       CALL MEMGET('INTE',KFACNH01TOT,4*NH01,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNH01TOT,4*NH01,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNH01TOT,NH01,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNH01TOT,NH01,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2112,9 +2112,9 @@
       CALL MEMGET('INTE',KFACNM12TOM02,4*NINTER12,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM12TOM02,4*NINTER12,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM12TOM02,NINTER12,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM12TOM02,NINTER12,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2200,9 +2200,9 @@
       CALL MEMGET('INTE',KFACNM20TOT,4*NINTER20,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM20TOT,4*NINTER20,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM20TOT,NINTER20,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM20TOT,NINTER20,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2288,9 +2288,9 @@
       CALL MEMGET('INTE',KFACNM11TOM01,4*NINTER11,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM11TOM01,4*NINTER11,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM11TOM01,NINTER11,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM11TOM01,NINTER11,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2370,9 +2370,9 @@
       CALL MEMGET('INTE',KFACNM11TOT,4*NINTER11,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM11TOT,4*NINTER11,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM11TOT,NINTER11,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM11TOT,NINTER11,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2458,9 +2458,9 @@
       CALL MEMGET('INTE',KFACNM02TOM01,4*NINTER02,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM02TOM01,4*NINTER02,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM02TOM01,NINTER02,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM02TOM01,NINTER02,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2540,9 +2540,9 @@
       CALL MEMGET('INTE',KFACNM02TOT,4*NINTER02,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM02TOT,4*NINTER02,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM02TOT,NINTER02,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM02TOT,NINTER02,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2628,9 +2628,9 @@
       CALL MEMGET('INTE',KFACNM10TOT,4*NINTER10,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM10TOT,4*NINTER10,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM10TOT,NINTER10,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM10TOT,NINTER10,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2716,9 +2716,9 @@
       CALL MEMGET('INTE',KFACNM01TOT,4*NINTER01,WORK,KFREE,LFREE)
 * The number of ways with a given permutation factor      
       CALL MEMGET('INTE',KCOMBFACNM01TOT,4*NINTER01,WORK,KFREE,LFREE)
-* The start for an operator
+* The start for an operator (Only used for internal checking)
       CALL MEMGET('INTE',KSNM01TOT,NINTER01,WORK,KFREE,LFREE)
-* The finish
+* The finish (Only used for internal checking)
       CALL MEMGET('INTE',KFNM01TOT,NINTER01,WORK,KFREE,LFREE)
 *
 * Now for the actual connections
@@ -2838,7 +2838,13 @@
       CALL OP_COMPARE(WORK(KNH01),NH01,WORK(KINTM01),NINTER01,
      &     WORK(KINT01_IDXS),WORK(KINT01_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM01TOH01),WORK(KLSOBEX))
-*
+* H00 + T
+      print*,' matching 00'
+      ISIMHT00 = NH00 !MIN(NINTER00,NH00)
+      CALL MEMGET('INTE',KM00TOH00,ISIMHT00,WORK,KFREE,LFREE)
+      CALL OP_COMPARE(WORK(KNH00),NH00,WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KT_IDXS),WORK(KT_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
+     &     WORK(KM00TOH00),WORK(KLSOBEX))
       RETURN
       END
 *
