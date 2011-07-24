@@ -30,7 +30,6 @@ foreach( d ${DirDefs} )
     message( STATUS "Found Define: " ${d} )
 endforeach()
 
-message("SVN_REVISION               ${SVN_REVISION}               ")
 message("GIT_REVISION               ${GIT_REVISION}               ")
 
 ## check integer setting of OpenMPI Fortran compiler, mpif90

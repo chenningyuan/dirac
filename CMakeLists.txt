@@ -209,20 +209,13 @@ if(ENABLE_XCFUN)
         )
 endif()
 
-# get svn or git revision number
-set(SVN_REVISION "")
+# get git revision number
 set(GIT_REVISION "")
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     execute_process(
         COMMAND ./get-git-revision
         TIMEOUT 1
         OUTPUT_VARIABLE GIT_REVISION
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(
-        COMMAND ./get-svn-revision
-        TIMEOUT 1
-        OUTPUT_VARIABLE SVN_REVISION
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()

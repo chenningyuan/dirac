@@ -72,7 +72,6 @@ gp/compinfo.h:
 	@echo "#define LIBRARIES \"${LIBS}\"" >> $@
 	@echo "#define DIRAC_BLAS \"${USED_DIRAC_BLAS}\"" >> $@
 	@echo "#define DIRAC_LAPACK \"${USED_DIRAC_LAPACK}\"" >> $@
-	@echo "#define DIRAC_SVN_REVISION \"`$(INSTALL_DIR)/cmake/get-svn-revision`\"" >> $@
 
 gp/gpc.o: gp/compinfo.h
 
@@ -94,7 +93,7 @@ $(TARGET): $(OBJ) $(EXT_OBJ)
 
 clean:
 	@echo "Cleaning the entire DIRAC (recursively) of *.o,*.mod,... files"
-	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gcov' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc'  -o -name '*.p' | grep -v '\.svn'`
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gcov' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc'  -o -name '*.p'`
 
 # Main target here is utils, which builds all utilities and
 # puts them in $(INSTALL_DIR/bin)

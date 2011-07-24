@@ -186,7 +186,6 @@ void sysinf_(fortran_int_t *parcal)
    printf("BLAS_LIBRARIES              : %s \n", BLAS_LIBRARIES              );
    printf("LAPACK_LIBRARIES            : %s \n", LAPACK_LIBRARIES            );
    printf("\n");
-   printf("SVN_REVISION                : %s \n", SVN_REVISION                );
    printf("GIT_REVISION                : %s \n", GIT_REVISION                );
    printf("\n");
    printf("Compilation time            : %s \n", COMPILATION_TIME            );
@@ -223,7 +222,6 @@ void sysinf_(fortran_int_t *parcal)
    printf(" External libraries: %s \n", LIBRARIES);
    printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
    printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
-   printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
 
 #endif /* #ifdef THIS_IS_CMAKE_BUILD */
    fflush(stdout);
