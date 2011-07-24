@@ -20,7 +20,7 @@
      &             KIBCAAB_FOR_CA(MXPSTT),KICAAB_FOR_CA_OP(MXPSTT),
      &             KICAAB_FOR_CA_NUM(MXPSTT),KLCAAB_FOR_CA(MXPSTT),
      &             KNCAAB_FOR_CA(MXPSTT),KLREORDER_CAAB,
-     &             KLAOBEX_CC,KLBOBEX_CC,
+     &             KLAOBEX_CC,KLBOBEX_CC,KUNITCC,
 ! Temp but may become permanent. Lasse
      &             KHTPCO,KCONNH,
      &             KHT0CO,KHT1CO,KHT2CO,KHT3CO,KHT4CO,
@@ -40,7 +40,12 @@
      &             KT_IDXS,KT_IDXF, i_ctcc_fill3,
      &             KINT01_IDXS,KINT01_IDXF,KINT10_IDXS,KINT10_IDXF,
      &             KINT11_IDXS,KINT11_IDXF,KINT02_IDXS,KINT02_IDXF,
-     &             KINT20_IDXS,KINT20_IDXF,KINT12_IDXS,KINT12_IDXF
+     &             KINT20_IDXS,KINT20_IDXF,KINT12_IDXS,KINT12_IDXF,
+     &             KLLSOBEX_M01,KLIBSOBEX_M01,LEN_M01_VEC_CC,KM01,
+     &             KLLSOBEX_M10,KLIBSOBEX_M10,LEN_M10_VEC_CC,KM10,
+     &             KLLSOBEX_M11,KLIBSOBEX_M11,LEN_M11_VEC_CC,KM11,
+     &             KLLSOBEX_M02,KLIBSOBEX_M02,LEN_M02_VEC_CC,KM02,
+     &             KLLSOBEX_M12,KLIBSOBEX_M12,LEN_M12_VEC_CC,KM12
 !
 ! I do not understand why, but the i_ctcc_fill* variables were needed
 ! to avoid padding by gfortran compiler.  / Feb 2011, hjaaj

@@ -12,7 +12,7 @@
      &            IGSOCCG(MXPNGAS,2,MXPICI),IHPVGAS_AB(MXPNGAS,2),
      &            IREFOCC(MXPNGAS),IREFOCC_ACC(MXPNGAS,2),
      &            IOFFINTTYPE(MXPSTT),IRELTYPE(20),ISUMORB(MXPORB),
-     &            ISPINORBIT,INOCOVA,KRCC_NISH(2),
+     &            INOCOVA,KRCC_NISH(2),
      &            IREF_ELEC(MXPNGAS),IREF_AB_ELEC(2,MXPNGAS)
 C NOTE > NGSSHT is the number of shells of given symmetry, not
 C given type. Should be changed ( name and dimension some day )

@@ -9,7 +9,7 @@
      &              KPICLX_F,KPICLY_F,KPICLZ_F,
      &              KDIONEE,KDITWOE,KKR,KIOFF12,KINDK,KINDL,
      &              KINVREO,KNUMINT,KT_CC,KBOSYM,KISREO,
-     &              KINDEX,KMDIASV,KPOSDIA,
+     &              KINDEX,
      &              IMOFFSET, i_glbbas_fill1, KLOOK,
      &              KFI_AL,KFI_BE,KFI_AL_IM,KFI_BE_IM,
      &              KFDIA_AL,KFDIA_BE,KFDIA_AL_IM,KFDIA_BE_IM,
