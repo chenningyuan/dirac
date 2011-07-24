@@ -11,6 +11,7 @@
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
+#include "lucinp.inc"
 *
       INTEGER NKRCCISH(2),NKRCCASH(2),NKRCCSSH(2)
       INTEGER NKRCCFRO(2),NKRCCGSP(2,MXPNGAS),NKRCCGSH(2,MXPNGAS)
