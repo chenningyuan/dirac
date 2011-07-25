@@ -2,12 +2,9 @@
 *.o
 *.pyc
 *.r
-*/*/Makefile
-*/Makefile
 maintenance/delete_flags
 DFCOEF
-Makefile.config
-Makefile.config.[0-9]
+Makefile.config*
 PAMXVC
 basis_dalton/*\*
 cbuild/Makefile.dep

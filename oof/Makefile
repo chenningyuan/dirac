@@ -1,0 +1,1 @@
+/home/radovan/dirac/cbuild/Makefile.dirs

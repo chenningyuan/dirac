@@ -107,33 +107,6 @@ def make_old_file(path):
     times = (atime,mtime)
     os.utime(path,times)
 
-def create_link(source, dest_dir, dest_file):
-    """
-    create symbolic link (Unix), before make a comprehensive check
-    """
-    import os
-    if not os.path.exists(source):
-        print "create_link error ! source does not exist:"+source
-        sys.exit(source+' does not exist ! No linking possible, error exit !')
-    
-    if not os.path.exists(dest_dir):
-        print "create_link error ! destination dir does not exist :"+dest_dir
-    
-    dest = dest_dir+"/"+dest_file
-    
-    # always remove old stuff (file or link) before
-    if os.path.isfile(dest) or os.path.islink(dest):
-        os.remove(dest)
-    
-    if sys.platform != "win32":
-        try:
-            os.symlink(source,dest)
-        except (OSError, ValueError):
-            print "*** linking error !!! "
-            print "source : ",source
-            print "destination : ",dest
-            sys.exit("Linking error ! Check source and destination !")
-
 # list of vital directories and files
 # these are always packaged
 
@@ -656,51 +629,6 @@ for module in dirac_modules:
        f.write(s + '\n')
 f.write(flags + '\n')
 f.close()
-
-# link "cbuild/Makefile.dirs" as "Makefile" over active source code directories
-#fixme: after transition to git remove this part
-#       and commit links
-
-# get position of absolute dirac directory
-dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
-source_dir=dirac_dir+"/cbuild/Makefile.dirs"
-
-directories_to_link = []
-directories_to_link.append('abacus')           
-directories_to_link.append('amfi')             
-directories_to_link.append('arducca')          
-directories_to_link.append('argosecp')         
-directories_to_link.append('cap')              
-directories_to_link.append('cfun')             
-directories_to_link.append('densfit')          
-directories_to_link.append('dirac')            
-directories_to_link.append('dirrci')           
-directories_to_link.append('embedding')        
-directories_to_link.append('eri')              
-directories_to_link.append('fmm')              
-directories_to_link.append('gp')               
-directories_to_link.append('grid')             
-directories_to_link.append('hsmrcc')           
-directories_to_link.append('include')          
-directories_to_link.append('krcc')             
-directories_to_link.append('krmc')             
-directories_to_link.append('luciarel')         
-directories_to_link.append('lucita')           
-directories_to_link.append('main')             
-directories_to_link.append('matrix_operations')
-directories_to_link.append('moltra')           
-directories_to_link.append('oof')              
-directories_to_link.append('openrsp')          
-directories_to_link.append('pdpack')           
-directories_to_link.append('prp')              
-directories_to_link.append('reladc')           
-directories_to_link.append('relccsd')          
-directories_to_link.append('srdft')            
-directories_to_link.append('visual')           
-
-for directory in directories_to_link:
-    create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
-
 
 # prepare files for cmake
 
