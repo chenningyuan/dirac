@@ -1,9 +1,6 @@
 #!/bin/bash
 
 #
-# crontab prescription
-#
-#30 23 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc;  timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running dirac cdash buildup at "$timestamp ; /home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_gcc_atlas_ILP64_cdash/adm/trunk/maintenance/cdash/cdash.pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64.opt  > /home/ilias/QCH_Work/qch_softs/dirac_space/svn_operated/openmpi_gfortran_gcc_atlas_ILP64_cdash/adm/trunk/maintenance/cdash_buildup_log.$timestamp 2>&1 || {echo "cront initiated cdash_buildup failed at "$timestamp}
 #
 
 # for crontab&queue system you have to set up enviroment !
