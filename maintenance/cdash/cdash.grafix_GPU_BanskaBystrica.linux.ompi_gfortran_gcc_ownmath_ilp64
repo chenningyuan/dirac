@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # FYI:  crontab inscription:
-#05 04 * * 1,2,3,4,5,6,7 timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64/maintenance/cdash; $DIRAC/cdash.grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64  >  $DIRAC/cdash_buildup_log_$timestamp
+#30 00 * * 1,2,3,4,5,6,7 timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/milias/work/qch/dirac_git/trunk; $DIRAC/maintenance/cdash/cdash.grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64 > $DIRAC/maintenance/cdash_buildup_log_$timestamp
 
 
 # enviroment variables ...
@@ -9,21 +9,22 @@ export PATH=/home/milias/bin/openmpi_ilp64/bin:/usr/local/sbin:/usr/local/bin:/u
 export LD_LIBRARY_PATH=/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64:/usr/local/lib
 
 # the directory where your DIRAC sits
-DIRAC=/home/milias/work/qch/dirac_git/ompi_gfortran_gcc_ownlibs_ILP64
+DIRAC=/home/milias/work/qch/dirac_git/trunk
+BUILD=build_ompi_gfortran_gcc_ownmath_ilp64
 
 # go to the local DIRAC directory
 cd $DIRAC
-/bin/rm -rf build
-git svn rebase
+/bin/rm -rf $BUILD
+
+git pull origin master
+
 ./pamadm -a 
 
 OMPI=/home/milias/bin/openmpi_ilp64/bin
 # configure step
-./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
 
-cd $DIRAC/build
-
-#make dirac_interfaces
+cd $DIRAC/$BUILD
 make Experimental
 
 exit 0
