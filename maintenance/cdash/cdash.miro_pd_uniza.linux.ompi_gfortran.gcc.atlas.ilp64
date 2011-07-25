@@ -1,21 +1,27 @@
 #!/bin/bash
 
+# cron prescription:
+# 10 00 * * 1,2,3,4,5,6,7  . /etc/profile; . /etc/bash.bashrc; . ~/.bashrc; timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /}; echo "running dirac cmake buildup at "$timestamp ; DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.miro_pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64 > $DIRAC/maintenance/log_out.cdash_$timestamp 2>&1 || {echo "cront initiated cdash buildup failed at "$timestamp}
+
+
 # for crontab&queue system you have to set up enviroment !
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
 
 # the directory where your DIRAC sits
-DIRAC=/home/ilias/qch_work/qch_software/dirac/openmpi_gfortran_gcc_opt_atlas_dirlapack_ILP64/trunk
+DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo
+# build dir
+BUILD=build_openmpi_gfortran_gcc_atlas_dirlapack_opt_ilp64
 
 # go to the local DIRAC directory
 cd $DIRAC
-svn --force up
+git pull origin master
 ./pamadm -a 
-/bin/rm -rf build
+/bin/rm -rf $BUILD
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
-cd $DIRAC/build
+./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
+cd $DIRAC/$BUILD
 #make dirac_interfaces
 #make -j 2
 make Experimental
@@ -23,16 +29,14 @@ make Experimental
 ###
 ### now run the Nightly test suite
 ###
-TMP_DIR=/tmp/dirac_build
-mkdir -p $TMP_DIR
-svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
-cd $TMP_DIR
-./pamadm -a
-
-./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999  -D VERBOSE_OUTPUT=ON
-
-cd $TMP_DIR/build
-make Nightly
-rm -rf $TMP_DIR
+#TMP_DIR=/tmp/dirac_build
+#mkdir -p $TMP_DIR
+#svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
+#cd $TMP_DIR
+#./pamadm -a
+#./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999  -D VERBOSE_OUTPUT=ON
+#cd $TMP_DIR/build
+#make Nightly
+#rm -rf $TMP_DIR
 
 exit 0
