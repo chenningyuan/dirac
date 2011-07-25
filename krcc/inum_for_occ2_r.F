@@ -23,12 +23,14 @@
      &                   NSPOBEX_TP_CC,NDIFF)
 *
       NTEST = 00
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Coupled cluster operator '
-        CALL WRT_SPOX_TP_CC_REL(IOCC,1)
-        WRITE(6,*) ' Corresponding type number ', INUM 
-        WRITE(6,*) ' NDIFF = ', NDIFF
-      END IF
+!radovan: code below is unreachable and contains unmet dependency to WRT_SPOX_TP_CC_REL
+!         depending on compiler/flags this does not link
+!     IF(NTEST.GE.100) THEN
+!       WRITE(6,*) ' Coupled cluster operator '
+!       CALL WRT_SPOX_TP_CC_REL(IOCC,1)
+!       WRITE(6,*) ' Corresponding type number ', INUM 
+!       WRITE(6,*) ' NDIFF = ', NDIFF
+!     END IF
 *
       RETURN
       END

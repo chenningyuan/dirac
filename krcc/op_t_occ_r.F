@@ -49,17 +49,19 @@
       END DO
 *
       NTEST = 00
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Combination of general operator and CC operator'
-        WRITE(6,*) ' Input general and CC operators '
-        CALL WRT_SPOX_TP_CC_REL(IOPOCC,1)
-        CALL WRT_SPOX_TP_CC_REL(ITOCC,1)
-        WRITE(6,*) ' Output operator '
-        CALL WRT_SPOX_TP_CC_REL(IOPTOCC,1)
-        IF(IMZERO.EQ.1) THEN
-          WRITE(6,*) ' Vanishing operator '
-        END IF
-      END IF
+!radovan: code below is unreachable and contains unmet dependency to WRT_SPOX_TP_CC_REL
+!         depending on compiler/flags this does not link
+!     IF(NTEST.GE.100) THEN
+!       WRITE(6,*) ' Combination of general operator and CC operator'
+!       WRITE(6,*) ' Input general and CC operators '
+!       CALL WRT_SPOX_TP_CC_REL(IOPOCC,1)
+!       CALL WRT_SPOX_TP_CC_REL(ITOCC,1)
+!       WRITE(6,*) ' Output operator '
+!       CALL WRT_SPOX_TP_CC_REL(IOPTOCC,1)
+!       IF(IMZERO.EQ.1) THEN
+!         WRITE(6,*) ' Vanishing operator '
+!       END IF
+!     END IF
 *
       RETURN
       END
