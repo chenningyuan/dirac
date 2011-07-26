@@ -27,3 +27,5 @@ test/*/compare
 test/LOGS
 test/list_of_tests
 test/density_at_nuclei/RHC__1F__1
+diracrc
+.diracrc
