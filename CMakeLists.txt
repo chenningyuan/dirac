@@ -264,28 +264,37 @@ add_library(
     ${GENERATED_FILES} 
     )
 
-### collect pairs of main source codes & names of executables produced out of them ###
-set(standalone_executables   ${standalone_executables}   dirac.x                      main/main.F90)
-set(standalone_executables   ${standalone_executables}   dirac_mointegral_export.x    utils/dirac_mointegral_export.F90)
-set(standalone_executables   ${standalone_executables}   rspread.x                    utils/rspread.F)
-set(standalone_executables   ${standalone_executables}   labread.x                    utils/labread.F)
-set(standalone_executables   ${standalone_executables}   twofit.x                     utils/twofit.F)
-set(standalone_executables   ${standalone_executables}   cfread.x                     utils/cfread.F)
-set(standalone_executables   ${standalone_executables}   vibcal.x                     utils/vibcal.F)
-set(standalone_executables   ${standalone_executables}   polfit.x                     utils/polfit.F)
-set(standalone_executables   ${standalone_executables}   mx2fit.x                     utils/mx2fit.F)
 
-include(AddStandaloneExecutables)
-
+set(LIST_OF_EXECUTABLES)
+macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
+    add_executable(
+        ${_executable}
+        ${_source}
+    )
+    set(LIST_OF_EXECUTABLES
+        ${LIST_OF_EXECUTABLES}
+        ${_executable}
+    )
+endmacro()
+compile_standalone(dirac.x                   main/main.F90                     "${LIST_OF_EXECUTABLES}")
+compile_standalone(foo.x                     main/main.F90                     "${LIST_OF_EXECUTABLES}")
+compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${LIST_OF_EXECUTABLES}")
+compile_standalone(rspread.x                 utils/rspread.F                   "${LIST_OF_EXECUTABLES}")
+compile_standalone(labread.x                 utils/labread.F                   "${LIST_OF_EXECUTABLES}")
+compile_standalone(twofit.x                  utils/twofit.F                    "${LIST_OF_EXECUTABLES}")
+compile_standalone(cfread.x                  utils/cfread.F                    "${LIST_OF_EXECUTABLES}")
+compile_standalone(vibcal.x                  utils/vibcal.F                    "${LIST_OF_EXECUTABLES}")
+compile_standalone(polfit.x                  utils/polfit.F                    "${LIST_OF_EXECUTABLES}")
+compile_standalone(mx2fit.x                  utils/mx2fit.F                    "${LIST_OF_EXECUTABLES}")
 foreach(
-    BINARY
-    ${executables}
+    EXECUTABLE
+    ${LIST_OF_EXECUTABLES}
     )
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${BINARY} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
     target_link_libraries(
-        ${BINARY}
+        ${EXECUTABLE}
         dirac
         ${LIBS}
         )
