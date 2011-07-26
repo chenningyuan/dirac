@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #
+# 20 00 * * 1,2,3,4,5,6,7  DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/dirac-git-repo; $DIRAC/maintenance/cdash/cdash.pd_uniza.linux.ompi_gfortran.gcc.atlas.ilp64.opt  > $DIRAC/maintenance/cdash_buildup_log
 #
 
 # for crontab&queue system you have to set up enviroment !
@@ -21,7 +22,7 @@ git pull origin master
 ./pamadm -a 
 
 # configure step,
-./setup --fc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpif90 --cc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpicc --cpp=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD --debug
+./setup --fc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpif90 --cc=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpicc --cpp=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin/mpiCC -D BUILDNAME="pd_uniza.linux.openmpi_gfortran_gcc_atlas.ilp64.opt" --mpi --math="-L/home/ilias/bin/atlas-lapack-ilp64/ATLAS/atlas_lapack_ILP64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:40:00" -D VERBOSE_OUTPUT=ON --build=$BUILD 
 #
 cd $DIRAC/$BUILD
 make Experimental
