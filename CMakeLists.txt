@@ -227,7 +227,7 @@ command='git show' # instead of 'git rev-parse HEAD 2> /dev/null'
 p=subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 stdout, stderr = p.communicate()
 if stderr:
-    print 'uknown (git not functional)'
+    print 'unknown'
 else: # process first three lines of the standard output
     all_out=stdout.splitlines()[:3]
     git_rev=all_out[0].split()
