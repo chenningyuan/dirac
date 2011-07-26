@@ -1,6 +1,6 @@
 module xc_response
 
-#ifdef MOD_XCFUN
+#if defined MOD_XCFUN && MOD_OPENRSP
   use xc_derv
   use density_eval
   use openrsp_cfg
