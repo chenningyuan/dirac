@@ -1138,6 +1138,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # serial run (also in debugger)
             if self.debug:
                 # first check if debugger is set
+                if self.debugger is None:
+                    sys.exit("though debug wanted, debugger not assigned !")
                 if find_executable(self.debugger) is None:
                     print 'no debugger found in the .diracrc file !'
                     sys.exit()
@@ -1828,6 +1830,8 @@ def find_executable(executable, path=None):
     """
     import os
     import sys
+    if not executable:
+        sys.exit("find_executable: no executable privided on input!")
     if path is None:
         path = os.environ['PATH']
     paths = path.split(os.pathsep)
