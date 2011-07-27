@@ -391,12 +391,3 @@ add_custom_command(
         POST_BUILD COMMAND ../utils/diagn.py
     endif()
 )
-
-# check the "diracrc" configuration files containing pam flags
-# the external script informs user about existing diracrc files and their content
-# usefull in order not be confused with several diracrc files
-execute_process(
-    COMMAND ./diracrc.py --install=${PROJECT_SOURCE_DIR}
-    TIMEOUT 1
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-)
