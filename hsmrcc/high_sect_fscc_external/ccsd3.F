@@ -1191,8 +1191,13 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         end if
         do 80 j=1,lngth
 ! miro: might get index leak for the "itmp" array !
+          itmp_indx=ndp3+(ii-1)*ndp8+j
+          if (itmp_indx.gt.ndp4) then
+            call quit('reord6: itmp ugly index leak!')
+          endif
           gen(istrtt2+ije1(i-1)+j)=
-     1    gen(istrtf2+ije2(i-1)+itmp(ndp3+(ii-1)*ndp8+j))
+!    1    gen(istrtf2+ije2(i-1)+itmp(ndp3+(ii-1)*ndp8+j))
+     1    gen(istrtf2+ije2(i-1)+itmp(itmp_indx))
 80      continue
 10    continue
 
