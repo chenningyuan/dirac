@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+#
 # Python replacement of the previous bash pam script
 #
 # Written by Miro ILIAS, Matej Bel University,
@@ -149,14 +149,12 @@ class pam_enviroment:
         exec_position=os.path.join(install_dir_default,self.dirac_exe_file)
         if os.path.isfile(exec_position):
             self.dirac_exe = exec_position
-            print self.dirac_exe_file,'taken from the dirac installation directory'
         else:
             # does not exist, try build directory
             exec_position=os.path.join(install_dir_default,"build",self.dirac_exe_file)
             if os.path.isfile(exec_position):
                 # assign build/dirac.x
                 self.dirac_exe = exec_position
-                print self.dirac_exe_file,'taken from the dirac build directory'
             else:
                 self.dirac_exe = None
 
@@ -1516,18 +1514,19 @@ Options are also read from the ~/.dirac and .diracrc files."""
         else:
             dirac_run = 'serial'
         print
-        print '  output from the DIRAC python script'
+        print '  DIRAC python script running:'
         print
         if not self.silent:
-            print '  input file     :', self.input_dirac
-            print '  molecule file  :', self.input_molecule
             print '  user           :', self.user_name
             print '  host           :', self.master,' (',self.master_full,')'
             print '  ip             :', self.hostname_ip
             print '  date and time  :', datetime.datetime.now()
+            print '  input dir      :', self.input_directory
+            print '  input file     :', self.input_dirac
+            print '  molecule file  :', self.input_molecule
             print '  pam command    :', self.pam_command
             print '  pam args       :', ' '.join(sys.argv[1:])
-            print '  input dir      :', self.input_directory
+            print '  excutable      :', self.dirac_exe
             print '  scratch dir    :', self.scratch_dir
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run
