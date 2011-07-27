@@ -87,7 +87,7 @@ macro(cache_math_result math_type _service)
 	endif()
 
 	if (${_SERVICE}_FOUND)
-		message("-- ${_SERVICE} found: ${${_SERVICE}_LIBRARIES}")
+		message("-- ${math_type} ${_SERVICE} found")
 		set(HAVE_${_SERVICE} ON CACHE INTERNAL "Defined if ${_SERVICE} is available")
 		set(${_SERVICE}_LIBRARIES ${${_SERVICE}_LIBRARIES} CACHE STRING "${_SERVICE} libraries")
 		mark_as_advanced(${_SERVICE}_LIBRARIES)
