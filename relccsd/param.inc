@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : param.inc
 C
       REAL*8 ACCUR
       PARAMETER (ACCUR=1.D-15)

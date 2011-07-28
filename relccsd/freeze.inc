@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : freeze.inc
 C
       PARAMETER (MAXFROZ=100)
       COMMON/FREEZE/NFROZEN,IFROZ(MAXFROZ,32)

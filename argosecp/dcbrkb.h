@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 1.5 $
-! DATE    : $Date: 2004/05/26 13:06:54 $
 ! FILE    : dcbrkb.h
 !
 ! ** COMMON block RKB pre-projection

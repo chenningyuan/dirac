@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbgen.h
 !
 !*** General information in DIRAC ***

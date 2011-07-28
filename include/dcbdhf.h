@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbdhf.h
 !
 !*** Dirac-Fock calculations ***

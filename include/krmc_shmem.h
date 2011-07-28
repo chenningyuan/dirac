@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : krmc_shmem.h
 !
 !                MPI memory pointer 

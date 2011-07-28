@@ -19,7 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C FILE    : dirv1c.F
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck type1drv */
       SUBROUTINE TYPE1DRV(OP1INT,WORK,LWORK,DOINT,OMITVNUC,QMAT,IPRINT) 

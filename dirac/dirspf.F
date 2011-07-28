@@ -23,9 +23,6 @@ C     Contains the modifications to activate the spinfree option in
 C     the code
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirspf.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spfscf */

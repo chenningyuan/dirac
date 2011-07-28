@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dcbexp.h
 C
 C*****************************************************************************
 C  DCBEXP:  Expectation values

@@ -23,8 +23,6 @@
 
  /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
  * FILE    : ccunix.c
  *
         Access to C I/O routrines from FORTAN.

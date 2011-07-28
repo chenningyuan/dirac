@@ -1,4 +1,3 @@
-C FILE    : printpkg.F
 C
 C
 C  /* Deck outpak */

@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision: 6986 $
-! DATE    : $Date: 2008-06-03 12:20:27 +0200 (Di, 03 Jun 2008) $
 ! FILE    : luciprop.h
 !
 !     This file conatins all information needed for 

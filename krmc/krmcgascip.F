@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision: 7375 $
-C DATE    : $Date: 2008-08-15 16:30:18 +0200 (Fri, 15 Aug 2008) $
-C FILE    : krmcgascip.F
 C main authors: H.J.Aa. Jensen & J. Thyssen
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbgrd.h
 !
 ! Depencies: mxcent.h

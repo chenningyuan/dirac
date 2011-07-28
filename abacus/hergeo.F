@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : hergeo.F
 C
 C
 #ifdef OLD_LOG

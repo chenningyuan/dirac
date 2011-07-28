@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbkrmc.h
 !
 !*** KR-MCSCF calculations ***

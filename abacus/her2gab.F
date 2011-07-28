@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her2gab.F
 C
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,

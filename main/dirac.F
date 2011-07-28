@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirac.F
 C
 C***********************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)

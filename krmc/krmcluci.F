@@ -20,7 +20,6 @@
 !dirac_copyright_end
 
 C
-C FILE    : krmcluci.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_SETUP()

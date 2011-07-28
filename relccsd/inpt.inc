@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : inpt.inc
 C
       PARAMETER (MAXOP=15,MAXFR=25)
       COMMON/CCINTR/INTERFACE

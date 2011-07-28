@@ -1,7 +1,5 @@
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
  * FILE    : patchlevel.h
  *
  */

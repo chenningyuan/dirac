@@ -19,7 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C FILE    : hersym.F
 #include <single.h>
 C
 #ifdef OLD_LOG

@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : cigosc.F
 C
       SUBROUTINE PAMGOS(CI,MAXCORE,NELECT,NGAS,IGAS,
      &                  MINE,MAXE,NGASO)

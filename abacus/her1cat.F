@@ -19,7 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C FILE    : her1cat.F
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck catdrv */
       SUBROUTINE CATDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,

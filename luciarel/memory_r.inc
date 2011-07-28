@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : memory_r.inc
 C
 C memory information for LUCIAREL
 C

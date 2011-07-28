@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : parluci.h
 !
 !                     PARALLEL INFORMATION

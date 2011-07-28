@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : mpi_framework.F90
 !
 !      /* Deck MPIXINIT */

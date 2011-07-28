@@ -1,6 +1,4 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbopt.h
 !
 !*** 2nd order opt. ***

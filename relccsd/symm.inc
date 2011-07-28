@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : symm.inc
 C
 C     The essential double group symmetry information.
 C

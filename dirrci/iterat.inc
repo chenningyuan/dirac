@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : iterat.inc
 C SOURCE  : $Source$
 C
       COMMON/DAVIDC/DCORR(N8)

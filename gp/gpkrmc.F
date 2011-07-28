@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : gpkrmc.F
 C
 C Purpose: General Purpose utility routines originally made for krmc,
 C          but some are now also used other places (e.g. prp/).

@@ -1,7 +1,4 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : mempoint.inc
 C SOURCE  : $Source$
 C
       COMMON/IPOINT/ITR ,ITI ,IIK ,IIL ,ITIR,ITII, M1 ,M2,

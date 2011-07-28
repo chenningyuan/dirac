@@ -23,8 +23,6 @@
 
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
  * FILE    : gpc.c
  *
  * frac2i:

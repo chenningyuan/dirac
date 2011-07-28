@@ -1,4 +1,3 @@
-C FILE    : eispack.F
 C
 C
 C

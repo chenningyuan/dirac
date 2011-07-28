@@ -1,4 +1,3 @@
-C FILE    : gpblas.F
 C
 C These routines have been downloaded from http://www.netlib.org/blas 
 C on august 31, 2001 and form the so-called reference implementation

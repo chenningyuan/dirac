@@ -1,7 +1,5 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision$
-! DATE    : $Date$
 ! FILE    : dcbham.h
 !
 !*****************************************************************************

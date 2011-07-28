@@ -20,7 +20,6 @@
 !dirac_copyright_end
 
 C
-C FILE    : graphic.F
 C
 #include <single.h>
 C

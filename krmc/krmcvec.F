@@ -19,9 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : krmcvec.F
 C
       SUBROUTINE KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &     DKAPPA,CREF,WORK,LWORK)
