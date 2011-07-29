@@ -1,4 +1,4 @@
-module NumDer
+module num_der
 implicit none
 
 public  :: nddrv
@@ -691,4 +691,4 @@ contains
 !================================================================================!
 !                             END OF THE MODULE                                  !
 !================================================================================!
-end module NumDer
+end module num_der
