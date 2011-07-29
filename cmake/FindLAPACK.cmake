@@ -90,6 +90,7 @@ function(find_lapack)
 endfunction()
 
 macro(find_default)
+	set(lapack_libs lapack)
 	set(path_suffixes lib)
 	find_math_header(lapack)
 	find_math_libs(lapack)

@@ -82,6 +82,7 @@ macro(find_default)
 	else()
 	    set(path_suffixes lib)
 	endif()
+	set(blas_libs blas)
 
 	find_math_header(blas)
 	find_math_libs(blas)
