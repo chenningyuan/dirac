@@ -347,11 +347,11 @@ class pam_enviroment:
             sys.stdout.flush()
 
         print '  ------------------------------------------------------------------------------'
-        print '       Total size of all files :  %10.3f  MB ' % sum_filesize_mb
+        print '      Total size of all files :  %10.3f  MB ' % sum_filesize_mb
 
         disk = disk_space(self.scratch_dir)
         print '      Disk info:  used    available   capacity [GB]'
-        print '           %10.3f     %10.3f     %10.3f ' % (disk.used,disk.available,disk.capacity)
+        print '             %10.3f %10.3f   %10.3f ' % (disk.used,disk.available,disk.capacity)
         print ''
         sys.stdout.flush()
 
