@@ -34,9 +34,6 @@ You can see the CMake command using::
 
 and use it directly to call CMake without setup.
 
-It is HIGHLY recommended to run the test set after you have compiled
-DIRAC (see further below).
-
 
 Basic installation without the setup script
 -------------------------------------------
@@ -136,6 +133,9 @@ Running tests
 You can run the test suite with::
 
   $ make test
+
+It is HIGHLY recommended to run the test set after you have compiled
+DIRAC.
 
 
 Compiling in verbose mode
