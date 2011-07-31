@@ -106,6 +106,15 @@ Alternatively::
   $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
   $ make
 
+Exporting MATH_ROOT is equivalent to calling setup with --math-dir::
+
+  $ ./setup --math-dir=/opt/intel/mkl
+
+If automatic detection of math libraries fails for whatever reason, you can
+always call the libraries explicitly like here::
+
+  $ ./setup --math="-L/path -lfoo -lbar"
+
 
 Running CMake using GUI
 -----------------------

@@ -68,7 +68,7 @@ group.add_option('--math-dir',
                  action='store',
                  dest='mathdir',
                  default=None,
-                 help='directiry containing math libraries [default: pick automatically]',
+                 help='directory containing math libraries [default: pick automatically]',
                  metavar='PATH')
 group.add_option('--internal-math',
                  action='store_true',
