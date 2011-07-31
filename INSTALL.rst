@@ -87,9 +87,10 @@ The CMake configuration script will automatically find them if you define MATH_R
 
   $ export MATH_ROOT='/opt/intel/mkl'
 
-Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append
-the correct paths depending on the processor and the default integer type.
-If your MKL library resides in /opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is::
+Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append the
+correct paths depending on the processor and the default integer type.  If the
+MKL libraries that you want to use reside in
+/opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is defined as::
 
   $ export MATH_ROOT='/opt/intel/mkl/10.0.3.020'
 
