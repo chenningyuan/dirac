@@ -64,6 +64,7 @@ function(find_lapack)
                             find_mkl("mkl_lapack_ilp64")
                         else()
                             find_mkl("mkl_lapack_lp64")
+                            find_mkl("mkl_lapack") # miro: solution for mkl/10.0.3.020/lib/em64t
                         endif()
                     else()
 			find_mkl("mkl_lapack")
