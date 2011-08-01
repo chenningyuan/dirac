@@ -5,12 +5,14 @@ public  :: nddrv
 
 private :: forwder, backder, centder, mul2exp, stir1, forwn, backn, centn, centnmu
 
+integer*4, private :: luout
+
 contains
 
 !================================================================================!
 !================================================================================!
 
-  subroutine nddrv(nder,derstr,ipoint,nprint,npoints,xcoor,ycoor,yerr,derres)
+  subroutine nddrv(nder,derstr,ipoint,nprint,lunit,npoints,xcoor,ycoor,yerr,derres)
   !------------------------------------------------------------------------------!
   !      Driver for numerical calculation of derivatives in some point           !
   !------------------------------------------------------------------------------!
@@ -37,7 +39,7 @@ contains
 
   ! external variables
   character*(*), intent(in) :: derstr
-  integer*4,     intent(in) :: nder, nprint, npoints, ipoint
+  integer*4,     intent(in) :: nder, nprint, lunit, npoints, ipoint
   real*8,        intent(in) :: yerr
 
   real*8,        intent(in), dimension(npoints) :: xcoor, ycoor
@@ -55,15 +57,19 @@ contains
   real*8,    allocatable, dimension(:,:) :: dcon, err3c, dpar
 
   !------------------------------------------------------------------------------!
+  luout = lunit
   step = dabs(xcoor(1)-xcoor(2))
 
   ! check the uniformity of step length
   do i=2, npoints-1
     tmp = dabs(xcoor(i)-xcoor(i+1))
     if(dabs(step-tmp) > tresh)then
-      write(6,*)" You don't have uniform step length"
-      write(6,'(a,d20.12)')' x(1)-x(2) =',step
-      write(6,'(a,i3,a,d20.12)')' i =',i,' x(i)-x(i+1) =',tmp
+      write(luout,*)" You don't have uniform step length"
+      write(luout,'(a,d20.12)')'  x(1)-x(2) =',step
+      write(luout,'(a,i3,a,d20.12)')'  i =',i,';  x(i)-x(i+1) =',tmp
+      write(luout,*)' STOP in module num_der'
+      write(0,*)' STOP in module num_der (check output)'
+      stop
     endif
   enddo
 
@@ -116,17 +122,23 @@ contains
 
   ! Print results
   if(nprint == 1)then
+    write(luout,'(25x,a,10x,a,5x,a)') 'Derivation','Partial sum','Err. from err. in f(x)'
     do i=1, nder
       if(derstr == 'CENTRAL') strres = ' SUM delta(mu)'
       if(derstr == 'FORWARD') strres = ' SUM forward  '
       if(derstr == 'BACKWARD')strres = ' SUM backward '
       if(ndmax(i) /= 0)then
         do k=1,ndmax(i)
-          write(6,'(1x,i1,a,i1,a,3es20.10)') k,'st order d^',i,' = ', &
-                                             dcon(i,k),dpar(i,k),err3c(i,k)
+          if(k==1)then
+            write(luout,'(1x,i1,a,i1,a,es21.10,21x,es21.10)') &
+             k,'. order d^',i,'  = ',dcon(i,k),err3c(i,k)
+          else
+            write(luout,'(1x,i1,a,i1,a,3es21.10)') &
+              k,'. order d^',i,'  = ',dcon(i,k),dpar(i,k-1),err3c(i,k)
+          endif
         enddo
-        write(6,'(a14,a,es20.10,20x,es20.10)')strres,' = ',derres(i,1),derres(i,3)
-        write(6,*)
+        write(luout,'(a14,a,21x,2es21.10)')strres,' = ',derres(i,1),derres(i,3)
+        write(luout,*)
       endif
     enddo
   endif
@@ -181,8 +193,8 @@ contains
 
   nmax = npoints - ipoint    ! maximum number of differences
   if(nmax < ider)then
-    write(6,'(a,i3,a)') "You don't have enough points for calculating ",ider,"th derivation"
-    write(6,*) 'WARNING in forwder'
+    write(luout,'(a,i3,a)') "You don't have enough points for calculating ",ider,"th derivation"
+    write(luout,*) 'WARNING in forwder (module num_der)'
     ndmax = 0
     return
   endif
@@ -266,8 +278,8 @@ contains
 
   nmax = ipoint - 1          ! maximum number of differences
   if(nmax < ider)then
-    write(6,'(a,i3,a)') "You don't have enough points for calculating ",ider,"th derivation"
-    write(6,*) 'WARNING in backder'
+    write(luout,'(a,i3,a)') "You don't have enough points for calculating ",ider,"th derivation"
+    write(luout,*) 'WARNING in backder (module num_der)'
     ndmax = 0
     return
   endif
@@ -350,8 +362,8 @@ contains
 
   nmax = 2 * min(npoints-ipoint,ipoint-1)
   if(nmax < ider)then
-    write(6,'(a,i3,a)') "You don't have enough points for calculating ",ider,"th derivation"
-    write(6,*) 'WARNING in centder'
+    write(luout,'(a,i3,a)') "You don't have enough points for calculating ",ider,"th derivation"
+    write(luout,*) 'WARNING in centder (module num_der)'
     ndmax = 0
     return
   endif
@@ -573,8 +585,8 @@ contains
   ip = ipoint + 1
 
   if (ip == (npoints+1)) then
-    write(20,'(a)') ' Not enough points to calculate your forward difference !!'
-    write(20,'(a,i4)') ' Warning in forwn; N =',N
+    write(luout,'(a)') ' Not enough points to calculate your forward difference !!'
+    write(luout,'(a,i4)') ' WARNING in forwn (module num_der); N =',N
     ier = 1; resfor = 0.0d0
   endif
 
@@ -605,8 +617,8 @@ contains
   ip = ipoint - 1
 
   if (ip < 0) then
-    write(20,'(a)') ' Not enough points to calculate your backward difference !!'
-    write(20,'(a,i4)') ' Warning in backn; N =',N
+    write(luout,'(a)') ' Not enough points to calculate your backward difference !!'
+    write(luout,'(a,i4)') ' WARNING in backn (module num_der); N =',N
     ier = 1; resbac = 0.0d0
   endif
 
@@ -638,8 +650,8 @@ contains
   ip = ipoint + 1
 
   if ( ( im == 0 ) .or. (ip == (npoints+1)) ) then
-    write(20,'(a)') ' Not enough points to calculate your central difference !!'
-    write(20,'(a,i4)') ' Warning in centn; N =',N
+    write(luout,'(a)') ' Not enough points to calculate your central difference !!'
+    write(luout,'(a,i4)') ' WARNING in centn (module num_der); N =',N
     ier = 1; resdel = 0.0d0
   endif
 
@@ -674,8 +686,8 @@ contains
   ip = ipoint + 1
 
   if ( ( im == 0 ) .or. (ip == (npoints+1)) ) then
-    write(20,'(a)') ' Not enough points to calculate your central difference !!'
-    write(20,'(a,i4)') ' Warning in centnmu; N =',N
+    write(luout,'(a)') ' Not enough points to calculate your central difference !!'
+    write(luout,'(a,i4)') ' WARNING in centnmu (module num_der); N =',N
     ier = 1; resdelmu = 0.0d0
   endif
 
