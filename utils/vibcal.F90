@@ -43,11 +43,13 @@
 
   real*8            :: u, v2, v3, v4, p0, p1, p2, um, omega, step
   real*8            :: fac, a0, a1, a2, a3, v, w, har, anh, tot, dif, dif2
+  real*8            :: err1, err2, err3, edifb, edifh
 
   real*8, parameter :: dp5=0.5d0, d1=1.0d0, dp16=0.0625d0, xtcm=2.19474625d+05
   real*8, parameter :: engerr=1.0d-10
 
-  real*8, dimension ( 0:4 ) :: b, h
+  real*8, dimension( 0:4  ) :: b, h, eb, eh
+  real*8, dimension(nder,2) :: errder
   real*8, dimension(nder,3) :: derres
 
   real*8, allocatable, dimension(:) :: xcoor, ycoor
@@ -173,6 +175,9 @@
 
     ! store results
     v2 = derres(2,1); v3 = derres(3,1); v4 = derres(4,1)
+    do i=1,nder
+      errder(i,1) = max(derres(i,2),derres(i,3))
+    enddo
 
     !----------------------------!
     !  Get property derivatives  !
@@ -199,10 +204,13 @@
     endif
 
     ! calculate derivatives and estimate errors
-    call nddrv(nder,'CENTRAL',ipoint,nprint,ilogg,npoints,xcoor,ycoor,engerr,derres)
+    call nddrv(nder,'CENTRAL',ipoint,nprint,ilogg,npoints,xcoor,ycoor,0.0d0,derres)
 
     ! store results
     p0 = ycoor(ipoint); p1 = derres(1,1); p2 = derres(2,1)
+    do i=1,nder
+      errder(i,2) = max(derres(i,2),derres(i,3))
+    enddo
   endif
 
   write(ilogg,*) 'Reduced mass in Daltons: ',u
@@ -215,8 +223,11 @@
   write(ilogg,*) '2nd property derivative: ', p2
 
   !-----------------------------------------------------------------------------!
-  !                                Main code                                    !
+  !                          Calculate PV shift                                 !
   !-----------------------------------------------------------------------------!
+  !--------------------------------------------!
+  ! calculate harmonic and anharmonic PV shift !
+  !--------------------------------------------!
   um = u*xfamu
   omega = sqrt(v2/um)
   fac=d1/um/omega
@@ -227,7 +238,6 @@
 
   write(ilogg,'(a,a)') '    n  Term 1 (P0)     Term 2 (P2)     Term 3 (P1 V3) ', &
                        ' Term 4 (P2 V4)  Harmonic cont.  Anharm. cont.   Total value'
-
   do n = 0,4
     v = n + dp5
     w = n*n+n+dp5
@@ -238,17 +248,53 @@
     h(n) = har
     write(ilogg,'(i5,7e16.8)') n,a0,a1*v,a2*v,a3*w,har,anh,tot
   enddo
+
+  !------------------!
+  ! error estimation !
+  !------------------!
+  if(keymeth == 2)then
+    err1 = dp5*fac*dabs(errder(2,2))
+    err2 = dp5*fac*fac/omega * (dabs(p1*errder(3,1)) + dabs(v3*errder(1,2)))
+    err3 = dp16*fac*fac*fac/omega * (dabs(p2*errder(4,1)) + dabs(v4*errder(2,2)))
+  endif
+
+  if(keymeth == 2)then
+    write(ilogg,'(a,a)') '    n  Term 1 (P0)     Term 2 (P2)     Term 3 (P1 V3) ', &
+                         ' Term 4 (P2 V4)  Total error'
+    do n = 0,4
+      v = n + dp5
+      w = n*n+n+dp5
+      eb(n) = v*err1 + v*err2 + w*err3
+      eh(n) = v*err1
+      write(ilogg,'(i5,5e16.8)') n,0.0d0,v*err1,v*err2,w*err3,eb(n)
+    enddo
+    edifb = xthz * 1000.0d0 * (eb(0) + eb(1))
+    edifh = xthz * 1000.0d0 * (eh(0) + eh(1))
+  endif
+
+  !---------------!
+  ! Print results !
+  !---------------!
   dif = b(1)-b(0)
   dif2 = dif*xthz*1000.0d0
+  if(keymeth == 2)then
+    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)') 'Difference :',dif, ' au = ',dif2, ' mHz  +-',edifb
+    write(ilogg,'(a,f12.3,a,f8.4)') 'PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifb
+  else
+    write(ilogg,'(a,e16.8,a,f10.1,a)') 'Difference :',dif, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f12.3,a)') 'PV shift:',2.0d0*dif2,' mHz'
+  endif
 
-  write(ilogg,'(a,e16.8,a,f10.1,a)') 'Difference :',dif, ' au = ',dif2, ' mHz'
-  write(ilogg,'(a,f12.3,a)') 'PV shift:',2.0d0*dif2,' mHz'
   write(ilogg,'(a)') 'Harmonic model:'
-
   dif = h(1)-h(0)
   dif2 = dif*xthz*1000.0d0
-  write(ilogg,'(a,e16.8,a,f10.1,a)') 'Difference :',DIF, ' au = ',dif2, ' mHz'
-  write(ilogg,'(a,f12.3,a)') 'PV shift:',2.0d0*dif2,' mHz'
+  if(keymeth == 2)then
+    write(ilogg,'(a,e16.8,a,f10.1,a,f8.4)') 'Difference :',DIF, ' au = ',dif2, ' mHz  +-',edifh
+    write(ilogg,'(a,f12.3,a,f8.4)') 'PV shift:',2.0d0*dif2,' mHz  +-',2.0d0*edifh
+  else
+    write(ilogg,'(a,e16.8,a,f10.1,a)') 'Difference :',DIF, ' au = ',dif2, ' mHz'
+    write(ilogg,'(a,f12.3,a)') 'PV shift:',2.0d0*dif2,' mHz'
+  endif
 
   !-----------------------------------------------------------------------------!
   end program
