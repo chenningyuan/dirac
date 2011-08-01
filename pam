@@ -251,8 +251,10 @@ class pam_enviroment:
 
     #  read diracrc file, full path 
         self.diracrc_file = None
-    # variable for the diracrc file argument list, full path
-        self.diracrc_args = None
+    # variable for the sole diracrc file argument list for pam
+        self.diracrc_args = []
+    # list of all pam arguments
+        self.pam_args = []
 
     def show_settings(self):
         '''
@@ -345,11 +347,11 @@ class pam_enviroment:
             sys.stdout.flush()
 
         print '  ------------------------------------------------------------------------------'
-        print '       Total size of all files :  %10.3f  MB ' % sum_filesize_mb
+        print '      Total size of all files :  %10.3f  MB ' % sum_filesize_mb
 
         disk = disk_space(self.scratch_dir)
         print '      Disk info:  used    available   capacity [GB]'
-        print '           %10.3f     %10.3f     %10.3f ' % (disk.used,disk.available,disk.capacity)
+        print '             %10.3f %10.3f   %10.3f ' % (disk.used,disk.available,disk.capacity)
         print ''
         sys.stdout.flush()
 
@@ -402,14 +404,15 @@ class pam_enviroment:
                     if len(l) > 0:
                         if l[0] != '#':
                             for a in shlex.split(l):
+                                self.diracrc_args.append(os.path.expandvars(a))
                                 fullargs.append(os.path.expandvars(a))
                                 read_args=True
                 if read_args:
                     break
             except Exception:
                 pass
-        if fullargs: # save info about the diracrc file
-            self.diracrc_args = fullargs 
+        self.pam_args = fullargs 
+        if self.diracrc_args: # save info about the diracrc file
             self.diracrc_file = path
         return fullargs
 
@@ -1525,11 +1528,11 @@ Options are also read from the ~/.dirac and .diracrc files."""
             print '  ip             :', self.hostname_ip
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
-            print '  input file     :', self.input_dirac
-            print '  molecule file  :', self.input_molecule
             print '  pam command    :', self.pam_command
-            print '  pam args       :', ' '.join(sys.argv[1:])
-            print '  excutable      :', self.dirac_exe
+            # we have all args here, therefore canceled printout of input file & molecule file 
+            print '  all pam args   :', self.pam_args
+            if self.dirac_exe not in self.pam_args:
+                print '  excutable      :', self.dirac_exe
             print '  scratch dir    :', self.scratch_dir
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run

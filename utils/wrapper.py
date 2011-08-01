@@ -12,6 +12,8 @@ and the directories will be deleted together with the main tmpdir. No files are
 saved from the remote hosts.
 
 Use --launcher="mpirun OPTIONS" with the appropriate OPTIONS to run an mpi job.
+
+Use --launcher="valgrind OPTIONS" to debug with valgrind.
 """
     W = Wrapper()
     parser = optparse.OptionParser(usage)

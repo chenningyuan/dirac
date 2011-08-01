@@ -10,8 +10,9 @@ template for the execution of a particular test. Have a look at present menu
 files to get inspirations and to see working examples.
 
 The whole test suite or part of the test suite is run with the 'runtest' command
-in the ../ directory. For information about options type:
-$ ../runtest --help
+in the ../ directory. For information about options type::
+
+  $ ../runtest --help
 
 
 The filtering
