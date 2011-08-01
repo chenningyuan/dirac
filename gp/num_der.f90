@@ -12,7 +12,7 @@ contains
 !================================================================================!
 !================================================================================!
 
-  subroutine nddrv(nder,derstr,ipoint,nprint,lunit,npoints,xcoor,ycoor,yerr,derres)
+  subroutine nddrv(nder,derstr,ipoint,nprint,lunit,npoints,xcoor,ycoor,yerr,derres,ierr)
   !------------------------------------------------------------------------------!
   !      Driver for numerical calculation of derivatives in some point           !
   !------------------------------------------------------------------------------!
@@ -40,6 +40,7 @@ contains
   ! external variables
   character*(*), intent(in) :: derstr
   integer*4,     intent(in) :: nder, nprint, lunit, npoints, ipoint
+  integer*4,     intent(out):: ierr
   real*8,        intent(in) :: yerr
 
   real*8,        intent(in), dimension(npoints) :: xcoor, ycoor
@@ -115,6 +116,9 @@ contains
         ntmp        = int(dlog10(dabs(dcon(i,k))))  ! get mantissa of dcon(i,k)
         err3c(i,k)  = err3c(i,k) * yerr
         derres(i,3) = derres(i,3) + err3c(i,k)
+        if(k/=1)then
+          if(dcon(i,k) > dcon(i,k-1))ierr = i
+        endif
       enddo
       derres(i,2) = dexp(dfloat(ntmp)*dlog(10.0d0))
     endif
