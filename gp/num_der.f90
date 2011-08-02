@@ -49,7 +49,7 @@ contains
   ! internal variables
   character :: strres*14
 
-  integer*4 :: i, k, ntmp, ier
+  integer*4 :: i, k, ntmp, itmp, ier
 
   real*8, parameter :: tresh = 1.0d-10
   real*8 :: step, tmp
@@ -109,6 +109,7 @@ contains
 
   ! calculate result from contributions
   do i=1, nder
+    itmp=0
     if(ndmax(i) /= 0)then
       do k=1,ndmax(i)
         derres(i,1) = derres(i,1) + dcon(i,k)
@@ -117,9 +118,10 @@ contains
         err3c(i,k)  = err3c(i,k) * yerr
         derres(i,3) = derres(i,3) + err3c(i,k)
         if(k/=1)then
-          if(dcon(i,k) > dcon(i,k-1))ierr = i
+          if(dabs(dcon(i,k)) > dabs(dcon(i,k-1)))itmp=1
         endif
       enddo
+      if(itmp==1)ierr = ierr + 10**(i-1)
       derres(i,2) = dexp(dfloat(ntmp)*dlog(10.0d0))
     endif
   enddo

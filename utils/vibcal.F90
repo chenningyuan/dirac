@@ -339,10 +339,10 @@
   !-----------------------------------------------------------------------------!
   if(keymeth == 2)then
     Rinf3  = dlog(2.0d0) * 3.0d0 * dabs(v2/v3)
-    dRinf3 = dlog(2.0d0) * 3.0d0 * (v3*errder(2,1) - v2*errder(3,1)) / (v3 * v3)
+    dRinf3 = dlog(2.0d0) * 3.0d0 * (dabs(v3*errder(2,1)) + dabs(v2*errder(3,1))) / (v3 * v3)
 
     Rinf4  = dlog(2.0d0) * dsqrt(7.0d0) * dsqrt(v2/v4)
-    dRinf4 = (v4*errder(2,1) - v2*errder(4,1)) / (v4 * v4)
+    dRinf4 = (dabs(v4*errder(2,1)) + dabs(v2*errder(4,1))) / (v4 * v4)
     dRinf4 = dlog(2.0d0) * dsqrt(7.0d0) * dRinf4 / (2.0d0 * dsqrt(v2/v4))
 
     Rinf  = Rinf3;  if(dRinf4 < dRinf3) Rinf  = Rinf4
@@ -362,19 +362,19 @@
     itmp = 0
     do i=1, 2*nder
       if(errwng(i,2) > errwng(i,1))then
-        itmp = 1
         if(itmp==0)write(ilogg,'(6x,a)') 'WARNING: The err_func is greater than err_trun '
+        itmp = 1
         if(i<nder)then
-          write(ilogg,'(6x,a,i2,a,d12.4,a,d12.4)') &
-            'Potential derivation #',i,':  err_func=',errwng(i,2),'   err_trun=',errwng(i,1)
+          write(ilogg,'(15x,a,i2,a,d10.3,a,d10.3)') &
+            'Potential',i,'. derivation:  err_func =',errwng(i,2),'   err_trun =',errwng(i,1)
         else
-          write(ilogg,'(6x,a,i2,a,d12.4,a,d12.4)') &
-            'Property derivation  #',i,':  err_func=',errwng(i,2),'   err_trun=',errwng(i,1)
+          write(ilogg,'(15x,a,i2,a,d10.3,a,d10.3)') &
+            'Property',i,'. derivation:  err_func =',errwng(i,2),'   err_trun =',errwng(i,1)
         endif
       endif
     enddo
-    if(itmp==1)write(ilogg,'(2x,a)')'CHECK convergence of numerical derivations!!!'
-    if(itmp==0)write(ilogg,'(a)') '  ************  OK  ************'
+    if(itmp==1)write(ilogg,'(6x,a)')'CHECK convergence of numerical derivations!!!'
+    if(itmp==0)write(ilogg,'(a)')'  ************  OK  ************'; write(ilogg,*)
 
     ! check inflex point
     write(ilogg,'(a,a)') '# Check the estimated inflex point Rinf (based on Morse potential)'
@@ -389,34 +389,34 @@
       write(ilogg,'(6x,a)') 'WARNING: Your interval <-I,I> is probably too big: I > Rinf/2 '
     endif
     if(itmp==1)then
-      write(ilogg,'(6x,a,d12.4)') 'I    =',xmax
-      write(ilogg,'(6x,a,d12.4,a,d12.4)') 'Rinf =',Rinf,'  +- ',dRinf
+      write(ilogg,'(15x,a,d12.4)') 'I    =',xmax
+      write(ilogg,'(15x,a,d12.4,a,d12.4)') 'Rinf =',Rinf,'  +-',dRinf
       do i=1,npoints
-        if( (Rinf-dabs(dRinf)) < xcoor(i) )then
-          write(ilogg,'(2x,a,i3,d12.4)') &
-            'TRY to recalculate PV on interval <-x_i,x_i>: i, x_i =',i,xcoor(i)
+        if( ((Rinf-dRinf)/2.0d0) < xcoor(i) )then
+          write(ilogg,'(6x,a,i3,a,d11.4)') &
+            'TRY to recalculate PV on interval <-x_i,x_i>:  i =',i-1,';  x_i =',xcoor(i-1)
           exit
         endif
       enddo
     endif
-    if(itmp==1)write(ilogg,'(2x,a)')'CHECK convergence of numerical derivations!!!'
-    if(itmp==0)write(ilogg,'(a)') '  ************  OK  ************'
+    if(itmp==1)write(ilogg,'(6x,a)')'CHECK convergence of numerical derivations!!!'
+    if(itmp==0)write(ilogg,'(a)')'  ************  OK  ************'; write(ilogg,*)
 
     ! check monotonousness
-    write(ilogg,'(a,a)') '# Check if the convergence of derivations are monotonous'
+    write(ilogg,'(a,a)')'# Check if the convergence of derivations are monotonous'
     itmp = 0
     if(ierrpot /= 0)then
       itmp = 1
-      write(ilogg,'(6x,a)') 'WARNING: The convergence of potential der. is not monotonous '
-      write(ilogg,'(6x,a,i2,a)') '         (at least',ierrpot,'. derivation)'
+      write(ilogg,'(6x,a)')'WARNING: The convergence of potential der. is not monotonous '
+      write(ilogg,'(15x,a,i5,a)')'Check these derivations:',ierrpot,' ("4321", 1-true, 0-false)'
     endif
     if(ierrpot /= 0)then
       itmp = 1
-      write(ilogg,'(6x,a)') 'WARNING: The convergence of property der. is not monotonous '
-      write(ilogg,'(6x,a,i2,a)') '         (at least',ierrpot,'. derivation)'
+      write(ilogg,'(6x,a)')'WARNING: The convergence of property der. is not monotonous '
+      write(ilogg,'(15x,a,i5,a)')'Check these derivations:',ierrpot,' ("4321", 1-true, 0-false)'
     endif
-    if(itmp==1)write(ilogg,'(2x,a)')'CHECK convergence of numerical derivations!!!'
-    if(itmp==0)write(ilogg,'(a)') '  ************  OK  ************'
+    if(itmp==1)write(ilogg,'(6x,a)')'CHECK convergence of numerical derivations!!!'
+    if(itmp==0)write(ilogg,'(a)')'  ************  OK  ************'; write(ilogg,*)
 
   endif
 
