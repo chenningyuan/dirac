@@ -34,9 +34,6 @@ You can see the CMake command using::
 
 and use it directly to call CMake without setup.
 
-It is HIGHLY recommended to run the test set after you have compiled
-DIRAC (see further below).
-
 
 Basic installation without the setup script
 -------------------------------------------
@@ -85,9 +82,15 @@ for instance provided by MKL or Atlas.
 
 The CMake configuration script will automatically find them if you define MATH_ROOT::
 
-  $ export MATH_ROOT='/opt/intel/mkl' # do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'
-                                      # cmake will append the correct paths depending on the processor
-                                      # and the default integer type
+  $ export MATH_ROOT='/opt/intel/mkl'
+
+Do not use full path MATH_ROOT='/opt/intel/mkl/lib/ia32'. CMake will append the
+correct paths depending on the processor and the default integer type.  If the
+MKL libraries that you want to use reside in
+/opt/intel/mkl/10.0.3.020/lib/em64t, then MATH_ROOT is defined as::
+
+  $ export MATH_ROOT='/opt/intel/mkl/10.0.3.020'
+
 Then::
 
   $ ./setup [--flags]                 # do not need to define --math
@@ -99,6 +102,15 @@ Alternatively::
   $ cd build
   $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
   $ make
+
+Exporting MATH_ROOT is equivalent to calling setup with --math-dir::
+
+  $ ./setup --math-dir=/opt/intel/mkl
+
+If automatic detection of math libraries fails for whatever reason, you can
+always call the libraries explicitly like here::
+
+  $ ./setup --math="-L/path -lfoo -lbar"
 
 
 Running CMake using GUI
@@ -121,6 +133,9 @@ Running tests
 You can run the test suite with::
 
   $ make test
+
+It is HIGHLY recommended to run the test set after you have compiled
+DIRAC.
 
 
 Compiling in verbose mode
