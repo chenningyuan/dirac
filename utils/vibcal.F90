@@ -393,8 +393,8 @@
       write(ilogg,'(15x,a,d12.4,a,d12.4)') 'Rinf =',Rinf,'  +-',dRinf
       do i=1,npoints
         if( ((Rinf-dRinf)/2.0d0) < xcoor(i) )then
-          write(ilogg,'(6x,a,i3,a,d11.4)') &
-            'TRY to recalculate PV on interval <-x_i,x_i>:  i =',i-1,';  x_i =',xcoor(i-1)
+          write(ilogg,'(6x,a,a,i3,a,d11.4)')'TRY to recalculate PV on interval',&
+            ' <-x_n,...,x_0,...,x_n>:  n =',i-1-ipoint,';  x_n =',xcoor(i-1)
           exit
         endif
       enddo
