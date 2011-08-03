@@ -264,6 +264,8 @@ C for backward compatibility the old notation is retained
             BASTMP = BASNAM(1:ISTART - 1)
          END IF
       END IF
+
+      iaug_save = iaug
 C
 C     Determine if there are any user added basis functions/polarization 
 C     functions
@@ -378,6 +380,15 @@ C                INTEXP = INTEXP_SAVE
                  write(lupri,*) 'restored INTORB=',INTORB
                  ENDIF
                END IF
+
+               if (split) then
+!                 block has been split and this is not the last part
+!                 augment only last part
+!                 do not augment this part
+                  iaug = 0
+               else
+                  iaug = iaug_save
+               end if
 
                INTEXP_SAVE = INTEXP
                INTORB_SAVE = INTORB
