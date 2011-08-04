@@ -159,6 +159,13 @@ contains
            f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
            hfx_out = hfx_out + 0.2d0*w
         end if
+      
+        w = get_weight(word_array(i), 'bhandh')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_SLATERX   ) = f%w(XC_SLATERX   ) + 0.5d0*w
+           f%w(XC_LYPC      ) = f%w(XC_LYPC      ) +       w
+           hfx_out = hfx_out + 0.5d0*w
+        end if
 
         w = get_weight(word_array(i), 'pp86')
         if (dabs(w) > tiny(0.0d0)) then
