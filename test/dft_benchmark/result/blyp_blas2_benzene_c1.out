@@ -1,5 +1,4 @@
-DIRAC pam run in /home/bast/dirac/git_trunk/test/dft_benchmark
--e Size of all static allocations: 108.825 MB 
+DIRAC pam run in /home/radovan/dirac/git-repo/test/dft_benchmark
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -138,43 +137,93 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *    (see http://dirac.chem.vu.nl).                                          *
  *                                                                            *
  ******************************************************************************
- Version           : Dirac 10.0 (patchlevel 0) 
- Hostname          : larry
- Operating system  : Linux 2.6.35-25-generic
- Machine           : i686
- Run               : Sequential
- Last compilation  : 19:30:01 Mar  2 2011 (by foo@foo:foo)
- FORTRAN compiler  : foo 
- C compiler        : foo 
- External libraries: foo 
- Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
- ILP data model    : foo 
- SVN URL           : foo 
- SVN Revision      : foo 
+
+
+Compilation settings
+--------------------
+
+CMAKE_SYSTEM_NAME           : Linux 
+
+ENABLE_INTERNAL_MATH       : OFF 
+ENABLE_64BIT_INTEGERS       : OFF 
+ENABLE_MPI                  : OFF 
+ENABLE_XCFUN                : ON 
+ENABLE_LOCAL_DISKS          :  
+NO_SSH_ACCESS_TO_NODES      :  
+
+CMAKE_BUILD_TYPE            : Release 
+
+CMAKE_Fortran_COMPILER      : /opt/intel/bin/ifort 
+FORTRAN_COMPILER_VERSION    : ifort (IFORT) 12.0.4 20110427 
+CMAKE_Fortran_FLAGS         : -w -assume byterecl -DVAR_IFORT -g -traceback 
+CMAKE_Fortran_FLAGS_DEBUG   : -O0 
+CMAKE_Fortran_FLAGS_RELEASE : -O3 -ip 
+
+CMAKE_C_COMPILER            : /opt/intel/bin/icc 
+C_COMPILER_VERSION          : icc (ICC) 12.0.4 20110427 
+CMAKE_C_FLAGS               : -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 
+CMAKE_C_FLAGS_DEBUG         : -g -O0 
+CMAKE_C_FLAGS_RELEASE       : -g -O2 
+
+BLAS_LIBRARIES              : -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmkl_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_lp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequential.so;-Wl,--end-group 
+LAPACK_LIBRARIES            : -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-group 
+
+GIT_REVISION                : 3f00e279430faf1d27c012556a0c3f9bda730f1c   Author: Radovan Bast   Date:   Thu Aug 4 10:58:03 2011 +0200 
+
+Compilation time            : Thu Aug  4 11:04:08 CEST 2011 
+ 
+ 
+Execution time and host
+-----------------------
 
  
-     Date and time (Linux)  : Thu Mar  3 09:54:35 2011
+     Date and time (Linux)  : Thu Aug  4 11:29:49 2011
      Host name              :                                         
-
-
- *******************************************************************************
- ************************** Input read from DIRAC.INP **************************
- *******************************************************************************
-
-**DIRAC
-.WAVE FUNCTION
-**HAMILTONIAN
-.LEVY-LEBLOND
-.DFT
- LDA
-**WAVE FUNCTION
-.DHF
-*DHFCAL
-.MAXITR
- 2
-.EVCCNV
- 1.0D-6 1.0D6
-*END OF
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+**HAMILTONIAN                                                                                       
+.LVCORR                                                                                             
+.DFT                                                                                                
+ BLYP                                                                                               
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF                                                                                                
+.MAXITR                                                                                             
+ 2                                                                                                  
+.EVCCNV                                                                                             
+ 1.0D-6 1.0D6                                                                                       
+*END OF                                                                                             
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+INTGRL                                                                                              
+                                                                                                    
+                                                                                                    
+C   2    0         A                                                                                
+       1.     6                                                                                     
+H     0.000000   -2.472878    0.000000                                                              
+H    -2.141580   -1.236440    0.000000                                                              
+H     2.141580   -1.236440    0.000000                                                              
+H    -2.141580    1.236440    0.000000                                                              
+H     2.141580    1.236440    0.000000                                                              
+H     0.000000    2.472878    0.000000                                                              
+LARGE BASIS cc-pVDZ                                                                                 
+       6.     6                                                                                     
+C     0.000000   -1.391016    0.000000                                                              
+C    -1.204659   -0.695508    0.000000                                                              
+C     1.204659   -0.695508    0.000000                                                              
+C    -1.204659    0.695508    0.000000                                                              
+C     1.204659    0.695508    0.000000                                                              
+C     0.000000    1.391016    0.000000                                                              
+LARGE BASIS cc-pVDZ                                                                                 
+FINISH                                                                                              
 
 
     *************************************************************************
@@ -193,7 +242,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
- * Running in the four-component mode
+ * running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -411,6 +460,25 @@ Point group: C1
 
 
 
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+   12
+ 
+H      0.0000000000  -2.4728780000   0.0000000000
+H     -2.1415800000  -1.2364400000   0.0000000000
+H      2.1415800000  -1.2364400000   0.0000000000
+H     -2.1415800000   1.2364400000   0.0000000000
+H      2.1415800000   1.2364400000   0.0000000000
+H      0.0000000000   2.4728780000   0.0000000000
+C      0.0000000000  -1.3910160000   0.0000000000
+C     -1.2046590000  -0.6955080000   0.0000000000
+C      1.2046590000  -0.6955080000   0.0000000000
+C     -1.2046590000   0.6955080000   0.0000000000
+C      1.2046590000   0.6955080000   0.0000000000
+C      0.0000000000   1.3910160000   0.0000000000
+
+
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
@@ -492,51 +560,51 @@ Point group: C1
                                 -----------------
 
    * Large components:   84
-     1  L H     s        2  L H     px       3  L H     py       4  L H     pz       5  L H     s        6  L H     px  
-     7  L H     py       8  L H     pz       9  L H     s       10  L H     px      11  L H     py      12  L H     pz  
-    13  L H     s       14  L H     px      15  L H     py      16  L H     pz      17  L H     s       18  L H     px  
-    19  L H     py      20  L H     pz      21  L H     s       22  L H     px      23  L H     py      24  L H     pz  
-    25  L C     s       26  L C     px      27  L C     py      28  L C     pz      29  L C     dxx     30  L C     dxy 
-    31  L C     dxz     32  L C     dyy     33  L C     dyz     34  L C     dzz     35  L C     s       36  L C     px  
-    37  L C     py      38  L C     pz      39  L C     dxx     40  L C     dxy     41  L C     dxz     42  L C     dyy 
-    43  L C     dyz     44  L C     dzz     45  L C     s       46  L C     px      47  L C     py      48  L C     pz  
-    49  L C     dxx     50  L C     dxy     51  L C     dxz     52  L C     dyy     53  L C     dyz     54  L C     dzz 
-    55  L C     s       56  L C     px      57  L C     py      58  L C     pz      59  L C     dxx     60  L C     dxy 
-    61  L C     dxz     62  L C     dyy     63  L C     dyz     64  L C     dzz     65  L C     s       66  L C     px  
-    67  L C     py      68  L C     pz      69  L C     dxx     70  L C     dxy     71  L C     dxz     72  L C     dyy 
-    73  L C     dyz     74  L C     dzz     75  L C     s       76  L C     px      77  L C     py      78  L C     pz  
-    79  L C     dxx     80  L C     dxy     81  L C     dxz     82  L C     dyy     83  L C     dyz     84  L C     dzz 
+     1  L H   1 s        2  L H   1 px       3  L H   1 py       4  L H   1 pz       5  L H   1 s        6  L H   1 px  
+     7  L H   1 py       8  L H   1 pz       9  L H   1 s       10  L H   1 px      11  L H   1 py      12  L H   1 pz  
+    13  L H   1 s       14  L H   1 px      15  L H   1 py      16  L H   1 pz      17  L H   1 s       18  L H   1 px  
+    19  L H   1 py      20  L H   1 pz      21  L H   1 s       22  L H   1 px      23  L H   1 py      24  L H   1 pz  
+    25  L C   1 s       26  L C   1 px      27  L C   1 py      28  L C   1 pz      29  L C   1 dxx     30  L C   1 dxy 
+    31  L C   1 dxz     32  L C   1 dyy     33  L C   1 dyz     34  L C   1 dzz     35  L C   1 s       36  L C   1 px  
+    37  L C   1 py      38  L C   1 pz      39  L C   1 dxx     40  L C   1 dxy     41  L C   1 dxz     42  L C   1 dyy 
+    43  L C   1 dyz     44  L C   1 dzz     45  L C   1 s       46  L C   1 px      47  L C   1 py      48  L C   1 pz  
+    49  L C   1 dxx     50  L C   1 dxy     51  L C   1 dxz     52  L C   1 dyy     53  L C   1 dyz     54  L C   1 dzz 
+    55  L C   1 s       56  L C   1 px      57  L C   1 py      58  L C   1 pz      59  L C   1 dxx     60  L C   1 dxy 
+    61  L C   1 dxz     62  L C   1 dyy     63  L C   1 dyz     64  L C   1 dzz     65  L C   1 s       66  L C   1 px  
+    67  L C   1 py      68  L C   1 pz      69  L C   1 dxx     70  L C   1 dxy     71  L C   1 dxz     72  L C   1 dyy 
+    73  L C   1 dyz     74  L C   1 dzz     75  L C   1 s       76  L C   1 px      77  L C   1 py      78  L C   1 pz  
+    79  L C   1 dxx     80  L C   1 dxy     81  L C   1 dxz     82  L C   1 dyy     83  L C   1 dyz     84  L C   1 dzz 
    * Small components:  180
-    85  S H     s       86  S H     px      87  S H     py      88  S H     pz      89  S H     dxx     90  S H     dxy 
-    91  S H     dxz     92  S H     dyy     93  S H     dyz     94  S H     dzz     95  S H     s       96  S H     px  
-    97  S H     py      98  S H     pz      99  S H     dxx    100  S H     dxy    101  S H     dxz    102  S H     dyy 
-   103  S H     dyz    104  S H     dzz    105  S H     s      106  S H     px     107  S H     py     108  S H     pz  
-   109  S H     dxx    110  S H     dxy    111  S H     dxz    112  S H     dyy    113  S H     dyz    114  S H     dzz 
-   115  S H     s      116  S H     px     117  S H     py     118  S H     pz     119  S H     dxx    120  S H     dxy 
-   121  S H     dxz    122  S H     dyy    123  S H     dyz    124  S H     dzz    125  S H     s      126  S H     px  
-   127  S H     py     128  S H     pz     129  S H     dxx    130  S H     dxy    131  S H     dxz    132  S H     dyy 
-   133  S H     dyz    134  S H     dzz    135  S H     s      136  S H     px     137  S H     py     138  S H     pz  
-   139  S H     dxx    140  S H     dxy    141  S H     dxz    142  S H     dyy    143  S H     dyz    144  S H     dzz 
-   145  S C     s      146  S C     px     147  S C     py     148  S C     pz     149  S C     dxx    150  S C     dxy 
-   151  S C     dxz    152  S C     dyy    153  S C     dyz    154  S C     dzz    155  S C     fxxx   156  S C     fxxy
-   157  S C     fxxz   158  S C     fxyy   159  S C     fxyz   160  S C     fxzz   161  S C     fyyy   162  S C     fyyz
-   163  S C     fyzz   164  S C     fzzz   165  S C     s      166  S C     px     167  S C     py     168  S C     pz  
-   169  S C     dxx    170  S C     dxy    171  S C     dxz    172  S C     dyy    173  S C     dyz    174  S C     dzz 
-   175  S C     fxxx   176  S C     fxxy   177  S C     fxxz   178  S C     fxyy   179  S C     fxyz   180  S C     fxzz
-   181  S C     fyyy   182  S C     fyyz   183  S C     fyzz   184  S C     fzzz   185  S C     s      186  S C     px  
-   187  S C     py     188  S C     pz     189  S C     dxx    190  S C     dxy    191  S C     dxz    192  S C     dyy 
-   193  S C     dyz    194  S C     dzz    195  S C     fxxx   196  S C     fxxy   197  S C     fxxz   198  S C     fxyy
-   199  S C     fxyz   200  S C     fxzz   201  S C     fyyy   202  S C     fyyz   203  S C     fyzz   204  S C     fzzz
-   205  S C     s      206  S C     px     207  S C     py     208  S C     pz     209  S C     dxx    210  S C     dxy 
-   211  S C     dxz    212  S C     dyy    213  S C     dyz    214  S C     dzz    215  S C     fxxx   216  S C     fxxy
-   217  S C     fxxz   218  S C     fxyy   219  S C     fxyz   220  S C     fxzz   221  S C     fyyy   222  S C     fyyz
-   223  S C     fyzz   224  S C     fzzz   225  S C     s      226  S C     px     227  S C     py     228  S C     pz  
-   229  S C     dxx    230  S C     dxy    231  S C     dxz    232  S C     dyy    233  S C     dyz    234  S C     dzz 
-   235  S C     fxxx   236  S C     fxxy   237  S C     fxxz   238  S C     fxyy   239  S C     fxyz   240  S C     fxzz
-   241  S C     fyyy   242  S C     fyyz   243  S C     fyzz   244  S C     fzzz   245  S C     s      246  S C     px  
-   247  S C     py     248  S C     pz     249  S C     dxx    250  S C     dxy    251  S C     dxz    252  S C     dyy 
-   253  S C     dyz    254  S C     dzz    255  S C     fxxx   256  S C     fxxy   257  S C     fxxz   258  S C     fxyy
-   259  S C     fxyz   260  S C     fxzz   261  S C     fyyy   262  S C     fyyz   263  S C     fyzz   264  S C     fzzz
+    85  S H   1 s       86  S H   1 px      87  S H   1 py      88  S H   1 pz      89  S H   1 dxx     90  S H   1 dxy 
+    91  S H   1 dxz     92  S H   1 dyy     93  S H   1 dyz     94  S H   1 dzz     95  S H   1 s       96  S H   1 px  
+    97  S H   1 py      98  S H   1 pz      99  S H   1 dxx    100  S H   1 dxy    101  S H   1 dxz    102  S H   1 dyy 
+   103  S H   1 dyz    104  S H   1 dzz    105  S H   1 s      106  S H   1 px     107  S H   1 py     108  S H   1 pz  
+   109  S H   1 dxx    110  S H   1 dxy    111  S H   1 dxz    112  S H   1 dyy    113  S H   1 dyz    114  S H   1 dzz 
+   115  S H   1 s      116  S H   1 px     117  S H   1 py     118  S H   1 pz     119  S H   1 dxx    120  S H   1 dxy 
+   121  S H   1 dxz    122  S H   1 dyy    123  S H   1 dyz    124  S H   1 dzz    125  S H   1 s      126  S H   1 px  
+   127  S H   1 py     128  S H   1 pz     129  S H   1 dxx    130  S H   1 dxy    131  S H   1 dxz    132  S H   1 dyy 
+   133  S H   1 dyz    134  S H   1 dzz    135  S H   1 s      136  S H   1 px     137  S H   1 py     138  S H   1 pz  
+   139  S H   1 dxx    140  S H   1 dxy    141  S H   1 dxz    142  S H   1 dyy    143  S H   1 dyz    144  S H   1 dzz 
+   145  S C   1 s      146  S C   1 px     147  S C   1 py     148  S C   1 pz     149  S C   1 dxx    150  S C   1 dxy 
+   151  S C   1 dxz    152  S C   1 dyy    153  S C   1 dyz    154  S C   1 dzz    155  S C   1 fxxx   156  S C   1 fxxy
+   157  S C   1 fxxz   158  S C   1 fxyy   159  S C   1 fxyz   160  S C   1 fxzz   161  S C   1 fyyy   162  S C   1 fyyz
+   163  S C   1 fyzz   164  S C   1 fzzz   165  S C   1 s      166  S C   1 px     167  S C   1 py     168  S C   1 pz  
+   169  S C   1 dxx    170  S C   1 dxy    171  S C   1 dxz    172  S C   1 dyy    173  S C   1 dyz    174  S C   1 dzz 
+   175  S C   1 fxxx   176  S C   1 fxxy   177  S C   1 fxxz   178  S C   1 fxyy   179  S C   1 fxyz   180  S C   1 fxzz
+   181  S C   1 fyyy   182  S C   1 fyyz   183  S C   1 fyzz   184  S C   1 fzzz   185  S C   1 s      186  S C   1 px  
+   187  S C   1 py     188  S C   1 pz     189  S C   1 dxx    190  S C   1 dxy    191  S C   1 dxz    192  S C   1 dyy 
+   193  S C   1 dyz    194  S C   1 dzz    195  S C   1 fxxx   196  S C   1 fxxy   197  S C   1 fxxz   198  S C   1 fxyy
+   199  S C   1 fxyz   200  S C   1 fxzz   201  S C   1 fyyy   202  S C   1 fyyz   203  S C   1 fyzz   204  S C   1 fzzz
+   205  S C   1 s      206  S C   1 px     207  S C   1 py     208  S C   1 pz     209  S C   1 dxx    210  S C   1 dxy 
+   211  S C   1 dxz    212  S C   1 dyy    213  S C   1 dyz    214  S C   1 dzz    215  S C   1 fxxx   216  S C   1 fxxy
+   217  S C   1 fxxz   218  S C   1 fxyy   219  S C   1 fxyz   220  S C   1 fxzz   221  S C   1 fyyy   222  S C   1 fyyz
+   223  S C   1 fyzz   224  S C   1 fzzz   225  S C   1 s      226  S C   1 px     227  S C   1 py     228  S C   1 pz  
+   229  S C   1 dxx    230  S C   1 dxy    231  S C   1 dxz    232  S C   1 dyy    233  S C   1 dyz    234  S C   1 dzz 
+   235  S C   1 fxxx   236  S C   1 fxxy   237  S C   1 fxxz   238  S C   1 fxyy   239  S C   1 fxyz   240  S C   1 fxzz
+   241  S C   1 fyyy   242  S C   1 fyyz   243  S C   1 fyzz   244  S C   1 fzzz   245  S C   1 s      246  S C   1 px  
+   247  S C   1 py     248  S C   1 pz     249  S C   1 dxx    250  S C   1 dxy    251  S C   1 dxz    252  S C   1 dyy 
+   253  S C   1 dyz    254  S C   1 dzz    255  S C   1 fxxx   256  S C   1 fxxy   257  S C   1 fxxz   258  S C   1 fxyy
+   259  S C   1 fxyz   260  S C   1 fxzz   261  S C   1 fyyy   262  S C   1 fyyz   263  S C   1 fyzz   264  S C   1 fzzz
 
 
   Symmetry Orbitals
@@ -826,12 +894,19 @@ Point group: C1
    ***************************************************************************
 
  * Print level:    0
- * Levy-Leblond Hamiltonian
-   - Spin-orbit interactions neglected
- * Kohn-Sham calculation using the xc functional: LDA
+ * Dirac-Coulomb Hamiltonian
+ * Kohn-Sham calculation using the xc functional: BLYP
+   Weighted mixed functional:
+                         LYP:    1.00000
+                       Becke:    1.00000
+                      Slater:    1.00000
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
  * Default integral flags passed to all modules
    - LL-integrals:     1
-   - LS-integrals:     0
+   - LS-integrals:     1
    - SS-integrals:     0
    - GT-integrals:     0
  * Basis set:
@@ -843,22 +918,15 @@ Point group: C1
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
-
-
-   Kohn-Sham calculation set-up
-   ----------------------------
-
- * Print level:     2
- * Numerical integration grid:
+  ===== Kohn-Sham calculation set-up =====
+ * DFT thresholds:
+   - small density threshold =  0.10000E-08
+ * Spin density contribution in response calculations:
+   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
+  ===== Numerical integration grid =====
    - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
      precision of radial quadrature set to:  0.10000E-12
    - angular quadrature using the Lebedev scheme, exact up to order L = 41
-   - accepted error in integrated number of electrons:  0.10000E-02
- * DFT thresholds:
-   - dfthr0 =  0.10000E-08
-   - dfthri =  0.20000E-11
- * Spin density contribution in response calculations:
-   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
 
 
     **************************************************************************
@@ -873,7 +941,7 @@ Point group: C1
    Charge of molecule    =   0
    i.e. no. of electrons =  42
 ===========================================================================
- DHFINP: Set-up for Kohn-Sham calculation:
+ SCFINP: Set-up for Kohn-Sham calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with   42 electrons in
@@ -899,7 +967,7 @@ Point group: C1
  * No quadratic convergent Hartree-Fock
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
- * NB!!! No e-p rotations in 2nd order optimization.
+   SL-integrals from iteration    1
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
 
@@ -914,7 +982,18 @@ Point group: C1
     ************************ End of input processing ************************
     *************************************************************************
 
-  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
 
 
                        Generating Lowdin canonical matrix:
@@ -922,13 +1001,13 @@ Point group: C1
 
    L   A     * Deleted:          6(Proj:          6, Lindep:          0)
    S   A     * Deleted:         48(Proj:         48, Lindep:          0)
- >>> Time used in Lwdn_a is   0.53 seconds
+ >>> Time used in Lwdn_a is   0.43 seconds
 
 
                                 Output from MODHAM
                                 ------------------
 
-* All positronic solutions deleted !
+* Applied strict kinetic balance !
 
 
       **********************************************************************
@@ -936,9 +1015,9 @@ Point group: C1
       **********************************************************************
 
 No. of positive energy orbitals (NESH):   114
-No. of negative energy orbitals (NPSH):     0
-Total no. of orbitals           (NORB):   114
- >>> Time used in PAMSET is   1.77 seconds
+No. of negative energy orbitals (NPSH):   114
+Total no. of orbitals           (NORB):   228
+ >>> Time used in PAMSET is   1.38 seconds
 
 
     *************************************************************************
@@ -950,16 +1029,17 @@ Total no. of orbitals           (NORB):   114
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Mar  3 09:54:36 2011
+########## START ITERATION NO.   1 ##########   Thu Aug  4 11:29:51 2011
 
-It.   1     67.98862578409      1.00D+20  0.00D+00  0.00D+00               0.59999990s   Scr. nuclei    Thu Mar  3
+It.   1     67.89047745604      1.00D+20  0.00D+00  0.00D+00               1.39999986s   Scr. nuclei    Thu Aug  4
 
-########## START ITERATION NO.   2 ##########   Thu Mar  3 09:54:36 2011
+########## START ITERATION NO.   2 ##########   Thu Aug  4 11:29:52 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    1.18%   47.68%    0.12%    0.00%  22.26000166s
+SOfock:LL  1.00D-12    1.18%   47.68%    0.12%    0.00%  13.48000050s
+SOfock:SL  1.00D-12    1.21%   58.80%    0.00%    0.00%   1min48.950s
 
 
  ********************************************************************************
@@ -1018,39 +1098,44 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
  
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-H       1   0.171E-04   0.114E+02   0.131E+00      87   26766
-H       1   0.171E-04   0.114E+02   0.131E+00      87   26766
-H       1   0.171E-04   0.114E+02   0.131E+00      87   26766
-H       1   0.171E-04   0.114E+02   0.131E+00      87   26766
-H       1   0.171E-04   0.114E+02   0.131E+00      87   26766
-H       1   0.171E-04   0.114E+02   0.131E+00      87   26766
-C       1   0.757E-06   0.108E+02   0.123E+00     117   27570
-C       1   0.757E-06   0.108E+02   0.123E+00     117   27570
-C       1   0.757E-06   0.108E+02   0.123E+00     117   27570
-C       1   0.757E-06   0.108E+02   0.123E+00     117   27570
-C       1   0.757E-06   0.108E+02   0.123E+00     117   27570
-C       1   0.757E-06   0.108E+02   0.123E+00     117   27570
+H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
+C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
+C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
+C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
+C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
+C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
+C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
 
-   Number of grid points in quadrature:    326016 (100.0%)
+   Number of grid points in quadrature:    352452 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.71 seconds
+ >>>> Time used in DFTGRD:   1.99 seconds
 
  
-   number of grid points                          =    326016
-   number of grid points below density threshold  =      8464
-   DFT exchange-correlation energy:               =       -33.6035366401424085
-   number of electrons from numerical integration =        42.0000023727493357
+   number of grid points                          =    352452
+   number of grid points below density threshold  =     13932
+   DFT exchange-correlation energy:               =       -35.6722140277123643
+   number of electrons from numerical integration =        42.0000025430695274
  
-   time spent in DFT integration                  =  39.90 seconds
+   time spent in DFT integration                  =  5 minutes 25 seconds
    number of processors                           =         1
  
->>> Total wall time:35.00000000s
->>> Total CPU-time : 1min 3.810s
 
-########## END ITERATION NO.   2 ##########   Thu Mar  3 09:54:36 2011
+  QM-QM nuclear repulsion energy :    0.000004283044
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000004283044
+>>> Total wall time: 7min43.000s
+>>> Total CPU-time : 7min33.820s
 
-It.   2    -229.5054922403      2.97D+02  1.23D+00  1.63D+00               1min 3.810s   LL             Thu Mar  3
+########## END ITERATION NO.   2 ##########   Thu Aug  4 11:29:52 2011
+
+It.   2    -231.6644423128      3.00D+02  1.18D+00  1.56D+00               7min33.820s   LL SL          Thu Aug  4
 
  ** Exit SCF because maximum number of iterations reached.
 
@@ -1068,71 +1153,67 @@ It.   2    -229.5054922403      2.97D+02  1.23D+00  1.63D+00               1min 
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1     67.98862578409      1.00D+20  0.00D+00  0.00D+00               0.59999990s   Scr. nuclei    Thu Mar  3
-It.   2    -229.5054922403      2.97D+02  1.23D+00  1.63D+00               1min 3.810s   LL             Thu Mar  3
+It.   1     67.89047745604      1.00D+20  0.00D+00  0.00D+00               1.39999986s   Scr. nuclei    Thu Aug  4
+It.   2    -231.6644423128      3.00D+02  1.18D+00  1.56D+00               7min33.820s   LL SL          Thu Aug  4
 --------------------------------------------------------------------------------------------------------------------------------
 * Desired convergence limit not reached after    2 iterations but the current convergence is acceptable.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL           :   35.00000000s
+      No 2-ints    :    1.00000000s
+      LL SL        :    7min43.000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -433.53240126856633
+   Electronic energy                        :    -435.69135562415613
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     204.02690902830841
+   SS Coulombic correction                  :       0.00000428304377
 
    Sum of all contributions to the energy
-   Total energy                             :    -229.50549224025792
+   Total energy                             :    -231.66444231280394
 
 
                                    Eigenvalues
                                    -----------
 
 
-* Boson symmetry A  
+* Fermion symmetry E1 
   * Closed shell, f = 1.0000
--9.355677173730381  ( 2)   -9.355583577650377  ( 4)   -9.355357890581681  ( 4)   -9.355319584023505  ( 2)   -0.557963531487359  ( 2)
--0.482141792968457  ( 4)   -0.381691711705686  ( 4)   -0.327458998131625  ( 2)   -0.303828723500788  ( 2)   -0.209289727509690  ( 2)
--0.209288446933518  ( 2)   -0.170916597802028  ( 2)   -0.160339245953203  ( 2)   -0.124823623386990  ( 4)   -0.059617586242214  ( 4)
+-9.503260408782051  ( 2)   -9.503142013373797  ( 4)   -9.502825719366838  ( 4)   -9.502697958519228  ( 2)   -0.548688755083270  ( 2)
+-0.476818804528521  ( 2)   -0.476810314385854  ( 2)   -0.378634619776091  ( 2)   -0.378596745149404  ( 2)   -0.317398632273726  ( 2)
+-0.306132849105177  ( 2)   -0.203706596123458  ( 2)   -0.203631775146072  ( 2)   -0.154816806073012  ( 2)   -0.141626812865023  ( 2)
+-0.117506187460960  ( 2)   -0.117390237280655  ( 2)   -0.042828153889900  ( 4)
   * Virtual eigenvalues, f = 0.0000
- 0.091303830234557  ( 2)    0.120896877854370  ( 4)    0.129729648079079  ( 4)    0.159114131259055  ( 4)    0.171348953862438  ( 2)
- 0.260232919595992  ( 2)    0.346635076307843  ( 4)    0.358716600604200  ( 2)    0.358717693352736  ( 2)    0.443648502684386  ( 2)
- 0.474032867675426  ( 2)    0.547458179915035  ( 2)    0.573782003163424  ( 2)    0.591159359799453  ( 2)    0.606768272839459  ( 4)
- 0.607036941508883  ( 2)    0.607038447859698  ( 2)    0.618961988398059  ( 4)    0.655233855569444  ( 2)    0.692075899281732  ( 4)
- 0.735457209400882  ( 4)    0.759051813411810  ( 2)    0.759053254111111  ( 2)    0.762444653944549  ( 2)    0.855567984472733  ( 2)
- 0.856343808579441  ( 2)    0.908977339466563  ( 2)    0.964579570695708  ( 4)    0.987112962323486  ( 2)    1.048049344792702  ( 2)
- 1.048050870332220  ( 2)    1.054193736214992  ( 2)    1.072630509877450  ( 2)    1.072631871757289  ( 2)    1.076374924825701  ( 2)
- 1.076376038222301  ( 2)    1.119528570200138  ( 2)    1.155895669275513  ( 2)    1.155896957825148  ( 2)    1.292436839290239  ( 2)
- 1.323327133550144  ( 2)    1.323328251760000  ( 2)    1.523489541583837  ( 2)    1.540605580995104  ( 2)    1.541760784917143  ( 2)
- 1.541762014558389  ( 2)    1.635395416008892  ( 2)    1.638134622215586  ( 4)    1.644774330134563  ( 2)    1.691206981787766  ( 2)
- 1.691208926629361  ( 2)    1.710881435939735  ( 2)    1.710882664000147  ( 2)    1.723382991333234  ( 2)    1.723384299185079  ( 2)
- 1.785904022199097  ( 2)    1.879334518228638  ( 2)    1.893478727627266  ( 4)    1.914598909281794  ( 2)    1.958715300889983  ( 2)
- 1.958718112178641  ( 2)    1.969570728838200  ( 4)    2.035201486452355  ( 4)    2.042112337416195  ( 2)    2.042113747692470  ( 2)
- 2.074328409373787  ( 2)    2.291824018161728  ( 2)    2.327362153390896  ( 2)    2.413850878685727  ( 2)    2.506213185185476  ( 2)
- 2.506217174683536  ( 2)    2.528887021781469  ( 2)    2.528888278197813  ( 2)    2.732880659276287  ( 2)    2.732882634580350  ( 2)
- 2.769063068919796  ( 2)    2.872201556321162  ( 2)    3.029243037734683  ( 4)    3.777031889730214  ( 2)
-
-* Occupation of subblocks
-                       E1 :  A                                                                              
-  closed shells (f=1.0000):   21
- virtual shells (f=0.0000):   93
-tot.num. of pos.erg shells:  114
-
-
+ 0.094661965630980  ( 2)    0.130088040362374  ( 2)    0.130098067737982  ( 2)    0.135910652094955  ( 4)    0.157555392517506  ( 2)
+ 0.157577481154201  ( 2)    0.167083609664525  ( 2)    0.272885560342141  ( 2)    0.358490129018261  ( 2)    0.358516491435534  ( 2)
+ 0.370986007042097  ( 2)    0.371018102084000  ( 2)    0.444281966689899  ( 2)    0.488450664912869  ( 2)    0.543442226339143  ( 2)
+ 0.586290142515305  ( 2)    0.600688054907300  ( 2)    0.608249433233928  ( 2)    0.608349353881713  ( 2)    0.611687221424623  ( 2)
+ 0.611840918724570  ( 2)    0.629519737299145  ( 2)    0.629521346308401  ( 2)    0.678437370547504  ( 2)    0.701291451392911  ( 4)
+ 0.745723776457442  ( 2)    0.745897897242170  ( 2)    0.767016051763183  ( 2)    0.767234233662684  ( 2)    0.770414145992056  ( 2)
+ 0.861074942487218  ( 2)    0.866324620381277  ( 2)    0.927632056526854  ( 2)    0.970838570767497  ( 2)    0.970943188043902  ( 2)
+ 0.995898978318796  ( 2)    1.052471153651001  ( 2)    1.052483010280519  ( 2)    1.075304378943715  ( 2)    1.083009852057318  ( 2)
+ 1.083073170563568  ( 2)    1.091795693502634  ( 2)    1.091800546389077  ( 2)    1.116743672849358  ( 2)    1.171674897898700  ( 2)
+ 1.171690983676811  ( 2)    1.309989008447831  ( 2)    1.330181544843499  ( 2)    1.330214871241691  ( 2)    1.531714731982791  ( 2)
+ 1.551836441947983  ( 2)    1.556108880653626  ( 2)    1.556119482047370  ( 2)    1.646691415464452  ( 2)    1.646695234475154  ( 2)
+ 1.647920228111801  ( 2)    1.662182502475647  ( 2)    1.702596811786469  ( 2)    1.702664113102986  ( 2)    1.726157074673691  ( 2)
+ 1.726159877754814  ( 2)    1.731258191545871  ( 2)    1.731277713201059  ( 2)    1.790047878631019  ( 2)    1.891957164234656  ( 2)
+ 1.911663857842112  ( 2)    1.911669007660243  ( 2)    1.920408631108840  ( 2)    1.975983094260643  ( 2)    1.975993014501795  ( 2)
+ 1.984347826270417  ( 2)    1.984592327574571  ( 2)    2.048292819495865  ( 2)    2.048318499721490  ( 2)    2.051036599437428  ( 4)
+ 2.078556687709299  ( 2)    2.310869124862909  ( 2)    2.341812838362193  ( 2)    2.410221305701766  ( 2)    2.505079162135134  ( 2)
+ 2.505289530491125  ( 2)    2.536054993739291  ( 2)    2.536254622684099  ( 2)    2.743756933312330  ( 2)    2.743850103318594  ( 2)
+ 2.771947723812561  ( 2)    2.884397291441934  ( 2)    3.034092391567164  ( 2)    3.034289941912302  ( 2)    3.780480996792903  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.09130383 au (symmetry A  )
-  - E(HOMO) :    -0.05961685 au (symmetry A  )
+    E(LUMO) :     0.09466197 au (symmetry E1 )
+  - E(HOMO) :    -0.04282745 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.15092068 au
+    gap     :     0.13748942 au
 
 
  
-     Date and time (Linux)  : Thu Mar  3 09:55:11 2011
+     Date and time (Linux)  : Thu Aug  4 11:37:35 2011
      Host name              :                                         
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1162,5 +1243,5 @@ tot.num. of pos.erg shells:  114
  MEMGET high-water mark:    58.19 MB
 
 *****************************************************
->>>> Node 0, utime: 64, stime: 2, minflt: 143565, majflt: 0, nvcsw: 331, nivcsw: 15981, maxrss: 546828
->>>> Total WALL time used in DIRAC: 37s
+>>>> Node 0, utime: 456, stime: 8, minflt: 147761, majflt: 9, nvcsw: 11, nivcsw: 46837, maxrss: 547920
+>>>> Total WALL time used in DIRAC: 7min46s
