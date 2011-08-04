@@ -50,11 +50,21 @@ if (CMAKE_COMPILER_IS_GNUFORTRAN)
 	set (CMAKE_Fortran_FLAGS "-Wall -Jfortran")
 	set (CMAKE_Fortran_FLAGS_DEBUG "-g -O0")
 	set (CMAKE_Fortran_FLAGS_RELEASE "-g -O2")
+    if(ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
+            )
+    endif()
 elseif (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 	set (CMAKE_Fortran_FLAGS "")
 	set (CMAKE_Fortran_FLAGS_DEBUG "-g -O0")
 	set (CMAKE_Fortran_FLAGS_RELEASE "-g -O2")
 	set (CMAKE_Fortran_LINK_FLAGS "${CMAKE_Fortran_LINK_FLAGS} -shared-intel")
+    if(ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -i8"
+            )
+    endif()
 endif ()
 config_compiler_flags(Fortran)
 
