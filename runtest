@@ -14,8 +14,6 @@ menu format: free form
 how to add new tests to the testset "--all":
              developers: add them to pamadm which generates test/list_of_tests
              users:      add them to test/list_of_tests
-
-TODO : Adapt for Widows 7; use os.path.join(...) instead of gluing path strings together
 '''
 
 import os
