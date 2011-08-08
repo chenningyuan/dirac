@@ -3014,7 +3014,7 @@ C
       DO I = 1,NI
          QLOC2 = D0
          DO J = 1,NUCDEP
-            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4
+            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4.0D0
          ENDDO
          DLOC = D1/QLOC2
          DINV = DINV + QLOC2
@@ -3247,7 +3247,7 @@ C
       DO I = 1,NI
         QLOC2 = D0
         DO J = 1,NUCDEP
-          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4
+          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4.0D0
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
@@ -3398,16 +3398,16 @@ C Hessian matrix
 C
       NDIM = NI*NI*4
       CALL DZERO(HAMAT,NDIM)
-      DO IZ = 1,4
+!STbugDO IZ = 1,4
          DO J = 1,NI
             DO I = 1,NI
                DO K = 1,NUCDEP
-                  HAMAT(I,J,1) = HAMAT(I,J,1) - 2*(
+                  HAMAT(I,J,1) = HAMAT(I,J,1) - 2.0D0*(
      S  (PMAT(I,I,1,K) - PMAT(J,J,1,K))*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
+!STbugENDDO
 C
 C Construction and print of the XKAPPA matrix
 C
@@ -3417,7 +3417,7 @@ C
          DO J = 1,NI
             DO I = 1,NI
                DO K = 1,NUCDEP
-                  XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + 2*(
+                  XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + 2.0D0*(
      S                 PMAT(I,J,IZ,K)*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
                   IF (FLAG) THEN
                      IF(.NOT. HESLOC) THEN
