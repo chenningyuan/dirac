@@ -51,6 +51,11 @@ class compiler_version:
                  metavar='STRING')
          parser.add_option_group(group)
          (options, args) = parser.parse_args()
+
+         if len(sys.argv) == 1:
+                 # user has given no arguments: print help and exit
+                 print parser.format_help().strip()
+                 sys.exit()
  
          if options.fc: 
              self.Fortran_compiler=options.fc
