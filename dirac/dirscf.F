@@ -5141,20 +5141,27 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
 CTROND: C1 test
-C          WRITE(LUPRI,'(A)') '* Atomic coefficients'
-C          CALL PRQMAT(WORK(KCMO),NBAS,NSEL,NBAS,NBAS,
-C     &              NZ,IPQTOQ(1,0),LUPRI)
-C          WRITE(LUPRI,'(A)') '* Selected Atomic coefficients'
-C          CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
-C     &              NZ,IPQTOQ(1,0),LUPRI)
+          WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
+          CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+     &              NZ,IPQTOQ(1,0),LUPRI)
+          WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+          CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
+     &              NZ,IPQTOQ(1,0),LUPRI)
           CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
      &                WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+CTROND
+         WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
+         CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
+     &              4,IPQTOQ(1,0),LUPRI)
           FAC = D1
           CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
+CTROND
+        WRITE(6,*) '* Calling PUT_AO ',IATOM,ICENT,NONT(IATOM),
+     &     NUCDEG(ICENT)
         CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
      &                   NUCDEG(ICENT),
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
@@ -5172,6 +5179,10 @@ C.......Release memory
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
+CTROND
+         WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &              NZ,IPQTOQ(1,0),LUPRI)
       ELSE
         CALL DZERO(DMAT,NDMAT)
         IREP = 0
@@ -5191,14 +5202,22 @@ CTROND
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NSYMIND,NDEG,
+      SUBROUTINE PUT_AOBLOCK(AMOL,NBAS,INUC,NONT,NDEG,
      &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
      &                       WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Put an atomic block into a molecular matrix
-C       NSYMIND     - number of symmetry-independent centers of this type
+C       AMOL        - molecular matrix
+C       NBAS        - dimension of molecular matrix
+C       INUC        - index of first atom of this type in list of
+C                     symmetry-independent centers
+C       NONT        - number of symmetry-independent centers of this type
 C       NDEG(ICENT) - degeneracy of symmetry-independent center ICENT
+C
+C       ATOM        - atomic matrix with leading row LR and column LC
+C       NR          - real rows of atomic matrix
+C       NC          - real columns of atomic matrix            
 C
 C     Written by T. Saue March 31 2011
 C***********************************************************************
@@ -5212,8 +5231,11 @@ C***********************************************************************
       CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
-      DO ITYP = 1,NSYMIND
-        DO IDEG = 1,NDEG(ICENT)
+CTROND
+      WRITE(6,*) 'Inside PUT_AOBLOCK: ',NONT,NBAS,NR,NC,NDEG(ICENT)
+      DO ITYP = 1,NONT
+        DO IDEG = 1,NDEG(ITYP)
+C.........Create pointer mol->atom for rows
           CALL LABCOUNT(N1,WORK(KRBUF),NBAS,1,IR_CLS,ICENT,IDEG,-1)
           IF(N1.NE.NR) THEN
             WRITE(6,'(A,2(/A,I5))') 
@@ -5222,7 +5244,9 @@ C***********************************************************************
      &                'Found     : ',N1
             CALL QUIT('PUT_AOBLOCK: Error in row number !')
           ENDIF
+C.........Create reverse pointer atom->mol
           CALL REVINDEX(WORK(KRBUF),NBAS,WORK(KIBUF),NR)
+C.........Create pointer mol->atom for rows
           CALL LABCOUNT(N2,WORK(KCBUF),NBAS,1,IC_CLS,ICENT,IDEG,-1)
           IF(N2.NE.NC) THEN
             WRITE(6,'(A,2(/A,I5))') 
@@ -5231,6 +5255,7 @@ C***********************************************************************
      &                'Found     : ',N2
             CALL QUIT('PUT_AOBLOCK: Error in column number !')
           ENDIF
+C.........Create reverse pointer atom->mol
           CALL REVINDEX(WORK(KCBUF),NBAS,WORK(KJBUF),NC)
           DO IZ = 1,4
             CALL IPMAT(NR,NC,AMOL(1,1,IZ),NBAS,ATOM(1,1,IZ),LR,
