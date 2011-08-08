@@ -12,7 +12,7 @@ from optparse import OptionParser, OptionGroup
 
 usage = '''
   Examples:
-    ./%prog --compiler=Ifort
+    ./%prog --compiler=ifort
     '''
 
 # initialize parser
