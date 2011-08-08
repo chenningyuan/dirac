@@ -8,7 +8,6 @@ import os
 
 class compiler_version:
     def __init__(self):
-         print 'initialzie...'
          self.Fortran_compiler=None
          self.Fortran_compiler_version=None
          self.C_compiler=None
@@ -16,6 +15,9 @@ class compiler_version:
          self.CPP_compiler=None
          self.CPP_compiler_version=None
          self.get_version=None
+         self.version_output=None
+         self.stdout=[]
+         self.stderr=None
 
     def read_flags(self):
          """ read the flags """
@@ -57,35 +59,86 @@ class compiler_version:
          if options.cpp: 
              self.CPP_compiler=options.cpp
 
-
     def get_Fortran_compiler_version_command(self):
         """ GNU, G95, Intel, PGI, XL   """
-        print 'fc=',self.Fortran_compiler
         if self.Fortran_compiler=="GNU":
             self.get_version="gfortran --version"
         elif self.Fortran_compiler=="G95":
             self.get_version="g95 --version"
+        elif self.Fortran_compiler=="Intel":
+            self.get_version="ifort --version"
+        elif self.Fortran_compiler=="PGI":
+            self.get_version="pgf90 -V"
+        elif self.Fortran_compiler=="XL":
+            self.get_version="xlf -V"
+        else:
+            self.get_version="unknown"
 
     def get_C_compiler_version_command(self):
         """ GNU, G95, Intel, PGI, XL   """
-        print 'cc=',self.C_compiler
+        if self.C_compiler=="GNU":
+            self.get_version="gcc --version"
+        elif self.C_compiler=="Intel":
+            self.get_version="icc --version"
+        elif self.C_compiler=="PGI":
+            self.get_version="pgcc -V"
+        elif self.C_compiler=="XL":
+            self.get_version="xlc -V"
+        else:
+            self.get_version="unknown"
 
     def get_CPP_compiler_version_command(self):
         """ GNU, G95, Intel, PGI, XL   """
-        print 'cpp=',self.CPP_compiler
+        if self.CPP_compiler=="GNU":
+            self.get_version="g++ --version"
+        elif self.CPP_compiler=="Intel":
+            self.get_version="iCC --version"
+        elif self.Fortran_compiler=="PGI":
+            self.get_version="pgCC -V"
+        elif self.Fortran_compiler=="XL":
+            self.get_version="xlCC -V"
+        else:
+            self.get_version="unknown"
 
     def process_compiler_version_command(self):
-        print 'command=',self.get_version
+        import subprocess
+        p=subprocess.Popen(self.get_version, shell=True, \
+          stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (self.version_output,self.stderr)=p.communicate()
+        p.wait()
+
+        # clean the stuff
+        # Get rid of empty lines
+        #print self.version_output
+        self.version_output=self.version_output.split()
+        self.stdout=[]
+        for word in self.version_output:
+        # Strip whitespace, should leave nothing if empty line was just "\n"
+            if not word.strip():
+                continue
+            # We got something, save it
+            else:
+                self.stdout.append(word+" ")
+                pass
+        # Get condensed text
+        self.stdout="".join(self.stdout)
+        print >> sys.stdout,self.stdout
+    
+        if self.stderr: # flush out error stream
+            print >> sys.stderr,self.stderr
 
     def get_compiler_version(self):
-         """ Get compiler version """
+         """ Get compiler version of Fortran/C/C++ compilers """
          if self.Fortran_compiler:
+             self.get_version=None
              self.get_Fortran_compiler_version_command()
              self.process_compiler_version_command()
          if self.C_compiler:
+             self.get_version=None
              self.get_C_compiler_version_command()
              self.process_compiler_version_command()
          if self.CPP_compiler:
+             self.get_version=None
              self.get_CPP_compiler_version_command()
              self.process_compiler_version_command()
 
