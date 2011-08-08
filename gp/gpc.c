@@ -160,12 +160,10 @@ void sysinf_(fortran_int_t *parcal)
    printf("\n");
    printf("CMAKE_SYSTEM_NAME           : %s \n", CMAKE_SYSTEM_NAME           );
    printf("\n");
-   printf("ENABLE_INTERNAL_MATH       : %s \n", ENABLE_INTERNAL_MATH       );
+   printf("ENABLE_INTERNAL_MATH        : %s \n", ENABLE_INTERNAL_MATH       );
    printf("ENABLE_64BIT_INTEGERS       : %s \n", ENABLE_64BIT_INTEGERS       );
    printf("ENABLE_MPI                  : %s \n", ENABLE_MPI                  );
    printf("ENABLE_XCFUN                : %s \n", ENABLE_XCFUN                );
-   printf("ENABLE_LOCAL_DISKS          : %s \n", ENABLE_LOCAL_DISKS          );
-   printf("NO_SSH_ACCESS_TO_NODES      : %s \n", NO_SSH_ACCESS_TO_NODES      );
    printf("\n");
    printf("CMAKE_BUILD_TYPE            : %s \n", CMAKE_BUILD_TYPE            );
    printf("\n");

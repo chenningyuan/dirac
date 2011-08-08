@@ -180,3 +180,18 @@ machine::
   $ cd build
   $ make
   $ make install
+
+
+Building utilities
+------------------
+
+First configure DIRAC using setup or directly using CMake. Then::
+
+  $ cd /buildpath
+  $ ccmake /sourcepath
+
+Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
+
+  $ make
+
+Voila. You can do these steps also after you have compiled the DIRAC binary.

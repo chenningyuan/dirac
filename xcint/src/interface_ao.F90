@@ -411,6 +411,32 @@ contains
       integer, allocatable :: kstart(:)
       real(8), allocatable :: cs_mat(:, :)
       real(8), parameter   :: bitstring_parity(0:7) = (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)
+      integer :: size1_ao_center
+      integer :: size1_ao_center_xyz
+      integer :: size2_ao_center_xyz
+      integer :: size1_ao_distance
+      integer :: size2_ao_distance
+      integer :: size3_ao_distance
+      integer :: size1_cartesian_deg
+      integer :: size1_cartesian_off
+      integer :: size1_contraction_coef
+      integer :: size2_contraction_coef
+      integer :: size1_f_so_ao
+      integer :: size1_i_so_ao
+      integer :: size2_i_so_ao
+      integer :: size1_l_quantum_nr
+      integer :: size1_nr_nonzero_contraction_coefs
+      integer :: size1_primitive_exp
+      integer :: size2_primitive_exp
+      integer :: size1_shell_center
+      integer :: size1_shell_stabilizing_irep
+      integer :: size1_spherical_deg
+      integer :: size1_spherical_off
+      integer :: size1_center_charge
+      integer :: size1_center_deg
+      integer :: size1_center_stabilizing_irep
+      integer :: size1_center_xyz
+      integer :: size2_center_xyz
 !     --------------------------------------------------------------------------
 
       call interface_ao_clear()
@@ -957,31 +983,114 @@ contains
 #ifdef VAR_MPI
       if (use_mpi_if_possible .and. (xc_mpi_get_nr_proc() > 1)) then
 
-         call xc_mpi_bcast(nr_ao                     )
-         call xc_mpi_bcast(nr_so_ao                  )
-         call xc_mpi_bcast(nr_centers)
-         call xc_mpi_bcast(sum_nr_primitives         )
+         call xc_mpi_bcast(nr_ao             )
+         call xc_mpi_bcast(nr_so_ao          )
+         call xc_mpi_bcast(nr_centers        )
+         call xc_mpi_bcast(sum_nr_primitives )
+
+         if (xc_mpi_is_master()) then
+            size1_ao_center                    = size(ao_center)
+            size1_ao_center_xyz                = size(ao_center_xyz, 1)
+            size2_ao_center_xyz                = size(ao_center_xyz, 2)
+            size1_ao_distance                  = size(ao_distance, 1)
+            size2_ao_distance                  = size(ao_distance, 2)
+            size3_ao_distance                  = size(ao_distance, 3)
+            size1_cartesian_deg                = size(cartesian_deg)
+            size1_cartesian_off                = size(cartesian_off)
+            size1_contraction_coef             = size(contraction_coef, 1)
+            size2_contraction_coef             = size(contraction_coef, 2)
+            size1_f_so_ao                      = size(f_so_ao)
+            size1_i_so_ao                      = size(i_so_ao, 1)
+            size2_i_so_ao                      = size(i_so_ao, 2)
+            size1_l_quantum_nr                 = size(l_quantum_nr)
+            size1_nr_nonzero_contraction_coefs = size(nr_nonzero_contraction_coefs)
+            size1_primitive_exp                = size(primitive_exp, 1)
+            size2_primitive_exp                = size(primitive_exp, 2)
+            size1_shell_center                 = size(shell_center)
+            size1_shell_stabilizing_irep       = size(shell_stabilizing_irep)
+            size1_spherical_deg                = size(spherical_deg)
+            size1_spherical_off                = size(spherical_off)
+            size1_center_charge                = size(center_charge)
+            size1_center_deg                   = size(center_deg)
+            size1_center_stabilizing_irep      = size(center_stabilizing_irep)
+            size1_center_xyz                   = size(center_xyz, 1)
+            size2_center_xyz                   = size(center_xyz, 2)
+         else
+            size1_ao_center                    = 0
+            size1_ao_center_xyz                = 0
+            size2_ao_center_xyz                = 0
+            size1_ao_distance                  = 0
+            size2_ao_distance                  = 0
+            size3_ao_distance                  = 0
+            size1_cartesian_deg                = 0
+            size1_cartesian_off                = 0
+            size1_contraction_coef             = 0
+            size2_contraction_coef             = 0
+            size1_f_so_ao                      = 0
+            size1_i_so_ao                      = 0
+            size2_i_so_ao                      = 0
+            size1_l_quantum_nr                 = 0
+            size1_nr_nonzero_contraction_coefs = 0
+            size1_primitive_exp                = 0
+            size2_primitive_exp                = 0
+            size1_shell_center                 = 0
+            size1_shell_stabilizing_irep       = 0
+            size1_spherical_deg                = 0
+            size1_spherical_off                = 0
+            size1_center_charge                = 0
+            size1_center_deg                   = 0
+            size1_center_stabilizing_irep      = 0
+            size1_center_xyz                   = 0
+            size2_center_xyz                   = 0
+         end if
+
+         call xc_mpi_bcast(size1_ao_center                    )
+         call xc_mpi_bcast(size1_ao_center_xyz                )
+         call xc_mpi_bcast(size2_ao_center_xyz                )
+         call xc_mpi_bcast(size1_ao_distance                  )
+         call xc_mpi_bcast(size2_ao_distance                  )
+         call xc_mpi_bcast(size3_ao_distance                  )
+         call xc_mpi_bcast(size1_cartesian_deg                )
+         call xc_mpi_bcast(size1_cartesian_off                )
+         call xc_mpi_bcast(size1_contraction_coef             )
+         call xc_mpi_bcast(size2_contraction_coef             )
+         call xc_mpi_bcast(size1_f_so_ao                      )
+         call xc_mpi_bcast(size1_i_so_ao                      )
+         call xc_mpi_bcast(size2_i_so_ao                      )
+         call xc_mpi_bcast(size1_l_quantum_nr                 )
+         call xc_mpi_bcast(size1_nr_nonzero_contraction_coefs )
+         call xc_mpi_bcast(size1_primitive_exp                )
+         call xc_mpi_bcast(size2_primitive_exp                )
+         call xc_mpi_bcast(size1_shell_center                 )
+         call xc_mpi_bcast(size1_shell_stabilizing_irep       )
+         call xc_mpi_bcast(size1_spherical_deg                )
+         call xc_mpi_bcast(size1_spherical_off                )
+         call xc_mpi_bcast(size1_center_charge                )
+         call xc_mpi_bcast(size1_center_deg                   )
+         call xc_mpi_bcast(size1_center_stabilizing_irep      )
+         call xc_mpi_bcast(size1_center_xyz                   )
+         call xc_mpi_bcast(size2_center_xyz                   )
 
          if (.not. xc_mpi_is_master()) then
-            allocate(ao_center(nr_ao))
-            allocate(ao_center_xyz(nr_ao, 3))
-            allocate(ao_distance(nr_ao, nr_ao, 3))
-            allocate(cartesian_deg(sum_nr_primitives))
-            allocate(cartesian_off(sum_nr_primitives))
-            allocate(contraction_coef(sum_nr_primitives, sum_nr_primitives))
-            allocate(f_so_ao(nr_so_ao))
-            allocate(i_so_ao(2, nr_so_ao))
-            allocate(l_quantum_nr(sum_nr_primitives))
-            allocate(nr_nonzero_contraction_coefs(sum_nr_primitives))
-            allocate(primitive_exp(sum_nr_primitives, sum_nr_primitives))
-            allocate(shell_center(sum_nr_primitives))
-            allocate(shell_stabilizing_irep(sum_nr_primitives))
-            allocate(spherical_deg(sum_nr_primitives))
-            allocate(spherical_off(sum_nr_primitives))
-            allocate(center_charge(nr_centers))
-            allocate(center_deg(nr_centers))
-            allocate(center_stabilizing_irep(nr_centers))
-            allocate(center_xyz(nr_centers, 3))
+            allocate(ao_center(size1_ao_center))
+            allocate(ao_center_xyz(size1_ao_center_xyz, size2_ao_center_xyz))
+            allocate(ao_distance(size1_ao_distance, size2_ao_distance, size3_ao_distance))
+            allocate(cartesian_deg(size1_cartesian_deg))
+            allocate(cartesian_off(size1_cartesian_off))
+            allocate(contraction_coef(size1_contraction_coef, size2_contraction_coef))
+            allocate(f_so_ao(size1_f_so_ao))
+            allocate(i_so_ao(size1_i_so_ao, size2_i_so_ao))
+            allocate(l_quantum_nr(size1_l_quantum_nr))
+            allocate(nr_nonzero_contraction_coefs(size1_nr_nonzero_contraction_coefs))
+            allocate(primitive_exp(size1_primitive_exp, size2_primitive_exp))
+            allocate(shell_center(size1_shell_center))
+            allocate(shell_stabilizing_irep(size1_shell_stabilizing_irep))
+            allocate(spherical_deg(size1_spherical_deg))
+            allocate(spherical_off(size1_spherical_off))
+            allocate(center_charge(size1_center_charge))
+            allocate(center_deg(size1_center_deg))
+            allocate(center_stabilizing_irep(size1_center_stabilizing_irep))
+            allocate(center_xyz(size1_center_xyz, size2_center_xyz))
          end if
 
          call xc_mpi_bcast(interface_ao_set              )
