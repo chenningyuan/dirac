@@ -38,6 +38,7 @@ parser.add_option('--compiler',
 command_d = {}
 
 command_d['gfortran'] = 'gfortran --version'
+command_d['f95']      = 'f95      --version'
 command_d['g95']      = 'g95      --version'
 command_d['ifort']    = 'ifort    --version'
 command_d['pgf90']    = 'pgf90    -V'
