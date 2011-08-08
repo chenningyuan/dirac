@@ -104,14 +104,14 @@ add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 include(Archs)
 include(Compilers)
 execute_process(
-    COMMAND ./get-compiler-version.py --fc=${CMAKE_Fortran_COMPILER_ID}
+    COMMAND ./get-compiler-version.py --compiler=${CMAKE_Fortran_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 execute_process(
-    COMMAND ./get-compiler-version.py --cc=${CMAKE_C_COMPILER_ID}
+    COMMAND ./get-compiler-version.py --compiler=${CMAKE_C_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE C_COMPILER_VERSION
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
