@@ -3058,32 +3058,32 @@ C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),NVECS(2,0:2),
-     S     KBV(2),SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
+     &          KBV(2),SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
 C
 #include "memint.h"
       CALL QENTER('ORBLP1')
       KFRSAV = KFREE
       IFRP   = 1
       NB     = NBL + NBS
-C      DO IFRP = 1,NFSYM
-      NVECS(IFRP,1) = 0
-      DO I = 1,NREFS
-         CALL MEMGET('INTE',KVEC(IFRP,I),NORB(IFRP),WORK,KFREE,LFREE)
-         NSTR(IFRP,0,I) = 1
-         CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)),
-     &        NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &        IFRP,NSTR(IFRP,0,I))
-         CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
-     &        NPSH(IFRP),NESH(IFRP),
-     &        NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-         NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-         NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
-         CALL MEMREL('PRJANA',WORK,KVEC(IFRP,I),KVEC(IFRP,I),
-     &        KFREE,LFREE)
-         CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
-     &        WORK,KFREE,LFREE)
-      ENDDO
-C      ENDDO
+C     DO IFRP = 1,NFSYM
+        NVECS(IFRP,1) = 0
+        DO I = 1,NREFS
+          CALL MEMGET('INTE',KVEC(IFRP,I),NORB(IFRP),WORK,KFREE,LFREE)
+          NSTR(IFRP,0,I) = 1
+          CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)),
+     &         NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
+     &         IFRP,NSTR(IFRP,0,I))
+          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
+     &         NPSH(IFRP),NESH(IFRP),
+     &         NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
+          NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
+          CALL MEMREL('PRJANA',WORK,KVEC(IFRP,I),KVEC(IFRP,I),
+     &         KFREE,LFREE)
+          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+     &         WORK,KFREE,LFREE)
+        ENDDO
+C     ENDDO
       NCDIM = NB*NVECS(IFRP,1)*4
       CALL MEMGET('REAL',KRCOEF,NCDIM,WORK,KFREE,LFREE)
 C
@@ -3098,52 +3098,52 @@ C
       IPRPRJ = 4
       NQ = KRCOEF
       DO I = 1,NREFS
-         INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(A,A6,A)') 
-     &           'Reference coefficient file ',REFFIL(I),' not present'
-            CALL QUIT('PRJANA: No reference coefficients !')
-         ENDIF
-         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
-         IF(OWNBAS) THEN
-            CALL SELOWN(2,WORK(KCMO),IDUM,IDUM,
-     &           I,1,LUCOEF,REFFIL(I),WORK(KRCOEF),IDUM,IDUM,
-     &           NVECS(1,1),IOFF,KVEC(1,I),
-     &           NSTR(1,0,I),WORK,KFREE,LFREE)
-            IF(IPRLOC .GE. 5) THEN
-              WRITE(LUPRI,'(A,A6)') 
-     &        '* Selected coefficients for reference ',REFFIL(I)
-              NQ = NB*IOFF(IFRP)+1
-              CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),
-     &        NB,NSTR(IFRP,0,I),4,
-     S        IPQTOQ(1,0),LUPRI)
-           ENDIF
-C     DO IFRP = 1, NFSYM
+        INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
+        IF (.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A,A6,A)') 
+     &         'Reference coefficient file ',REFFIL(I),' not present'
+          CALL QUIT('PRJANA: No reference coefficients !')
+        ENDIF
+        CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
+        IF(OWNBAS) THEN
+          CALL SELOWN(2,WORK(KCMO),IDUM,IDUM,
+     &         I,1,LUCOEF,REFFIL(I),WORK(KRCOEF),IDUM,IDUM,
+     &         NVECS(1,1),IOFF,KVEC(1,I),
+     &         NSTR(1,0,I),WORK,KFREE,LFREE)
+          IF(IPRLOC .GE. 5) THEN
+            WRITE(LUPRI,'(A,A6)') 
+     &      '* Selected coefficients for reference ',REFFIL(I)
+            NQ = NB*IOFF(IFRP)+1
+            CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),
+     &      NB,NSTR(IFRP,0,I),4,
+     &      IPQTOQ(1,0),LUPRI)
+          ENDIF
+C         DO IFRP = 1, NFSYM
             IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,I)
             IF(NSTR(IFRP,0,I).GT.0) THEN
                NQ = NQ + NSTR(IFRP,0,I)*NB
             ENDIF
-C     ENDDO
-         ELSE
-            CALL REACMO(LUCOEF,REFFIL(I),WORK(KCMO),IDUM,
-     &           IDUM,TOTERG,2,WORK,KFREE,LFREE)
-C     DO IFRP = 1, NFSYM
+C         ENDDO
+        ELSE
+          CALL REACMO(LUCOEF,REFFIL(I),WORK(KCMO),IDUM,
+     &         IDUM,TOTERG,2,WORK,KFREE,LFREE)
+C         DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,I).GT.0) THEN
-               CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ),
-     &              NVECS(IFRP,1),WORK(KVEC(IFRP,I)),
-     &              NSTR(IFRP,2,I),NSTR(IFRP,1,I),NB,NORB(IFRP))
+              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ),
+     &             NVECS(IFRP,1),WORK(KVEC(IFRP,I)),
+     &             NSTR(IFRP,2,I),NSTR(IFRP,1,I),NB,NORB(IFRP))
               IF(IPRLOC .GE. 5) THEN
                 WRITE(LUPRI,'(A,A6)') 
      &          '* Selected coefficients for reference ',REFFIL(I)
                 CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),
      &            NB,NSTR(IFRP,0,I),4,
-     S            IPQTOQ(1,0),LUPRI)
-               ENDIF
-               NQ = NQ + NSTR(IFRP,0,I)*NB
+     &            IPQTOQ(1,0),LUPRI)
+              ENDIF
+              NQ = NQ + NSTR(IFRP,0,I)*NB
             ENDIF
-C     ENDDO
-         ENDIF
-         CLOSE(LUCOEF,STATUS='KEEP')
+C         ENDDO
+        ENDIF
+        CLOSE(LUCOEF,STATUS='KEEP')
       ENDDO
 C
 C     Throw away the full coefficients and eigenvalues
@@ -3154,38 +3154,38 @@ C
 C     Do projection analysis
 C     ======================
 C
-C      NBDIM = 0
-C      DO IFRP = 1,NFSYM
-      NBDIM = NVECS(IFRP,1)*NI*4
-C      ENDDO
+C     NBDIM = 0
+C     DO IFRP = 1,NFSYM
+        NBDIM = NVECS(IFRP,1)*NI*4
+C     ENDDO
       CALL MEMGET('REAL',KBV(1),NBDIM,WORK,KFREE,LFREE)
-C      IF(NFSYM.EQ.2) THEN
-C        KBV(2)   = KBV(1) + NVECS(1,0)*NVECS(1,2)*NZ
-C      ELSE
-      KBV(2)   = KFREE
-C      ENDIF
-C      DO IFRP = 1,NFSYM
-C      CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
+C     IF(NFSYM.EQ.2) THEN
+C       KBV(2)   = KBV(1) + NVECS(1,0)*NVECS(1,2)*NZ
+C     ELSE
+        KBV(2)   = KFREE
+C     ENDIF
+C     DO IFRP = 1,NFSYM
+C     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
       KBUF   = KFREE
       NMOL   = NI
       NREF   = NVECS(IFRP,1)
       N2REF  = NREF*NREF
       CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
       IF(NREFS.GT.1) THEN
-         CALL MEMGET('REAL',KAMAT,N2REF*4,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KAMAT,N2REF*4,WORK,KFREE,LFREE)
       ELSE
-         KAMAT = KFREE
+        KAMAT = KFREE
       ENDIF
       CALL MEMGET('INTE',KJREF,NREF*3,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPIV,NREF  ,WORK,KFREE,LFREE)
       IVEC = 0
       DO I = 1,NREFS
-         CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
-         IVEC = IVEC + NSTR(IFRP,0,I)
+        CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
+        IVEC = IVEC + NSTR(IFRP,0,I)
       ENDDO
       CALL ORBLP2(SMAT,SCOEF,WORK(KRCOEF),WORK(KAMAT),NB,NI,
-     S     NVECS(IFRP,1),WORK(KBV(IFRP)),WORK(KGVEC),WORK(KVEC(IFRP,1)),
-     S     WORK(KJREF),NSTR,WORK(KIPIV),WORK,KFREE,LFREE)
+     &     NVECS(IFRP,1),WORK(KBV(IFRP)),WORK(KGVEC),WORK(KVEC(IFRP,1)),
+     &     WORK(KJREF),NSTR,WORK(KIPIV),WORK,KFREE,LFREE)
 C
       CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
@@ -3196,48 +3196,47 @@ C
 C Construction of W = Ac
 C
       IF(IPRLOC .GE. 5) THEN
-         WRITE(LUPRI,'(/A)') '* Matrice KBV'
-         CALL PRQMAT(WORK(KBV(IFRP)),NREF,NI,NREF,NI,4,
-     S        IPQTOQ(1,0),LUPRI)
-         WRITE(LUPRI,'(/A)') '* Matrice AMAT'
-         CALL PRQMAT(WORK(KAMAT),NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice KBV'
+        CALL PRQMAT(WORK(KBV(IFRP)),NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice AMAT'
+        CALL PRQMAT(WORK(KAMAT),NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
-         CALL QGEMM(NREF,NI,NREF,D1,
-     S        'N','N',IPQTOQ(1,0),WORK(KAMAT),NREF,NREF,4,
-     S        'N','N',IPQTOQ(1,0),WORK(KBV(IFRP)),NREF,NI,4,
-     S        D0,IPQTOQ(1,0),WORK(KWMAT),NREF,NI,4)
+        CALL QGEMM(NREF,NI,NREF,D1,
+     &       'N','N',IPQTOQ(1,0),WORK(KAMAT),NREF,NREF,4,
+     &       'N','N',IPQTOQ(1,0),WORK(KBV(IFRP)),NREF,NI,4,
+     &       D0,IPQTOQ(1,0),WORK(KWMAT),NREF,NI,4)
 C
       IF(IPRLOC.GE.5) THEN
-         WRITE(LUPRI,'(/A)') '* Matrice W'
-         CALL PRQMAT(WORK(KWMAT),NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice W'
+        CALL PRQMAT(WORK(KWMAT),NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 C
 C Construct P_A for each center A
 C
       JOFF = 0
       DO I = 1,NUCDEP
-         CALL QGEMM(NI,NI,NSTR(IFRP,0,I),D1,
-     S              'H','N',IPQTOQ(1,0),WORK(KBV(IFRP)+JOFF),NREF,NI,4,
-     S              'N','N',IPQTOQ(1,0),WORK(KWMAT+JOFF),NREF,NI,4,
-     S              D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-      JOFF = JOFF + NSTR(IFRP,0,I)
+        CALL QGEMM(NI,NI,NSTR(IFRP,0,I),D1,
+     &             'H','N',IPQTOQ(1,0),WORK(KBV(IFRP)+JOFF),NREF,NI,4,
+     &             'N','N',IPQTOQ(1,0),WORK(KWMAT+JOFF),NREF,NI,4,
+     &             D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+        JOFF = JOFF + NSTR(IFRP,0,I)
       ENDDO
 C
 C P_A matrices symmetrization
 C
       DO I = 1,NUCDEP
-         CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
-         DO IZ = 2,4
-            CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
-         ENDDO
+        CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
+        DO IZ = 2,4
+          CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
+        ENDDO
       ENDDO
 C
       IF(IPRLOC .GE. 1) THEN
-         DO I = 1,NUCDEP
-            WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-            WRITE(LUPRI,'(A)') '  ============================'
-            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
-         ENDDO
+        DO I = 1,NUCDEP
+          WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
+          WRITE(LUPRI,'(A)') '  ============================'
+          CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
+        ENDDO
       ENDIF
 C
 C Calculation and print of the localisation criterion
@@ -3246,18 +3245,18 @@ C
       WRITE(LUPRI,'(A)')  '  ===================================  '
       DINV = D0
       DO I = 1,NI
-         QLOC2 = D0
-         DO J = 1,NUCDEP
-            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4
-         ENDDO
-         DLOC = D1/QLOC2
-         DINV = DINV + QLOC2
-         WRITE(LUPRI,'(A,I3,A,F7.4)') 
-     S   '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
+        QLOC2 = D0
+        DO J = 1,NUCDEP
+          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4
+        ENDDO
+        DLOC = D1/QLOC2
+        DINV = DINV + QLOC2
+        WRITE(LUPRI,'(A,I3,A,F7.4)') 
+     &  '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
       ENDDO
       DINVM = DINV/NI
       WRITE(LUPRI,'(/A,F15.13)')
-     S    '* Inverse mean delocalization = ',DINVM
+     &    '* Inverse mean delocalization = ',DINVM
 C
       CALL MEMREL('ORBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
