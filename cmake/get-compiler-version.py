@@ -66,8 +66,12 @@ def main():
         else:
             p = subprocess.Popen(command_d[compiler_name], shell=True, \
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # use only first line, not the copyright stuff
-            print p.communicate()[0].split('\n')[0]
+            out = p.communicate()[0]
+            if out == '':
+                print 'unknown version'
+            else:
+                # use only first line, not the copyright stuff
+                print out.split('\n')[0]
 
 if __name__ == '__main__':
         main()
