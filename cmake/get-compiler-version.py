@@ -107,21 +107,8 @@ class compiler_version:
         (self.version_output,self.stderr)=p.communicate()
         p.wait()
 
-        # clean the stuff
-        # Get rid of empty lines
-        #print self.version_output
-        self.version_output=self.version_output.split()
-        self.stdout=[]
-        for word in self.version_output:
-        # Strip whitespace, should leave nothing if empty line was just "\n"
-            if not word.strip():
-                continue
-            # We got something, save it
-            else:
-                self.stdout.append(word+" ")
-                pass
-        # Get condensed text
-        self.stdout="".join(self.stdout)
+        # use only first line, not the copyright stuff
+        self.stdout = self.version_output.split('\n')[0]
         print >> sys.stdout,self.stdout
     
         if self.stderr: # flush out error stream
