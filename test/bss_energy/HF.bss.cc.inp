@@ -2,9 +2,8 @@
 .TITLE
   LiH
 .WAVE F ! Activate integral and wave functions modules
-!.PROPERTIES ! Activate property module (dipole moment; polarizability...)
+.XMLOUT
 **GENERAL
-! Direct evaluation of two-electron integrals
 .DIRECT
 1 1 1
 **INTEGRALS
