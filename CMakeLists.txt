@@ -103,6 +103,20 @@ add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
 include(Compilers)
+execute_process(
+    COMMAND ./get-compiler-version.py --compiler=${CMAKE_Fortran_COMPILER}
+    TIMEOUT 1
+    OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND ./get-compiler-version.py --compiler=${CMAKE_C_COMPILER}
+    TIMEOUT 1
+    OUTPUT_VARIABLE C_COMPILER_VERSION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 set(LIBS)
 #set(LIBS ${LIBS} STATIC IMPORTED)
@@ -394,3 +408,14 @@ add_custom_command(
         POST_BUILD COMMAND ../utils/diagn.py
     endif()
 )
+
+# doxygen documentation
+configure_file(
+    ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
+    ${PROJECT_BINARY_DIR}/Doxyfile
+)
+add_custom_target(
+    doc 
+    COMMAND doxygen
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )

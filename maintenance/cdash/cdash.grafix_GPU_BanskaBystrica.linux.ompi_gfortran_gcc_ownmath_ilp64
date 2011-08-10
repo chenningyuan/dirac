@@ -11,13 +11,13 @@ export LD_LIBRARY_PATH=/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudapr
 # the directory where your DIRAC sits
 DIRAC=/home/milias/work/qch/dirac_git/trunk
 BUILD=build_ompi_gfortran_gcc_ownmath_ilp64
+OMPI=/home/milias/bin/openmpi_ilp64/bin
 
 # go to the local DIRAC directory
 cd $DIRAC
 /bin/rm -rf $BUILD
 git pull origin master
 ./pamadm -a 
-OMPI=/home/milias/bin/openmpi_ilp64/bin
 # configure step
 ./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
 cd $DIRAC/$BUILD
@@ -30,6 +30,7 @@ TMP_DIR=/tmp/ilias/dirac_build
 mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
+./pamadm -a 
 ./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
 cd $DIRAC/build
 make Nightly

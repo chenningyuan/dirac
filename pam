@@ -61,15 +61,13 @@ class pam_enviroment:
 
         self.expert_mode = False # disable various safety checks
 
-     #  installation directory ...
+        #  installation directory ...
         self.dirac_home = install_dir
 
-    # basis set directory - initial value which can be reset later in the flags-reading step
-    # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-        self.basdir = '.:' + os.path.join(install_dir_default,'basis')+':' \
-                            + os.path.join(install_dir_default,'basis_dalton')
+        # set the basis set directories
+        self.set_basdir()
 
-    # by default we assume no xyz-molecule input file
+        # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
         # no internal pam default for --scratch 
@@ -158,9 +156,9 @@ class pam_enviroment:
             else:
                 self.dirac_exe = None
 
-    # ## put/get files (flag controlled) ###
-        self.put_files = ''
-        self.get_files = ''
+    # put/get files (flag controlled) #
+        self.put_files = None
+        self.get_files = None
 
     # memory allocation
         mw = 64
@@ -255,6 +253,20 @@ class pam_enviroment:
         self.diracrc_args = []
     # list of all pam arguments
         self.pam_args = []
+
+    def set_basdir(self):
+        '''
+        set and controls the basis set directory
+        '''
+    # basis set directory - initial value which can be reset later in the flags-reading step
+    # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
+        self.basdir='.:'
+        basis_dir= os.path.join(install_dir_default,'basis')
+        basis_dalton_dir=os.path.join(install_dir_default,'basis_dalton')
+        if os.path.isdir(basis_dir):
+            self.basdir = self.basdir + basis_dir
+        if os.path.isdir(basis_dalton_dir):
+            self.basdir = self.basdir+':'+basis_dalton_dir
 
     def show_settings(self):
         '''
@@ -1427,6 +1439,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                     backup_file(some_file=file_name_home, upto=None)
         # finally copy
                 self.copy_file(full_file_name, file_name_home)
+                print '  Saved file "',file_name,'" from the scratch directory'
             else:
                 print_std_out_err(file_name+' not found in the scratch directory.')
 
