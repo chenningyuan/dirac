@@ -254,6 +254,7 @@ contains
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
 
+      integer, parameter :: max_response_order_mo = 5
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -448,12 +449,20 @@ contains
          end if
       end if
 
+      if (response_order_mo > max_response_order_mo) then
+          stop 'response_order_mo > max_response_order_mo'
+      end if
+
 !     set and sync functional
 #ifdef MOD_XCFUN
       if (fun_is_automatic) then
-         call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
+!        call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
+!        call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
+!        call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
+!radovan: hack - this is needed otherwise with rhs_direct we go out of the array
+         call xcfun_set_functional(xc_fun,       max_response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_alda,  max_response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_xalda, max_response_order_mo, parallel_xc)
       else
 #endif
 #ifdef VAR_MPI
@@ -648,7 +657,6 @@ contains
 !        symmetrize matrices
          if (dft_cfg_blocked .or. (use_gga                          &
                                    .and. .not. do_london_rhs_direct &
-                                   !.and. .not. do_london_rhs_ro &
                                    .and. .not. do_london_ks         &
 !radovan: with do_london_lr matrices have to be symmetrized!
 !                                  .and. .not. do_london_lr         &
