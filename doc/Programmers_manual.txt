@@ -1,2 +1,0 @@
-Content of this file was moved to the Dirac developpers web page: 
-     http://dirac.chem.sdu.dk/tracDirac/wiki
