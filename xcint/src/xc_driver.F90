@@ -1250,12 +1250,11 @@ contains
         end if
 
 
-!       linear response
-!       ===============
+!       london direct spin density contribution
+!       =======================================
 
-        if (response_order_mo == 1) then
-           if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
-
+        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
+!radovan: this code is commented and tests pass, strange
               !call lr_sdft_lao_direct(bllen,          &
               !                        mat_dim,        &
               !                        nz,             &
@@ -1269,30 +1268,31 @@ contains
               !                        derv_length,    &
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
+        end if
 
 
-           else
+!       linear response
+!       ===============
 
-              call lr(bllen,          &
-                      mat_dim,        &
-                      nz,             &
-                      nr_dmat,        &
-                      dmat,           &
-                      dmat_pg_sym,    &
-                      dmat_ih_sym,    &
-                      .false.,        &
-                      ao,             &
-                      n_0,            &
-                      gn_0_pointwise,           &
-                      gnn_0,            &
-                      w,              &
-                      use_gga_qr,     &
-                      use_gga_qi,     &
-                      buffer,         &
-                      derv_length,    &
-                      derv, u)
-
-          endif
+        if (response_order_mo == 1) then
+           call lr(bllen,          &
+                   mat_dim,        &
+                   nz,             &
+                   nr_dmat,        &
+                   dmat,           &
+                   dmat_pg_sym,    &
+                   dmat_ih_sym,    &
+                   .false.,        &
+                   ao,             &
+                   n_0,            &
+                   gn_0_pointwise, &
+                   gnn_0,          &
+                   w,              &
+                   use_gga_qr,     &
+                   use_gga_qi,     &
+                   buffer,         &
+                   derv_length,    &
+                   derv, u)
         endif
 
 
