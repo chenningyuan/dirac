@@ -916,6 +916,12 @@ contains
        max_fun_derv = 2
     end if
 
+    if (do_london_rhs_ro) then
+       if (max_fun_derv < 2) then
+          max_fun_derv = 2
+       end if
+    end if
+
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
     if (response_order_ao > 0) then
@@ -1223,6 +1229,27 @@ contains
           end if
 
 
+!       london reorthogonalization spin density contribution
+!       ====================================================
+
+        if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
+           call lr_sdft_lao_reorth(bllen,          &
+                                   mat_dim,        &
+                                   nz,             &
+                                   ao,             &
+                                   n_0,            &
+                                   gn_0_pointwise, &
+                                   gnn_0,          &
+                                   w,              &
+                                   use_gga_qi,     &
+                                   dmat,           &
+                                   dmat_pg_sym,    &
+                                   buffer,         &
+                                   derv_length,    &
+                                   derv, u)
+        end if
+
+
 !       linear response
 !       ===============
 
@@ -1243,21 +1270,6 @@ contains
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
 
-           else if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
-              call lr_sdft_lao_reorth(bllen,          &
-                                      mat_dim,        &
-                                      nz,             &
-                                      ao,             &
-                                      n_0,            &
-                                      gn_0_pointwise,           &
-                                      gnn_0,            &
-                                      w,              &
-                                      use_gga_qi,     &
-                                      dmat, &
-                                      dmat_pg_sym, &
-                                      buffer,         &
-                                      derv_length,    &
-                                      derv, u)
 
            else
 
