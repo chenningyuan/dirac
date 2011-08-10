@@ -2827,6 +2827,7 @@ C         PRJLOC = FALSE localization with Mulliken analysis
           ENDIF
           GOTO 100
         ELSE
+          WRITE(6,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
           IF(DIFFA .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 100
           IF(DIFFA .LE. THRLOC) THEN
             WRITE(LUPRI,'(/A,I5,A)') 
@@ -3249,12 +3250,13 @@ C
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
-        WRITE(LUPRI,'(A,I3,A,F7.4)') 
-     &  '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
+        WRITE(LUPRI,'(A,I3,A,2F7.4)') 
+     &  '* Orbital ', I ,' Pipek-Mezey localization measure d = ',
+     &   DLOC,QLOC2
       ENDDO
       DINVM = DINV/NI
-      WRITE(LUPRI,'(/A,F15.13)')
-     &    '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/A,2F17.13)')
+     &    '* Inverse mean delocalization = ',DINVM,1.0D0/DINVM
 C
       CALL MEMREL('ORBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -3433,7 +3435,7 @@ C
          CALL PRQMAT(XKAPPA(1,1,1),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
       XNRM = DNRM2(NDIM,XKAPPA,1)
-      WRITE (LUPRI,'(A,E12.2)') 'Norm of gradient: ', XNRM
+      WRITE (LUPRI,'(A,E12.2)') 'Norm of gradient: ',DSQRT(XNRM)
       CALL MEMREL('ORBLO2',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('ORBLO2')
