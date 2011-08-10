@@ -311,12 +311,11 @@ contains
 
          derv(k, d0000000) = f%output(1, k)
 
-         select case (order)
-
-            case (0)
+         if (order == 0) then
                call my_quit('get_functional_derv: order 0; probably programming error')
+         end if
 
-            case (1)
+         if (order > 0) then
                if (fun_is_lda()) then
                   derv(k, d1000000) = f%output(XC_D10, k)
                else if (fun_is_gga()) then
@@ -326,11 +325,10 @@ contains
                   derv(k, d1000000) = f%output(XC_D1000000, k)
                   derv(k, d0010000) = f%output(XC_D0010000, k)
                   derv(k, d0000010) = f%output(XC_D0000010, k)
-               else
-                  call my_quit('get_functional_derv: unknown fun type')
                end if
+         end if
 
-            case (2)
+         if (order > 1) then
 !              order 2 - spin unpolarized
                if (do_alda_real) then
                   derv(k, d2000000) = f_alda%output(XC_D20, k)
@@ -351,8 +349,6 @@ contains
                      derv(k, d0000020) = f%output(XC_D0000020, k)
                      derv(k, d0010010) = f%output(XC_D0010010, k)
                      derv(k, d1000010) = f%output(XC_D1000010, k)
-                  else
-                     call my_quit('get_functional_derv: unknown fun type')
                   end if
                end if
 !              order 2 - spin polarized
@@ -375,12 +371,11 @@ contains
                      derv(k, d0000002) = f%output(XC_D0000002, k)
                      derv(k, d0001001) = f%output(XC_D0001001, k)
                      derv(k, d0100001) = f%output(XC_D0100001, k)
-                  else
-                     call my_quit('get_functional_derv: unknown fun type')
                   end if
                end if
+         end if
 
-            case (3)
+         if (order > 2) then
                if (do_alda_real .or. do_alda_imag) then
                   call my_quit('get_functional_derv: xcfun alda qr not implemented')
                end if
@@ -412,14 +407,12 @@ contains
                   derv(k, d0012000) = f%output(XC_D00120, k)
                else if (fun_is_tau_mgga()) then
                   call my_quit('get_functional_derv: tau mgga qr not implemented')
-               else
-                  call my_quit('get_functional_derv: unknown fun type')
                end if
+         end if
 
-            case default
+         if (order > 3) then
                call my_quit('get_functional_derv: order too high')
-
-         end select
+         end if
 
       end do
 
