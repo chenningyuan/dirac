@@ -3,7 +3,7 @@
 #PBS -S /bin/bash
 #PBS -N cdash_buildup
 #PBS -l nodes=2
-#PBS -l walltime=12:00:00
+#PBS -l walltime=6:00:00
 #PBS -j oe
 #PBS -q workq
 ##PBS -o cdash_buildup_log
