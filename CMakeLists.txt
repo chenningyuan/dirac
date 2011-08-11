@@ -220,16 +220,6 @@ if(ENABLE_XCFUN)
         )
 endif()
 
-# get git revision number
-set(GIT_REVISION "")
-execute_process(
-    COMMAND ./get-git-revision.py
-    TIMEOUT 1
-    OUTPUT_VARIABLE GIT_REVISION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 # create compilation info
 configure_file(
     ${CMAKE_SOURCE_DIR}/cmake/compilation_info.py.in
