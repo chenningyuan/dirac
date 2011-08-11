@@ -135,7 +135,11 @@ program dirprg
      call printlogo
      call printsubtitle
      call flush(lupri)
+#ifdef THIS_IS_CMAKE_BUILD
+     call print_compilation_info()
+#else
      call sysinf(iparcal)
+#endif
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST

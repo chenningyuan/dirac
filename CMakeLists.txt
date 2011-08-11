@@ -8,7 +8,7 @@ set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-set(THIS_IS_CMAKE_BUILD 1)
+add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -103,23 +103,8 @@ add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
 include(Compilers)
-execute_process(
-    COMMAND ./get-compiler-version.py --compiler=${CMAKE_Fortran_COMPILER}
-    TIMEOUT 1
-    OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-execute_process(
-    COMMAND ./get-compiler-version.py --compiler=${CMAKE_C_COMPILER}
-    TIMEOUT 1
-    OUTPUT_VARIABLE C_COMPILER_VERSION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 set(LIBS)
-#set(LIBS ${LIBS} STATIC IMPORTED)
 
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
 option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
@@ -198,10 +183,6 @@ add_executable(
     ${PROJECT_SOURCE_DIR}/cbuild/gen_fortran_interface_h.c
     )
 
-set(GENERATED_FILES
-    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
-    )
-
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/modules
@@ -224,33 +205,18 @@ if(ENABLE_XCFUN)
         )
 endif()
 
-# get git revision number
-set(GIT_REVISION "")
+# create compilation info
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/compilation_info.py.in
+    ${CMAKE_BINARY_DIR}/compilation_info.py
+    )
 execute_process(
-    COMMAND ./get-git-revision.py
+    COMMAND python ${CMAKE_BINARY_DIR}/compilation_info.py
     TIMEOUT 1
-    OUTPUT_VARIABLE GIT_REVISION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/gp/compilation_info.F90
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
-#fixme: it's cmake time, not compile time
-#       also revision numbers are cmake time
-# get compilation time
-set(COMPILATION_TIME "")
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    execute_process(
-        COMMAND date
-        TIMEOUT 1
-        OUTPUT_VARIABLE COMPILATION_TIME
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-
-# configure compinfo.h
-configure_file(
-    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in
-    ${CMAKE_SOURCE_DIR}/gp/compinfo.h
-    )
 
 # copy pam to build dir
 configure_file(
@@ -259,6 +225,9 @@ configure_file(
     COPYONLY
     )
 
+set(GENERATED_FILES
+    ${PROJECT_SOURCE_DIR}/include/fortran_interface.h
+    )
 add_custom_target(dirac_interfaces
     ALL
     DEPENDS
@@ -271,6 +240,7 @@ set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
+    gp/compilation_info.F90
     )
 
 add_library(
@@ -362,7 +332,6 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules           ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in  ${EXPORT_DIR}/gp
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
