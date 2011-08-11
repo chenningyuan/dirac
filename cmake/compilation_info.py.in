@@ -49,11 +49,7 @@ def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
 def print_line(l, r):
-    empty = ' '
-    if l == '':
-        print "    write(lupri, '(a)') ' %s | %s'" % (empty.ljust(23), r)
-    else:
-        print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(23), r)
+    print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(23), r)
 
 for line in s:
     chunk_l = chunkify(line[1], 50)
@@ -61,7 +57,7 @@ for line in s:
         if i == 0:
             print_line(line[0], chunk_l[i])
         else:
-            print_line('', chunk_l[i])
+            print_line(' ', chunk_l[i])
 print_line('Last commit rev',    last_commit_rev)
 print_line('Last commit author', last_commit_author)
 print_line('Last commit time',   last_commit_time)
