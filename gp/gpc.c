@@ -49,7 +49,9 @@
 
 #include <math.h>
 #include "patchlevel.h"
+#ifndef THIS_IS_CMAKE_BUILD
 #include "compinfo.h"
+#endif
 #include "fortran_interface.h"
 
 void printaddr_(void *p)
@@ -152,42 +154,7 @@ void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 void sysinf_(fortran_int_t *parcal)
 {
 
-#ifdef THIS_IS_CMAKE_BUILD
-   printf("\n");
-   printf("\n");
-   printf("Compilation settings\n");
-   printf("--------------------\n");
-   printf("\n");
-   printf("CMAKE_SYSTEM_NAME           : %s \n", CMAKE_SYSTEM_NAME           );
-   printf("\n");
-   printf("ENABLE_INTERNAL_MATH        : %s \n", ENABLE_INTERNAL_MATH       );
-   printf("ENABLE_64BIT_INTEGERS       : %s \n", ENABLE_64BIT_INTEGERS       );
-   printf("ENABLE_MPI                  : %s \n", ENABLE_MPI                  );
-   printf("ENABLE_XCFUN                : %s \n", ENABLE_XCFUN                );
-   printf("\n");
-   printf("CMAKE_BUILD_TYPE            : %s \n", CMAKE_BUILD_TYPE            );
-   printf("\n");
-   printf("CMAKE_Fortran_COMPILER      : %s \n", CMAKE_Fortran_COMPILER      );
-   printf("FORTRAN_COMPILER_VERSION    : %s \n", FORTRAN_COMPILER_VERSION    );
-   printf("CMAKE_Fortran_FLAGS         : %s \n", CMAKE_Fortran_FLAGS         );
-   printf("CMAKE_Fortran_FLAGS_DEBUG   : %s \n", CMAKE_Fortran_FLAGS_DEBUG   );
-   printf("CMAKE_Fortran_FLAGS_RELEASE : %s \n", CMAKE_Fortran_FLAGS_RELEASE );
-   printf("\n");
-   printf("CMAKE_C_COMPILER            : %s \n", CMAKE_C_COMPILER            );
-   printf("C_COMPILER_VERSION          : %s \n", C_COMPILER_VERSION          );
-   printf("CMAKE_C_FLAGS               : %s \n", CMAKE_C_FLAGS               );
-   printf("CMAKE_C_FLAGS_DEBUG         : %s \n", CMAKE_C_FLAGS_DEBUG         );
-   printf("CMAKE_C_FLAGS_RELEASE       : %s \n", CMAKE_C_FLAGS_RELEASE       );
-   printf("\n");
-   printf("BLAS_LIBRARIES              : %s \n", BLAS_LIBRARIES              );
-   printf("LAPACK_LIBRARIES            : %s \n", LAPACK_LIBRARIES            );
-   printf("\n");
-   printf("GIT_REVISION                : %s \n", GIT_REVISION                );
-   printf("\n");
-   printf("Compilation time            : %s \n", COMPILATION_TIME            );
-
-#else
-
+#ifndef THIS_IS_CMAKE_BUILD
 #if !defined (SYS_WINDOWS)
    struct utsname *un;
    un = (struct utsname *) malloc(sizeof(struct utsname));
@@ -219,7 +186,7 @@ void sysinf_(fortran_int_t *parcal)
    printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
    printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
 
-#endif /* #ifdef THIS_IS_CMAKE_BUILD */
+#endif /* #ifndef THIS_IS_CMAKE_BUILD */
    fflush(stdout);
 }
 
