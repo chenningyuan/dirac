@@ -18,24 +18,24 @@ else:
     last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
 
 s = []
-s.append(['System'                  , r'@CMAKE_SYSTEM_NAME@'         ])
-s.append(['Internal math'           , r'@ENABLE_INTERNAL_MATH@'      ])
-s.append(['64-bit integers'         , r'@ENABLE_64BIT_INTEGERS@'     ])
-s.append(['MPI'                     , r'@ENABLE_MPI@'                ])
-s.append(['XCFun'                   , r'@ENABLE_XCFUN@'              ])
-s.append(['Build type'              , r'@CMAKE_BUILD_TYPE@'          ])
-s.append(['Fortran compiler'        , r'@CMAKE_C_COMPILER@'          ])
-s.append(['Fortran compiler version', r'@FortranCOMPILER_VERSION@'   ])
-s.append(['Fortran flags'           , r'@CMAKE_FortranFLAGS@'        ])
-s.append(['Fortran flags (debug)'   , r'@CMAKE_FortranFLAGS_DEBUG@'  ])
-s.append(['Fortran flags (release)' , r'@CMAKE_FortranFLAGS_RELEASE@'])
-s.append(['C compiler'              , r'@CMAKE_FortranCOMPILER@'     ])
-s.append(['C compiler version'      , r'@C_COMPILER_VERSION@'        ])
-s.append(['C flags'                 , r'@CMAKE_C_FLAGS@'             ])
-s.append(['C flags (debug)'         , r'@CMAKE_C_FLAGS_DEBUG@'       ])
-s.append(['C flags (release)'       , r'@CMAKE_C_FLAGS_RELEASE@'     ])
-s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'            ])
-s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'          ])
+s.append(['System'                  , r'@CMAKE_SYSTEM_NAME@'          ])
+s.append(['Internal math'           , r'@ENABLE_INTERNAL_MATH@'       ])
+s.append(['64-bit integers'         , r'@ENABLE_64BIT_INTEGERS@'      ])
+s.append(['MPI'                     , r'@ENABLE_MPI@'                 ])
+s.append(['XCFun'                   , r'@ENABLE_XCFUN@'               ])
+s.append(['Build type'              , r'@CMAKE_BUILD_TYPE@'           ])
+s.append(['Fortran compiler'        , r'@CMAKE_C_COMPILER@'           ])
+s.append(['Fortran compiler version', r'@Fortran_COMPILER_VERSION@'   ])
+s.append(['Fortran flags'           , r'@CMAKE_Fortran_FLAGS@'        ])
+s.append(['Fortran flags (debug)'   , r'@CMAKE_Fortran_FLAGS_DEBUG@'  ])
+s.append(['Fortran flags (release)' , r'@CMAKE_Fortran_FLAGS_RELEASE@'])
+s.append(['C compiler'              , r'@CMAKE_Fortran_COMPILER@'     ])
+s.append(['C compiler version'      , r'@C_COMPILER_VERSION@'         ])
+s.append(['C flags'                 , r'@CMAKE_C_FLAGS@'              ])
+s.append(['C flags (debug)'         , r'@CMAKE_C_FLAGS_DEBUG@'        ])
+s.append(['C flags (release)'       , r'@CMAKE_C_FLAGS_RELEASE@'      ])
+s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
+s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
 
 print 'subroutine print_compilation_info()'
 print '#include "priunit.h"'
@@ -51,9 +51,9 @@ def chunkify(l, n):
 def print_line(l, r):
     empty = ' '
     if l == '':
-        print "    write(lupri, '(a)') ' %s | %s'" % (empty.ljust(18), r)
+        print "    write(lupri, '(a)') ' %s | %s'" % (empty.ljust(23), r)
     else:
-        print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(18), r)
+        print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(23), r)
 
 for line in s:
     chunk_l = chunkify(line[1], 50)
