@@ -76,18 +76,17 @@ s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
 
 print 'subroutine print_compilation_info()'
-print '#include "priunit.h"'
-print "    write(lupri, '(a)')                   "
-print "    write(lupri, '(a)')                   "
-print "    write(lupri, '(a)') 'Compilation info'"
-print "    write(lupri, '(a)') '----------------'"
-print "    write(lupri, '(a)')                   "
+print "    write(6, '(a)')                   "
+print "    write(6, '(a)')                   "
+print "    write(6, '(a)') 'Compilation info'"
+print "    write(6, '(a)') '----------------'"
+print "    write(6, '(a)')                   "
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
 def print_line(l, r):
-    print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(24), r)
+    print "    write(6, '(a)') ' %s | %s'" % (l.ljust(24), r)
 
 for line in s:
     chunk_l = chunkify(line[1], 50)
