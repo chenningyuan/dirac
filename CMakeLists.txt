@@ -103,23 +103,8 @@ add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
 include(Compilers)
-execute_process(
-    COMMAND ./get-compiler-version.py --compiler=${CMAKE_Fortran_COMPILER}
-    TIMEOUT 1
-    OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-execute_process(
-    COMMAND ./get-compiler-version.py --compiler=${CMAKE_C_COMPILER}
-    TIMEOUT 1
-    OUTPUT_VARIABLE C_COMPILER_VERSION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 set(LIBS)
-#set(LIBS ${LIBS} STATIC IMPORTED)
 
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
 option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
