@@ -144,6 +144,7 @@ program dirprg
 
 #ifdef THIS_IS_CMAKE_BUILD
      call print_compilation_info()
+     call print_git_revision_info()
 #else
      call sysinf(iparcal)
 #endif
