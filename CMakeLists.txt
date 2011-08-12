@@ -351,15 +351,17 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         )
 endif()
 
+if(VERBOSE_OUTPUT)
+    include(Report)
+endif()
+
+include(Documentation)
+
 # add short make target for the executable's diagnostics 
 # with the  external python script
 add_custom_target(dgn
     COMMAND ${CMAKE_SOURCE_DIR}/utils/diagn.py
 )
-
-if(VERBOSE_OUTPUT)
-    include(Report)
-endif()
 
 # custom commands on created dirac.x executable
 add_custom_command(
@@ -368,5 +370,3 @@ add_custom_command(
         POST_BUILD COMMAND ../utils/diagn.py
     endif()
 )
-
-include(Documentation)
