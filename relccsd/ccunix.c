@@ -58,7 +58,9 @@ I/O routines:   openc(unit,fname,size,status)
 #if !defined (SYS_WINDOWS)
 #include <sys/times.h>
 #endif
+/*
 #include <sys/param.h>
+*/
 
 extern char  *getenv(); 
 
