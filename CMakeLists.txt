@@ -359,15 +359,6 @@ add_custom_target(dgn
 
 if(VERBOSE_OUTPUT)
     include(Report)
-
-    # print out enviroment variables
-    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        message("Actual Unix environment variable PATH=$ENV{PATH}")
-        message("Actual Unix environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-    else()
-        message("Actual Windows environment variable PATH=$ENV{PATH}")
-            message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-    endif()
 endif()
 
 # custom commands on created dirac.x executable
