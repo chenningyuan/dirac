@@ -1130,7 +1130,7 @@ c
              if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
                write(iounit,'(10X,I5,A3,F12.5,1X,"(",F7.5,")",A8,A44)') 
-     &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'   conf:',field
+     &         iths,':  ',z(iths,j),z(iths,j)*z(iths,j),'  conf: ',field
              endif
            ENDDO          
         ENDIF
@@ -1243,7 +1243,7 @@ C
       CHARACTER*8 SPECFILE
 c variables for hole-configuration analysis
       REAL*8 THTHR,WTHR
-      CHARACTER*22 FIELD
+      CHARACTER*44 FIELD
 C
 C---------------Executable code--------------------------------------
 C
@@ -1401,7 +1401,7 @@ C
 
 c
 c    * * * * * *     S P E C T R U M     * * * * * * * * * * * *
-c  spectrum is purged and available (all eigenvalues with corresponding
+c  spectrum is purged and available: all eigenvalues with corresponding
 c  intensities obtained as squares of the hole/hole components
 c  (pole strengths). IMPORTANT: the band width of the Lanczos matrix
 c  can be larger than the number of actual hole states due to stability
@@ -1411,7 +1411,7 @@ c
 c  print eigenvalues and accuracy in a more convenient format
 c  threshold applies only to the screen output. pole strength = square of
 c  eigenvector component. Write all eigenvalues and pole strength
-c  to file SPECFILE
+c  to file named in SPECFILE
 c
       if(irrep.gt.9) then
         write(SPECFILE,'(a5,a1,i2)') NMSPEC,'.',irrep
@@ -1423,7 +1423,7 @@ c
       cntev=0
       DO J = 1, JND 
 c
-c  pole strength
+c  pole strength calculation
 c
         x1 = 0.0d0
         do i = 1, nholes
@@ -1444,29 +1444,42 @@ c  together with their pole strengths and error estimates are written
 c  to the XSPEC.XX files.
 c
         IF(IONIZLEVEL.EQ.1) THEN
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)')
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of single ionizations
+c
+           isipcount=0
+           DO iths=1,nholes
+             ththr=z(iths,j)*dconjg(z(iths,j))
+             if(ththr.gt.0.001) isipcount = isipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
+     &        d(j)*AUEV,x1,y1,'@',isipcount
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(10X,I5,A3,2F12.6,1X,"(",F7.6,")",A,A22)')
+               write(iounit,'(10X,I5,A3,2F12.5,1X,"(",F7.5,")",A8,A22)')
      &         iths,':  ',z(iths,j),dble(z(iths,j)*dconjg(z(iths,j))),
      &         '   conf:',field
              endif
            ENDDO
-c          write(iounit,'(8x,500I24)')   (ix,ix=1,nholes)
-c          write(iounit,'(8x,500F12.6)') (z(ix,j),ix=1,nholes)
-c          write(iounit,'(8x,500F24.6)')
-c    &           (dble(z(ix,j)*dconjg(z(ix,j))),ix=1,nholes)
+
         ELSE
-           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1)')
-     &        d(j)*AUEV,x1,y1,'@'
+c
+c  take care of double ionizations
+c
+           idipcount=0
+           DO iths=1,nholes
+             ththr=z(iths,j)*dconjg(z(iths,j))
+             if(ththr.gt.0.001) idipcount = idipcount + 1
+           ENDDO 
+           write(iounit,'(2x,F14.8,4x,2F12.6,4x,A1,I4)')
+     &        d(j)*AUEV,x1,y1,'@',idipcount
            DO iths=1,nholes
              ththr=dble(z(iths,j)*dconjg(z(iths,j)))
-             if(ththr.gt.0.0001) then
+             if(ththr.gt.0.001) then
                read(iounitc,rec=iths) field
-               write(iounit,'(12X,I5,A3,2F12.6,1X," (",F7.6,")",A,A22)')
+               write(iounit,'(10X,I5,A3,2F12.5,1X,"(",F7.5,")",A8,A44)')
      &            iths,':  ',z(iths,j),ththr,'  conf: ',field
              endif
            ENDDO

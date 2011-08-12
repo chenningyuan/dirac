@@ -4350,7 +4350,8 @@ C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
 #ifdef MOD_ECP
-      use argos_ctran
+!     use argos_ctran
+      USE RECP_INTERFACE
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -4586,77 +4587,76 @@ C For ARGOS
 C
 C     Run over Nuclear Centres
 C
-
-!fixme: check whether user wants .ECP
-!       if not, do not allocate and do the rest below
-
-!     allocate ctranarg
-      allocate(ctranarg(mxcent,mxqn,mxcent*mxqn,mxcent*mxqn))
-
-      blk = 0
-      do 401 ICENT = 1, NUCIND   ! run over nuclear center
-         nucdega = nucdeg(ICENT)
-         DO 411 IA = 1, KMAX     ! run over shells
-            ila = 0
-            icol = 1
-            MULA   = ISTBAO(IA)
-            NHKTA  = NHKT(IA)
-            KHKTA  = KHKT(IA)
-            NUMCFA = NUMCF(IA)
-            IC     = LCLASS(IA)
-            ncenta = NCENT(IA)
-            irowmax(icent,NHKTA) = nucdega * KHKTA
-CYCP        IF (IA-1.GE.1) THEN ! arrays boundaries fix
-            if (ncenta .eq. ICENT) then
-               if ((ncenta .ne. NCENT(IA-1)) .or.
-     &             (NHKTA .ne. NHKT(IA-1))) then
-                  blk = blk +1
-                  IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
-                  IOFF = NAORBD
-                  DO 421 NA = 1, KHKTA      ! run over components
-                     ila = 0
-                     DO 431 LA = 0, MAXREP  ! run over symmetry operator
-                        IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
-C
-C              If orbital contributes to this representation:
-C
-c                (IVARB is a bitstring of basic operations with
-C                1 in the positions where the basic operations
-C                has a different parity for the irrep and the
-C                AO(when centered in origo). These basic
-C                operations with different parities must then
-C                not be part of the stabilizer of the center
-C                for the AO).
-C
-                        IF (IBTAND(MULA,IVARB) .EQ. 0) THEN
-                           ila = ila + 1
-                           JKB = 0
-C
-C                 loop over symmetry dependent centers
-C
-                           DO 441 KB = 0, MAXREP
-                              IF (IBTAND(KB,MULA) .EQ. 0) THEN
-                                 JKB              = JKB + 1
-                                 irow = NA + KHKTA*(ila-1)
-                                 icol = NA + KHKTA*(JKB-1)
-                                 CTRANarg(icent,NHKTA,irow,icol) =
-     &                                       PT(IBTAND(KB,IVARB))
-                           soef = nint(CTRANarg(icent,NHKTA,irow,icol))
-                                 ireparg(icent,NHKTA,irow) = LA + 1
-c                                 write(lupri,'(a,i3,i3,i3,i3,a,i3)')
-c     &                   'CTRANarg(',icent,NHKTA,irow,icol,') = ',soef
-                              maxang(icent) = NHKTA
-                              END IF
-  441                      CONTINUE
-                        ELSE
-                        END IF
-  431                CONTINUE
-  421             continue
-               endif
-            endif
-CYCP        ENDIF
-  411    CONTINUE
-  401 CONTINUE
+      CALL RECP_INTERFACE_CTRAN(blk)
+!!fixme: check whether user wants .ECP
+!!       if not, do not allocate and do the rest below
+!
+!      ALLOCATE(ctranarg(NUCIND,mxqn,NUCIND*mxqn,NUCIND*mxqn))
+!
+!      blk = 0
+!      do 401 ICENT = 1, NUCIND   ! run over nuclear center
+!         nucdega = nucdeg(ICENT)
+!         DO 411 IA = 1, KMAX     ! run over shells
+!            ila = 0
+!            icol = 1
+!            MULA   = ISTBAO(IA)
+!            NHKTA  = NHKT(IA)
+!            KHKTA  = KHKT(IA)
+!            NUMCFA = NUMCF(IA)
+!            IC     = LCLASS(IA)
+!            ncenta = NCENT(IA)
+!            irowmax(icent,NHKTA) = nucdega * KHKTA
+!CYCP        IF (IA-1.GE.1) THEN ! arrays boundaries fix
+!            if (ncenta .eq. ICENT) then
+!               if ((ncenta .ne. NCENT(IA-1)) .or.
+!     &             (NHKTA .ne. NHKT(IA-1))) then
+!                  blk = blk +1
+!                  IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
+!                  IOFF = NAORBD
+!                  DO 421 NA = 1, KHKTA      ! run over components
+!                     ila = 0
+!                     DO 431 LA = 0, MAXREP  ! run over symmetry operator
+!                        IVARB = IBTXOR(LA,ISYMAO(NHKTA,NA))
+!C
+!C              If orbital contributes to this representation:
+!C
+!c                (IVARB is a bitstring of basic operations with
+!C                1 in the positions where the basic operations
+!C                has a different parity for the irrep and the
+!C                AO(when centered in origo). These basic
+!C                operations with different parities must then
+!C                not be part of the stabilizer of the center
+!C                for the AO).
+!C
+!                        IF (IBTAND(MULA,IVARB) .EQ. 0) THEN
+!                           ila = ila + 1
+!                           JKB = 0
+!C
+!C                 loop over symmetry dependent centers
+!C
+!                           DO 441 KB = 0, MAXREP
+!                              IF (IBTAND(KB,MULA) .EQ. 0) THEN
+!                                 JKB              = JKB + 1
+!                                 irow = NA + KHKTA*(ila-1)
+!                                 icol = NA + KHKTA*(JKB-1)
+!                                 CTRANarg(icent,NHKTA,irow,icol) =
+!     &                                       PT(IBTAND(KB,IVARB))
+!                           soef = nint(CTRANarg(ICENT,NHKTA,irow,icol))
+!                                 ireparg(icent,NHKTA,irow) = LA + 1
+!c                                 write(lupri,'(a,i3,i3,i3,i3,a,i3)')
+!c     &                   'CTRANarg(',icent,NHKTA,irow,icol,') = ',soef
+!                              maxang(icent) = NHKTA
+!                              END IF
+!  441                      CONTINUE
+!                        ELSE
+!                        END IF
+!  431                CONTINUE
+!  421             continue
+!               endif
+!            endif
+!CYCP        ENDIF
+!  411    CONTINUE
+!  401 CONTINUE
 #endif /* ifdef MOD_ECP */
 c
       RETURN
