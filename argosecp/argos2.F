@@ -108,7 +108,7 @@ c
       endif
  
 !     # input processing.
-      call argos_input( a,      a(ipt(55)), ccr,    chg,    eta,
+      call RECP_INPUT( a,      a(ipt(55)), ccr,    chg,    eta,
      &   ica,    idp,    ipt,    ityp,       la,     lb,     lcr,
      &   lls,    lmnp1,  lmnv,   lmn1u,      lproju, maords, mcons,
      &   mcrs,   mgcs,   mnl,    ms,         mtype,  nblpr,  nc,
@@ -474,11 +474,10 @@ c
      & kaords, mconsu, mgcsu, mru,  mcsu, mctu, mcru, msfu, mgu,
      & msfru,  mnru,   ngcs,  nu,   mcxu2,
      & lxyzir(3),      inam(5),     nnam, mdum(32)
-c
+ 
       integer        ipq
       common /dim21/ ipq(1000) !256->1000
-c
-c     # dummy:
+ 
       integer
      & icxast(*),        icxst(2,*),   icxsv1(*),    icxsv2(mgcsu,*),
      & idp(mstu,mstu,*), il(nnbft),    iprst(*),     la(mru,*),

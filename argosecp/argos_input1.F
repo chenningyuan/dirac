@@ -1,5 +1,4 @@
-*deck syminp_argos
-      subroutine argos_input( a,      c,          ccr,    chg,    eta,
+      SUBROUTINE RECP_INPUT( a,      c,          ccr,    chg,    eta,
      &   ica,    idp,    ipt,    ityp,       la,     lb,     lcr,
      &   lls,    lmnp1,  lmnv,   lmn1u,      lproju, maords, mcons,
      &   mcrs,   mgcs,   mnl,    ms,         mtype,  nblpr,  nc,
@@ -12,7 +11,7 @@
 !  geometry, etc.
 
       USE RECP_INPUT_READ
-      USE RECP_ORBITAL 
+      USE RECP_INP_ORBITAL 
 
       implicit logical(a-z)
 
@@ -109,7 +108,7 @@ c     # for workspace allocation.
 !     # Open the input file.
       OPEN(UNIT=ECP_INPUT,STATUS='OLD',FILE='RECP_INPUT')
       call ibummr(nlist)
-      rewind ECP_INPUT
+      REWIND ECP_INPUT
  
 !     # read general information 
       CALL RECP_INPUT_READ_GENERAL
@@ -144,8 +143,8 @@ c     # for workspace allocation.
       CALL ECPINT_INPUT_READ_GEO
      &           (mcu, msu, ng, nbft, ECP_INPUT, ns, nf,
      &            nc, ica, mcons, mgcs, maords, lmnp1, lmn1u,
-     &            ipq, nrcr, nir, nso, nt, ntl, ntu, la, lb, mcrs,
-     &            chg, x, y, z, mtype, mru, ncrs)
+     &            nrcr, nir, nso, nt, ntl, ntu, la, lb, mcrs,
+     &            chg, x, y, z, mtype, mru, ncrs,nst)
 
       N_LMNV = (lmn1u*(lmn1u + 1)*(lmn1u + 2))/6
       ipt(2) = ipt(1) + forbyt( 3*N_LMNV )
@@ -190,18 +189,14 @@ c
       endif
  
 !     # normalization of symmetry orbitals. (deleted)
-!     if ( inrm .ne. 0 ) CALL ARGOS_ORBITAL_NORM
+!     if ( inrm .ne. 0 ) CALL RECP_INP_ORB_SONORM
  
       call izero_argos(3,ixyzir,1)
  
-!     # compute contracted orbital and lower-triangle-packed
-!     # matrix symmetry offsets.
-      nsopr(1) = 0
-      nblpr(1) = 0
-      do ist = 2,nst
-         nsopr(ist) = nsopr(ist-1) + nso(ist-1)
-         nblpr(ist) = nblpr(ist-1) + ipq( nso(ist-1) + 1 )
-      enddo
+!     contracted orbital and lower-triangle-packed matrix symmetry
+!     offsets.
+      CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
+!     CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,ipq,nst)
  
 c     # nnbft = total number of unique so function pairs.
 c     # mpru = the number of elements in a diagonal,
@@ -216,7 +211,7 @@ c     #        irreducible representation.
       mpru  = nblpr(nst) + ipq( nso(nst) + 1 )
  
 !     # normalize the contraction coefficients.
-      CALL RECP_ORBITAL_CONT_COEFF_NORM
+      CALL RECP_INP_ORBITAL_CCNORM
      &   ( mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
 !     # calculate the nuclear repulsion energy.
       CALL ARGOS_INPUT_CALC_NUCREP
