@@ -63,6 +63,7 @@ s.append(['C flags (debug)'         , r'@CMAKE_C_FLAGS_DEBUG@'        ])
 s.append(['C flags (release)'       , r'@CMAKE_C_FLAGS_RELEASE@'      ])
 s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
+s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
 print 'subroutine print_compilation_info()'
 
