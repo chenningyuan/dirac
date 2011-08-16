@@ -74,7 +74,7 @@ using the following job input (plot.inp)::
   .SCF
   **VISUAL
   .3D
-   80 80 80         # will generate 80x80x80 cubes
+   40 40 40         # will generate 40x40x40 cubes, the more points the better looking
   .DENSITY
    DFCOEF
   .ORBSTRING        # expects two lines: gerade and ungerade
