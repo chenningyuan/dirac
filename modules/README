@@ -1,7 +1,0 @@
-!
-! This directory serves for temporary storing of Fortran90/95 module files.
-!
-! The compilator is pointing to this directory (through -Imodules) to link desired "*.mod" files.
-!
-! Since the number of module files is growing, it is important to keep distinct names.
-!
