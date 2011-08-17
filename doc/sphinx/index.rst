@@ -7,7 +7,8 @@ Write me ...
 .. toctree::
    :maxdepth: 2
 
-   INSTALL.rst
+   install.rst
+   testing.rst
    plotting_orbital_densities.rst
 
 Indices and tables
