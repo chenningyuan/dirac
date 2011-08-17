@@ -10,6 +10,8 @@ Write me ...
    install.rst
    testing.rst
    plotting_orbital_densities.rst
+   basis.rst
+   cdash.rst
 
 Indices and tables
 ==================
