@@ -1,3 +1,9 @@
+
+
+Installation
+============
+
+
 Dependencies
 ------------
 
@@ -162,7 +168,7 @@ You can build several binaries with the same source::
 
   $ cd /sourcepath
   $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
-  $ cd /gfortran-builddir
+  $ cd /gfortran-buildpath
   $ make
   $ cd /sourcepath
   $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath

@@ -12,7 +12,6 @@
      &       n_bfn_sym,  INT_AREP,   N1MAX,  L1REC   )
 
       USE ARGOS_ONEINT_NUC
-      USE ARGOS_TEST
       USE ARGOS_WRITE
 
       implicit logical(a-z)

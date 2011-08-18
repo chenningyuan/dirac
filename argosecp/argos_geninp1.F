@@ -3,27 +3,30 @@
 !     read DIRAC input files and convert to ARGOS input file
 !
 
-      use argos_ctran
+      USE RECP_INTERFACE
+
+#include "mxcent.h"          
+#include "nuclei.h"          
+
 #include "argosparm.h" 
 #include "argosbas.h"  
 #include "argosecp.h"    
 #include "argosatm.h"    
 #include "argosopti.h"   
-c
+ 
 #include "argoscom.h"    
 #include "argoscomch.h"  
 #include "pgroup.h"          
+
       integer dimmr, dimmc 
-cisl-b
       integer blkcnt
-cisl-e
       LOGICAL FILE_EXIST
       INTEGER ECPLINE, MAX_ECPLINE
 !     CHARACTER*90 ECPLINE(2000)
 
       MAX_ECPLINE = 1000
-c
-c files 
+ 
+! files 
       lufile2 = 9  !molecule.inp
       lufile3 = 51 !argosin
 
@@ -45,7 +48,6 @@ c files
 !****************************************
  
  2000 continue
-!     write(*,*)'reading molecule.mol...'
       OPEN (lufile2,file='MOLECULE.MOL',status='old',err=5200)
       rewind (lufile2)
       nmline = 1
@@ -62,38 +64,36 @@ c files
       endif
       nmline = nmline + 1 
       goto 2010
-c
-c****************************************
-c**                                    **
-c**                                    **
-c**      processing data .....1/2      **
-c**                                    **
-c**                                    **
-c****************************************
+ 
+!****************************************
+!**                                    **
+!**                                    **
+!**      processing data .....1/2      **
+!**                                    **
+!**                                    **
+!****************************************
  2200 continue
-c
-c Section 1-3. Title
-c
-c Section 4. Point group generator
-c
+!
+! Section 4. Point group generator
+!
       nmline = 4
       read (mline(nmline)(1:80),'(bn,a1, i4, i3, i2, 9a1, a1, d10.2)')
-     &              crt, nontyp, kcharg, symtxt, 
+     &              crt, RECP_NONTYP, kcharg, symtxt, 
      &              ((kasym(i,j),j=1,3),i=1,3), id3, thrs
       nmline = nmline + 1
-c
-c Section 5. charge, atoms, exponent   
-c
-      do i = 1, nontyp
+!
+! Section 5. charge, atoms, exponent   
+!
+      do i = 1, RECP_NONTYP
          read (mline(nmline)(1:80),'(1x,f9.0,i5,f20.5)') 
-     &        q(i),nont(i),qexp1
+     &        q(i),RECP_NONT(i),qexp1
          nmline = nmline + 1
-c
-c Section 6. Atom type, coordinates
-c
-c        Coordinate will be taken directly from DIRAC
-c        Only atom name will be taken here
-         call readcoor(i, nont, mline, nmline, namnar)
+!
+! Section 6. Atom type, coordinates
+!
+!        Coordinate will be taken directly from DIRAC
+!        Only atom name will be taken here
+         call readcoor(i, RECP_NONT, mline, nmline, namnar)
 c
 c Section 7. Type of Basis, # of AO blocks
 c
@@ -109,9 +109,9 @@ c
      &           call readlibbas(basfil, i, iqm, jco, q,
      &                           nucij, nrcij, expn, cont, bfree)
       enddo
-c
-c Section 9. Start of ECP block
-c
+!
+! Section 9. Start of ECP block
+!
 
       nmcrs = 0  ! index for the core and spin-orbit expansion set
 !     # Check ARGOS_INPUT2 file
@@ -144,7 +144,7 @@ c
  2310 continue
       ecpchk = .true.
       soindex = 1
-      do i = 1, nontyp
+      do i = 1, RECP_NONTYP
          mcrs(i) = 0
       enddo
  
@@ -158,7 +158,7 @@ c
       CLOSE(64)
 
       NMLINE = 1     
-      do i = 1, nontyp + 1
+      do i = 1, RECP_NONTYP + 1
          IF ( mline(nmline)(1:6).EQ.'FINISH' ) GOTO 3000
          if ((mline(nmline)(1:3).ne.'ECP').and.
      &       (mline(nmline)(1:3).ne.'ecp')) goto 2991
@@ -168,13 +168,13 @@ c           (3-2. explicit ECP)
             call readecpexp(mline, nmline, i, namatm, namnar,
      &                      lcru, llsu, nbfcr, nbfls, soindex,
      &                      ncr, zcr, ccr, nls, zls, cls,
-     &                      mcrs, nmcrs, nontyp)
+     &                      mcrs, nmcrs, RECP_NONTYP)
          else
 c           (3-3. ECP library)
             call readecplib(mline, nmline, i, namatm, namnar,
      &                      lcru, llsu, nbfcr, nbfls, soindex,
      &                      ncr, zcr, ccr, nls, zls, cls,
-     &                      mcrs, nmcrs, nontyp )
+     &                      mcrs, nmcrs, RECP_NONTYP )
          endif
          soindex = soindex + 1
       enddo
@@ -187,87 +187,43 @@ c error
       write(*,*) 'Please check your input'
       write(*,*) '"START ECP", "FINISH" or "ECP" keyword is needed'
       stop
-c
-c****************************************
-c**                                    **
-c**                                    **
-c**      processing data .....2/2      **
-c**                                    **
-c**                                    **
-c****************************************
+ 
  3000 continue
       call chkopt (ns, naords, ncons, ngcs,
      &             icut, inrm, ncrs, 
-     &             symtxt, nontyp, nont, iqm, jco, nmcrs)
+     &             symtxt, RECP_NONTYP, RECP_NONT, iqm, jco, nmcrs)
 c
 c     coordinate copy
 c     check symmetry operation
 c     (for card 2 & 9) 
-      call permatm (isend,nontyp,nont,ngenl,
+      call permatm (isend,RECP_NONTYP,RECP_NONT,ngenl,
      &              xyz3,mj2,symtxt,kasym)
-      call permgen (isend,ngenl,ngenp,nont,nsag,mj2)
-c
-cisl-b
-c****************************************
-c**                                    **
-c**                                    **
-c**            Generate argosin        **
-c**                part 1/2            **
-c**                                    **
-c**                                    **
-c****************************************
-c
+      call permgen (isend,ngenl,ngenp,RECP_NONT,nsag,mj2)
+ 
+!****************************************
+!     Generate RECP_INPUT
+!****************************************
+ 
  4000 continue
       open (lufile3,file='RECP_INPUT',status='new',err=5300)
-c
-c------------------ 
-c Card 1: Title
-c------------------
-c
-c     write (lufile3,'(a)')' '
-c
-c---------------------
-c Card 2: Options 
-c---------------------
-c
-c      write (lufile3,'(a)')'isl isl argosin writing inside ARGOS'
-c      write (lufile3,*)'nsymop =',ngenag
-c      write (lufile3,*)'nsag   =',nsag
-c      write (lufile3,*)'naordsag =',naordsag
-c      write (lufile3,*)'nconsag =',nconsag
-c      write (lufile3,*)'ngcsag = ',ngcsag
-c      write (lufile3,*)'icutag = ',icutag
-c      write (lufile3,*)'inruag = ',inruag
-c      write (lufile3,*)'ncrsag = ',ncrsag
-c      write (lufile3,*)'nstag  = ',nstag
-c      write (lufile3,*)'ndag(i)= ',(ndag(i),i=0,nstag-1)
-c      write (lufile3,*)'itypag(i) = ',(itypag(i),i=0,nstag-1)
-c
+ 
+!     Card 2: Options 
       write (lufile3,'(6i3)') ngenp, nsag, naordsag, ncons, 
      &                         ngcsag, nmcrs
-c
-c------------------------------------     
-c Card 3: Point group symmetry
-c------------------------------------
-c
+ 
+!     Card 3: Point group symmetry
       write (lufile3,'(i3,8(i2,1x,a3))')
      &       nstag, (ndag(i), itypag(i),i=0,nstag-1)
-c
-c-------------------------------------------------     
-c Card 4: NDPT, # of distinct products of irrep
-c-------------------------------------------------
-c
-       write(lufile3,'(i3)')ndptag
-c
-c------------------------
-c Card 5: P1 X P2 = P3
-c------------------------
-c
-c     ----------------------------------------------------
-c     *  THIS NEEDS ATTENTION FOR D2h POINT GROUP !!!!!  *
-c     ----------------------------------------------------
+ 
+!     Card 4: NDPT, # of distinct products of irrep
+      write(lufile3,'(i3)')ndptag
+ 
+!     Card 5: P1 X P2 = P3
+!     ----------------------------------------------------
+!     *  THIS NEEDS ATTENTION FOR D2h POINT GROUP !!!!!  *
+!     ----------------------------------------------------
       if (ndptag .eq. 0) then
-c        write(lufile3,'(a)'),'  0'
+!        write(lufile3,'(a)'),'  0'
       elseif (ndptag .eq. 1) then
          write(lufile3,'(a)'),'  2  3  4'
       elseif (ndptag .eq. 7) then
@@ -279,20 +235,19 @@ c        write(lufile3,'(a)'),'  0'
          write(lufile3,'(a)'),'  4  5  8'
          write(lufile3,'(a)'),'  4  6  7'
       endif
-c----------------------------------------------
-c Card 6: AO to SO transformation matrices
-c----------------------------------------------
-c
-      do 41 icent = 1, nsag
-c       do 43 k = 1, nont(icent) 
-         do lang = 1, maxang(icent)
-            write(lufile3,'(20i3)'),irowmax(icent,lang),
-     &         (ireparg(icent,lang,lmang),lmang=1,irowmax(icent,lang))
-         enddo   
-c 43    continue
-  41  continue
+
+!     Card 6: AO to SO transformation matrices
+      do icent = 1, nsag
+!        do k = 1, RECP_NONT(icent) 
+            do lang = 1, maxang(icent)
+               write(lufile3,'(20i3)'),irowmax(icent,lang),
+     &           (ireparg(icent,lang,lmang),lmang=1,irowmax(icent,lang))
+            enddo   
+!        enddo
+      enddo
+
       blkcnt = 0
-      do 51 icent = 1, nucind
+      do 51 icent = 1, NUCIND
          do 52 lang = 1, maxang(icent)
             blkcnt = blkcnt + 1
             write(lufile3,'(20i3)'),
@@ -304,8 +259,7 @@ c 43    continue
   52     continue
   51  continue
       deallocate(ctranarg)
-cisl-e
-c
+
 c----------------------------------------------
 c Card 7 : exp, contracted coeff
 c----------------------------------------------
@@ -349,15 +303,16 @@ c----------------------------------------------
 !     number sym-related atoms
       k = 1
       do i = 1, nsag
-         do j = 1, nont(i)
-            nc(i,j)= get_nucdeg(k)
+         do j = 1, RECP_NONT(i)
+!           nc(i,j)= get_nucdeg(k)
+            nc(i,j)= nucdeg(k)
             k = k + 1
          enddo
       enddo
 
       igcs = 0
       do i = 1, nsag
-         do j = 1, nont(i)
+         do j = 1, RECP_NONT(i)
             mtype(i) = namnar(i,1)(1:3)
             nf(i) = 0
             do k = 1, iqm(i)
@@ -366,10 +321,12 @@ c----------------------------------------------
             chg(i) = q(i) 
 c           write(lufile3,'(a3,2i3,f3.0)') mtype(i),nf(i),nc(i,j),chg(i)
             write(lufile3,*) mtype(i),nf(i),nc(i,j),chg(i)
+
+!           Geometry
             do j2=1,mj2(i,j)-1
-c              write(lufile3,*) (xyz3(k,j2,j,i),k=1,3)
                write(lufile3,'(3f14.10)') (xyz3(k,j2,j,i),k=1,3)
             enddo
+
 c           (igen)
             igenq(1)=2
             igenq(2)=3
@@ -407,8 +364,6 @@ c           (mcrs)
          enddo
       enddo
  
-c**        end 'argosin' file          **
- 
  3999 continue 
       close (lufile3)
       goto 6000 
@@ -432,7 +387,6 @@ c
 
       IF (PRINT_LEVEL.GE.5)
      &   PRINT *,' * ECPINT : exiting...  ARGOS_GENINPUT'
-      stop
       return
       end
 
@@ -445,7 +399,7 @@ c
 #include "nuclei.h"      
 
          get_nucdeg = nucdeg(k)
-
+         return
       end function
 
       function get_cord(k, i)
@@ -458,5 +412,5 @@ c
 #include "nuclei.h"      
 
          get_cord = cord(k, i)
-
+         return
       end function

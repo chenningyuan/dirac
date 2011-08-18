@@ -1,12 +1,14 @@
 *deck readcoor
 c     **************************************************************
-      subroutine readcoor (i, nont, mline, nmline, namnar) 
+      subroutine readcoor (i, RECP_NONT, mline, nmline, namnar) 
 c     **************************************************************
       implicit none
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
-      integer   nont(mxatom)
+      integer   RECP_NONT(mxatom)
       character namnar(mxatom,mxatom)*4
-      do j = 1, nont(i)
+      do j = 1, RECP_NONT(i)
          read (mline(nmline),'(a4)') namnar(i,j)
          IF (MLINE(NMLINE)(1:4) .EQ. '    ')
      &      NAMNAR(i,j) = NAMNAR(i,j-1)
@@ -20,6 +22,8 @@ c     ******************************************************************
       subroutine readbskey (mline, nmline, bset, bskeyword, i, iqm, jco,
      &                      basfil,bscode)
 c     ******************************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosbas.h"
       bscode = 0
@@ -85,6 +89,8 @@ c     ******************************************************************
 c     ******************************************************************
 c     read explicit basis set
       implicit none
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosbas.h"
 c     *** basis lines ***
@@ -120,6 +126,8 @@ c     **************************************************************
       subroutine readlibbas(basfil, i, iqm, jco, q,
      &                      nucij, nrcij, expn, cont, bfree)
 c     **************************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosbas.h"
 c     *** basis lines ***
@@ -252,6 +260,8 @@ c     **********************************************************
       subroutine acporbag(bline,nbline,i,j,k,iqm,jco,nucij,nrcij,
      &                    expn,cont,basexpl,bfree)
 c     **********************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosbas.h"
 c     *** basis lines ***
@@ -339,8 +349,10 @@ c     *******************************************************
       subroutine readecpexp(mline, nmline, i, namatm, namnar,
      &                      lcru, llsu, nbfcr, nbfls, soindex,
      &                      ncr, zcr, ccr, nls, zls, cls,
-     &                      mcrs, nmcrs, nontyp)
+     &                      mcrs, nmcrs, RECP_NONTYP)
 c     *******************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosecp.h"
 #include "argosatm.h"
@@ -349,9 +361,8 @@ c     for SO-index
 c
       csoindex = 0
       read(mline(nmline)(5:8),'(a4)') namatm(i) ! name of atom
-      write(6,*) 'yc-xxxx', namatm(i)
       nmline = nmline + 1
-      do j = 1, nontyp
+      do j = 1, RECP_NONTYP
          if (namatm(i)(1:3).eq.namnar(j,1)(1:3)) then
             if (mcrs(j).ne.0) goto 3227
             mcrs(j) = soindex
@@ -440,8 +451,10 @@ c     ********************************************************
       subroutine readecplib(mline, nmline, i, namatm, namnar,
      &                      lcru, llsu, nbfcr, nbfls, soindex,
      &                      ncr, zcr, ccr, nls, zls, cls,
-     &                      mcrs, nmcrs, nontyp)
+     &                      mcrs, nmcrs, RECP_NONTYP)
 c     ********************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosecp.h"
 #include "argosatm.h"
@@ -571,7 +584,7 @@ c
       neline = neline + 1
 c     for SO potential index
       csoindex = 0
-      do j = 1, nontyp
+      do j = 1, RECP_NONTYP
          if (namatm(i)(1:3).eq.namnar(j,1)(1:3)) then
             if (mcrs(j).ne.0) goto 2895 
             mcrs(j) = soindex
@@ -671,12 +684,13 @@ c
 *deck chkopt 
 c     *******************************************************
       subroutine chkopt ( ns, naords, ncons, ngcs,
-     &                    icut, inrm,
-     &                    ncrs, 
-     &                    symtxt, nontyp, nont, iqm, jco, nmcrs)
+     &                    icut, inrm, ncrs,
+     &                    symtxt,RECP_NONTYP,RECP_NONT,iqm,jco,nmcrs)
 c     *******************************************************
 c     card 2 : options
 c     (dirac symmetry is only low level symmetry for argos)
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosecp.h"
 #include "argosatm.h"
@@ -692,7 +706,7 @@ c     *****ns*****
 c     ***naords***
       naords = 0
       do i = 1, ns
-         do j = 1, nont(i)
+         do j = 1, RECP_NONT(i)
             do k = 1, iqm(i)
                naords = naords + 1
             enddo
@@ -701,7 +715,7 @@ c     ***naords***
 c     ***ncons***
       ncons  = 0
 c     do i = 1, ns
-      do i = 1, nontyp
+      do i = 1, RECP_NONTYP
          do j = 1, iqm(i)
             ncons = ncons + jco(i,j)
          enddo
@@ -718,9 +732,11 @@ c     ***********
 
 *deck permatm
 c     *****************************************************
-      subroutine permatm (isend,nontyp,nont,ngenl,
+      subroutine permatm (isend,RECP_NONTYP,RECP_NONT,ngenl,
      &                    xyz3,mj2,symtxt,kasym)
 c     *****************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include "argosparm.h"
 #include "argosatm.h"
       integer   lgen(3,3), nirep, ltrans(3,8),
@@ -765,11 +781,12 @@ c     set coordinate
 c
  30   continue
       icentar=1
-      do i=1,nontyp
-         natm=nont(i)
+      do i=1,RECP_NONTYP
+         natm=RECP_NONT(i)
          do j=1,natm
             do k=1,3
-               xyz1(k,j,i)=get_cord(k,icentar) ! get CORD from DIRAC
+!              xyz1(k,j,i)=get_cord(k,icentar) ! get CORD from DIRAC
+               xyz1(k,j,i)=cord(k,icentar) ! get CORD from DIRAC
                if(symtxt.eq.0)then
                  xyz3(k,1,j,i)=xyz1(k,j,i)
                  mj2(i,j)=2
@@ -786,8 +803,8 @@ c
       do j2= 1, nirep
       enddo
 c
-      do i = 1, nontyp       ! number of atom type
-         natm = nont(i)
+      do i = 1, RECP_NONTYP       ! number of atom type
+         natm = RECP_NONT(i)
          do j = 1, natm      ! number of symmetry-distinct atom of this type
             mj2(i,j)=1       !  
             do j2=1,nirep
@@ -814,9 +831,9 @@ c              check
 c
 c  operation  
 c
-      do i=1,nontyp
+      do i=1,RECP_NONTYP
          do iopl=1,nirep
-            do j=1,nont(i)
+            do j=1,RECP_NONT(i)
                do j2=1,mj2(i,j)-1  ! natom(nc)
                   do k=1,3
                      xyz4(k)=ltrans(k,iopl)*xyz3(k,j2,j,i)
@@ -837,15 +854,16 @@ c                 # check closest atom
       enddo
  999  continue
       end
-c
-*deck permgen
-c     *******************************************************
-      subroutine permgen (isend,ngenl,ngenp,nont,nsag,mj2)
-c     *******************************************************
+ 
+!     *******************************************************
+      subroutine permgen (isend,ngenl,ngenp,RECP_NONT,nsag,mj2)
+!     *******************************************************
+#include "mxcent.h"
+#include "nuclei.h"
 #include  "argosparm.h"
 #include  "argosatm.h"
       integer   nsag, is, iatm
-c
+
       ngenp=0
       igenq(1)=2
       igenq(2)=3
@@ -853,18 +871,20 @@ c
       do jgen=1,ngenl              !ngenl=symtxt
          igen=igenq(jgen)
          do is=1,nsag              !nsag=ns
-            do j=1,nont(is)
+            print *,'RECP_NONT',is,RECP_NONT(is) 
+            do j=1,RECP_NONT(is)
                do iatm=1,mj2(is,j)-1          !mj2(i,j)-1 = nc(is)
                   if (isend(iatm,j,igen,is).ne.iatm) goto 550
                enddo
             enddo
          enddo
          goto 559
+
  550     continue               ! this is not the identity
          do kgen=1,ngenp
             kgen1=igenp(kgen)
             do is=1,nsag
-               do j=1,nont(is)
+               do j=1,RECP_NONT(is)
                   do iatm=1,mj2(is,j)-1
                      if(isend(iatm,j,igen,is).ne.isend(iatm,j,kgen1,is))
      &               goto 551
@@ -872,13 +892,14 @@ c
                enddo
             enddo
             goto 559
+
  551        continue            ! this is not generator kgen
          enddo
          if (ngenp.ge.2) then
             kgen1=igenp(1)
             kgen2=igenp(2)
             do is=1,nsag
-               do j=1,nont(is)
+               do j=1,RECP_NONT(is)
                   do iatm=1,mj2(is,j)-1
                      if (isend(iatm,j,igen,is).ne.
      &                isend(isend(iatm,j,kgen2,is),j,kgen1,is)) goto 552
@@ -887,6 +908,7 @@ c
             enddo
             goto 559
          endif
+
  552     continue     ! this is not a product of previous generators
          ngenp=ngenp+1
          igenp(ngenp)=igenq(jgen)

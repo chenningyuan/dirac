@@ -75,3 +75,11 @@ RESULT_VARIABLE ret_var
 #message("ret_var=${ret_var}")
 endif()
 
+# print out enviroment variables
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    message("Actual Unix environment variable PATH=$ENV{PATH}")
+    message("Actual Unix environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+else()
+    message("Actual Windows environment variable PATH=$ENV{PATH}")
+        message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+endif()

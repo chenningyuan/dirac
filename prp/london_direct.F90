@@ -447,26 +447,14 @@ contains
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
-    if (dft_cfg_no_sdft) then
-      call xc_integrator(xc_mat_dim              = nr_ao_total,   &
-                         xc_nz                   = nr_qu,        &
-                         xc_dmat_0               = dmat,         &
-                         xc_nr_dmat              = 0,            &
-                         xc_nr_fmat              = max_nr_xyz_comp,  &
-                         xc_fmat                 = fmat,         &
-                         xc_fmat_pg_sym          = isym_2el_lao, &
-                         xc_do_london_rhs_direct = .true.)
-    else
-      call xc_integrator(xc_mat_dim              = nr_ao_total,      &
-                         xc_nz                   = nr_qu,           &
-                         xc_dmat_0               = dmat,            &
-                         xc_nr_dmat              = 0,               &
-                         xc_nr_fmat              = max_nr_xyz_comp,     &
-                         xc_fmat                 = fmat,         &
-                         xc_fmat_pg_sym          = isym_2el_lao,    &
-                         xc_do_london_rhs_direct = .true.,       &
-                         xc_response_order_mo    = 1)
-    end if
+    call xc_integrator(xc_mat_dim              = nr_ao_total,     &
+                       xc_nz                   = nr_qu,           &
+                       xc_dmat_0               = dmat,            &
+                       xc_nr_dmat              = 0,               &
+                       xc_nr_fmat              = max_nr_xyz_comp, &
+                       xc_fmat                 = fmat,            &
+                       xc_fmat_pg_sym          = isym_2el_lao,    &
+                       xc_do_london_rhs_direct = .true.)
 
     !if (debug_me) then
     !  do icomp = 1, max_nr_xyz_comp
