@@ -1,48 +1,52 @@
 #!/usr/bin/env python
 
-import os
-import re
-import string
-import subprocess
+import sys
 import datetime
 
-command_d = {}
+fortran_compiler_version = 'unknown'
+c_compiler_version       = 'unknown'
 
-command_d['mpif90']   = 'mpif90   --version'
-command_d['gfortran'] = 'gfortran --version'
-command_d['f95']      = 'f95      --version'
-command_d['g95']      = 'g95      --version'
-command_d['ifort']    = 'ifort    --version'
-command_d['pgf90']    = 'pgf90    -V'
-command_d['xlf']      = 'xlf      -qversion'
-
-command_d['mpicc']    = 'mpicc    --version'
-command_d['gcc']      = 'gcc      --version'
-command_d['icc']      = 'icc      --version'
-command_d['pgcc']     = 'pgcc     -V'
-command_d['xlc']      = 'xlc      -qversion'
-
-command_d['g++']      = 'g++      --version'
-command_d['iCC']      = 'iCC      --version'
-command_d['pgCC']     = 'pgCC     -V'
-command_d['xlCC']     = 'xlCC     -qversion'
-
-def return_compiler_version(compiler):
-    compiler_name = compiler.split('/')[-1]
-    if not compiler_name in command_d:
-        return 'unknown version'
-    else:
-        p = subprocess.Popen(command_d[compiler_name], shell=True, \
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out = p.communicate()[0]
-        if out == '':
+if sys.version >= '2.4':
+    import subprocess
+    
+    command_d = {}
+    
+    command_d['mpif90']   = 'mpif90   --version'
+    command_d['gfortran'] = 'gfortran --version'
+    command_d['f95']      = 'f95      --version'
+    command_d['g95']      = 'g95      --version'
+    command_d['ifort']    = 'ifort    --version'
+    command_d['pgf90']    = 'pgf90    -V'
+    command_d['xlf']      = 'xlf      -qversion'
+    
+    command_d['mpicc']    = 'mpicc    --version'
+    command_d['gcc']      = 'gcc      --version'
+    command_d['icc']      = 'icc      --version'
+    command_d['pgcc']     = 'pgcc     -V'
+    command_d['xlc']      = 'xlc      -qversion'
+    
+    command_d['g++']      = 'g++      --version'
+    command_d['iCC']      = 'iCC      --version'
+    command_d['pgCC']     = 'pgCC     -V'
+    command_d['xlCC']     = 'xlCC     -qversion'
+    
+    def return_compiler_version(compiler):
+        compiler_name = compiler.split('/')[-1]
+        if not compiler_name in command_d:
             return 'unknown version'
         else:
-            # use only first line, not the copyright stuff
-            return out.split('\n')[0]
+            p = subprocess.Popen(command_d[compiler_name], shell=True, \
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out = p.communicate()[0]
+            if out == '':
+                return 'unknown version'
+            else:
+                # use only first line, not the copyright stuff
+                return out.split('\n')[0]
+    
+    fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
+    c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
 
-fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
-c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
 
 s = []
 s.append(['System'                  , r'@CMAKE_SYSTEM_NAME@'          ])
