@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 # script for selecting DIRAC modules
 # based on: old pamadm written by Trond Saue, Thomas Enevoldsen, Joern Thyssen, and others
