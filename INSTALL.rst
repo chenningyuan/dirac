@@ -33,11 +33,10 @@ If it is a cluster, but you prefer to install it yourself (it's easy):
 
 1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
-3. Use your cmake instead of the old one::
+
+Now you can enjoy your cmake instead of the old one::
 
   $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
-
-4. Enjoy the latest CMake
 
 
 Basic installation using the setup script

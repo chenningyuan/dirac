@@ -1,10 +1,10 @@
-# doxygen documentation
-configure_file(
-    ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
-    ${PROJECT_BINARY_DIR}/Doxyfile
-)
 add_custom_target(
-    doc
-    COMMAND doxygen
+    html
+    COMMAND sphinx-build -b html -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/html
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
+add_custom_target(
+    latex
+    COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/html
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
