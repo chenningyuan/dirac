@@ -107,6 +107,13 @@ group.add_option('--install',
                  default=None,
                  help='set the install path for make install [default: %default]',
                  metavar='PATH')
+group.add_option('--cmake',
+                 type='string',
+                 action='store',
+                 dest='alternative_cmake',
+                 default=None,
+                 help='give full path to alternative cmake binary (use this if default cmake is too old)',
+                 metavar='PATH')
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'Advanced options')
@@ -178,8 +185,11 @@ def gen_cmake_command():
             command += ' CC=%s' % options.cc
         if options.cpp:
             command += ' CXX=%s' % options.cpp
-    
-    command += ' cmake'
+   
+    if options.alternative_cmake: 
+        command += ' %s' % options.alternative_cmake
+    else:
+        command += ' cmake'
     
     if options.nomath:
         command += ' -DENABLE_INTERNAL_MATH=ON'
