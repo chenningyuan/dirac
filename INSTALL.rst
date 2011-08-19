@@ -18,6 +18,26 @@ pam and runtest require:
 python >= 2.4.0
 
 
+What to do if CMake is not available or too old?
+------------------------------------------------
+
+It is your machine and you have Ubuntu or Debian::
+
+  $ sudo apt-get install cmake cmake-gui
+
+If it is a cluster, please ask the admin to install/upgrade CMake.
+
+If it is a cluster, but you prefer to install it yourself (it's easy):
+
+1. Download the latest tarball from http://www.cmake.org/cmake/resources/software.html
+2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
+3. Use your cmake instead of the old one::
+
+  $ alias cmake='~/cmake-2.8.5-Linux-i386/bin/cmake'
+
+4. Enjoy the latest CMake
+
+
 Basic installation using the setup script
 -----------------------------------------
 
