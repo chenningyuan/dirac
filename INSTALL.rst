@@ -33,7 +33,7 @@ If it is a cluster, but you prefer to install it yourself (it's easy):
 2. Extract the tarball to, say, ~/cmake-2.8.5-Linux-i386
 3. Use your cmake instead of the old one::
 
-  $ alias cmake='~/cmake-2.8.5-Linux-i386/bin/cmake'
+  $ ./setup [other flags] --cmake=~/cmake-2.8.5-Linux-i386/bin/cmake
 
 4. Enjoy the latest CMake
 
