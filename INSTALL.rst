@@ -23,7 +23,9 @@ What to do if CMake is not available or too old?
 
 It is your machine and you have Ubuntu or Debian::
 
-  $ sudo apt-get install cmake cmake-gui
+  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
+
+If this is another system, ask Google.
 
 If it is a cluster, please ask the admin to install/upgrade CMake.
 
@@ -150,7 +152,7 @@ You prefer GUI? No problem. You can configure with GUI::
 
 You may have to install cmake-gui for it, on debian/ubuntu::
 
-  $ sudo apt-get install cmake cmake-gui
+  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
 
 
 Running tests
