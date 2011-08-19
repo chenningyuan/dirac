@@ -5,6 +5,6 @@ add_custom_target(
     )
 add_custom_target(
     latex
-    COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/html
+    COMMAND sphinx-build -b latex -d _build/doctrees ${CMAKE_SOURCE_DIR}/doc/sphinx _build/latex
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
