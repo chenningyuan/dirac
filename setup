@@ -20,15 +20,7 @@ default_path = root_directory + 'build/'
 # define example usage
 
 usage = '''
-  Examples:
-    ./%prog --auto
-    ./%prog --fc=gfortran --debug
-    ./%prog --fc=ifort --build=/path/to/build/dir/
-    ./%prog --fc=g95 --math-dir=/usr/local/lib/atlas
-    ./%prog --fc=pgf90 --cc=pgcc --internal-math
-    ./%prog --fc=mpif90 --cc=mpicc --mpi 
-    ./%prog --fc=ifort --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
-    '''
+  Example: ./%prog --fc=gfortran --cc=gcc'''
 
 # initialize parser
 
