@@ -5159,9 +5159,6 @@ CTROND
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
-CTROND
-        WRITE(6,*) '* Calling PUT_AO ',IATOM,ICENT,NONT(IATOM),
-     &     NUCDEG(ICENT)
         CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),ICENT,NONT(IATOM),
      &                   NUCDEG(ICENT),
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
@@ -5192,8 +5189,6 @@ CTROND
            IREPD = IRQMAT(IZ,IREP)
            IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
            IPQ   = IQTOPQ(IQ,IREP)
-CTROND
-           WRITE(6,*) 'DTAOSO: ',IREPD,IQ,IPQ        
            CALL DTAOSO(WORK(KDBUF+IOFF),DMAT(1,1,IPQ),NTBAS(0),
      &                 IREPD,IPRINT)
            IOFF = IOFF + NOFF
@@ -5231,8 +5226,6 @@ C***********************************************************************
       CALL MEMGET('INTE',KCBUF,NBAS,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KIBUF,NR,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KJBUF,NC,WORK,KFREE,LFREE)      
-CTROND
-      WRITE(6,*) 'Inside PUT_AOBLOCK: ',NONT,NBAS,NR,NC,NDEG(ICENT)
       DO ITYP = 1,NONT
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
