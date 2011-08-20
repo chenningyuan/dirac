@@ -85,3 +85,4 @@ include(CTest)
 enable_testing()
 
 include(CompilationInfo)
+include(Documentation)
