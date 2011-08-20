@@ -258,6 +258,12 @@ def gen_reconfigure_script(command, build_path):
     f.close()
     os.system('chmod 700 %s' % file_name)
 
+def save_setup_command(argv, build_path):
+    file_name = os.path.join(build_path, 'setup_command')
+    f = open(file_name, 'w')
+    f.write(" ".join(sys.argv[:]))
+    f.close()
+
 def setup_build_path(build_path, only_show_command):
     if os.path.isdir(build_path):
         if not only_show_command:
@@ -295,6 +301,7 @@ def main():
 
         if not 'Configuring incomplete' in status:
                 gen_reconfigure_script(command, build_path)
+                save_setup_command(sys.argv, build_path)
                 print_build_help(build_path)
 
 # host/system specific configurations
