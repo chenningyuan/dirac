@@ -97,22 +97,25 @@ Your code needs to generate these files.
 Have a look in test/lda_energy for examples.
 
 interface_ao:
-     - all coordinates in bohr
-     - is_spherical "F" means cartesian GTO, "T" means spherical GTO
-     - use_only_large "T" is what you want outside of the DIRAC code, and all primitives "L"
-     - coefficients (coef) contain normalization
-     - algebra: use 1 (means real; 1, 2, 4 is for DIRAC)
+
+- all coordinates in bohr
+- is_spherical "F" means cartesian GTO, "T" means spherical GTO
+- use_only_large "T" is what you want outside of the DIRAC code, and all primitives "L"
+- coefficients (coef) contain normalization
+- algebra: use 1 (means real; 1, 2, 4 is for DIRAC)
 
 interface_mo:
 typically you only need to set
-     - nr_electrons_inactive (number of closed-shell electrons)
-     - nr_mo_gerade_positive_inactive (nr of occupied orbitals)
-     - nr_mo_gerade_positive_secondary (nr of virtual orbitals)
-     - mo_eigenvalues (for asymptotic correction)
+
+- nr_electrons_inactive (number of closed-shell electrons)
+- nr_mo_gerade_positive_inactive (nr of occupied orbitals)
+- nr_mo_gerade_positive_secondary (nr of virtual orbitals)
+- mo_eigenvalues (for asymptotic correction)
 
 interface_mo_coef:
-     - first line contains number of matrix elements (nr_ao*nr_mo*nr_quaternion_units)
-       nr_quaternion_units is typically 1
+
+- first line contains number of matrix elements (nr_ao*nr_mo*nr_quaternion_units)
+  nr_quaternion_units is typically 1
 
 
 Integration, finally

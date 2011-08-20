@@ -126,20 +126,6 @@ always call the libraries explicitly like here::
   $ ./setup --math="-L/path -lfoo -lbar"
 
 
-Running CMake using GUI
------------------------
-
-You prefer GUI? No problem. You can configure with GUI::
-
-  $ cd build
-  $ cmake ..
-  $ cmake-gui ..
-
-You may have to install cmake-gui for it, on debian/ubuntu::
-
-  $ sudo apt-get install cmake cmake-curses-gui cmake-qt-gui
-
-
 Running tests
 -------------
 
@@ -148,47 +134,3 @@ You can run the test suite with::
   $ make test
 
 It is HIGHLY recommended to run the test set after you have compiled the library.
-
-
-Compiling in verbose mode
--------------------------
-
-Sometimes you want to see the actual compiler flags and definitions::
-
-  $ make VERBOSE=1
-
-
-Compiling on many cores
------------------------
-
-Yes, it works. Try::
-
-  $ make -j4
-
-
-Out of source compilation
--------------------------
-
-By default CMake builds out of source.
-You can build several binaries with the same source::
-
-  $ cd /sourcepath
-  $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
-  $ cd /gfortran-buildpath
-  $ make
-  $ cd /sourcepath
-  $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath
-  $ cd /ifort-buildpath
-  $ make
-
-
-Make install
-------------
-
-Make install is very useful to make xcint available to other users on the same
-machine::
-
-  $ ./setup [--flags] --install=/path
-  $ cd build
-  $ make
-  $ make install
