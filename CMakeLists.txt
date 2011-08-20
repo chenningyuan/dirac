@@ -102,7 +102,8 @@ set(WORK_MEM_WORDS
 add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
-include(Compilers)
+include(FCompilers)
+include(CCompilers)
 
 set(LIBS)
 

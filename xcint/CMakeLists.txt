@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-project(xcint Fortran)
+project(xcint Fortran C)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE
-        Release
+        Debug
         CACHE STRING
         "Choose the type of build, options are: None Debug Release."
         FORCE
@@ -19,11 +19,12 @@ endif()
 option(ENABLE_PROFILING      "Enable profiling"          OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
-option(ENABLE_EXTERNAL_MATH  "Use external math library" ON)
+option(ENABLE_INTERNAL_MATH  "Enable internal math library"       OFF)
 option(ENABLE_MPI            "Use MPI parallelization"   OFF)
 
 include(cmake/Archs.cmake)
-include(cmake/Compilers.cmake)
+include(FCompilers)
+include(CCompilers)
 
 set(LIBS)
 
@@ -34,18 +35,7 @@ set(LIBS
     xcfun
     )
 
-if(ENABLE_EXTERNAL_MATH)
-    set(BLAS_LANG "Fortran")
-    find_package(BLAS)
-    if(BLAS_FOUND)
-        set(LIBS ${LIBS} ${BLAS_LIBRARIES})
-    endif()
-    set(LAPACK_LANG "Fortran")
-    find_package(LAPACK)
-    if(LAPACK_FOUND)
-        set(LIBS ${LIBS} ${LAPACK_LIBRARIES})
-    endif()
-endif()
+include(Math)
 
 if(ENABLE_MPI)
     find_package(MPI)
@@ -93,3 +83,6 @@ install(TARGETS xcint ARCHIVE DESTINATION lib)
 include(Tests)
 include(CTest)
 enable_testing()
+
+include(CompilationInfo)
+include(Documentation)
