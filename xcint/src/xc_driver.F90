@@ -1,28 +1,4 @@
-!dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
-
 module xc_driver
-
-!  written by T. Helgaker
-!  DIRAC adaption by T. Saue
 
 #ifdef PRG_DIRAC
 !  these dependencies should be removed
@@ -36,6 +12,7 @@ module xc_driver
    use xc_derv
    use xc_ac
    use extra
+   use file_units
    use interface_grid
    use ao_eval
    use density_eval
@@ -80,7 +57,6 @@ module xc_driver
    save
 
    integer, parameter :: file_unit      = 6
-   integer, parameter :: file_unit_grid = 44
 
    real(8), allocatable :: dmat_saop_outer(:)
    real(8), allocatable :: dmat_saop_resp(:)
@@ -1803,11 +1779,18 @@ contains
     real(8), allocatable :: mpi_buffer(:)
 
       if (xc_mpi_is_master()) then
+         interface_file_open = .false. 
          if (do_fde_update_vemb .or. do_fde_response) then
 !           don't open and rewind anything
 !           data is already stored at this point
          else
-            rewind file_unit_grid
+            open(interface_file_unit,       &
+                 file   = 'numerical_grid', &
+                 status = 'unknown',        &
+                 form   = 'formatted',      &
+                 access = 'sequential')
+            rewind(interface_file_unit)
+            interface_file_open = .true. 
          end if
       end if
 
@@ -1825,7 +1808,7 @@ contains
                nr_points_batch = fde_grid_np
             else
 #endif
-               read(file_unit_grid, *) nr_points_batch
+               read(interface_file_unit, *) nr_points_batch
 #ifdef MOD_UNRELEASED
             end if
 #endif
@@ -1881,7 +1864,7 @@ contains
 
             else
 #endif
-               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
+               call num_grid_read(rx, ry, rz, rw, interface_file_unit, nr_points_batch)
 #ifdef MOD_UNRELEASED
             end if
 #endif
@@ -1918,6 +1901,12 @@ contains
 !     end loop over batches
       end do
  999  continue
+
+      if (xc_mpi_is_master()) then
+         if (interface_file_open) then
+            close(interface_file_unit, status='keep')
+         end if
+      end if
 
    end subroutine
 
