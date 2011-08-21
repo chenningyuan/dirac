@@ -36,6 +36,7 @@ module xc_driver
    public xc_integrator
    public get_xc_energy
    public get_xc_mat_energy
+   public get_nr_electrons_integrated
 
    private
 
@@ -502,7 +503,9 @@ contains
 !        get average density from open shells
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
+#ifdef PRG_DIRAC
          call scale_density_matrices(2.0d0)
+#endif
 
          call insert_half_phases()
       end if
@@ -625,7 +628,9 @@ contains
       end if
 
       if (xc_mpi_is_master()) then
+#ifdef PRG_DIRAC
          call scale_density_matrices(0.5d0)
+#endif
 
 !        get average density from open shells
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
@@ -1750,25 +1755,19 @@ contains
 
 
 
+   function get_nr_electrons_integrated()
+      real(8) :: get_nr_electrons_integrated
+      get_nr_electrons_integrated = nr_electrons_integrated
+   end function
 
    function get_xc_energy()
-
-!     --------------------------------------------------------------------------
       real(8) :: get_xc_energy
-!     --------------------------------------------------------------------------
-
       get_xc_energy = xc_energy
-
    end function
 
    function get_xc_mat_energy()
-
-!     --------------------------------------------------------------------------
       real(8) :: get_xc_mat_energy
-!     --------------------------------------------------------------------------
-
       get_xc_mat_energy = xc_mat_energy
-
    end function
 
    subroutine loop_over_batches()

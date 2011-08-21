@@ -24,6 +24,19 @@ contains
       real(8)              :: hfx_out, mu_out, beta_out
 !     --------------------------------------------------------------------------
 
+#ifdef VAR_DALTON
+      line = 'lda       '// &
+             '          '// &
+             '          '// &
+             '          '// &
+             '          '// &
+             '          '// &
+             '          '// &
+             '          '
+      call parse_functional(line, xc_fun, hfx_out, mu_out, beta_out, .true.)
+      fun_is_automatic = .true.
+#else
+
 !     this is to catch keywords that appear before some section starts
       kw_section = '       '
 
@@ -68,6 +81,7 @@ contains
       end do
 
 2     close(unit_in)
+#endif
 
    end subroutine
 

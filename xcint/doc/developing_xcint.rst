@@ -43,7 +43,7 @@ or you compile the XCint sources directly by the build mechanism of your code.
 Setting the XC functional (with XCFun)
 --------------------------------------
 
-The following minimal code will set the XC functional::
+The following minimal code will set the LDA XC functional::
 
   use xc_derv
   use interface_functional_read
@@ -51,10 +51,17 @@ The following minimal code will set the XC functional::
   character(80) :: line
   real(8)       :: hfx_out, mu_out, beta_out
 
+  line = 'lda       '// &
+         '          '// &
+         '          '// &
+         '          '// &
+         '          '// &
+         '          '// &
+         '          '// &
+         '          '
   call parse_functional(line, xc_fun, hfx_out, mu_out, beta_out, .true.)
   fun_is_automatic = .true.
 
-The simplest example for line is the string "lda" (with 77 trailing blanks).
 The subroutine parse_functional sets xc_fun and returns hfx_out, mu_out,
 beta_out that you can use in your parent code.
 
