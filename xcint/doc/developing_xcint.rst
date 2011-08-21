@@ -7,12 +7,13 @@ Contributing to the XCint development
 Getting the latest development code and committing changes
 ----------------------------------------------------------
 
-DIRAC developers:
-commit changes to the DIRAC repository.
-
-Developers outside the DIRAC group:
-Pull/push changes from/to https://repo.ctcc.no/projects/xcint
+Get the latest development code from https://repo.ctcc.no/projects/xcint.
 Write to Radovan Bast <radovan.bast@uit.no> to get access to the repository.
+
+DIRAC developers please commit changes to the DIRAC repository.
+
+Developers outside the DIRAC group please pull/push changes from/to
+https://repo.ctcc.no/projects/xcint.
 
 
 Interfacing your code with XCint
@@ -28,9 +29,8 @@ So far only Fortran 90.
 XCFun
 -----
 
-XCint is using the XCFun library to obtain XC functional derivatives.  XCint
-talks to XCFun through "use xcfun" provided by xcfun/fortran/xcfun_module.F90
-which itself needs xcfun/fortran/xcfun_autogen.F90 to be compiled.
+XCint obtains XC functional derivatives using the XCFun library of Ulf Ekstrom
+and coworkers.
 
 
 Which sources to compile
@@ -38,13 +38,12 @@ Which sources to compile
 
 You can either build libxcint.a separately and link your application against it,
 or you compile the XCint sources directly by the build mechanism of your code.
-You can find the list of sources to compile in cmake/XCint_Sources.cmake.
 
 
-Setting the functional (with XCFun)
------------------------------------
+Setting the XC functional (with XCFun)
+--------------------------------------
 
-The following minimal code will set the functional::
+The following minimal code will set the XC functional::
 
   use xc_derv
   use interface_functional_read
