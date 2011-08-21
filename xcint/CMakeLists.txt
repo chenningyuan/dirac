@@ -4,7 +4,7 @@ project(xcint Fortran C)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake
     )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -60,7 +60,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-include(Sources)
+include(XCint_Sources)
 
 add_library(
     xcint

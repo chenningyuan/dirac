@@ -195,7 +195,7 @@ module numoper_integrals
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
          use grid_file
-         use interface_ao
+         use interface_ao_specific
          use ao_eval
 
          implicit none

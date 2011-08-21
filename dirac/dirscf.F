@@ -373,7 +373,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use xc_driver
-      use interface_mo
+      use interface_mo_specific
       use dft_cfg
       use fde_mod
       use num_grid_gen
@@ -1078,7 +1078,7 @@ C   Called from PSIDHF
 C
 C*****************************************************************************
 
-      use interface_ao
+      use interface_ao_specific
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1193,7 +1193,7 @@ C*****************************************************************************
       use xc_driver
       use fde_mod
       use num_grid_gen
-      use interface_mo
+      use interface_mo_specific
       use xmlout
 
 #include "implicit.h"
