@@ -1,6 +1,7 @@
 set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/ao_eval.F90
     ${PROJECT_SOURCE_DIR}/src/file_units.F90
+    ${PROJECT_SOURCE_DIR}/src/fake_input.F90
     ${PROJECT_SOURCE_DIR}/src/sigma_prefactor_setting.F90
     ${PROJECT_SOURCE_DIR}/src/ao_eval_sub.F90
     ${PROJECT_SOURCE_DIR}/src/density_eval.F90
