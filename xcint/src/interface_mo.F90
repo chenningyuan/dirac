@@ -1,11 +1,10 @@
 
 module interface_mo
 
+   use file_units
+
    implicit none
 
-#ifdef PRG_DIRAC
-   public interface_mo_write
-#endif
    public interface_mo_read
    public interface_mo_clear
 
@@ -34,11 +33,6 @@ module interface_mo
    real(8), allocatable, public :: df_open(:)
 
    private
-
-   character(*), parameter :: file_name_mo      = 'interface_mo'
-   character(*), parameter :: file_name_mo_coef = 'interface_mo_coef'
-   integer,      parameter :: file_unit         = 137
-   logical                 :: file_exists
 
 contains
 
@@ -70,172 +64,6 @@ contains
 
    end subroutine
 
-#ifdef PRG_DIRAC
-   subroutine interface_mo_write()
-
-!     --------------------------------------------------------------------------
-      real(8) :: dummy
-      integer :: i
-      logical :: lucoef_opened_by_dirac
-!     --------------------------------------------------------------------------
-
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-
-      call interface_mo_clear()
-
-      inquire(file = 'DFCOEF', exist = file_exists)
-      if (file_exists) then
-         inquire(unit=lucoef, opened=lucoef_opened_by_dirac)
-         if (lucoef_opened_by_dirac) then
-            close(lucoef, status = 'keep')
-         end if
-
-         open(file_unit,              &
-              file   = 'DFCOEF',      &
-              status = 'unknown',     &
-              form   = 'unformatted', &
-              access = 'sequential')
-         rewind(file_unit)
-         allocate(mo_eigenvalues(norbt))
-         mo_eigenvalues = 0.0d0
-         allocate(mo_coef(n2bbasxq))
-         mo_coef = 0.0d0
-
-         call reacmo_no_work(file_unit,      &
-                             'DFCOEF',       &
-                             mo_coef,        &
-                             mo_eigenvalues, &
-                             (/0/),          &
-                             dummy,          &
-                             6)
-         mo_eigenvalues_available = .true.
-         mo_coef_available        = .true.
-
-         close(file_unit, status = 'keep')
-         if (lucoef_opened_by_dirac) then
-            open(lucoef,                 &
-                 file   = 'DFCOEF',      &
-                 status = 'unknown',     &
-                 form   = 'unformatted', &
-                 access = 'sequential')
-         end if
-      end if
-
-!     always regenerate this file
-      inquire(file = file_name_mo, exist = file_exists)
-      if (file_exists) then
-         open(file_unit,             &
-              file   = file_name_mo, &
-              status = 'unknown',    &
-              form   = 'formatted',  &
-              access = 'sequential')
-         close(file_unit, status = 'delete')
-      end if
-      open(file_unit,             &
-           file   = file_name_mo, &
-           status = 'new',        &
-           form   = 'formatted',  &
-           access = 'sequential')
-      rewind(file_unit)
-
-      nr_electrons_inactive = nelect
-      nr_electrons_active   = naelec
-
-      nr_mo_gerade_negative_secondary = npsh(1)
-      nr_mo_gerade_positive_inactive  = nish(1)
-      nr_mo_gerade_positive_active    = nash(1)
-      nr_mo_gerade_positive_secondary = nesh(1) - nr_mo_gerade_positive_inactive
-
-      nr_mo_ungerade_negative_secondary = npsh(2)
-      nr_mo_ungerade_positive_inactive  = nish(2)
-      nr_mo_ungerade_positive_active    = nash(2)
-      nr_mo_ungerade_positive_secondary = nesh(2) - nr_mo_ungerade_positive_inactive
-
-      if (aoc) then
-         nr_open_shells = nopen
-      else
-         nr_open_shells = 0
-      end if
-
-      write(file_unit, '(4x, a)') 'nr_electrons_inactive'
-      write(file_unit, '(4x, i6)') nr_electrons_inactive
-      write(file_unit, '(4x, a)') 'nr_electrons_active'
-      write(file_unit, '(4x, i6)') nr_electrons_active
-      write(file_unit, '(4x, a)') 'nr_mo_gerade_negative_secondary'
-      write(file_unit, '(4x, i6)') nr_mo_gerade_negative_secondary
-      write(file_unit, '(4x, a)') 'nr_mo_gerade_positive_inactive'
-      write(file_unit, '(4x, i6)') nr_mo_gerade_positive_inactive
-      write(file_unit, '(4x, a)') 'nr_mo_gerade_positive_active'
-      write(file_unit, '(4x, i6)') nr_mo_gerade_positive_active
-      write(file_unit, '(4x, a)') 'nr_mo_gerade_positive_secondary'
-      write(file_unit, '(4x, i6)') nr_mo_gerade_positive_secondary
-      write(file_unit, '(4x, a)') 'nr_mo_ungerade_negative_secondary'
-      write(file_unit, '(4x, i6)') nr_mo_ungerade_negative_secondary
-      write(file_unit, '(4x, a)') 'nr_mo_ungerade_positive_inactive'
-      write(file_unit, '(4x, i6)') nr_mo_ungerade_positive_inactive
-      write(file_unit, '(4x, a)') 'nr_mo_ungerade_positive_active'
-      write(file_unit, '(4x, i6)') nr_mo_ungerade_positive_active
-      write(file_unit, '(4x, a)') 'nr_mo_ungerade_positive_secondary'
-      write(file_unit, '(4x, i6)') nr_mo_ungerade_positive_secondary
-      write(file_unit, '(4x, a)') 'nr_open_shells'
-      write(file_unit, '(4x, i6)') nr_open_shells
-      if (nr_open_shells > 0) then
-         do i = 1, nr_open_shells
-            write(file_unit, '(4x, i6, e26.16)') i, df(i)
-         end do
-      end if
-
-      nr_mo_gerade = nr_mo_gerade_negative_secondary &
-                   + nr_mo_gerade_positive_inactive  &
-                   + nr_mo_gerade_positive_active    &
-                   + nr_mo_gerade_positive_secondary
-      nr_mo_ungerade = nr_mo_ungerade_negative_secondary &
-                     + nr_mo_ungerade_positive_inactive  &
-                     + nr_mo_ungerade_positive_active    &
-                     + nr_mo_ungerade_positive_secondary
-      nr_mo = nr_mo_gerade + nr_mo_ungerade
-
-      if (mo_eigenvalues_available) then
-         write(file_unit, '(4x, a)') 'mo_eigenvalues'
-         do i = 1, nr_mo
-            write(file_unit, '(4x, i6, e26.16)') i, mo_eigenvalues(i)
-         end do
-      end if
-
-      close(file_unit, status = 'keep')
-
-      if (mo_coef_available) then
-!        always regenerate this file
-         inquire(file = file_name_mo_coef, exist = file_exists)
-         if (file_exists) then
-            open(file_unit,                  &
-                 file   = file_name_mo_coef, &
-                 status = 'unknown',         &
-                 form   = 'formatted',       &
-                 access = 'sequential')
-            close(file_unit, status = 'delete')
-         end if
-         open(file_unit,                  &
-              file   = file_name_mo_coef, &
-              status = 'new',             &
-              form   = 'formatted',       &
-              access = 'sequential')
-         rewind(file_unit)
-         write(file_unit, *) size(mo_coef)
-         do i = 1, size(mo_coef)
-            write(file_unit, *) mo_coef(i)
-         end do
-         close(file_unit, status = 'keep')
-      end if
-
-      call interface_mo_clear()
-
-   end subroutine
-#endif
-
    subroutine interface_mo_read()
 
       use xc_mpi
@@ -248,45 +76,45 @@ contains
       call interface_mo_clear()
 
       if (xc_mpi_is_master()) then
-         inquire(file = file_name_mo, exist = file_exists)
-         if (.not. file_exists) then
+         inquire(file = interface_file_name_mo, exist = interface_file_exists)
+         if (.not. interface_file_exists) then
             print *, 'interface_mo file not found'
             stop
          end if
-         open(file_unit,             &
-              file   = file_name_mo, &
+         open(interface_file_unit,             &
+              file   = interface_file_name_mo, &
               status = 'unknown',    &
               form   = 'formatted',  &
               access = 'sequential')
-         rewind(file_unit)
+         rewind(interface_file_unit)
 
-         read(file_unit, *)
-         read(file_unit, *) nr_electrons_inactive
-         read(file_unit, *)
-         read(file_unit, *) nr_electrons_active
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_gerade_negative_secondary
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_gerade_positive_inactive
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_gerade_positive_active
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_gerade_positive_secondary
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_ungerade_negative_secondary
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_ungerade_positive_inactive
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_ungerade_positive_active
-         read(file_unit, *)
-         read(file_unit, *) nr_mo_ungerade_positive_secondary
-         read(file_unit, *)
-         read(file_unit, *) nr_open_shells
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_electrons_inactive
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_electrons_active
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_gerade_negative_secondary
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_gerade_positive_inactive
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_gerade_positive_active
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_gerade_positive_secondary
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_ungerade_negative_secondary
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_ungerade_positive_inactive
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_ungerade_positive_active
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_mo_ungerade_positive_secondary
+         read(interface_file_unit, *)
+         read(interface_file_unit, *) nr_open_shells
          if (nr_open_shells > 0) then
             allocate(df_open(nr_open_shells))
             df_open = 0.0d0
             do i = 1, nr_open_shells
-               read(file_unit, *) idummy, df_open(i)
+               read(interface_file_unit, *) idummy, df_open(i)
             end do
          end if
 
@@ -301,15 +129,15 @@ contains
                         + nr_mo_ungerade_positive_secondary
          nr_mo = nr_mo_gerade + nr_mo_ungerade
 
-         rewind(file_unit)
+         rewind(interface_file_unit)
          do while (.true.)
 
-            read(file_unit, '(a120)', end=1) line
+            read(interface_file_unit, '(a120)', end=1) line
 
             if (word_contains(line, 'mo_eigenvalues')) then
                allocate(mo_eigenvalues(nr_mo))
                do i = 1, nr_mo
-                  read(file_unit, *) idummy, mo_eigenvalues(i)
+                  read(interface_file_unit, *) idummy, mo_eigenvalues(i)
                end do
                mo_eigenvalues_available = .true.
             end if
@@ -317,20 +145,20 @@ contains
          end do
 1        continue
 
-         inquire(file = file_name_mo_coef, exist = file_exists)
-         if (file_exists) then
-            open(file_unit,                  &
-                 file   = file_name_mo_coef, &
+         inquire(file = interface_file_name_mo_coef, exist = interface_file_exists)
+         if (interface_file_exists) then
+            open(interface_file_unit,                  &
+                 file   = interface_file_name_mo_coef, &
                  status = 'unknown',         &
                  form   = 'formatted',       &
                  access = 'sequential')
-            rewind(file_unit)
-            read(file_unit, *) n
+            rewind(interface_file_unit)
+            read(interface_file_unit, *) n
             allocate(mo_coef(n))
             do i = 1, n
-               read(file_unit, *) mo_coef(i)
+               read(interface_file_unit, *) mo_coef(i)
             end do
-            close(file_unit, status = 'keep')
+            close(interface_file_unit, status = 'keep')
             mo_coef_available = .true.
          end if
 

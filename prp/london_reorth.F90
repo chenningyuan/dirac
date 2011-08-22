@@ -326,20 +326,19 @@ contains
 
       call generate_num_grid(dmat)
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim           = nr_ao_total,   &
-                         xc_nz                = nr_qu,         &
-                         xc_dmat_0            = dmat,          &
-                         xc_nr_dmat           = nr_xyz_comp,   &
-                         xc_nr_fmat           = nr_xyz_comp,   &
-                         xc_dmat              = tb_dmat,       &
-                         xc_fmat              = fao,           &
-                         xc_fmat_pg_sym       = isymop,        &
-                         xc_dmat_pg_sym       = isymop,        &
-                         xc_dmat_ih_sym       = ihrmop,        &
-                         xc_response_order_mo = 1,             &
-                         xc_do_london_rhs_ro  = .true.)       
+      call xc_integrator(xc_mat_dim          = nr_ao_total, &
+                         xc_nz               = nr_qu,       &
+                         xc_dmat_0           = dmat,        &
+                         xc_nr_dmat          = nr_xyz_comp, &
+                         xc_nr_fmat          = nr_xyz_comp, &
+                         xc_dmat             = tb_dmat,     &
+                         xc_fmat             = fao,         &
+                         xc_fmat_pg_sym      = isymop,      &
+                         xc_dmat_pg_sym      = isymop,      &
+                         xc_dmat_ih_sym      = ihrmop,      &
+                         xc_do_london_rhs_ro = .true.)       
 
       call dealloc(dmat)
 

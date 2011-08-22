@@ -1,8 +1,8 @@
-MODULE RECP_ORBITAL
+MODULE RECP_INP_ORBITAL
 
 CONTAINS
 
-SUBROUTINE RECP_ORBITAL_CONT_COEFF_NORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
+SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
 ! normalize the contraction coefficients
 ! Y. C. Park
 
@@ -48,12 +48,35 @@ SUBROUTINE RECP_ORBITAL_CONT_COEFF_NORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,ze
     ENDDO
   ENDDO
 
-END SUBROUTINE RECP_ORBITAL_CONT_COEFF_NORM
+END SUBROUTINE RECP_INP_ORBITAL_CCNORM
 
 
-!SUBROUTINE ARGOS_ORBITAL_SYM_ORB_NORM
+!SUBROUTINE RECP_INP_ORB_SONORM
 ! normalization of symmetry orbitals.
 ! deleted Y. C. Park
-!END SUBROUTINE ARGOS_ORBITAL_SYM_ORB_NORM
+!END SUBROUTINE RECP_INP_ORB_SONORM
 
-END MODULE RECP_ORBITAL 
+SUBROUTINE RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
+! compute contracted orbital and lower-triangle-packed matrix symmetry offsets.
+
+  USE RECP_FUNCTION
+  IMPLICIT NONE
+
+! variable : global
+  INTEGER  :: nsopr(*), nso(*) 
+  INTEGER  :: nblpr(*) 
+  INTEGER  :: nst 
+
+! variable : local
+  INTEGER  :: i 
+
+  nsopr(1) = 0
+  nblpr(1) = 0
+  do i = 2,nst
+     nsopr(i) = nsopr(i-1) + nso(i-1)
+!    print *,'i=',i,'nst=',nst,'nso=',nso(i-1),'RECP_FNIPQ=',RECP_FNIPQ(nso(i-1)+1)
+     nblpr(i) = nblpr(i-1) + RECP_FNIPQ( nso(i-1) + 1 )
+  enddo
+END SUBROUTINE RECP_INP_ORBITAL_OFFSET
+
+END MODULE RECP_INP_ORBITAL 

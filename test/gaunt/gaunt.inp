@@ -3,6 +3,7 @@
  Hartree-Fock run with the Gaunt interaction included
 .WAVE FUNCTION
 .PROPERTIES
+.XMLOUT
 **HAMILTONIAN
 .GAUNT
 **WAVE FUNCTION

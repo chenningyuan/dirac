@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 # script for selecting DIRAC modules
 # based on: old pamadm written by Trond Saue, Thomas Enevoldsen, Joern Thyssen, and others
@@ -252,7 +252,7 @@ files_never_compiled.append('eri/eriprg.F')
 files_never_compiled.append('cfun/fun-tester.c')
 files_never_compiled.append('relccsd/ccmain.F')
 files_never_compiled.append('relccsd/quit.F')
-files_never_compiled.append('cbuild/gen_fortran_interface_h.c')
+files_never_compiled.append('utils/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
 files_never_compiled.append('xcint/xcfun/fortran/example.F90')
 files_never_compiled.append('fmm/mm_standalone_drv.f90')

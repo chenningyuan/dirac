@@ -1,28 +1,4 @@
-!dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
-
 module xc_driver
-
-!  written by T. Helgaker
-!  DIRAC adaption by T. Saue
 
 #ifdef PRG_DIRAC
 !  these dependencies should be removed
@@ -36,6 +12,7 @@ module xc_driver
    use xc_derv
    use xc_ac
    use extra
+   use file_units
    use interface_grid
    use ao_eval
    use density_eval
@@ -59,6 +36,7 @@ module xc_driver
    public xc_integrator
    public get_xc_energy
    public get_xc_mat_energy
+   public get_nr_electrons_integrated
 
    private
 
@@ -80,7 +58,6 @@ module xc_driver
    save
 
    integer, parameter :: file_unit      = 6
-   integer, parameter :: file_unit_grid = 44
 
    real(8), allocatable :: dmat_saop_outer(:)
    real(8), allocatable :: dmat_saop_resp(:)
@@ -254,6 +231,7 @@ contains
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
 
+      integer, parameter :: max_response_order_mo = 5
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -448,12 +426,20 @@ contains
          end if
       end if
 
+      if (response_order_mo > max_response_order_mo) then
+          stop 'response_order_mo > max_response_order_mo'
+      end if
+
 !     set and sync functional
 #ifdef MOD_XCFUN
       if (fun_is_automatic) then
-         call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
+!        call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
+!        call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
+!        call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
+!radovan: hack - this is needed otherwise with rhs_direct we go out of the array
+         call xcfun_set_functional(xc_fun,       max_response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_alda,  max_response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_xalda, max_response_order_mo, parallel_xc)
       else
 #endif
 #ifdef VAR_MPI
@@ -517,7 +503,9 @@ contains
 !        get average density from open shells
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
+#ifdef PRG_DIRAC
          call scale_density_matrices(2.0d0)
+#endif
 
          call insert_half_phases()
       end if
@@ -640,7 +628,9 @@ contains
       end if
 
       if (xc_mpi_is_master()) then
+#ifdef PRG_DIRAC
          call scale_density_matrices(0.5d0)
+#endif
 
 !        get average density from open shells
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
@@ -648,7 +638,6 @@ contains
 !        symmetrize matrices
          if (dft_cfg_blocked .or. (use_gga                          &
                                    .and. .not. do_london_rhs_direct &
-                                   !.and. .not. do_london_rhs_ro &
                                    .and. .not. do_london_ks         &
 !radovan: with do_london_lr matrices have to be symmetrized!
 !                                  .and. .not. do_london_lr         &
@@ -906,6 +895,12 @@ contains
     end if
     if (do_london_lr) then
        max_fun_derv = 2
+    end if
+
+    if (do_london_rhs_ro) then
+       if (max_fun_derv < 2) then
+          max_fun_derv = 2
+       end if
     end if
 
 #ifdef MOD_XCFUN
@@ -1215,12 +1210,32 @@ contains
           end if
 
 
-!       linear response
-!       ===============
+!       london reorthogonalization spin density contribution
+!       ====================================================
 
-        if (response_order_mo == 1) then
-           if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
+        if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
+           call lr_sdft_lao_reorth(bllen,          &
+                                   mat_dim,        &
+                                   nz,             &
+                                   ao,             &
+                                   n_0,            &
+                                   gn_0_pointwise, &
+                                   gnn_0,          &
+                                   w,              &
+                                   use_gga_qi,     &
+                                   dmat,           &
+                                   dmat_pg_sym,    &
+                                   buffer,         &
+                                   derv_length,    &
+                                   derv, u)
+        end if
 
+
+!       london direct spin density contribution
+!       =======================================
+
+        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
+!radovan: this code is commented and tests pass, strange
               !call lr_sdft_lao_direct(bllen,          &
               !                        mat_dim,        &
               !                        nz,             &
@@ -1234,45 +1249,31 @@ contains
               !                        derv_length,    &
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
+        end if
 
-           else if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
-              call lr_sdft_lao_reorth(bllen,          &
-                                      mat_dim,        &
-                                      nz,             &
-                                      ao,             &
-                                      n_0,            &
-                                      gn_0_pointwise,           &
-                                      gnn_0,            &
-                                      w,              &
-                                      use_gga_qi,     &
-                                      dmat, &
-                                      dmat_pg_sym, &
-                                      buffer,         &
-                                      derv_length,    &
-                                      derv, u)
 
-           else
+!       linear response
+!       ===============
 
-              call lr(bllen,          &
-                      mat_dim,        &
-                      nz,             &
-                      nr_dmat,        &
-                      dmat,           &
-                      dmat_pg_sym,    &
-                      dmat_ih_sym,    &
-                      .false.,        &
-                      ao,             &
-                      n_0,            &
-                      gn_0_pointwise,           &
-                      gnn_0,            &
-                      w,              &
-                      use_gga_qr,     &
-                      use_gga_qi,     &
-                      buffer,         &
-                      derv_length,    &
-                      derv, u)
-
-          endif
+        if (response_order_mo == 1) then
+           call lr(bllen,          &
+                   mat_dim,        &
+                   nz,             &
+                   nr_dmat,        &
+                   dmat,           &
+                   dmat_pg_sym,    &
+                   dmat_ih_sym,    &
+                   .false.,        &
+                   ao,             &
+                   n_0,            &
+                   gn_0_pointwise, &
+                   gnn_0,          &
+                   w,              &
+                   use_gga_qr,     &
+                   use_gga_qi,     &
+                   buffer,         &
+                   derv_length,    &
+                   derv, u)
         endif
 
 
@@ -1754,25 +1755,19 @@ contains
 
 
 
+   function get_nr_electrons_integrated()
+      real(8) :: get_nr_electrons_integrated
+      get_nr_electrons_integrated = nr_electrons_integrated
+   end function
 
    function get_xc_energy()
-
-!     --------------------------------------------------------------------------
       real(8) :: get_xc_energy
-!     --------------------------------------------------------------------------
-
       get_xc_energy = xc_energy
-
    end function
 
    function get_xc_mat_energy()
-
-!     --------------------------------------------------------------------------
       real(8) :: get_xc_mat_energy
-!     --------------------------------------------------------------------------
-
       get_xc_mat_energy = xc_mat_energy
-
    end function
 
    subroutine loop_over_batches()
@@ -1783,11 +1778,18 @@ contains
     real(8), allocatable :: mpi_buffer(:)
 
       if (xc_mpi_is_master()) then
+         interface_file_open = .false. 
          if (do_fde_update_vemb .or. do_fde_response) then
 !           don't open and rewind anything
 !           data is already stored at this point
          else
-            rewind file_unit_grid
+            open(interface_file_unit,       &
+                 file   = 'numerical_grid', &
+                 status = 'unknown',        &
+                 form   = 'formatted',      &
+                 access = 'sequential')
+            rewind(interface_file_unit)
+            interface_file_open = .true. 
          end if
       end if
 
@@ -1805,7 +1807,7 @@ contains
                nr_points_batch = fde_grid_np
             else
 #endif
-               read(file_unit_grid, *) nr_points_batch
+               read(interface_file_unit, *) nr_points_batch
 #ifdef MOD_UNRELEASED
             end if
 #endif
@@ -1861,7 +1863,7 @@ contains
 
             else
 #endif
-               call num_grid_read(rx, ry, rz, rw, file_unit_grid, nr_points_batch)
+               call num_grid_read(rx, ry, rz, rw, interface_file_unit, nr_points_batch)
 #ifdef MOD_UNRELEASED
             end if
 #endif
@@ -1898,6 +1900,12 @@ contains
 !     end loop over batches
       end do
  999  continue
+
+      if (xc_mpi_is_master()) then
+         if (interface_file_open) then
+            close(interface_file_unit, status='keep')
+         end if
+      end if
 
    end subroutine
 

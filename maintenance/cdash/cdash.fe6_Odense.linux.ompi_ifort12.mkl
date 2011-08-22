@@ -3,59 +3,42 @@
 #PBS -S /bin/bash
 #PBS -N cdash_buildup
 #PBS -l nodes=2
-#PBS -l walltime=12:00:00
+#PBS -l walltime=6:00:00
 #PBS -j oe
 #PBS -q workq
 ##PBS -o cdash_buildup_log
 
-# crontab prescription:
-# 30 00 * * 1,2,3,4,5,6,7  svn --force up /people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk;  /usr/local/bin/qsub  /people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk/maintenance/cdash/cdash.fe6_Odense.linux.ompi_ifort12.mkl
-#
-
 # intel fortran/MKL stuff
-export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
-export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
+#export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
+#export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
+export PATH=/opt/intel/composerxe/bin:$PATH
 
-# own (old) gcc-trunk stuff
-export PATH=/people/disk2/ilias/bin/gcc_bin_lib/bin:$PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/bin/gcc_bin_lib/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/opt/intel/lib/intel64:$LD_LIBRARY_PATH
 
 # OpenMPI stuff
-export PATH=/people/disk2/ilias/bin/openmpi_ifort_gcc_ilp64/bin:$PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_gcc_ilp64/lib:$LD_LIBRARY_PATH
-
+export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin:$PATH
+export LD_LIBRARY_PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/lib:$LD_LIBRARY_PATH
 # cmake stuff
 export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
-
-# my own svn stuff
-#export PATH=/people/disk2/ilias/bin/subversion/bin:$PATH
-#export INCLUDE=/people/disk2/ilias/bin/subversion/bin:$INCLUDE
-#export LD_LIBRARY_PATH=/people/disk2/ilias/bin/subversion/lib:$LD_LIBRARY_PATH
-
 #  my most recent python 2.7.1 #
 export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "running dirac cdash buildup at "$timestamp
 
-DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_ifc_gcc_mkl_ILP64_cdash/adm/trunk
-
+DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
+BUILD=build_ompi_ifort_icc_mkl_ilp64
+OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin
 cd $DIRAC
-
-/bin/rm -rf build
-
+/bin/rm -rf $BUILD
 ./pamadm -a 
-
-./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/people/disk2/ilias/intel/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.fe6_Odense.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
-
-cd $DIRAC/build
-
+export MATH_ROOT=/opt/intel/mkl
+./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
+cd $DIRAC/$BUILD
 make Experimental 
-
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
-
 exit 0

@@ -75,7 +75,7 @@ gp/compinfo.h:
 
 gp/gpc.o: gp/compinfo.h
 
-cbuild/gen_fortran_interface_h: cbuild/gen_fortran_interface_h.c
+cbuild/gen_fortran_interface_h: utils/gen_fortran_interface_h.c
 	$(CC) $(CFLAGS) -o cbuild/gen_fortran_interface_h $<
 
 include/fortran_interface.h: cbuild/gen_fortran_interface_h
