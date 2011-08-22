@@ -1,13 +1,9 @@
-noref rsp_ll_nolao.inp hf.mol --get="DFCOEF PAMXVC"
-vis_ll_nolao.inp hf.mol --put="DFCOEF PAMXVC"
+noref rsp_dc_lao_sc.inp   hf.mol --get="DFCOEF PAMXVC TBMO"
+vis_dc_lao_sc.inp   hf.mol --put="DFCOEF PAMXVC TBMO"
+vis_dc_lao_none_after_sc.inp   hf.mol --put="DFCOEF PAMXVC TBMO"
 
-noref rsp_ll_lao.inp   hf.mol --get="DFCOEF PAMXVC AOPROPER property_info"
-vis_ll_lao.inp   hf.mol --put="DFCOEF PAMXVC AOPROPER property_info"
+noref rsp_dc_lao_nc.inp   hf.mol --get="DFCOEF PAMXVC TBMO"
+vis_dc_lao_nc.inp   hf.mol --put="DFCOEF PAMXVC TBMO"
+vis_dc_lao_none_after_nc.inp   hf.mol --put="DFCOEF PAMXVC TBMO"
 
-noref rsp_dc_nolao.inp hf.mol --get="DFCOEF PAMXVC"
-vis_dc_nolao.inp hf.mol --put="DFCOEF PAMXVC"
-
-noref rsp_dc_lao.inp   hf.mol --get="DFCOEF PAMXVC AOPROPER property_info"
-vis_dc_lao.inp   hf.mol --put="DFCOEF PAMXVC AOPROPER property_info"
-
-sh rm DFCOEF PAMXVC AOPROPER property_info
+sh rm DFCOEF PAMXVC TBMO
