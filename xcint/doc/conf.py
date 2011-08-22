@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'XCint: Library for the integration of XC contributions'
-copyright = u'Radovan Bast, Trygve Helgaker, Michal Repisky, Kenneth Ruud, Pawel Salek, Trond Saue'
+copyright = u'Radovan Bast, Trygve Helgaker, Malgorzata Olejniczak, Michal Repisky, Kenneth Ruud, Pawel Salek, Trond Saue'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

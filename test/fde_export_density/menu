@@ -1,6 +1,6 @@
 sh ln -sf ../fde_static-vemb_dipole/EMBPOT.2e-1 vemb.grid
 sh ln -sf ../fde_static-vemb_dipole/EMBPOT.2e-1 GRIDOUT
-sh ln -sf ../fde_static-vemb_dipole/EMBPOT.2e-1 IMPORT_GRID
+sh ln -sf ../fde_static-vemb_dipole/EMBPOT.2e-1 numerical_grid
 
 sh ln -sf fde_dc_hf_exportdens.inp  fde_dc_hf_exportdens_short.inp
 sh ln -sf fde_dc_lda_exportdens.inp fde_dc_lda_exportdens_short.inp
@@ -9,10 +9,10 @@ sh ln -sf fde_dc_mp2_exportdens.inp fde_dc_mp2_exportdens_short.inp
 fde_dc_hf_exportdens_short.inp  water.sto6g     --mw=80 --nw=80 --put="vemb.grid GRIDOUT"
 fde_dc_hf_exportdens_short.inp  water.sto6g.c2v --mw=80 --nw=80 --put="vemb.grid GRIDOUT"
 
-fde_dc_lda_exportdens_short.inp water.sto6g     --mw=80 --nw=80 --put="vemb.grid GRIDOUT IMPORT_GRID"
-fde_dc_lda_exportdens_short.inp water.sto6g.c2v --mw=80 --nw=80 --put="vemb.grid GRIDOUT IMPORT_GRID"
+fde_dc_lda_exportdens_short.inp water.sto6g     --mw=80 --nw=80 --put="vemb.grid GRIDOUT numerical_grid"
+fde_dc_lda_exportdens_short.inp water.sto6g.c2v --mw=80 --nw=80 --put="vemb.grid GRIDOUT numerical_grid"
 
 fde_dc_mp2_exportdens_short.inp water.sto6g     --mw=80 --nw=80 --put="vemb.grid GRIDOUT"
 fde_dc_mp2_exportdens_short.inp water.sto6g.c2v --mw=80 --nw=80 --put="vemb.grid GRIDOUT"
 
-sh rm vemb.grid GRIDOUT IMPORT_GRID
+sh rm vemb.grid GRIDOUT numerical_grid

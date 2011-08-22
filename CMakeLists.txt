@@ -36,12 +36,19 @@ endif()
 # this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# check whether pamadm-generated files exist, if not exit
+# check whether pamadm-generated files exist
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
 else()
-    message(FATAL_ERROR "could not find cmake/Sources.cmake and/or cmake/Definitions.cmake and/or cmake/Tests.cmake; run pamadm first")
+    # they do not exist: run pamadm -a
+    execute_process(
+        COMMAND python pamadm -a
+        TIMEOUT 1
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_QUIET
+    )
+    message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
 include(Definitions)
@@ -286,11 +293,11 @@ endif()
 
 include(Documentation)
 
-# add short make target for the executable's diagnostics 
-# with the  external python script
-add_custom_target(dgn
-    COMMAND ${CMAKE_SOURCE_DIR}/utils/diagn.py
-)
+# get size of static allocations
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
 
 # custom commands on created dirac.x executable
 add_custom_command(
