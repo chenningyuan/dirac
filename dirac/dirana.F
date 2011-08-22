@@ -3230,6 +3230,16 @@ C
         ENDDO
       ENDDO
 C
+      WRITE(6,*)
+      WRITE(6,*) 'Print Q^A matrices'
+      DO I=1, NUCDEP
+        WRITE(6,'(A,I4)') ' Nucleus #',I
+        DO J=1,NI
+          WRITE(6,'(I4,10ES9.1)') J,(PMAT(J,K,1,I)/2.0D0,K=1,NI)
+        ENDDO
+        WRITE(6,*)
+      ENDDO
+C
       IF(IPRLOC .GE. 1) THEN
         DO I = 1,NUCDEP
           WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
@@ -3245,14 +3255,16 @@ C
       DINV = D0
       DO I = 1,NI
         QLOC2 = D0
+        SUMD  = D0
         DO J = 1,NUCDEP
           QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4.0D0
+          SUMD  = SUMD + PMAT(I,I,1,J)/2.0D0
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
         WRITE(LUPRI,'(A,I3,A,2F7.4)') 
      &  '* Orbital ', I ,' Pipek-Mezey localization measure d = ',
-     &   DLOC,QLOC2
+     &   DLOC,SUMD
       ENDDO
       DINVM = DINV/NI
       WRITE(LUPRI,'(/A,2F17.13)')
