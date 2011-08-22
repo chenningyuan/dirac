@@ -14,12 +14,10 @@ saved from the remote hosts.
 
 Use --launcher="mpirun OPTIONS" with the appropriate OPTIONS to run an mpi job.
 
-<<<<<<< HEAD
+Use --launcher="valgrind OPTIONS" to debug with valgrind.
+
 Create a file named 'keep' in the temporary directory if you don't want it to
 be deleted at the end of a run.
-=======
-Use --launcher="valgrind OPTIONS" to debug with valgrind.
->>>>>>> a6222ac87d88a0089313f83566dcac729ea80942
 """
     W = Wrapper()
     parser = optparse.OptionParser(usage)
