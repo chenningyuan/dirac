@@ -46,8 +46,9 @@ else()
         COMMAND python pamadm -a
         TIMEOUT 1
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+        OUTPUT_QUIET
     )
+    message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
 include(Definitions)
