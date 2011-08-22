@@ -3385,6 +3385,8 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D4 = 4.0D0)
+      PARAMETER(D2 = 2.0D0)
       PARAMETER(D1 = 1.0D0)
       PARAMETER(D0 = 0.0D0)
 #include "maxorb.h"
@@ -3414,8 +3416,13 @@ C
          DO J = 1,NI
             DO I = 1,NI
                DO K = 1,NUCDEP
-                  HAMAT(I,J,1) = HAMAT(I,J,1) - 2.0D0*(
-     S  (PMAT(I,I,1,K) - PMAT(J,J,1,K))*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
+!                 HAMAT(I,J,1) = HAMAT(I,J,1) - 2.0D0*(
+!    S  (PMAT(I,I,1,K) - PMAT(J,J,1,K))*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
+                 PII = PMAT(I,I,1,K)
+                 PJJ = PMAT(J,J,1,K)
+                 PJI = PMAT(J,I,1,K)
+                 HAMAT(I,J,1) = HAMAT(I,J,1) +
+     &             D4*PJI*PJI - D2*((PJJ-PII)*(PJJ-PII))
                ENDDO
             ENDDO
          ENDDO
@@ -3429,7 +3436,7 @@ C
          DO J = 1,NI
             DO I = 1,NI
                DO K = 1,NUCDEP
-                  XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + 2.0D0*(
+                  XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + D2*(
      S                 PMAT(I,J,IZ,K)*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
                   IF (FLAG) THEN
                      IF(.NOT. HESLOC) THEN
