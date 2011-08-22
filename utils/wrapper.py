@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # Universal wrapper, by Ulf Ekstrom 2011
 import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, tempfile, zipfile, socket
 
@@ -13,7 +14,12 @@ saved from the remote hosts.
 
 Use --launcher="mpirun OPTIONS" with the appropriate OPTIONS to run an mpi job.
 
+<<<<<<< HEAD
+Create a file named 'keep' in the temporary directory if you don't want it to
+be deleted at the end of a run.
+=======
 Use --launcher="valgrind OPTIONS" to debug with valgrind.
+>>>>>>> a6222ac87d88a0089313f83566dcac729ea80942
 """
     W = Wrapper()
     parser = optparse.OptionParser(usage)
@@ -29,7 +35,6 @@ Use --launcher="valgrind OPTIONS" to debug with valgrind.
     group.add_option('-D','--define', type='string', action='callback',callback=W.define_callback,
 		     help='Define the environment variable NAME as VALUE',
                      metavar='NAME=VALUE')
-
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
 
@@ -368,7 +373,7 @@ class Wrapper:
 
     def cleanup(self):
         os.chdir(self.workdir)
-        if not self.keeptmp:
+        if not self.keeptmp and not os.path.isfile(os.path.join(self.tmppath,'keep')):
             shutil.rmtree(self.tmppath)
             if self.verbose: print "Wrapper: Temporary directory deleted"
             for h in self.remote_hosts:
