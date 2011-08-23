@@ -293,11 +293,11 @@ endif()
 
 include(Documentation)
 
-# add short make target for the executable's diagnostics 
-# with the  external python script
-add_custom_target(dgn
-    COMMAND ${CMAKE_SOURCE_DIR}/utils/diagn.py
-)
+# get size of static allocations
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
 
 # custom commands on created dirac.x executable
 add_custom_command(
