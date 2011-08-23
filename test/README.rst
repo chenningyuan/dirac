@@ -20,6 +20,12 @@ To run all tests, type::
 
 You can also run individual tests. Have a look at the options.
 
+If you are in the subdirectory of an individual test (example: dft_ac), you can
+do this instead to run just this one test::
+
+  $ [cd test/dft_ac]
+  $ ../../runtest
+
 
 Some tests are broken, what now?
 --------------------------------
