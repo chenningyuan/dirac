@@ -111,9 +111,9 @@ contains
        call print_mat(D_con_mo, label = 'D_con_mo read from TBMO')
     end if
 
-!    if (visual_cfg_use_orbital_string) then
-!       call select_orbitals_reortho(D_con_mo%elms)
-!    end if
+    if (visual_cfg_use_orbital_string) then
+       call select_orbitals_reortho(D_con_mo%elms)
+    end if
 
     if (visual_cfg_london_none) then
 
@@ -130,28 +130,18 @@ contains
 
   end subroutine
 
-
-
   subroutine select_orbitals_reortho(A)
 !    ---------------------------------------------------------------------------
      real(8), intent(inout)  :: A(norbt, norbt, nz)
-!     real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
      real(8), allocatable    :: B(:, :, :)
 
      integer, allocatable :: kvec(:)
      integer :: list(norbt, 2), ifrp, i, k, iz, nr(2), ir(2, 2), nvec
 !    ---------------------------------------------------------------------------
 
-     !call alloc(D_ji, norbt, norbt, nz)
-     !call alloc(D_ai, norbt, norbt, nz)
-
-     !call partition_connection_matrix(A, D_ai, D_ji)
-
 
 !    read numbers from the string
 !    into integer list kvec(nvec):
-
-
      do ifrp = 1, nfsym
 
 !fixme skipep
@@ -177,22 +167,11 @@ contains
         end do
         call dealloc(kvec)
 
-      end do
-
-     do ifrp = 1, nfsym
-        write(*, *) 'string', visual_cfg_orbital_string(ifrp)
-        write(*, *) 'list', list(:, ifrp)
      end do
-
 
 !    save those elements of A which are on the list and zero-out the rest
      call alloc(B, norbt, norbt, nz)
      call dzero(B, norbt*norbt*nz)
-
-!     call prqmat(A, &
-!                 norbt, norbt, norbt, norbt, &
-!                 nz, ipqtoq(1, 0), lupri)
-
 
      do iz = 1, nz
         do ifrp = 1, nfsym
@@ -207,18 +186,11 @@ contains
         end do
      end do
 
-
      call dzero(A, norbt*norbt*nz)
      call dcopy(norbt*norbt*nz, B, 1, A, 1)
 
      call dealloc(B)
-     !call dealloc(D_ji)
-     !call dealloc(D_ai)
 
-!     call prqmat(A, &
-!                 norbt, norbt, norbt, norbt, &
-!                 nz, ipqtoq(1, 0), lupri)
-!
   end subroutine
 
 
