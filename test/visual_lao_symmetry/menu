@@ -29,4 +29,4 @@ response_london_symcon_bz.inp co2_d2.mol  --get="DFCOEF PAMXVC TBMO"
 vis_shield_symmetric_zz.inp   co2_d2.mol  --put="DFCOEF PAMXVC TBMO"
 vis_shield_none_zz.inp        co2_d2.mol  --put="DFCOEF PAMXVC TBMO"
 
-sh rm DFCOEF PAMXVC AOPROPER property_info
+sh rm DFCOEF PAMXVC TBMO
