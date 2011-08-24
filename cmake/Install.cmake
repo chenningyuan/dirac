@@ -30,6 +30,17 @@ install(
     )
 
 install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/utils/wrapper.py
+    DESTINATION
+    dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+    )
+
+install(
     DIRECTORY
     ${PROJECT_SOURCE_DIR}/basis
     ${PROJECT_SOURCE_DIR}/basis_dalton

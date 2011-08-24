@@ -1,9 +1,5 @@
-# Fortran compilers
-
-set(FORTRAN_COMPILER_VERSION "")
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -fno-range-check")
+    set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
                                    # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
@@ -21,15 +17,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -ftest-coverage"
             )
-    endif()
-
-    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        execute_process(
-            COMMAND ./get-gfortran-version
-            TIMEOUT 1
-            OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
 endif()
 
@@ -51,15 +38,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS}"
             )
-    endif()
-
-    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        execute_process(
-            COMMAND ./get-g95-version
-            TIMEOUT 1
-            OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
 endif()
 
@@ -85,14 +63,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             )
     endif()
 
-    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        execute_process(
-            COMMAND ./get-ifort-version
-            TIMEOUT 1
-            OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
-    endif()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)

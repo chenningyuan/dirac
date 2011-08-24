@@ -1,7 +1,3 @@
-# Fortran compilers
-
-set(FORTRAN_COMPILER_VERSION "")
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR_MFDS -fno-range-check")
                                    # -fcray-pointer is for VAR_MPI2
@@ -108,33 +104,4 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         PROPERTIES COMPILE_FLAGS
         "-qfixed"
         )
-endif()
-
-# C compilers
-
-set(C_COMPILER_VERSION "")
-
-if(CMAKE_C_COMPILER_ID MATCHES GNU)
-    set(CMAKE_C_FLAGS         " ")
-    set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
-    set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES Intel)
-    set(CMAKE_C_FLAGS         "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
-    set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
-    set(CMAKE_C_FLAGS_RELEASE "-g -O2")
-    set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES PGI)
-    set(CMAKE_C_FLAGS         " ")
-    set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
-    set(CMAKE_C_FLAGS_RELEASE "-O3")
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES XL)
-    set(CMAKE_C_FLAGS         " ")
-    set(CMAKE_C_FLAGS_DEBUG   " ")
-    set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
