@@ -12,6 +12,8 @@ Write me ...
    plotting_orbital_densities.rst
    basis.rst
    cdash.rst
+   programmers_manual.rst
+
 
 Indices and tables
 ==================

@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'DIRAC'
-copyright = u'2009, John Hunter, Fernando Perez, Michael Droettboom'
+copyright = u'The authors of DIRAC'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -163,7 +163,7 @@ html_theme_path = ['_theme']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'sampledocdoc'
+htmlhelp_basename = 'DIRAC'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -177,8 +177,8 @@ htmlhelp_basename = 'sampledocdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'sampledoc.tex', u'sampledoc Documentation',
-   u'John Hunter, Fernando Perez, Michael Droettboom', 'manual'),
+  ('index', 'dirac_manual.tex', u'DIRAC Documentation',
+   u'The authors of DIRAC', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
