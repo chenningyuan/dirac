@@ -15,6 +15,7 @@ contains
 !     Modify by S. Dubillard - Apr 21 2004
 !
 !***********************************************************************
+      USE MEMORY_ALLOCATOR
       USE SELECT_COEFF_OWN_BAS
       IMPLICIT REAL*8 (A-H,O-Z)
       IMPLICIT INTEGER*4 (I-N)
@@ -34,44 +35,56 @@ contains
 
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
-      DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),NVECS(2,0:2), &
+      DIMENSION NSTR(2,0:2,0:MAXREF),NVECS(2,0:2), &
                 KBV(2),SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
       DIMENSION DDUMARR(2),IDUMARR(2)
+
+      INTEGER*4, ALLOCATABLE :: KVECTMP(:)
+
+      TYPE :: PTR2ARRAY
+        INTEGER*4, DIMENSION(:), POINTER :: P
+      END TYPE PTR2ARRAY
+
+      TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
+
+  !------------------------------------------------------------------------------!
+#include "memint.h"
       WRITE(6,*) "I'm in localization module"
 
-!     INTEGER*4, ALLOCATABLE :: KVEC(:,:,:)
-!
-!     TYPE :: KVEC
-!       REAL, DIMENSION(:), POINTER :: KVEC
-!     END TYPE KVEC
-!     TYPE(ptr_to_array), ALLOCATABLE :: x(:)
-!     !...
-!     ALLOCATE(x(nx))
-!     DO i = 1,nx
-!        ALLOCATE(x(i)%arr(m))
-!     END DO
+      ALLOCATE( KVEC(2,NREFS), STAT=IER )
+      IF(IER /= 0)THEN
+        WRITE(LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
+        WRITE(LUPRI,*) "STAT=",IER
+        WRITE(0,*) "Error in allocation ==> see output file "
+        STOP
+      ENDIF
+      DO I=1,2
+      DO J=1,NREFS
+        NULLIFY(KVEC(I,J)%P)
+      ENDDO
+      ENDDO
 
-#include "memint.h"
       CALL QENTER('ORBLP1')
       KFRSAV = KFREE
       IFRP   = 1
       NB     = NBL + NBS
 !     DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
+        CALL ALLOC(KVECTMP,NORB(IFRP),ID='KVECTMP IN ORBLP1')
         DO I = 1,NREFS
-          CALL MEMGET('INTE',KVEC(IFRP,I),NORB(IFRP),WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = 1
-          CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)), &
-               NORB(IFRP),-NPSH(IFRP),NESH(IFRP),        &
+          CALL NUMLST(VECREF(IFRP,I),KVECTMP,     &
+               NORB(IFRP),-NPSH(IFRP),NESH(IFRP), &
                IFRP,NSTR(IFRP,0,I))
-          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I), &
-               NPSH(IFRP),NESH(IFRP),                    &
+          CALL ORBCNT(KVECTMP,NSTR(IFRP,0,I), &
+               NPSH(IFRP),NESH(IFRP),         &
                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
-          CALL MEMREL('PRJANA',WORK,KVEC(IFRP,I),KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+          CALL ALLOCP(KVEC(IFRP,I)%P,NSTR(IFRP,0,I),ID='KVEC%P IN ORBLP1')
+          KVEC(IFRP,I)%P(1:NSTR(IFRP,0,I)) = KVECTMP(1:NSTR(IFRP,0,I))
         ENDDO
+        CALL DEALLOC(KVECTMP,ID='KVECTMP IN ORBLP1')
 !     ENDDO
       NCDIM = NB*NVECS(IFRP,1)*4
       CALL MEMGET('REAL',KRCOEF,NCDIM,WORK,KFREE,LFREE)
@@ -96,9 +109,8 @@ contains
         IF(OWNBAS) THEN
           CALL SELOWN_DRV(2,WORK(KCMO),DDUMARR,IDUMARR,          &
                I,1,LUCOEF,REFFIL(I),WORK(KRCOEF),DDUMARR,IDUMARR,&
-               NVECS(1,1),IOFF,VECREF(IFRP,I),IFRP,              &
-               NSTR(1,0,I),WORK,KFREE,LFREE,                     &
-               -NPSH(IFRP),NESH(IFRP))
+               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                   &
+               NSTR(1,0,I),WORK,KFREE,LFREE)
           IF(IPRLOC .GE. 5) THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
@@ -115,7 +127,7 @@ contains
 !         DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,I).GT.0) THEN
               CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ), &
-                   NVECS(IFRP,1),WORK(KVEC(IFRP,I)),             &
+                   NVECS(IFRP,1),KVEC(IFRP,I)%P,                 &
                    NSTR(IFRP,2,I),NSTR(IFRP,1,I),NB,NORB(IFRP))
               IF(IPRLOC .GE. 5) THEN
                 WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
@@ -162,11 +174,11 @@ contains
       CALL MEMGET('INTE',KIPIV,NREF  ,WORK,KFREE,LFREE)
       IVEC = 0
       DO I = 1,NREFS
-        CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
+        CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
         IVEC = IVEC + NSTR(IFRP,0,I)
       ENDDO
       CALL ORBLP2(SMAT,SCOEF,WORK(KRCOEF),WORK(KAMAT),NB,NI,             &
-           NVECS(IFRP,1),WORK(KBV(IFRP)),WORK(KGVEC),WORK(KVEC(IFRP,1)), &
+           NVECS(IFRP,1),WORK(KBV(IFRP)),WORK(KGVEC),KVEC(IFRP,1)%P, &
            WORK(KJREF),NSTR,WORK(KIPIV),WORK,KFREE,LFREE)
 
       CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -252,6 +264,11 @@ contains
       WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM,1.0D0/DINVM
 
       CALL MEMREL('ORBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      DO I=1,NREFS
+        CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
+      ENDDO
+      DEALLOCATE( KVEC )
 
       CALL QEXIT('ORBLP1')
 

@@ -10,43 +10,29 @@ contains
 !================================================================================!
 !================================================================================!
   subroutine selown_drv(iopt,cmo,eig,ibeig,inuc,nnuc,iunit,cmofil, &
-                        csel,esel,ibsel,nvecs,ioff,vecref,ifrp,    &
-                        nstr,work,kfree,lfree,                     &
-                        npsh,nesh)
+                        csel,esel,ibsel,nvecs,ioff,kvec,           &
+                        nstr,work,kfree,lfree)
   !------------------------------------------------------------------------------!
-  use memory_allocator
   implicit none
 
   ! external variables
-!st tmp
-  character*(*), intent(in) :: vecref
-  integer*4,     intent(in) :: ifrp, npsh, nesh
-  integer*4,    allocatable :: kvec(:)
-!st tmp
-
   character*6, intent(in) :: cmofil
   integer*4,   intent(in) :: iopt, inuc, nnuc, iunit, kfree, lfree
 
+  integer*4,   intent(in), dimension(  :  ) :: kvec
   integer*4,   intent(in), dimension(2,0:2) :: nstr
   integer*4,   intent(in), dimension(  2  ) :: nvecs, ioff
   integer*4,   intent(in), dimension(  *  ) :: ibeig, ibsel
   real*8,      intent(in), dimension(  *  ) :: eig, cmo, csel, esel, work
-  integer*4 :: i
 
   ! internal variables
 
   !------------------------------------------------------------------------------!
   write(6,*) "I'm in select_coeff_own_bas module"
 
-  call alloc(kvec,nstr(1,0),id='kvec in selown_drv')
-
-  call numlst(vecref,kvec,nstr(1,0),npsh,nesh,ifrp,nstr(1,0))
-
   call selown_mod(iopt,cmo,eig,ibeig,inuc,nnuc,iunit,cmofil, &
-              csel,esel,ibsel,nvecs,ioff,kvec,nstr,          &
-              work,kfree,lfree)
-
-  call dealloc(kvec,id='kvec in selown_drv')
+                  csel,esel,ibsel,nvecs,ioff,kvec,nstr,      &
+                  work,kfree,lfree)
 
   !------------------------------------------------------------------------------!
 
@@ -56,7 +42,7 @@ contains
 !================================================================================!
 
   SUBROUTINE SELOWN_mod(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL, &
-                    CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,      &
+                    CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,          &
                     WORK,KFREE,LFREE)
 !***********************************************************************
 !
