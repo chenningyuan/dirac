@@ -36,7 +36,7 @@ contains
   ! internal variables
 
   !------------------------------------------------------------------------------!
-  write(6,*) "I'm inside selown_drv! 2"
+  write(6,*) "I'm in select_coeff_own_bas module"
 
   call alloc(kvec,nstr(1,0),id='kvec in selown_drv')
 
