@@ -3039,6 +3039,7 @@ C     Based on T.Saue March 26 1999 : SUBROUTINE ANAPRJ
 C     Modify by S. Dubillard - Apr 21 2004
 C
 C***********************************************************************
+      USE SELECT_COEFF_OWN_BAS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0,DM1=-1.0D0,D1=1.0D0)
@@ -3058,6 +3059,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),NVECS(2,0:2),
      &          KBV(2),SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
+      DIMENSION DDUMARR(2),IDUMARR(2)
 C
 #include "memint.h"
       CALL QENTER('ORBLP1')
@@ -3105,10 +3107,11 @@ C
         ENDIF
         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
         IF(OWNBAS) THEN
-          CALL SELOWN(2,WORK(KCMO),IDUM,IDUM,
-     &         I,1,LUCOEF,REFFIL(I),WORK(KRCOEF),IDUM,IDUM,
-     &         NVECS(1,1),IOFF,KVEC(1,I),
-     &         NSTR(1,0,I),WORK,KFREE,LFREE)
+          CALL SELOWN_DRV(2,WORK(KCMO),DDUMARR,IDUMARR,
+     &         I,1,LUCOEF,REFFIL(I),WORK(KRCOEF),DDUMARR,IDUMARR,
+     &         NVECS(1,1),IOFF,VECREF(IFRP,I),IFRP,
+     &         NSTR(1,0,I),WORK,KFREE,LFREE,
+     &         -NPSH(IFRP),NESH(IFRP))
           IF(IPRLOC .GE. 5) THEN
             WRITE(LUPRI,'(A,A6)') 
      &      '* Selected coefficients for reference ',REFFIL(I)
