@@ -1,11 +1,262 @@
 module localization
 implicit none
 
-public :: ORBLP1
+public :: ORBLOC
 
-private :: ORBLP2
+private :: ORBLP1, ORBLP2
 
 contains
+
+!================================================================================!
+!================================================================================!
+
+  SUBROUTINE ORBLOC(WORK,LWORK)
+!***********************************************************************
+!
+!     Molecular orbital localization
+!
+!     Written by S. Dubillard - Jan 20 2004
+!     Last revision:
+!
+!***********************************************************************
+      USE MEMORY_ALLOCATOR
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbloc.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
+      PARAMETER(D0 = 0.0D0)
+      LOGICAL TOBE,FLAG
+      DIMENSION WORK(LWORK)
+      CHARACTER SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
+
+      INTEGER*4, ALLOCATABLE, DIMENSION(:) :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
+      REAL*8,    ALLOCATABLE, DIMENSION(:) :: SCOEF, SCOEFO, SMAT, PMAT, XKAPPA, HAMAT, CMO
+
+  !------------------------------------------------------------------------------!
+      CALL QENTER('ORBLOC')
+#include "memint.h"
+      IFRP = 1
+
+      CALL TITLER('Molecular orbital localization','*',122)
+
+! Check if coefficients are on file
+
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE)THEN
+        WRITE(LUPRI,'(A)') 'ORBLOC: Coefficient file not found !'
+        CALL QUIT('ORBLOC: Coefficients not found !')
+      ENDIF
+
+
+! Memory allocation
+
+      CALL ALLOC(SCOEF ,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEF IN ORBLOC')
+      CALL ALLOC(SCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEFO IN ORBLOC')
+      CALL ALLOC(SMAT  ,N2BBASX,ID='SMAT IN ORBLOC')
+      CALL ALLOC(PMAT  ,NUCDEP*NISH(IFRP)*NISH(IFRP)*4,ID='PMAT IN ORBLOC')
+      CALL ALLOC(XKAPPA,NISH(IFRP)*NISH(IFRP)*4,ID='XKAPPA IN ORBLOC')
+      CALL ALLOC(HAMAT ,NISH(IFRP)*NISH(IFRP)*4,ID='HAMAT IN ORBLOC')
+      CALL ALLOC(CMO   ,N2BBASXQ,ID='CMO IN ORBLOC')
+
+      CALL ALLOC(NFNUC ,2*NUCDEP,ID='NFNUC IN ORBLOC')
+      CALL ALLOC(ISEL  ,NISH(IFRP),ID='ISEL IN ORBLOC')
+      CALL ALLOC(INDAO ,NFBAS(IFRP,0),ID='INDAO IN ORBLOC')
+      CALL ALLOC(INDAOS,NFBAS(IFRP,0),ID='INDAOS IN ORBLOC')
+      CALL ALLOC(INDNAO,2*NUCDEP+2,ID='INDNAO IN ORBLOC')
+
+! Read coefficients
+
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,IDUM,IDUM,TOTERG,2)
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+! Get overlap matrix 
+
+      CALL GTOVLX(SMAT,SSMTRC)
+      IF(IPRLOC.GE.6) THEN
+        WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
+        CALL PRQMAT(CMO,NFBAS(IFRP,0),NORB(IFRP), &
+                    NFBAS(IFRP,0),NORB(IFRP),4,IPQTOQ(1,0),LUPRI)
+
+        WRITE(LUPRI,'(/A)') '* ORBLOC: Overlap matrix' 
+        CALL PRQMAT(SMAT,NFBAS(IFRP,0),NFBAS(IFRP,0), &
+                    NFBAS(IFRP,0),NFBAS(IFRP,0),1,IPQTOQ(1,0),LUPRI)
+      ENDIF
+
+! Occupied electronic orbital coeffients selection
+
+      CALL OCCUPY(ISEL,NISH(IFRP))
+      CALL SELCFS(CMO,IFRP,SCOEF,NISH(IFRP),ISEL, &
+                  D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
+      IF(IPRLOC.GE.5) THEN
+        WRITE(LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
+        CALL PRQMAT(SCOEF,NFBAS(IFRP,0),NISH(IFRP), &
+             NFBAS(IFRP,0),NISH(IFRP),4,IPQTOQ(1,0),LUPRI)
+      ENDIF
+
+! Get the number of functions per center
+
+      CALL INDAOC(INDAO,INDAOS,INDNAO)
+      CALL ORBLO4(INDNAO,NFNUC)
+
+! We do orbital rotation until the difference between two succesive
+! localisation criteria is less than a threshold
+
+      TIMSTR = SECOND()
+      DINVM = D0
+      XNRM  = D0
+      IF(PRJLOC) THEN
+!       PRJLOC = TRUE localization with projection analysis
+        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1), &
+                    NFBAS(IFRP,2),NISH(IFRP),DINVM)
+      ELSE
+!       PRJLOC = FALSE localization with Mulliken analysis
+        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),        &
+                    NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM, &
+                    WORK(KFREE),LFREE)
+      ENDIF
+      TOBE = .FALSE.
+      ITR = 0
+      FLAG = .TRUE.
+      IF (AUTO) THEN
+ 100    CONTINUE
+        ITR = ITR + 1
+        CALL GTINFO(DAYTID)
+        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
+          '########## START ITERATION NO.', ITR , ' ##########',DAYTID
+        DINVMO = DINVM
+        CALL ORBLO2(PMAT,NISH(IFRP),XKAPPA,HAMAT,XNRM,FLAG)
+        IF (.NOT. FLAG) THEN
+          CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
+        ENDIF
+        CALL ROTCMO(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,        &
+                    XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC, &
+                    WORK(KFREE),LFREE)
+        IF(PRJLOC) THEN
+!         PRJLOC = TRUE localization with projection analysis
+          CALL GTOVLX(SMAT,SSMTRC)
+          CALL ORBLP1(SMAT,SCOEF,PMAT, &
+                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+        ELSE
+!         PRJLOC = FALSE localization with Mulliken analysis
+          CALL ORBLO1(SMAT,SCOEF,PMAT,                        &
+                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
+                      NFNUC,DINVM,WORK(KFREE),LFREE)
+        ENDIF
+        DIFF  = DINVM - DINVMO
+        DIFFA = ABS(DINVM - DINVMO)
+        IF (DIFF .LT. D0 .AND. .NOT. FLAG) THEN
+          CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEFO,1,SCOEF,1)
+          DINVM = DINVMO
+          ITR = ITR - 1
+          FLAG = .TRUE.
+          WRITE(LUPRI,'(/5X,A)')'! Localization criterion decreases !'
+          WRITE(LUPRI,'(5X,A)') '! Restart from  previous iteration !'
+          WRITE(LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
+          IF(PRJLOC) THEN
+            CALL ORBLP1(SMAT,SCOEF,PMAT, &
+                        NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+          ELSE
+            CALL ORBLO1(SMAT,SCOEF,PMAT,                        &
+                        NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
+                        NFNUC,DINVM,WORK(KFREE),LFREE)
+          ENDIF
+          GOTO 100
+        ELSE
+          WRITE(6,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
+          IF(DIFFA .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 100
+          IF(DIFFA .LE. THRLOC) THEN
+            WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
+          ELSE
+            WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
+          ENDIF
+        ENDIF
+      ELSE
+ 200    CONTINUE
+        ITR = ITR + 1
+        CALL GTINFO(DAYTID)
+        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
+          '########## START ITERATION NO.', ITR , ' ##########',DAYTID
+        DINVMO = DINVM
+        CALL ORBLO2(PMAT,NISH(IFRP),XKAPPA,HAMAT,XNRM,FLAG)
+        CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
+        CALL ROTCMO(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,        &
+                    XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC, &
+                    WORK(KFREE),LFREE)
+        IF(PRJLOC) THEN
+!         PRJLOC = TRUE localization with projection analysis
+          CALL GTOVLX(SMAT,SSMTRC)
+          CALL ORBLP1(SMAT,SCOEF,PMAT, &
+                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+        ELSE
+!         PRJLOC = FALSE localization with Mulliken analysis
+          CALL ORBLO1(SMAT,SCOEF,PMAT,   &
+                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
+                      NFNUC,DINVM,WORK(KFREE),LFREE)
+        ENDIF
+        DIFF  =     DINVM - DINVMO
+        DIFFA = ABS(DINVM - DINVMO)
+        IF (DIFF .LT. D0) THEN
+          WRITE(LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+          WRITE(LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
+          WRITE(LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+        ENDIF
+        IF (.NOT. FLAG .AND. DIFFA .LE. HESTHR) THEN
+          FLAG = .TRUE.
+          WRITE(LUPRI,'(/5X,A)')  '!!! Hessian activated !!!'
+        ENDIF
+        IF(DIFFA .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 200
+        IF(DIFFA .LE. THRLOC) THEN
+          WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
+        ELSE
+          WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
+        ENDIF
+      ENDIF
+      TIMEND = SECOND()
+      TIME   = TIMEND - TIMSTR
+      CALL TIMTXT('>>> Time used in localization is :',TIME,LUPRI)
+
+! Put the localised coefficients in DFCOEF
+
+      CALL ORBLO5(SCOEF,NFBAS(IFRP,0),NISH(IFRP),IFRP,WORK(KFREE),LFREE)
+
+! Memory deallocation
+
+      CALL MEMREL('ORBLOC',WORK,KWORK,KWORK,KFREE,LFREE)
+
+  !------------------------------------------------------------------------------!
+  !                             Deallocate arrays                                !
+  !------------------------------------------------------------------------------!
+      CALL DEALLOC(SCOEF ,ID='SCOEF  IN ORBLOC')
+      CALL DEALLOC(SCOEFO,ID='SCOEFO IN ORBLOC')
+      CALL DEALLOC(SMAT  ,ID='SMAT   IN ORBLOC')
+      CALL DEALLOC(PMAT  ,ID='PMAT   IN ORBLOC')
+      CALL DEALLOC(XKAPPA,ID='XKAPPA IN ORBLOC')
+      CALL DEALLOC(HAMAT ,ID='HAMAT  IN ORBLOC')
+      CALL DEALLOC(CMO   ,ID='CMO    IN ORBLOC')
+
+      CALL DEALLOC(NFNUC ,ID='NFNUC  IN ORBLOC')
+      CALL DEALLOC(ISEL  ,ID='ISEL   IN ORBLOC')
+      CALL DEALLOC(INDAO ,ID='INDAO  IN ORBLOC')
+      CALL DEALLOC(INDAOS,ID='INDAOS IN ORBLOC')
+      CALL DEALLOC(INDNAO,ID='INDNAO IN ORBLOC')
+
+      CALL QEXIT('ORBLOC')
+
+  END SUBROUTINE ORBLOC
 
 !================================================================================!
 !================================================================================!
