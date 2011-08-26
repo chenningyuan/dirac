@@ -3,7 +3,7 @@ implicit none
 
 public :: ORBLOC
 
-private :: ORBLP1, ORBLP2, ORBLO1, ORBLO2, ORBLO4, ORBLO5, ORBLO6
+private :: ORBLP1, ORBLP2, ORBLO1, ORBLO2, ORBLO4, ORBLO5
 
 contains
 
@@ -230,7 +230,7 @@ contains
 
 ! Put the localised coefficients in DFCOEF
 
-      CALL ORBLO5(SCOEF,NFBAS(IFRP,0),NISH(IFRP),IFRP,WORK(KFREE),LFREE)
+      CALL ORBLO5(SCOEF,NFBAS(IFRP,0),NISH(IFRP),IFRP)
 
 ! Memory deallocation
 
@@ -871,7 +871,7 @@ contains
 !================================================================================!
 !================================================================================!
 
-  SUBROUTINE ORBLO5(SCOEF,NB,NI,IFRP,WORK,LWORK)
+  SUBROUTINE ORBLO5(SCOEF,NB,NI,IFRP)
 !***********************************************************************
 !
 !     Written by S.Dubillard Apr 13 2004
@@ -898,27 +898,46 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
-      DIMENSION SCOEF(NB,NI,4),WORK(LWORK)
+      DIMENSION SCOEF(NB,NI,4)
 
-      INTEGER*4, ALLOCATABLE, DIMENSION(:) :: IBEIG
-      REAL*8,    ALLOCATABLE, DIMENSION(:) :: CMO, EIG
+      INTEGER*4, ALLOCATABLE :: IBEIG(:)
+      REAL*8,    ALLOCATABLE :: CMO(:,:,:), EIG(:)
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLO5')
-#include "memint.h"
-      IFRP = 1
-      CALL ALLOC(CMO  ,N2BBASXQ,ID='CMO   IN ORBLO5')
-      CALL ALLOC(EIG  ,NORBT   ,ID='EIG   IN ORBLO5')
-      CALL ALLOC(IBEIG,NORBT   ,ID='IBEIG IN ORBLO5')
 
+      IFRP = 1
+      NO = NORB(IFRP)
+
+      ! allocate arrays
+      CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
+      CALL ALLOC(EIG  ,NORBT  ,ID='EIG   IN ORBLO5')
+      CALL ALLOC(IBEIG,NORBT  ,ID='IBEIG IN ORBLO5')
+
+      ! open DFCOEF file and read EIG, IBEIG and TOTERG
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG, &
-                  TOTERG,14,WORK,KFREE,LFREE)
-      CALL ORBLO6(CMO,SCOEF(1,1,1),NFBAS(IFRP,0),NORB(IFRP), &
-                   NISH(IFRP),WORK(KFREE),LFREE)
+      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+
+      ! reorganize MO
+      DO I = 1,NB
+        DO J = 1,NI
+          DO K = 1,4
+            L = J + NO/2
+            IF (LEVYLE) L = J
+            CMO(I,L,K) = SCOEF(I,J,K)
+          ENDDO
+        ENDDO
+      ENDDO
+      IF (IPRLOC .GE. 5) THEN
+         WRITE(LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
+         CALL PRQMAT(CMO,NB,NO,NB,NO,4,IPQTOQ(1,0),LUPRI)
+      ENDIF
+
+      ! write MO to file and close him
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 
+      ! deallocate arrays
       CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
       CALL DEALLOC(EIG  ,ID='EIG   IN ORBLO5')
       CALL DEALLOC(IBEIG,ID='IBEIG IN ORBLO5')
@@ -926,59 +945,6 @@ contains
       CALL QEXIT('ORBLO5')
 
   END SUBROUTINE ORBLO5
-
-!================================================================================!
-!================================================================================!
-
-  SUBROUTINE ORBLO6(CMO,SCOEF,NB,NO,NI,WORK,LWORK)
-!***********************************************************************
-!
-!     Written by S.Dubillard Apr 13 2004
-!     Last revision:
-!
-!     Put the localised coefficients into the DFCOEF file (2/2)
-!
-!***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-      PARAMETER(D0 = 0.0D0)
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbloc.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-
-      DIMENSION CMO(NB,NO,4),SCOEF(NB,NI,4),WORK(LWORK)
-
-  !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO6')
-#include "memint.h"
-      DO I = 1,NB
-         DO J = 1,NI
-            DO K = 1,4
-               L = J + NO/2
-               IF (LEVYLE) THEN
-                  L = J
-               ENDIF
-               CMO(I,L,K) = SCOEF(I,J,K)
-            ENDDO
-         ENDDO
-      ENDDO
-      IF (IPRLOC .GE. 5) THEN
-         WRITE(LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
-         CALL PRQMAT(CMO(1,1,1),NB,NO,NB,NO,4,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      CALL QEXIT('ORBLO6')
-
-  END SUBROUTINE ORBLO6
 
 !================================================================================!
 !                             END OF THE MODULE                                  !
