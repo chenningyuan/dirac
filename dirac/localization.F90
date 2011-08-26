@@ -947,6 +947,229 @@ contains
   END SUBROUTINE ORBLO5
 
 !================================================================================!
+!================================================================================!
+
+  SUBROUTINE ROTCMO(CMO,NBASI,NORBI,NZ,XKAPPA,NORBT,IP,IPRINT,WORK,LWORK)
+!***********************************************************************
+!
+!     Rotate coefficients
+!
+!     CMO_{new} = CMO_{old} exp( -\kappa )
+!     We use a trick a la Sostrup notes, chapter 3.1.5
+!
+!     Input:
+!        CMO     - old coefficients
+!        XKAPPA  - Kappa matrix (Kappa is overwritten with junk)
+!        IPRINT  - print level
+!
+!     Output:
+!        CMO     - new coefficients
+!
+!     Written by J. Thyssen - Nov 24 1998
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+#include "thrzer.h"
+
+      PARAMETER (D1 = 1.00D00, D0 = 0.00D00, DM1 = -D1)
+      PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
+      PARAMETER (D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12)
+
+      DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ), IP(4), WORK(*)
+      CHARACTER SECTID*12,CPUTID*12,WALLTID*12
+
+  !------------------------------------------------------------------------------!
+
+#include "memint.h"
+
+      CALL QENTER('ROTCMO')
+      CALL GETTIM(CPU1,WALL1)
+      IF (IPRINT .GE. 5) CALL HEADER('Output from ROTCMO',-1)
+
+      NORBXQ = NORBI*NORBI*NZ
+      CALL MEMGET('REAL',KEIG,NORBI,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KKSQ,NORBI*NBASI*NZ,WORK,KFREE,LFREE)
+      KCOS = KKSQ
+      CALL MEMGET('REAL',KSIN,NORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KV  ,NORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP,NORBXQ,WORK,KFREE,LFREE)
+
+!     Calculate -\kappa^2 = \kappa^{\dagger} \kappa
+!     ---------------------------------------------
+
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,             &
+                 'H','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 D0,IP,WORK(KKSQ),NORBI,NORBI,NZ)
+
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: -kappa^2',-1)
+         CALL PRQMAT(WORK(KKSQ),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Diagonalize -\kappa^2
+!     ---------------------------------------------
+
+      CALL QDIAG(NZ,NORBI,WORK(KKSQ),NORBI,NORBI,   &
+                 WORK(KEIG),1,WORK(KV),NORBI,NORBI, &
+                 WORK(KFREE),LFREE,IERR)
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: V matrix (eigenvector)',-1)
+         CALL PRQMAT(WORK(KV),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO: eigenvalues',-1)
+         CALL PRQMAT(WORK(keig),1,NORBI,1,NORBI,1,IP,LUPRI)
+      END IF
+
+!     Make cos(d) and sin(d)/d ; d = sqrt(eigenvalues)
+!     ------------------------------------------------
+
+      CALL GETTIM(CPU2,WALL2)
+      CALL DZERO(WORK(KCOS),NORBXQ)
+      CALL DZERO(WORK(KSIN),NORBXQ)
+      DO I = 1,NORBI
+         IADDR = (I-1) + (I-1)*NORBI
+         EIG = WORK(KEIG+I-1)
+         IF (EIG .LT. D0) THEN
+            IF (IPRINT .GE. 3 .AND. ABS(EIG).GT. THRZER) WRITE(LUPRI,9010) EIG
+            EIG = D0
+            WORK(KEIG+I-1)   = D0
+         END IF
+         IF (EIG .LT. DTHRS) THEN
+
+!           Use Taylor expansion to avoid division by zero and/or
+!           to speed up evaluation (avoid call to sin/cos/sqrt).
+!           For EIG < 1.0D-8 the 3. order Taylor expansion is correct
+!             to machine precision.
+
+            WORK(KCOS+IADDR) = D1-DP5*EIG
+            WORK(KSIN+IADDR) = D1-DSIXTH*EIG
+         ELSE
+            SQEIG = SQRT(EIG)
+            WORK(KCOS+IADDR) = COS(SQEIG)
+            WORK(KSIN+IADDR) = SIN(SQEIG)/SQEIG
+         END IF
+      END DO
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: sin(d)/d',-1)
+         CALL PRQMAT(WORK(KSIN),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO: cos(d)',-1)
+         CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+      CALL GETTIM(CPU3,WALL3)
+ 9010 FORMAT('WARNING from ROTCMO: Negative eigenvalue ',1P,D15.6)
+
+!     Make V cos(d) V^{\dagger}
+!     (use KTMP as temporatory storage)
+!     ------------------------------------
+
+      CALL QTRANS('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                  WORK(KTMP),NORBI,NORBI,NZ,IP,          &
+                  WORK(KCOS),NORBI,NORBI,NZ,IP,          &
+                  WORK(KV),NORBI,NORBI,NZ,IP,            &
+                  WORK(KV),NORBI,NORBI,NZ,IP,            &
+                  WORK(KFREE),LFREE,IPRINT)
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: V cos(d) V^{dagger}',-1)
+         CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Make V sin(d)/d V^{\dagger}
+!     (use KCOS as temporatory storage)
+!     ------------------------------------
+
+      CALL QTRANS('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                  WORK(KCOS),NORBI,NORBI,NZ,IP,          &
+                  WORK(KSIN),NORBI,NORBI,NZ,IP,          &
+                  WORK(KV),NORBI,NORBI,NZ,IP,            &
+                  WORK(KV),NORBI,NORBI,NZ,IP,            &
+                  WORK(KFREE),LFREE,IPRINT)
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: V sin(d)/d V^{dagger}',-1)
+         CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Make V cos(d) V^{\dagger} - V sin(d)/d V^{\dagger} \kappa
+!     ---------------------------------------------------------
+
+      CALL QGEMM(NORBI,NORBI,NORBI,DM1,                &
+                 'N','N',IP,WORK(KCOS),NORBI,NORBI,NZ, &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ,     &
+                 D1,IP,WORK(KTMP),NORBI,NORBI,NZ)
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: exp(-kappa)',-1)
+         CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+      END IF
+
+!     Check if unitary
+
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,                 &
+                 'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ, &
+                 'H','N',IP,WORK(KTMP),NORBI,NORBI,NZ, &
+                 D0,IP,WORK(KCOS),NORBI,NORBI,NZ)
+      ioff = 0
+      i_max = 0
+      j_max = 0
+      d_max = D0
+      do i = 1,norbi
+      do j = 1,norbi
+         if (i.eq.j) then
+            if (abs(work(kcos+ioff)-d1).gt.d_max) then
+               i_max = i
+               j_max = j
+               d_max = abs(work(kcos+ioff)-d1)
+            end if
+         else
+            if (work(kcos+ioff).gt.d_max) then
+               i_max = i
+               j_max = j
+               d_max = abs(work(kcos+ioff))
+            end if
+         end if
+         ioff = ioff + 1
+      end do
+      end do
+      if (d_max .gt. thrzer) then
+         write(LUPRI,*) 'ROTCMO: maximum deviation from unitary matrix'
+         write(LUPRI,*) 'Element ',j_max,i_max,' value :',d_max
+      end if
+
+!     Calculate new orbitals: CMO_{old} exp(-kappa)
+!     ---------------------------------------------
+
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ROTCMO: old orbitals',-1)
+         CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
+      END IF
+!SK   CALL DZERO(WORK(KCOS),NORBXQ)
+      CALL QGEMM(NBASI,NORBI,NORBI,D1,                 &
+                 'N','N',IP,CMO,NBASI,NORBI,NZ,        &
+                 'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ, &
+                 D0,IP,WORK(KCOS),NBASI,NORBI,NZ)
+      CALL DCOPY(NBASI*NORBI*NZ,WORK(KCOS),1,CMO,1)
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('ROTCMO: new orbitals',-1)
+         CALL PRQMAT(cmo,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
+      END IF
+      CALL GETTIM(CPU4,WALL4)
+      IF (IPRINT .GE. 2) THEN
+         CPUTID = SECTID(CPU4-CPU1)
+         WALLTID = SECTID(WALL4-WALL1)
+         WRITE(LUPRI,9020) CPUTID,WALLTID
+         CPUTID = SECTID(CPU3-CPU2)
+         WALLTID = SECTID(WALL3-WALL2)
+         WRITE(LUPRI,9021) CPUTID,WALLTID
+      END IF
+ 9020 FORMAT(/'ROTCMO: total CPU (WALL) time       : ',A12,' (',A12,')')
+ 9021 FORMAT( 'ROTCMO: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
+
+      CALL MEMREL('ROTCMO',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('ROTCMO')
+
+  END SUBROUTINE ROTCMO
+
+!================================================================================!
 !                             END OF THE MODULE                                  !
 !================================================================================!
 end module localization
