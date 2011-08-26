@@ -3,14 +3,14 @@ implicit none
 
 public :: ORBLOC
 
-private :: ORBLP1, ORBLP2, ORBLO1, ORBLO2, ORBLO4, ORBLO5
+private :: ORBLP1, ORBLP2, ORBLO1, ORBLO2, ORBLO4, ORBLO5, ROTCMO_MOD
 
 contains
 
 !================================================================================!
 !================================================================================!
 
-  SUBROUTINE ORBLOC(WORK,LWORK)
+  SUBROUTINE ORBLOC
 !***********************************************************************
 !
 !     Molecular orbital localization
@@ -39,7 +39,6 @@ contains
 #include "cbiher.h"
       PARAMETER(D0 = 0.0D0)
       LOGICAL TOBE,FLAG
-      DIMENSION WORK(LWORK)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:) :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
@@ -47,7 +46,7 @@ contains
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLOC')
-#include "memint.h"
+
       IFRP = 1
 
       CALL TITLER('Molecular orbital localization','*',122)
@@ -99,12 +98,11 @@ contains
 ! Occupied electronic orbital coeffients selection
 
       CALL OCCUPY(ISEL,NISH(IFRP))
-      CALL SELCFS(CMO,IFRP,SCOEF,NISH(IFRP),ISEL, &
-                  D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
+      CALL SELCFS(CMO,IFRP,SCOEF,NISH(IFRP),ISEL,D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
       IF(IPRLOC.GE.5) THEN
         WRITE(LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
         CALL PRQMAT(SCOEF,NFBAS(IFRP,0),NISH(IFRP), &
-             NFBAS(IFRP,0),NISH(IFRP),4,IPQTOQ(1,0),LUPRI)
+                    NFBAS(IFRP,0),NISH(IFRP),4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
 ! Get the number of functions per center
@@ -120,12 +118,10 @@ contains
       XNRM  = D0
       IF(PRJLOC) THEN
 !       PRJLOC = TRUE localization with projection analysis
-        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1), &
-                    NFBAS(IFRP,2),NISH(IFRP),DINVM)
+        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
       ELSE
 !       PRJLOC = FALSE localization with Mulliken analysis
-        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),        &
-                    NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
+        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
       ENDIF
       TOBE = .FALSE.
       ITR = 0
@@ -141,19 +137,15 @@ contains
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
-        CALL ROTCMO(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,        &
-                    XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC, &
-                    WORK(KFREE),LFREE)
+        CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,        &
+                        XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC)
         IF(PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT, &
-                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,                        &
-                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
-                      NFNUC,DINVM)
+          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
         ENDIF
         DIFF  = DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
@@ -166,12 +158,9 @@ contains
           WRITE(LUPRI,'(5X,A)') '! Restart from  previous iteration !'
           WRITE(LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
           IF(PRJLOC) THEN
-            CALL ORBLP1(SMAT,SCOEF,PMAT, &
-                        NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
           ELSE
-            CALL ORBLO1(SMAT,SCOEF,PMAT,                        &
-                        NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
-                        NFNUC,DINVM)
+            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
           ENDIF
           GOTO 100
         ELSE
@@ -192,19 +181,15 @@ contains
         DINVMO = DINVM
         CALL ORBLO2(PMAT,NISH(IFRP),XKAPPA,HAMAT,XNRM,FLAG)
         CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
-        CALL ROTCMO(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,        &
-                    XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC, &
-                    WORK(KFREE),LFREE)
+        CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4, &
+                        XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC)
         IF(PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT, &
-                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,   &
-                      NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
-                      NFNUC,DINVM)
+          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
         ENDIF
         DIFF  =     DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
@@ -231,10 +216,6 @@ contains
 ! Put the localised coefficients in DFCOEF
 
       CALL ORBLO5(SCOEF,NFBAS(IFRP,0),NISH(IFRP),IFRP)
-
-! Memory deallocation
-
-      CALL MEMREL('ORBLOC',WORK,KWORK,KWORK,KFREE,LFREE)
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -949,7 +930,7 @@ contains
 !================================================================================!
 !================================================================================!
 
-  SUBROUTINE ROTCMO(CMO,NBASI,NORBI,NZ,XKAPPA,NORBT,IP,IPRINT,WORK,LWORK)
+  SUBROUTINE ROTCMO_MOD(CMO,NBASI,NORBI,NZ,XKAPPA,NORBT,IP,IPRINT)
 !***********************************************************************
 !
 !     Rotate coefficients
@@ -968,6 +949,7 @@ contains
 !     Written by J. Thyssen - Nov 24 1998
 !
 !***********************************************************************
+      USE MEMORY_ALLOCATOR
       IMPLICIT REAL*8 (A-H,O-Z)
       IMPLICIT INTEGER*4 (I-N)
 #include "priunit.h"
@@ -977,64 +959,64 @@ contains
       PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
       PARAMETER (D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12)
 
-      DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ), IP(4), WORK(*)
+      DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ), IP(4)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 
+      REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
+
   !------------------------------------------------------------------------------!
+      CALL QENTER('ROTCMO_MOD')
 
-#include "memint.h"
-
-      CALL QENTER('ROTCMO')
       CALL GETTIM(CPU1,WALL1)
-      IF (IPRINT .GE. 5) CALL HEADER('Output from ROTCMO',-1)
+      IF (IPRINT .GE. 5) CALL HEADER('Output from ROTCMO_MOD',-1)
 
       NORBXQ = NORBI*NORBI*NZ
-      CALL MEMGET('REAL',KEIG,NORBI,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KKSQ,NORBI*NBASI*NZ,WORK,KFREE,LFREE)
-      KCOS = KKSQ
-      CALL MEMGET('REAL',KSIN,NORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KV  ,NORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMP,NORBXQ,WORK,KFREE,LFREE)
+      CALL ALLOC(REIG,NORBI ,ID='REIG IN ROTCMO_MOD')
+      CALL ALLOC(RSIN,NORBXQ,ID='RSIN IN ROTCMO_MOD')
+      CALL ALLOC(RV  ,NORBXQ,ID='KV   IN ROTCMO_MOD')
+      CALL ALLOC(RTMP,NORBXQ,ID='RTMP IN ROTCMO_MOD')
+
+      CALL ALLOC(RCOS,NORBI*NBASI*NZ,ID='RCOS IN ROTCMO_MOD')
 
 !     Calculate -\kappa^2 = \kappa^{\dagger} \kappa
+!     (use RCOS as temporary array)
 !     ---------------------------------------------
 
       CALL QGEMM(NORBI,NORBI,NORBI,D1,             &
                  'H','N',IP,XKAPPA,NORBT,NORBT,NZ, &
                  'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
-                 D0,IP,WORK(KKSQ),NORBI,NORBI,NZ)
+                 D0,IP,RCOS,NORBI,NORBI,NZ)
 
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: -kappa^2',-1)
-         CALL PRQMAT(WORK(KKSQ),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: -kappa^2',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Diagonalize -\kappa^2
 !     ---------------------------------------------
 
-      CALL QDIAG(NZ,NORBI,WORK(KKSQ),NORBI,NORBI,   &
-                 WORK(KEIG),1,WORK(KV),NORBI,NORBI, &
-                 WORK(KFREE),LFREE,IERR)
+      CALL QDIAG90(NZ,NORBI,RCOS,NORBI,NORBI, &
+                   REIG,1,RV,NORBI,NORBI,IERR)
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: V matrix (eigenvector)',-1)
-         CALL PRQMAT(WORK(KV),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
-         CALL HEADER('ROTCMO: eigenvalues',-1)
-         CALL PRQMAT(WORK(keig),1,NORBI,1,NORBI,1,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: V matrix (eigenvector)',-1)
+         CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: eigenvalues',-1)
+         CALL PRQMAT(REIG,1,NORBI,1,NORBI,1,IP,LUPRI)
       END IF
 
 !     Make cos(d) and sin(d)/d ; d = sqrt(eigenvalues)
 !     ------------------------------------------------
 
       CALL GETTIM(CPU2,WALL2)
-      CALL DZERO(WORK(KCOS),NORBXQ)
-      CALL DZERO(WORK(KSIN),NORBXQ)
+      RCOS(1:NORBXQ) = 0.0D0
+      RSIN(1:NORBXQ) = 0.0D0
       DO I = 1,NORBI
          IADDR = (I-1) + (I-1)*NORBI
-         EIG = WORK(KEIG+I-1)
+         EIG = REIG(I)
          IF (EIG .LT. D0) THEN
             IF (IPRINT .GE. 3 .AND. ABS(EIG).GT. THRZER) WRITE(LUPRI,9010) EIG
             EIG = D0
-            WORK(KEIG+I-1)   = D0
+            REIG(I)   = D0
          END IF
          IF (EIG .LT. DTHRS) THEN
 
@@ -1043,113 +1025,111 @@ contains
 !           For EIG < 1.0D-8 the 3. order Taylor expansion is correct
 !             to machine precision.
 
-            WORK(KCOS+IADDR) = D1-DP5*EIG
-            WORK(KSIN+IADDR) = D1-DSIXTH*EIG
+            RCOS(1+IADDR) = D1-DP5*EIG
+            RSIN(1+IADDR) = D1-DSIXTH*EIG
          ELSE
             SQEIG = SQRT(EIG)
-            WORK(KCOS+IADDR) = COS(SQEIG)
-            WORK(KSIN+IADDR) = SIN(SQEIG)/SQEIG
+            RCOS(1+IADDR) = COS(SQEIG)
+            RSIN(1+IADDR) = SIN(SQEIG)/SQEIG
          END IF
       END DO
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: sin(d)/d',-1)
-         CALL PRQMAT(WORK(KSIN),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
-         CALL HEADER('ROTCMO: cos(d)',-1)
-         CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: sin(d)/d',-1)
+         CALL PRQMAT(RSIN,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: cos(d)',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
       CALL GETTIM(CPU3,WALL3)
- 9010 FORMAT('WARNING from ROTCMO: Negative eigenvalue ',1P,D15.6)
+ 9010 FORMAT('WARNING from ROTCMO_MOD: Negative eigenvalue ',1P,D15.6)
 
 !     Make V cos(d) V^{\dagger}
 !     (use KTMP as temporatory storage)
 !     ------------------------------------
 
-      CALL QTRANS('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
-                  WORK(KTMP),NORBI,NORBI,NZ,IP,          &
-                  WORK(KCOS),NORBI,NORBI,NZ,IP,          &
-                  WORK(KV),NORBI,NORBI,NZ,IP,            &
-                  WORK(KV),NORBI,NORBI,NZ,IP,            &
-                  WORK(KFREE),LFREE,IPRINT)
+      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                    RTMP,NORBI,NORBI,NZ,IP,                &
+                    RCOS,NORBI,NORBI,NZ,IP,                &
+                    RV,NORBI,NORBI,NZ,IP,                  &
+                    RV,NORBI,NORBI,NZ,IP,IPRINT)
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: V cos(d) V^{dagger}',-1)
-         CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: V cos(d) V^{dagger}',-1)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Make V sin(d)/d V^{\dagger}
-!     (use KCOS as temporatory storage)
+!     (use RCOS as temporatory storage)
 !     ------------------------------------
 
-      CALL QTRANS('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
-                  WORK(KCOS),NORBI,NORBI,NZ,IP,          &
-                  WORK(KSIN),NORBI,NORBI,NZ,IP,          &
-                  WORK(KV),NORBI,NORBI,NZ,IP,            &
-                  WORK(KV),NORBI,NORBI,NZ,IP,            &
-                  WORK(KFREE),LFREE,IPRINT)
+      CALL QTRANS90('MOAO','S',D0,NORBI,NORBI,NORBI,NORBI, &
+                    RCOS,NORBI,NORBI,NZ,IP,                &
+                    RSIN,NORBI,NORBI,NZ,IP,                &
+                    RV,NORBI,NORBI,NZ,IP,                  &
+                    RV,NORBI,NORBI,NZ,IP,IPRINT)
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: V sin(d)/d V^{dagger}',-1)
-         CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: V sin(d)/d V^{dagger}',-1)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Make V cos(d) V^{\dagger} - V sin(d)/d V^{\dagger} \kappa
 !     ---------------------------------------------------------
 
-      CALL QGEMM(NORBI,NORBI,NORBI,DM1,                &
-                 'N','N',IP,WORK(KCOS),NORBI,NORBI,NZ, &
-                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ,     &
-                 D1,IP,WORK(KTMP),NORBI,NORBI,NZ)
+      CALL QGEMM(NORBI,NORBI,NORBI,DM1,            &
+                 'N','N',IP,RCOS,NORBI,NORBI,NZ,   &
+                 'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
+                 D1,IP,RTMP,NORBI,NORBI,NZ)
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: exp(-kappa)',-1)
-         CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
+         CALL HEADER('ROTCMO_MOD: exp(-kappa)',-1)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Check if unitary
 
-      CALL QGEMM(NORBI,NORBI,NORBI,D1,                 &
-                 'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ, &
-                 'H','N',IP,WORK(KTMP),NORBI,NORBI,NZ, &
-                 D0,IP,WORK(KCOS),NORBI,NORBI,NZ)
-      ioff = 0
-      i_max = 0
-      j_max = 0
-      d_max = D0
-      do i = 1,norbi
-      do j = 1,norbi
-         if (i.eq.j) then
-            if (abs(work(kcos+ioff)-d1).gt.d_max) then
-               i_max = i
-               j_max = j
-               d_max = abs(work(kcos+ioff)-d1)
-            end if
-         else
-            if (work(kcos+ioff).gt.d_max) then
-               i_max = i
-               j_max = j
-               d_max = abs(work(kcos+ioff))
-            end if
-         end if
-         ioff = ioff + 1
-      end do
-      end do
-      if (d_max .gt. thrzer) then
-         write(LUPRI,*) 'ROTCMO: maximum deviation from unitary matrix'
-         write(LUPRI,*) 'Element ',j_max,i_max,' value :',d_max
-      end if
+      CALL QGEMM(NORBI,NORBI,NORBI,D1,           &
+                 'N','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 'H','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 D0,IP,RCOS,NORBI,NORBI,NZ)
+      IOFF = 0
+      I_MAX = 0
+      J_MAX = 0
+      D_MAX = d0
+      DO I = 1,NORBI
+      DO J = 1,NORBI
+         IF (I.EQ.J) THEN
+            IF (ABS(RCOS(1+IOFF)-D1).GT.D_MAX) THEN
+               I_MAX = I
+               J_MAX = J
+               D_MAX = ABS(RCOS(1+IOFF)-D1)
+            END IF
+         ELSE
+            IF (RCOS(1+IOFF).GT.D_MAX) THEN
+               I_MAX = I
+               J_MAX = J
+               D_MAX = ABS(RCOS(1+IOFF))
+            END IF
+         END IF
+         IOFF = IOFF + 1
+      END DO
+      END DO
+      IF (D_MAX .GT. THRZER) THEN
+         WRITE(lupri,*) 'ROTCMO_MOD: maximum deviation from unitary matrix'
+         WRITE(lupri,*) 'Element ',J_MAX,I_MAX,' value :',D_MAX
+      END IF
 
 !     Calculate new orbitals: CMO_{old} exp(-kappa)
 !     ---------------------------------------------
 
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ROTCMO: old orbitals',-1)
+         CALL HEADER('ROTCMO_MOD: old orbitals',-1)
          CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
-!SK   CALL DZERO(WORK(KCOS),NORBXQ)
-      CALL QGEMM(NBASI,NORBI,NORBI,D1,                 &
-                 'N','N',IP,CMO,NBASI,NORBI,NZ,        &
-                 'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ, &
-                 D0,IP,WORK(KCOS),NBASI,NORBI,NZ)
-      CALL DCOPY(NBASI*NORBI*NZ,WORK(KCOS),1,CMO,1)
+!SK   CALL DZERO(RCOS,NORBXQ)
+      CALL QGEMM(NBASI,NORBI,NORBI,D1,           &
+                 'N','N',IP,CMO,NBASI,NORBI,NZ,  &
+                 'N','N',IP,RTMP,NORBI,NORBI,NZ, &
+                 D0,IP,RCOS,NBASI,NORBI,NZ)
+      CALL DCOPY(NBASI*NORBI*NZ,RCOS,1,CMO,1)
       IF (IPRINT .GE. 5) THEN
-         CALL HEADER('ROTCMO: new orbitals',-1)
+         CALL HEADER('ROTCMO_MOD: new orbitals',-1)
          CALL PRQMAT(cmo,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
       CALL GETTIM(CPU4,WALL4)
@@ -1161,13 +1141,18 @@ contains
          WALLTID = SECTID(WALL3-WALL2)
          WRITE(LUPRI,9021) CPUTID,WALLTID
       END IF
- 9020 FORMAT(/'ROTCMO: total CPU (WALL) time       : ',A12,' (',A12,')')
- 9021 FORMAT( 'ROTCMO: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
+ 9020 FORMAT(/'ROTCMO_MOD: total CPU (WALL) time       : ',A12,' (',A12,')')
+ 9021 FORMAT( 'ROTCMO_MOD: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
 
-      CALL MEMREL('ROTCMO',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('ROTCMO')
+      CALL DEALLOC(REIG,ID='REIG IN ROTCMO_MOD')
+      CALL DEALLOC(RSIN,ID='RSIN IN ROTCMO_MOD')
+      CALL DEALLOC(RCOS,ID='RCOS IN ROTCMO_MOD')
+      CALL DEALLOC(RV  ,ID='KV   IN ROTCMO_MOD')
+      CALL DEALLOC(RTMP,ID='RTMP IN ROTCMO_MOD')
 
-  END SUBROUTINE ROTCMO
+      CALL QEXIT('ROTCMO_MOD')
+
+  END SUBROUTINE ROTCMO_MOD
 
 !================================================================================!
 !                             END OF THE MODULE                                  !
