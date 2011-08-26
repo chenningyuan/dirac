@@ -11,19 +11,19 @@ contains
 !================================================================================!
   subroutine selown_drv(iopt,cmo,eig,ibeig,inuc,nnuc,iunit,cmofil, &
                         csel,esel,ibsel,nvecs,ioff,kvec,           &
-                        nstr,work,kfree,lfree)
+                        nstr)
   !------------------------------------------------------------------------------!
   implicit none
 
   ! external variables
   character*6, intent(in) :: cmofil
-  integer*4,   intent(in) :: iopt, inuc, nnuc, iunit, kfree, lfree
+  integer*4,   intent(in) :: iopt, inuc, nnuc, iunit
 
   integer*4,   intent(in), dimension(  :  ) :: kvec
   integer*4,   intent(in), dimension(2,0:2) :: nstr
   integer*4,   intent(in), dimension(  2  ) :: nvecs, ioff
   integer*4,   intent(in), dimension(  *  ) :: ibeig, ibsel
-  real*8,      intent(in), dimension(  *  ) :: eig, cmo, csel, esel, work
+  real*8,      intent(in), dimension(  *  ) :: eig, cmo, csel, esel
 
   ! internal variables
 
@@ -31,8 +31,7 @@ contains
   write(6,*) "I'm in select_coeff_own_bas module"
 
   call selown_mod(iopt,cmo,eig,ibeig,inuc,nnuc,iunit,cmofil, &
-                  csel,esel,ibsel,nvecs,ioff,kvec,nstr,      &
-                  work,kfree,lfree)
+                  csel,esel,ibsel,nvecs,ioff,kvec,nstr)
 
   !------------------------------------------------------------------------------!
 
@@ -42,8 +41,7 @@ contains
 !================================================================================!
 
   SUBROUTINE SELOWN_mod(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL, &
-                    CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,          &
-                    WORK,KFREE,LFREE)
+                    CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR)
 !***********************************************************************
 !
 !     Select coeffiecients for symmetry independent nucleus INUC
@@ -75,7 +73,7 @@ contains
 #include "dcbbas.h"
 #include "nuclei.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(*),NVECS(2), &
-                CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
+                CSEL(*),ESEL(*),IBSEL(*),IOFF(2)
 !     Local variables
       LOGICAL LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
@@ -87,7 +85,6 @@ contains
 !     flag for MCSCF coefficients on file CMOFIL
       CMCSCF_MAGIC = 137.0D0
 !
-      KFRSAV = KFREE
       REWIND IUNIT
 !
 !     Read title line
@@ -170,7 +167,6 @@ contains
       IF(NSTR(IFRP,0).GT.0) THEN
         NCMO = IDIM(1,IFRP)+IDIM(2,IFRP)
 !       Generate pointer array for bases
-!       CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
         CALL ALLOC(KBAS,IDIM(3,IFRP),ID='KBAS in SELOWN_mod')
         CALL SELOWI_mod(INUC,NNUC,IFRP,KBAS,NSBAS)
         IF(NSBAS.NE.IDIM(3,IFRP)) THEN
@@ -209,7 +205,6 @@ contains
         ENDIF
         IEIG = IEIG + NCMO
         CALL DEALLOC(KBAS,ID='KBAS in SELOWN_mod')
-!       CALL MEMREL('SELOWN.loop',WORK,KBAS,KBAS,KFREE,LFREE)
         ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         IEOFF = IEOFF + NVECS(IFRP)
       ENDIF

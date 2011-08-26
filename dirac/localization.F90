@@ -36,10 +36,11 @@ contains
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
       DIMENSION NSTR(2,0:2,0:MAXREF),NVECS(2,0:2), &
-                KBV(2),SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
+                SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
       DIMENSION DDUMARR(2),IDUMARR(2)
 
-      INTEGER*4, ALLOCATABLE :: KVECTMP(:)
+      INTEGER*4, ALLOCATABLE, DIMENSION(:) :: KVECTMP, JREF, IPIV
+      REAL*8,    ALLOCATABLE, DIMENSION(:) :: RCOEF, CMO, BV, GVEC, AMAT, WMAT
 
       TYPE :: PTR2ARRAY
         INTEGER*4, DIMENSION(:), POINTER :: P
@@ -87,18 +88,17 @@ contains
         CALL DEALLOC(KVECTMP,ID='KVECTMP IN ORBLP1')
 !     ENDDO
       NCDIM = NB*NVECS(IFRP,1)*4
-      CALL MEMGET('REAL',KRCOEF,NCDIM,WORK,KFREE,LFREE)
+      CALL ALLOC(RCOEF,NCDIM,ID="RCOEF in ORBLP1")
 
 !     COEFFICIENT SELECTION
 !     =====================
 
       ICFS = 6
       IF(IPRPRJ.GE.5) ICFS = 7
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL ALLOC(CMO,N2BBASXQ,ID="CMO in ORBLP1")
 
       IOFF(1) = 0
       IPRPRJ = 4
-      NQ = KRCOEF
       DO I = 1,NREFS
         INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
@@ -107,35 +107,22 @@ contains
         ENDIF
         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
         IF(OWNBAS) THEN
-          CALL SELOWN_DRV(2,WORK(KCMO),DDUMARR,IDUMARR,          &
-               I,1,LUCOEF,REFFIL(I),WORK(KRCOEF),DDUMARR,IDUMARR,&
-               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                   &
-               NSTR(1,0,I),WORK,KFREE,LFREE)
+          CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,           &
+               I,1,LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
+               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,             &
+               NSTR(1,0,I))
           IF(IPRLOC .GE. 5) THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
-            CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
+            CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
           ENDIF
 !         DO IFRP = 1, NFSYM
             IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,I)
-            IF(NSTR(IFRP,0,I).GT.0) THEN
-               NQ = NQ + NSTR(IFRP,0,I)*NB
-            ENDIF
 !         ENDDO
         ELSE
-          CALL REACMO(LUCOEF,REFFIL(I),WORK(KCMO),IDUM,IDUM,TOTERG,2,WORK,KFREE,LFREE)
-!         DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,I).GT.0) THEN
-              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ), &
-                   NVECS(IFRP,1),KVEC(IFRP,I)%P,                 &
-                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),NB,NORB(IFRP))
-              IF(IPRLOC .GE. 5) THEN
-                WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
-                CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
-              ENDIF
-              NQ = NQ + NSTR(IFRP,0,I)*NB
-            ENDIF
-!         ENDDO
+          WRITE(LUPRI,*) 'Current version work only with .OWNBAS option'
+          WRITE(0,*) 'Current version work only with .OWNBAS option'
+          STOP
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
       ENDDO
@@ -143,7 +130,7 @@ contains
 !     Throw away the full coefficients and eigenvalues
 !     ================================================
 
-      CALL MEMREL('PRJANA.cfs',WORK,KCMO,KCMO,KFREE,LFREE)
+      CALL DEALLOC(CMO,ID='CMO IN ORBLP1')
 
 !     Do projection analysis
 !     ======================
@@ -152,66 +139,55 @@ contains
 !     DO IFRP = 1,NFSYM
         NBDIM = NVECS(IFRP,1)*NI*4
 !     ENDDO
-      CALL MEMGET('REAL',KBV(1),NBDIM,WORK,KFREE,LFREE)
-!     IF(NFSYM.EQ.2) THEN
-!       KBV(2)   = KBV(1) + NVECS(1,0)*NVECS(1,2)*NZ
-!     ELSE
-        KBV(2)   = KFREE
-!     ENDIF
+      CALL ALLOC(BV,NBDIM,ID="BV in ORBLP1")
 !     DO IFRP = 1,NFSYM
 !     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
       KBUF   = KFREE
       NMOL   = NI
       NREF   = NVECS(IFRP,1)
       N2REF  = NREF*NREF
-      CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
-      IF(NREFS.GT.1) THEN
-        CALL MEMGET('REAL',KAMAT,N2REF*4,WORK,KFREE,LFREE)
-      ELSE
-        KAMAT = KFREE
-      ENDIF
-      CALL MEMGET('INTE',KJREF,NREF*3,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIPIV,NREF  ,WORK,KFREE,LFREE)
+      CALL ALLOC(GVEC,(NREF+1)*2,ID="GVEC in ORBLP1")
+      CALL ALLOC(AMAT,N2REF*4,ID="AMAT in ORBLP1")
+      CALL ALLOC(JREF,NREF*3,ID="JREF in ORBLP1")
+      CALL ALLOC(IPIV,NREF,ID="IPIV in ORBLP1")
       IVEC = 0
       DO I = 1,NREFS
-        CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
+        CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
         IVEC = IVEC + NSTR(IFRP,0,I)
       ENDDO
-      CALL ORBLP2(SMAT,SCOEF,WORK(KRCOEF),WORK(KAMAT),NB,NI,             &
-           NVECS(IFRP,1),WORK(KBV(IFRP)),WORK(KGVEC),KVEC(IFRP,1)%P, &
-           WORK(KJREF),NSTR,WORK(KIPIV),WORK,KFREE,LFREE)
-
-      CALL MEMREL('PRJANA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,   &
+           NVECS(IFRP,1),BV,GVEC,KVEC(IFRP,1)%P, &
+           JREF,NSTR,IPIV,WORK,KFREE,LFREE)
 
 ! Memory allocation for the matrix W = Ac
 
-      CALL MEMGET('REAL',KWMAT,NREF*NI*4,WORK,KFREE,LFREE)
+      CALL ALLOC(WMAT,NREF*NI*4,ID="WMAT in ORBLP1")
 
 ! Construction of W = Ac
 
       IF(IPRLOC .GE. 5) THEN
-        WRITE(LUPRI,'(/A)') '* Matrice KBV'
-        CALL PRQMAT(WORK(KBV(IFRP)),NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice BV'
+        CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
         WRITE(LUPRI,'(/A)') '* Matrice AMAT'
-        CALL PRQMAT(WORK(KAMAT),NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(AMAT,NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
-        CALL QGEMM(NREF,NI,NREF,D1,                         &
-             'N','N',IPQTOQ(1,0),WORK(KAMAT),NREF,NREF,4,   &
-             'N','N',IPQTOQ(1,0),WORK(KBV(IFRP)),NREF,NI,4, &
-             D0,IPQTOQ(1,0),WORK(KWMAT),NREF,NI,4)
+      CALL QGEMM(NREF,NI,NREF,D1,                &
+           'N','N',IPQTOQ(1,0),AMAT,NREF,NREF,4, &
+           'N','N',IPQTOQ(1,0),BV,NREF,NI,4,     &
+           D0,IPQTOQ(1,0),WMAT,NREF,NI,4)
 
       IF(IPRLOC.GE.5) THEN
         WRITE(LUPRI,'(/A)') '* Matrice W'
-        CALL PRQMAT(WORK(KWMAT),NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
 ! Construct P_A for each center A
 
       JOFF = 0
       DO I = 1,NUCDEP
-        CALL QGEMM(NI,NI,NSTR(IFRP,0,I),D1,                            &
-                   'H','N',IPQTOQ(1,0),WORK(KBV(IFRP)+JOFF),NREF,NI,4, &
-                   'N','N',IPQTOQ(1,0),WORK(KWMAT+JOFF),NREF,NI,4,     &
+        CALL QGEMM(NI,NI,NSTR(IFRP,0,I),D1,                    &
+                   'H','N',IPQTOQ(1,0),BV(JOFF+1),NREF,NI,4,   &
+                   'N','N',IPQTOQ(1,0),WMAT(JOFF+1),NREF,NI,4, &
                    D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
         JOFF = JOFF + NSTR(IFRP,0,I)
       ENDDO
@@ -263,12 +239,20 @@ contains
       DINVM = DINV/NI
       WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM,1.0D0/DINVM
 
-      CALL MEMREL('ORBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
-
+  !------------------------------------------------------------------------------!
+  !                             Deallocate arrays                                !
+  !------------------------------------------------------------------------------!
       DO I=1,NREFS
         CALL DEALLOCP(KVEC(1,I)%P,ID='KVEC%P IN ORBLP1')
       ENDDO
       DEALLOCATE( KVEC )
+      CALL DEALLOC(RCOEF,ID='RCOEF IN ORBLP1')
+      CALL DEALLOC(BV,ID='BV IN ORBLP1')
+      CALL DEALLOC(GVEC,ID='GVEC IN ORBLP1')
+      CALL DEALLOC(AMAT,ID='AMAT IN ORBLP1')
+      CALL DEALLOC(JREF,ID='JREF IN ORBLP1')
+      CALL DEALLOC(IPIV,ID='IPIV IN ORBLP1')
+      CALL DEALLOC(WMAT,ID='WMAT IN ORBLP1')
 
       CALL QEXIT('ORBLP1')
 
