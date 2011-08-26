@@ -3,12 +3,14 @@ implicit none
 
 public :: ORBLP1
 
+private :: ORBLP2
+
 contains
 
 !================================================================================!
 !================================================================================!
 
-  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,DINVM,WORK,LWORK)
+  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,DINVM)
 !***********************************************************************
 !
 !     Based on T.Saue March 26 1999 : SUBROUTINE ANAPRJ
@@ -34,7 +36,6 @@ contains
 #include "nuclei.h"
 
       LOGICAL TOBE
-      DIMENSION WORK(LWORK)
       DIMENSION NSTR(2,0:2,0:MAXREF),NVECS(2,0:2), &
                 SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
       DIMENSION DDUMARR(2),IDUMARR(2)
@@ -49,7 +50,6 @@ contains
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
 
   !------------------------------------------------------------------------------!
-#include "memint.h"
       WRITE(6,*) "I'm in localization module"
 
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
@@ -157,7 +157,7 @@ contains
       ENDDO
       CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,   &
            NVECS(IFRP,1),BV,GVEC,KVEC(IFRP,1)%P, &
-           JREF,NSTR,IPIV,WORK,KFREE,LFREE)
+           JREF,NSTR,IPIV)
 
 ! Memory allocation for the matrix W = Ac
 
@@ -257,6 +257,99 @@ contains
       CALL QEXIT('ORBLP1')
 
   END SUBROUTINE ORBLP1
+
+!================================================================================!
+!================================================================================!
+
+ SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,GVEC, &
+                   JMOL,JREF,NSTR,IPIVOT)
+!***********************************************************************
+!
+!     Projection analysis for fermion ircop IFRP
+!
+!     Written by T.Saue March 26 1999
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0)
+
+#include "dcbloc.h"
+#include "dcbprj.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+
+      LOGICAL DOPOP
+      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),SCOEF(*), &
+           RCOEF(*),AMAT(NREF,NREF,4),BVEC(NREF,NMOL,4),SMAT(*), &
+           GVEC(*),IPIVOT(*)
+
+  !------------------------------------------------------------------------------!
+      IFRP = 1
+      KFRSAV = KFREE
+      DOPOP = NREFS.GT.1
+      PTOL = PROTHR*DC
+
+!     Make projection vector
+
+      CALL QTRANS90('AOMO','S',D0,NB,NB,NREF,NMOL, &
+                    SMAT,NB,NB,1,IPQTOQ(1,0),      &
+                    BVEC,NREF,NMOL,4,IPQTOQ(1,0),  &
+                    RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
+                    SCOEF,NB,NMOL,4,IPQTOQ(1,0),IPRPRJ)
+      IF(NREFS.GT.1) THEN
+
+!       Make overlap matrix
+
+        CALL QTRANS90('AOMO','S',D0,NB,NB,NREF,NREF, &
+                      SMAT,NB,NB,1,IPQTOQ(1,0),      &
+                      AMAT,NREF,NREF,4,IPQTOQ(1,0),  &
+                      RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
+                      RCOEF,NB,NREF,4,IPQTOQ(1,0),IPRPRJ)
+
+!       Print overlaps
+
+        IF(IPRLOC .GE. 5) THEN
+           JOFF = 1
+           DO J = 1,NREFS
+              KOFF = 1
+              DO I = 1,(J-1)
+                 WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',REFFIL(I),REFFIL(J)
+                 CALL PRQMAT(AMAT(KOFF,JOFF,1),                  &
+                      NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,4, &
+                      IPQTOQ(1,0),LUPRI)
+                 KOFF = KOFF + NSTR(IFRP,0,I)
+              ENDDO
+              JOFF = JOFF + NSTR(IFRP,0,J)
+           ENDDO
+        ENDIF
+
+!       Solve linear system by Cholesky decomposition
+!       with full pivoting
+!        --> notice that overlap matrix SMAT is destroyed !
+
+        JOB = 1
+        CALL QCHOLD(AMAT,NREF,4,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
+        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,4,NREF,NREF,SMAT,BVEC, &
+             NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
+        IF(NEFF.LT.NREF) THEN
+          WRITE(LUPRI,'(A,A)') '* WARNING: ', &
+           ' linear dependencies detected in Cholesky decomposition'
+          WRITE(LUPRI,'(11X,A,I5,A,I5)') ' Reduced dimensionality: ',NREF,' --> ',NEFF
+        ENDIF
+
+!       Restore overlap matrix
+
+        CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
+      ENDIF
+
+      END SUBROUTINE ORBLP2
 
 !================================================================================!
 !                             END OF THE MODULE                                  !

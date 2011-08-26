@@ -2768,7 +2768,7 @@ C
       IF(PRJLOC) THEN
 C       PRJLOC = TRUE localization with projection analysis
         CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
-     &              NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
+     &              NFBAS(IFRP,2),NISH(IFRP),DINVM)
       ELSE
 C       PRJLOC = FALSE localization with Mulliken analysis
         CALL ORBLO1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
@@ -2786,7 +2786,7 @@ C       PRJLOC = FALSE localization with Mulliken analysis
      &    '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
         CALL ORBLO2(WORK(KPMAT),NISH(IFRP),WORK(KXKAPPA),WORK(KHAMAT),
-     &              XNRM,FLAG,WORK(KFREE),LFREE)
+     &              XNRM,FLAG)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,WORK(KSCOEF),1,
      &               WORK(KSCOEFO),1)
@@ -2798,8 +2798,7 @@ C       PRJLOC = FALSE localization with Mulliken analysis
 C         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(WORK(KSMAT),SSMTRC)
           CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),
-     &                NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM,
-     &                WORK(KFREE),LFREE)
+     &                NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
         ELSE
 C         PRJLOC = FALSE localization with Mulliken analysis
           CALL ORBLO1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),
@@ -2819,8 +2818,7 @@ C         PRJLOC = FALSE localization with Mulliken analysis
           WRITE(LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
           IF(PRJLOC) THEN
             CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),
-     &                  NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM,
-     &                  WORK(KFREE),LFREE)
+     &                  NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
           ELSE
             CALL ORBLO1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),
      &                  NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),
@@ -2846,7 +2844,7 @@ C         PRJLOC = FALSE localization with Mulliken analysis
      &    '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
         CALL ORBLO2(WORK(KPMAT),NISH(IFRP),WORK(KXKAPPA),WORK(KHAMAT),
-     &              XNRM,FLAG,WORK(KFREE),LFREE)
+     &              XNRM,FLAG)
         CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,WORK(KSCOEF),1,
      &             WORK(KSCOEFO),1)
         CALL ROTCMO(WORK(KSCOEF),NFBAS(IFRP,0),NISH(IFRP),4,
@@ -2856,8 +2854,7 @@ C         PRJLOC = FALSE localization with Mulliken analysis
 C         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(WORK(KSMAT),SSMTRC)
           CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),
-     &                NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM,
-     &                WORK(KFREE),LFREE)
+     &                NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
         ELSE
 C         PRJLOC = FALSE localization with Mulliken analysis
           CALL ORBLO1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),
@@ -3032,104 +3029,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck orblp2 */
-      SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,GVEC,
-     &           JMOL,JREF,NSTR,IPIVOT,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Projection analysis for fermion ircop IFRP
-C
-C     Written by T.Saue March 26 1999
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0)
-C
-#include "dcbloc.h"
-#include "dcbprj.h"
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-C
-      LOGICAL DOPOP
-      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),SCOEF(*),
-     S     RCOEF(*),AMAT(NREF,NREF,4),BVEC(NREF,NMOL,4),SMAT(*),
-     S     GVEC(*),IPIVOT(*),WORK(*)
-C
-      IFRP = 1
-      KFRSAV = KFREE
-      DOPOP = NREFS.GT.1
-      PTOL = PROTHR*DC
-C
-C     Make projection vector
-C
-      CALL QTRANS('AOMO','S',D0,NB,NB,NREF,NMOL,
-     &            SMAT,NB,NB,1,IPQTOQ(1,0),
-     &            BVEC,NREF,NMOL,4,IPQTOQ(1,0),
-     &            RCOEF,NB,NREF,4,IPQTOQ(1,0),
-     &            SCOEF,NB,NMOL,4,IPQTOQ(1,0),
-     &            WORK(KFREE),LFREE,IPRPRJ)
-      CALL MEMGET('REAL',KOCC,NMOL,WORK,KFREE,LFREE)
-      IF(NREFS.GT.1) THEN
-C
-C       Make overlap matrix
-C
-        CALL QTRANS('AOMO','S',D0,NB,NB,NREF,NREF,
-     &           SMAT,NB,NB,1,IPQTOQ(1,0),
-     &           AMAT,NREF,NREF,4,IPQTOQ(1,0),
-     &           RCOEF,NB,NREF,4,IPQTOQ(1,0),
-     &           RCOEF,NB,NREF,4,IPQTOQ(1,0),
-     &           WORK(KFREE),LFREE,IPRPRJ)
-C
-C       Print overlaps
-C
-        IF(IPRLOC .GE. 5) THEN
-           JOFF = 1
-           DO J = 1,NREFS
-              KOFF = 1
-              DO I = 1,(J-1)
-                 WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
-     &                REFFIL(I),REFFIL(J)
-                 CALL PRQMAT(AMAT(KOFF,JOFF,1),
-     &                NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,4,
-     &                IPQTOQ(1,0),LUPRI)
-                 KOFF = KOFF + NSTR(IFRP,0,I)
-              ENDDO
-              JOFF = JOFF + NSTR(IFRP,0,J)
-           ENDDO
-        ENDIF
-C
-C       Solve linear system by Cholesky decomposition
-C       with full pivoting
-C        --> notice that overlap matrix SMAT is destroyed !
-C
-        JOB = 1
-        CALL QCHOLD(AMAT,NREF,4,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
-        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,4,NREF,NREF,SMAT,BVEC,
-     &       NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
-        IF(NEFF.LT.NREF) THEN
-          WRITE(LUPRI,'(A,A)') '* WARNING: ',
-     &     ' linear dependencies detected in Cholesky decomposition'
-          WRITE(LUPRI,'(11X,A,I5,A,I5)') 
-     &     ' Reduced dimensionality: ',NREF,' --> ',NEFF
-        ENDIF
-C
-C       Restore overlap matrix
-C
-        CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
-      ENDIF
-C
-      CALL MEMREL('ORBLP2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck orblo2 */
-      SUBROUTINE ORBLO2(PMAT,NI,XKAPPA,HAMAT,XNRM,FLAG,WORK,LWORK)
+      SUBROUTINE ORBLO2(PMAT,NI,XKAPPA,HAMAT,XNRM,FLAG)
 C***********************************************************************
 C
 C     Written by S.Dubillard Jan 21 2004
@@ -3156,12 +3057,10 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "nuclei.h"
 C
-      DIMENSION PMAT(NI,NI,4,NUCDEP),XKAPPA(NI,NI,4),HAMAT(NI,NI,4),
-     S          WORK(LWORK)
+      DIMENSION PMAT(NI,NI,4,NUCDEP),XKAPPA(NI,NI,4),HAMAT(NI,NI,4)
       LOGICAL FLAG
 C
       CALL QENTER('ORBLO2')
-#include "memint.h"
 C
 C Hessian matrix
 C
@@ -3210,7 +3109,6 @@ C
       ENDIF
       XNRM = DNRM2(NDIM,XKAPPA,1)
       WRITE (LUPRI,'(A,E12.2)') 'Norm of gradient: ',DSQRT(XNRM)
-      CALL MEMREL('ORBLO2',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('ORBLO2')
       RETURN
