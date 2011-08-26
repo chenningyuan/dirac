@@ -3,7 +3,7 @@ implicit none
 
 public :: ORBLOC
 
-private :: ORBLP1, ORBLP2
+private :: ORBLP1, ORBLP2, ORBLO1
 
 contains
 
@@ -125,8 +125,7 @@ contains
       ELSE
 !       PRJLOC = FALSE localization with Mulliken analysis
         CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),        &
-                    NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM, &
-                    WORK(KFREE),LFREE)
+                    NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
       ENDIF
       TOBE = .FALSE.
       ITR = 0
@@ -154,7 +153,7 @@ contains
 !         PRJLOC = FALSE localization with Mulliken analysis
           CALL ORBLO1(SMAT,SCOEF,PMAT,                        &
                       NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
-                      NFNUC,DINVM,WORK(KFREE),LFREE)
+                      NFNUC,DINVM)
         ENDIF
         DIFF  = DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
@@ -172,7 +171,7 @@ contains
           ELSE
             CALL ORBLO1(SMAT,SCOEF,PMAT,                        &
                         NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
-                        NFNUC,DINVM,WORK(KFREE),LFREE)
+                        NFNUC,DINVM)
           ENDIF
           GOTO 100
         ELSE
@@ -205,7 +204,7 @@ contains
 !         PRJLOC = FALSE localization with Mulliken analysis
           CALL ORBLO1(SMAT,SCOEF,PMAT,   &
                       NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP), &
-                      NFNUC,DINVM,WORK(KFREE),LFREE)
+                      NFNUC,DINVM)
         ENDIF
         DIFF  =     DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
@@ -605,7 +604,7 @@ contains
 !================================================================================!
 !================================================================================!
 
-  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NFNUC,DINVM,WORK,LWORK)
+  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NFNUC,DINVM)
 !***********************************************************************
 !
 !     Written by S.Dubillard Jan 21 2004
@@ -616,6 +615,7 @@ contains
 !     Calculation of the localisation criteria DINV
 !
 !***********************************************************************
+      USE MEMORY_ALLOCATOR
       IMPLICIT REAL*8 (A-H,O-Z)
       IMPLICIT INTEGER*4 (I-N)
 #include "priunit.h"
@@ -633,36 +633,39 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
-      DIMENSION SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),NFNUC(*),WORK(LWORK)
+      DIMENSION SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),NFNUC(*)
 
+      REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
+
+  !------------------------------------------------------------------------------!
       CALL QENTER('ORBLO1')
-#include "memint.h"
+
       NB = NBL + NBS
 
 ! Memory allocation for the matrix W = Sc
 
-      CALL MEMGET('REAL',KWLMAT,NBL*NI*4,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KWSMAT,NBS*NI*4,WORK,KFREE,LFREE)
+      CALL ALLOC(WLMAT,NBL*NI*4,ID='WLMAT IN ORBLO1')
+      CALL ALLOC(WSMAT,NBS*NI*4,ID='WSMAT IN ORBLO1')
 
 ! Construction of W = Sc (large and small components)
 
       CALL QGEMM(NBL,NI,NBL,D1,               &
            'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
            'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
-           D0,IPQTOQ(1,0),WORK(KWLMAT),NBL,NI,4)
+           D0,IPQTOQ(1,0),WLMAT,NBL,NI,4)
       IF(.NOT.TWOCOMPBSS) THEN
          CALL QGEMM(NBS,NI,NBS,D1,                            &
               'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
               'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
-              D0,IPQTOQ(1,0),WORK(KWSMAT),NBS,NI,4)
+              D0,IPQTOQ(1,0),WSMAT,NBS,NI,4)
       ENDIF
 
       IF(IPRLOC.GE.5) THEN
          WRITE(LUPRI,'(/A)') '* WL matrix :'
-         CALL PRQMAT(WORK(KWLMAT),NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
+         CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
          IF(.NOT.TWOCOMPBSS) THEN
             WRITE(LUPRI,'(/A)') '* WS matrix :'
-            CALL PRQMAT(WORK(KWSMAT),NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
+            CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
          ENDIF
       ENDIF
 
@@ -671,14 +674,14 @@ contains
       IOFFL = 0
       IOFFS = 0
       DO I = 1,NUCDEP
-         CALL QGEMM(NI,NI,NFNUC(I),D1,                         &
-              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,      &
-              'N','N',IPQTOQ(1,0),WORK(KWLMAT+IOFFL),NBL,NI,4, &
+         CALL QGEMM(NI,NI,NFNUC(I),D1,                     &
+              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,  &
+              'N','N',IPQTOQ(1,0),WLMAT(1+IOFFL),NBL,NI,4, &
               D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
          IF(.NOT.TWOCOMPBSS) THEN
-            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                  &
-                 'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4,  &
-                 'N','N',IPQTOQ(1,0),WORK(KWSMAT+IOFFS),NBS,NI,4, &
+            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                 &
+                 'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4, &
+                 'N','N',IPQTOQ(1,0),WSMAT(1+IOFFS),NBS,NI,4,    &
                  D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
             IOFFS = IOFFS + NFNUC(NUCDEP+I)
          ENDIF
@@ -720,7 +723,11 @@ contains
       DINVM = DINV/NI
       WRITE(LUPRI,'(/A,F15.13)') '* Inverse mean delocalization = ',DINVM
 
-      CALL MEMREL('ORBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
+  !------------------------------------------------------------------------------!
+  !                             Deallocate arrays                                !
+  !------------------------------------------------------------------------------!
+      CALL DEALLOC(WLMAT,ID='WLMAT IN ORBLO1')
+      CALL DEALLOC(WSMAT,ID='WSMAT IN ORBLO1')
 
       CALL QEXIT('ORBLO1')
 
