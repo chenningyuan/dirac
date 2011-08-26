@@ -67,7 +67,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(matrix)         :: D_mo, D(max_para)
-    type(matrix)         :: D_con_ao, D_con_mo, D_con, D_0, D_0_full
+    type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_0, D_test
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable :: eigenvalues(:)
@@ -226,48 +226,55 @@ contains
 
        D_0 = C*(D_mo*dag(C))
        D_0 = 2.0d0*D_0
-       D_0_full = 2.0d0*C*dag(C)
-       
-       call init_mat(D_con_ao, ntbas(0), ntbas(0))
-       D_con_ao%elms = 0.0d0
-       
-!      read connection matrices in AO basis from AOPROPER file
-       call setup_fo_conmat_ao(D_con_ao, 1)
-       
-       
-!      transform connection matrices to MO basis
-       D_con_mo = dag(C)*(D_con_ao*C)
+
+
+!      get T^B matrix in MO basis
+
+       call init_mat(D_con_mo, norbt, norbt)
+       D_con_mo%elms = 0.0d0
+
+       if (visual_cfg_london_none) then
+
+          call init_mat(D_con_mo_ai, norbt, norbt)
+          D_con_mo_ai%elms = 0.0d0
+
+          call get_d_con_mo(D_con_mo, &
+                            D_con_mo_ai = D_con_mo_ai)
+
+          call copy_matrix_sym(D_con_mo_ai, D_con_mo)
+
+       else
+
+          call get_d_con_mo(D_con_mo)
+
+       end if
 
        if (.not. levyle) then
 !         radovan: magic factor for levyle
 !                  need to find the reason for it
           D_con_mo = 0.5d0*D_con_mo
+          if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
+       end if       
+
+
+!      build 'modified' (by T^B) density matrices:
+
+       call init_mat(D_con, norbt, norbt)
+       D_con%elms = 0.0d0
+       call copy_matrix_sym(D_con, D_con_mo)
+
+       if (nfsym == 2) then
+          call get_mdm_con(D_con,                     &
+                           D_con_mo,                  &
+                           C, Cig, Csg,               &
+                           Ciu = Ciu,                 &
+                           Csu = Csu)
+       else
+          call get_mdm_con(D_con,                     &
+                           D_con_mo,                  &
+                           C, Cig, Csg)
        end if
 
-       if (visual_cfg_london_symmetric) then
-!         symmetric connection
-       
-          D_con = D_0_full*D_con_ao*D_0 &
-                + D_0*D_con_ao*D_0_full
-          D_con = 0.125d0*D_con
-       
-       else if (visual_cfg_london_natural) then
-!         natural connection
-       
-          D_con = D_0_full*D_con_ao*D_0 &
-                - D_0*dag(D_con_ao)*D_0_full
-          D_con = 0.125d0*D_con
-       
-       else if (visual_cfg_london_none) then
-!         none connection
-       
-          D_con = D_0*D_con_ao*D_0
-          D_con = 0.25d0*D_con
-       end if
-
-       if (levyle) then
-          D_con = 2.0d0*D_con
-       end if
     end if
 #endif
 
@@ -290,15 +297,15 @@ contains
              call print_mat(D_mo,    label = 'debug MO D matrix')
              call print_mat(D(imat), label = 'debug AO D matrix')
           end if
-      
+
        else
 !         get perturbed density matrix
-      
+
           call setup_fo_dmat_ao(imat, occupation, D_mo)
 
           if (visual_cfg_london .and. visual_cfg_london_none) then
-             TP = D_mo + D_con_mo
-             TM = D_mo - D_con_mo
+             TP = D_mo - dag(D_con_mo_ai)
+             TM = D_mo - D_con_mo_ai
           else
              TP = 1.0d0*D_mo
              TM = 1.0d0*D_mo
@@ -323,7 +330,7 @@ contains
                      - (Csg*(TM*dag(Cig)))
           end if
           call copy_matrix_sym(D(imat), D_mo)
-      
+
        end if
     end do
 
@@ -359,6 +366,7 @@ contains
 !            happes to the current, mag field, and so on
              D(imat) = D(imat) + D_con
           end if
+
        end if
 #endif
 
@@ -411,8 +419,9 @@ contains
 
 #ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
-       D_con_ao = 0
        D_con_mo = 0
+       D_con    = 0
+       if (visual_cfg_london_none) D_con_mo_ai = 0
     end if
 #endif
 

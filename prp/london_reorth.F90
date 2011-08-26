@@ -125,7 +125,6 @@ contains
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: fmat(p_n2orbxq, *)
-    !real(8), intent(in)    :: fmat(*)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -141,6 +140,7 @@ contains
     integer :: indxpr
     integer :: icomp, i, j, isymh
     logical :: ah
+    logical :: debug_me
 !-----------------------------------------------------------------------
 
   
@@ -169,6 +169,10 @@ contains
          access='direct',recl=8*p_n2orbxq,                 &
          status='unknown')
 
+    open(tbmo_unit, file='TBMO', form='unformatted',   &
+         access='sequential', action='write',          &
+         status='unknown')
+
     do icomp = 1, nr_xyz_comp
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
@@ -194,6 +198,30 @@ contains
                   prp_iprint)
 
       call deselect_wrk(work, lwork)
+
+! write to TBMO file, to be reused in visual
+! ------------------------------------------
+! *) how many components:
+      write(tbmo_unit) nr_xyz_comp
+! *) which icomp:
+      write(tbmo_unit) icomp
+! *) irep of T^B_icomp:
+      write(tbmo_unit) (isym(icomp) - 1)
+! *) time-reversal symmetry:
+!      write(tbmo_unit) 
+! *) reorthonormalization over both (p+e) shells or only over e shells:
+      write(tbmo_unit) sum_ep_rn 
+! *) T^B_icomp matrix in MO basis:
+      write(tbmo_unit) tb
+
+      debug_me = .false.
+      if (debug_me) then
+         write(p_lupri, *) 'T^B in MO basis,icomp = ', icomp
+         write(p_lupri, *) 'isym,iopsy = ', isym(icomp),iopsy(icomp)
+         call prqmat(tb, &
+                     p_norb, p_norb, p_norb, p_norb, &
+                     nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+      end if
 
 ! get final result to buf
 
@@ -228,6 +256,7 @@ contains
     end do
 
 
+    close(tbmo_unit,   status='keep')
     close(fcklon_unit, status='keep')
     close(int1_unit,   status='keep')
 
