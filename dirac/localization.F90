@@ -3,7 +3,7 @@ implicit none
 
 public :: ORBLOC
 
-private :: ORBLP1, ORBLP2, ORBLO1
+private :: ORBLP1, ORBLP2, ORBLO1, ORBLO2, ORBLO4, ORBLO5, ORBLO6
 
 contains
 
@@ -732,6 +732,244 @@ contains
       CALL QEXIT('ORBLO1')
 
   END SUBROUTINE ORBLO1
+
+!================================================================================!
+!================================================================================!
+
+  SUBROUTINE ORBLO2(PMAT,NI,XKAPPA,HAMAT,XNRM,FLAG)
+!***********************************************************************
+!
+!     Written by S.Dubillard Jan 21 2004
+!     Last revision:
+!
+!     Construction of the XKAPPA matrix
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D4 = 4.0D0)
+      PARAMETER(D2 = 2.0D0)
+      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0)
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbloc.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+
+      DIMENSION PMAT(NI,NI,4,NUCDEP),XKAPPA(NI,NI,4),HAMAT(NI,NI,4)
+      LOGICAL FLAG
+
+  !------------------------------------------------------------------------------!
+      CALL QENTER('ORBLO2')
+
+! Hessian matrix
+
+      NDIM = NI*NI*4
+      CALL DZERO(HAMAT,NDIM)
+!STbugDO IZ = 1,4
+         DO J = 1,NI
+            DO I = 1,NI
+               DO K = 1,NUCDEP
+!                 HAMAT(I,J,1) = HAMAT(I,J,1) - 2.0D0*(
+!    S  (PMAT(I,I,1,K) - PMAT(J,J,1,K))*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
+                 PII = PMAT(I,I,1,K)
+                 PJJ = PMAT(J,J,1,K)
+                 PJI = PMAT(J,I,1,K)
+                 HAMAT(I,J,1) = HAMAT(I,J,1) + D4*PJI*PJI - D2*((PJJ-PII)*(PJJ-PII))
+               ENDDO
+            ENDDO
+         ENDDO
+!STbugENDDO
+
+! Construction and print of the XKAPPA matrix
+
+      NDIM = NI*NI*4
+      CALL DZERO(XKAPPA,NDIM)
+      DO IZ = 1,4
+         DO J = 1,NI
+            DO I = 1,NI
+               DO K = 1,NUCDEP
+                  XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + D2*( &
+                       PMAT(I,J,IZ,K)*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
+                  IF (FLAG) THEN
+                     IF(.NOT. HESLOC) THEN
+                        IF(HAMAT(I,J,1) .LE. -D1) THEN
+                     XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) / (-HAMAT(I,J,1))
+                        ENDIF
+                     ENDIF
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+      IF(IPRLOC .GE. 5) THEN
+         WRITE (LUPRI,'(/A)') '* KAPPA matrix :'
+         CALL PRQMAT(XKAPPA(1,1,1),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
+      ENDIF
+      XNRM = DNRM2(NDIM,XKAPPA,1)
+      WRITE (LUPRI,'(A,E12.2)') 'Norm of gradient: ',DSQRT(XNRM)
+
+      CALL QEXIT('ORBLO2')
+
+  END SUBROUTINE ORBLO2
+
+!================================================================================!
+!================================================================================!
+
+  SUBROUTINE ORBLO4(INDNAO,NFNUC)
+!***********************************************************************
+!
+!     Written by S.Dubillard Jan 21 2004
+!     Last revision:
+!
+!     Construction of the array NFNUC which contains the number of
+!     large components basis functions for each center and then the 
+!     number of small components basis functions for each center
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbloc.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+
+      DIMENSION INDNAO(2,*)
+      DIMENSION NFNUC(2*NUCDEP)
+
+  !------------------------------------------------------------------------------!
+      IFRP = 1
+      CALL QENTER('ORBLO4')
+      DO I = 1,NUCDEP-1
+         NFNUC(I)=INDNAO(1,I+1)-INDNAO(1,I)
+      ENDDO
+      NFNUC(NUCDEP)=INDNAO(2,1)-INDNAO(1,NUCDEP)
+      DO I = 1,NUCDEP-1
+         NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
+      ENDDO
+      NFNUC(2*NUCDEP)=NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
+      CALL QEXIT('ORBLO4')
+
+  END SUBROUTINE ORBLO4
+
+!================================================================================!
+!================================================================================!
+
+  SUBROUTINE ORBLO5(SCOEF,NB,NI,IFRP,WORK,LWORK)
+!***********************************************************************
+!
+!     Written by S.Dubillard Apr 13 2004
+!     Last revision:
+!
+!     Put the localised coefficients into the DFCOEF file (1/2)
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0)
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbloc.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+
+      DIMENSION SCOEF(NB,NI,4),WORK(LWORK)
+
+  !------------------------------------------------------------------------------!
+      CALL QENTER('ORBLO5')
+#include "memint.h"
+      IFRP = 1
+      CALL MEMGET('REAL',KCMO  ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG  ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG), &
+                  TOTERG,14,WORK,KFREE,LFREE)
+      CALL ORBLO6(WORK(KCMO),SCOEF(1,1,1),NFBAS(IFRP,0),NORB(IFRP), &
+                   NISH(IFRP),WORK(KFREE),LFREE)
+      CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBEIG),TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL MEMREL('ORBLO5',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('ORBLO5')
+
+  END SUBROUTINE ORBLO5
+
+!================================================================================!
+!================================================================================!
+
+  SUBROUTINE ORBLO6(CMO,SCOEF,NB,NO,NI,WORK,LWORK)
+!***********************************************************************
+!
+!     Written by S.Dubillard Apr 13 2004
+!     Last revision:
+!
+!     Put the localised coefficients into the DFCOEF file (2/2)
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0)
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbloc.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+
+      DIMENSION CMO(NB,NO,4),SCOEF(NB,NI,4),WORK(LWORK)
+
+  !------------------------------------------------------------------------------!
+      CALL QENTER('ORBLO6')
+#include "memint.h"
+      DO I = 1,NB
+         DO J = 1,NI
+            DO K = 1,4
+               L = J + NO/2
+               IF (LEVYLE) THEN
+                  L = J
+               ENDIF
+               CMO(I,L,K) = SCOEF(I,J,K)
+            ENDDO
+         ENDDO
+      ENDDO
+      IF (IPRLOC .GE. 5) THEN
+         WRITE(LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
+         CALL PRQMAT(CMO(1,1,1),NB,NO,NB,NO,4,IPQTOQ(1,0),LUPRI)
+      ENDIF
+      CALL QEXIT('ORBLO6')
+
+  END SUBROUTINE ORBLO6
 
 !================================================================================!
 !                             END OF THE MODULE                                  !
