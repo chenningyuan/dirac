@@ -603,6 +603,130 @@ contains
       END SUBROUTINE ORBLP2
 
 !================================================================================!
+!================================================================================!
+
+  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NFNUC,DINVM,WORK,LWORK)
+!***********************************************************************
+!
+!     Written by S.Dubillard Jan 21 2004
+!     Last revision:
+!
+!     Construction of the matrices P_A=c_A^+Sc from Mulliken analysis
+!
+!     Calculation of the localisation criteria DINV
+!
+!***********************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT INTEGER*4 (I-N)
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0)
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbloc.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+
+      DIMENSION SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),NFNUC(*),WORK(LWORK)
+
+      CALL QENTER('ORBLO1')
+#include "memint.h"
+      NB = NBL + NBS
+
+! Memory allocation for the matrix W = Sc
+
+      CALL MEMGET('REAL',KWLMAT,NBL*NI*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KWSMAT,NBS*NI*4,WORK,KFREE,LFREE)
+
+! Construction of W = Sc (large and small components)
+
+      CALL QGEMM(NBL,NI,NBL,D1,               &
+           'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
+           'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
+           D0,IPQTOQ(1,0),WORK(KWLMAT),NBL,NI,4)
+      IF(.NOT.TWOCOMPBSS) THEN
+         CALL QGEMM(NBS,NI,NBS,D1,                            &
+              'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
+              'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
+              D0,IPQTOQ(1,0),WORK(KWSMAT),NBS,NI,4)
+      ENDIF
+
+      IF(IPRLOC.GE.5) THEN
+         WRITE(LUPRI,'(/A)') '* WL matrix :'
+         CALL PRQMAT(WORK(KWLMAT),NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
+         IF(.NOT.TWOCOMPBSS) THEN
+            WRITE(LUPRI,'(/A)') '* WS matrix :'
+            CALL PRQMAT(WORK(KWSMAT),NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
+         ENDIF
+      ENDIF
+
+! Construct P_A for each center A
+
+      IOFFL = 0
+      IOFFS = 0
+      DO I = 1,NUCDEP
+         CALL QGEMM(NI,NI,NFNUC(I),D1,                         &
+              'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,      &
+              'N','N',IPQTOQ(1,0),WORK(KWLMAT+IOFFL),NBL,NI,4, &
+              D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+         IF(.NOT.TWOCOMPBSS) THEN
+            CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                  &
+                 'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4,  &
+                 'N','N',IPQTOQ(1,0),WORK(KWSMAT+IOFFS),NBS,NI,4, &
+                 D1,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
+            IOFFS = IOFFS + NFNUC(NUCDEP+I)
+         ENDIF
+         IOFFL = IOFFL + NFNUC(I)
+      ENDDO
+
+! P_A matrices symetrisation
+
+      DO I = 1,NUCDEP
+         CALL FULMAT('S',NI,NI,PMAT(1,1,1,I))
+         DO IZ = 2,4
+            CALL FULMAT('A',NI,NI,PMAT(1,1,IZ,I))
+         ENDDO
+      ENDDO
+!
+      IF(IPRLOC.GE.1) THEN
+         DO I = 1,NUCDEP
+            WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
+            WRITE(LUPRI,'(A)') '  ============================'
+            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
+         ENDDO
+      ENDIF
+
+! Calculation and print of the localisation criterion
+
+      WRITE(LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
+      WRITE(LUPRI,'(A)')  '  ===================================  '
+      DINV = D0
+      DO I = 1,NI
+         QLOC2 = D0
+         DO J = 1,NUCDEP
+            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4.0D0
+         ENDDO
+         DLOC = D1/QLOC2
+         DINV = DINV + QLOC2
+         WRITE(LUPRI,'(A,I3,A,F7.4)') &
+         '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
+      ENDDO
+      DINVM = DINV/NI
+      WRITE(LUPRI,'(/A,F15.13)') '* Inverse mean delocalization = ',DINVM
+
+      CALL MEMREL('ORBLO1',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      CALL QEXIT('ORBLO1')
+
+  END SUBROUTINE ORBLO1
+
+!================================================================================!
 !                             END OF THE MODULE                                  !
 !================================================================================!
 end module localization
