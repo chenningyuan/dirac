@@ -28,8 +28,6 @@ contains
   ! internal variables
 
   !------------------------------------------------------------------------------!
-  write(6,*) "I'm in select_coeff_own_bas module"
-
   call selown_mod(iopt,cmo,eig,ibeig,inuc,nnuc,iunit,cmofil, &
                   csel,esel,ibsel,nvecs,ioff,kvec,nstr)
 

@@ -42,7 +42,8 @@ contains
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:) :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
-      REAL*8,    ALLOCATABLE, DIMENSION(:) :: SCOEF, SCOEFO, SMAT, PMAT, XKAPPA, HAMAT, CMO
+      REAL*8,    ALLOCATABLE, DIMENSION(:) :: SCOEF, SCOEFO, SMAT, CMO
+      REAL*8,    ALLOCATABLE :: PMAT(:,:,:,:), XKAPPA(:,:,:), HAMAT(:,:,:)
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLOC')
@@ -65,10 +66,10 @@ contains
       CALL ALLOC(SCOEF ,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEF IN ORBLOC')
       CALL ALLOC(SCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEFO IN ORBLOC')
       CALL ALLOC(SMAT  ,N2BBASX,ID='SMAT IN ORBLOC')
-      CALL ALLOC(PMAT  ,NUCDEP*NISH(IFRP)*NISH(IFRP)*4,ID='PMAT IN ORBLOC')
-      CALL ALLOC(XKAPPA,NISH(IFRP)*NISH(IFRP)*4,ID='XKAPPA IN ORBLOC')
-      CALL ALLOC(HAMAT ,NISH(IFRP)*NISH(IFRP)*4,ID='HAMAT IN ORBLOC')
       CALL ALLOC(CMO   ,N2BBASXQ,ID='CMO IN ORBLOC')
+      CALL ALLOC(HAMAT ,NISH(IFRP),NISH(IFRP),4,ID='HAMAT IN ORBLOC')
+      CALL ALLOC(XKAPPA,NISH(IFRP),NISH(IFRP),4,ID='XKAPPA IN ORBLOC')
+      CALL ALLOC(PMAT  ,NISH(IFRP),NISH(IFRP),4,NUCDEP,ID='PMAT IN ORBLOC')
 
       CALL ALLOC(NFNUC ,2*NUCDEP,ID='NFNUC IN ORBLOC')
       CALL ALLOC(ISEL  ,NISH(IFRP),ID='ISEL IN ORBLOC')
@@ -133,7 +134,7 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL ORBLO2(PMAT,NISH(IFRP),XKAPPA,HAMAT,XNRM,FLAG)
+        CALL ORBLO2(PMAT,XKAPPA,HAMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
@@ -179,7 +180,7 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL ORBLO2(PMAT,NISH(IFRP),XKAPPA,HAMAT,XNRM,FLAG)
+        CALL ORBLO2(PMAT,XKAPPA,HAMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
         CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
         CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4, &
                         XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC)
@@ -281,8 +282,6 @@ contains
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
 
   !------------------------------------------------------------------------------!
-      WRITE(6,*) "I'm in localization module"
-
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
         WRITE(LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
@@ -717,90 +716,88 @@ contains
 !================================================================================!
 !================================================================================!
 
-  SUBROUTINE ORBLO2(PMAT,NI,XKAPPA,HAMAT,XNRM,FLAG)
-!***********************************************************************
-!
-!     Written by S.Dubillard Jan 21 2004
-!     Last revision:
-!
-!     Construction of the XKAPPA matrix
-!
-!***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
-#include "priunit.h"
-      PARAMETER(D4 = 4.0D0)
-      PARAMETER(D2 = 2.0D0)
-      PARAMETER(D1 = 1.0D0)
-      PARAMETER(D0 = 0.0D0)
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbloc.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
+  subroutine orblo2(pmat,xkappa,hamat,xnrm,flag,hesloc,iprloc,ipqtoq,lupri)
+  !******************************************************************************!
+  !                                                                              !
+  !     Written by S.Dubillard Jan 21 2004                                       !
+  !     Last revision:                                                           !
+  !                                                                              !
+  !     Construction of the XKAPPA matrix                                        !
+  !                                                                              !
+  !******************************************************************************!
+  IMPLICIT NONE
 
-      DIMENSION PMAT(NI,NI,4,NUCDEP),XKAPPA(NI,NI,4),HAMAT(NI,NI,4)
-      LOGICAL FLAG
+  ! external variables
+  logical flag, hesloc
+
+  integer*4 :: iprloc, lupri
+  integer*4, dimension(:,:) :: ipqtoq
+
+  ! internal variables
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
+
+  real*8 :: xnrm
+  real*8, dimension(:,:,:)   ::  xkappa, hamat
+  real*8, dimension(:,:,:,:) ::  pmat
+
+  integer*4 :: i, j, k, iz, nucdep, ni, ndim
+  real*8    :: pii, pjj, pji, dnrm2
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLO2')
+  call qenter('orblo2')
 
-! Hessian matrix
+  ! Get some dimensions
+  nucdep = size(pmat,4)
+  ni     = size(pmat,1)
 
-      NDIM = NI*NI*4
-      CALL DZERO(HAMAT,NDIM)
-!STbugDO IZ = 1,4
-         DO J = 1,NI
-            DO I = 1,NI
-               DO K = 1,NUCDEP
-!                 HAMAT(I,J,1) = HAMAT(I,J,1) - 2.0D0*(
-!    S  (PMAT(I,I,1,K) - PMAT(J,J,1,K))*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
-                 PII = PMAT(I,I,1,K)
-                 PJJ = PMAT(J,J,1,K)
-                 PJI = PMAT(J,I,1,K)
-                 HAMAT(I,J,1) = HAMAT(I,J,1) + D4*PJI*PJI - D2*((PJJ-PII)*(PJJ-PII))
-               ENDDO
-            ENDDO
-         ENDDO
-!STbugENDDO
+  ! Construct Hessian matrix
+  ndim = ni*ni*4
+  call dzero(hamat,ndim)
+  do j = 1,ni
+    do i = 1,ni
+      do k = 1,nucdep
+        pii = pmat(i,i,1,k)
+        pjj = pmat(j,j,1,k)
+        pji = pmat(j,i,1,k)
+        hamat(i,j,1) = hamat(i,j,1) + d4*pji*pji - d2*((pjj-pii)*(pjj-pii))
+      enddo
+    enddo
+  enddo
 
-! Construction and print of the XKAPPA matrix
+  ! Construction and print of the XKAPPA matrix
+  ndim = ni*ni*4
+  call dzero(xkappa,ndim)
+  do iz = 1,4
+     do j = 1,ni
+        do i = 1,ni
+           do k = 1,nucdep
+              xkappa(i,j,iz) = xkappa(i,j,iz) + d2*( &
+                   pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)))
+              if (flag) then
+                 if(.not. hesloc) then
+                    if(hamat(i,j,1) .le. -d1) then
+                 xkappa(i,j,iz) = xkappa(i,j,iz) / (-hamat(i,j,1))
+                    endif
+                 endif
+              endif
+           enddo
+        enddo
+     enddo
+  enddo
 
-      NDIM = NI*NI*4
-      CALL DZERO(XKAPPA,NDIM)
-      DO IZ = 1,4
-         DO J = 1,NI
-            DO I = 1,NI
-               DO K = 1,NUCDEP
-                  XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + D2*( &
-                       PMAT(I,J,IZ,K)*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
-                  IF (FLAG) THEN
-                     IF(.NOT. HESLOC) THEN
-                        IF(HAMAT(I,J,1) .LE. -D1) THEN
-                     XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) / (-HAMAT(I,J,1))
-                        ENDIF
-                     ENDIF
-                  ENDIF
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-      IF(IPRLOC .GE. 5) THEN
-         WRITE (LUPRI,'(/A)') '* KAPPA matrix :'
-         CALL PRQMAT(XKAPPA(1,1,1),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      XNRM = DNRM2(NDIM,XKAPPA,1)
-      WRITE (LUPRI,'(A,E12.2)') 'Norm of gradient: ',DSQRT(XNRM)
+  ! Print some kappa matrix
+  if(iprloc .ge. 5) then
+     write (lupri,'(/a)') '* KAPPA matrix :'
+     call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
+  endif
 
-      CALL QEXIT('ORBLO2')
+  ! Norm of the gradient
+  xnrm = dnrm2(ndim,xkappa,1)
+  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
 
-  END SUBROUTINE ORBLO2
+  call qexit('orblo2')
+
+  end subroutine orblo2
 
 !================================================================================!
 !================================================================================!
