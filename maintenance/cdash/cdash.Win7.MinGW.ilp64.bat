@@ -12,7 +12,7 @@ rem set DIRAC=C:\Users\dv6-2145ec\Documents\MiroIlias_osobne\dirac_software\git_
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-git pull
+git pull origin master
 
 python pamadm -a 
 
