@@ -74,8 +74,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
 
-      use interface_ao
-      use interface_mo
+      use interface_ao_specific
+      use interface_mo_specific
       use xmlout
 
 #include "implicit.h"

@@ -398,9 +398,10 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
       SUBROUTINE ECPINT_INPUT_READ_GEO
      &           (mcu, msu, ng, nbft, ECP_INPUT, NUC_N, BASIS_BLOCK_N,
      &            NUC_OTHER_N, ica, mcons, mgcs, maords, lmnp1, lmn1u,
-     &            ipq, nrcr, nir, nso, nt, ntl, ntu, la, lb, mcrs,
-     &            NUC_CHG, X, Y, Z, NUC_NAME, mru, ncrs)
+     &            nrcr, nir, nso, nt, ntl, ntu, la, lb, mcrs,
+     &            NUC_CHG, X, Y, Z, NUC_NAME, mru, ncrs,nst)
 
+      USE RECP_FUNCTION
       IMPLICIT NONE
 
 #include "argos_mxvalue.h"
@@ -418,7 +419,6 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
       INTEGER     maords(*)  ! from ECPINT_INPUT_READ_AO2SO
       INTEGER     lmnp1(*)   ! (l+1)
       INTEGER     lmn1u      ! maximum value of lmnp1
-      INTEGER     ipq(*)
       INTEGER     nrcr(*), nir(*), nso(*)
       INTEGER     nt(*), ntl(*), ntu(*)
       INTEGER     la(mru,*), lb(*)
@@ -426,6 +426,7 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
       REAL*8      NUC_CHG(*)      ! NUC_CHG : chg
       REAL*8      X(mcu,*),Y(mcu,*),Z(mcu,*)
       CHARACTER*3 NUC_NAME(*)     ! NUC_NAME : mtype
+      INTEGER     nst
 !     local
       INTEGER     I, J, K, I2
       INTEGER     NUC_I          ! NUC_I(is)
@@ -438,6 +439,10 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
 !     nbft : total number of symmetry orbital basis functions.
       nbft = 0 
 
+!     CHECKME
+      DO I = 1, nst
+         nso(i) = 0 
+      ENDDO
 
       DO NUC_I = 1,NUC_N           ! NUC_I(is) -> NUC_N(ns)
 
@@ -474,7 +479,7 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
           lmn1u     = max(lmn1u,lmnp1(BASIS_BLOCK))
 
 !         nt : 
-          nt(I2)    = ipq(lmnp1(BASIS_BLOCK)+1)
+          nt(I2)    = RECP_FNIPQ(lmnp1(BASIS_BLOCK)+1)
           ntu(I2)   = (nt(I2)*(lmnp1(BASIS_BLOCK)+2))/3
           ntl(I2)   = ntu(I2)-nt(I2)+1
 !         nct(I2)   = NUC_OTHER_N(NUC_I)*nt(I2)
@@ -485,6 +490,8 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
               nso(la(K,maords(L_QUANT))) 
      &           = nso(la(K,maords(L_QUANT)))+1
               lb(nbft) = nso(la(K,maords(L_QUANT)))
+              print *,'la:',la(K,maords(L_QUANT)),
+     &                'nso:',nso(la(K,maords(L_QUANT)))
             ENDDO
           ENDDO
         ENDDO

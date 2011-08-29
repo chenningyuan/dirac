@@ -7,15 +7,6 @@
 !     and maintained by Young Choon Park (KAIST)
 !
 !*******************************************************************
-!     PROGRAM ARGOS
-!
-!     INTEGER     LCORED
-!     PARAMETER ( LCORED = 4 500 000 )
-!     REAL*8    MEM_ALL
-!     COMMON // MEM_ALL( LCORED )
-!     LCORE  = LCORED
-!     CALL ARGOS_DRIVER( MEM_ALL(IFIRST), (LCORE) )
-!*******************************************************************
       SUBROUTINE ECPINT(WORK,LWORK)
 
 #include "implicit.h"

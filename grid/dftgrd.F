@@ -124,28 +124,15 @@ C..added for the MOLCAS scheme:
       CALL alloc(KNUCO,NDIM  )
 
 
-C
-C     Open unit
-C     ================
-C
-      lunit_grid = 44
-      IF(num_grid_cfg_import_grid) THEN
-        OPEN(lunit_grid,
-     &       FORM   = 'FORMATTED',
-     &       STATUS = 'UNKNOWN',
-     &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  num_grid_cfg_gridfile)
-      ELSE
-        OPEN(lunit_grid,
-     &       FORM   = 'FORMATTED',
-     &       STATUS = 'UNKNOWN',
-     &       ACCESS = 'SEQUENTIAL',
-     &       FILE   = 'numerical_grid')
-      ENDIF
-      REWIND lunit_grid
-
       if (num_grid_cfg_import_grid) go to 999
 
+      lunit_grid = 44
+      OPEN(lunit_grid,
+     &     FORM   = 'FORMATTED',
+     &     STATUS = 'UNKNOWN',
+     &     ACCESS = 'SEQUENTIAL',
+     &     FILE   = 'numerical_grid')
+      REWIND lunit_grid
 
 C
 C     Calculate abscissas and weights
@@ -166,6 +153,7 @@ C
         call grtest()
       end if
 
+      close(lunit_grid, status='keep')
 
       TIMGRD = SECOND() - TIMSTR
       WRITE (LUPRI,'(1X)')

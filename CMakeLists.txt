@@ -36,12 +36,19 @@ endif()
 # this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# check whether pamadm-generated files exist, if not exit
+# check whether pamadm-generated files exist
 if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake"
     AND EXISTS "${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
 else()
-    message(FATAL_ERROR "could not find cmake/Sources.cmake and/or cmake/Definitions.cmake and/or cmake/Tests.cmake; run pamadm first")
+    # they do not exist: run pamadm -a
+    execute_process(
+        COMMAND python pamadm -a
+        TIMEOUT 1
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_QUIET
+    )
+    message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
 include(Definitions)
@@ -102,7 +109,8 @@ set(WORK_MEM_WORDS
 add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
 include(Archs)
-include(Compilers)
+include(FCompilers)
+include(CCompilers)
 
 set(LIBS)
 
@@ -180,7 +188,7 @@ add_custom_command(
 
 add_executable(
     gen_fortran_interface_h
-    ${PROJECT_SOURCE_DIR}/cbuild/gen_fortran_interface_h.c
+    ${PROJECT_SOURCE_DIR}/utils/gen_fortran_interface_h.c
     )
 
 include_directories(
@@ -205,18 +213,7 @@ if(ENABLE_XCFUN)
         )
 endif()
 
-# create compilation info
-configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/compilation_info.py.in
-    ${CMAKE_BINARY_DIR}/compilation_info.py
-    )
-execute_process(
-    COMMAND python ${CMAKE_BINARY_DIR}/compilation_info.py
-    TIMEOUT 1
-    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/gp/compilation_info.F90
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+include(CompilationInfo)
 
 # copy pam to build dir
 configure_file(
@@ -241,6 +238,7 @@ set(DIRAC_SOURCES
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
     gp/compilation_info.F90
+    gp/git_revision_info.F90
     )
 
 add_library(
@@ -287,88 +285,19 @@ foreach(
 endforeach()
 
 include(Install)
-include(InstallRequiredSystemLibraries)
-
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DIRAC")
-set(CPACK_PACKAGE_VENDOR "T. Saue, L. Visscher, H. J. Aa. Jensen, and contributors")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL.rst")
-set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_VERSION_MAJOR    "${VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR    "${VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH    "${VERSION_PATCH}")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY
-    "DIRAC ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
-    )
-
-SET(EXPORT_DIR ${CMAKE_BINARY_DIR}/export)
-SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
-    "${EXPORT_DIR};/"
-    )
-
-include(CPack)
-
-file(GLOB_RECURSE H_FILES   RELATIVE ${CMAKE_SOURCE_DIR} "*.h")
-file(GLOB_RECURSE INC_FILES RELATIVE ${CMAKE_SOURCE_DIR} "*.inc")
-
-set(INCLUDE_FILES
-    ${H_FILES}
-    ${INC_FILES}
-    )
-
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    add_custom_target(release
-        COMMAND mkdir -p ${EXPORT_DIR}
-        COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
-        COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
-        COMMAND rm     ${EXPORT_DIR}/sources.tar
-        COMMAND rm -rf ${EXPORT_DIR}/build
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
-        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild            ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis             ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton      ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/test              ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules           ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL           ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.guess      ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.status     ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.sub        ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/README            ${EXPORT_DIR}
-        COMMAND make package_source
-        COMMENT "Packaging source files"
-        VERBATIM
-        )
-endif()
-
-# add short make target for the executable's diagnostics 
-# with the  external python script
-add_custom_target(dgn
-    COMMAND ${CMAKE_SOURCE_DIR}/utils/diagn.py
-)
+include(Release)
 
 if(VERBOSE_OUTPUT)
     include(Report)
-
-    # print out enviroment variables
-    if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        message("Actual Unix environment variable PATH=$ENV{PATH}")
-        message("Actual Unix environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-    else()
-        message("Actual Windows environment variable PATH=$ENV{PATH}")
-            message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-    endif()
 endif()
+
+include(Documentation)
+
+# get size of static allocations
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
 
 # custom commands on created dirac.x executable
 add_custom_command(
@@ -377,14 +306,3 @@ add_custom_command(
         POST_BUILD COMMAND ../utils/diagn.py
     endif()
 )
-
-# doxygen documentation
-configure_file(
-    ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
-    ${PROJECT_BINARY_DIR}/Doxyfile
-)
-add_custom_target(
-    doc 
-    COMMAND doxygen
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
