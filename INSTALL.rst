@@ -221,4 +221,4 @@ Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
 
   $ make
 
-Voila. You can do these steps also after you have compiled the DIRAC binary.
+Voila! You can do these steps also after you have compiled the DIRAC binary.
