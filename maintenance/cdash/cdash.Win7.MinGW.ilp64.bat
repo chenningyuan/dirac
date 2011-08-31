@@ -6,12 +6,13 @@ rem  http://www.robvanderwoude.com/batchfiles.php
 rem the directory where your DIRAC sits
 
 echo "hello, building up DIRAC"
-set DIRAC=C:\Users\dv6-2145ec\Dirac-Windows\gfortran_gcc_ilp64_ownmath\trunk
+rem set DIRAC=C:\Users\dv6-2145ec\Dirac-Windows\gfortran_gcc_ilp64_ownmath\trunk
+rem set DIRAC=C:\Users\dv6-2145ec\Documents\MiroIlias_osobne\dirac_software\git_downloaded\trunk
 
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-svn up
+git pull origin master
 
 python pamadm -a 
 
