@@ -1033,7 +1033,7 @@ C    =========================================================
       ENDDO
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
-      IF(IPRINT.GE.5) THEN
+!gosia      IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1044,7 +1044,7 @@ C  ... in gp/gpsaue.F
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      ENDIF
+!end if      ENDIF
       CALL QEXIT('GETMDM')
       RETURN
       END

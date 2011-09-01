@@ -37,6 +37,7 @@ module london_prp_cfg
 
 ! parameters:
   integer, parameter, public :: fcklon_unit = 70
+  integer, parameter, public :: tbmo_unit = 71
   integer, parameter, public :: twolon_unit = 69
   integer, parameter, public :: p_lupri = 6
   integer, parameter, public :: max_prp_operators = 400
