@@ -785,6 +785,13 @@ contains
      enddo
   enddo
 
+  write(6,*)
+  write(6,*) 'Print xkappa matrix (IZ = 1)'
+  do j=1,ni
+    write(6,'(i4,10es9.1)') j,(xkappa(j,k,1),k=1,ni)
+  enddo
+  write(6,*)
+
   ! Print some kappa matrix
   if(iprloc .ge. 5) then
      write (lupri,'(/a)') '* KAPPA matrix :'
