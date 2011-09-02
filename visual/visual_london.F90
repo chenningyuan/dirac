@@ -300,23 +300,7 @@ contains
 
 !   ----------------------------------------------------------------------------
 
-    if (visual_cfg_london_symmetric .or. &
-        visual_cfg_london_natural) then
-
-!      "-" is because dag() does only transposition and T^B is antihermitian 
-
-       if (nfsym == 2) then
-          D_con = C*(D_con_mo*dag(Cig)) &
-                + C*(D_con_mo*dag(Ciu))
-          D_con = D_con - dag(D_con)
-       else
-
-          D_con = C*(D_con_mo*dag(Cig))
-          D_con = D_con - dag(D_con)
-
-       end if
-
-    else if (visual_cfg_london_none) then
+    if (visual_cfg_london_none) then
 
 !      here build density matrix modified by first-order overlap
 !      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
@@ -339,6 +323,22 @@ contains
        else
           D_con = Cig*(D_con*dag(Cig))
        end if
+
+    else
+!      symmetric or natural connection used in preceding response run
+!      "-" is because dag() does only transposition and T^B is antihermitian 
+
+       if (nfsym == 2) then
+          D_con = C*(D_con_mo*dag(Cig)) &
+                + C*(D_con_mo*dag(Ciu))
+          D_con = D_con - dag(D_con)
+       else
+
+          D_con = C*(D_con_mo*dag(Cig))
+          D_con = D_con - dag(D_con)
+
+       end if
+
 
     end if
 
