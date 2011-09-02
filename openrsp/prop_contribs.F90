@@ -2197,7 +2197,7 @@ contains
 
 
    subroutine twofck_ks(n, D, F)
-      use xc_driver
+      use xcint_main
       use num_grid_gen
       integer,      intent(in)    :: n
 #ifdef PRG_DIRAC
@@ -2332,21 +2332,21 @@ contains
 
 !radovan:
 !           in many situations one could pass F directly
-!           to xc_integrator but the gga symmetrization can make problems
+!           to integrate_xc but the gga symmetrization can make problems
 !           with hybrid functionals and anti-hermitian contributions (nonzero frequencies)
 !           so in other words while A is always symmetric, F is non necessarily so
-!           and it would get symmetrized inside xc_integrator
+!           and it would get symmetrized inside integrate_xc
             
 !           note to myself:
 !           geometric derivatives of 2nd order properties
 !           are incorrect with conventional derivatives, correct with xcfun
-!           (this is due to handling of options inside xc_driver)
+!           (this is due to handling of options inside xcint_main)
             
             call generate_num_grid(D(1)%elms)
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
-            call xc_integrator(xc_mat_dim      = A%nrow,                              &
+            call integrate_xc(xc_mat_dim      = A%nrow,                              &
                                xc_nz           = nz,                                  &
                                xc_dmat_0       = D(1)%elms,                           &
                                xc_nr_dmat      = nr_dmat - 1,                         &

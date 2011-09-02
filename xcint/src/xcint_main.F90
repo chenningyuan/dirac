@@ -1,4 +1,4 @@
-module xc_driver
+module xcint_main
 
 #ifdef PRG_DIRAC
 !  these dependencies should be removed
@@ -33,7 +33,7 @@ module xc_driver
 
    implicit none
 
-   public xc_integrator
+   public integrate_xc
    public get_xc_energy
    public get_xc_mat_energy
    public get_nr_electrons_integrated
@@ -156,7 +156,7 @@ module xc_driver
 
 contains
 
-   subroutine xc_integrator(xc_mat_dim,               &
+   subroutine integrate_xc(xc_mat_dim,               &
                             xc_nz,                    &
                             xc_dmat_0,                &
                             xc_nr_dmat,               &
