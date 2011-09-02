@@ -448,21 +448,7 @@ contains
          read(unit_in, *) visual_cfg_london_component
       end if
 
-      if (kw_matches(word, '.NATURA')) then
-         visual_cfg_london_natural   = .true.
-         visual_cfg_london_symmetric = .false.
-         visual_cfg_london_none      = .false.
-      end if
-
-      if (kw_matches(word, '.SYMMET')) then
-         visual_cfg_london_natural   = .false.
-         visual_cfg_london_symmetric = .true.
-         visual_cfg_london_none      = .false.
-      end if
-
       if (kw_matches(word, '.NONE  ')) then
-         visual_cfg_london_natural   = .false.
-         visual_cfg_london_symmetric = .false.
          visual_cfg_london_none      = .true.
       end if
 
