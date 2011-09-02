@@ -183,7 +183,7 @@ C     J. Thyssen, 2000/8/27
 C
 C*****************************************************************************
       use quaternion_algebra
-      use xc_driver
+      use xcint_main
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"

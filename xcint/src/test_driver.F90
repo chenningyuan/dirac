@@ -2,7 +2,7 @@ program main
 
    use interface_ao
    use interface_file_io
-   use xc_driver
+   use xcint_main
    use xc_derv
    use fake_input
 

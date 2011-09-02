@@ -268,7 +268,7 @@ contains
 
 
   subroutine get_gtb(fao, tb_dmat, cmo, ibeig)
-    use xc_driver
+    use xcint_main
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
     real(8), intent(in)    :: tb_dmat(*)

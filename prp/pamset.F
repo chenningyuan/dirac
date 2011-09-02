@@ -538,7 +538,7 @@ C
 C***********************************************************************
        use dirac_cfg
        use dft_cfg
-       use xc_driver
+       use xcint_main
        use fde_mod
        use num_grid_gen
        use num_grid_cfg

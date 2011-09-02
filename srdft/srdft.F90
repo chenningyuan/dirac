@@ -53,7 +53,7 @@ module srdft
 ! ---------------------------------------------------------------------------------------
 !
   use memory_allocator
-  use xc_driver 
+  use xcint_main 
   use num_grid_gen
 ! x2c modules
 ! use x2c_fio, only:      &

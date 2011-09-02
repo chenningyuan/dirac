@@ -372,7 +372,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xc_driver
+      use xcint_main
       use interface_mo_specific
       use dft_cfg
       use fde_mod
@@ -1190,7 +1190,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use dft_cfg
-      use xc_driver
+      use xcint_main
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
@@ -1578,7 +1578,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-      use xc_driver
+      use xcint_main
 
 #include "implicit.h"
 #include "priunit.h"

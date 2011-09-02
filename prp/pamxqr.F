@@ -2290,7 +2290,7 @@ C
 C*****************************************************************************
       use dirac_cfg
       use dft_cfg
-      use xc_driver
+      use xcint_main
       use num_grid_gen
 
 

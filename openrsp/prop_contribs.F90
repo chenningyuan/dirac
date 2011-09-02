@@ -2197,7 +2197,7 @@ contains
 
 
    subroutine twofck_ks(n, D, F)
-      use xc_driver
+      use xcint_main
       use num_grid_gen
       integer,      intent(in)    :: n
 #ifdef PRG_DIRAC
@@ -2340,7 +2340,7 @@ contains
 !           note to myself:
 !           geometric derivatives of 2nd order properties
 !           are incorrect with conventional derivatives, correct with xcfun
-!           (this is due to handling of options inside xc_driver)
+!           (this is due to handling of options inside xcint_main)
             
             call generate_num_grid(D(1)%elms)
 #ifdef VAR_MPI

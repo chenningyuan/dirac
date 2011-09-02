@@ -1,4 +1,4 @@
-module xc_driver
+module xcint_main
 
 #ifdef PRG_DIRAC
 !  these dependencies should be removed

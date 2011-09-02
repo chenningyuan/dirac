@@ -855,7 +855,7 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 
-      use xc_driver
+      use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -995,7 +995,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
 
-         use xc_driver
+         use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"

@@ -415,7 +415,7 @@ contains
 
 
   subroutine xc_contrib_2el_lao(cmo, fmat)
-    use xc_driver
+    use xcint_main
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     real(8), intent(inout) :: fmat(nr_ao_total*nr_ao_total, nr_qu, max_nr_xyz_comp)
