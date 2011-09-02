@@ -946,7 +946,7 @@ C
 C
 C        Enter the DFT module
 C
-         call xc_integrator(xc_mat_dim = 1,
+         call integrate_xc(xc_mat_dim = 1,
      &                      xc_nz      = 1,
      &                      xc_dmat_0  = (/0.0d0/),
      &                      xc_nr_dmat = 0,
@@ -1066,7 +1066,7 @@ C
 C
 C        Enter the DFT module
 C
-         call xc_integrator(xc_mat_dim = 1,
+         call integrate_xc(xc_mat_dim = 1,
      &                      xc_nz      = 1,
      &                      xc_dmat_0  = (/0.0d0/),
      &                      xc_nr_dmat = 0,

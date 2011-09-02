@@ -183,7 +183,7 @@ contains
 
 !      compute the srXC potential 
        call generate_num_grid(dvao)
-       call xc_integrator(xc_mat_dim          = nao,  &
+       call integrate_xc(xc_mat_dim          = nao,  &
                               xc_nz           = nz,   &
                               xc_dmat_0       = dvao, &! contains the TOTAL density matrix
                               xc_nr_dmat      = 0,    &

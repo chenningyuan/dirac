@@ -431,7 +431,7 @@ contains
     !debug_me = .false.
     !if (debug_me) then
     !  do icomp = 1, max_nr_xyz_comp
-    !    write(p_lupri, *) 'london_direct: fmat before xc_integrator, icomp = ', icomp
+    !    write(p_lupri, *) 'london_direct: fmat before integrate_xc, icomp = ', icomp
     !    call prqmat(fmat_p(1, 1, icomp), &
     !                nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total,  &
     !                nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
@@ -447,7 +447,7 @@ contains
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
-    call xc_integrator(xc_mat_dim              = nr_ao_total,     &
+    call integrate_xc(xc_mat_dim              = nr_ao_total,     &
                        xc_nz                   = nr_qu,           &
                        xc_dmat_0               = dmat,            &
                        xc_nr_dmat              = 0,               &
@@ -458,7 +458,7 @@ contains
 
     !if (debug_me) then
     !  do icomp = 1, max_nr_xyz_comp
-    !    write(p_lupri, *) 'london_direct: fmat after xc_integrator, icomp = ', icomp
+    !    write(p_lupri, *) 'london_direct: fmat after integrate_xc, icomp = ', icomp
     !    call prqmat(fmat_p(1, 1, icomp), &
     !                nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total,  &
     !                nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)

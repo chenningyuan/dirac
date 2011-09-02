@@ -118,7 +118,7 @@ This is a minimal example to integrate the XC potential matrix::
 
   use xc_driver
 
-  call xc_integrator(                         &
+  call integrate_xc(                         &
                      xc_mat_dim      = nr_ao, &
                      xc_nz           = 1,     &
                      xc_dmat_0       = dmat,  &

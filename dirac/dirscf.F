@@ -578,7 +578,7 @@ C
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call xc_integrator(xc_mat_dim      = ntbas(0),
+           call integrate_xc(xc_mat_dim      = ntbas(0),
      &                        xc_nz           = nz,
      &                        xc_dmat_0       = dmat,
      &                        xc_nr_dmat      = 0,
@@ -1381,7 +1381,7 @@ C
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
-           call xc_integrator(xc_mat_dim      = ntbas(0),
+           call integrate_xc(xc_mat_dim      = ntbas(0),
      &                        xc_nz           = nz,
      &                        xc_dmat_0       = dmat,
      &                        xc_nr_dmat      = 0,

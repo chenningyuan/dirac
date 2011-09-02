@@ -296,7 +296,7 @@ c        ... Calculate and add correction.
 !       not correct for gga
 !        in one go integrate xc potential
 !        and xc contribution to molecular gradient
-!        call xc_integrator(xc_mat_dim           = ntbas(0),
+!        call integrate_xc(xc_mat_dim           = ntbas(0),
 !    &                      xc_nz                = nz,
 !    &                      xc_dmat_0            = dmat,
 !    &                      xc_nr_dmat           = 0, 
@@ -306,14 +306,14 @@ c        ... Calculate and add correction.
 !    &                      xc_nr_atoms          = nucdep, 
 !    &                      xc_property_gradient = gradxc,
 !    &                      xc_do_geo_0          = .true.)
-         call xc_integrator(xc_mat_dim           = ntbas(0),
+         call integrate_xc(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
      &                      xc_dmat_0            = dmat,
      &                      xc_nr_dmat           = 0, 
      &                      xc_nr_fmat           = 1,
      &                      xc_fmat              = work(kh1ao),
      &                      xc_do_potential      = .true.)
-         call xc_integrator(xc_mat_dim           = ntbas(0),
+         call integrate_xc(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
      &                      xc_dmat_0            = dmat,
      &                      xc_nr_dmat           = 0, 

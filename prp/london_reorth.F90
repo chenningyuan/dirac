@@ -339,11 +339,11 @@ contains
       if (debug_me) then
         do icomp = 1, nr_xyz_comp
           ioff = (icomp - 1)*nr_qu*nr_ao_total**2 + 1
-          write(p_lupri, *) 'london_reorth: fmat before xc_integrator, icomp = ', icomp
+          write(p_lupri, *) 'london_reorth: fmat before integrate_xc, icomp = ', icomp
           call prqmat(fao(ioff), &
                       nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
                       nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
-          write(p_lupri, *) 'london_reorth: tb_dmat before xc_integrator, icomp = ', icomp
+          write(p_lupri, *) 'london_reorth: tb_dmat before integrate_xc, icomp = ', icomp
           call prqmat(tb_dmat(ioff), &
                       nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
                       nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
@@ -357,7 +357,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim          = nr_ao_total, &
+      call integrate_xc(xc_mat_dim          = nr_ao_total, &
                          xc_nz               = nr_qu,       &
                          xc_dmat_0           = dmat,        &
                          xc_nr_dmat          = nr_xyz_comp, &
@@ -374,7 +374,7 @@ contains
       if (debug_me) then
         do icomp = 1, nr_xyz_comp
           ioff = (icomp - 1)*nr_qu*nr_ao_total**2 + 1
-          write(p_lupri, *) 'london_reorth: fmat after xc_integrator, icomp = ', icomp
+          write(p_lupri, *) 'london_reorth: fmat after integrate_xc, icomp = ', icomp
           call prqmat(fao(ioff), &
                       nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
                       nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)

@@ -33,7 +33,7 @@ program main
         access = 'sequential')
    rewind(unit_grid)
 
-   call xc_integrator(                                        &
+   call integrate_xc(                                        &
                       xc_mat_dim      = nr_ao,                &
                       xc_nz           = nr_quaternion_blocks, &
                       xc_dmat_0       = dmat,                 &
