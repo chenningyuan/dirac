@@ -741,7 +741,7 @@ contains
   real*8, dimension(:,:,:,:) ::  pmat
 
   integer*4 :: i, j, k, iz, nucdep, ni, ndim
-  real*8    :: pii, pjj, pji, dnrm2
+  real*8    :: pii, pjj, pji, dnrm2, gradient
 
   !------------------------------------------------------------------------------!
   call qenter('orblo2')
@@ -768,21 +768,16 @@ contains
   ndim = ni*ni*4
   call dzero(xkappa,ndim)
   do iz = 1,4
-     do j = 1,ni
-        do i = 1,ni
-           do k = 1,nucdep
-              xkappa(i,j,iz) = xkappa(i,j,iz) + d2*( &
-                   pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)))
-              if (flag) then
-                 if(.not. hesloc) then
-                    if(hamat(i,j,1) .le. -d1) then
-                 xkappa(i,j,iz) = xkappa(i,j,iz) / (-hamat(i,j,1))
-                    endif
-                 endif
-              endif
-           enddo
+    do j = 1,ni
+      do i = 1,ni
+        gradient = d0
+        do k = 1,nucdep
+          gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
         enddo
-     enddo
+!ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+        xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+      enddo
+    enddo
   enddo
 
   write(6,*)
