@@ -442,14 +442,16 @@ contains
         ENDDO
       ENDDO
 
-      WRITE(6,*)
-      WRITE(6,*) 'Print Q^A matrices'
-      DO I=1, NUCDEP
-        WRITE(6,'(A,I4)') ' Nucleus #',I
-        DO J=1,NI
-          WRITE(6,'(I4,10ES9.1)') J,(PMAT(J,K,1,I),K=1,NI)
-        ENDDO
+      DO IZ=1,4
         WRITE(6,*)
+        WRITE(6,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
+        DO I=1, NUCDEP
+          WRITE(6,'(A,I4)') ' Nucleus #',I
+          DO J=1,NI
+            WRITE(6,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
+          ENDDO
+          WRITE(6,*)
+        ENDDO
       ENDDO
 
       IF(IPRLOC .GE. 1) THEN
@@ -752,7 +754,7 @@ contains
   real*8, dimension(:,:,:,:) ::  pmat
 
   integer*4 :: i, j, k, iz, nucdep, ni, ndim
-  real*8    :: pii, pjj, pji, dnrm2, gradient
+  real*8    :: pii, pjj, pn2, dnrm2, gradient
 
   !------------------------------------------------------------------------------!
   call qenter('orblo2')
@@ -761,7 +763,7 @@ contains
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
 
-  ! Construct Hessian matrix
+  ! Construct unbared diagonal Hessian matrix
   ndim = ni*ni*4
   call dzero(hamat,ndim)
   do j = 1,ni
@@ -769,16 +771,16 @@ contains
       do k = 1,nucdep
         pii = pmat(i,i,1,k)
         pjj = pmat(j,j,1,k)
-        pji = pmat(j,i,1,k)
-        hamat(i,j,1) = hamat(i,j,1) + d4*pji*pji - d2*((pjj-pii)*(pjj-pii))
+        pn2 = pmat(j,i,1,k)*pmat(j,i,1,k) + pmat(j,i,2,k)*pmat(j,i,2,k)
+        if(i /= j)hamat(i,j,1) = hamat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
       enddo
     enddo
   enddo
 
-  ! Construction and print of the XKAPPA matrix
+  ! Construction and print of the unbared kappa matrix
   ndim = ni*ni*4
   call dzero(xkappa,ndim)
-  do iz = 1,4
+  do iz = 1,2
     do j = 1,ni
       do i = 1,ni
         gradient = d0
@@ -786,17 +788,49 @@ contains
           gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
         enddo
 !ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hamat(i,j,1)
-        xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+        if(i /= j)xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+        if(i == j)xkappa(i,j,iz) = d0
       enddo
     enddo
   enddo
 
-  write(6,*)
-  write(6,*) 'Print xkappa matrix (IZ = 1)'
-  do j=1,ni
-    write(6,'(i4,10es9.1)') j,(xkappa(j,k,1),k=1,ni)
+  ! Construct bared diagonal Hessian matrix
+  ndim = ni*ni*4
+  call dzero(hamat,ndim)
+  do j = 1,ni
+    do i = 1,ni
+      do k = 1,nucdep
+        pii = pmat(i,i,1,k)
+        pjj = pmat(j,j,1,k)
+        pn2 = pmat(j,i,3,k)*pmat(j,i,3,k) + pmat(j,i,4,k)*pmat(j,i,4,k)
+        if(i /= j)hamat(i,j,1) = hamat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
+      enddo
+    enddo
   enddo
-  write(6,*)
+
+  ! Construction and print of the bared kappa matrix
+  ndim = ni*ni*4
+  do iz = 3,4
+    do j = 1,ni
+      do i = 1,ni
+        gradient = d0
+        do k = 1,nucdep
+          gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
+        enddo
+!ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+        if(i /= j)xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+        if(i == j)xkappa(i,j,iz) = d0
+      enddo
+    enddo
+  enddo
+
+  do iz=1,4
+    write(6,*)
+    write(6,'(a,i4)') 'Print xkappa matrix, IZ =',iz
+    do j=1,ni
+      write(6,'(i4,10es9.1)') j,(xkappa(j,k,1),k=1,ni)
+    enddo
+  enddo
 
   ! Print some kappa matrix
   if(iprloc .ge. 5) then
