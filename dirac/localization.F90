@@ -431,12 +431,23 @@ contains
         ENDDO
       ENDDO
 
+! Multiply pmat with 1/2 just to avoid confusion in the code below
+      DO IZ=1,4
+        DO I=1,NI
+          DO J=1,NI
+            DO K=1,NUCDEP
+              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
       WRITE(6,*)
       WRITE(6,*) 'Print Q^A matrices'
       DO I=1, NUCDEP
         WRITE(6,'(A,I4)') ' Nucleus #',I
         DO J=1,NI
-          WRITE(6,'(I4,10ES9.1)') J,(PMAT(J,K,1,I)/2.0D0,K=1,NI)
+          WRITE(6,'(I4,10ES9.1)') J,(PMAT(J,K,1,I),K=1,NI)
         ENDDO
         WRITE(6,*)
       ENDDO
@@ -458,8 +469,8 @@ contains
         QLOC2 = D0
         SUMD  = D0
         DO J = 1,NUCDEP
-          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4.0D0
-          SUMD  = SUMD + PMAT(I,I,1,J)/2.0D0
+          QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
+          SUMD  = SUMD + PMAT(I,I,1,J)
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
