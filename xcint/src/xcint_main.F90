@@ -252,9 +252,11 @@ contains
 
       parallel_xc = (xc_mpi_get_nr_proc() > 1)
 
+#ifdef VAR_MPI
       if (parallel_xc) then
          call xc_mpi_bcast(pure_hf_run)
       end if
+#endif
       if (pure_hf_run) then
          return
       end if
