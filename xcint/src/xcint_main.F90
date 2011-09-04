@@ -233,10 +233,6 @@ contains
 
       integer, parameter :: max_response_order_mo = 5
 
-      if (pure_hf_run) then
-         return
-      end if
-
 !#define DEBUG_XC
 #ifdef DEBUG_XC
       call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0)
@@ -255,6 +251,13 @@ contains
       tau_integral = 0.0d0
 
       parallel_xc = (xc_mpi_get_nr_proc() > 1)
+
+      if (parallel_xc) then
+         call xc_mpi_bcast(pure_hf_run)
+      end if
+      if (pure_hf_run) then
+         return
+      end if
 
 #ifdef VAR_MPI
       if (parallel_xc) then
