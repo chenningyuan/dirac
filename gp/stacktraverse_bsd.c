@@ -1,11 +1,6 @@
-#include "system_flavor.h"
+#include "trace.h"
 
-#ifdef SYS_LINUX
-#if (SYS_FLAVOR == LINUX)
-
-/* use the libexec from linux... */
-
-#elif (SYS_FLAVOR != UNKNOWN)
+#if defined (__BSD_EXECINFO__)
 /* 
    if this is not a linux system, we use the implementation below (from freebsd). 
 */
@@ -38,7 +33,7 @@
 
 #include <stddef.h>
 
-#include "stacktraverse.h"
+#include "stacktraverse_bsd.h"
 
 void *
 getreturnaddr(int level)
@@ -179,7 +174,7 @@ getreturnaddr(int level)
 
 #include <stddef.h>
 
-#include "stacktraverse.h"
+#include "stacktraverse_bsd.h"
 
 void *
 getframeaddr(int level)
@@ -318,5 +313,4 @@ getframeaddr(int level)
     }
 }
 
-#endif /* SYS_FLAVOR */
 #endif
