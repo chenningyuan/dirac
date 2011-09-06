@@ -144,8 +144,8 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_R(data,start_index_i,end_index_i, &
-     &                                      start_index_j,end_index_j)
+!                    call initData_R(data,start_index_i,end_index_i, &
+!    &                                      start_index_j,end_index_j)
 
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
@@ -354,8 +354,8 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_R(data,start_index_i,end_index_i, &
-     &                                      start_index_j,end_index_j)
+!                    call initData_R(data,start_index_i,end_index_i, &
+!    &                                      start_index_j,end_index_j)
 
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
@@ -564,8 +564,8 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_I(data,start_index_i,end_index_i, &
-     &                                      start_index_j,end_index_j)
+!                    call initData_I(data,start_index_i,end_index_i, &
+!    &                                      start_index_j,end_index_j)
 
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
@@ -774,8 +774,8 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_I(data,start_index_i,end_index_i, &
-     &                                      start_index_j,end_index_j)
+!                    call initData_I(data,start_index_i,end_index_i, &
+!    &                                      start_index_j,end_index_j)
 
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)

@@ -27,6 +27,7 @@ module visual_integrate
    use visual_cfg
    use visual_in_point
    use interface_grid
+   use file_units
 #ifdef MOD_UNRELEASED
    use visual_london
 #endif
@@ -66,15 +67,17 @@ contains
 
         CALL AROUND('3D numerical integration')
 
-        LUNIT = 44
-
         call dftgrd(D(1)%elms, 1)
 
-
-        REWIND LUNIT
+        open(interface_file_unit,       &
+             file   = 'numerical_grid', &
+             status = 'unknown',        &
+             form   = 'formatted',      &
+             access = 'sequential')
+        rewind(interface_file_unit)
 
  1      CONTINUE
-        READ(LUNIT, *) NR_POINTS
+        READ(interface_file_unit, *) NR_POINTS
 
         IF(NR_POINTS .LE. 0) GOTO 2
 
@@ -83,7 +86,7 @@ contains
         call alloc(z, nr_points)
         call alloc(w, nr_points)
 
-        call num_grid_read(x, y, z, w, lunit, nr_points)
+        call num_grid_read(x, y, z, w, interface_file_unit, nr_points)
 
         call integrate_quantity(nr_dmat, d,        &
                                 d_0,               &
@@ -102,8 +105,7 @@ contains
         GOTO 1
  2      CONTINUE
 
-
-        CLOSE(LUNIT,STATUS = 'DELETE')
+        close(interface_file_unit, status = 'keep')
 
         WRITE(LUPRI,'(A)')
         WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &

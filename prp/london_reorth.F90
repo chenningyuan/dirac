@@ -125,7 +125,6 @@ contains
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: fmat(p_n2orbxq, *)
-    !real(8), intent(in)    :: fmat(*)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -141,6 +140,7 @@ contains
     integer :: indxpr
     integer :: icomp, i, j, isymh
     logical :: ah
+    logical :: debug_me
 !-----------------------------------------------------------------------
 
   
@@ -169,6 +169,10 @@ contains
          access='direct',recl=8*p_n2orbxq,                 &
          status='unknown')
 
+    open(tbmo_unit, file='TBMO', form='unformatted',   &
+         access='sequential', action='write',          &
+         status='unknown')
+
     do icomp = 1, nr_xyz_comp
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
@@ -194,6 +198,30 @@ contains
                   prp_iprint)
 
       call deselect_wrk(work, lwork)
+
+! write to TBMO file, to be reused in visual
+! ------------------------------------------
+! *) how many components:
+      write(tbmo_unit) nr_xyz_comp
+! *) which icomp:
+      write(tbmo_unit) icomp
+! *) irep of T^B_icomp:
+      write(tbmo_unit) (isym(icomp) - 1)
+! *) time-reversal symmetry:
+!      write(tbmo_unit) 
+! *) reorthonormalization over both (p+e) shells or only over e shells:
+      write(tbmo_unit) sum_ep_rn 
+! *) T^B_icomp matrix in MO basis:
+      write(tbmo_unit) tb
+
+      debug_me = .false.
+      if (debug_me) then
+         write(p_lupri, *) 'T^B in MO basis,icomp = ', icomp
+         write(p_lupri, *) 'isym,iopsy = ', isym(icomp),iopsy(icomp)
+         call prqmat(tb, &
+                     p_norb, p_norb, p_norb, p_norb, &
+                     nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+      end if
 
 ! get final result to buf
 
@@ -228,6 +256,7 @@ contains
     end do
 
 
+    close(tbmo_unit,   status='keep')
     close(fcklon_unit, status='keep')
     close(int1_unit,   status='keep')
 
@@ -239,7 +268,7 @@ contains
 
 
   subroutine get_gtb(fao, tb_dmat, cmo, ibeig)
-    use xc_driver
+    use xcint_main
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
     real(8), intent(in)    :: tb_dmat(*)
@@ -310,11 +339,11 @@ contains
       if (debug_me) then
         do icomp = 1, nr_xyz_comp
           ioff = (icomp - 1)*nr_qu*nr_ao_total**2 + 1
-          write(p_lupri, *) 'london_reorth: fmat before xc_integrator, icomp = ', icomp
+          write(p_lupri, *) 'london_reorth: fmat before integrate_xc, icomp = ', icomp
           call prqmat(fao(ioff), &
                       nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
                       nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
-          write(p_lupri, *) 'london_reorth: tb_dmat before xc_integrator, icomp = ', icomp
+          write(p_lupri, *) 'london_reorth: tb_dmat before integrate_xc, icomp = ', icomp
           call prqmat(tb_dmat(ioff), &
                       nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
                       nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
@@ -328,7 +357,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim          = nr_ao_total, &
+      call integrate_xc(xc_mat_dim          = nr_ao_total, &
                          xc_nz               = nr_qu,       &
                          xc_dmat_0           = dmat,        &
                          xc_nr_dmat          = nr_xyz_comp, &
@@ -345,7 +374,7 @@ contains
       if (debug_me) then
         do icomp = 1, nr_xyz_comp
           ioff = (icomp - 1)*nr_qu*nr_ao_total**2 + 1
-          write(p_lupri, *) 'london_reorth: fmat after xc_integrator, icomp = ', icomp
+          write(p_lupri, *) 'london_reorth: fmat after integrate_xc, icomp = ', icomp
           call prqmat(fao(ioff), &
                       nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
                       nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)

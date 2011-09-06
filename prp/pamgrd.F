@@ -526,8 +526,6 @@ C
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dummy.h"
-!gosia: temporarily i need it
-#include "dcbprl.h"
 C
       LOGICAL FIRST(*),QBTR, IS_SQUARE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
@@ -584,45 +582,6 @@ CMI   ENDIF
         write(lupri,*) 'PRPMA1: N2BBASX,NNBBASX=',N2BBASX,NNBBASX
         CALL QUIT('PRPMA1: wrong parameters ! ')
       ENDIF
-
-!gosia: 
-!       property_info is used for visual+london
-        open(11, file='property_info', status = 'unknown',
-     &       form   = 'formatted')
-        write(11, *) prpnam(indxpr)
-        write(11, *) iprptyp(indxpr)
-        write(11, *) iprpsym(indxpr)
-        write(11, *) iprptim(indxpr)
-!      
-        write(11, *) nz
-        do i = 1, nz
-         write(11,*) ihqmat(ipqtoq(i,iprpsym(indxpr)-1),iprptim(indxpr))
-        end do
-!
-!       how many 'components' (1:3):
-        write(11, *) mcmp(iprptyp(indxpr))
-        do i = 1, mcmp(iprptyp(indxpr))
-          write(11, *) facprp(i, indxpr)
-          write(11, *) iprplbl(i, indxpr)
-          write(11, *) pdoint(iprplbl(i, indxpr))(1:4)
-          write(11, *) iprlrep(iprplbl(i, indxpr))
-          write(11, *) iprltyp(iprplbl(i, indxpr))
-          write(11, *) jm4(i, iprptyp(indxpr))
-          write(11, *) jm4pos(jm4(i, iprptyp(indxpr)))
-!repeated... but i need it
-          if (pdoint(iprplbl(i, indxpr))(2:3) .eq. '00') then
-            ic = 1
-          else if ((pdoint(iprplbl(i, indxpr))(1:1) .eq. '0') .and.
-     &             (pdoint(iprplbl(i, indxpr))(4:4) .eq. '0')) then
-            ic = 2
-          end if
-          i1 = jqbas(iprlrep(iprplbl(i, indxpr)), ic)
-          i2 = jm4pos(jm4(i, iprptyp(indxpr)))
-          write(11, *) iqmult(1, i1, i2) 
-          write(11, *) iqtopq(iqmult(1, i1, i2), iprpsym(indxpr) - 1)
-        end do
-        close(11)
-! 
 C
 C
 C     Get property matrix in AO-basis
@@ -641,14 +600,11 @@ C     ===============================
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.7) THEN
-!gosia        if ((prpnam(indxpr)(1:5) == 'dS/dB') .or. 
-!gosia     &      (prpnam(indxpr)(1:7) == 'd|S>/dB')) then
         WRITE(LUPRI,'(/A,A16)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
-!gosia        endif
       ENDIF
 !
 C

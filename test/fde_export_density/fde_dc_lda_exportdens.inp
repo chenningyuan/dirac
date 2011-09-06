@@ -25,7 +25,7 @@ DHF
 ! (on gfortran) this is because the DFT grid unit remains open which confuses
 ! embedding trying to use the same file with another unit
 .IMPORT
-IMPORT_GRID
+numerical_grid
 **INTEGRALS
 .NUCMOD
  1

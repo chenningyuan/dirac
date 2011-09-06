@@ -74,8 +74,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
 
-      use interface_ao
-      use interface_mo
+      use interface_ao_specific
+      use interface_mo_specific
       use xmlout
 
 #include "implicit.h"
@@ -855,7 +855,7 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 
-      use xc_driver
+      use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -946,7 +946,7 @@ C
 C
 C        Enter the DFT module
 C
-         call xc_integrator(xc_mat_dim = 1,
+         call integrate_xc(xc_mat_dim = 1,
      &                      xc_nz      = 1,
      &                      xc_dmat_0  = (/0.0d0/),
      &                      xc_nr_dmat = 0,
@@ -995,7 +995,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
 
-         use xc_driver
+         use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1066,7 +1066,7 @@ C
 C
 C        Enter the DFT module
 C
-         call xc_integrator(xc_mat_dim = 1,
+         call integrate_xc(xc_mat_dim = 1,
      &                      xc_nz      = 1,
      &                      xc_dmat_0  = (/0.0d0/),
      &                      xc_nr_dmat = 0,

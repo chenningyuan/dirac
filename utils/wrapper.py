@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # Universal wrapper, by Ulf Ekstrom 2011
 import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, tempfile, zipfile, socket
 
@@ -14,6 +15,9 @@ saved from the remote hosts.
 Use --launcher="mpirun OPTIONS" with the appropriate OPTIONS to run an mpi job.
 
 Use --launcher="valgrind OPTIONS" to debug with valgrind.
+
+Create a file named 'keep' in the temporary directory if you don't want it to
+be deleted at the end of a run.
 """
     W = Wrapper()
     parser = optparse.OptionParser(usage)
@@ -29,13 +33,14 @@ Use --launcher="valgrind OPTIONS" to debug with valgrind.
     group.add_option('-D','--define', type='string', action='callback',callback=W.define_callback,
 		     help='Define the environment variable NAME as VALUE',
                      metavar='NAME=VALUE')
-
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
 		     help="Do not create an archive file.")
 
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
 		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
                      metavar='[NAME=]FILE]')
+    group.add_option('--allow-empty-infiles', action='store_true', dest="allow_empty_infiles",default=False,
+		     help="Do not stop if infiles do not exist.")
     group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
 		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
     group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
@@ -132,6 +137,8 @@ Use --launcher="valgrind OPTIONS" to debug with valgrind.
     W.stdin = None
     if not options.noarchive:
         W.archive = jobname+'.tgz'
+    if options.allow_empty_infiles:
+        W.allow_empty_infiles = True
 
     # Append executable itself to the commands to be run
     if options.executable is None:
@@ -190,6 +197,7 @@ class Wrapper:
         self.archive = None
         self.archpatterns = []
         self.verbose = False
+        self.allow_empty_infiles = False
         self.workdir = None
         self.env = os.environ.copy()
         self.remote_hosts = set() # Duplicate tmpdir and stage in on these hosts
@@ -287,18 +295,23 @@ class Wrapper:
         # Copy in files, stop if problem
         for f in self.copyin: 
             src = f[0]
-            if len(f) % 2 == 0: # dst name given
-                dst = os.path.join(self.tmppath,f[1])
-                rep = f[2:]
+            if os.path.isfile(src):
+                if len(f) % 2 == 0: # dst name given
+                    dst = os.path.join(self.tmppath,f[1])
+                    rep = f[2:]
+                else:
+                    dst = os.path.join(self.tmppath,os.path.basename(src))
+                    rep = f[1:]
+                rep = zip(rep[0::2],rep[1::2])
+                try:
+                    self.copy_with_replacement(src,dst,rep)
+                except:
+                    print >> sys.stderr, "Wrapper: File copy failed, quitting."
+                    raise
             else:
-                dst = os.path.join(self.tmppath,os.path.basename(src))
-                rep = f[1:]
-            rep = zip(rep[0::2],rep[1::2])
-            try:
-                self.copy_with_replacement(src,dst,rep)
-            except:
-                print >> sys.stderr, "Wrapper: File copy failed, quitting."
-                raise
+                if not self.allow_empty_infiles:
+                    print >> sys.stderr, "Wrapper: File copy failed, source file nonexistent, quitting."
+                    raise
         for h in self.remote_hosts:
             try:
                 self.run_cmd([self.rcp]+glob.glob(os.path.join(self.tmppath,'*'))+[h+':'+self.tmppath])
@@ -368,7 +381,7 @@ class Wrapper:
 
     def cleanup(self):
         os.chdir(self.workdir)
-        if not self.keeptmp:
+        if not self.keeptmp and not os.path.isfile(os.path.join(self.tmppath,'keep')):
             shutil.rmtree(self.tmppath)
             if self.verbose: print "Wrapper: Temporary directory deleted"
             for h in self.remote_hosts:
