@@ -59,7 +59,7 @@ module FDE_ImportPotentials
  
             use memory_allocator
             use numoper_integrals
-            use fde_mod
+            use fde_io
 
 #include "implicit.h"
 #include "priunit.h"

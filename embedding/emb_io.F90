@@ -19,22 +19,87 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-! FILE    : grid_file.F90
+module fde_io
+
+   use memory_allocator
+   use fde_cfg
+      
+   private
+
+   public FDE_importVembStatic_fileOpen
+   public FDE_importVembStatic_fileClose
+
+   public FDE_ImportFrozenDensity_FileOpen
+   public FDE_ImportFrozenDensity_FileClose
+
+   public read_grid
+
+   interface read_grid
+      module procedure read_grid_onecol
+      module procedure read_grid_manycol
+   end interface read_grid
+
+   contains
+
+! FDE_ImportStaticPotential_FileOpen: opens file containing the embedding potential
+!                                    (static) exported on a grid
 !
+         subroutine FDE_importVembStatic_fileOpen(embpot_unit)
+            integer, intent(out) :: embpot_unit
+            logical              :: embpot_found
 
-MODULE GRID_FILE
-  use memory_allocator
-  IMPLICIT NONE
-  PRIVATE
-  public read_grid  
+            inquire(FILE=FDEPOT,EXIST=embpot_found)
 
-  interface read_grid
-     module procedure read_grid_onecol
-     module procedure read_grid_manycol
-  end interface read_grid
+            if (embpot_found) then
+                open(lufdepot,               &
+                     FORM   = 'FORMATTED',   &
+                     STATUS = 'UNKNOWN',     &
+                     ACCESS = 'SEQUENTIAL',  &
+                     FILE   =  FDEPOT)
+                embpot_unit = lufdepot
+             else
+                call quit("File with embedding potential not found!")
+             endif
 
-CONTAINS 
-  
+         end subroutine FDE_importVembStatic_fileOpen
+
+         subroutine FDE_ImportStaticPotential_FileClose()
+            close(lufdepot) 
+         end subroutine FDE_ImportStaticPotential_FileClose
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_ImportFrozenDensity_FileOpen: opens file containing the exported density and
+!                                    other quantities (density gradient components etc)
+!
+         subroutine FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
+            integer, intent(out) :: frozdens_unit
+            logical              :: frozdens_found
+
+            inquire(FILE=FDEDNS,EXIST=frozdens_found)
+
+            if (frozdens_found) then
+                open(lufdefrzdns,               &
+                     FORM   = 'FORMATTED',   &
+                     STATUS = 'UNKNOWN',     &
+                     ACCESS = 'SEQUENTIAL',  &
+                     FILE   =  FDEDNS)
+                frozdens_unit = lufdefrzdns
+             else
+             call quit("File with Frozen Density(+gradient) not found!")
+             endif
+
+         end subroutine FDE_ImportFrozenDensity_FileOpen
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_ImportFrozenDensity_FileClose: closes file containing the exported density and
+!                                    other quantities (density gradient components etc)
+!
+         subroutine FDE_ImportFrozenDensity_FileClose()
+            close(lufdefrzdns) 
+         end subroutine FDE_ImportFrozenDensity_FileClose
+
+
+
 ! description : this subroutine will read some operator (i.e. an embedding
 !               potential) from file.
 !
@@ -50,7 +115,6 @@ CONTAINS
 !
 
   SUBROUTINE READ_GRID_onecol(file,points,vc)
-#include "priunit.h"
     REAL(kind=8),POINTER :: points(:,:)
     REAL(kind=8),pointer,optional :: vc(:)
     INTEGER                 :: file
@@ -62,7 +126,6 @@ CONTAINS
     call allocp(points,4,npoints,id="grid_points")
     
     if (present(vc)) then
-       nullify(vc)
        call allocp(vc,npoints,id="potential")
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
@@ -88,7 +151,6 @@ CONTAINS
 !                                 have in file
 !
   SUBROUTINE READ_GRID_manycol(file,points,properties)
-#include "priunit.h"
     REAL(kind=8),POINTER :: points(:,:)
     REAL(kind=8),pointer :: properties(:,:)
     INTEGER              :: file
@@ -107,6 +169,5 @@ CONTAINS
 
   END SUBROUTINE READ_GRID_manycol
   
-END MODULE GRID_FILE
 
-
+end module fde_io
