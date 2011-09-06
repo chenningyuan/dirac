@@ -143,7 +143,7 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_R(data,start_index,end_index)
+!                    call initData_R(data,start_index,end_index)
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
                   endif
@@ -341,7 +341,7 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_R(data,start_index,end_index)
+!                    call initData_R(data,start_index,end_index)
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
                   endif
@@ -539,7 +539,7 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_I(data,start_index,end_index)
+!                    call initData_I(data,start_index,end_index)
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
                   endif
@@ -737,7 +737,7 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_I(data,start_index,end_index)
+!                    call initData_I(data,start_index,end_index)
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
                   endif
