@@ -1444,31 +1444,6 @@ C No documentation when end of file is found
 C
  200  CONTINUE
  1000 CONTINUE
-!radovan: this error printout below is quite annoying
-!         when you use own libraries to organize basis sets
-!         then you may get lots (nr of processors)
-!         of these messages
-CMI: well, rather use warning message
-CMI   WRITE (LUPRI,'(//A,I5/2A/)')
-CMI  &     'Error in reading basis set file, your basis '//
-CMI  &     'has no documentation. IOSTAT code:',IOERR,
-CMI  &     'Basis set: ',BASNAM
-#ifdef VAR_MPI
-!     print only from one process
-      if (mytid == 1) then
-#endif
-      WRITE (LUPRI,'(A,/,A,A)')
-     &     'Info(warning) about the basis set file: your basis '//
-     &     'has no documentation.',
-     &     'Basis set: ',BASNAM
-#ifdef VAR_MPI
-      end if
-#endif
-
-Chj   CALL QUIT('Incomplete basis set file in HERBAS')
-
-Chj   CALL QUIT('Incomplete basis set file in HERBAS')
-      RETURN
       END
 C             
 C

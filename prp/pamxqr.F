@@ -2290,7 +2290,7 @@ C
 C*****************************************************************************
       use dirac_cfg
       use dft_cfg
-      use xc_driver
+      use xcint_main
       use num_grid_gen
 
 
@@ -2383,7 +2383,7 @@ C
 !        radovan:
 !        this is necessary iff
 !        (hybrid functional .and. gradient dependence .and. nonzero frequency)
-!        otherwise the symmetrization inside xc_integrator messes up the KS matrix
+!        otherwise the symmetrization inside integrate_xc messes up the KS matrix
 !        we could check here whether we have this situation and not allocate
 !        otherwise but now we just play it safe and simply allocate it
          call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
@@ -2393,7 +2393,7 @@ C
 #ifdef VAR_MPI
          if (parcal) call dirac_parctl(4)
 #endif
-         call xc_integrator(xc_mat_dim           = ntbas(0),
+         call integrate_xc(xc_mat_dim           = ntbas(0),
      &                      xc_nz                = nz,
      &                      xc_dmat_0            = work(kdmat),
      &                      xc_nr_dmat           = 3,

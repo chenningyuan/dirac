@@ -14,7 +14,6 @@
  1 DFCOEF 0
 .LONDON
  Z
-.SYMMETRIC
 .3D_INTEGRATE
 .SCALE
  -53.25135    !this is to get integrated nr in ppm
