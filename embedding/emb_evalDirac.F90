@@ -37,12 +37,7 @@ module fde_eval_dirac
 #include "dcbgen.h"
 
          nba_orb = ntbas(0) 
-!         nba_aux = nbasisaux
-!#ifdef MOD_DNF
-!         if (DF_FITVXC) nba = MAX(nba_orb, nba_aux)
-!#else
          nba = nba_orb
-!#endif
          dfcoef_unit = LUCOEF
 
       end subroutine dirac_data_interface 
