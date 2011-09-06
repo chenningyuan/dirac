@@ -26,10 +26,11 @@ export PATH=/home/chemia/ucitelia/milias/bin/python/Python-2.7.1:$PATH
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "running dirac cdash buildup at "$timestamp
 
-DIRAC=/home/chemia/ucitelia/milias/work/qch/software/dirac/ompi_ifort_gcc_mkl_ILP64_cdash/adm/trunk
+DIRAC=/home/chemia/ucitelia/milias/work/qch/software/dirac_git/trunk
+BUILD=build_ompi_ifort_gcc_mkl_ILP64_cdash
 cd $DIRAC
 
-/bin/rm -rf build
+/bin/rm -rf $BUILD
 
 #/people/disk2/ilias/bin/subversion/bin/svn up .
 #svn up .
@@ -38,7 +39,7 @@ cd $DIRAC
 # setup, no --debug
 ./setup --fc=mpif90 --cc=mpicc --cpp=mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
 
-cd $DIRAC/build
+cd $DIRAC/$BUILD
 make Experimental
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
