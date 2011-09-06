@@ -23,8 +23,9 @@ module fde_xcfun_interface
 
    use fde_cfg
    use dft_cfg
-   use dft_input
+   use xc_derv
    use xcfun
+   use memory_allocator
 
    private
 
@@ -77,6 +78,7 @@ module fde_xcfun_interface
 
       subroutine fde_initializeFunctionals
          integer :: i
+         logical :: reset_hfxfac 
 
          reset_hfxfac = .false.
 
@@ -300,7 +302,7 @@ module fde_xcfun_interface
       call set_pointer_fde_grid(p)
 
       call alloc(n_tot,fde_grid_np)
-      call alloc(gn_tot,fde_grid_np)
+      call alloc(gnn_tot,fde_grid_np)
 
       call fde_calc_ngn_total(n_tot,gnn_tot)
 
@@ -331,14 +333,16 @@ module fde_xcfun_interface
       enddo
 
       call dealloc(n_tot)
-      call dealloc(gn_tot)
+      call dealloc(gnn_tot)
 
    end subroutine fde_calc_emb_derv
 
 ! we are assuming dirac
    subroutine fde_add_emb_derv(ipoint,derv)
       real(kind=8) :: derv(:,:)
-      integer :: i, j, ipoint
+      integer :: i, j, ipoint, derv_length
+
+      derv_length = nr_nonzero_derv 
 
       w = p(ipoint,4)
 
@@ -347,7 +351,7 @@ module fde_xcfun_interface
             if (j >  1 ) &
                derv(i,j) = derv(i,j) + derv_nadd(ipoint,i,j)
 ! we add the electrostatic potential from the frozen subsystem(s) to the derivative
-            if (j == 1 .and. update_vemb) &
+            if (j == 1 .and. fde_update_vemb) &
                derv(i,j) = derv(i,j) + derv_nadd(ipoint,i,j) + w*fde_frozen_elpot(ipoint)
          enddo
       enddo

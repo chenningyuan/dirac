@@ -36,8 +36,9 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
-      use fde_mod
-      use FDE_ImportPotentials
+! checking
+!      use fde_mod
+!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -101,9 +102,9 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
-         if (import_vemb) then
-            CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
-         endif
+!!       if (fde_import_vemb) then
+!!          CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
+!!       endif
 C
 C     Contribution from beta-matrix
 C
@@ -836,7 +837,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
-      use fde_mod
+!     use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -887,11 +888,11 @@ C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-      IF (dirac_cfg_fde.and.import_vemb) THEN
-         IOP = IPVEMB0
-         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
-     &          OP1INT,FIRST,IPRHAM)
-      ENDIF
+!!    IF (dirac_cfg_fde.and.fde_import_vemb) THEN
+!!       IOP = IPVEMB0
+!!       CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
+!!   &          OP1INT,FIRST,IPRHAM)
+!!    ENDIF
 
 C
 C     Kinetic energy

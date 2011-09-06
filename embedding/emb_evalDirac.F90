@@ -5,7 +5,7 @@ module fde_eval_dirac
    use vc_grid
    use density_eval
    use ao_eval
-   use basis_info
+   use interface_ao
 
    
    implicit none
@@ -15,7 +15,7 @@ module fde_eval_dirac
    public fde_get_vc_dirac
    public fde_free_dmat_dirac
 
-   integer, save :: nbasis, nbasis_orb, nbasis_aux
+   integer, save :: nba, nba_orb, nba_aux
    integer, save :: dfcoef_unit
 
    logical, save :: is_dirac_initialized = .false.
@@ -36,12 +36,12 @@ module fde_eval_dirac
 #include "dcbdhf.h"
 #include "dcbgen.h"
 
-         nbasis_orb = ntbas(0) 
-!         nbasis_aux = nbasisaux
+         nba_orb = ntbas(0) 
+!         nba_aux = nbasisaux
 !#ifdef MOD_DNF
-!         if (DF_FITVXC) nbasis = MAX(nbasis_orb, nbasis_aux)
+!         if (DF_FITVXC) nba = MAX(nba_orb, nba_aux)
 !#else
-         nbasis = nbasis_orb
+         nba = nba_orb
 !#endif
          dfcoef_unit = LUCOEF
 
@@ -55,7 +55,7 @@ module fde_eval_dirac
 
          if (.not.is_dirac_initialized) call dirac_data_interface
 
-         allocate(dmat(nbasis_orb,nbasis_orb,4))
+         allocate(dmat(nba_orb,nba_orb,4))
 
          select case(fde_export_level)
          case('MP2')
@@ -67,8 +67,8 @@ module fde_eval_dirac
             end if
          case default
 !     HF density used
-            allocate(cmo(nbasis_orb,nbasis_orb,4))
-            allocate(work(nbasis_orb*nbasis_orb*32))
+            allocate(cmo(nba_orb,nba_orb,4))
+            allocate(work(nba_orb*nba_orb*32))
 
             CMO=0.0
             work=0
@@ -97,28 +97,35 @@ module fde_eval_dirac
 
 
       subroutine fde_get_ngn_dirac(dmat)
-         real(kind=8) :: dmat(nbasis_orb,nbasis_orb,4)
-         real(kind=8) :: x,y,z, n, gn(3)
-         real(kind=8), allocatable :: ao(:)
-         real(kind=8), allocatable :: buffer(:)
-         integer :: mat_dim
+         real(kind=8) :: dmat(nba_orb,nba_orb,4)
+         real(kind=8) :: n(1), gn(3)
+         real(kind=8), allocatable :: ao(:,:), buffer(:,:)
+         real(kind=8), allocatable :: x(:), y(:), z(:)
+         integer :: mat_dim, block_length
          integer :: i
 
-         mat_dim = nbasis_orb
+         mat_dim = nba_orb
+         block_length = 1
 
-         allocate(ao    (total_ao_vector_length))
-         allocate(buffer(total_ao_vector_length))
+         call alloc(ao,block_length,nr_ao_slices*nr_ao_cartesian)
+         ao = 0.0d0
+         call alloc(buffer,block_length,nr_ao_slices*nr_ao_cartesian)
+         buffer = 0.0d0
+
+         call alloc(x,block_length)
+         call alloc(y,block_length)
+         call alloc(z,block_length)
 
          call ao_eval_init(0, 0, .false.)
 
-         do i = 1, fde_grid_np
+         do i = 1, fde_grid_np, block_length
 
-            call get_fde_grid_coords(i,x,y,z)
-            call get_ao(x, y, z, ao, buffer)
-            call get_gn(n, gn, 0, mat_dim, dmat, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
+            call get_fde_grid_coords(i,block_length,x,y,z)
+            call get_ao(block_length,x, y, z, ao, buffer)
+            call get_gn(n(1), gn, 0, mat_dim, dmat, buffer, ao)
 
-!           call fde_data_set_active_ngn(i,n,gn(1),gn(2),gn(3))
-            fde_active_n(i) = n
+!           call fde_data_set_active_ngn(i,n(1),gn(1),gn(2),gn(3))
+            fde_active_n(i) = n(1)
             fde_active_gn(1,i) = gn(1)
             fde_active_gn(2,i) = gn(2)
             fde_active_gn(3,i) = gn(3)
@@ -127,6 +134,11 @@ module fde_eval_dirac
 
          deallocate(ao)
          deallocate(buffer)
+         call dealloc(ao)
+         call dealloc(buffer)
+         call dealloc(x)
+         call dealloc(y)
+         call dealloc(z)
 
       end subroutine fde_get_ngn_dirac 
 
@@ -134,7 +146,7 @@ module fde_eval_dirac
 !       call fde_calculate_active_n_gn(dmat)
 !       call fde_calculate_active_elpot(dmat)
       subroutine fde_get_vc_dirac(dmat)
-         real(kind=8) :: dmat(nbasis_orb,nbasis_orb,4)
+         real(kind=8) :: dmat(nba_orb,nba_orb,4)
          real(kind=8), allocatable :: work(:)
          real(kind=8), pointer :: gp(:,:)
          integer :: lwork, wsize

@@ -580,7 +580,7 @@ contains
 #ifdef MOD_UNRELEASED
 !     aspg, toying with having the frozen density and adfgrid available
 !     for the respose calcs or otherwise...
-      if (have_frozen_density) then
+      if (fde_have_frozen_density) then
          call FDE_testFrozenDensity()
       endif
 #endif
@@ -1851,23 +1851,21 @@ contains
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
                do i = 1, nr_points_batch
-                  rx(i) = fde_grid(1,i)
-                  ry(i) = fde_grid(2,i)
-                  rz(i) = fde_grid(3,i)
-                  rw(i) = fde_grid(4,i)
+                  call get_fde_grid_coords(i,block_length,rx(i),ry(i), rz(i))
+                  call get_fde_grid_weight(i,block_length,rw(i))
 
-                  fde_froz_n(i) = fde_frozen_prp(3,i)
-                  fde_elpot(i)  = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
+!                 fde_froz_n(i) = fde_frozen_prp(3,i)
+!                 fde_elpot(i)  = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
 
-                  if (fde_nprop.eq.6) then
-                     fde_froz_ng(i,1) = fde_frozen_prp(4,i)
-                     fde_froz_ng(i,2) = fde_frozen_prp(5,i)
-                     fde_froz_ng(i,3) = fde_frozen_prp(6,i)
-                  else
-                     fde_froz_ng(i,1) = 0.0d0
-                     fde_froz_ng(i,2) = 0.0d0
-                     fde_froz_ng(i,3) = 0.0d0
-                  endif
+!                 if (fde_nprop.eq.6) then
+!                    fde_froz_ng(i,1) = fde_frozen_prp(4,i)
+!                    fde_froz_ng(i,2) = fde_frozen_prp(5,i)
+!                    fde_froz_ng(i,3) = fde_frozen_prp(6,i)
+!                 else
+!                    fde_froz_ng(i,1) = 0.0d0
+!                    fde_froz_ng(i,2) = 0.0d0
+!                    fde_froz_ng(i,3) = 0.0d0
+!                 endif
                end do
 
             else

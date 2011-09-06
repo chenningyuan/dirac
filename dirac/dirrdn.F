@@ -4390,7 +4390,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-      USE FDE_MOD, ONLY: FDEINI, FDEINP, FDE_setupFDEgrid, update_vemb
+      USE FDE_MOD, ONLY: FDEINI, FDEINP
       use dft_cfg
       use xc_derv
       use interface_functional_read
@@ -6110,10 +6110,10 @@ CMI  ... reading input routine for AMFI+RELSCF
 C
     1 CONTINUE
 
-#ifdef MOD_UNRELEASED
-      if ((dirac_cfg_fde.and.update_vemb).or.dirac_cfg_fde_response)        &
-     &   call FDE_setupFDEgrid()
-#endif
+!#ifdef MOD_UNRELEASED
+!      if ((dirac_cfg_fde.and.update_vemb).or.dirac_cfg_fde_response)        &
+!     &   call FDE_setupFDEgrid()
+!#endif
 
 !       work can be easily removed by changing internal memget to alloc
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)

@@ -35,7 +35,7 @@ module FDE_exportPotentials
    contains
 
       subroutine fde_export
-         character(len=3) :: export_format
+         character(len=4) :: export_format
 
          call fde_prepare_export
 

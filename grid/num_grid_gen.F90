@@ -71,7 +71,7 @@ contains
          grid_is_done = .true.
       end if
 
-      if (dirac_cfg_fde_response .or. (dirac_cfg_fde .and. update_vemb)) then
+      if (dirac_cfg_fde_response .or. (dirac_cfg_fde .and. fde_update_vemb)) then
          write(*, *) ' '
          write(*, *) '   FDE info: requested FDE response. Grid generation will'
          write(*, *) '             be skipped, and impoted grid will be used.'

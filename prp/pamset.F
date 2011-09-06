@@ -684,7 +684,7 @@ C          Hermitian operator
      &                        xc_do_overlap_diagnostic = 
      &                           dirac_cfg_overlap_diagnostic,
      &                        xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
+     &                       (dirac_cfg_fde .and. fde_update_vemb),
      &                        xc_do_fde_response    = 
      &                                           dirac_cfg_fde_response)
         end if
