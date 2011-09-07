@@ -26,16 +26,21 @@
  * SUCH DAMAGE.
  *
  *
- * $Id$
+ * $Id: system_flavor.h 7029 2008-06-10 11:54:45Z gomes $
  *
  */
-#define LINUX   (0)
-#define FREEBSD (1)
-#define OPENBSD (2)
-#define NETBSD  (3)
-#define DARWIN  (4)
-#define UNKNOWN (-1)
 
-#ifndef SYS_FLAVOR
-#define SYS_FLAVOR UNKNOWN 
+
+#if defined (__FreeBSD__) || (__NetBSD__) || (__OpenBSD__) || (__bsdi__) || (__DragonFly__)
+#define __BSD_EXECINFO__
 #endif
+
+#define MAXSIZE_SYMBOL (300)
+#define MAXDEPTH_TRACE  (30)
+#define TYPICAL_FCHAR_LENGTH (132)
+#define BUFFERSIZE (512)
+
+
+enum allowedActions { printAllToStdout = 1, printAllocCaller, printPrettyTrace, prinRawTrace };
+enum retrieveSymbolKinds {symbolName = 1, symbolRetAddr};
+
