@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamset */
@@ -503,7 +504,7 @@ C
         N2ISHT      = N2ISHT + N2ISH(IFRP)
 C
         N2ASH(IFRP) = NASH(IFRP)*NASH(IFRP)
-        NASHT       = NASHT  + NASH(IFRP) 
+        NASHT       = NASHT  + NASH(IFRP)
         I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
 C
@@ -516,10 +517,10 @@ C
         N2SSH(IFRP) = NSSH(IFRP)*NSSH(IFRP)
         NSSHT       = NSSHT  + NSSH(IFRP)
         N2SSHT      = N2SSHT + N2SSH(IFRP)
-        N2ESH(IFRP) = NESH(IFRP)*N2ESH(IFRP)
+        N2ESH(IFRP) = NESH(IFRP)*NESH(IFRP)
         NESHT       = NESHT  + NESH(IFRP)
         N2ESHT      = N2ESHT + N2ESH(IFRP)
-        N2PSH(IFRP) = NPSH(IFRP)*N2PSH(IFRP)
+        N2PSH(IFRP) = NPSH(IFRP)*NPSH(IFRP)
         NPSHT       = NPSHT  + NPSH(IFRP)
         N2PSHT      = N2PSHT + N2PSH(IFRP)
         ICMO(IFRP)  = NCMOT
@@ -562,7 +563,7 @@ C
       N2ISHX  = NISHT*NISHT
       N2ASHX  = NASHT*NASHT
       N2ASHXQ = N2ASHX * NZ
-      NNASHX = NASHT * (NASHT+1) / 2
+      NNASHX  = NASHT * (NASHT+1) / 2
       N2OCCX  = NOCCT*NOCCT
       N2SSHX  = NSSHT*NSSHT
       N2ESHX  = NESHT*NESHT
