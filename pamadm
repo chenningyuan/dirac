@@ -451,7 +451,7 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
-dirac_modules[this_module].add_test('visual_lao')
+dirac_modules[this_module].add_test('visual_lao_symmetry')
 dirac_modules[this_module].add_test('visual_lao_current')
 dirac_modules[this_module].add_test('visual_lao_shielding')
 dirac_modules[this_module].add_test('dft_london_mag_prop')
