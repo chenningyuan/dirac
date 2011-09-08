@@ -600,14 +600,11 @@ C     ===============================
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.7) THEN
-!gosia        if ((prpnam(indxpr)(1:5) == 'dS/dB') .or. 
-!gosia     &      (prpnam(indxpr)(1:7) == 'd|S>/dB')) then
         WRITE(LUPRI,'(/A,A16)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
-!gosia        endif
       ENDIF
 !
 C

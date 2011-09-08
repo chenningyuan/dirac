@@ -1,11 +1,6 @@
-#include "system_flavor.h"
+#include "trace.h"
 
-#ifdef SYS_LINUX
-#if (SYS_FLAVOR == LINUX)
-/* use native gnu support for traceback */
-
-#elif (SYS_FLAVOR != UNKNOWN)
-
+#if defined (__BSD_EXECINFO__)
 /* 
    if this is not a linux system, we use the implementation below (from freebsd). 
    note: the copyright notice her should be kept intact!
@@ -49,8 +44,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "execinfo.h"
-#include "stacktraverse.h"
+#include "execinfo_bsd.h"
+#include "stacktraverse_bsd.h"
 
 #define D10(x) ceil(log10(((x) == 0) ? 2 : ((x) + 1)))
 
@@ -182,5 +177,5 @@ backtrace_symbols_fd(void *const *buffer, int size, int fd)
         write(fd, buf, len - 1);
     }
 }
-#endif
+
 #endif

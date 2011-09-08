@@ -1,4 +1,4 @@
-DIRAC pam run in /home/gosia/dirac.git/git-repo/test/visual_lao_shielding
+DIRAC pam run in /home/gosia/dirac.git/dirac-git-repo/test/visual_lao_shielding
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -152,17 +152,17 @@ Compilation info
  C compiler               | /usr/bin/gcc
  C compiler version       | gcc (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2
  C flags                  |   -g -O2 -Wno-unused
- Configuration time       | 2011-08-25 01:21:13.788049
- Last commit rev          | d2f35ce0f3878ab9f97ab9d70435d076cca92b54
- Last commit author       | gosia 
- Last commit time         | Thu Aug 25 01:06:09 2011 +0200
+ Configuration time       | 2011-09-01 22:39:51.173016
+ Last commit rev          | 2d9c67f3d2845ca40544ffbea1fc317ed3e331cf
+ Last commit author       | Merge: b9c6f92 24bebbc
+ Last commit time         | Author: gosia <gosia.olejniczak@gmail.com>
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Aug 25 01:34:25 2011 
+     Date and time (Linux)  : Fri Sep  2 13:11:41 2011 
      Host name              :                                         
 
 
@@ -185,7 +185,6 @@ Contents of the input file
  1 PAMXVC 6                                                                                         
 .LONDON                                                                                             
  Z                                                                                                  
-.SYMMETRIC                                                                                          
 .3D_INTEGRATE                                                                                       
 .SCALE                                                                                              
  -53.25135    !this is to get integrated nr in ppm                                                  
@@ -629,23 +628,23 @@ H       1   0.143E-04   0.105E+02   0.131E+00      88   26720
    Number of grid points in quadrature:     53732 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.46 seconds
+ >>>> Time used in DFTGRD:   0.41 seconds
 
 
       scalar              x-component         y-component         z-component
 
-    0.6019296928E+02    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+    0.5117774148E+02    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   2.82 seconds
+ >>>> time used in integration:   1.70 seconds
 
  
-     Date and time (Linux)  : Thu Aug 25 01:34:28 2011 
+     Date and time (Linux)  : Fri Sep  2 13:11:42 2011 
      Host name              :                                         
->>>> Node 0, utime: 2, stime: 0, minflt: 135253, majflt: 0, nvcsw: 1, nivcsw: 397, maxrss: 536996
->>>> Total WALL time used in DIRAC: 4s
+>>>> Node 0, utime: 1, stime: 0, minflt: 135247, majflt: 0, nvcsw: 0, nivcsw: 206, maxrss: 536728
+>>>> Total WALL time used in DIRAC: 2s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 

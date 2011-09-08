@@ -6516,8 +6516,6 @@ C
          WRITE (LUPRI,'(A/A/A/A)')
      &        '@            isotropic shielding',
      &        '@        ----------------------------',
-!gosia     &        '@atom       total       dia      para      skew'//
-!gosia     &        '      span      anis      asym',
      &        '@atom          total          dia         para'//     
      &        '            skew'//
      &        '            span            anis            asym',
@@ -6530,7 +6528,6 @@ C
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOATOM(I)) THEN
-                      !gosia WRITE (LUPRI,'(A,A,7F10.4)') '@',
                       WRITE (LUPRI,'(A,A,7F14.4)') '@',
      &                 NAMDEP(IATOM),TISO(IATOM),DISO(IATOM),PISO(IATOM)
      &                 ,SKEW(IATOM),SPAN(IATOM),ANIS(IATOM),ASYM(IATOM)

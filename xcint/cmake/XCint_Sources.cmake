@@ -20,7 +20,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/xc_ac.F90
     ${PROJECT_SOURCE_DIR}/src/xc_blas3.F90
     ${PROJECT_SOURCE_DIR}/src/xc_derv.F90
-    ${PROJECT_SOURCE_DIR}/src/xc_driver.F90
+    ${PROJECT_SOURCE_DIR}/src/xcint_main.F90
     ${PROJECT_SOURCE_DIR}/src/xc_max_block_length.F90
     ${PROJECT_SOURCE_DIR}/src/xc_mpi.F90
     ${PROJECT_SOURCE_DIR}/xcfun/fortran/xcfun_module.F90
