@@ -601,7 +601,7 @@ C     CALL MEMGET('REAL',KDAX,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 C     SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
       CALL QENTER('STRIN')
 *
-      NTESTL = 100
+      NTESTL = 00
       NTEST = MAX(NTESTL,IPRNT)
 *
 **.2 : Number of classes per string type and mappings between
@@ -643,7 +643,7 @@ C     KFREEL2=KFREEL!+2
         write(6,*)
         write(6,*) '======================================='
       end if
-      print*,'before it all'
+C     print*,'before it all'
       CALL MEMCHK_KRCC(WORK)!,KFREE,LFREE)
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
@@ -662,14 +662,14 @@ C     KFREEL2=KFREEL!+2
         MXRS3X = 0
         IEL = NELFGP(IGRP)
         IOCTYPX = 1
-        print*,'NORB1,NORB2,NORB3,IEL',NORB1,NORB2,NORB3,IEL
+C       print*,'NORB1,NORB2,NORB3,IEL',NORB1,NORB2,NORB3,IEL
 *. Reverse lexical adresing schemes for each group of string
         CALL WEIGHT_KRCC(WORK(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
      &                  MNRS1X,MXRS1X,MNRS3X,MXRS3X,
      &                  WORK(KFREEL),IPRNT)
-       print*,'MNRS1X,MXRS1X,MNRS3X,MXRS3X',MNRS1X,MXRS1X,MNRS3X,MXRS3X
-        print*,'NORB1,NORB2,NORB3,IEL',NORB1,NORB2,NORB3,IEL
-        print*,'after WEIGHT_KRCC, IGRP',IGRP
+C      print*,'MNRS1X,MXRS1X,MNRS3X,MXRS3X',MNRS1X,MXRS1X,MNRS3X,MXRS3X
+C       print*,'NORB1,NORB2,NORB3,IEL',NORB1,NORB2,NORB3,IEL
+C       print*,'after WEIGHT_KRCC, IGRP',IGRP
         CALL MEMCHK_KRCC(WORK)
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_KRCC(IEL,NORB1,NORB2,NORB3,
@@ -678,7 +678,7 @@ C     KFREEL2=KFREEL!+2
      &                      WORK(KNSTSGP(1)),
      &                      WORK(KISTSGP(1)),
      &                      IOCTYPX,NSMST,IGRP,IPRNT)
-        print*,'after NSTRSO_GAS_KRCC, IGRP',IGRP
+C       print*,'after NSTRSO_GAS_KRCC, IGRP',IGRP
         CALL MEMCHK_KRCC(WORK)
 *
 *. Construct the strings ordered by symmetry
@@ -689,7 +689,7 @@ C     KFREEL2=KFREEL!+2
      &                        WORK(KFREEL),
      &                        WORK(KSTREO(IGRP)),WORK(KOCSTR(IGRP)),
      &                        WORK(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
-        print*,'after GENSTR_GAS_KRCC, IGRP',IGRP
+C       print*,'after GENSTR_GAS_KRCC, IGRP',IGRP
         CALL MEMCHK_KRCC(WORK)
 
 C     SUBROUTINE GENSTR_GAS_KRCC(NEL,NELMN1,NELMX1,NELMN3,NELMX3,
@@ -702,7 +702,7 @@ C    &                  IREORD,STRING,IOC,IOTYP,IPRNT)
        CALL ICOPVE2(WORK(KISTSGP(1)),1+(IGRP-1)*NSMST,NSMST,
      &              ISTFSMGP(1,IGRP))
       END DO
-      print*,'after GENSTR_GAS_KRCC'
+C     print*,'after GENSTR_GAS_KRCC'
       CALL MEMCHK_KRCC(WORK)
 *
 *. Min and max of sym for each group
@@ -1121,7 +1121,7 @@ C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
 *. Only the first element, i.e. ISTAC  is defined
 
 *
-      NTEST = 100
+      NTEST = 00
       NTEST = MAX(NTEST,IPRNT)
 * ******************************************************************
 * Mappings between strings with the same type ISTTP index , +/- 1 el
@@ -1199,7 +1199,7 @@ C
 C     call memmar(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       CALL MEMGET('INTE',KSTINF,IDUMMY,WORK,KFREE,LFREE)
 
-      NTEST = 10
+      NTEST = 0
       IF(NTEST.NE.0)
      &WRITE(6,*) ' First word with string information',KSTINF
 *
@@ -1401,7 +1401,7 @@ C     call memmar(KSTINE,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
 #include "ipoist8.inc"
       DIMENSION MINEL(*),MAXEL(*)
 *
-      NTEST = 100
+      NTEST = 00
 *
       NORB = NORB1 + NORB2 + NORB3
 *. accumulated max and min in each of the three spaces
@@ -1626,7 +1626,7 @@ C
 *
       CALL ISETVC(LSTASO,0,NOCTYP*NSMST)
 *
-      NTEST0 = 1000
+      NTEST0 = 000
       NTEST = MAX(NTEST0,IPRNT)
 *
       IF( NTEST .GE. 10) THEN
@@ -1729,7 +1729,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
                IF(NTEST.GT.500) CALL IWRTMA(IOC,1,NEL,1,NEL)
                CALL ICOPVE(IOC,STRING(1,LACTU),NEL)
                IF(NTEST.GT.500) CALL IWRTMA(STRING,1,NEL,1,LACTU+1)
-               print*,'STRING(1,LACTU)',STRING(1,LACTU)
+C              print*,'STRING(1,LACTU)',STRING(1,LACTU)
              END IF
 *
            IF( IEL3 .NE. 0 ) GOTO 903
@@ -2000,7 +2000,7 @@ C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
 *.Scratch
       DIMENSION STRIN2(500)
 *
-      NTEST0 =  200
+      NTEST0 =  00
       NTEST = MAX(IPRNT,NTEST0)
       IF( NTEST .GE. 20 ) THEN
         WRITE(6,*)  ' ==================== '
@@ -2011,11 +2011,11 @@ C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
       END IF
 C     WRITE(6,*) ' Reorder array NEWORD '
 C     CALL IWRTMA(NEWORD,1,NSTINO,1,NSTINO)
-      print*,' see NACOB',NACOB
-      print*,'writing out strings'
-      CALL IWRTMA(STRING,1,NEL,1,NSTINI)
-      print*,'writing out Z'
-      CALL IWRTMA(STRING,1,NORB,1,NEL+1)
+C     print*,' see NACOB',NACOB
+C     print*,'writing out strings'
+C     CALL IWRTMA(STRING,1,NEL,1,NSTINI)
+C     print*,'writing out Z'
+C     CALL IWRTMA(STRING,1,NORB,1,NEL+1)
 *
       DO 1000 ISTRIN = 1,NSTINI
 C?    write(6,*) ' Input string ',istrin,(string(i,istrin),i=1,nel)
@@ -2114,7 +2114,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 #include "mxpdim.inc"
       INTEGER ISM(MXPNGAS),MNSM(MXPNGAS),MXSM(MXPNGAS)
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' ============================'
         WRITE(6,*) ' NSTPTP_GAS_KRCC is speaking '
@@ -2167,10 +2167,10 @@ C       NXTNUM3(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
           ISMSPGP = ISMSPGPO
           NST = NST * NSTSGP(ISM(JGRP),ISPGRP(JGRP))
         END DO
-        WRITE(6,*) ' Symmetry of groups '
-        CALL IWRTMA(ISM,1,NGAS,1,NGAS)
-        WRITE(6,*) ' Symmetry of super group and number of strings '
-        WRITE(6,*) ISMSPGP , NST
+C       WRITE(6,*) ' Symmetry of groups '
+C       CALL IWRTMA(ISM,1,NGAS,1,NGAS)
+C       WRITE(6,*) ' Symmetry of super group and number of strings '
+C       WRITE(6,*) ISMSPGP , NST
         NSTSSPGP(ISMSPGP,IGRP) = NSTSSPGP(ISMSPGP,IGRP) + NST
         GOTO 1000
       END IF
@@ -2316,10 +2316,10 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
       CALL MEMGET('INTE',KLLSOBEX,NSPOBEX_TP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KLIBSOBEX,NSPOBEX_TP,WORK,KFREE,LFREE)
       ITOP_SM = 1
-      print*,'ITOP_SM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,LEN_T_VEC',
-     &        ITOP_SM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,LEN_T_VEC
-      print*,'MSCOMB,MX_SBSTR,IFTONE,IFTTWO,N1ELINT,N2ELINT',
-     &        MSCOMB,MX_SBSTR,IFTONE,IFTTWO,N1ELINT,N2ELINT
+C     print*,'ITOP_SM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,LEN_T_VEC',
+C    &        ITOP_SM,MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,LEN_T_VEC
+C     print*,'MSCOMB,MX_SBSTR,IFTONE,IFTTWO,N1ELINT,N2ELINT',
+C    &        MSCOMB,MX_SBSTR,IFTONE,IFTTWO,N1ELINT,N2ELINT
       CALL IDIM_TCC_KRCC(WORK(KLSOBEX),NSPOBEX_TP,ITOP_SM,
      &     MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
      &     WORK(KLLSOBEX),WORK(KLIBSOBEX),LEN_T_VEC,
@@ -2330,9 +2330,9 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 *
 C TEMP DO NOT KNOW IF THIS IS CORRECT
 C     LEN_T_VEC = IFTONE + IFTTWO
-      print*,'LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT',
-     &        LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT
-      stop
+C     print*,'LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT',
+C    &        LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT
+C     stop
 *
       RETURN
       END
@@ -2372,7 +2372,7 @@ C#include "memint.h"
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 DUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
-      print*,'NSPOBEX_TP',NSPOBEX_TP
+C     print*,'NSPOBEX_TP',NSPOBEX_TP
 *
 *. and the actual spin-orbital excitations
       CALL MEMGET('INTE',KLSOBEX,4*NGAS*NSPOBEX_TP,WORK,KFREE,LFREE)
@@ -2414,11 +2414,11 @@ C#include "memint.h"
                  MX_TBLK_MX = MX_TBLK
                  MX_ST_TSOSO_BLK_MX = MX_ST_TSOSO_BLK
                  LEN_T_VEC_MX = LEN_T_VEC
-      print*,'LEN_T_VEC_MX,MX_ST_TSOSO_BLK_MX,MX_TBLK_MX',
-     &        LEN_T_VEC_MX,MX_ST_TSOSO_BLK_MX,MX_TBLK_MX
+C     print*,'LEN_T_VEC_MX,MX_ST_TSOSO_BLK_MX,MX_TBLK_MX',
+C    &        LEN_T_VEC_MX,MX_ST_TSOSO_BLK_MX,MX_TBLK_MX
 C     LEN_T_VEC = IFTONE + IFTTWO
-      print*,'LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT',
-     &        LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT
+C     print*,'LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT',
+C    &        LEN_T_VEC,IFTONE,IFTTWO,N1ELINT,N2ELINT
 *
       RETURN
       END
@@ -2543,7 +2543,7 @@ C              print*,'INSIDE if block.'
 C             print*,'INCLUDED',INCLUDED
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -2581,7 +2581,7 @@ C             print*,'INCLUDED',INCLUDED
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -2609,7 +2609,7 @@ C             print*,'INCLUDED',INCLUDED
 *
 * For general purposes: First type with
 *                       1-electron and 2-electron integrals:
-      print*,'NHX one electron',NHX
+C     print*,'NHX one electron',NHX
       IFTONE = 1
       IFTTWO = NHX + 1
 *
@@ -2652,7 +2652,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                 CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                 IF (INCLUDED.EQ.0) THEN
                   WRITE(6,*) ' Hamiltonian type excluded '
-                  CALL WRT_SPOX_TP(IHX_LOC,1)
+                  CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                 ELSE
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
@@ -2716,7 +2716,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                 CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                 IF (INCLUDED.EQ.0) THEN
                   WRITE(6,*) ' Hamiltonian type excluded '
-                  CALL WRT_SPOX_TP(IHX_LOC,1)
+                  CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                 ELSE
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
@@ -2748,7 +2748,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 *
 * First type of integrals for 2-electron diagonal
       I2DIATP = NHX + 1
-      print*,'NHX after diagonal',NHX
+C     print*,'NHX after diagonal',NHX
 C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
 *
 * operator:
@@ -2769,7 +2769,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                 CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                 IF (INCLUDED.EQ.0) THEN
                   WRITE(6,*) ' Hamiltonian type excluded '
-                  CALL WRT_SPOX_TP(IHX_LOC,1)
+                  CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                 ELSE
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
@@ -2799,7 +2799,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
         END DO
       END DO
 *
-      print*,'NHX before ub|bu ',NHX
+C     print*,'NHX before ub|bu ',NHX
       if (IHTYPE.ge.40) then
 *
 * operator:
@@ -2823,7 +2823,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                   call caab_included(IHX_LOC,INCLUDED)
                   if (INCLUDED.eq.0) then
                     write(6,*) 'Hamiltonian type excluded '
-                    call wrt_spox_tp(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   else
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -2857,7 +2857,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
 *
 * Last type of non-spin-flip integrals
       ILTTWO = NHX
-      print*,'NHX after non-spin-flip',NHX
+C     print*,'NHX after non-spin-flip',NHX
 *
 * one-electron spin orbit
 *
@@ -2875,7 +2875,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -2912,7 +2912,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -2938,7 +2938,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
 *    quaternionic matrix groups only!
         END DO
       END IF
-      print*,'NHX after one-electron spinflip',NHX
+C     print*,'NHX after one-electron spinflip',NHX
 *
 * Two-electron terms with Delta mk .ne. 0
 *
@@ -2972,7 +2972,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3025,7 +3025,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3079,7 +3079,7 @@ Cori                  SIGN_NHX(NHX) = ONE
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3133,7 +3133,7 @@ Cori                      SIGN_NHX(NHX) = ONE
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3171,7 +3171,7 @@ C No the sign is not so confusing
 *      (bu|bu), (ub|ub) integral classes                 *
 **********************************************************
 *
-      print*,'NHX after IHTYPE 3 or 5',NHX
+C     print*,'NHX after IHTYPE 3 or 5',NHX
       if (IHTYPE.eq.4) then
 *
 * operator:
@@ -3208,7 +3208,7 @@ C No the sign is not so confusing
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3272,7 +3272,7 @@ C No the sign is not so confusing
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3303,7 +3303,7 @@ C No the sign is not so confusing
           END DO
         END DO
       end if
-      print*,'NHX at the end',NHX
+C     print*,'NHX at the end',NHX
 *
       if (IFLAG.ne.1.and.NTEST.ge.500) then
         do I=1,NHX
@@ -3311,7 +3311,7 @@ C No the sign is not so confusing
         end do
       end if
 *
-      NTEST = 100
+      NTEST = 00
       if (IFLAG.ne.1) then
         if (NTEST.ge.100) then
           WRITE(6,*) ' Information from  GET_HX_RELA_CC '
@@ -3320,7 +3320,6 @@ C No the sign is not so confusing
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
           WRITE(6,*) ' The excitation types '
           CALL WRT_SPOX_TP_CC_KRCC(IHX,NHX)
-C              WRT_SPOX_TP(IEX_TP,NEX_TP)
         end if
         write(6,*)
         WRITE(6,*) ' Number of excitation types ', NHX
@@ -3404,7 +3403,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       ONE = 1.0D0
 *
       NHX = 0
-      print*,'IHTYPE = ',IHTYPE
+C     print*,'IHTYPE = ',IHTYPE
 *
 
 * Determine maximum number of electrons per GAS first:
@@ -3439,7 +3438,7 @@ C              print*,'INSIDE if block.'
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -3477,7 +3476,7 @@ C              print*,'INSIDE if block.'
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -3547,7 +3546,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                 CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                 IF (INCLUDED.EQ.0) THEN
                   WRITE(6,*) ' Hamiltonian type excluded '
-                  CALL WRT_SPOX_TP(IHX_LOC,1)
+                  CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                 ELSE
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
@@ -3648,7 +3647,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                 CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                 IF (INCLUDED.EQ.0) THEN
                   WRITE(6,*) ' Hamiltonian type excluded '
-                  CALL WRT_SPOX_TP(IHX_LOC,1)
+                  CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                 ELSE
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
@@ -3729,7 +3728,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                 CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                 IF (INCLUDED.EQ.0) THEN
                   WRITE(6,*) ' Hamiltonian type excluded '
-                  CALL WRT_SPOX_TP(IHX_LOC,1)
+                  CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                 ELSE
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
@@ -3811,7 +3810,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                   call caab_included(IHX_LOC,INCLUDED)
                   if (INCLUDED.eq.0) then
                     write(6,*) 'Hamiltonian type excluded '
-                    call wrt_spox_tp(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   else
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -3891,7 +3890,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -3928,7 +3927,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
               CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
               IF (INCLUDED.EQ.0) THEN
                 WRITE(6,*) ' Hamiltonian type excluded '
-                CALL WRT_SPOX_TP(IHX_LOC,1)
+                CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
               ELSE
                 NHX = NHX + 1
                 if (IFLAG.ne.1) then
@@ -3998,7 +3997,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -4091,7 +4090,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
                   CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
                   IF (INCLUDED.EQ.0) THEN
                     WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
+                    CALL WRT_SPOX_TP_CC_KRCC(IHX_LOC,1)
                   ELSE
                     NHX = NHX + 1
                     if (IFLAG.ne.1) then
@@ -4165,7 +4164,6 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
           call iwrtma(MXNELGS,1,NGAS,1,NGAS)
           WRITE(6,*) ' The excitation types '
           CALL WRT_SPOX_TP_CC_KRCC(IHX,NHX)
-C              WRT_SPOX_TP(IEX_TP,NEX_TP)
         write(6,*)
         WRITE(6,*) ' Number of excitation types ', NHX
 *
@@ -4773,7 +4771,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       NTEST = 000
       IF(NTEST.GE.100) THEN
        WRITE(6,*) ' CAAB excitation operator '
-       CALL WRT_SPOX_TP(IEXOP,1)
+       CALL WRT_SPOX_TP_CC_KRCC(IEXOP,1)
        WRITE(6,*) ' INCLUDED_CAAB = ', INCLUDED_CAAB
       END IF
 *
@@ -4828,6 +4826,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
+#include "cgas.inc"
 *
        DIMENSION WORK(*)
 *
@@ -5048,10 +5047,6 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       CALL MEMGET('INTE',KNH01,NH01,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNH00,NH00,WORK,KFREE,LFREE)
 *
-      CALL ISETVC(WORK(KNH22),1,5)
-      DO I=1,5
-        print*,'WORK(KNH22+I)',WORK(KNH22+I)
-      END DO
       INI = 1
       CALL HTYPE_PH_CONTRACTIONS(INI,WORK(KLSOBEX),NSPOBEX_TP,NGAS,
      &                                 NH22,NH21,NH12,NH20,
@@ -5063,10 +5058,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
      &                                 WORK(KNH00))
 *
       CALL MEMCHK_KRCC(WORK)
-      print*,'KNH22,KFREE,LFREE',KNH22,KFREE,LFREE
-      DO I=1,5
-        print*,'WORK(KNH22+I)',WORK(KNH22+I),WORK(KNH21+I),WORK(KNH20+I)
-      END DO
+*
       RETURN
       END
 *
@@ -5075,6 +5067,8 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
      &                                 NH11,NH02,NH10,NH01,NH00,
      &                                 INH22,INH21,INH12,INH20,
      &                                 INH11,INH02,INH10,INH01,INH00)
+*
+#include "implicit.inc"
 *
 * Find the number of holes and particles a given HTYPE has.
 * Extended to also include an active space
@@ -5154,6 +5148,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       END DO
 *
       NHTOT=NH22+NH21+NH12+NH20+NH11+NH02+NH10+NH01+NH00
+      IF(NHTOT.NE.NHTP) STOP ' Error in HTYPE_PH_CONTRACTIONS '
 *
       NTEST = 100
       IF(NTEST.GE.100) THEN
@@ -5163,6 +5158,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH22
             WRITE(6,*) INH22(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH22(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 2 Particles 1 Holes ',NH21
@@ -5170,6 +5166,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH21
             WRITE(6,*) INH21(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH21(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 1 Particles 2 Holes ',NH12
@@ -5177,6 +5174,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH12
             WRITE(6,*) INH12(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH12(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 2 Particles 0 Holes ',NH20
@@ -5184,6 +5182,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH20
             WRITE(6,*) INH20(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH20(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 1 Particles 1 Holes ',NH11
@@ -5191,6 +5190,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH11
             WRITE(6,*) INH11(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH11(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 0 Particles 2 Holes ',NH02
@@ -5198,6 +5198,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH02
             WRITE(6,*) INH02(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH02(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 1 Particles 0 Holes ',NH10
@@ -5205,6 +5206,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH10
             WRITE(6,*) INH10(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH10(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 0 Particles 1 Holes ',NH01
@@ -5212,6 +5214,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH01
             WRITE(6,*) INH01(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH01(I)),1)
           END DO
         END IF
         WRITE(6,*) ' 0 Particles 0 Holes ',NH00
@@ -5219,6 +5222,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           WRITE(6,*) ' The Specific types are '
           DO I = 1,NH00
             WRITE(6,*) INH00(I)
+            CALL WRT_SPOX_TP_CC_KRCC(IHTP(1,INH00(I)),1)
           END DO
         END IF
       END IF
@@ -5304,7 +5308,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *. Scratch
       INTEGER ITEMP(2*NGAS,NOBEX_TP)
 *
-      NTEST = 100
+      NTEST = 00
 *
 * First find number of different creation and annihilation types
 *
@@ -5319,18 +5323,23 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
         ICOUNT = 0
 *
+C       DO I=1,4
+C         WRITE(6,*) (ITEMP(J,I),J=1,NGAS)
+C         WRITE(6,*) (ITEMP(J+NGAS,I),J=1,NGAS)
+C       END DO
+        
         DO I = 1,NC
           DO J = 1,NA
             ICOUNT = ICOUNT + 1
 * Copy creators
-            WRITE(6,*) (ITEMP(K,I),K=1,NGAS)
+C           WRITE(6,*) (ITEMP(K,I),K=1,NGAS)
             CALL ICOPVE(ITEMP(1,I),IOBEX_TP_KRCC(1,ICOUNT),NGAS)
-            WRITE(6,*) (IOBEX_TP_KRCC(K,ICOUNT),K=1,NGAS)
+C           WRITE(6,*) (IOBEX_TP_KRCC(K,ICOUNT),K=1,NGAS)
 * Copy annihilators
-            WRITE(6,*) (ITEMP(K+NGAS,J),K=1,NGAS)
+C           WRITE(6,*) (ITEMP(K+NGAS,J),K=1,NGAS)
             CALL ICOPVE(ITEMP(1+NGAS,J),IOBEX_TP_KRCC(1+NGAS,ICOUNT),
      &                  NGAS)
-            WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
+C           WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
           END DO
         END DO
       END IF
@@ -5367,7 +5376,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 
       INTEGER ISCR(2,NABOBEX)
 *
-      NTEST = 100
+      NTEST = 00
 *
       CALL ISETVC(ISCR,1,2*NABOBEX)
 *
@@ -5379,7 +5388,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       DO
         ICOUNT = ICOUNT + 1
         IF(ICOUNT.GE.NABOBEX) EXIT
-        IF(ISCR(1,ICOUNT).EQ.0) CYCLE
+        IF(ISCR(1,ICOUNT-1).EQ.0) CYCLE
         DO I =ICOUNT,NABOBEX
           IF(ISCR(1,I).EQ.0) CYCLE
 * Compare
@@ -5398,7 +5407,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       DO
         ICOUNT = ICOUNT + 1
         IF(ICOUNT.GE.NABOBEX) EXIT
-        IF(ISCR(2,ICOUNT).EQ.0) CYCLE
+        IF(ISCR(2,ICOUNT-1).EQ.0) CYCLE
         DO I =ICOUNT,NABOBEX
           IF(ISCR(2,I).EQ.0) CYCLE
 * Compare
@@ -5417,13 +5426,13 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         IF(ISCR(1,I).EQ.1) THEN
           NC = NC + 1
           IF(INI.EQ.1) THEN
-            CALL ICOPVE(IABOBEX(1,I),IOUT(1,I),NGAS)
+            CALL ICOPVE(IABOBEX(1,I),IOUT(1,NC),NGAS)
           END IF        
         END IF
         IF(ISCR(2,I).EQ.1) THEN
           NA = NA + 1
           IF(INI.EQ.1) THEN
-            CALL ICOPVE(IABOBEX(1+NGAS,I),IOUT(1+NGAS,I),NGAS)
+            CALL ICOPVE(IABOBEX(1+NGAS,I),IOUT(1+NGAS,NA),NGAS)
           END IF
         END IF
       END DO
