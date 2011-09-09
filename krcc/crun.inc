@@ -57,7 +57,8 @@
      &            ICEXC_RANK_MIN,ICEXC_RANK_MAX,ICEXC_INT,
      &            I_DO_CMPCCI, I_DO_CC_TO_CI,
      &            IRECOM,    ! for real/complex algebra
-     &            I_EXPT_REF ! to control ISIMSYM_LOC
+     &            I_EXPT_REF, ! to control ISIMSYM_LOC
+     &            IFORM ! restart (set automatically)
 * !!! and now all logicals:
       logical KRASYM
       COMMON/KRCC_CRUNL/
