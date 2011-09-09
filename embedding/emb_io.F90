@@ -26,12 +26,8 @@ module fde_io
       
    private
 
-   public FDE_importVembStatic_fileOpen
-   public FDE_importVembStatic_fileClose
-
-   public FDE_ImportFrozenDensity_FileOpen
-   public FDE_ImportFrozenDensity_FileClose
-
+   public fde_open_file
+   public fde_close_file
    public read_grid
 
    interface read_grid
@@ -41,12 +37,39 @@ module fde_io
 
    contains
 
+     subroutine fde_open_file(name,unit)
+        character(len=60), intent(in) :: name
+        logical                       :: file_found 
+        integer, intent(in)           :: unit
+
+        inquire(FILE=name,EXIST=file_found)
+  
+        if (file_found) then
+            open(unit,                   &
+                 FORM   = 'FORMATTED',   &
+                 STATUS = 'UNKNOWN',     &
+                 ACCESS = 'SEQUENTIAL',  &
+                 FILE   =  name)
+         else
+            call quit("File not found!")
+         endif
+     end subroutine fde_open_file
+
+     subroutine fde_close_file(unit)
+        integer, intent(in) :: unit
+        close(unit)
+     end subroutine fde_close_file
+
+#ifdef FOOBAR
 ! FDE_ImportStaticPotential_FileOpen: opens file containing the embedding potential
 !                                    (static) exported on a grid
 !
          subroutine FDE_importVembStatic_fileOpen(embpot_unit)
             integer, intent(out) :: embpot_unit
             logical              :: embpot_found
+            integer :: 
+
+
 
             inquire(FILE=FDEPOT,EXIST=embpot_found)
 
@@ -98,6 +121,7 @@ module fde_io
             close(lufdefrzdns) 
          end subroutine FDE_ImportFrozenDensity_FileClose
 
+#endif
 
 
 ! description : this subroutine will read some operator (i.e. an embedding

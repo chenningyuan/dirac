@@ -375,6 +375,7 @@ C*****************************************************************************
       use xcint_main
       use interface_mo_specific
       use dft_cfg
+      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
@@ -398,6 +399,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
+      type(fde_import) :: itmp
       LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -579,18 +581,29 @@ C
            if (parcal) call dirac_parctl(4)
 #endif
            call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.,
-     &                        xc_do_fde_update_vemb =
-     &                            (dirac_cfg_fde .and. fde_update_vemb),
-     &                        xc_do_fde_response    =
-     &                                           dirac_cfg_fde_response)
+     &                       xc_nz           = nz,
+     &                       xc_dmat_0       = dmat,
+     &                       xc_nr_dmat      = 0,
+     &                       xc_nr_fmat      = 1,
+     &                       xc_fmat         = fock,
+     &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
+
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+
+           if (.not.dirac_cfg_dft_calculation) then
+              call interface_mo_write()
+           endif
+            
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+
+           tdfde =  second() - tdxc
+        endif
+
+       
 C
 C       Solvent contribution
 C
@@ -1191,6 +1204,7 @@ C*****************************************************************************
       use dirac_cfg
       use dft_cfg
       use xcint_main
+      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
@@ -1214,6 +1228,7 @@ C
 #include "dcbreo.h"
 #include "densfit.h"
       LOGICAL   LBIT
+      type(fde_import) :: itmp
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
@@ -1382,20 +1397,27 @@ C
            if (parcal) call dirac_parctl(4)
 #endif
            call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.,
-     &                        xc_do_fde_update_vemb =
-     &                          (dirac_cfg_fde .and. fde_update_vemb),
-     &                        xc_do_fde_response    =
-     &                                           dirac_cfg_fde_response)
-           
+     &                       xc_nz           = nz,
+     &                       xc_dmat_0       = dmat,
+     &                       xc_nr_dmat      = 0,
+     &                       xc_nr_fmat      = 1,
+     &                       xc_fmat         = fock,
+     &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
 
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+
+           if (.not.dirac_cfg_dft_calculation) then
+              call interface_mo_write()
+           endif
+
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+
+           tdfde =  second() - tdxc
+        endif
 
 C
 C        Solvent contribution

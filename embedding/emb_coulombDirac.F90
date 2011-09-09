@@ -19,8 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-! VERSION : $Revision: 13314 $
-! DATE    : $Date: 2011-03-19 14:32:26 +0100 (Sat, 19 Mar 2011) $
 ! FILE    : emb1int.F
 !
 !
@@ -29,9 +27,10 @@
 
       PRIVATE
 
-!     REAL(KIND=8), save :: TOLOG, TOLS,FACTOR=1.0
-
-      PUBLIC EMB_VC, ESP_EL, ESP_NUC
+      public emb_vc
+      public esp_el
+      public esp_nuc
+      public get_esp
       
 !     Module for calculating the coulomb potential on a grid.
 !     Contains:
@@ -54,6 +53,35 @@
 
       CONTAINS
 
+      subroutine get_esp(esp,iopt, &
+                         irep,     &
+                         mat_dim,  &
+                         dmat,     &
+                         px, py, pz)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: esp
+      integer, intent(in)  :: irep,iopt
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: px,py,pz
+!     --------------------------------------------------------------------------
+      real(8)              :: r_p(3,1),work(10000),vc(1)
+      integer              :: iprint
+      logical              :: lbit
+!     --------------------------------------------------------------------------
+
+      esp = 0.0d0
+      iprint = 0
+      r_p(1,1) = px
+      r_p(2,1) = py
+      r_p(3,1) = pz
+      IF(LBIT(IOPT,1))CALL ESP_EL(DMAT,r_p,vc,WORK,10000,IPRINT)
+      IF(LBIT(IOPT,2))CALL ESP_NUC(r_p,vc,IPRINT)
+      esp=vc(1)
+
+      end subroutine
+
       SUBROUTINE EMB_VC(DMAT,points,vc,IPRINT,WORK,LWORK)
 !     Interface for the user. Calles LOOP_PRIM
 !     calls VC_PRIM.
@@ -72,6 +100,8 @@
       REAL(KIND=8) :: WORK(*)
       INTEGER :: LWORK
 
+!     JHS MAKE LATER OPTIONAL
+      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       
       IF (IPRINT .GE. 5) CALL TITLER('Output from EMB_VC','*',103)
 
@@ -114,6 +144,7 @@
       INTEGER :: MULTA,MULTB,NHKTAB,KAB,IDENB_TMP
       INTEGER :: ISYM
       INTEGER :: ipoint, i,j,k,l
+      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
 
 !      REAL(KIND=8) :: CORA(3),CORB(3)
       REAL(KIND=8),ALLOCATABLE :: ADER(:,:,:)
@@ -123,7 +154,6 @@
       REAL(KIND=8) :: gexp=0.0,vc_tmp
       REAL(KIND=8) :: dummy
       INTEGER(KIND=8) :: idummy
-      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
 
 #include "cbisol.h"
 #include "shells.h"
@@ -382,9 +412,8 @@
       real(kind=8) :: points(:,:)
       REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(points,2))
       REAL(KIND=8) :: WORK(*)
+      REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
       INTEGER :: LWORK
-
-      REAL(KIND=8) :: TOLOG, TOLS, factor=1.0
 
 
 !     Local variables

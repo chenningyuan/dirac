@@ -1,26 +1,46 @@
 module fde_eval_dirac
 
+   use memory_allocator
+   use fde_types
    use fde_cfg
    use fde_data
+   use fde_integrate
    use vc_grid
    use density_eval
    use ao_eval
    use interface_ao
 
-   
    implicit none
 
    public fde_get_dmat_dirac
    public fde_get_ngn_dirac
    public fde_get_vc_dirac
    public fde_free_dmat_dirac
+   public fde_set_nz
+   public fde_get_nz
+   public fde_calculate_vemb_dirac
+
+   private 
 
    integer, save :: nba, nba_orb, nba_aux
    integer, save :: dfcoef_unit
+   integer, save :: nz = 4
 
    logical, save :: is_dirac_initialized = .false.
 
    contains
+
+      subroutine fde_set_nz(value)
+         integer, intent(in) :: value
+
+         nz = value
+      end subroutine fde_set_nz
+
+      subroutine fde_get_nz(value)
+         integer, intent(out) :: value
+
+         value = nz
+      end subroutine fde_get_nz
 
       subroutine dirac_data_interface 
 #include "implicit.h"
@@ -47,17 +67,29 @@ module fde_eval_dirac
          real(kind=8), allocatable, intent(out) :: dmat(:,:,:)
          real(kind=8), allocatable :: cmo(:,:,:)
          real(kind=8), allocatable :: work(:) 
+         character(len=4) :: el
+         integer :: eu, lu, pl
+         type(fde_files)  :: ftmp
+         type(fde_export) :: etmp
 
+         call fde_get_files_info(ftmp)
+         call fde_get_export_info(etmp)
+         call fde_get_print_level(pl)
+
+         lu = ftmp%logfile%unit
+         eu = ftmp%export%unit
+         el = etmp%ex_level
+         
          if (.not.is_dirac_initialized) call dirac_data_interface
 
          allocate(dmat(nba_orb,nba_orb,4))
 
-         select case(fde_export_level)
+         select case(el)
          case('MP2')
-            write(fde_log_unit,*) 'Reading CC_DENSITY'
-            call GET_CC_DENSITY(fde_export_level,'AO',DMAT,ierr)
+            write(lu,*) 'Reading CC_DENSITY'
+            call GET_CC_DENSITY(el,'AO',DMAT,ierr)
             if (ierr.ne.0) then
-               write(fde_log_unit,*) 'Error in reading density matrix'
+               write(lu,*) 'Error in reading density matrix'
                call quit('error readin density matrix')
             end if
          case default
@@ -68,16 +100,16 @@ module fde_eval_dirac
             CMO=0.0
             work=0
 
-            write(fde_log_unit,*) 'Reading DFCOEF'
+            write(lu,*) 'Reading DFCOEF'
             CALL OPNFIL(dfcoef_unit,'DFCOEF','UNKNOWN','EMBDRV')
             CALL REACMO(dfcoef_unit,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1,1)
             deallocate(work)
-            if (fde_print_level.gt.20) then
-               WRITE(fde_log_unit,*) 'CMO', CMO
-               WRITE(fde_log_unit,*) 'DMAT OLD', DMAT
+            if (pl.gt.20) then
+               WRITE(lu,*) 'CMO', CMO
+               WRITE(lu,*) 'DMAT OLD', DMAT
             end if
 !     SCF construct density matrix
-            CALL DENMAT(DMAT,CMO,fde_print_level)
+            CALL DENMAT(DMAT,CMO,pl)
             deallocate(cmo)
          end select
 !     Correct DMAT for occupationnumbers, both for scf and mp2...
@@ -115,7 +147,7 @@ module fde_eval_dirac
 
          do i = 1, fde_grid_np, block_length
 
-            call get_fde_grid_coords(i,block_length,x,y,z)
+            call get_fde_grid_coord(i,block_length,x,y,z)
             call get_ao(block_length,x, y, z, ao, buffer)
             call get_gn(n(1), gn, 0, mat_dim, dmat, buffer, ao)
 
@@ -140,14 +172,18 @@ module fde_eval_dirac
 !! calculate vc, density and gradient, will be stored at the fde_data module
 !       call fde_calculate_active_n_gn(dmat)
 !       call fde_calculate_active_elpot(dmat)
+
       subroutine fde_get_vc_dirac(dmat)
          real(kind=8) :: dmat(nba_orb,nba_orb,4)
          real(kind=8), allocatable :: work(:)
          real(kind=8), pointer :: gp(:,:)
          integer :: lwork, wsize
+         integer :: pl
       
          wsize = 1000000
          lwork = 1
+
+         call fde_get_print_level(pl)
 
          call alloc(work,wsize)
 
@@ -156,11 +192,30 @@ module fde_eval_dirac
          call emb_vc(dmat,             &
                      gp,               &
                      fde_active_elpot, &
-                     fde_print_level,  &
+                     pl,               &
                      work,lwork)
 
          call dealloc(work)
 
       end subroutine fde_get_vc_dirac
+
+
+      subroutine fde_calculate_vemb_dirac(mat_dim,dmat,vmat)
+         integer, intent(in) :: mat_dim
+!        real(kind=8), target, intent(in) :: dmat(mat_dim, mat_dim)
+         real(kind=8), target, intent(in) :: dmat(*)
+!        real(kind=8), target  :: vmat(mat_dim, mat_dim, nz, 1)
+         real(kind=8), target  :: vmat(*)
+
+         call integrate_fde(fde_mat_dim   = mat_dim, &
+                            fde_nz        = nz,      &
+                            fde_dmat_0    = dmat,    &
+                            fde_nr_dmat   = 0,       &
+                            fde_nr_fmat   = 1,       &
+                            fde_fmat      = vmat,    &
+                            fde_do_potential = .true.)
+
+      end subroutine fde_calculate_vemb_dirac
+
 
 end module fde_eval_dirac

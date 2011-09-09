@@ -22,11 +22,45 @@
 module fde_data
       
    use memory_allocator
+   use fde_types
    use fde_cfg
+   use fde_io
 
    implicit none
 
    private
+!
+! routines
+!
+   public fde_data_cleanup
+   public get_fde_grid_coord
+   public get_fde_grid_weight
+   public set_pointer_fde_grid
+   public fde_test_frozen_density
+
+   interface get_fde_grid_coord
+      module procedure get_fde_grid_coords_single
+      module procedure get_fde_grid_coords_block
+   end interface get_fde_grid_coord
+
+   interface get_fde_grid_weight
+      module procedure get_fde_grid_weight_single
+      module procedure get_fde_grid_weight_block
+   end interface get_fde_grid_weight
+
+!!!public fde_setFrozenN, fde_setFrozenGN, fde_setFrozenEP
+!!!public fde_setActiveEP
+!  public fde_setActiveN, fde_setActiveGN
+
+!
+! variables 
+!
+   public fde_frozen_n, fde_frozen_gn, fde_frozen_elpot
+   public fde_active_n, fde_active_gn, fde_active_elpot
+   public fde_vemb
+   public fde_grid_np
+
+   integer, save :: fde_grid_np = 0
 
    real(kind=8), save, allocatable :: fde_frozen_n(:)
    real(kind=8), save, allocatable :: fde_frozen_gn(:,:)
@@ -38,30 +72,53 @@ module fde_data
 
    real(kind=8), save, allocatable :: fde_vemb(:)
 
-!  public fde_importStaticVemb, fde_cleanupStaticVemb
-!  public fde_importFrozenVars, fde_cleanupFrozenVars
+   real(kind=8), pointer :: fde_grid(:,:) 
 
-!!!public fde_setFrozenN, fde_setFrozenGN, fde_setFrozenEP
-!!!public fde_setActiveEP
-!  public fde_setActiveN, fde_setActiveGN
-
-   real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
-
-   public fde_frozen_n, fde_frozen_gn, fde_frozen_elpot
-   public fde_active_n, fde_active_gn, fde_active_elpot
-   public fde_vemb
-      
    contains
 
-      subroutine get_fde_grid_coords(i,x,y,z)
+      subroutine get_fde_grid_coords_single(i,x,y,z)
          integer, intent(in) :: i
          real(kind=8), intent (out) :: x, y, z
 
          x = fde_grid(1,i)
          y = fde_grid(2,i)
          z = fde_grid(3,i)
+      end subroutine get_fde_grid_coords_single
 
-      end subroutine get_fde_grid_coords
+      subroutine get_fde_grid_coords_block(i,stride,x,y,z)
+         integer, intent(in) :: i, stride
+         integer :: j, k 
+         real(kind=8), intent (out) :: x(:), y(:), z(:)
+
+         k = 1
+         do j = i, i+stride
+            x(k) = fde_grid(1,j)
+            y(k) = fde_grid(2,j)
+            z(k) = fde_grid(3,j)
+            k = k+1
+         enddo
+      end subroutine get_fde_grid_coords_block
+
+
+      subroutine get_fde_grid_weight_single(i,w)
+         integer, intent(in) :: i
+         real(kind=8), intent (out) :: w
+
+         w = fde_grid(4,i)
+      end subroutine get_fde_grid_weight_single
+
+      subroutine get_fde_grid_weight_block(i,stride,w)
+         integer, intent(in) :: i, stride
+         integer :: j, k
+         real(kind=8), intent (out) :: w(:)
+
+         k = 1
+         do j = i, i+stride
+            w(k) = fde_grid(4,j)
+            k = k+1
+         enddo
+      end subroutine get_fde_grid_weight_block
+
 
       subroutine set_pointer_fde_grid(p) 
          real(kind=8), pointer :: p(:,:)
@@ -89,79 +146,102 @@ module fde_data
 !  end subroutine fde_data_set_active_ngn
 !!!!!!!
 
-   subroutine import_static
-   end subroutine import_static
+   subroutine fde_import_static
+      integer :: file_unit
+      character(len=60) :: file_name
+      integer :: i, fde_grid_np
+      real(kind=8), pointer :: fde_vtmp(:)
+      type(fde_files)  :: ftmp
 
-   subroutine import_frozen
-   end subroutine import_frozen
+      call fde_get_files_info(ftmp)
+      
+      file_unit = ftmp%embpot%unit
+      file_name = ftmp%embpot%name
+!      call fde_get_embpot_unit(file_unit)
+!      call fde_get_embpot_filename(file_name)
 
-   subroutine cleanup_static
-   end subroutine cleanup_static
+      call fde_open_file(file_name,file_unit)
+      call read_grid(file_unit,fde_grid,fde_vtmp)
+      call fde_close_file(file_unit)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDE_setupFDEgrid: opens the file containing the frozen density, reads in the density
-!                   and whatever other quantities we have exportend (such as the 
-!                   components of the density gradient etc) using read_grid (internally,
-!                   it is read_grid which will allocate storage, and later we have to 
-!                   free it using FDE_cleanupFDEgrid for instance). for convenience, 
-!                   we also set fde_grid_np (number of grid points) and fde_nprop 
-!                   (number of properties read in) 
-!
-         subroutine FDE_setupFDEgrid()
-            integer :: frozdens_unit
-            integer :: i
-            real(kind=8), pointer :: fde_frozen_prp(:,:)
+      fde_grid_np = size(fde_grid,2)
 
-            call FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
-            call read_grid(frozdens_unit,fde_grid,fde_frozen_prp)
-            call FDE_ImportFrozenDensity_FileClose()
+      call alloc(fde_vemb, fde_grid_np)
 
-            fde_grid_np = size(fde_grid,2)
+      do i=1, fde_grid_np
+         fde_vemb(i) = fde_vtmp(i)
+      enddo
 
-            call alloc(fde_frozen_n,     fde_grid_np)
-            call alloc(fde_frozen_gn,    fde_grid_np,3)
-            call alloc(fde_frozen_elpot, fde_grid_np)
-
-            do i=1, fde_grid_np
-               fde_frozen_elpot(i) = fde_frozen_prp(i,1) + fde_frozen_prp(i,2) 
-               fde_frozen_n(i)     = fde_frozen_prp(i,3)
-               fde_frozen_gn(i,1)  = fde_frozen_prp(i,4)
-               fde_frozen_gn(i,5)  = fde_frozen_prp(i,5)
-               fde_frozen_gn(i,6)  = fde_frozen_prp(i,6)
-            enddo
-            
-            call deallocp(fde_frozen_prp)
-
-         end subroutine FDE_setupFDEgrid
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDE_testFrozenDensity: integrates the imported density, useful to check if the
-!                        number of electrons does match that of the frozen subsystems
-!
-         subroutine FDE_testFrozenDensity()
-            integer      :: point = 0
-            real(kind=8) :: frozen_particle_number = 0.0
-
-            do point = 1, fde_grid_np 
-               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(3,point) 
-            end do
-            
-            write (*,*) '  FDE info: imported frozen density integrates to ',frozen_particle_number,' electrons'
-            write (*,*) '            grid points processed ',fde_grid_np
-            write (*,*) '            number of properties  ',fde_nprop
-            frozen_particle_number = 0.0
-
-         end subroutine FDE_testFrozenDensity
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDE_cleanupFDEgrid: dealocates the storage used for holding the grid, and whatever
-!                     properties exported at the grid points
-!
-         subroutine FDE_cleanupFDEgrid()
-            deallocate(fde_grid)
-            deallocate(fde_frozen_prp) 
-         end subroutine FDE_cleanupFDEgrid
+      call deallocp(fde_vtmp)
+   end subroutine fde_import_static
 
 
+   subroutine fde_import_frozen
+      integer :: file_unit
+      character(len=60) :: file_name
+      integer :: i, fde_grid_np
+      real(kind=8), pointer :: fde_frozen_prp(:,:)
+      type(fde_files)  :: ftmp
+
+      call fde_get_files_info(ftmp)
+      
+      file_unit = ftmp%frozen%unit
+      file_name = ftmp%frozen%name
+
+!      call fde_get_frozen_unit(file_unit)
+!      call fde_get_frozen_filename(file_name)
+
+      call fde_open_file(file_name,file_unit)
+      call read_grid(file_unit,fde_grid,fde_frozen_prp)
+      call fde_close_file(file_unit)
+
+      fde_grid_np = size(fde_grid,2)
+
+      call alloc(fde_frozen_n,     fde_grid_np)
+      call alloc(fde_frozen_gn,    fde_grid_np,3)
+      call alloc(fde_frozen_elpot, fde_grid_np)
+
+      do i=1, fde_grid_np
+         fde_frozen_elpot(i) = fde_frozen_prp(i,1) + fde_frozen_prp(i,2)
+         fde_frozen_n(i)     = fde_frozen_prp(i,3)
+         fde_frozen_gn(i,1)  = fde_frozen_prp(i,4)
+         fde_frozen_gn(i,5)  = fde_frozen_prp(i,5)
+         fde_frozen_gn(i,6)  = fde_frozen_prp(i,6)
+      enddo
+
+      call deallocp(fde_frozen_prp)
+   end subroutine fde_import_frozen
+
+
+   subroutine fde_data_cleanup
+
+      call dealloc(fde_frozen_n)
+      call dealloc(fde_frozen_gn)
+      call dealloc(fde_frozen_elpot)
+
+      call dealloc(fde_active_n)
+      call dealloc(fde_active_gn)
+      call dealloc(fde_active_elpot)
+
+      call dealloc(fde_vemb)
+
+      call deallocp(fde_grid)
+   end subroutine fde_data_cleanup
+
+
+   subroutine fde_test_frozen_density
+      integer      :: point = 0
+      real(kind=8) :: frozen_particle_number = 0.0
+
+      do point = 1, fde_grid_np 
+         frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_n(point) 
+      end do
+      
+      write (*,*) '  FDE info: imported frozen density integrates to ',frozen_particle_number,' electrons'
+      write (*,*) '            grid points processed ',fde_grid_np
+
+      frozen_particle_number = 0.0
+
+   end subroutine fde_test_frozen_density
 
 end module fde_data

@@ -5137,7 +5137,7 @@ C         as they need to be picture-changed transformed after the 2c-transforma
 
 
       if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
-         call fdeini()
+         call fdeini(lupri,'DIRAC.OUT')
       end if 
       
 

@@ -21,52 +21,73 @@
 
 module fde_inputDirac
 
+   use fde_types
    use fde_cfg
-   use fde_xcfun_interface
+   use fde_nadd_derv
    
    private
 
-   public FDEINI,FDEINP
+   public fdeini
+   public fdeinp
+   
+   contains
 
-   CONTAINS
+!   ----------------------------------------------------------------------------
+      subroutine fdeini(log_unit,log_name)
+!   ----------------------------------------------------------------------------
+         integer          :: log_unit
+         character(len=*) :: log_name
+         type(fde_files)  :: ftmp
 
-      SUBROUTINE FDEINI()
-         integer :: unit
+!         call fde_set_have_frozen(.true.)
+!         call fde_set_vemb_update(.true.)
 
-         call fde_get_log_unit(unit)
-         call fde_set_have_frozen(.true.)
-         call fde_set_vemb_update(.true.)
-
-         call fde_initializeFunctionals
-
-         write (unit,*) ' '
-         CALL PRSYMB(unit,'=',101,1)
-         write (unit,*) ' '
-         write(unit,'(1X,A)') &
+         call fde_initialize_cfg
+         call fde_initialize_nadd_functionals
+         
+         call fde_get_files_info(ftmp)
+         ftmp%logfile%unit = log_unit
+         ftmp%logfile%name = log_name
+         call fde_set_files_info(ftmp)
+         
+         write (log_unit,*) ' '
+         call prsymb(log_unit,'=',101,1)
+         write (log_unit,*) ' '
+         
+         write (log_unit,'(1X,A)') &
             ' Frozen Density Embedding Calculation defaults:'
-         call FDE_setupInfo(unit)    
-         CALL PRSYMB(unit,'=',101,1)
-         write (unit,*) ' '
-      END SUBROUTINE
+         call fde_show_setup    
+         
+         call prsymb(log_unit,'=',101,1)
+         write (log_unit,*) ' '
+      end subroutine fdeini
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDEINP: dirac-specific input reader for the module
-!
-      SUBROUTINE FDEINP(WORD,Echo_Input)
+
+!   ----------------------------------------------------------------------------
+      subroutine fdeinp(word,echo_input)
+!   ----------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h" 
 #include "dcbgen.h"
       PARAMETER (NTABLE = 8)
-!
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, line*80
-!
-!
+ 
       logical :: Echo_Input,newdef
-      integer :: printlevel
+      integer :: pl
+      integer :: lunit
+      type(fde_files)  :: ftmp
+      type(fde_export) :: etmp
+      type(fde_import) :: itmp
+      character(len=80):: nadd_fun
 !
-
-      call fde_set_vemb_import(.false.)
-      call fde_set_frzdns_import(.false.)
+      call fde_get_files_info(ftmp)
+      call fde_get_export_info(etmp)
+      call fde_get_import_info(itmp)
+      
+      lunit = ftmp%logfile%unit
+      
+!      call fde_set_vemb_import(.false.)
+!      call fde_set_frozen_import(.false.)
 
       ICHANG = 0
       IF (WORD(1:4).eq.'*FDE') THEN
@@ -80,86 +101,119 @@ module fde_inputDirac
             ICHANG = ICHANG + 1
             SELECT CASE(WORD(1:7))
             CASE ('.OPTION')
-              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',fde_log_unit)
+              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',lunit)
               CYCLE
 
             CASE ('.EMBPOT')
-              call fde_parse_vemb(lucmd)
+               read(lucmd,'(A60)') ftmp%embpot%name
+               itmp%im_vemb     = .true.
+!              call fde_parse_vemb(lucmd)
             CASE ('.FRDENS')
-              call fde_parse_frozen(lucmd)
+               read(lucmd,'(A60)') ftmp%frozen%name
+               itmp%im_frozen   = .true.
+               itmp%im_n        = .true.
+               itmp%im_gn       = .true.
+               itmp%im_coulomb  = .true.
+               itmp%im_update_vemb = .true.
+!              call fde_parse_frozen(lucmd)
 
             CASE ('.PRINT')
-              READ(LUCMD,*) printlevel 
-              call fde_set_print(printlevel)
+              read(lucmd,*) pl 
+              call fde_set_print_level(pl)
 
             CASE ('.SKIPK')
-               call set_skip_kin(.true.)
+               call fde_set_skip_nadd_ke(.true.)
             CASE ('.SKIPX')
-               call set_skip_xc(.true.)
+               call fde_set_skip_nadd_xc(.true.)
 
 ! read kinetic energy functional for non-additive term
             CASE ('.NAXCF')
-               call parse_xcf(lucmd)
+               read(lucmd,*) nadd_fun
+               call fde_set_nadd_xcf(nadd_fun)
 ! read kinetic energy functional for non-additive term
             CASE ('.NAKEF')
-               call parse_kef(lucmd)
+               read(lucmd,*) nadd_fun
+               call fde_set_nadd_kef(nadd_fun)
 ! read kinetic energy functional for non-additive term
             CASE ('.RSPLDA')
-               call set_fde_alda(.true.)
+               call fde_set_nadd_all_alda
 
             CASE ('.LEVEL')
-               call parse_export_level(lucmd)
+               read(lucmd,*) etmp%ex_level 
+!               call fde_set_export_level(lucmd)
             CASE ('.GRIDOU')
-               call set_export_file(lucmd)
+               read(lucmd,*) ftmp%export%name
+               etmp%do_grid_out = .true.
+               etmp%ex_n        = .true.
+               etmp%ex_coulomb  = .true.
+               etmp%ex_gn       = .true.
+!               call fde_set_export_file(lucmd)
 ! doprp is part of dcbgen.h
                doprp = .true.
 
             CASE DEFAULT
-              WRITE (fde_log_unit,'(/,3A,/)') ' Keyword "',WORD, &
+              WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &
                  '" not recognized in FDEINP.'
-              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',fde_log_unit)
+              CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',lunit)
               CALL QUIT('Illegal keyword in FDEINP.')
             END SELECT
           CASE('*')
             EXIT
           CASE DEFAULT
-            WRITE (fde_log_unit,'(/,3A,/)') ' Prompt "',WORD, &
+            WRITE (lunit,'(/,3A,/)') ' Prompt "',WORD, &
                '" not recognized in FDEINP.'
-            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',fde_log_unit)
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',lunit)
             CALL QUIT('Illegal prompt in FDEINP.')
           END SELECT
         END DO
       END IF
 
+! saving information on 
+      call fde_set_files_info(ftmp)
+      call fde_set_export_info(etmp)
+      call fde_set_import_info(itmp)
+      
 !     options are echoed
          if (Echo_Input) then
-           write (fde_log_unit,*) ' '
-           CALL PRSYMB(fde_log_unit,'=',101,1)
-           write (fde_log_unit,*) ' '
-           write(fde_log_unit,'(1X,A)') &
+           write (lunit,*) ' '
+           CALL PRSYMB(lunit,'=',101,1)
+           write (lunit,*) ' '
+           write (lunit,'(1X,A)') &
               ' Frozen Density Embedding Calculation, user-defined setup:'  
-           call FDE_setupInfo(fde_log_unit) 
-           CALL PRSYMB(fde_log_unit,'=',101,1)
-           write (fde_log_unit,*) ' '
+           call FDE_show_setup 
+           CALL PRSYMB(lunit,'=',101,1)
+           write (lunit,*) ' '
          endif 
 
       END SUBROUTINE
 
 
-      subroutine FDE_setupInfo(unit)
+      subroutine FDE_show_setup
          integer :: unit
          character(len=60) :: string
+         type(fde_export)  :: etmp
+         type(fde_import)  :: itmp
+         type(fde_files)   :: ftmp
+         logical :: have_frozen
+         integer :: pl
 
-         call fde_get_log_unit(unit)
+         call fde_get_print_level(pl)
 
+         call fde_get_files_info(ftmp)
+         call fde_get_export_info(etmp)
+         call fde_get_import_info(itmp)
+
+         unit = ftmp%logfile%unit
+         
          CALL PRSYMB(unit,'-',44,2)
          write(unit,*)
-         write(unit,'(A,I5)')  ' * Print level                : ',print_fde
+         write(unit,'(A,I5)')  ' * Print level                : ',pl
 
-         call fde_printFunctionals
+         call fde_print_nadd_functionals(unit)
 
-         if (fde_import_vemb) then
-            call fde_get_vemb_filename(string)
+         if (itmp%im_vemb) then
+            string = ftmp%embpot%name
+            
             write(unit,'(A,A60)')  ' * FDE Potential to be read from file: ',string
             write(unit,*)
             write(unit,'(1X,2A,/1X,2A)') &
@@ -170,23 +224,45 @@ module fde_inputDirac
 
          else
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
-            call fde_set_vemb_update(.true.)
-            call fde_set_have_frozen(.true.)
+            itmp%im_frozen = .true.
+            itmp%im_update_vemb = .true.
+!            call fde_set_vemb_update(.true.)
+!            call fde_set_have_frozen(.true.)
          endif
 
-         if (fde_have_frozen_density) then
-            call fde_get_frozen_filename(string)
+!         call fde_get_have_frozen(have_frozen)
+
+         if (itmp%im_frozen) then
+            string = ftmp%frozen%name
+            
+!           call fde_get_frozen_filename(string)
             write(unit,'(A,A60)') &
                 ' * Density (and gradient) from frozen subsystems read from file: ',string
          endif
 
-         IF (fde_export_n) then
-            call fde_get_export_filename(string)
+         if (etmp%do_grid_out) then
+            string = ftmp%export%name
+            
+!            call fde_get_export_filename(string)
             write(unit,'(2A)') &
             ' * FDE Gridfile with updated density written to:',string
 
+            select case(etmp%ex_level)
+               case('DHF','MP2')
+                  write(unit,*)                               &
+                  'Outputted density will be taken from: ',trim(etmp%ex_level)
+               case default
+                  write(unit,*) 'Input for outputted density not a &
+     &  x  valid calculation, HF will be used instead. Given:',trim(etmp%ex_level)
+                  etmp%ex_level = 'DHF'
+            end select
          endif
-      end subroutine FDE_setupInfo
-
+         
+! saving information on 
+         call fde_set_files_info(ftmp)
+         call fde_set_export_info(etmp)
+         call fde_set_import_info(itmp)
+         
+      end subroutine FDE_show_setup
 
 end module fde_inputDirac

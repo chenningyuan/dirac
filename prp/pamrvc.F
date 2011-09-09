@@ -3616,10 +3616,6 @@ C
      &                       xc_fmat_pg_sym        = isymop,
      &                       xc_dmat_pg_sym        = isymop,
      &                       xc_dmat_ih_sym        = ihrmop,
-     &                       xc_do_fde_update_vemb =
-     &                            (dirac_cfg_fde .and. fde_update_vemb),
-     &                       xc_do_fde_response    = 
-     &                                           dirac_cfg_fde_response,
      &                       xc_response_order_mo = 1)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)

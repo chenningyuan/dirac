@@ -37,6 +37,7 @@ C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
 ! checking
+       use fde_types
        use fde_mod
 !!     use FDE_ImportPotentials
 
@@ -47,6 +48,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
+      type(fde_import) :: itmp
 C
 #include "dcbgen.h"
 #include "dcbprl.h"
@@ -102,7 +104,8 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
-         if (fde_import_vemb) then
+        call fde_get_import_info(itmp)
+        if (itmp%im_vemb) then
             CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
          endif
 C
@@ -837,7 +840,8 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
-      use fde_cfg
+      use fde_types
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -852,6 +856,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
+      type(fde_import) :: itmp
       LOGICAL FIRST(NZ),TOBE
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
@@ -888,7 +893,8 @@ C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-      IF (dirac_cfg_fde.and.fde_import_vemb) THEN
+      call fde_get_import_info(itmp)
+      if (dirac_cfg_fde .and. itmp%im_vemb) then
          IOP = IPVEMB0
          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &          OP1INT,FIRST,IPRHAM)
