@@ -194,7 +194,7 @@ C
 C**************************************************************
 C NOTE perhaps CCVEC6 should be added, Done
 C ADD ECC1_IMG ?
-        CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,
+        CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,ITER,
      &                       WORK,KFREE,LFREE)
 C       stop 'after CC_VEC_FNC_KRCC'
         CALL MEMCHK_KRCC(WORK)
