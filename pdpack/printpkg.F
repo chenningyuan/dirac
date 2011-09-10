@@ -1,3 +1,4 @@
+C FILE    : printpkg.F
 C
 C
 C  /* Deck outpak */
@@ -48,6 +49,7 @@ C
       CHARACTER   PFMT*20, COLUMN*8
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      LOGICAL IS_NAN
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 C
       IF (NCTL .LT. 0) THEN
@@ -64,9 +66,21 @@ C
 C
       J = NROW*(NROW+1)/2
       AMAX = ZERO
-      DO 5 I=1,J
-         AMAX = MAX( AMAX, ABS(AMATRX(I)) )
-    5 CONTINUE
+      BMAX = ZERO
+      CMAX = ZERO
+      N_NAN = 0
+      DO I = 1,J
+!        IF (AMATRX(I) .ne. AMATRX(I)) THEN
+         IF (IS_NAN(AMATRX(I),AMATRX(I))) THEN
+            N_NAN = N_NAN + 1
+         ELSE
+            AMAX = MAX( AMAX, ABS(AMATRX(I)) )
+            BMAX = MAX( BMAX, AMATRX(I))
+            CMAX = MIN( CMAX, AMATRX(I))
+         END IF
+      END DO
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
          GO TO 200
@@ -158,6 +172,7 @@ C
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
       CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
       PARAMETER (ZERO = 0.0D0, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
@@ -180,9 +195,16 @@ C
   200 CONTINUE
 C
       AMAX = ZERO
-      DO 205 I=1,MATLN
-         AMAX = MAX( AMAX, ABS(AMATRX(I)) )
-  205 CONTINUE
+      N_NAN = 0
+      DO I=1,MATLN
+         IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
+            N_NAN = N_NAN + 1
+         ELSE
+            AMAX = MAX( AMAX, ABS(AMATRX(I)) )
+         END IF
+      END DO
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,3000) NBLK
          GO TO 800
@@ -439,6 +461,7 @@ C
       INTEGER NDIM(NBLK), BEGIN, KCOL
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
@@ -461,9 +484,16 @@ C
   200 CONTINUE
 C
       AMAX = ZERO
-      DO 205 I=1,MATDIM
-         AMAX = MAX( AMAX, ABS(AMATRX(I)) )
-  205 CONTINUE
+      N_NAN = 0
+      DO I=1,J
+         IF ( IS_NAN(AMATRX(I),AMATRX(I)) ) THEN
+            N_NAN = N_NAN + 1
+         ELSE
+            AMAX = MAX( AMAX, ABS(AMATRX(I)) )
+         END IF
+      END DO
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,3000) NBLK
          GO TO 800
@@ -558,6 +588,7 @@ C
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
@@ -566,10 +597,17 @@ C
       IF (COLHI.LT.COLLOW) GO TO 3
 C
       AMAX = ZERO
+      N_NAN = 0
       DO 10 J = COLLOW,COLHI
          DO 10 I = ROWLOW,ROWHI
-            AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+            IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
+               N_NAN = N_NAN + 1
+            ELSE
+               AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+            END IF
    10 CONTINUE
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
       IF (AMAX .EQ. ZERO) THEN
          WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
          GO TO 3
@@ -773,18 +811,27 @@ C
       C2NRM = DNORM2(NDIM,VEC,INCVEC)
       IZER  = 0
       NLAST = NDIM*INCVEC
+      VECMAX = D0
       DO 100 NA = 1, NLAST, INCVEC
-         IF (VEC(NA) .EQ. D0) IZER = IZER + 1
+         IF (VEC(NA) .EQ. D0) THEN
+            IZER = IZER + 1
+         ELSE
+            VECMAX = MAX(VECMAX, ABS(VEC(NA)) )
+         END IF
   100 CONTINUE
 C
 C.... SIZE OF COEFFICIENTS
 C
-      WRITE(LUOUT,'(/A)')  '  Magnitude of coefficients '
-      WRITE(LUOUT,'( A)')  ' ==========================='
+      WRITE(LUOUT,'(/A/A//A,2I12)')
+     &  '  Magnitude of coefficients ',
+     &  ' ===========================',
+     &  '  Number of elements and increment:',NDIM,INCVEC
       IF (IZER .EQ. NDIM) THEN
-         WRITE(LUOUT,'(/A)') ' All elements are zero.'
+         WRITE(LUOUT,'(/A)') '  All elements are zero.'
          GO TO 9999
       END IF
+      WRITE(LUOUT,'(/A,1P,2E23.12)')
+     &   '  Maximum abs value and vector norm:',VECMAX,C2NRM
 C
       IF (C2NRM .GT. (D1 + 1.0 D-10) ) THEN
          WRITE (LUOUT,'(/A,1P,E23.12,A,/A)')
@@ -901,3 +948,41 @@ C
       PNZVEC = DNZ*D100 / DNDIM
       RETURN
       END
+C === Deck is_nan ===============
+      LOGICAL FUNCTION IS_NAN(XA,XB)
+C
+C     May 2010, Hans Joergen Aa. Jensen
+C     Purpose: IS_NAN(X,X) is true iff X is NAN
+C
+      REAL*8 XA, XB
+      IS_NAN = XA .NE. XB
+      RETURN
+      END
+C === Deck n_nan ===============
+      INTEGER FUNCTION N_NAN(N,AVEC)
+C
+C     May 2010, Hans Joergen Aa. Jensen
+C     Purpose: N_NAN returns number of NAN entries in AVEC(1:N)
+C
+      REAL*8 AVEC(N)
+      N_NAN  = N_NOT_EQUAL(N,AVEC,AVEC)
+      RETURN
+      END
+C === Deck n_not_equal ===============
+      INTEGER FUNCTION N_NOT_EQUAL(N,AVEC,BVEC)
+C
+C     May 2010, Hans Joergen Aa. Jensen
+C     Purpose: Number of not equal elements in AVEC and BVEC
+C
+C     NOTE: N_NOT_EQUAL(N,DA,DA) is number of NAN elements in DA(1:N)
+C
+      INTEGER N, I, J
+      REAL*8  AVEC(N), BVEC(N)
+      J = 0
+      DO I = 1,N
+         IF ( AVEC(I) .NE. BVEC(I) ) J = J + 1
+      END DO
+      N_NOT_EQUAL = J
+      RETURN
+      END
+C -------- end of printpkg.F -----------
