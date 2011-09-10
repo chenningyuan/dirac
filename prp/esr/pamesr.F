@@ -122,17 +122,17 @@ C
      *            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ESRINP.')
-    1          CONTINUE
+    1          CONTINUE ! .GAUGEO
 C Read user specified gauge origin
                   READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
                   GORG = .TRUE.
                GO TO 100
-    2          CONTINUE
-C&&&& PRINT:  Print level
+    2          CONTINUE ! .PRINT
+C&&&& PRINT:  Print level in ESR module
                   READ(LUCMD,*) IPRESR
                GO TO 100
-    3          CONTINUE
-C&&&& OPERATOR: Define operator
+    3          CONTINUE ! .OPERATOR
+C&&&& OPERATOR: Define additional operator for results section
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
      &                        WORK,LWORK,IPRESR)
                   CALL OP1IND('ESRINP',INDESR,LESRP,NESRP,INDXPR,
@@ -140,28 +140,37 @@ C&&&& OPERATOR: Define operator
                   DOESR = .TRUE.
                   ICHANG = ICHANG + 1
                GO TO 100
-    4          CONTINUE
+    4          CONTINUE ! .MULTIPLICITY
 C Read multiplicity
                   READ(LUCMD,*) MULTIPESR
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE ! .SPINPOL
 C&&&& SPINPOLARIZATION (= SCI)
                   SPINPOLESR = .TRUE.
                   READ(LUCMD,*) (NCESR(I),I=1,NFSYM)
                   READ(LUCMD,*) (NVESR(I),I=1,NFSYM)
                GO TO 100
-    6          CONTINUE
-C&&&& SDCI
+    6          CONTINUE ! .SDCI
+C&&&& Singles and doubles CI
                   LVL_CIESR = 2
                GO TO 5 !! NB! go to 5, not go to 100
-    7          CONTINUE
+    7          CONTINUE ! .MAX CI ITERATIONS
 C&&&& MAX CI ITERATIONS
                   READ(LUCMD,*) MAX_CIESR_IT
                GO TO 100
-    8          CONTINUE
+    8          CONTINUE ! .CI ROOTS
 C&&&& CI ROOTS
                   READ(LUCMD,*) N_CIESR
-      IF (N_CIESR .lt. MULTIPESR) CALL QUIT('N_CIESR .lt. MULTIPESR')
+                  IF (N_CIESR .lt. MULTIPESR)
+     &               CALL QUIT('N_CIESR .lt. MULTIPESR')
+               GO TO 100
+    9          CONTINUE  ! .THRCVEC
+C&&&& THRESHOLD FOR CVECS IN GASCIP_RCISTD
+                  READ(LUCMD,*) THR_CVEC_ESR
+               GO TO 100
+   10          CONTINUE  ! .THRCI
+C&&&& Convergence threshold for CI 
+                  READ(LUCMD,*) THR_CIESR
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -172,14 +181,6 @@ C&&&& CI ROOTS
                CALL QUIT('Illegal prompt in ESRINP.')
             END IF
       END IF
-    9          CONTINUE 
-C&&&& THRESHOLD FOR CVECS IN GASCIP_RCISTD
-                  READ(LUCMD,*) THR_CVEC_ESR
-               GO TO 100
-   10          CONTINUE 
-C&&&& Convergence threshold for CI 
-                  READ(LUCMD,*) THR_CIESR
-               GO TO 100
   300 CONTINUE
 C
 C     Print section
@@ -303,16 +304,16 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMREL('PRPESR.REACMO',WORK,1,KEIG,KFREE,LFREE)
 
-      write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
-     &                     N_CIESR,MAX_CIESR_IT,NZCONF
+!     write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
+!    &                     N_CIESR,MAX_CIESR_IT,NZCONF
       IF (N_CIESR .GE. 0) THEN
          !
       IF (MAX_CIESR_IT .GT. 0) THEN
          ! Davidson iterations
          N_CIESR = MIN(NZCONF, MULTIPESR + 1)
-       write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
+!      write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
       ELSE
-         ! full CI
+         ! full CI (now primarily for debugging Davidson iterations code)
          N_CIESR = NZCONF
       END IF
       END IF
@@ -904,7 +905,7 @@ C       ... here PHASE is new phase of vector J-1
            Seff_M = (JM1 - 1) - Seff
            CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) * 0.5D0
            write(lupri,*) 'CPLUS / 2 ', CPLUS
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
+           WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
      &     " J,JM1,<J|S_x|JM1'> :",J,JM1,PHASE_J_R,' + i',PHASE_J_I,
      &     '; PHASE_J_NORM',PHASE_J_NORM, PHASE_J_NORM - CPLUS
 C
@@ -1606,12 +1607,6 @@ C
 C           ... < p | O | p > for ITIM = -1 :
             PVAL = PVAL +
      &         DF(1)*DDOT(N2BBASX,DMAT(1,IZ,2),1,PMAT(1,IZ),1)
-            write (6,*) 'iz, df(1),esrval',iz,df(1),esrval
-            write (6,*) 'dmat(1,iz,2)'
-            nbast = ntbas(0)
-            call output(dmat(1,iz,2),1,nbast,1,nbast,nbast,nbast,1,6)
-            write (6,*) 'pmat(1,iz)'
-            call output(pmat(1,iz),1,nbast,1,nbast,nbast,nbast,1,6)
           ELSE
             DO IOPEN = 0,NOPEN
               PVAL = PVAL + DF(IOPEN)

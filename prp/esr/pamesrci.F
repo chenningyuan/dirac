@@ -62,8 +62,6 @@ C        ... special input for using old code for a single open shell
          GO TO 9999
       END IF
 C
-      MZ = MIN(2,NZ)
-      write (lupri,*) 'ESR_INIT NZ, MZ',NZ,MZ
 C
 C     Include spin polarization in CI ?? If yes redefine GAS spaces
 C     NASH(:), NASHT, NACTEL, NAELEC etc. are all reset in THDFORB
@@ -164,7 +162,6 @@ C
       CALL QENTER('ESR_RESOLVE')
       KFRSAV = KFREE
 C
-      MZ = MIN(2,NZ)
       IPROPT =  MAX(IPRINT,3)
 C
 C     ***************************************************
@@ -202,8 +199,8 @@ C
 C        MAX_CI_IT Davidson CI iterations.
 C
          L_EIGVAL = N_CIROOTS
-         L_EIGVEC = N_CIROOTS*NZCONF*MZ ! final CI eigen vectors
-         L_EIGVXX = N_CIROOTS*NZCONF*MZ ! CI eigen vectors from GASCIP_RCISTD
+         L_EIGVEC = N_CIROOTS*NZCONF*NZ_in_CI ! final CI eigen vectors
+         L_EIGVXX = N_CIROOTS*NZCONF*NZ_in_CI ! CI eigen vectors from GASCIP_RCISTD
          CALL MEMGET('REAL',K_EIGVAL,L_EIGVAL,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',K_EIGVXX,L_EIGVEC,WORK,KFREE,LFREE)
 !        assign pointer to CI vectors which is in the argument list of this subroutine and needs to be
@@ -226,7 +223,7 @@ C
 C        Sort CI eigenvectors from (real C1, imag C1, real C2, etc)
 C        to (real C1, real C2, ..., imag C1, imag c2, ...) for later use in QTRANS
 C
-         IF (MZ .EQ. 2) THEN
+         IF (NZ_in_CI .EQ. 2) THEN
             CALL MEMGET('REAL',K_EIGVX2,L_EIGVEC,WORK,KFREE,LFREE)
             J_EIGVEC_R = K_EIGVX2 - 1
             J_EIGVEC_I = J_EIGVEC_R + N_CIROOTS*NZCONF
@@ -252,7 +249,7 @@ C
 C        Full CI.
 C           
          L_EIGVAL = NZCONF
-         L_EIGVEC = NZCONF*NZCONF * MZ
+         L_EIGVEC = NZCONF*NZCONF * NZ_in_CI
          CALL MEMGET('REAL',K_EIGVAL,L_EIGVAL,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',K_EIGVEC,L_EIGVEC,WORK,KFREE,LFREE)
 C debug TODO remove again: 
@@ -276,7 +273,7 @@ C
      &   '(ESR_RESOLVE): Real part of the N_ROOTS CI vectors'
         CALL OUTPUT(WORK(K_EIGVEC),
      &              1,NZCONF,1,N_CIROOTS,NZCONF,N_CIROOTS,-1,LUPRI)
-      IF (MZ .eq. 2) THEN
+      IF (NZ_in_CI .eq. 2) THEN
         WRITE(LUPRI,*)
      &   '(ESR_RESOLVE): Imaginary part of the N_ROOTS CI vectors'
         CALL OUTPUT(WORK(K_EIGVEC+NZCONF*N_CIROOTS),
