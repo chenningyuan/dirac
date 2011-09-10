@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : dirac.F
 C
 C***********************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)
@@ -54,10 +55,8 @@ C
 C
 C     Execute Dirac
 C
-      write(lupri, *)
-      write(lupri, *)
-      write(lupri, '(a)') 'Execution time and host'
-      write(lupri, '(a)') '-----------------------'
+      write(lupri, '(//a)') 'Execution time and host'
+      write(lupri, '(a)')   '-----------------------'
       CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL(WORK,LWORK)
 C
@@ -234,9 +233,6 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 C
-C.s/sya,2007.02.07 - SK - 30-11-2009
-#include "dcbgos2.h"
-C.q
       CALL QENTER('PAMPSI')
 C
 C HJAaJ Nov. 2002 TODO: PAMANA only works for closed shell SCF now
@@ -256,10 +252,10 @@ C
 C
 C        Transfer DHF info to common block DCBORB
 C        and recalculate DCBORB.
+C        Open shell is defined according to 'RESOLVE', i.e. include
+C        in CI exactly those determinants included in the av.of.conf. SCF
 C
-         CALL TDHFORB
-         CALL SETDC2(0)
-c        call setdc2(iprint)
+         CALL TDHFORB('NO CI')
 C
 C
 C        *************************************************
@@ -302,8 +298,7 @@ C
          IF (.NOT.dirac_cfg_scf_calculation) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
-            CALL TDHFORB
-            CALL SETDC2(0)
+            CALL TDHFORB('RESOLVE')
          END IF
          CALL RESOLV(WORK,LWORK)
       END IF
@@ -345,7 +340,6 @@ C        Transfer DHF info to common block DCBORB
 C        and recalculate DCBORB.
 C
          CALL TKRMCORB
-         CALL SETDC2(0)
 C
 C        *************************************************
 C        *** Call PSIOPT for KR-MCSCF wave function ******
@@ -405,10 +399,15 @@ C
 !@d      IF (.NOT.dirac_cfg_scf_calculation) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
-!@d         CALL TDHFORB
-!@d         CALL SETDC2(0)
+!@d         CALL TDHFORB('RESOLVE')
 !@d      END IF
          CALL SY_COSCI(WORK,LWORK)
+      END IF
+
+      IF (DOGASCIP .AND. DOPSI) THEN
+         WRITE (LUPRI,'(///A//)')
+     &   ' WARNING: .GASCIP is not active in this version',
+     &   ' WARNING: DIRAC continues with next task.'
       END IF
 C
 C***********************************************************************
@@ -444,7 +443,6 @@ C Not sure which to include?
 C
          CALL OPTINI
          CALL TKRCCORB
-C         CALL TKRMCORB
          CALL SETDC2(0)
 C         CALL SETDCBIDX()
 C
@@ -474,7 +472,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tdhforb */
-      SUBROUTINE TDHFORB
+      SUBROUTINE TDHFORB(CISELECT)
 C***********************************************************************
 C
 C     Transfer information from common block DCODHF to 
@@ -489,14 +487,22 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+      CHARACTER*(*) CISELECT
+C
 #include "dgroup.h"
 #include "dcbdhf.h"
+#include "dcbesr.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbgascip.h"
 C
       CALL QENTER('TDHFORB')
+
 C
+C     initialize CI program in charge on common block DCCOPT
+C
+      OPT_CIPROGRAM  = 'not set'
+C
+C     Transfer variables to /DCBORB/
 C
       NASHT = 0
       DO I = 1,NFSYM
@@ -505,40 +511,153 @@ C
          NASHT   = NASHT + NASH(I)
          NOCC(I) = NISH(I) + NASH(I)
          NSSH(I) = NSSH_DHF(I)
-c         NESH(I) = NESH_DHF(I)
-c         NPSH(I) = NPSH_DHF(I)
+c        NESH(I) = NESH_DHF(I)
+c        NPSH(I) = NPSH_DHF(I)
          NFRO(I) = NFRO_DHF(I)
          NELEC(I) = NELEC_DHF(I)
       END DO
       NELECT = NELECT_DHF
+      NAELEC = NAELEC_DHF
+C
+C     Calculate derived variables in /DCBORB/:
+C
+      IF ( CISELECT .EQ. 'NO SETDC2') GOTO 9999 ! for Trond's temp. fix in dirrdn.F
+      CALL SETDC2(0)
+c     call setdc2(iprint)
 C
 C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GASCIP) /July 2002 hjaaj
+C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
-      NAELEC = NAELEC_DHF
-      NGAS_DC= NOPEN
+      IF ( CISELECT .EQ. 'NO CI' ) THEN
+         NGAS_DC = 0
+         THR_CVEC = D0
+      ELSE IF ( CISELECT .EQ. 'RESOLVE' ) THEN
+C        ... include exactly those det.s which was included
+C            in the 'average-of-configuration' SCF
+         NGAS_DC = NOPEN
+         THR_CVEC = 1.0D-3
+      ELSE IF ( CISELECT .EQ. 'RESOLVE' ) THEN
+
+         THR_CVEC = 1.0D-3
+         CALL IZERO(NGSHT,MXMCGAS)
+         DO J = 1, NGAS_DC
+            DO I = 1,NFSYM
+               NGSH(I,J) = NACSH(I,J)
+               NGSHT(J)  = NGSHT(J) + NGSH(I,J)
+            END DO
+         END DO
+C
+C        initialize min and max accumlated no. of electrons in each gas space
+C
+         XELEC = D0
+         DO J = 1, NGAS_DC
+            XELEC = XELEC + D2*DF(J)*NGSHT(J)
+            NGSP(1,J) = NINT(XELEC)
+            NGSP(2,J) = NINT(XELEC)
+         END DO
+      ELSE IF (CISELECT .EQ. 'FULLCI') THEN
+C        ... do a full ci in the active space
+         NGAS_DC = 1
+         THR_CVEC = 1.0D-3
+
+C        ... set CI program in charge
+!        OPT_CIPROGRAM = 'GASCIP'
+
+         CALL IZERO(NGSHT,MXMCGAS)
+         DO J = 1, NGAS_DC
+            DO I = 1,NFSYM
+               NGSH(I,J) = NASH(I)
+               NGSHT(J)  = NGSHT(J) + NGSH(I,J)
+            END DO
+         END DO
+C
+C        initialize min and max accumlated no. of electrons in each gas space
+C
+         NGSP(1,1) = NAELEC
+         NGSP(2,1) = NAELEC
+      ELSE IF (CISELECT .EQ. 'ESRCI') THEN
+C        ... do CI for ESR spin-polarization /hjaaj nov 2002
+C            (Cxx are preparation for RESOLVE instead of FULLCI
+C             in the DHF open shells)
+         NGAS_DC = NOPEN + 2
+         IF (NOPEN .NE. 1) THEN
+            write (lupri,*) 'NOPEN is not 1, it is: ',NOPEN
+            call quit ('NOPEN is not 1')
+         END IF
+
+C        ... set CI program in charge
+         OPT_CIPROGRAM = 'GASCIP'
+C
+C        set up core and virtual spaces
+C
+         NCESRT = 0
+         NVESRT = 0
+         DO I = 1,NFSYM
+           IF (NCESR(I) .LT. 0) THEN
+              NCESR(I) = NISH(I)
+           END IF
+           NISH(I) = NISH(I) - NCESR(I)
+           NELEC(I) = NELEC(I) - 2*NCESR(I)
+           NCESRT = NCESRT + NCESR(I)
+           IF (NVESR(I) .LT. 0) THEN
+              NVESR(I) = NSSH(I)
+           END IF
+           NSSH(I) = NSSH(I) - NVESR(I)
+           NVESRT = NVESRT + NVESR(I)
+         END DO
+         NAELEC = NAELEC + 2*NCESRT
+C
+C        initialize min and max accumlated no. of electrons in each gas space
+C
+Cxx      XELEC = D2*NCESRT
+         NGSP(1,1) = MAX(0,2*NCESRT-LVL_CIESR)
+         NGSP(2,1) = 2*NCESRT
+         DO J = 2, NGAS_DC - 1
+Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
+Cxx         NGSP(1,J) = NINT(XELEC)
+Cxx         NGSP(2,J) = NINT(XELEC)
+            NGSP(1,J) = MAX(0,NAELEC-LVL_CIESR)
+            NGSP(2,J) = NAELEC
+         END DO
+         NGSP(1,NGAS_DC) = NAELEC
+         NGSP(2,NGAS_DC) = NAELEC
+
+         CALL IZERO(NGSHT,MXMCGAS)
+         DO J = 2, NGAS_DC-1
+            DO I = 1,NFSYM
+Cxx            NGSH(I,J) = NACSH(I,J)
+               NGSH(I,J) = NASH(I)
+               NGSHT(J)  = NGSHT(J) + NGSH(I,J)
+            END DO
+         END DO
+C        do core (gas 1) and virtual (gas NGAS_DC) and update NASH(*)
+         DO I = 1,NFSYM
+            NGSH(I,1)    = NCESR(I)
+            NGSH(I,NGAS_DC) = NVESR(I)
+            NGSHT(1)     = NGSHT(1)    + NGSH(I,1)
+            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+            NASH(I)      = NASH(I) + NCESR(I) + NVESR(I)
+         END DO
+         THR_CVEC = THR_CVEC_ESR
+      ELSE
+         CALL QUIT('Invalid CISELECT parameter')
+      END IF
+C
+C     Define MK limits now AFTER CI has been defined:
+C     we may have more active orbitals and (maybe) more
+C     active electrons than in the wave function optimization step.
+C
+C     For "RESOLVE" this corresponds to:
+C     transfer open shell average-of-configuration to GAS space notation
+C     (for e.g. ESR GOSCI) /July 2002 hjaaj
+C
+C
+      NASHT  = NASH(1) + NASH(2)
       MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
-      MINMK2 = NAELEC-2*MIN(NAELEC,NASHT)
+      MINMK2 = -MAXMK2
       MK2REF = 0
       MK2DEL = MAXMK2
-
-      CALL IZERO(NGSHT,MXMCGAS)
-      DO J = 1, NGAS_DC
-         DO I = 1,NFSYM
-            NGSH(I,J) = NACSH(I,J)
-            NGSHT(J)  = NGSHT(J) + NGSH(I,J)
-         END DO
-      END DO
-C
-C     initialize min and max accumlated no. of electrons 
-C     in each gas space
-C
-      XELEC = D0
-      DO J = 1, NGAS_DC
-         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-         NGSP(1,J) = NINT(XELEC)
-         NGSP(2,J) = NINT(XELEC)
-      END DO
 C
 C     Set common block DCIOPT
 C
@@ -576,7 +695,7 @@ C
 C
 C     Set common block DCCOPT
 C
-      OPT_CIPROGRAM  = 'noone HF'
+!     OPT_CIPROGRAM  = 'not set'
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = ' '
       END DO
@@ -584,7 +703,7 @@ C
          OPT_DELSTR(I) = ' '
       END DO
 C
-C
+ 9999 CONTINUE
       CALL QEXIT('TDHFORB')
       RETURN
 C
@@ -640,6 +759,11 @@ C     min and max electrons in each gas space:
          NGSP(2,J) = NKRMCGSP(2,J)
       END DO
 C
+C     Calculated derived variables in /DCBORB/
+C
+      CALL SETDC2(0)
+c     call setdc2(iprint)
+C
 C
 C     Set common block DCIOPT
 C
@@ -666,6 +790,7 @@ C
       OPT_THRGRD     = DKRMC_THRGRD
       THRPCI         = DKRMC_THRPCI
       LVCORR_MC      = 0.0d0
+      THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
 C
@@ -736,6 +861,7 @@ C
       MK2DEL = NKRCI_MK2DEL
       MINMK2 = NKRCI_MINMK2
       MAXMK2 = NKRCI_MAXMK2
+
 C     ... do not change MXMCGAS to MXCIGAS; not necessary...
       CALL IZERO(NGSHT,MXMCGAS)
       DO I = 1,NFSYM
@@ -782,6 +908,7 @@ C
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
       LVCORR_MC      = 0.0d0
+      THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
 C
@@ -855,7 +982,7 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 
-      use xcint_main
+      use xc_driver
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -889,11 +1016,33 @@ C
       CALL GETBASDIR()
 C
  100  CONTINUE
+#if defined (VAR_SLEEPING_SLAVES)
+! If it is important that the slaves are not idling
+! then one can define VAR_SLEEPING SLAVES.
+! If set, then the slaves test once per second if there
+! is a new task (because of the CALL SLEEP(1))
+      CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
+     &                NEWTASK,STATUS_MPI,IERR)
+      IF (NEWTASK) THEN
+chj      write (0,*) 'mpi_iprobe true for node',mytid
+chj      write (0,*) 'istatus(source,tag,error):',
+chj  &     ( istatus(i),i=1,3)
+         CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+chj      write (0,*) ' itask, node',itask,mytid
+chj      write (0,*) 'istatus(source,tag,error):',
+chj  &     ( istatus(i),i=1,3)
+      ELSE
+         CALL SLEEP(1)
+         GO TO 100
+      END IF
+#else
 C
 Csk      write(6,*) 'node will recieve itask',MYTID
       CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
 Csk      write(6,*) 'node has recieved itask',MYTID,itask
+#endif
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -946,7 +1095,7 @@ C
 C
 C        Enter the DFT module
 C
-         call integrate_xc(xc_mat_dim = 1,
+         call xc_integrator(xc_mat_dim = 1,
      &                      xc_nz      = 1,
      &                      xc_dmat_0  = (/0.0d0/),
      &                      xc_nr_dmat = 0,
@@ -995,7 +1144,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
 
-         use xcint_main
+         use xc_driver
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1066,7 +1215,7 @@ C
 C
 C        Enter the DFT module
 C
-         call integrate_xc(xc_mat_dim = 1,
+         call xc_integrator(xc_mat_dim = 1,
      &                      xc_nz      = 1,
      &                      xc_dmat_0  = (/0.0d0/),
      &                      xc_nr_dmat = 0,
@@ -1261,8 +1410,9 @@ C
 C     Set common block DCROPT
 C     
       LVCORR_MC      = 0.0d0
+      THR_CVEC       = 1.0D-3
 
-      OPT_CIPROGRAM  = 'KRCC' !KRCI_CIPROGRAM
+      OPT_CIPROGRAM  = 'KRCC'
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = ' '
       END DO
