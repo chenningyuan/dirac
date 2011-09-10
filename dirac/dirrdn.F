@@ -6860,8 +6860,8 @@ C
             END IF
          END DO
          WRITE(LUPRI,1020)
-         NELECT_TOT = NELECT_DHF+DTEMP
          DTEMP      = NELECT_DHF+DTEMP
+         NELECT_TOT = NINT(DTEMP)
          IF (NFSYM .EQ. 1) THEN
             WRITE(LUPRI,1031)
      &         DTEMP,NISH_DHF(1)+NASH_DHF(1)
