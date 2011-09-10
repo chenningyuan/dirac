@@ -530,15 +530,12 @@ C     (for e.g. ESR GASCIP) /July 2002 hjaaj
 C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
       IF ( CISELECT .EQ. 'NO CI' ) THEN
-         NGAS_DC = 0
+         NGAS_DC  = 0
          THR_CVEC = D0
       ELSE IF ( CISELECT .EQ. 'RESOLVE' ) THEN
-C        ... include exactly those det.s which was included
+C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
-         NGAS_DC = NOPEN
-         THR_CVEC = 1.0D-3
-      ELSE IF ( CISELECT .EQ. 'RESOLVE' ) THEN
-
+         NGAS_DC  = NOPEN
          THR_CVEC = 1.0D-3
          CALL IZERO(NGSHT,MXMCGAS)
          DO J = 1, NGAS_DC
@@ -557,8 +554,8 @@ C
             NGSP(2,J) = NINT(XELEC)
          END DO
       ELSE IF (CISELECT .EQ. 'FULLCI') THEN
-C        ... do a full ci in the active space
-         NGAS_DC = 1
+C        ... do a full CI in the active space
+         NGAS_DC  = 1
          THR_CVEC = 1.0D-3
 
 C        ... set CI program in charge
@@ -580,7 +577,8 @@ C
 C        ... do CI for ESR spin-polarization /hjaaj nov 2002
 C            (Cxx are preparation for RESOLVE instead of FULLCI
 C             in the DHF open shells)
-         NGAS_DC = NOPEN + 2
+         NGAS_DC  = NOPEN + 2
+         THR_CVEC = THR_CVEC_ESR
          IF (NOPEN .NE. 1) THEN
             write (lupri,*) 'NOPEN is not 1, it is: ',NOPEN
             call quit ('NOPEN is not 1')
@@ -639,7 +637,6 @@ C        do core (gas 1) and virtual (gas NGAS_DC) and update NASH(*)
             NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
             NASH(I)      = NASH(I) + NCESR(I) + NVESR(I)
          END DO
-         THR_CVEC = THR_CVEC_ESR
       ELSE
          CALL QUIT('Invalid CISELECT parameter')
       END IF
@@ -649,8 +646,7 @@ C     we may have more active orbitals and (maybe) more
 C     active electrons than in the wave function optimization step.
 C
 C     For "RESOLVE" this corresponds to:
-C     transfer open shell average-of-configuration to GAS space notation
-C     (for e.g. ESR GOSCI) /July 2002 hjaaj
+C     transfer open shell average-of-configuration to GAS space notation /July 2002 hjaaj
 C
 C
       NASHT  = NASH(1) + NASH(2)
@@ -982,7 +978,7 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 
-      use xc_driver
+      use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1095,11 +1091,11 @@ C
 C
 C        Enter the DFT module
 C
-         call xc_integrator(xc_mat_dim = 1,
-     &                      xc_nz      = 1,
-     &                      xc_dmat_0  = (/0.0d0/),
-     &                      xc_nr_dmat = 0,
-     &                      xc_nr_fmat = 0)
+         call integrate_xc(xc_mat_dim = 1,
+     &                     xc_nz      = 1,
+     &                     xc_dmat_0  = (/0.0d0/),
+     &                     xc_nr_dmat = 0,
+     &                     xc_nr_fmat = 0)
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -1144,7 +1140,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
 
-         use xc_driver
+         use xcint_main
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1215,11 +1211,11 @@ C
 C
 C        Enter the DFT module
 C
-         call xc_integrator(xc_mat_dim = 1,
-     &                      xc_nz      = 1,
-     &                      xc_dmat_0  = (/0.0d0/),
-     &                      xc_nr_dmat = 0,
-     &                      xc_nr_fmat = 0)
+         call integrate_xc(xc_mat_dim = 1,
+     &                     xc_nz      = 1,
+     &                     xc_dmat_0  = (/0.0d0/),
+     &                     xc_nr_dmat = 0,
+     &                     xc_nr_fmat = 0)
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -1427,7 +1423,7 @@ C transformation level
       KTRLVL      = 3 !KTRLVL_KRCI
       IANACI      = 0 !IANACI_KRCI
       NCIROOT     = -1
-C dont think i need max number of ci vectors for subspace
+C dont think I need max number of CI vectors for subspace
       MXCIV       = 0 !MXCIV_KRCI
 C at the moment this is not the way to restart
       IRESTRK     = 0 !IRESTRK_KRCI
