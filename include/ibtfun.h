@@ -1,5 +1,5 @@
 !
-!$Id$
+! FILE:  ibtfun.h
 !
       IBTAND(I,J) = IAND(I,J)
       IBTOR(I,J)  = IOR(I,J)
