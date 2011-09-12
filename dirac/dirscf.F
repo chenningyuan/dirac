@@ -2998,7 +2998,7 @@ C
          KPOS = KFREE
       endif
 C
-      CALL MVOGE1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
+      CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3008,8 +3008,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck mvoge1 */
-      SUBROUTINE MVOGE1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
+C/* Deck mvogen_1 */
+      SUBROUTINE MVOGEN_1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
 C***********************************************************************
 C     Generate modified virtual orbitals
 C
@@ -3051,8 +3051,9 @@ C     Get all coefficients
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('MVOGEN: No coefficients !')
+         WRITE(LUPRI,'(//A)')
+     &   'MVOGEN ERROR: MO coefficient file DFCOEF not present'
+         CALL QUIT('MVOGEN: No MO coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
@@ -3063,7 +3064,7 @@ C
 C       Generate MVOs by the Bauschlicher method (ionic Fock)
 C
         CALL DENMVO(DMAT,CMO,FOCK,WORK(KFREE),LFREE)
-        IF (ABS(MVOWEIGHT-1).GT.1.0D-14) THEN
+        IF (ABS(MVOWEIGHT-1.0D0).GT.1.0D-14) THEN
 C     Make a weighted average density D = w*Dmvo + (1 - w)D0, where
 C     w = MVOWEIGHT and D0 is the full inactive density matrix.
            CALL GENDEN(FOCK,CMO,1,IPRMVO)
@@ -3074,7 +3075,7 @@ C     w = MVOWEIGHT and D0 is the full inactive density matrix.
      &              INTMVO,IPRMVO,WORK(KFREE),LFREE)
         INQUIRE(FILE='DFFCK1',EXIST=TOBE)
         IF(TOBE) THEN
-          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MVOGE1')
+          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MVOGEN_1')
           CALL REAFCK(LUBUF,DMAT,.TRUE.,1)
           CLOSE(LUBUF,STATUS='KEEP')
         ELSE
@@ -3250,7 +3251,7 @@ C
 C     Print section
 C
       IF(IPRMVO.GE.4) THEN
-        CALL TITLER('Output from DENMVO','*',103)
+        CALL TITLER('Output density matrix from DENMVO','*',103)
         DO 20 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 20
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I

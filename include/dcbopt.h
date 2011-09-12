@@ -62,8 +62,9 @@
      &        NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO, MOPT_MXMACRO,     &
      &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
-     &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
-     &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
+     &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MCTYPE,             &
+     &        MK2DEL, MK2REF, MINMK2, MAXMK2,                           &
+     &        JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,                    &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
      &        NMAX_SYM, nopen_mc
@@ -75,7 +76,8 @@
      &                MOPT_MXMACRO, MOPT_MAXBCK, NCIROOT, MXCIV, IANACI,&
      &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
-     &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
+     &                ITMACN, MAXCIT, IOPTST, MCTYPE,                   &
+     &                MK2DEL, MK2REF, MINMK2, MAXMK2,                   &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
@@ -86,14 +88,14 @@
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
      &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
-     &       LVCORR_MC
+     &       LVCORR_MC,THR_CVEC
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
      &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
-     &                LVCORR_MC
+     &                LVCORR_MC,THR_CVEC
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)

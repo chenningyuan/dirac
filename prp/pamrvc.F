@@ -3319,7 +3319,7 @@ C        Calculate density matrices
 C        --------------------------
 C
          IF ( XRS_CIPROGRAM .EQ. 'GASCIP' ) THEN
-            CALL GASCIP_RMAKDM(NZCONF,.TRUE.,.TRUE.,WORK(KZCONF),
+            CALL GASCIP_RMAKDM(.TRUE.,.TRUE.,NZCONF,WORK(KZCONF),
      &           CLREF,CRREF,WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
@@ -3604,9 +3604,9 @@ C
 
           call generate_num_grid(work(kbuf))
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+          if (parcal) call dirac_parctl(4)
 #endif
-          call integrate_xc(xc_mat_dim            = ntbas(0),
+          call integrate_xc (xc_mat_dim            = ntbas(0),
      &                       xc_nz                 = nz,
      &                       xc_dmat_0             = work(kbuf),
      &                       xc_nr_dmat            = ndmat,

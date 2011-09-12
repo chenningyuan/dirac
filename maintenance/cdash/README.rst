@@ -2,7 +2,13 @@
 Contributing to the DIRAC Dashboard
 -----------------------------------
 
-Before you start, set --scratch=/your/scratch/path in ~/.diracrc
+Before you start, set --scratch=/your/scratch/path in ~/.diracrc.
+
+In the case of parallel DIRAC installation, you have to set up more
+parameters in the diracrc (=~/.diracrc, or .diracrc or diracrc) file, like
+--machfile=$PBS_NODEFILE
+--scratch=/your/scratch/path
+--global-scratch-disk
 
 It is very easy to contribute to the DIRAC Dashboard:
 http://repo.ctcc.no/CDash/index.php?project=DIRAC
