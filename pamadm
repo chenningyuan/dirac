@@ -260,6 +260,7 @@ files_never_compiled.append('fmm/mm_standalone_aux.F')
 files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
 files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
 files_never_compiled.append('xcint/src/test_driver.F90')
+files_never_compiled.append('xcint/src/fake_input.F90')
 
 do_not_release = []
 do_not_release.append('utils/add_copyright.py')
