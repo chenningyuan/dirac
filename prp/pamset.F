@@ -540,6 +540,7 @@ C***********************************************************************
        use dft_cfg
        use xcint_main
        use fde_mod
+       use fde_integrate
        use num_grid_gen
        use num_grid_cfg
 #include "implicit.h"
@@ -557,6 +558,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
+      type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
@@ -686,7 +688,30 @@ C          Hermitian operator
         end if
 
 
+!!!!!!
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
 
+           if (.not.dirac_cfg_dft_calculation) then
+              call genden(fao, cmo, 1, iprint)
+           endif
+
+           write (*,*) 'debug, before getting the response 3'
+
+!          call fde_set_nz(nz)
+!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
+
+          call integrate_fde(fde_mat_dim            = ntbas(0),
+     &                       fde_nz                 = nz,
+     &                       fde_dmat_0             = fao, 
+     &                       fde_nr_dmat            = 0,
+     &                       fde_nr_fmat            = 1,
+     &                       fde_fmat               = fmo,
+     &                       fde_do_potential       = .true.)
+
+           write (*,*) 'debug, after  getting the response 3'
+        endif
+!!!!!
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
