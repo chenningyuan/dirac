@@ -3037,7 +3037,10 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcborb.h" !// NAELEC, NGAS_DC
+
+!NAELEC, NGAS_DC
+#include "dcborb.h"
+
 #include "dcbgascip.h"
 C
       INTEGER*8 JSTR(*), MSKGAS(*)
