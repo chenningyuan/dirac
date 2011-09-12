@@ -23,7 +23,9 @@ module fde_inputDirac
 
    use fde_types
    use fde_cfg
+   use fde_data
    use fde_nadd_derv
+   use fde_eval_dirac
    
    private
 
@@ -86,8 +88,13 @@ module fde_inputDirac
       
       lunit = ftmp%logfile%unit
       
-!      call fde_set_vemb_import(.false.)
-!      call fde_set_frozen_import(.false.)
+      itmp%im_vemb     = .false.
+      itmp%im_frozen   = .true.
+      itmp%im_n        = .true.
+      itmp%im_gn       = .true.
+      itmp%im_coulomb  = .true.
+      itmp%im_update_vemb = .true.
+
 
       ICHANG = 0
       IF (WORD(1:4).eq.'*FDE') THEN
@@ -107,9 +114,15 @@ module fde_inputDirac
             CASE ('.EMBPOT')
                read(lucmd,'(A60)') ftmp%embpot%name
                itmp%im_vemb     = .true.
+               itmp%im_frozen   = .false.
+               itmp%im_n        = .false.
+               itmp%im_gn       = .false.
+               itmp%im_coulomb  = .false.
+               itmp%im_update_vemb = .false.
 !              call fde_parse_vemb(lucmd)
             CASE ('.FRDENS')
                read(lucmd,'(A60)') ftmp%frozen%name
+               itmp%im_vemb     = .false.
                itmp%im_frozen   = .true.
                itmp%im_n        = .true.
                itmp%im_gn       = .true.
@@ -128,7 +141,9 @@ module fde_inputDirac
 
 ! read kinetic energy functional for non-additive term
             CASE ('.NAXCF')
-               read(lucmd,*) nadd_fun
+               read(lucmd,'(A80)') nadd_fun
+               write (*,*) 'debug, nadd_fun is ',nadd_fun
+               
                call fde_set_nadd_xcf(nadd_fun)
 ! read kinetic energy functional for non-additive term
             CASE ('.NAKEF')
@@ -173,6 +188,8 @@ module fde_inputDirac
       call fde_set_export_info(etmp)
       call fde_set_import_info(itmp)
       
+      if (itmp%im_frozen) call fde_import_frozen
+
 !     options are echoed
          if (Echo_Input) then
            write (lunit,*) ' '
@@ -184,6 +201,7 @@ module fde_inputDirac
            CALL PRSYMB(lunit,'=',101,1)
            write (lunit,*) ' '
          endif 
+
 
       END SUBROUTINE
 
@@ -226,8 +244,7 @@ module fde_inputDirac
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
             itmp%im_frozen = .true.
             itmp%im_update_vemb = .true.
-!            call fde_set_vemb_update(.true.)
-!            call fde_set_have_frozen(.true.)
+            call fde_test_frozen_density
          endif
 
 !         call fde_get_have_frozen(have_frozen)

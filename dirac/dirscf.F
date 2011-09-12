@@ -596,9 +596,10 @@ C
            if (.not.dirac_cfg_dft_calculation) then
               call interface_mo_write()
            endif
-            
+           write(*,*) 'debug, before fde_calculate_embpot 1'
            call fde_set_nz(nz)
            call fde_calculate_embpot(ntbas(0),dmat,fock)
+           write(*,*) 'debug, after  fde_calculate_embpot 1'    
 
            tdfde =  second() - tdxc
         endif
@@ -1412,9 +1413,10 @@ C
            if (.not.dirac_cfg_dft_calculation) then
               call interface_mo_write()
            endif
-
+           write (*,*) 'debug, before fde_calculate_embpot 2'
            call fde_set_nz(nz)
            call fde_calculate_embpot(ntbas(0),dmat,fock)
+           write (*,*) 'debug, after  fde_calculate_embpot 2'
 
            tdfde =  second() - tdxc
         endif

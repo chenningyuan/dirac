@@ -1,5 +1,6 @@
 module fde_integrate
 
+   use fde_types
    use fde_cfg
    use fde_io
    use fde_data
@@ -22,8 +23,6 @@ module fde_integrate
    implicit none
 
    public integrate_fde
-   public get_fde_energy
-   public get_fde_mat_energy
    public fde_get_nr_electrons_integrated
 
    real(8) :: fde_get_nr_electrons_integrated
@@ -571,32 +570,30 @@ contains
 
          w(1) = rw(ipoint)
 
-        if (do_fde_update_vemb .or. do_fde_response) then
-           if ( fde_froz_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
-              n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
+         if ( fde_frozen_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
+            n_0_t(1) = n_0(1) + fde_frozen_n(ipoint)
 
-              z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1)
-              z0tt(2)  = gn_0_pointwise(2) + fde_froz_ng(ipoint,2)
-              z0tt(3)  = gn_0_pointwise(3) + fde_froz_ng(ipoint,3)
+            z0tt(1)  = gn_0_pointwise(1) + fde_frozen_gn(ipoint,1)
+            z0tt(2)  = gn_0_pointwise(2) + fde_frozen_gn(ipoint,2)
+            z0tt(3)  = gn_0_pointwise(3) + fde_frozen_gn(ipoint,3)
 
-              gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
+            gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
-           else
-              n_0_t(1) = n_0(1)
-              gnn_0_t(1) = gnn_0(1)
-           endif
-        endif
+         else
+            n_0_t(1) = n_0(1)
+            gnn_0_t(1) = gnn_0(1)
+         endif
 
 !       number of electrons
-        nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
+         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
 
-        time_derv_start = second()
+         time_derv_start = second()
 
 ! aspg: this way we are forcing the same xc functional for the active and non-additive
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
 !       on using only up to 5 functionals...
 !
-              call get_fde_nadd_fun_derv(max_fun_derv, &
+         call get_fde_nadd_fun_derv(max_fun_derv, &
                                          bllen,        &
                                          w,            &
                                          n_0,          &
@@ -608,40 +605,32 @@ contains
                                          parallel_xc)
 
 
-              if (do_fde_update_vemb) then
-                 do ii = 1, max_block_length
-                    derv(ii,1) = derv(ii,1) + w(1)*fde_elpot(ipoint)
-                 enddo
-              endif
+          do ii = 1, max_block_length
+             derv(ii,1) = derv(ii,1) + w(1)*fde_frozen_elpot(ipoint)
+          enddo
 
-        time_derv = time_derv + second() - time_derv_start
+         time_derv = time_derv + second() - time_derv_start
 
-        time_matrix_dist_start = second()
+         time_matrix_dist_start = second()
 
 !       exchange-correlation potential
 !       ==============================
 
-        if (do_potential) then
-
-          if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = n_0(1)**(1.0d0/3.0d0)
-            call dftac(derv, w(1), n_0(1), rho13, &
-     &                 rho_resp, rho_outer, gnn_0(1))
-          end if
+         if (do_potential) then
 
 !         energy density
-          fde_energy = fde_energy + derv(1, d0000000)
+           fde_energy = fde_energy + derv(1, d0000000)
 
-          u%n(1) = derv(1, d1000000)
-          if (use_gga) then
+           u%n(1) = derv(1, d1000000) 
+           if (use_gga) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
-          end if
+              u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
+           end if
 
-        end if !exchange-correlation potential
+         end if !exchange-correlation potential
 
 
 !       linear response
@@ -784,99 +773,63 @@ contains
       fde_get_nr_electrons_integrated = nr_electrons_integrated
    end function
 
-   function get_fde_energy()
-      real(8) :: get_fde_energy
-      get_fde_energy = fde_energy
-   end function
 
-   function get_fde_mat_energy()
-      real(8) :: get_fde_mat_energy
-      get_fde_mat_energy = fde_mat_energy
-   end function
+      subroutine loop_over_batches()
+         real(8) :: dummy
+         integer :: idummy
+         integer :: ibatch
+         integer :: start_batch, i
 
-   subroutine loop_over_batches()
-    real(8) :: dummy
-    integer :: idummy
-    integer             :: ibatch
-    integer             :: i
-    real(8), allocatable :: mpi_buffer(:)
+         ibatch          = 0
+         nr_points_total = 0
+         nr_points_used  = 0
+         
+         start_batch = 1
+         nr_points_batch = fde_grid_np
 
-      ibatch                = 0
-      nr_points_total       = 0
-      nr_points_used        = 0
+!        loop over batches
+         do
 
-!     loop over batches
-      do
+            if (nr_points_batch < 0) exit
 
-!        get number of points in this batch
-            if (do_fde_update_vemb .or. do_fde_response) then
-               nr_points_batch = fde_grid_np
-            end if
-
-         if (nr_points_batch < 0) exit
-
-         allocate(rx(nr_points_batch))
-         allocate(ry(nr_points_batch))
-         allocate(rz(nr_points_batch))
-         allocate(rw(nr_points_batch))
-
-            if (do_fde_update_vemb .or. do_fde_response) then
-               if (parallel_xc) then
-                  call my_quit('fix fde_response mpi')
-               end if
-
-               allocate(fde_froz_n(nr_points_batch))
-               fde_froz_n = 0.0d0
-               allocate(fde_elpot(nr_points_batch))
-               fde_elpot = 0.0d0
-               allocate(fde_froz_ng(nr_points_batch, 3))
-               fde_froz_ng = 0.0d0
+            allocate(rx(nr_points_batch))
+            allocate(ry(nr_points_batch))
+            allocate(rz(nr_points_batch))
+            allocate(rw(nr_points_batch))
 
 !              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
-!              do i = 1, nr_points_batch
-                  call get_fde_grid_coord(i,block_length,rx,ry, rz)
-                  call get_fde_grid_weight(i,block_length,rw)
+            call get_fde_grid_coord(start_batch,nr_points_batch,rx,ry, rz)
+            call get_fde_grid_weight(start_batch,nr_points_batch,rw)
+                 
+            ibatch = ibatch + 1
+            nr_points_total = nr_points_total + nr_points_batch
+            nr_points_on_this_proc = nr_points_batch
 
-!                 fde_froz_n(i) = fde_frozen_prp(3,i)
-!                 fde_elpot(i)  = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
+            call integrate()
 
-!                 if (fde_nprop.eq.6) then
-!                    fde_froz_ng(i,1) = fde_frozen_prp(4,i)
-!                    fde_froz_ng(i,2) = fde_frozen_prp(5,i)
-!                    fde_froz_ng(i,3) = fde_frozen_prp(6,i)
-!                 else
-!                    fde_froz_ng(i,1) = 0.0d0
-!                    fde_froz_ng(i,2) = 0.0d0
-!                    fde_froz_ng(i,3) = 0.0d0
-!                 endif
-!              end do
-         end if
+         i = 12 
+         write (*,*) 'debug, checking data copied in loop_over_batches'
+         write (*,*) '       point ',i
+         write (*,*) '           x ',rx(i)
+         write (*,*) '           y ',ry(i)
+         write (*,*) '           z ',rz(i)
+         write (*,*) '           w ',rw(i)
 
-         ibatch          = ibatch + 1
-         nr_points_total = nr_points_total + nr_points_batch
 
-         nr_points_on_this_proc = nr_points_batch
+            deallocate(rx)
+            deallocate(ry)
+            deallocate(rz)
+            deallocate(rw)
 
-         call integrate()
-
-         deallocate(rx)
-         deallocate(ry)
-         deallocate(rz)
-         deallocate(rw)
-
-        if (do_fde_update_vemb .or. do_fde_response) then
-           if (allocated(fde_froz_n))  deallocate(fde_froz_n)
-           if (allocated(fde_elpot))   deallocate(fde_elpot)
-           if (allocated(fde_froz_ng)) deallocate(fde_froz_ng)
 !          don't try to read another batch
            goto 999
-        end if
 
 !     end loop over batches
-      end do
- 999  continue
+         end do
+                  
+ 999     continue
 
-   end subroutine
+      end subroutine
 
 
 

@@ -86,6 +86,7 @@ module fde_nadd_derv
             character(len=80) :: id
 
             xcfun_fde = id
+            write (*,*) 'debug, nadd xc is ',id
             call parse_functional(xcfun_fde, fde_xcf,      hfx_out, mu_out, beta_out, .false.)
          end subroutine fde_set_nadd_xcf
 

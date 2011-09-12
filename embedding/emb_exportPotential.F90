@@ -49,7 +49,7 @@ module FDE_exportPotentials
          endif
       end subroutine fde_export_write_data_to_file
 
-
+#ifdef FOOBAR
       subroutine fde_prepare_export
          real(kind=8), allocatable :: dmat(:,:,:)
 
@@ -61,6 +61,9 @@ module FDE_exportPotentials
          call fde_calculate_active_elpot(dmat)
 
          call fde_cleanup_density_matrix(dmat)
+#else
+      subroutine fde_prepare_export
+#endif
       end subroutine fde_prepare_export
 
       subroutine fde_export_data_as_xml

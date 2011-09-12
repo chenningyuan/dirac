@@ -123,8 +123,8 @@ module fde_eval_dirac
 
 
 
-      subroutine fde_get_ngn_dirac(dmat)
-         real(kind=8) :: dmat(nba_orb,nba_orb,4)
+      subroutine fde_get_ngn_dirac(dmat,mat_dim)
+         real(kind=8) :: dmat(*)
          real(kind=8) :: n(1), gn(3)
          real(kind=8), allocatable :: ao(:,:), buffer(:,:)
          real(kind=8), allocatable :: x(:), y(:), z(:)
@@ -202,11 +202,14 @@ module fde_eval_dirac
 
       subroutine fde_calculate_vemb_dirac(mat_dim,dmat,vmat)
          integer, intent(in) :: mat_dim
-!        real(kind=8), target, intent(in) :: dmat(mat_dim, mat_dim)
          real(kind=8), target, intent(in) :: dmat(*)
-!        real(kind=8), target  :: vmat(mat_dim, mat_dim, nz, 1)
          real(kind=8), target  :: vmat(*)
 
+         write (*,*) 'debug, inside fde_calculate_vemb_dirac'
+!        write (*,*) '       before fde_get_ngn_dirac'
+!        call fde_get_ngn_dirac(dmat,mat_dim)
+!        write (*,*) '       after  fde_get_ngn_dirac'
+         write (*,*) '       before integrate_fde'
          call integrate_fde(fde_mat_dim   = mat_dim, &
                             fde_nz        = nz,      &
                             fde_dmat_0    = dmat,    &
@@ -214,6 +217,7 @@ module fde_eval_dirac
                             fde_nr_fmat   = 1,       &
                             fde_fmat      = vmat,    &
                             fde_do_potential = .true.)
+         write (*,*) '       after  integrate_fde'
 
       end subroutine fde_calculate_vemb_dirac
 

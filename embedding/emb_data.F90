@@ -37,6 +37,7 @@ module fde_data
    public get_fde_grid_weight
    public set_pointer_fde_grid
    public fde_test_frozen_density
+   public fde_import_frozen
 
    interface get_fde_grid_coord
       module procedure get_fde_grid_coords_single
@@ -85,13 +86,13 @@ module fde_data
          z = fde_grid(3,i)
       end subroutine get_fde_grid_coords_single
 
-      subroutine get_fde_grid_coords_block(i,stride,x,y,z)
-         integer, intent(in) :: i, stride
+      subroutine get_fde_grid_coords_block(first,last,x,y,z)
+         integer, intent(in) :: first, last
          integer :: j, k 
          real(kind=8), intent (out) :: x(:), y(:), z(:)
 
          k = 1
-         do j = i, i+stride
+         do j = first, first+last-1
             x(k) = fde_grid(1,j)
             y(k) = fde_grid(2,j)
             z(k) = fde_grid(3,j)
@@ -107,13 +108,13 @@ module fde_data
          w = fde_grid(4,i)
       end subroutine get_fde_grid_weight_single
 
-      subroutine get_fde_grid_weight_block(i,stride,w)
-         integer, intent(in) :: i, stride
+      subroutine get_fde_grid_weight_block(first,last,w)
+         integer, intent(in) :: first, last
          integer :: j, k
          real(kind=8), intent (out) :: w(:)
 
          k = 1
-         do j = i, i+stride
+         do j = first, first+last-1
             w(k) = fde_grid(4,j)
             k = k+1
          enddo
@@ -149,7 +150,7 @@ module fde_data
    subroutine fde_import_static
       integer :: file_unit
       character(len=60) :: file_name
-      integer :: i, fde_grid_np
+      integer :: i
       real(kind=8), pointer :: fde_vtmp(:)
       type(fde_files)  :: ftmp
 
@@ -157,8 +158,6 @@ module fde_data
       
       file_unit = ftmp%embpot%unit
       file_name = ftmp%embpot%name
-!      call fde_get_embpot_unit(file_unit)
-!      call fde_get_embpot_filename(file_name)
 
       call fde_open_file(file_name,file_unit)
       call read_grid(file_unit,fde_grid,fde_vtmp)
@@ -179,7 +178,7 @@ module fde_data
    subroutine fde_import_frozen
       integer :: file_unit
       character(len=60) :: file_name
-      integer :: i, fde_grid_np
+      integer :: i
       real(kind=8), pointer :: fde_frozen_prp(:,:)
       type(fde_files)  :: ftmp
 
@@ -188,8 +187,7 @@ module fde_data
       file_unit = ftmp%frozen%unit
       file_name = ftmp%frozen%name
 
-!      call fde_get_frozen_unit(file_unit)
-!      call fde_get_frozen_filename(file_name)
+      write (*,*) 'debug: unit, name',file_unit,file_name
 
       call fde_open_file(file_name,file_unit)
       call read_grid(file_unit,fde_grid,fde_frozen_prp)
@@ -202,11 +200,31 @@ module fde_data
       call alloc(fde_frozen_elpot, fde_grid_np)
 
       do i=1, fde_grid_np
-         fde_frozen_elpot(i) = fde_frozen_prp(i,1) + fde_frozen_prp(i,2)
-         fde_frozen_n(i)     = fde_frozen_prp(i,3)
-         fde_frozen_gn(i,1)  = fde_frozen_prp(i,4)
-         fde_frozen_gn(i,5)  = fde_frozen_prp(i,5)
-         fde_frozen_gn(i,6)  = fde_frozen_prp(i,6)
+         fde_frozen_elpot(i) = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
+         fde_frozen_n(i)     = fde_frozen_prp(3,i)
+         fde_frozen_gn(i,1)  = fde_frozen_prp(4,i)
+         fde_frozen_gn(i,2)  = fde_frozen_prp(5,i)
+         fde_frozen_gn(i,3)  = fde_frozen_prp(6,i)
+
+         if ((i .eq. 2).or.(i.eq.12)) then
+            write (*,*) 'debug, in import from',file_name
+            write (*,*) '       at point',i
+            write (*,*) '       n  : ',fde_frozen_n(i)
+            write (*,*) '       gn : (',fde_frozen_gn(i,1),',',fde_frozen_gn(i,2),',',fde_frozen_gn(i,3),')'
+            write (*,*) '       elp: ',fde_frozen_elpot(i)
+            write (*,*) '           =',fde_frozen_prp(1,i)
+            write (*,*) '           +',fde_frozen_prp(2,i)
+            write (*,*) ' tmpvars '
+            write (*,*) '       n  : ',fde_frozen_prp(3,i)
+            write (*,*) '       gn : (',fde_frozen_prp(4,i),',',fde_frozen_prp(5,i),',',fde_frozen_prp(6,i),')'
+            write (*,*) '       elp: ',fde_frozen_prp(1,i)
+            write (*,*) '           +',fde_frozen_prp(2,i)
+            write (*,*) ' grid coords'
+            write (*,*) '       x  : ',fde_grid(1,i)
+            write (*,*) '       y  : ',fde_grid(2,i)
+            write (*,*) '       z  : ',fde_grid(3,i)
+            write (*,*) '       w  : ',fde_grid(4,i)
+         endif
       enddo
 
       call deallocp(fde_frozen_prp)
