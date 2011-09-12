@@ -1,5 +1,5 @@
       COMMON/CC_SCR2/ KLZ,KLZSCR,KLSTOCC1,
-     &              KLSTOCC5,KLSTOCC6,KLSTOCC7,KLSTREO,
+     &              KLSTOCC2,KLSTOCC3,KLSTOCC4,KLSTREO,
      &              KIX1_CA,KSX1_CA,KIX1_CB,KSX1_CB,
      &              KIX1_AA,KSX1_AA,KIX1_AB,KSX1_AB,
      &              KIX2_CA,KSX2_CA,KIX2_CB,KSX2_CB,
