@@ -39,11 +39,7 @@ C***********************************************************************
          use xmlout
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -51,7 +47,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbpsi.h"
-#include "blocks.h"
 C
       LOGICAL   WFCONV, DO4C2C_SAVE, EX,
      &          TRIVEC_SAVE, TRIFCK_SAVE, ERGCNV_SAVE,
@@ -385,8 +380,6 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0 = 0.0D0, D4 = 4.00D00,
      &          D2 = 2.0D0, DP5=0.5D0)
 C
-#include "mxcent.h"
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -1144,14 +1137,11 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "cbihr2.h"
-#include "blocks.h"
       CALL QENTER('SCFCYC')
 #include "memint.h"
 C
@@ -1202,8 +1192,6 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0,DM1=-1.0D0,D1=1.0D0, DP5 = 0.50D00,
      &          D2 = 2.00D00)
 C
-#include "mxcent.h"
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -1584,9 +1572,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0, DP5 = 0.5D00,
      &          DP25 = 0.25D00)
-#include "mxcent.h"
 C
-#include "nuclei.h"
 #include "frame.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2227,9 +2213,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 #include "frame.h"
-#include "nuclei.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -2944,16 +2928,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
-#include "aovec.h"
-C
 #include "dcbbas.h"
 #include "dcborb.h"
 C
 #include "dcbfir.h"
 #include "dcbgen.h"
 #include "dcbmvo.h"
-#include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4)
       DIMENSION WORK(*)
@@ -4745,16 +4725,12 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxorb.h"
-#include "aovec.h"
-C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "blocks.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2),NO(2)
 C
 #include "memint.h"
