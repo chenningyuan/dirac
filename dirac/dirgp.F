@@ -4032,12 +4032,12 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcb_rkbimp.h"
       DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),IBOS(NORB),
      &          TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
      &          WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
-      IPRINT = 0
 C     Initialize unit matrix (transformation matrix in MO-basis)
       CALL DUNIT2(CBUF,NORB,NORB,NORB,NZ)
       IF(SUB_BL) THEN
@@ -4059,10 +4059,10 @@ C.....Transform negative energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
 C.....Project out negative energy solutions
-      PRJTHR  = 1.0D-5
+      PRJTHR  = 1.0D-4
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NPRKB,
-     &            PRJTHR,THRMAX,NORB,NORB,
+     &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
      &            NPRKB,NQ(IP),IP,IPRINT)
       CALL MEMREL('RKBIMP_1.neg',WORK,1,KCF,KFREE,LFREE)
 C.....Transform positive energy coefficients to orthonormal basis
@@ -4122,7 +4122,6 @@ C
      &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
-      IPRINT = 0
 C.....Approximate eigenvalue of UKB complement
       FAC=-D2*CVAL*CVAL
       II = 0
