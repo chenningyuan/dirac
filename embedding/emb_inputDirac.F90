@@ -41,27 +41,13 @@ module fde_inputDirac
          character(len=*) :: log_name
          type(fde_files)  :: ftmp
 
-!         call fde_set_have_frozen(.true.)
-!         call fde_set_vemb_update(.true.)
-
          call fde_initialize_cfg
-!         call fde_initialize_nadd_functionals
          
          call fde_get_files_info(ftmp)
          ftmp%logfile%unit = log_unit
          ftmp%logfile%name = log_name
          call fde_set_files_info(ftmp)
          
-         write (log_unit,*) ' '
-         call prsymb(log_unit,'=',101,1)
-         write (log_unit,*) ' '
-         
-         write (log_unit,'(1X,A)') &
-            ' Frozen Density Embedding Calculation defaults:'
-         call fde_show_setup    
-         
-         call prsymb(log_unit,'=',101,1)
-         write (log_unit,*) ' '
       end subroutine fdeini
 
 
@@ -190,6 +176,8 @@ module fde_inputDirac
       
       if (itmp%im_frozen) call fde_import_frozen
 
+      call fde_initialize_nadd_functionals         
+
 !     options are echoed
          if (Echo_Input) then
            write (lunit,*) ' '
@@ -274,8 +262,6 @@ module fde_inputDirac
                   etmp%ex_level = 'DHF'
             end select
          endif
-
-         call fde_initialize_nadd_functionals
          
          if ((fde_xc_fun_is_lda().and.fde_ke_fun_is_gga()).or. &
              (fde_xc_fun_is_gga().and.fde_ke_fun_is_lda())) then
