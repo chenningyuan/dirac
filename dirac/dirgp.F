@@ -4059,7 +4059,6 @@ C.....Transform negative energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
 C.....Project out negative energy solutions
-      PRJTHR  = 1.0D-4
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NPRKB,
      &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
@@ -4076,10 +4075,9 @@ C.....Transform positive energy coefficients to orthonormal basis
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
 C.....Project out positive energy solutions
-      PRJTHR  = 1.0D-5
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NERKB,
-     &            PRJTHR,THRMAX,NORB,NORB,
+     &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
      &            NERKB,NQ(IP),IP,IPRINT)
       CALL MEMREL('RKBIMP_1',WORK,1,KCF,KFREE,LFREE)
 C.....
