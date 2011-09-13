@@ -207,8 +207,11 @@ module fde_data
          fde_frozen_gn(i,3)  = fde_frozen_prp(6,i)
 
          if ((i .eq. 2).or.(i.eq.12)) then
-            write (*,*) 'debug, in import from',file_name
-            write (*,*) '       at point',i
+            write (*,*) ' '
+            write (*,*) 'debug, in import from ',file_name
+            write (*,*) ' '
+            write (*,*) '       at point ',i
+            write (*,*) ' '
             write (*,*) '       n  : ',fde_frozen_n(i)
             write (*,*) '       gn : (',fde_frozen_gn(i,1),',',fde_frozen_gn(i,2),',',fde_frozen_gn(i,3),')'
             write (*,*) '       elp: ',fde_frozen_elpot(i)

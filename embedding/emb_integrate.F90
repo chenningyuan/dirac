@@ -195,10 +195,6 @@ contains
       nr_electrons_integrated = 0.0d0
       fde_energy    = 0.0d0
 
-!     if (pure_hf_run) then
-!        return
-!     end if
-
          mat_dim = fde_mat_dim
          nz      = fde_nz
          nr_dmat = fde_nr_dmat
@@ -263,16 +259,26 @@ contains
       end if
 
 !     check whether gga code structure will be used
-      use_gga_qr = (fun_is_gga())
-      use_gga_qi = (fun_is_gga())
+!
+! aspg: TODO! think about what to do if KEF is lda and XCF is gga,
+!       or the reverse... perhaps this has to be caught at input
+!       reading time and throw an error
+      use_gga_qr = (fde_xc_fun_is_gga())
+      use_gga_qi = (fde_xc_fun_is_gga())
 
       if (response_order_mo > 0) then
          if (dft_cfg_alda_hs) use_gga_qr = .false.
          if (dft_cfg_alda_ha) use_gga_qi = .false.
       end if
+      
       if (use_gga_qr .or. use_gga_qi) then
          use_gga = .true.
       end if
+      
+      write (6,*) 'debug, in integrate_fde: use_gga ',use_gga
+      write (6,*) '       fde_xc_fun_is_lda()       ',fde_xc_fun_is_lda()
+      write (6,*) '       fde_xc_fun_is_gga()       ',fde_xc_fun_is_gga()
+      
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
 !     therefore i quit here if the user wants qr
@@ -354,6 +360,7 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
             fde_mat_energy = save_ddot2 - save_ddot1
+            write (6,*) 'debug, fde_mat_energy :',fde_mat_energy
          end if
 
 !        call report()

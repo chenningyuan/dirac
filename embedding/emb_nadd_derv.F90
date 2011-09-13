@@ -16,6 +16,10 @@ module fde_nadd_derv
       public fde_set_nadd_xcf
       public fde_set_nadd_all_alda
       public get_fde_nadd_fun_derv
+      public fde_xc_fun_is_lda
+      public fde_xc_fun_is_gga
+      public fde_ke_fun_is_lda
+      public fde_ke_fun_is_gga
 
       logical,save :: skip_kin_contribution = .false.
       logical,save :: skip_xc_contribution  = .false.
@@ -26,8 +30,10 @@ module fde_nadd_derv
       type(functional), save :: fde_kef_xalda, fde_xcf_xalda
 
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
-      character(len=80), save :: kefun_fde='kin_tf'
-      character(len=80), save :: xcfun_fde='lda'
+!      character(len=80), save :: kefun_fde='kin_tf'
+!      character(len=80), save :: xcfun_fde='lda'
+       character(len=80), save :: kefun_fde='kin_pw91'
+       character(len=80), save :: xcfun_fde='pbe'
 
       character(len=80), save :: kefun_fde_alda='kin_tf'
       character(len=80), save :: xcfun_fde_alda='lda'
@@ -38,6 +44,42 @@ module fde_nadd_derv
       
       contains
 
+!   ----------------------------------------------------------------------------
+      function fde_xc_fun_is_lda()
+!   ----------------------------------------------------------------------------
+      logical :: fde_xc_fun_is_lda
+
+         fde_xc_fun_is_lda = (xc_get_type(fde_xcf%id) == 0)
+      end function
+
+
+!   ----------------------------------------------------------------------------
+      function fde_xc_fun_is_gga()
+!   ----------------------------------------------------------------------------
+      logical :: fde_xc_fun_is_gga
+
+         fde_xc_fun_is_gga = (xc_get_type(fde_xcf%id) == 1)
+      end function
+   
+
+!   ----------------------------------------------------------------------------
+      function fde_ke_fun_is_lda()
+!   ----------------------------------------------------------------------------
+      logical :: fde_ke_fun_is_lda
+
+         fde_ke_fun_is_lda = (xc_get_type(fde_kef%id) == 0)
+      end function
+
+
+!   ----------------------------------------------------------------------------
+      function fde_ke_fun_is_gga()
+!   ----------------------------------------------------------------------------
+      logical :: fde_ke_fun_is_gga
+
+         fde_ke_fun_is_gga = (xc_get_type(fde_kef%id) == 1)
+      end function
+      
+         
 !   ----------------------------------------------------------------------------
          subroutine fde_set_skip_nadd_xc(value)
 !   ----------------------------------------------------------------------------
@@ -57,16 +99,31 @@ module fde_nadd_derv
 !   ----------------------------------------------------------------------------
          subroutine fde_initialize_nadd_functionals
 !   ----------------------------------------------------------------------------
-            integer :: i
+            integer :: i, order
+            logical :: parallel_fde
+            
+            parallel_fde = .false.
+            order = 0
 
+            fun_is_automatic = .true. 
+            
             call parse_functional(kefun_fde,      fde_kef,      hfx_out, mu_out, beta_out, .false.)
             call parse_functional(kefun_fde_alda, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
             call parse_functional(xcfun_fde,      fde_xcf,      hfx_out, mu_out, beta_out, .false.)
             call parse_functional(xcfun_fde_alda, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
 
+!            call set_kin_fun_alda(fde_kef_alda)
+!            call set_xc_fun_alda(fde_xcf_alda)             
+
             do i = 1, 20
                fde_set_functionals(i) = .true.
             enddo
+
+            call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
+            call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
+            call xcfun_set_functional(fde_kef,      order, parallel_fde)
+            call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
+            
          end subroutine fde_initialize_nadd_functionals
 
 
@@ -95,8 +152,11 @@ module fde_nadd_derv
          subroutine fde_set_nadd_all_alda
 !   ----------------------------------------------------------------------------
             is_fdersp_alda = .true.
-            call parse_functional(kefun_fde_alda, fde_kef,      hfx_out, mu_out, beta_out, .false.)
-            call parse_functional(xcfun_fde_alda, fde_xcf,      hfx_out, mu_out, beta_out, .false.)
+
+!             call set_kin_fun_alda(fde_kef)
+!             call set_xc_fun_alda(fde_xcf)
+!            call parse_functional(kefun_fde_alda, fde_kef,      hfx_out, mu_out, beta_out, .false.)
+!            call parse_functional(xcfun_fde_alda, fde_xcf,      hfx_out, mu_out, beta_out, .false.)
          end subroutine fde_set_nadd_all_alda 
 
 
@@ -107,8 +167,8 @@ module fde_nadd_derv
 
             write(unit,'(A,A20)') ' * Non-additive KE functional : ',kefun_fde
             write(unit,'(A,A20)') ' * Non-additive XC functional : ',xcfun_fde
-            write(unit,'(A,A20)') '   if .ALDA set, wil use : (XC) ',xcfun_fde_alda
-            write(unit,'(A,A20)') '                           (KE) ',kefun_fde_alda
+!            write(unit,'(A,A20)') '   if .ALDA set, wil use : (XC) ',xcfun_fde_alda
+!            write(unit,'(A,A20)') '                           (KE) ',kefun_fde_alda
          end subroutine fde_print_nadd_functionals
 
 

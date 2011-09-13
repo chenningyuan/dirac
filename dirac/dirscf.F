@@ -570,12 +570,29 @@ C
         TDXC = SECOND()
         TDF2 = TDXC - TDF2
 
+        call interface_mo_write()
+        
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+
+!           if (.not.dirac_cfg_dft_calculation) then
+!              call interface_mo_write()
+!           endif
+           write(*,*) 'debug, before fde_calculate_embpot 1'
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           write(*,*) 'debug, after  fde_calculate_embpot 1'    
+
+           tdfde =  second() - tdxc
+        endif
+
+
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
  
 !          write mo info to file
 !          read by the dft module
-           call interface_mo_write() 
+!           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -589,20 +606,6 @@ C
      &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-
-           if (.not.dirac_cfg_dft_calculation) then
-              call interface_mo_write()
-           endif
-           write(*,*) 'debug, before fde_calculate_embpot 1'
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
-           write(*,*) 'debug, after  fde_calculate_embpot 1'    
-
-           tdfde =  second() - tdxc
-        endif
 
        
 C
@@ -1387,12 +1390,28 @@ C
 !       mi - variable initialization (otherwise runtime-check failure)
         TDXC = SECOND()
 
+        call interface_mo_write()
+
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+
+!           if (.not.dirac_cfg_dft_calculation) then
+!              call interface_mo_write()
+!           endif
+           write (*,*) 'debug, before fde_calculate_embpot 2'
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           write (*,*) 'debug, after  fde_calculate_embpot 2'
+
+           tdfde =  second() - tdxc
+        endif
+        
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
  
 !          write mo info to file
 !          read by the dft module
-           call interface_mo_write() 
+!           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -1406,20 +1425,6 @@ C
      &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
-
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-
-           if (.not.dirac_cfg_dft_calculation) then
-              call interface_mo_write()
-           endif
-           write (*,*) 'debug, before fde_calculate_embpot 2'
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
-           write (*,*) 'debug, after  fde_calculate_embpot 2'
-
-           tdfde =  second() - tdxc
-        endif
 
 C
 C        Solvent contribution

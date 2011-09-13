@@ -45,7 +45,7 @@ module fde_inputDirac
 !         call fde_set_vemb_update(.true.)
 
          call fde_initialize_cfg
-         call fde_initialize_nadd_functionals
+!         call fde_initialize_nadd_functionals
          
          call fde_get_files_info(ftmp)
          ftmp%logfile%unit = log_unit
@@ -273,6 +273,18 @@ module fde_inputDirac
      &  x  valid calculation, HF will be used instead. Given:',trim(etmp%ex_level)
                   etmp%ex_level = 'DHF'
             end select
+         endif
+
+         call fde_initialize_nadd_functionals
+         
+         if ((fde_xc_fun_is_lda().and.fde_ke_fun_is_gga()).or. &
+             (fde_xc_fun_is_gga().and.fde_ke_fun_is_lda())) then
+             call quit('inconsistent selection of KE+XC functionals')
+         else 
+             write (*,*) 'debug, fde_xc_fun_is_lda() ',fde_xc_fun_is_lda()
+             write (*,*) '       fde_ke_fun_is_gga() ',fde_ke_fun_is_gga()
+             write (*,*) '       fde_xc_fun_is_gga() ',fde_xc_fun_is_gga()
+             write (*,*) '       fde_ke_fun_is_lda() ',fde_ke_fun_is_lda()
          endif
          
 ! saving information on 
