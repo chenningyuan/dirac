@@ -5020,6 +5020,8 @@ C
      &          IBVEC(NVECS),IBREF(NVREF)
       DIMENSION P(4)
 C
+CTROND
+      WRITE(6,*) 'TEST, IPRINT = ', IPRINT
       IF(IPRINT.GE.7) THEN
          CALL HEADER('PRJORT: MO transformation matrix on input',-1)
          CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
@@ -5039,7 +5041,7 @@ C     ===================================
 C
       JTOP = IREF+NREF-1
       DO JREF = IREF,JTOP
-        IF(IPRINT.GE.2) THEN
+        IF(IPRINT.GE.3) THEN
           CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
      &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
      &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
