@@ -72,7 +72,7 @@
 ! Only used for integrals
      & KISTR_AA, KISTR_AB,
      &KISTR_CA, KISTR_CB,
-
+!
      &KC2,  
      &KLBLTP,  
      &KLCBLTP, KLCIOIO,  

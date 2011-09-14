@@ -94,8 +94,7 @@ C THEREFORE ONLY THAT WILL BE GENERATED
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IDOH2,
      &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC,
-     &               WORK,KFREE,LFREE)
+     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC)
 *
           IF(IRECOM.NE.1) THEN
             print*,'img dia'
@@ -104,8 +103,7 @@ C THEREFORE ONLY THAT WILL BE GENERATED
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IDOH2,
      &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),
-     &               WORK,KFREE,LFREE)
+     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),NELEC)
           END IF
         END IF
 * end replacement. Lasse
@@ -155,8 +153,7 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
      &                   NGAS,NGSSH,IHPVGAS_AB,
      &                   LOBSM,NORBT,IDOH2,
      &                   ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &                   NTOOB,FI_AL,FI_BE,NELEC,
-     &                   WORK,KFREE,LFREE)
+     &                   NTOOB,FI_AL,FI_BE,NELEC)
 *
 * Obtain core energy and alpha and beta part of inactive Fock-matrix
 * / effective 1- electron operator for high spin openshell
@@ -194,14 +191,11 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 * Lasse, 2011
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "ctcc.inc"
-#include "glbbas.inc"
 #include "gasstr.inc"
 *
-      DIMENSION WORK(*)
 *. Standard 1+2 electron integrals
       DIMENSION T(*)
 *. Output
@@ -662,7 +656,6 @@ C                                                         Lasse
 C
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
