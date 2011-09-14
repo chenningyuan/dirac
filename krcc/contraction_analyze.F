@@ -17,6 +17,7 @@
 * Lasse 2010
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cgas.inc"
@@ -795,14 +796,23 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
       INTEGER IOP(NOP),IMOP(4*NGAS,NMOP)
       INTEGER IVECS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
       INTEGER IVECF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
-      INTEGER IMTOH(NMOP)
+      INTEGER IMTOH(NOP) !Misleading name since it is actually H TO M
       INTEGER HOP(4*NGAS,*)
 * Scratch
       INTEGER INDX(4)
 *
-      NTEST = 100
+      NTEST = 00
 *
-      CALL ISETVC(IMTOH,0,NMOP)
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Input Hamiltonian types '
+        DO IHOP =1,NOP
+          CALL WRT_SPOX_TP_CC_KRCC(HOP(1,IOP(IHOP)),1)
+        END DO
+        WRITE(6,*) ' Input Cluster operator types '
+        CALL WRT_SPOX_TP_CC_KRCC(IMOP,NMOP)
+      END IF
+*
+      CALL ISETVC(IMTOH,0,NOP) 
 *
       DO IHOP =1,NOP
 * Analyze H operator
@@ -812,10 +822,8 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 * Compare indices to intermediate
         ISTART = IVECS(INH,IMK,IMUB)
         IEND = IVECF(INH,IMK,IMUB)
-        print*,'ISTART,IEND',ISTART,IEND
-C       IF(IEND.GE.ISTART) STOP
-        ISIM = 0
         DO I = ISTART,IEND
+          ISIM = 0
           DO J = 1,IDIFFINDX
             IF(HOP(INDX(J),IOP(IHOP)).NE.IMOP(INDX(J),I)) THEN
 * No match
@@ -860,7 +868,7 @@ C       IF(IEND.GE.ISTART) STOP
 #include "implicit.inc"
       INTEGER IOP(4*NGAS),INDX(NINDX)
 *
-      NTEST = 100
+      NTEST = 00
 *
       ICOUNT = 0
       IEND = 0
@@ -894,7 +902,7 @@ C       IF(IEND.GE.ISTART) STOP
 * they are not reached ==> wasting memory
 * For the final version only intermediates reached should be allocated
 * for and an intermediate should only be in memory when needed. Meaning
-* this routine should be obsolete and the context mergged into
+* this routine should be obsolete and the context merged into
 * CC_VEC_FNC_KRCC.
 *                               Lasse 2011
 *
@@ -902,7 +910,6 @@ C       IF(IEND.GE.ISTART) STOP
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
-#include "tempint.inc"
 *
       DIMENSION WORK(*)
 *
@@ -910,7 +917,7 @@ C       IF(IEND.GE.ISTART) STOP
 *
       ISYMINT = 1
 *
-      NTEST = 100
+      NTEST = 00
       IDUM = 0
 *
       MX_ST_TSOSO_INI = MX_ST_TSOSO
@@ -932,11 +939,9 @@ C       IF(IEND.GE.ISTART) STOP
      &     WORK(KLLSOBEX_M01),WORK(KLIBSOBEX_M01),LEN_M01_VEC_CC,
 * output   number of elements, offset, total length. Names needs to be
 * found
-     &     IDUM,MX_SBSTR_INT,
+     &     MX_SBSTR_INT,
 * seems to be dummy/not used
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-* all not in use
-     &     IDUM)
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM01,IMULTFAC*LEN_M01_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -965,9 +970,8 @@ C       IF(IEND.GE.ISTART) STOP
       CALL IDIM_TCC_KRCC(WORK(KINTM10),NINTER10,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M10),WORK(KLIBSOBEX_M10),LEN_M10_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM10,IMULTFAC*LEN_M10_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -996,9 +1000,8 @@ C       IF(IEND.GE.ISTART) STOP
       CALL IDIM_TCC_KRCC(WORK(KINTM02),NINTER02,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M02),WORK(KLIBSOBEX_M02),LEN_M02_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM02,IMULTFAC*LEN_M02_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1027,9 +1030,8 @@ C       IF(IEND.GE.ISTART) STOP
       CALL IDIM_TCC_KRCC(WORK(KINTM11),NINTER11,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M11),WORK(KLIBSOBEX_M11),LEN_M11_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM11,IMULTFAC*LEN_M11_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1058,9 +1060,8 @@ C       IF(IEND.GE.ISTART) STOP
       CALL IDIM_TCC_KRCC(WORK(KINTM12),NINTER12,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M12),WORK(KLIBSOBEX_M12),LEN_M12_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM12,IMULTFAC*LEN_M12_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1104,6 +1105,335 @@ C       IF(IEND.GE.ISTART) STOP
       RETURN
       END
 *
+      SUBROUTINE M_TO_EX_DX_FORMAT(IWAY,IDIMEXDX,IOUT,NRANK,ISM,
+     &                             MTYPE,TTYPE,RESTYPE,T,
+     &                             WORK,KFREE,LFREE)
+*
+* Subroutine to map a given CAAB-type of cluster operator to a given
+* EX,DX set of operators. Notice this is an injective mapping...hence we
+* need to first find the dimension of the new array
+*
+* Strategy:
+* 1. Find EX,DX
+* 2. Find dimension of EX,DX
+* 3. Perform mapping
+* Lasse 2011
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
+*
+      INTEGER MTYPE(4*NGAS),TTYPE(4*NGAS),RESTYPE(4*NGAS)
+      DIMENSION IOUT(IDIMEXDX),T(*),WORK(*)
+* Local scratch
+      INTEGER IEX(4*NGAS),IDX(4*NGAS)
+      INTEGER ICONN(2*NRANK),IHINDEX(40),IEXD1234(2*NRANK),IORD(4)
+*
+      NTEST = 100
+*
+      IF(NTEST.GE.100) THEN
+        IF(IWAY.EQ.0) THEN
+          WRITE(6,*) ' Will dimension the needed  array '
+        ELSE
+          WRITE(6,*) ' Will perform the mapping '
+        END IF
+        WRITE(6,*) ' Intermediate '
+        CALL WRT_SPOX_TP_CC_KRCC(MTYPE,1)
+        WRITE(6,*) ' Cluster operator '
+        CALL WRT_SPOX_TP_CC_KRCC(TTYPE,1)
+        WRITE(6,*) ' Resulting operator '
+        CALL WRT_SPOX_TP_CC_KRCC(RESTYPE,1)
+      END IF
+*
+* First find EX,DX by calling old routines
+*
+      CALL CONTR_POS_REL_1T(MTYPE,TTYPE,RESTYPE,NGAS,ICONN,NRANK)
+      NTOP = 1
+* Fill IHINDEX
+      DO I=1,40
+        IHINDEX(I) = I
+      END DO
+      CALL HTYPE_TO_ED_KRCC(MTYPE,IHINDEX,NHOP,ICONN,NTOP,NRANK,
+     &                   IDX,IEX,IEXD1234,IORD,ISIGN_DE)
+      CALL MEMCHK_KRCC(WORK)
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Excitation part '
+        CALL WRT_SPOX_TP_CC_KRCC(IEX,1)
+        WRITE(6,*) ' De-excitation part '
+        CALL WRT_SPOX_TP_CC_KRCC(IDX,1)
+      END IF
+*
+* Second find the dimension of the new array if IWAY = 0
+* else perform the mapping
+*
+      CALL IDIM_EX_DX(IEX,IDX,MTYPE,NRANK,ISM,IOUT,IDIMEXDX,T,
+     &            WORK,KFREE,LFREE)
+*
+      RETURN
+      END
+*
+      SUBROUTINE IDIM_EX_DX(IEX,IDX,MTYPE,NRANK,ISM,IOUT,IDIMEXDX,T,
+     &            WORK,KFREE,LFREE)
+*
+* Do as the routine name says. Dimension EX and DX.
+* Based on ANA_GENCCS_CC_KRCC just with more loops.
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "multd2h.inc"
+#include "csm.inc"
+#include "orbinp.inc"
+#include "symm.inc"
+#include "ctcc.inc"
+*
+      INTEGER IEX(4*NGAS),IDX(4*NGAS),MTYPE(4*NGAS)
+      DIMENSION IOUT(IDIMEXDX),T(*),WORK(*)
+* Local scratch
+      INTEGER IOCC_CAE(MX_ST_TSOSO_BLK_MX),IOCC_CBE(MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AAE(MX_ST_TSOSO_BLK_MX),IOCC_ABE(MX_ST_TSOSO_BLK_MX)
+*
+      INTEGER IOCC_CAD(MX_ST_TSOSO_BLK_MX),IOCC_CBD(MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AAD(MX_ST_TSOSO_BLK_MX),IOCC_ABD(MX_ST_TSOSO_BLK_MX)
+*
+      INTEGER IOCC_CA(MX_ST_TSOSO_BLK_MX),IOCC_CB(MX_ST_TSOSO_BLK_MX)
+      INTEGER IOCC_AA(MX_ST_TSOSO_BLK_MX),IOCC_AB(MX_ST_TSOSO_BLK_MX)
+*
+      INTEGER IGRP_CAE(MXPNGAS),IGRP_CBE(MXPNGAS)
+      INTEGER IGRP_AAE(MXPNGAS),IGRP_ABE(MXPNGAS)
+*
+      INTEGER IGRP_CAD(MXPNGAS),IGRP_CBD(MXPNGAS)
+      INTEGER IGRP_AAD(MXPNGAS),IGRP_ABD(MXPNGAS)
+*
+      INTEGER IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS)
+      INTEGER IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
+*
+      NTEST = 100
+      NSAVE = 0
+      NSAVE2 = 0
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Rank of EX+DX ',NRANK
+        WRITE(6,*) ' Excitation operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IEX,1)
+        WRITE(6,*) ' De-excitation operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IDX,1)
+        WRITE(6,*) ' Original operator '
+        CALL WRT_SPOX_TP_CC_KRCC(MTYPE,1)
+      END IF
+*. Transform from occupations to groups for EX 
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+0*NGAS),IGRP_CAE,1)
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+1*NGAS),IGRP_CBE,1)
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+2*NGAS),IGRP_AAE,1)
+      CALL OCC_TO_GRP_CC_KRCC(IEX(1+3*NGAS),IGRP_ABE,1)
+*. Transform from occupations to groups for DX 
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+0*NGAS),IGRP_CAD,1)
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+1*NGAS),IGRP_CBD,1)
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+2*NGAS),IGRP_AAD,1)
+      CALL OCC_TO_GRP_CC_KRCC(IDX(1+3*NGAS),IGRP_ABD,1)
+*. Transform from occupations to groups for MTYPE
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+0*NGAS),IGRP_CA,1)
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+1*NGAS),IGRP_CB,1)
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+2*NGAS),IGRP_AA,1)
+      CALL OCC_TO_GRP_CC_KRCC(MTYPE(1+3*NGAS),IGRP_AB,1)
+*
+      NEL_CAE = IELSUM(IEX(1+0*NGAS),NGAS)
+      NEL_CBE = IELSUM(IEX(1+1*NGAS),NGAS)
+      NEL_AAE = IELSUM(IEX(1+2*NGAS),NGAS)
+      NEL_ABE = IELSUM(IEX(1+3*NGAS),NGAS)
+*
+      NEL_CAD = IELSUM(IDX(1+0*NGAS),NGAS)
+      NEL_CBD = IELSUM(IDX(1+1*NGAS),NGAS)
+      NEL_AAD = IELSUM(IDX(1+2*NGAS),NGAS)
+      NEL_ABD = IELSUM(IDX(1+3*NGAS),NGAS)
+*
+      NEL_CA  = IELSUM(MTYPE(1+0*NGAS),NGAS)
+      NEL_CB  = IELSUM(MTYPE(1+1*NGAS),NGAS)
+      NEL_AA  = IELSUM(MTYPE(1+2*NGAS),NGAS)
+      NEL_AB  = IELSUM(MTYPE(1+3*NGAS),NGAS)
+*
+      DO ISM_C = 1, NSMST
+       ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
+       ISM_A = IADJSYM(ISM_A)
+* We now have the symmetry of both C and A for EX and DX since their
+* total sym is ISM
+       DO ISM_CA = 1, NSMST
+        DO ISM_CAE = 1, NSMST
+         ISM_CAD = IDBGMULT(ISM_CA,INVELM(ISM_CAE))
+*
+         ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
+         DO ISM_CBE =1, NSMST
+          ISM_CBD = IDBGMULT(ISM_CB,INVELM(ISM_CBE))
+*
+          DO ISM_AAA = 1, NSMST
+           ISM_AA = IADJSYM(ISM_AAA)
+           DO ISM_AAE = 1, NSMST
+            ISM_AAD = IDBGMULT(ISM_AA,INVELM(ISM_AAE))
+            ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
+            DO ISM_ABE = 1, NSMST
+             ISM_ABD = IDBGMULT(ISM_AB,INVELM(ISM_ABE))
+*. obtain strings for EX 
+             IUB = 1
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CAE,NGAS,
+     &            ISM_CAE,NEL_CAE,NSTR_CAE,
+     &            IOCC_CAE, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CBE,NGAS,
+     &            ISM_CBE,NEL_CBE,NSTR_CBE,
+     &            IOCC_CBE, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 1
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AAE,NGAS,
+     &            ISM_AAE,NEL_AAE,NSTR_AAE,
+     &            IOCC_AAE, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_ABE,NGAS,
+     &            ISM_ABE,NEL_ABE,NSTR_ABE,
+     &            IOCC_ABE, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+*. obtain strings for DX 
+             IUB = 1
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CAD,NGAS,
+     &            ISM_CAD,NEL_CAD,NSTR_CAD,
+     &            IOCC_CAD, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CBD,NGAS,
+     &            ISM_CBD,NEL_CBD,NSTR_CBD,
+     &            IOCC_CBD, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 1
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AAD,NGAS,
+     &            ISM_AAD,NEL_AAD,NSTR_AAD,
+     &            IOCC_AAD, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_ABD,NGAS,
+     &            ISM_ABD,NEL_ABD,NSTR_ABD,
+     &            IOCC_ABD, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+*. obtain strings for MTYPE 
+             IUB = 1
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CA,NGAS,
+     &            ISM_CA,NEL_CA,NSTR_CA,
+     &            IOCC_CA, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_CB,NGAS,
+     &            ISM_CB,NEL_CB,NSTR_CB,
+     &            IOCC_CB, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 1
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AA,NGAS,
+     &            ISM_AA,NEL_AA,NSTR_AA,
+     &            IOCC_AA, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+             IUB = 2
+             CALL GETSTR2_TOTSM_SPGP_KRCC(IUB,IGRP_AB,NGAS,
+     &            ISM_AB,NEL_AB,NSTR_AB,
+     &            IOCC_AB, NORB,0,IDUM,IDUM,
+     &            WORK,KFREE,LFREE)
+*. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
+C        print*,'NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE',
+C    &           NSTR_ABE,NSTR_AAE,NSTR_CBE,NSTR_CAE
+C        print*,'NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD',
+C    &           NSTR_ABD,NSTR_AAD,NSTR_CBD,NSTR_CAD
+C        print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+C    &           NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+         NSTR_TOTE = NSTR_ABE*NSTR_AAE*NSTR_CBE*NSTR_CAE
+         NSTR_TOTD = NSTR_ABD*NSTR_AAD*NSTR_CBD*NSTR_CAD
+         NSTR_TOT  = NSTR_AB *NSTR_AA *NSTR_CB *NSTR_CA 
+         NTOT =NSTR_TOTE*NSTR_TOTD*NSTR_TOT
+         NTOT2 = NSTR_TOTE*NSTR_TOTD
+         NSAVE = MAX(NTOT,NSAVE)
+         NSAVE2 = MAX(NSTR_TOT,NSAVE2)
+C        IF(NTOT.GE.1.OR.NSTR_TOTE.GE.1.OR.NSTR_TOTD.GE.1) THEN
+         IF(NTOT.GE.1) THEN
+         print*,'NSTR_TOTE,NSTR_TOTD,NSTR_TOT',
+     &           NSTR_TOTE,NSTR_TOTD,NSTR_TOT
+         END IF
+         IF(NSTR_TOT.GE.10877) THEN
+         DO I_AB = 1, NSTR_AB
+            I_AA_MIN = 1
+          DO I_AA = I_AA_MIN, NSTR_AA
+           DO I_CB = 1, NSTR_CB
+              I_CA_MIN = 1
+            DO I_CA = I_CA_MIN, NSTR_CA
+             IT = IT + 1
+             WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
+*
+             IF(ILOOP .EQ. 1 ) THEN
+               NTVAR = NTVAR + 1
+               TNORM = TNORM + T(IT)**2
+*. Classify element according to size
+C              DO IPOT = 1, 10
+C                IF(10.0D0 ** (-IPOT+1).GE.ABS(T(IT)).AND.
+C    &           ABS(T(IT)).GT. 10.0D0 ** ( - IPOT )      )THEN
+C                  IOEX = ISOX_TO_OX(ITSS)
+C                  NCPMT_OX(IPOT,IOEX)= NCPMT_OX(IPOT,IOEX)+1
+C                  WCPMT_OX(IPOT,IOEX)= WCPMT_OX(IPOT,IOEX)+T(IT)**2
+C                END IF
+C              END DO
+*            ^ End of loop over powers of ten
+             END IF
+*            ^ end if we are in loop 1
+C            IF( XMAX .GE. ABS(T(IT)) .AND.
+C    &       ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
+               ITRM = ITRM + 1
+               IIT = IIT + 1
+               TTNORM = TTNORM + T(IT) ** 2
+               WRITE(6,'(A)')
+               WRITE(6,'(A)')
+     &         '                 =================== '
+               WRITE(6,*)
 
-
-
+      print*,'ISM_CA,ISM_CB,ISM_AA,ISM_AB',ISM_CA,ISM_CB,ISM_AA,ISM_AB
+               WRITE(6,'(A,2I8,2X,E14.8)')
+     &         '  Type, number, size of amplitude : ',
+     &         ITSS, IT, T(IT)
+C              IF(IUSLAB.EQ.0) THEN
+                 WRITE(6,*) ' Creator alpha '
+                 WRITE(6,'(4X,10I4)')
+     &           (IOCC_CA(IEL+(I_CA-1)*NEL_CA),IEL = 1, NEL_CA)
+                 WRITE(6,*) ' Creator beta '
+                 WRITE(6,'(4X,10I4)')
+     &           (IOCC_CB(IEL+(I_CB-1)*NEL_CB),IEL = 1, NEL_CB)
+                 WRITE(6,*) ' Annihilator alpha '
+                 WRITE(6,'(4X,10I4)')
+     &           (IOCC_AA(IEL+(I_AA-1)*NEL_AA),IEL = 1, NEL_AA)
+                 WRITE(6,*) ' Annihilator beta '
+                 WRITE(6,'(4X,10I4)')
+     &           (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
+C              END IF
+C            END IF
+*            ^ End if could and should be printed
+            END DO
+*           ^ End of loop over alpha creation strings
+           END DO
+*          ^ End of loop over beta creation strings
+          END DO
+*         ^ End of loop over alpha annihilation
+         END DO
+*        ^ End of loop over beta annihilation
+         END IF
+            END DO
+           END DO
+          END DO
+         END DO
+        END DO
+       END DO
+      END DO
+*     ^ End of loop over symmetry blocks
+      IF(NSAVE.EQ.0) print*,'NSAVE is equal to zero',NRANK
+*
+      RETURN
+      END

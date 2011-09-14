@@ -25,13 +25,14 @@
 #include "csm.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-#include "cprnt.inc"
 #include "ctcc.inc"
-#include "cc_exc.inc"
 *
       DIMENSION WORK(*)
 *
       CALL QENTER('ANAGC')
+*
+      NTEST = 0
+      IPRNCIV = NTEST
 *
 *. Four blocks of string occupations
       CALL MEMGET('INTE',KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
@@ -48,7 +49,8 @@
         MAXTRM = 100000
       END IF
 *Numbers and weight of spinorbital excitation type
-      LENGTH_SOX = NSPOBEX_TP_CC*10
+C     LENGTH_SOX = NSPOBEX_TP_CC*10
+      LENGTH_SOX = NSPOBEX_TPE*10
       CALL MEMGET('INTE',KNCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KWCPMT_SOX,LENGTH_SOX,WORK,KFREE,LFREE)
 *. Number and weight of orbital excitation type
@@ -58,15 +60,16 @@
       IUSLAB = 0
 *
 *. Occupation of strings of given sym and supergroup
-      CALL ANA_GENCCS_CC_KRCC(T,WORK(KLSOBEX_CC),WORK(KLOBEX),
-     &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
+      CALL ANA_GENCCS_CC_KRCC(T,WORK(KLSOBEX_CC),
+C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
+     &            NSPOBEX_TPE,NOBEX_TP,ISM,
      &            THRES,MAXTRM,
      &            WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
      &            WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
      &            IUSLAB,IDUMMY,
      &            WORK(KNCPMT_SOX),WORK(KWCPMT_SOX),
      &            WORK(KNCPMT_OX),WORK(KWCPMT_OX),
-     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX),MSCOMB_CC,
+     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX),
      &            WORK,KFREE,LFREE)
 
       CALL MEMREL('ANALYZE',WORK,KLSTR1_OCC,KLSTR1_OCC,KFREE,LFREE)
@@ -75,14 +78,14 @@
       RETURN
       END
 *
-      SUBROUTINE ANA_GENCCS_CC_KRCC(T,ISPOBEX_TP,IOBEX_TP,
+      SUBROUTINE ANA_GENCCS_CC_KRCC(T,ISPOBEX_TP,
      &                 NSPOBEX_TP,NOBEX_TP,ISM,
      &                 THRES,MAXTRM,
      &                 IOCC_CA, IOCC_CB, IOCC_AA, IOCC_AB,
      &                 IUSLAB,IOBLAB,
      &                 NCPMT_SOX,WCPMT_SOX,
      &                 NCPMT_OX, WCPMT_OX,
-     &                 NORB,IPRNCIV,ISOX_TO_OX,MSCOMB_CC,
+     &                 NORB,IPRNCIV,ISOX_TO_OX,
      &                 WORK,KFREE,LFREE)
 *
 * Analyze T-CC vector :
@@ -96,13 +99,13 @@
 *         excitation type, spin orbital types and orbital types
 *
 * Jeppe Olsen , September 1999
-*               July 2000, MSCOMB_CC added
 *
 
 *. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
 *  Orbitals
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -113,7 +116,6 @@
       DIMENSION WORK(*)
 *. Specific input
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
-      INTEGER IOBEX_TP(2*NGAS,NOBEX_TP)
       DIMENSION T(*)
       DIMENSION ISOX_TO_OX(NSPOBEX_TP)
 *. Scratch
@@ -132,6 +134,9 @@
       CALL SETVEC(WCPMT_SOX,0.0D0,10*NSPOBEX_TP)
       CALL ISETVC(NCPMT_OX,0    ,10*NOBEX_TP)
       CALL SETVEC(WCPMT_OX,0.0D0,10*NOBEX_TP)
+C     DO I=10,25
+C       T(I) = 0.8D0/I
+C     END DO
 *
 * ===========================================================
 *.1 : Printout of coefficients and largest occupation vectors
@@ -179,7 +184,8 @@
       IT = 0
       IIT = 0
       DO ITSS = 1, NSPOBEX_TP
-C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
+        CALL WRT_SPOX_TP_CC_KRCC(ISPOBEX_TP(1,ITSS),1)
+        WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *. Transform from occupations to groups
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+0*NGAS,ITSS),IGRP_CA,1   )
        CALL OCC_TO_GRP_CC_KRCC(ISPOBEX_TP(1+1*NGAS,ITSS),IGRP_CB,1   )
@@ -193,9 +199,11 @@ C       WRITE(6,*) ' NSPOBEX_TP,ITSS = ', NSPOBEX_TP,ITSS
 *
        DO ISM_C = 1, NSMST
         ISM_A =  IDBGMULT(ISM,INVELM(ISM_C))
+        ISM_A = IADJSYM(ISM_A) !testing
         DO ISM_CA = 1, NSMST
          ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
-         DO ISM_AA = 1, NSMST
+         DO ISM_AAA = 1, NSMST !testing
+          ISM_AA = IADJSYM(ISM_AAA) !testing
           ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
 C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
           ISM_ALPHA = (ISM_AA-1)*NSMST + ISM_CA
@@ -222,6 +230,11 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
      &         IOCC_AB, NORB,0,IDUM,IDUM,
      &         WORK,KFREE,LFREE)
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
+          NSTR_TOT =NSTR_AB*NSTR_AA*NSTR_CB*NSTR_CA
+          IF(NSTR_TOT.GE.1) THEN
+          print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+     &            NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+          END IF
           DO I_AB = 1, NSTR_AB
              I_AA_MIN = 1
            DO I_AA = I_AA_MIN, NSTR_AA
@@ -229,7 +242,7 @@ C check ISM_ALPHA and ISM_BETA since these are CA A or B strings sym
                I_CA_MIN = 1
              DO I_CA = I_CA_MIN, NSTR_CA
               IT = IT + 1
-C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
+              WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
               IF(ILOOP .EQ. 1 ) THEN
                 NTVAR = NTVAR + 1
@@ -246,8 +259,8 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *             ^ End of loop over powers of ten
               END IF
 *             ^ end if we are in loop 1
-              IF( XMAX .GE. ABS(T(IT)) .AND.
-     &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
+C             IF( XMAX .GE. ABS(T(IT)) .AND.
+C    &        ABS(T(IT)).GT. XMIN .AND. ITRM.LE.MAXTRM) THEN
                 ITRM = ITRM + 1
                 IIT = IIT + 1
                 TTNORM = TTNORM + T(IT) ** 2
@@ -256,20 +269,25 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
      &          '                 =================== '
                 WRITE(6,*)
 
+       print*,'ISM_CA,ISM_CB,ISM_AA,ISM_AB',ISM_CA,ISM_CB,ISM_AA,ISM_AB
                 WRITE(6,'(A,2I8,2X,E14.8)')
      &          '  Type, number, size of amplitude : ',
      &          ITSS, IT, T(IT)
-                IF(IUSLAB.EQ.0) THEN
+C               IF(IUSLAB.EQ.0) THEN
+                  WRITE(6,*) ' Creator alpha '
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_CA(IEL+(I_CA-1)*NEL_CA),IEL = 1, NEL_CA)
+                  WRITE(6,*) ' Creator beta '
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_CB(IEL+(I_CB-1)*NEL_CB),IEL = 1, NEL_CB)
+                  WRITE(6,*) ' Annihilator alpha '
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_AA(IEL+(I_AA-1)*NEL_AA),IEL = 1, NEL_AA)
+                  WRITE(6,*) ' Annihilator beta '
                   WRITE(6,'(4X,10I4)')
      &            (IOCC_AB(IEL+(I_AB-1)*NEL_AB),IEL = 1, NEL_AB)
-                END IF
-              END IF
+C               END IF
+C             END IF
 *             ^ End if could and should be printed
              END DO
 *            ^ End of loop over alpha creation strings

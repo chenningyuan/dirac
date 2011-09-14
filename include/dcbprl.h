@@ -2,7 +2,7 @@
 !     PROPERTY LABELS:
 !
 !       PRPLBL  - property label
-!       IPRREP  - boson irrep of scalar operator (0 - 7)
+!       IPRLREP  - boson irrep of scalar operator (0 - 7)
 !       IPRLTYP - symmetry of scalar operator under matrix transpose (-1,0,1)
 !
       INTEGER MAXPRPLBL

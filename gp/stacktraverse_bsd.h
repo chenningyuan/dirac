@@ -1,15 +1,7 @@
-#include "system_flavor.h"
-
-#if (SYS_FLAVOR == LINUX)
-
-/* use the libexec from linux... */
-
-#else
 /* 
    if this is not a linux system, we use the implementation below (from freebsd). 
    note: the copyright notice her should be kept intact!
 */
-
 
 /*
  * Copyright (c) 2003 Maxim Sobolev <sobomax@FreeBSD.org>
@@ -36,24 +28,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *  Id: execinfo.h,v 1.2 2004/07/19 05:20:29 sobomax Exp  
+ *  Id: stacktraverse.h,v 1.1 2003/08/10 14:47:54 sobomax Exp  
  */
 
-#ifndef _EXECINFO_H_
-#define _EXECINFO_H_
+#ifndef _STACKTRAVERSE_H_
+#define _STACKTRAVERSE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-size_t     backtrace(void **, size_t);
-char ** backtrace_symbols(void *const *, size_t);
-void    backtrace_symbols_fd(void *const *, int, int);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _EXECINFO_H_ */
-
-#endif /* SYS_FLAVOR */ 
+void *getreturnaddr(int);
+void *getframeaddr(int);

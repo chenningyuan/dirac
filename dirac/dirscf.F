@@ -1607,10 +1607,8 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef SAVE_BEST
       data besterg /1.0D100/
       save besterg
-#endif
 C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
@@ -1766,7 +1764,6 @@ CMI      ... print out matrixes ...
             end IF
          END IF
       ENDIF
-#ifdef SAVE_BEST
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
@@ -1774,7 +1771,6 @@ c     save the DFCOEF file as DFCOEF.BEST
          call system('cp DFCOEF DFCOEF.BEST')
          besterg = dhferg
       endif
-#endif
       CALL QEXIT('ERGCAL')
       RETURN
 C
@@ -2976,7 +2972,7 @@ C
          KPOS = KFREE
       endif
 C
-      CALL MVOGE1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
+      CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2986,8 +2982,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck mvoge1 */
-      SUBROUTINE MVOGE1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
+C/* Deck mvogen_1 */
+      SUBROUTINE MVOGEN_1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
 C***********************************************************************
 C     Generate modified virtual orbitals
 C
@@ -3029,8 +3025,9 @@ C     Get all coefficients
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('MVOGEN: No coefficients !')
+         WRITE(LUPRI,'(//A)')
+     &   'MVOGEN ERROR: MO coefficient file DFCOEF not present'
+         CALL QUIT('MVOGEN: No MO coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
@@ -3041,7 +3038,7 @@ C
 C       Generate MVOs by the Bauschlicher method (ionic Fock)
 C
         CALL DENMVO(DMAT,CMO,FOCK,WORK(KFREE),LFREE)
-        IF (ABS(MVOWEIGHT-1).GT.1.0D-14) THEN
+        IF (ABS(MVOWEIGHT-1.0D0).GT.1.0D-14) THEN
 C     Make a weighted average density D = w*Dmvo + (1 - w)D0, where
 C     w = MVOWEIGHT and D0 is the full inactive density matrix.
            CALL GENDEN(FOCK,CMO,1,IPRMVO)
@@ -3052,7 +3049,7 @@ C     w = MVOWEIGHT and D0 is the full inactive density matrix.
      &              INTMVO,IPRMVO,WORK(KFREE),LFREE)
         INQUIRE(FILE='DFFCK1',EXIST=TOBE)
         IF(TOBE) THEN
-          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MVOGE1')
+          CALL OPNFIL(LUBUF,'DFFCK1','OLD','MVOGEN_1')
           CALL REAFCK(LUBUF,DMAT,.TRUE.,1)
           CLOSE(LUBUF,STATUS='KEEP')
         ELSE
@@ -3228,7 +3225,7 @@ C
 C     Print section
 C
       IF(IPRMVO.GE.4) THEN
-        CALL TITLER('Output from DENMVO','*',103)
+        CALL TITLER('Output density matrix from DENMVO','*',103)
         DO 20 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 20
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
@@ -5140,16 +5137,16 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
           CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
-CTROND: C1 test
-          WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
-          CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-          WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
-          CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-          CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
-     &                WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
-CTROND
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+           WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+           CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+     &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+         ENDIF
          WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
          CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
      &              4,IPQTOQ(1,0),LUPRI)
@@ -5163,11 +5160,6 @@ C       molecular C1 density matrix
      &                   NUCDEG(ICENT),
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
      &                   WORK,KFREE,LFREE)
-CTROND: C1 test
-C        CALL DCOPY(NADEN,WORK(KADE),1,DMAT,1)
-C        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-C        CALL PRQMAT(DMAT,NBAS,NBAS,NBAS,NBAS,
-C     &              NZ,IPQTOQ(1,0),LUPRI)
 C.......Release memory        
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
@@ -5176,10 +5168,11 @@ C.......Release memory
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
-CTROND
-         WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NZ,IPQTOQ(1,0),LUPRI)
+        IF(IPRINT.GE.4) THEN
+          WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+          CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
       ELSE
         CALL DZERO(DMAT,NDMAT)
         IREP = 0
