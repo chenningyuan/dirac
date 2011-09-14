@@ -14,7 +14,11 @@ echo %BUILD%
 
 rem go to the local DIRAC directory
 cd %DIRAC%
-rem git pull origin master
+
+rem enable keyring....
+rem C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
+
+rem git pull
 
 python pamadm -a 
 
