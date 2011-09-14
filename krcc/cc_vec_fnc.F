@@ -30,7 +30,6 @@
 #include "cgas.inc"
 #include "cecore.inc"
 #include "interm.inc"
-#include "cc_scr2.inc"
       COMMON/CMXCJ/MXCJ
 *. Local scratch 
       INTEGER ISX(2*MXPNGAS*MXPNGAS)

@@ -6,7 +6,7 @@
         PRINT*,'IM(I),I',IM(I),I
       END DO
       END
-      SUBROUTINE INTIM_KRCC(INTSPACE,MCSCF, !F1,F2,IBOSYM,CIRUN,
+      SUBROUTINE INTIM_KRCC(INTSPACE,MCSCF,
      &                   WORK,KFREE,LFREE)
 *
 *
@@ -314,7 +314,6 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
      &                           ISPINFREE,IBOSYM,IDUMAR,DUMAR,IPRNT)
 *
       implicit real*8 (A-H,O-Z)
-#include "ipoist8.inc"
 *
 *
       character*14 CHA(8)
@@ -1244,7 +1243,6 @@ C
      &                          IDGTYP,ISPINFREE,IPRNT)
 *
 #include "implicit.h"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
       integer SYDI(NIRR_PN),SYMDIM(NIRR_PN),DOUGRP
@@ -1393,7 +1391,6 @@ C
      &                              ISUM,NAC,NBC,NAA,NBA)
 *
 #include "implicit.h"
-#include "ipoist8.inc"
       character*11 CELEC2
       character*13 CELEC
       dimension ISOB(NGAS,4)
@@ -1436,7 +1433,7 @@ C
 *
       subroutine getint_sigden_KRCC(YINT,INDEX,IRI,ITOTDIM,
      &                         NASHT,F1,F2,IPRNT,
-     &                            WORK,KFREE,LFREE)
+     &                         WORK,KFREE,LFREE)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -1471,7 +1468,6 @@ C
       subroutine kkr_set_KRCC(KR,IDIM,ISYDI,NIRR,INVSYM)
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *
       dimension KR(-IDIM:IDIM),ISYDI(NIRR)
 *
@@ -1512,7 +1508,6 @@ C
      &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "dgroup.h"
 *
 C     dimension DMFC(*),H2AC(*)
