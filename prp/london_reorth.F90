@@ -103,12 +103,14 @@ contains
 
     size_tb_dmat = n2bbasxq*nr_xyz_comp
     call alloc(tb_dmat, size_tb_dmat)
+    tb_dmat = 0.0d0
 
 !   get (C+)(T^B)C
     call get_tb_dmat(tb_dmat, cmo, ibeig)
 
     size_fao = n2bbasxq*nr_xyz_comp
     call alloc(fao, size_fao)
+    fao = 0.0d0
 
 !   calculate "G" part in AO basis
     call get_gtb(fao, tb_dmat, cmo, ibeig)
@@ -118,6 +120,7 @@ contains
 !   do AO-to-MO transformation on "G" part
     size_fmo = n2orbxq*nr_xyz_comp
     call alloc(fmo, size_fmo)
+    fmo = 0.0d0
     call do_ao_to_mo(fmo, fao, cmo, ibeig)
     call dealloc(fao)
 
@@ -150,6 +153,7 @@ contains
 !-----------------------------------------------------------------------
   
     call alloc(fmo, n2bbasxq)
+    fmo = 0.0d0
 
     lwork = len_f77_work
     kfree = 1
@@ -165,7 +169,9 @@ contains
     call di_deselect_wrk(work, lwork)
 
     call alloc(tb,  n2orbxq)
+    tb = 0.0d0
     call alloc(buf, n2orbxq)
+    buf = 0.0d0
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_ftb')
 
@@ -310,6 +316,7 @@ contains
 !gosia fixme parallel run
     call my_get_npos(npos)
     call alloc(npos_array, npos)
+    npos_array(1:npos) = 0
 
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
@@ -355,6 +362,7 @@ contains
       end if
 
       call alloc(dmat, n2bbasxq)
+      dmat = 0.0d0
       call genden(dmat, cmo, 1, iprprp)
 
       call generate_num_grid(dmat)
@@ -495,6 +503,7 @@ contains
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
     call alloc(tb, n2orbxq)
+    tb = 0.0d0
 
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
