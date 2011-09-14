@@ -67,42 +67,57 @@ module FDE_exportPotentials
       end subroutine fde_prepare_export
 
       subroutine fde_export_data_as_xml
-         integer :: file_unit
-         character(len=60)  :: file_name
+         integer :: export_unit, log_unit
+         character(len=60)  :: export_name, log_name
          character(len=132) :: csizept1
          character(len=132) :: csizept2
          character(len=132) :: csizegrdrho1
 !not handling hessian now
 !        character(len=132) :: csizehesrho1
          type(xml_tag),pointer :: tag
-         real(kind=8), pointer :: gp(:,:)
+         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:)
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
-         call set_pointer_fde_grid(gp)
+!         call set_pointer_fde_grid(gp)
+!         call quit('bla')
 
+         if (allocated(fde_grid)) write (*,*) 'ok 1!'
+         if (allocated(fde_active_n)) write (*,*) 'ok 2!'
+         if (allocated(fde_active_gn)) write (*,*) 'ok 3!'
+         if (allocated(fde_active_elpot)) write (*,*) 'ok 4!'
+         
+         gp  => fde_grid
+         np  => fde_active_n
+         gnp => fde_active_gn
+         vcp => fde_active_elpot
+         
+         
          call fde_get_files_info(ftmp)
          call fde_get_export_info(etmp)
       
-         file_unit = ftmp%export%unit
-         file_name = ftmp%export%name
+         export_unit = ftmp%export%unit
+         export_name = ftmp%export%name
 
+         log_unit    = ftmp%logfile%unit
+         log_name    = ftmp%logfile%name
+         
 !         call fde_get_log_unit(lu)
 !         call fde_get_name(export_file)
 !         call fde_get_what_to_export(export_n, export_gn, export_coulomb)
 
          CALL TITLER('Output of density to XML file','*',118)
-         WRITE(lu,*) 'Name of the outputfile:', trim(file_name)
-         WRITE(lu,*) 'Writing data to xml_file:', file_name
+         WRITE(log_unit,*) 'Name of the outputfile:', trim(export_name)
+         WRITE(log_unit,*) 'Writing data to xml_file:', export_name
 
          write (csizept1,*)     size(gp,1)        ! ; trim (csizept1) 
          write (csizept2,*)     size(gp,2)        ! ; trim (csizept2) 
 ! not handling hessian now
 !        write (csizehesrho1,*) size(fde_active_hn,1)   ! ; trim (csizehesrho1) 
-         write (csizegrdrho1,*) size(fde_active_gn,1)  ! ; trim (csizegrdrho1) 
+         write (csizegrdrho1,*) size(gnp,1)  ! ; trim (csizegrdrho1) 
 
-         tag=>xml_open(file_name)
-           write(lu,*) 'tst'
+         tag=>xml_open(export_name)
+           write(log_unit,*) 'tst'
            tag=>xml_tag_open(tag,'grid')
              call set_attribute(tag,'size',csizept2)
              tag=>xml_tag_open(tag,'dataset','gridpoints')
@@ -115,7 +130,7 @@ module FDE_exportPotentials
                 tag=>xml_tag_open(tag,'dataset','density')
                   call set_attribute(tag,'size',  csizept2)
                   call set_attribute(tag,'width', '1')
-                  call xml_add_data(tag,fde_active_n)
+                  call xml_add_data(tag,np)
                 tag=>xml_tag_close(tag)
              endif
 
@@ -123,7 +138,7 @@ module FDE_exportPotentials
                 tag=>xml_tag_open(tag,'dataset','gradient')
                   call set_attribute(tag,'size', csizept2)
                   call set_attribute(tag,'width',csizegrdrho1)
-                  call xml_add_data(tag,fde_active_gn)
+                  call xml_add_data(tag,gnp)
                 tag=>xml_tag_close(tag)
              endif
 
@@ -141,16 +156,16 @@ module FDE_exportPotentials
                 tag=>xml_tag_open(tag,'dataset','vc')
                   call set_attribute(tag,'size',  csizept2)
                   call set_attribute(tag,'width', '1')
-                  call xml_add_data(tag,fde_active_elpot)
+                  call xml_add_data(tag,vcp)
                 tag=>xml_tag_close(tag)
              endif
 
            tag=>xml_tag_close(tag)
 
-           write(*,*) 'WRITING:'       
-           call xml_write(file_name)
-           write(*,*) 'CLOSING:'
-         tag=>xml_close(file_name)
+           write(log_unit,*) 'WRITING:'       
+           call xml_write(export_name)
+           write(log_unit,*) 'CLOSING:'
+         tag=>xml_close(export_name)
          write(*,*) 'CLOSED!'
 
 !aspg come back to this later         CALL TIME()
