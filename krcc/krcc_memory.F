@@ -79,7 +79,6 @@ C     CALL MEMGET('REAL',KLSM2,NBINT2,WORK,KFREE,LFREE)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
-#include "mxpdim.inc"
 #include "glbbas.inc"
 *
       DIMENSION WORK(*)

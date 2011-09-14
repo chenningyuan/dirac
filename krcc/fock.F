@@ -29,7 +29,6 @@
 *
 #include "mxpdim.inc"
 #include "orbinp.inc"
-#include "glbbas.inc"
 #include "lucinp.inc"
 #include "cgas.inc"
 #include "strinp.inc"
@@ -120,14 +119,8 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 #include "implicit.inc"
 *. General input
 #include "mxpdim.inc"
-#include "ipoist8.inc"
 #include "ctcc.inc"
-C#include "glbbas.inc"
 #include "gasstr.inc"
-C#include "strinp.inc"
-C#include "cgas.inc"
-C#include "orbinp.inc"
-C#include "lucinp.inc"
 *. Standard 1+2 electron integrals
       DIMENSION T(*)
 *. Output
@@ -376,7 +369,6 @@ C                                                         Lasse
 C
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"

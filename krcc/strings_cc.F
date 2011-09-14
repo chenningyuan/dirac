@@ -8,7 +8,6 @@
 *              July 1997, modified for relativistic calculations
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1071,7 +1070,6 @@ C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *                    mapped
 *. Input
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1285,7 +1283,6 @@ C
 * Reverse lexical ordering is used for restricted space
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
       INTEGER Z(*),ISCR(*)
 *
       NORB = NORB1 + NORB2 + NORB3
@@ -1321,7 +1318,6 @@ C
 * Construct accumulated MAX and MIN arrays for a RAS set of strings
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
       DIMENSION MINEL(*),MAXEL(*)
 *
       NTEST = 00
@@ -1379,7 +1375,6 @@ COLD  MIN1A = MIN1_T
 * Jeppe Olsen Winter of 1994
 *
       IMPLICIT REAL*8           ( A-H,O-Z)
-#include "ipoist8.inc"
 C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
       DIMENSION IOC(*),NSTASO(NSMST,*),ISTASO(NSMST,*)
 *
@@ -1527,7 +1522,6 @@ C
 *                      order to symmetry and occupation type order.
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION ISTASO(NSMST,*)
       INTEGER Z(NACOB,NEL)
@@ -1877,7 +1871,6 @@ C
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
 C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
@@ -1993,7 +1986,6 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 * Jeppe Olsen , Fall of 94
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Output
@@ -2086,7 +2078,6 @@ C       WRITE(6,*) ISMSPGP , NST
 * Jeppe Olsen, July 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. input
 #include "mxpdim.inc"
 #include "strbas.inc"
@@ -2141,7 +2132,6 @@ C       WRITE(6,*) ISMSPGP , NST
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "orbinp.inc"
-#include "glbbas.inc"
 *. Output
 #include "ctcc.inc"
 C
@@ -2333,7 +2323,6 @@ C     print*,'NSPOBEX_TP',NSPOBEX_TP
 *
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. input
@@ -3219,7 +3208,6 @@ C     print*,'NHX at the end',NHX
 *
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. input
@@ -4198,7 +4186,6 @@ CTI  Set following stuff to zero in such cases.
 * NELTOT : Total number of electrons
 *
       IMPLICIT REAL*8(A-H,O-Z)
-C#include "ipoist8.inc"
 *. Input
       DIMENSION ISTADD(NELADD,*)
 *. Input and output
@@ -4579,7 +4566,6 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 * list of excitations
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -4627,7 +4613,6 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *. Local scratch
 *. Specific input
       INTEGER IOCC(NGAS)
-#include "ipoist8.inc"
 *
       NTEST = 00
 *

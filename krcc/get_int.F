@@ -21,7 +21,6 @@ C KSEA = C2
 C LSEA = A2
 C
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Local scratch
