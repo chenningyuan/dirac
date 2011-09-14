@@ -7,18 +7,26 @@ rem the directory where your DIRAC sits
 
 echo "Hello, building up DIRAC on Windows 7 server Urpin, KCH FPV UMB"
 
-set DIRAC=C:\Users\milias\Documents\Work\QCH\svn-dirac\trunk
+set DIRAC=C:\Users\milias\Documents\Work\QCH\dirac_git\trunk
+set BUILD=%DIRAC%\build_gnu_i8_debug
+
+echo %BUILD%
 
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-svn up
+rem enable keyring....
+rem C:\Users\milias\pageant_link.lnk C:\Users\milias\Documents\milias_private_key.ppk
+
+rem git pull
+
 python pamadm -a 
 
-rem delete/recreate directory
-rmdir /S /Q %DIRAC%\build
-mkdir %DIRAC%\build
-cd %DIRAC%/build
+rem delete/recreate build directory
+
+rmdir /S /Q %BUILD%
+mkdir %BUILD%
+cd %BUILD%
 
 rem own cmake configure step
 cmake -G "MinGW Makefiles"  -DENABLE_64BIT_INTEGERS=1 -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME="Win7.Urpin_BB.MinGW.gfortran.gcc.ownmath.ilp64" -DVERBOSE_OUTPUT=ON %DIRAC%
