@@ -2092,7 +2092,11 @@ C       ----------------
 C
         IC = 1
         NFORB(IFRP,IC) = 0
-        IP    = MOD(IFRP+IC,NFSYM) + 1
+        IF(MDIRAC) THEN
+          IP = IFRP
+        ELSE
+          IP    = MOD(IFRP+IC,NFSYM) + 1
+        ENDIF
         DO JSYM = 1,NBRP
           NBORB(JSYM,IFRP,IC) = 0
           IREP = JFSYM(JSYM,IP) - 1
@@ -2132,15 +2136,25 @@ C       ----------------
 C
         IC = 2
         NFORB(IFRP,IC) = 0
-        IP    = MOD(IFRP+IC,NFSYM) + 1
+        IF(MDIRAC) THEN 
+          IP=IFRP
+        ELSE
+          IP    = MOD(IFRP+IC,NFSYM) + 1
+        ENDIF
         DO JSYM = 1,NBRP
           NBORB(JSYM,IFRP,IC) = 0
           IREP = JFSYM(JSYM,IP) - 1
           IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
-              CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
-     &                    IRKB,WORK,LWORK,IPRINT)
+              IF(MDIRAC) THEN
+                CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
+     &                      NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                      WORK,LWORK,IPRINT)
+              ELSE
+                CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
+     &                      NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                      IRKB,WORK,LWORK,IPRINT)
+              ENDIF
               NDEL  = NBBAS(IREP,IC) - NEFF
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
@@ -2582,7 +2596,6 @@ C
       lux2c = 40
 
 !     set local 2c-relativistic run flag
-      is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
 !     logical flag for keeping track of whether case 3 in gmotra has
@@ -2661,7 +2674,7 @@ C
 C     Case 1: Unrestricted kinetic balance 
 C             or 2-component non-relativistic calculation
 C     ---------------------------------------------------
-      IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run)) THEN
+      IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run).OR.MDIRAC) THEN
 C
 C
         NZT = 1
@@ -3590,6 +3603,7 @@ C*****************************************************************************
 #include "maxorb.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3604,47 +3618,78 @@ C
 C     Allocate integral buffer
 C     ========================
 C
-      call alloc(stri, nnbbasx)
-      call alloc(sbuf, n2bbasx)
-C
-C     Read integral from file
-C     =======================
-C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',STRI,NNBBASX,
-     &            IPRONE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
-C
-C     Make full matrix
-C     ================
-C
-      CALL DSPTSI(NTBAS(0),STRI,SBUF)
-C
       CALL DZERO(SMAT,N2BAST)
       NBRP     = 4/NZ
-      IOFF = 0
-      DO I = 1,NFSYM
-        DO IC = 1,2
-          IP    = MOD(I+IC,NFSYM) + 1
+
+      IF(MDIRAC) THEN
+        IF(NBSYM.GT.1) THEN
+          CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
+        ENDIF
+        IOFF = 1
+        DO I = 1,NFSYM
+          IC = 1
+C.........Insert overlap integrals
           DO JSYM = 1,NBRP
-            ISYM           = JFSYM(JSYM,IP)
-            IREP           = ISYM - 1
-!fixme irep can be < 0 in NONREL runs
-            IF(NBBAS(IREP,IC).GT.0) THEN
-              ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
-              IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
-              DO J = 1,NBBAS(IREP,IC)
-                CALL DCOPY(NBBAS(IREP,IC),SBUF(1+IUOFF),1,
-     &                                    SMAT(1+ISOFF)    ,1)
-                IUOFF = IUOFF + NTBAS(0)
-                ISOFF = ISOFF + NFBAS(I,0)
-              ENDDO
-            ENDIF
+              ISYM           = JFSYM(JSYM,I)
+              IREP           = ISYM - 1
+              IF(NBBAS(IREP,IC).GT.0) THEN
+C.....please add your INTEREST stuff here ....SMAT(IOFF)
+                IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
+              ENDIF
           ENDDO
+          IC = 2
+C.........Insert scaled kinetic energy integrals
+          DO JSYM = 1,NBRP
+              ISYM           = JFSYM(JSYM,I)
+              IREP           = ISYM - 1
+              IF(NBBAS(IREP,IC).GT.0) THEN
+C.....please add your INTEREST stuff here ....SMAT(IOFF)
+                IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
+              ENDIF
+          ENDDO
+      ELSE
+        call alloc(sbuf, n2bbasx)
+        call alloc(stri, nnbbasx)
+C
+C       Read integral from file
+C       =======================
+C
+        OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &           FILE='AOPROPER')
+        CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',STRI,NNBBASX,
+     &              IPRONE)
+        CLOSE(LU1INT,STATUS = 'KEEP')
+C
+C       Make full matrix
+C       ================
+C
+        CALL DSPTSI(NTBAS(0),STRI,SBUF)
+C
+        IOFF = 0
+        DO I = 1,NFSYM
+          DO IC = 1,2
+            IP    = MOD(I+IC,NFSYM) + 1
+            DO JSYM = 1,NBRP
+              ISYM           = JFSYM(JSYM,IP)
+              IREP           = ISYM - 1
+!fixme irep can be < 0 in NONREL runs
+              IF(NBBAS(IREP,IC).GT.0) THEN
+                ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
+                IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
+                DO J = 1,NBBAS(IREP,IC)
+                  CALL DCOPY(NBBAS(IREP,IC),SBUF(1+IUOFF),1,
+     &                                      SMAT(1+ISOFF)    ,1)
+                  IUOFF = IUOFF + NTBAS(0)
+                  ISOFF = ISOFF + NFBAS(I,0)
+                ENDDO
+              ENDIF
+            ENDDO
+          ENDDO
+          IOFF = IOFF + N2BAS(I)
         ENDDO
-        IOFF = IOFF + N2BAS(I)
-      ENDDO
+        call dealloc(stri)
+        call dealloc(sbuf)
+      ENDIF
 C
 C     Scale SS-block
 C     ==============
@@ -3661,11 +3706,6 @@ C
         ENDDO
       ENDIF
 C
-C     Memory deallocation
-C     ===================
-C
-      call dealloc(stri)
-      call dealloc(sbuf)
       CALL QEXIT('GTOVLT')
       RETURN
       END

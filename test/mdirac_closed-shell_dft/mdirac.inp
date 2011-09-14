@@ -1,6 +1,10 @@
 **DIRAC
 .WAVE F
 .INPTES
+**GENERAL
+! We do not transform to spherical Cartesians
+.SPHTRA
+ 0 0
 **HAMILTONIAN
 .MDIRAC
 **INTEGRALS

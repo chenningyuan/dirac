@@ -52,8 +52,6 @@ C***********************************************************************
       character(100)     :: line 
       integer, parameter :: file_unit = 137
       logical            :: file_exists, file_exists2
-
-
 C
       CALL QENTER('PAMINP')
 C
