@@ -66,6 +66,7 @@ C Assuming this position (at least until a new one is taken)
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 #include "dgroup.h"
 *
@@ -438,6 +439,7 @@ C#include "inforb.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE, EX

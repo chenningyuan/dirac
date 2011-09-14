@@ -28,22 +28,9 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "lucinp.inc"
 #include "orbinp.inc"
-#include "cstate.inc"
-#include "csm.inc"
-#include "crun.inc"
-#include "cintfo.inc"
-#include "ctcc.inc"
-*.CSMPRD
-      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
-      COMMON/CSMPRDR/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
-     &              ADSXA(MXPOBS,2*MXPOBS),
-     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-
 *.Output
 #include "glbbas.inc"
-      common/glbref/ISPC/ISM/ITERGLB
 *
       DIMENSION WORK(*)
 *

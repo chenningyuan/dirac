@@ -2,7 +2,7 @@
 !    DIRAC - KRCC memory pointers
 !
       INTEGER*8
-! ctcc.inc start
+! ctccp.inc start
 ! Hamiltonian
      &             KLSOBEX,KLLSOBEX,KLIBSOBEX,
      &             KLIHIND,KSIGNNHX,KLABEXTP,
@@ -37,7 +37,7 @@
      &             KIBSOX_FOR_OX, KNSOX_FOR_OX,KISOX_FOR_OX,
      &             KLSPOBEX_AB, KIBSOX_FOR_OCCLS,KNSOX_FOR_OCCLS,
      &             KISOX_FOR_OCCLS,
-! ctcc.inc end
+! ctccp.inc end
 ! strbas.inc start
      & KSTINF, KSTINE, KOCSTR, KNSTSO,
      & KISTSO, KSTSTM, KZ,

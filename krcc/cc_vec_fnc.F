@@ -27,6 +27,7 @@
 #include "cands.inc"
 #include "cstate.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 #include "cecore.inc"
 #include "interm.inc"

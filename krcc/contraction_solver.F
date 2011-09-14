@@ -79,6 +79,7 @@
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "interm.inc"
 *
       DIMENSION WORK(*)
@@ -2795,6 +2796,7 @@
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "interm.inc"
 *
       DIMENSION WORK(*)

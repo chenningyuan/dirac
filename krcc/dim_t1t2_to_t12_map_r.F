@@ -13,12 +13,14 @@
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 *
       DIMENSION WORK(*)
 *
       CALL DIM_T1T2_TO_T12_S_REL(LEN_T1T2_STRING,LEN_T1T2_TCC,
-     &                        NSPOBEX_TP_CC,WORK(KLSOBEX_CC),
+Cori &                        NSPOBEX_TP_CC,WORK(KLSOBEX_CC),
+     &                        NSPOBEX_TPE,WORK(KLSOBEX_CC),
      &                        NGAS)
       RETURN
       END

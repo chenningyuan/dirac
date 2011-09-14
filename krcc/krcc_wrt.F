@@ -86,12 +86,15 @@ C             print*,'LENGTH',LENGTH
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
-
+#include "ctccp.inc"
+*
       CHARACTER*6 CCTYPE
       DIMENSION CC(*) 
 *
       DIMENSION WORK(*)
 *     
+      print*,' I need a fix for NSXE. This used to be on crun.inc'
+      STOP ' this routine does not work '
       IF(CCTYPE(1:2).EQ.'CC') THEN
         WRITE(6,*)
         WRITE(6,*) ' ====================== '

@@ -41,6 +41,7 @@
 #include "cecore.inc"
 #include "clunit.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cands.inc"
 #include "cstate.inc"
 #include "cintfo.inc"
