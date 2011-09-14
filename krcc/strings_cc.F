@@ -2080,7 +2080,6 @@ C       WRITE(6,*) ISMSPGP , NST
       IMPLICIT REAL*8(A-H,O-Z)
 *. input
 #include "mxpdim.inc"
-#include "strbas.inc"
 #include "cgas.inc"
 *. Input and Output ( NELFSPGP(MXPNGAS,MXPSTT) )
 #include "gasstr.inc"
@@ -2134,6 +2133,7 @@ C       WRITE(6,*) ISMSPGP , NST
 #include "orbinp.inc"
 *. Output
 #include "ctcc.inc"
+#include "ctccp.inc"
 C
       DIMENSION WORK(LWORK)
 C
@@ -2210,6 +2210,7 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 #include "orbinp.inc"
 *. Output
 #include "ctcc.inc"
+#include "ctccp.inc"
 *
       DIMENSION WORK(*)
 C
@@ -4643,6 +4644,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 *
        DIMENSION WORK(*)
@@ -4830,6 +4832,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
       DIMENSION WORK(*)
 *
 * Initialize

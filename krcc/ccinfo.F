@@ -4536,6 +4536,7 @@ C     END IF
 #include "crun.inc"
 #include "lucinp.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 * for real or complex groups
 #include "../include/dgroup.h"
 *
@@ -6765,7 +6766,6 @@ C     DIMENSION NSTSGP(NSMST,*)
       IMPLICIT REAL*8(A-H,O-Z)
 *. Include blocks
 #include "mxpdim.inc"
-#include "strbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "csm.inc"

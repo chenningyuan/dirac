@@ -142,6 +142,7 @@ C
 #include "cstate.inc"
 #include "csm.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cintfo.inc"
 *
 * for real or complex groups
