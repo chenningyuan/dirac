@@ -83,7 +83,6 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-!     youngc:  RECP integral     
 #ifdef MOD_ECP
       IF (ECPCALC) CALL ECPINT(WORK,LWORK)
 #endif
