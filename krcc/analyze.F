@@ -17,7 +17,6 @@
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
-#include "strbas.inc"
 #include "cicisp.inc"
 #include "cstate.inc"
 #include "strinp.inc"
@@ -25,13 +24,15 @@
 #include "csm.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-#include "cprnt.inc"
 #include "ctcc.inc"
-#include "cc_exc.inc"
+#include "ctccp.inc"
 *
       DIMENSION WORK(*)
 *
       CALL QENTER('ANAGC')
+*
+      NTEST = 0
+      IPRNCIV = NTEST
 *
 *. Four blocks of string occupations
       CALL MEMGET('INTE',KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
@@ -59,7 +60,7 @@ C     LENGTH_SOX = NSPOBEX_TP_CC*10
       IUSLAB = 0
 *
 *. Occupation of strings of given sym and supergroup
-      CALL ANA_GENCCS_CC_KRCC(T,WORK(KLSOBEX_CC),WORK(KLOBEX),
+      CALL ANA_GENCCS_CC_KRCC(T,WORK(KLSOBEX_CC),
 C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
      &            NSPOBEX_TPE,NOBEX_TP,ISM,
      &            THRES,MAXTRM,
@@ -68,7 +69,7 @@ C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
      &            IUSLAB,IDUMMY,
      &            WORK(KNCPMT_SOX),WORK(KWCPMT_SOX),
      &            WORK(KNCPMT_OX),WORK(KWCPMT_OX),
-     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX),MSCOMB_CC,
+     &            NTOOB,IPRNCIV,WORK(KLSOX_TO_OX),
      &            WORK,KFREE,LFREE)
 
       CALL MEMREL('ANALYZE',WORK,KLSTR1_OCC,KLSTR1_OCC,KFREE,LFREE)
@@ -77,14 +78,14 @@ C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
       RETURN
       END
 *
-      SUBROUTINE ANA_GENCCS_CC_KRCC(T,ISPOBEX_TP,IOBEX_TP,
+      SUBROUTINE ANA_GENCCS_CC_KRCC(T,ISPOBEX_TP,
      &                 NSPOBEX_TP,NOBEX_TP,ISM,
      &                 THRES,MAXTRM,
      &                 IOCC_CA, IOCC_CB, IOCC_AA, IOCC_AB,
      &                 IUSLAB,IOBLAB,
      &                 NCPMT_SOX,WCPMT_SOX,
      &                 NCPMT_OX, WCPMT_OX,
-     &                 NORB,IPRNCIV,ISOX_TO_OX,MSCOMB_CC,
+     &                 NORB,IPRNCIV,ISOX_TO_OX,
      &                 WORK,KFREE,LFREE)
 *
 * Analyze T-CC vector :
@@ -98,13 +99,13 @@ C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
 *         excitation type, spin orbital types and orbital types
 *
 * Jeppe Olsen , September 1999
-*               July 2000, MSCOMB_CC added
 *
 
 *. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
 *  Orbitals
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -115,7 +116,6 @@ C    &            NSPOBEX_TP_CC,NOBEX_TP,ISM,
       DIMENSION WORK(*)
 *. Specific input
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
-      INTEGER IOBEX_TP(2*NGAS,NOBEX_TP)
       DIMENSION T(*)
       DIMENSION ISOX_TO_OX(NSPOBEX_TP)
 *. Scratch

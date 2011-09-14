@@ -22,7 +22,6 @@
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-!#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -32,8 +31,6 @@
 #include "stinf.inc"
 #include "strbas.inc"
 #include "glbbas.inc"
-#include "cprnt.inc"
-#include "oper.inc"
 #include "gasstr.inc"
 *
 #include "cgas.inc"
@@ -46,8 +43,7 @@
       IDUM = 1
 C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
 *
-      NTESTL = 1000
-      NTEST = MAX(NTESTL,IPRDIA)
+      NTEST = 1000
 *
       ISPC = ISSPC
       ISM  = ISSM
@@ -113,7 +109,7 @@ C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
           MAXB = MAX(MAXB,MAXB1)
         END IF
         MXSTBL = MAX(MAXA,MAXB)
-        IF(IPRCIX.GE.2 ) WRITE(6,*)
+        IF(NTEST.GE.2 ) WRITE(6,*)
      &  ' Largest block of strings with given symmetry and type',MXSTBL
 *. Largest number of resolution strings and spectator strings
 *  that can be treated simultaneously
@@ -124,13 +120,13 @@ C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
 *. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
         CALL MXRESC_REL(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                  NSMST,NSTFSMSPGP,NSTFSMSPGP2,MXPNSMST,
-     &                  NSMOB,MXPNGAS,NGAS,NOBPTS,NOBPTS2,IPRCIX,MAXK,
+     &                  NSMOB,MXPNGAS,NGAS,NOBPTS,NOBPTS2,NTEST,MAXK,
      &                  NELFSPGP,
      &                  MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
         LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
         LCJRES = LSCR2
 *. Note : LCJRES and MXADKBLK are being save in /CICISP/
-        IF(IPRCIX.GE.2) THEN
+        IF(NTEST.GE.2) THEN
           WRITE(6,*) 'GET_3BL: MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
      &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
           WRITE(6,*) 'GET_3BL: MXADKBLK ', MXADKBLK
@@ -139,14 +135,7 @@ C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
       END DO
 *     ^ End loop over MK2 values
 *
-      IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) ' ICISTR = 0 not in action ANYMORE'
-        Call Abend2( ' ICISTR = 0 not in action ANYMORE' )
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
+      LBLOCK = MXSOOB
       LBLOCK = MAX(LBLOCK,LCSBLK)
       LSCR12 = MAX(LBLOCK,2*LSCR2)
 *

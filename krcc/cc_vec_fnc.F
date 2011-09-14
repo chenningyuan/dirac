@@ -24,17 +24,13 @@
 #include "clunit.inc"
 #include "glbbas.inc"
 #include "crun.inc"
-#include "cprnt.inc"
-#include "cc_exc.inc"
 #include "cands.inc"
 #include "cstate.inc"
-#include "oper.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 #include "cecore.inc"
 #include "interm.inc"
-#include "tempint.inc"
-#include "cc_scr2.inc"
       COMMON/CMXCJ/MXCJ
 *. Local scratch 
       INTEGER ISX(2*MXPNGAS*MXPNGAS)
@@ -43,7 +39,6 @@
 *
       LBLK = -1
       NTEST = 10
-      NTEST = MAX(NTEST,IPRCC)
 *
 * Will determine the number of commutators (Of course one one with zero)
       IONE = 1
@@ -165,7 +160,6 @@ C Still ITSM
 C NSPOBEX_TP_CC,WORK(KLSOBEX_CC) still the cluster operator
 C WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC) also cluster operator (should
 C also be made for intermediates)
-C Need to check KIBSOX_FOR_OX KNSOX_FOR_OX KISOX_FOR_OX
 C NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM still hamiltonian in
 C NH22,WORK(KNH22) still H22
 C Careful third argument is set to zero!
@@ -253,7 +247,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
      &     NH22,WORK(KNH22),
      &     NH22TOT,WORK(KNH22TOT),WORK(KNH22TT),WORK(KCOMBNH22TOT),
      &     WORK(KPERMNH22TOT),WORK(KFACNH22TOT),WORK(KCOMBFACNH22TOT),
-C    &     WORK(KUNITCC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
@@ -291,7 +284,6 @@ C Still ITSM
 C NSPOBEX_TP_CC,WORK(KLSOBEX_CC) still the cluster operator
 C WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC) also cluster operator (should
 C also be made for intermediates)
-C Need to check KIBSOX_FOR_OX KNSOX_FOR_OX KISOX_FOR_OX
 C NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM still hamiltonian in
 C NH22,WORK(KNH22) still H22
 C 
@@ -361,7 +353,6 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
      &     NH21,WORK(KNH21),
      &     NH21TOT,WORK(KNH21TOT),WORK(KNH21TT),WORK(KCOMBNH21TOT),
      &     WORK(KPERMNH21TOT),WORK(KFACNH21TOT),WORK(KCOMBFACNH21TOT),
-C    &     WORK(KUNITCC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
@@ -410,9 +401,11 @@ C    &     WORK(KUNITCC),NSPOBEX_TPE,
         WRITE(6,*)
         WRITE(6,*) ' DO NOT USE WRT_CC_VEC2 YET '
         STOP ' DO NOT USE WRT_CC_VEC2 YET '
-        CALL WRT_CC_VEC2(CC_VEC,6,CCTYPE)
+        CALL WRT_CC_VEC2(CC_VEC,6,CCTYPE,
+     &                   WORK,KFREE,LFREE)
         WRITE(6,*) ' Initial amplitudes '
-        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE)
+        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE,
+     &                   WORK,KFREE,LFREE)
       END IF
 C?    WRITE(6,*) ' I12 at END of CC_VEC = ', I12
 *. 
