@@ -55,8 +55,6 @@ module xc_derv
    type(functional), public :: xc_fun
    type(functional), public :: xc_fun_alda
    type(functional), public :: xc_fun_xalda
-   type(functional), public :: kin_fun
-   type(functional), public :: kin_fun_alda
 
    integer, parameter, public :: d0000000 =  0
    integer, parameter, public :: d1000000 =  1
@@ -174,6 +172,7 @@ contains
             end if
          end do
          f%xcfun_id_is_set = .true.
+         write(*,*) 'debug, id is set to ',f%id
       end if
 
       if (allocated(f%input)) then

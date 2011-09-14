@@ -42,7 +42,7 @@ module interface_functional_read
  
    real(8), public :: hf_exchange_factor
    logical, public :: pure_hf_run
- 
+   logical, save   :: already_checked = .true.
    private
 
 contains
@@ -118,7 +118,9 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
       
-      write(*, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
+      write(*,*) ' debug, line is ',line
+      
+      write(*, '(a)') '* Using the automatic differentiation xc functional:'
       write(*, '(a)') '   (weight: functional)'
 
       hfx_out  = 0.0d0
@@ -208,6 +210,7 @@ contains
       
         w = get_weight(word_array(i), 'pbe')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbe'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
@@ -266,11 +269,13 @@ contains
       
         w = get_weight(word_array(i), 'pbex')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbex'
            f%w(XC_PBEX) = f%w(XC_PBEX) + w
         end if
       
         w = get_weight(word_array(i), 'pbec')
         if (dabs(w) > tiny(0.0d0)) then
+          write(*, '(f10.6, a)') w, ': pbec'
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
       
@@ -340,10 +345,11 @@ contains
       do i = 1, size(f%w)
          h = h + dabs(f%w(i)) 
       end do
-      pure_hf_run = .false.
+      if (.not.already_checked) pure_hf_run = .false.
       if (h < tiny(0.0d0)) then
          if (hf_exchange_factor == 1.0d0) then
              pure_hf_run = .true.
+             already_checked = .true.
          else
 !            no functional is recognized
 !            in this case quit the program

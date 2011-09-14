@@ -32,12 +32,13 @@ module fde_data
 !
 ! routines
 !
-   public fde_data_cleanup
+   public fde_cleanup_data
    public get_fde_grid_coord
    public get_fde_grid_weight
    public set_pointer_fde_grid
    public fde_test_frozen_density
    public fde_import_frozen
+   public fde_import_static
 
    interface get_fde_grid_coord
       module procedure get_fde_grid_coords_single
@@ -58,22 +59,23 @@ module fde_data
 !
    public fde_frozen_n, fde_frozen_gn, fde_frozen_elpot
    public fde_active_n, fde_active_gn, fde_active_elpot
+   public fde_grid
    public fde_vemb
    public fde_grid_np
 
    integer, save :: fde_grid_np = 0
 
-   real(kind=8), save, allocatable :: fde_frozen_n(:)
-   real(kind=8), save, allocatable :: fde_frozen_gn(:,:)
-   real(kind=8), save, allocatable :: fde_frozen_elpot(:)
+   real(kind=8), save, allocatable, target :: fde_frozen_n(:)
+   real(kind=8), save, allocatable, target :: fde_frozen_gn(:,:)
+   real(kind=8), save, allocatable, target :: fde_frozen_elpot(:)
 
-   real(kind=8), save, allocatable :: fde_active_n(:)
-   real(kind=8), save, allocatable :: fde_active_gn(:,:)
-   real(kind=8), save, allocatable :: fde_active_elpot(:)
+   real(kind=8), save, allocatable, target :: fde_active_n(:)
+   real(kind=8), save, allocatable, target :: fde_active_gn(:,:)
+   real(kind=8), save, allocatable, target :: fde_active_elpot(:)
 
-   real(kind=8), save, allocatable :: fde_vemb(:)
+   real(kind=8), save, allocatable, target :: fde_vemb(:)
 
-   real(kind=8), pointer :: fde_grid(:,:) 
+   real(kind=8), save, allocatable, target :: fde_grid(:,:) 
 
    contains
 
@@ -122,8 +124,29 @@ module fde_data
 
 
       subroutine set_pointer_fde_grid(p) 
-         real(kind=8), pointer :: p(:,:)
-         p => fde_grid
+         real(kind=8), pointer, intent(out) :: p(:,:)
+!         p => fde_grid
+         
+         write(6,*) 'debug, checking grid elements, in set_pointer_fde_grid'
+         write(6,*) ' '
+         write(6,*) '       for i = 2, internal (fde_grid)'
+         write(6,*) '               x :',fde_grid(1,2)
+         write(6,*) '               y :',fde_grid(2,2)
+         write(6,*) '               z :',fde_grid(3,2)
+         write(6,*) '               w :',fde_grid(4,2)
+         write(6,*) ' '
+         if (allocated(fde_vemb)) then
+            write(6,*) '       for i = 2, vemb '
+            write(6,*) '               v :',fde_vemb(2)
+            write(6,*) ' '
+         endif
+!         write(6,*) '       for i = 2, pointer to fde_grid'
+!         write(6,*) '               x :',p(1,2)
+!         write(6,*) '               y :',p(2,2)
+!         write(6,*) '               z :',p(3,2)
+!         write(6,*) '               w :',p(4,2)
+!         write(6,*) ' '
+
       end subroutine set_pointer_fde_grid
 
 !!!!!!!
@@ -151,7 +174,7 @@ module fde_data
       integer :: file_unit
       character(len=60) :: file_name
       integer :: i
-      real(kind=8), pointer :: fde_vtmp(:)
+      real(kind=8), pointer :: fde_vtmp(:), gridp(:,:)
       type(fde_files)  :: ftmp
 
       call fde_get_files_info(ftmp)
@@ -160,18 +183,23 @@ module fde_data
       file_name = ftmp%embpot%name
 
       call fde_open_file(file_name,file_unit)
-      call read_grid(file_unit,fde_grid,fde_vtmp)
+      call read_grid(file_unit,gridp,fde_vtmp)
       call fde_close_file(file_unit)
 
-      fde_grid_np = size(fde_grid,2)
+      fde_grid_np = size(gridp,2)
 
-      call alloc(fde_vemb, fde_grid_np)
+      call fde_initialize_data
 
       do i=1, fde_grid_np
-         fde_vemb(i) = fde_vtmp(i)
+         fde_vemb(i)   = fde_vtmp(i)
+         fde_grid(1,i) = gridp(1,i)
+         fde_grid(2,i) = gridp(2,i)
+         fde_grid(3,i) = gridp(3,i)
+         fde_grid(4,i) = gridp(4,i)
       enddo
 
       call deallocp(fde_vtmp)
+      call deallocp(gridp)
    end subroutine fde_import_static
 
 
@@ -179,7 +207,7 @@ module fde_data
       integer :: file_unit
       character(len=60) :: file_name
       integer :: i
-      real(kind=8), pointer :: fde_frozen_prp(:,:)
+      real(kind=8), pointer :: fde_frozen_prp(:,:), gridp(:,:)
       type(fde_files)  :: ftmp
 
       call fde_get_files_info(ftmp)
@@ -189,22 +217,26 @@ module fde_data
 
       write (*,*) 'debug: unit, name',file_unit,file_name
 
+      gridp => fde_grid
       call fde_open_file(file_name,file_unit)
-      call read_grid(file_unit,fde_grid,fde_frozen_prp)
+      call read_grid(file_unit,gridp,fde_frozen_prp)
       call fde_close_file(file_unit)
 
-      fde_grid_np = size(fde_grid,2)
+      fde_grid_np = size(gridp,2)
 
-      call alloc(fde_frozen_n,     fde_grid_np)
-      call alloc(fde_frozen_gn,    fde_grid_np,3)
-      call alloc(fde_frozen_elpot, fde_grid_np)
-
+      call fde_initialize_data
+      
       do i=1, fde_grid_np
          fde_frozen_elpot(i) = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
          fde_frozen_n(i)     = fde_frozen_prp(3,i)
          fde_frozen_gn(i,1)  = fde_frozen_prp(4,i)
          fde_frozen_gn(i,2)  = fde_frozen_prp(5,i)
          fde_frozen_gn(i,3)  = fde_frozen_prp(6,i)
+         
+         fde_grid(1,i)       = gridp(1,i)
+         fde_grid(2,i)       = gridp(2,i)
+         fde_grid(3,i)       = gridp(3,i)
+         fde_grid(4,i)       = gridp(4,i)
 
          if ((i .eq. 2).or.(i.eq.12)) then
             write (*,*) ' '
@@ -231,23 +263,67 @@ module fde_data
       enddo
 
       call deallocp(fde_frozen_prp)
+      call deallocp(gridp)
    end subroutine fde_import_frozen
 
 
-   subroutine fde_data_cleanup
+   subroutine fde_initialize_data
+      if (fde_grid_np > 0) then
+         call alloc(fde_grid, 4,fde_grid_np, id="fde_grid")
+         
+         call fde_initialize_frozen_data
+         call fde_initialize_active_data
+      else
+         call quit('there are no grid points for fde!')
+      endif
+      
+   end subroutine fde_initialize_data
 
+
+   subroutine fde_initialize_frozen_data
+         call alloc(fde_vemb, fde_grid_np, id="fde_vemb")
+         call alloc(fde_frozen_n,     fde_grid_np, id="fde_frozen_n")
+         call alloc(fde_frozen_gn,    fde_grid_np,3, id="fde_frozen_gn")
+         call alloc(fde_frozen_elpot, fde_grid_np, id="fde_frozen_elpot")
+         
+         fde_vemb         = 0.0d0  
+         fde_frozen_n     = 0.0d0
+         fde_frozen_gn    = 0.0d0
+         fde_frozen_elpot = 0.0d0
+   end subroutine fde_initialize_frozen_data
+
+
+   subroutine fde_initialize_active_data
+         call alloc(fde_active_n,     fde_grid_np, id="fde_active_n")
+         call alloc(fde_active_gn,    fde_grid_np,3, id="fde_active_gn")
+         call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
+         
+         fde_active_n     = 0.0d0
+         fde_active_gn    = 0.0d0
+         fde_active_elpot = 0.0d0
+   end subroutine fde_initialize_active_data
+   
+
+   subroutine fde_cleanup_data
+      call dealloc(fde_grid)
+      call fde_cleanup_active_data
+      call fde_cleanup_frozen_data
+   end subroutine fde_cleanup_data
+
+
+   subroutine fde_cleanup_frozen_data
+      call dealloc(fde_vemb)
       call dealloc(fde_frozen_n)
       call dealloc(fde_frozen_gn)
       call dealloc(fde_frozen_elpot)
+   end subroutine fde_cleanup_frozen_data
 
+   
+   subroutine fde_cleanup_active_data
       call dealloc(fde_active_n)
       call dealloc(fde_active_gn)
       call dealloc(fde_active_elpot)
-
-      call dealloc(fde_vemb)
-
-      call deallocp(fde_grid)
-   end subroutine fde_data_cleanup
+   end subroutine fde_cleanup_active_data
 
 
    subroutine fde_test_frozen_density

@@ -61,6 +61,7 @@ module FDE_ImportPotentials
             use numoper_integrals
             use fde_types
             use fde_cfg
+            use fde_data
             use fde_io
 
 #include "implicit.h"
@@ -75,23 +76,20 @@ module FDE_ImportPotentials
             integer :: file_unit, iprint, i, irrep_vemb
             real(kind=8), allocatable :: a_oneint(:)
             character(len=60) :: file_name
-            type(fde_files)  :: ftmp
+            type(fde_files)   :: ftmp
 
+            call fde_import_static
             call fde_get_files_info(ftmp)
       
             file_unit = ftmp%embpot%unit
             file_name = ftmp%embpot%name
+            call fde_open_file(file_name,file_unit)
 
  
             label = 'FDEVEMB '
             irrep_vemb = 0  ! embedding potential is totally symmetric
 
             read(comb,'(4L1)',err=1000) (doint(i),i=1,4)
-
-!            call fde_get_embpot_unit(file_unit)
-!            call fde_get_embpot_filename(file_name)
-
-            call fde_open_file(file_name,file_unit)
 
             call alloc(a_oneint,nnbbasx)  
             call NumOper_OneElOpMatrix(a_oneint,file_unit,doint,irrep_vemb)

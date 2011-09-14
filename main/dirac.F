@@ -146,6 +146,7 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
+      use fde_mod
       use dirac_cfg
       use visual
 
@@ -204,6 +205,15 @@ C***** V I S U A L I Z A T I O N ***************************************
 C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
+
+C
+C***********************************************************************
+C ***** cleaning up data stored in fde calculations ********************
+C***********************************************************************
+C
+      if (dirac_cfg_fde.or.dirac_cfg_fde_response) 
+     &   call fde_cleanup_data()
+
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')

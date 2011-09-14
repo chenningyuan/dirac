@@ -285,6 +285,7 @@ module numoper_integrals
          call deallocp(operator)
          call dealloc(ao)
          call dealloc(offt_bu)
+         call dealloc(buffer)
 
       end subroutine NumOper_OneElOp_SetMatrix_PS
 

@@ -312,7 +312,8 @@ contains
          end if
 
 !        get average density from open shells
-         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) &
+            call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 #ifdef PRG_DIRAC
          call scale_density_matrices(2.0d0)
@@ -343,7 +344,8 @@ contains
 #endif
 
 !        get average density from open shells
-         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) &
+            call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 !        symmetrize matrices
          if (dft_cfg_blocked .or.  use_gga ) then

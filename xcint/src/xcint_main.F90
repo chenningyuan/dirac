@@ -240,6 +240,7 @@ contains
       end if
 #endif
       if (pure_hf_run) then
+         write (*,*) 'this is a pure hf run?!?'
          return
       end if
 
@@ -638,6 +639,7 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
+            write (6,*) 'debug, xc_mat_energy :',xc_mat_energy
          end if
 
          call report()
@@ -1704,7 +1706,9 @@ contains
       if (xc_mpi_is_master()) then
          interface_file_open = .false. 
          open(interface_file_unit,       &
-              file   = 'numerical_grid', &
+! aspg debug
+!              file   = 'numerical_grid', &
+              file   = 'ADFGRID',        &
               status = 'unknown',        &
               form   = 'formatted',      &
               access = 'sequential')
