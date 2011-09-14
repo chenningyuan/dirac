@@ -5141,10 +5141,10 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+           WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
      &                NZ,IPQTOQ(1,0),LUPRI)
-            CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+           CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
      &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
          ENDIF
          WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
