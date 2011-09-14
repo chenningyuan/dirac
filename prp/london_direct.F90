@@ -112,10 +112,12 @@ contains
 
 !   density matrix
     call alloc(dmat_ao, n2bbasx, nr_mat)
+    dmat_ao = 0.0d0
     call get_dmat_ao(cmo, ibeig, dmat_ao)
 
 !   fock matrix
     call alloc(fmat, n2bbasx, nr_mat, max_nr_xyz_comp)
+    fmat = 0.0d0
 
 !   get 2-electron lao-integrals 
     call get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat_ao)
@@ -193,6 +195,7 @@ contains
 !   --------------------------------------------------------------------
 
     call alloc(fmat_help, n2bbasx, nz)
+    fmat_help = 0.0d0
 
     do icomp = 1, max_nr_xyz_comp
 
@@ -332,6 +335,7 @@ contains
         if (parcal) then
 
            call alloc(npos, mtottk(i2typ))
+           npos = 0
            call dirac_parctl(1)
 
            lwork = len_f77_work
@@ -406,6 +410,7 @@ contains
 !   --------------------------------------------------------------------
 
     call alloc(dmat, ntbas(0)*ntbas(0), nz)
+    dmat = 0.0d0
     call genden(dmat, cmo, 1, iprprp)
     call dscal(ntbas(0)*ntbas(0)*nz, 2.0d0, dmat, 1)
     call bstobu_no_work(dmat, nz)
@@ -447,6 +452,7 @@ contains
 !   --------------------------------------------------------------------
 
     call alloc(dmat, n2bbasx, nz)
+    dmat = 0.0d0
     call genden(dmat, cmo, 1, iprprp)
 
 !   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
@@ -485,6 +491,7 @@ contains
 !   --------------------------------------------------------------------
 
     call alloc(gmat, n2orbxq)
+    gmat = 0.0d0
 
     open(unit = lutwol, file = 'TWOLON', form = 'unformatted',  &
          access = 'direct', recl = 8*n2orbxq, action = 'write', &
