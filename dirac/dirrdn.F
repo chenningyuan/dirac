@@ -170,9 +170,15 @@ C     General input
 C
 C     Integral and basis input
 C
+C.....If modified Dirac Hamiltonian switch to 2c mode here
+      IF(MDIRAC) TWOCOMP=.TRUE.
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
+      IF(MDIRAC) THEN
+C.....switch back to 4c mode
+        TWOCOMP=.FALSE.
+      ENDIF
 C
       DOJACO = DOJACO.AND.(NZ.EQ.1)
 C
@@ -186,7 +192,7 @@ C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
 C
-      CALL GETLAB(WORK,LWORK,IPREAD)
+CTRNOD: to fix      CALL GETLAB(WORK,LWORK,IPREAD)
 C
 C     Define Hamiltonian
 C
@@ -323,15 +329,14 @@ C
       NOGENINP   = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      SKIP2E = .FALSE.
-      LOWJACO = .FALSE.
-      LOGMEMGET = .FALSE.
-      DOQJACO  = .FALSE.
+      SKIP2E     = .FALSE.
+      LOWJACO    = .FALSE.
+      LOGMEMGET  = .FALSE.
+      DOQJACO    = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C
       CALL HAMSCAN
-
 C
 C     Read menu file
 C     ==============
@@ -4455,7 +4460,7 @@ C
 !                   57        58        59        60
      &            '.FDERSP','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.xxxxxx','.xxxxxx'/
+     &            '.ECP   ','.X2Cmmf','.MDIRAC','.xxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4483,6 +4488,7 @@ C
       VEXTPJ  = .FALSE.
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
+      MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
@@ -5112,7 +5118,10 @@ C         as they need to be picture-changed transformed after the 2c-transforma
      &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
   163     CONTINUE
+C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
   164     CONTINUE
+            MDIRAC=.TRUE.
+C..TODO: check for inconsistencies and add stops
           GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -5130,9 +5139,6 @@ C         as they need to be picture-changed transformed after the 2c-transforma
       if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
          call fdeini()
       end if 
-      
-
-CMI   ... needed for output
       GAUNT_SAVE = GAUNT
 
 !     take care of the correct choice of the X2C module 
@@ -5512,6 +5518,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
      &       '   - parameter NZ set to one'
+      ELSE IF(MDIRAC) THEN
+        WRITE(LUPRI,'(A)') ' * Modified Dirac-Coulomb Hamiltonian'
+        WRITE(LUPRI,'(A)') 
+     &    '   Switching to the INTEREST integral package (M. Repisky)'
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
@@ -7514,7 +7524,6 @@ C
       TWOCOMP_SAVE    = TWOCOMP
       TWOCOMPBSS_SAVE = TWOCOMPBSS
       CNTMAT_SAVE     = CNTMAT
-
 C
 C     Read menu file
 C     ==============
@@ -7553,6 +7562,7 @@ C............variable telling that this is a 2-component relativistic calculatio
          ENDIF
          IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE. 
          IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN
            ISDO2C4C =.TRUE.

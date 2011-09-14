@@ -215,6 +215,7 @@ C***********************************************************************
 #include "mxcent.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -247,6 +248,13 @@ C        IBBAS(ibrp,ic),
 C        I2BBASX(ibrp,jbrp,ic,jc)
 C        IBAS(ifrp),I2BASX(ifrp,ifrp),I2BAST(ifrp)
 C
+      IF(MDIRAC) THEN
+C.....if modified Dirac Hamiltonian update from 2c to 4c mode
+        DO ISYM = 1, NBSYM
+          NAOS(ISYM)   = NAOS(ISYM)+NAOS(ISYM)
+          NCOS(ISYM,2) = NCOS(ISYM,1)
+        ENDDO
+      ENDIF
       NNBBAST = 0
       N2BBAST = 0
       DO IBREP = 0,MAXREP
@@ -287,8 +295,12 @@ C
         DO IFRP = 1,NFSYM
           IBAS(IFRP)    = IBASI
           DO IC = 1,2
-C           IP is gerade(1)/ungerade(2) !
-            IP    = MOD(IFRP+IC,2) + 1
+            IF(MDIRAC) THEN
+              IP = IFRP
+            ELSE
+C             IP is gerade(1)/ungerade(2) !
+              IP    = MOD(IFRP+IC,2) + 1
+            ENDIF
             DO ISYM = 1,NBRP
               IBSYM           = JFSYM(ISYM,IP)
               IBREP           = IBSYM - 1
@@ -352,7 +364,7 @@ C
      &        'Max',MXBBAS
         WRITE(LUPRI,'(/3X,2(A,I6,2X))') 'NNBBAST = ',NNBBAST,
      &        'NNBBASX ',NNBBASX
-         WRITE(LUPRI,'(/A)') '* I2BBASX:'
+         WRITE(LUPRI,'(/A)') '* Matrix offsets to symmetry  blocks (I2BBASX):'
          WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
      &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
      &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)

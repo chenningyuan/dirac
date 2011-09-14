@@ -55,7 +55,8 @@ C
 #include "cbiher.h"
 #include "nuclei.h"
       CALL QENTER('ONEGEN')
-
+C.....With modified Hamiltonian this routine is skipped for now
+      IF(MDIRAC) GOTO 20
       !mi: always print nuclear contribution to the dipole moment (costs nothing)
       CALL DIPNUC(1,.FALSE.)
 C

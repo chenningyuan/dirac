@@ -23,6 +23,7 @@
 !     VEXTPJ     - Hamiltonian embedded in molecular field projections
 !     NOSMLV     - No small nuclear attraction integrals
 !     URKBAL     - Unrestricted kinetic balance
+!     MDIRAC     - modified Dirac Hamiltonian
 !     LEVYLE     - Levy-Leblond Hamiltonian
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
@@ -129,7 +130,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc
+     &        TRMO4C2C, MOLMF3, X2C, X2C_aba, ecpcalc,MDIRAC
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -141,7 +142,7 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
-     &                ecpcalc,                                          &
+     &                ecpcalc,MDIRAC,                                   &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!
