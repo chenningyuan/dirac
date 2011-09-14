@@ -586,12 +586,8 @@ C NEXT ARRAY ONLY ALLOCATED FOR THE PROGAM TO RUN LASSE
 *. KLSPOBEX_AC allocated for later and transfered via common blocks
 *. ALl spinorbital excitations are initially active
 *
-* It boggles the mind why ISETVC doesn't set IONE in vec?
             IONE = 1
             CALL ISETVC(WORK(KLSPOBEX_AC_CC),IONE,NSPOBEX_TPE)
-            DO I=1,NSPOBEX_TPE
-              print*,'WORK(KLSPOBEX_AC_CC+I)',WORK(KLSPOBEX_AC_CC+I)
-            END DO
 *
 CLasse      MX_ST_TSOSO_MX = 0
 CLasse      MX_ST_TSOSO_BLK_MX = 0
@@ -653,7 +649,8 @@ C      stop 'after IDIM'
 *
 * NOT SURE IDIM_TCC_KRCC WORKS AS IT SHOULD!!!! LASSE
 * Should be moved since T is resorted!!!!! Lasse 2011 dont ignore
-      CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,ITOP_SM,
+C     CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,ITOP_SM,
+      CALL IDIM_TCC_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TPE,ITOP_SM,
      &     MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
      &     WORK(KLLSOBEX_CC),WORK(KLIBSOBEX_CC),LEN_T_VEC_CC,
      &     MSCOMB_CC,MX_SBSTR,
@@ -722,9 +719,9 @@ C Now with automated restart. Lasse
 * ==========================================
 *
 *. New optimizer
-      CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),WORK(KDIA),
-     &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
-     &                   WORK,KFREE,LFREE)
+C     CALL OPTIM_CC2_KRCC(WORK(KCC1),WORK(KCC2),WORK(KDIA),
+C    &                   WORK(KVEC1),WORK(KVEC2),CCTYPE,ECC,
+C    &                   WORK,KFREE,LFREE)
 C     STOP 'CC ENERGY HAS BEEN OPTIMIZED'
 *
 * ===========================

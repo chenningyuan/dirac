@@ -390,7 +390,7 @@ C Assuming a bottom up occupation of electrons
 C IUB loop to only count occpied contributions for IAB
 C                   DO IUB = 1,2,1
 C                     DO IAB = 1,NELEC(IUB)
-                      print*,'I,J,IAB,IPOS',I,J,IAB,IPOS
+C                     print*,'I,J,IAB,IPOS',I,J,IAB,IPOS
 C
 C Here a call to get int with nalpha = 0 will fetch first term in sum
 C and nalpha = 2 second part ( which is the one with the special exchange 2 integrals)
@@ -440,9 +440,6 @@ C                     print*,'XOUT',XOUT
 C
 C Add the integrals to inactive fock matrix
 C
-                      print*,'XOUT,XOUT2',XOUT,XOUT2
-                      print*,'XOUT3,XOUT4',XOUT3,XOUT4
-                      print*,'J many times',J,J,J,J,J
                       FI_AL(J) = (XOUT + XOUT2) + FI_AL(J)
                       FI_BE(J) = (XOUT + XOUT2) + FI_BE(J)
 C                     END DO
@@ -549,7 +546,7 @@ C          print*,'ARR(I)',ARR(I),I
 *
       DIMENSION WORK(*)
 *
-      NTEST = 100
+      NTEST = 00
       IT = 0
 C      print*,'NTSS_TP',NTSS_TP
 C      II = 4*NGAS
@@ -659,8 +656,8 @@ C    &               NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                  IT = IT + 1
                  CCDIA(IT) =
      &           E_CA(I_CA) + E_CB(I_CB) - E_AA(I_AA) - E_AB(I_AB)
-                 print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
-                 print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
+C                print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
+C                print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
                  IF(IRECOM.NE.1) THEN
                  CCDIA(IT+N_CC_AMP) =
      &           E_CA_IM(I_CA)+E_CB_IM(I_CB)-E_AA_IM(I_AA)-E_AB_IM(I_AB)
@@ -726,7 +723,7 @@ C
       DIMENSION XINT(*),XOUT(ISIDE**2)
       INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
-      NTESTL = 100
+      NTESTL = 00
       NTEST = max(NTESTL,IPRNT)
 *
       IPOS = 0

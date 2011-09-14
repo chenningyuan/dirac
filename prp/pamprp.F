@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
@@ -71,7 +72,7 @@ C
          WF = PRPWF(I)
 C
          IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
-            CALL TDHFORB
+            CALL TDHFORB('FULLCI')
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
             CALL TKRMCORB
@@ -181,9 +182,11 @@ C
 #ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,NCIESR,WORK,KFREE,LFREE)
+         CALL ESR_INIT(WF,IPRESR,N_CIESR,SPINPOLESR,WORK,KFREE,LFREE)
 C
-         CALL MEMGET('REAL',KESR,2*NCIESR*NCIESR*NESRP,WORK,KFREE,LFREE)
+         LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
+C        max(4,nesrp): make sure sufficient space for ESRPHASE
+         CALL MEMGET('REAL',KESR,LENESR,WORK,KFREE,LFREE)
          CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
