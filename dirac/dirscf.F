@@ -1607,10 +1607,8 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef SAVE_BEST
       data besterg /1.0D100/
       save besterg
-#endif
 C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
@@ -1766,7 +1764,6 @@ CMI      ... print out matrixes ...
             end IF
          END IF
       ENDIF
-#ifdef SAVE_BEST
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
@@ -1774,7 +1771,6 @@ c     save the DFCOEF file as DFCOEF.BEST
          call system('cp DFCOEF DFCOEF.BEST')
          besterg = dhferg
       endif
-#endif
       CALL QEXIT('ERGCAL')
       RETURN
 C
@@ -5141,16 +5137,16 @@ C.......Loop over closed/open shells and construct contribution to atomic densit
           CALL SELOWC(4,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
-CTROND: C1 test
-          WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
-          CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-          WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
-          CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-          CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
-     &                WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
-CTROND
+          IF(IPRINT.GE.4) THEN
+            WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+            WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients ',IATOM
+            CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+            CALL DENST1(WORK(KADE),NBAS,NBAS,4,OCCATOM(ISHELL,IATOM),FAC,
+     &                  WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
+         ENDIF
          WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
          CALL PRQMAT(WORK(KADE),NBAS,NBAS,NBAS,NBAS,
      &              4,IPQTOQ(1,0),LUPRI)
@@ -5164,11 +5160,6 @@ C       molecular C1 density matrix
      &                   NUCDEG(ICENT),
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
      &                   WORK,KFREE,LFREE)
-CTROND: C1 test
-C        CALL DCOPY(NADEN,WORK(KADE),1,DMAT,1)
-C        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-C        CALL PRQMAT(DMAT,NBAS,NBAS,NBAS,NBAS,
-C     &              NZ,IPQTOQ(1,0),LUPRI)
 C.......Release memory        
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
@@ -5177,10 +5168,11 @@ C.......Release memory
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
-CTROND
-         WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
-         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NZ,IPQTOQ(1,0),LUPRI)
+        IF(IPRINT.GE.4) THEN
+          WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+          CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
       ELSE
         CALL DZERO(DMAT,NDMAT)
         IREP = 0

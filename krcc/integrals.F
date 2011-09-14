@@ -9,9 +9,6 @@
       SUBROUTINE INTIM_KRCC(INTSPACE,MCSCF, !F1,F2,IBOSYM,CIRUN,
      &                   WORK,KFREE,LFREE)
 *
-*******************************************************************
-*  !!!  INATIT states iteration point for natural spinor method !!!
-*******************************************************************
 *
       implicit real*8 (A-H,O-Z)
 #include "ipoist8.inc"
@@ -21,9 +18,7 @@
       common /WORKPIC/IPOI
 *
 #include "mxpdim.inc"
-#include "input.inc"
 #include "symm.inc"
-#include "onel.inc"
 #include "crun.inc"
 *
       DIMENSION WORK(*)
@@ -33,11 +28,8 @@ C#include "memint.h"
 *
 Commmented out by Lasse since i do not think i need it on krcc
 C     CALL INTIM_KRCC_POINTERS
-* for integral summation
-      ISUMNEW = 1
 * for global purposes
       INTITER = 1
-      N_SPINR_EXP = 2
 C Stupid transfer of information
       CALL SETUP_FOR_itrctl_KRCC
 *  Determine double group information
@@ -47,22 +39,12 @@ C Stupid transfer of information
 *  Define type of transformation
 *  Here for now: complete two-component trans for CI
 *
-C     if (MCSCF) then
-C       ITRA_TYPE = 4
-C     else
-C       if (INATIT.eq.1) then
-C         ITRA_TYPE = 2
-C       else if (INATIT.ge.2) then
-C         ITRA_TYPE = 4
-C         ORBFILE = .true.
-C       end if
-C     end if
 C Assuming this position (at least until a new one is taken)
       ITRA_TYPE = 2
 *
-      call itrctl_KRCC(INTSPACE,ITRA_TYPE,INTITER,ENVIRO,
+      call itrctl_KRCC(INTSPACE,ITRA_TYPE,INTITER,
      &            ISPINFREE,NORB_F,ISYM_T,
-     &            SIGDEN_ROUTE,F1,F2,IBOSYM,MCSCF,CIRUN,
+     &            F1,F2,IBOSYM,MCSCF,CIRUN,
      &            WORK,KFREE,LFREE)
 *
       return
@@ -71,8 +53,8 @@ C Assuming this position (at least until a new one is taken)
 *  Control section for integral transformation
 *
       subroutine itrctl_KRCC(INTSPACE,ITRA_TYPE,INTITER,
-     &                  ENVIRO,ISPINFREE,NORB_FULL,
-     &                  ISYM_T,SIGDEN_ROUTE,
+     &                  ISPINFREE,NORB_FULL,
+     &                  ISYM_T,
      &                  F1,F2,IBOSYM,MCSCF,CIRUN,
      &                  WORK,KFREE,LFREE)
 *
@@ -80,18 +62,13 @@ C Assuming this position (at least until a new one is taken)
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-!#include "wrkspc.inc"
 #include "symm.inc"
 #include "glbbas.inc"
-#include "input.inc"
 #include "clunit.inc"
-#include "oper.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "dgroup.h"
 *
-      character*72 ENVIRO
-      character*6 SIGDEN_ROUTE
       character*1 COORD
       logical MCSCF
       dimension INTEG(1000)
@@ -124,7 +101,6 @@ C#include "memint.h"
       DIRACONE = 'MRCONEE'
       DIRACTWO = 'MDCINT'
 C assuming INTIMP = 7 Lasse
-C     INTIMP = 6
       INTIMP = 7
       if (MCSCF) INTIMP = 7
 *
@@ -132,8 +108,6 @@ C     INTIMP = 6
 *
       NTESTL = 00
       NTEST = 0
-C     NTEST = max(IPRINT,NTESTL)
-      CALL MEMCHK('LULU',WORK,KINT1)
 *
       if (NTEST.ge.1) then
         WRITE(6,*) ' *************************************************'
@@ -184,7 +158,6 @@ C     NTEST = max(IPRINT,NTESTL)
       print*,'Static memory'
       print*,'MXPIRR,MXPNGAS',MXPIRR,MXPNGAS
       print*,'NIRR_DG,NIRR_PN',NIRR_DG,NIRR_PN
-C will replace NGSOBPI with NGSSH
       call findhigh(NGSSH,MXPIRR*MXPNGAS,MXGSDIM)
       if (NTEST.ge.1) write(6,*) 'Highest GAS dimension is  ',MXGSDIM
       call findhigh(SYMDIM(1),NIRR_DG,IMXDDIM)
@@ -192,17 +165,10 @@ C will replace NGSOBPI with NGSSH
 C NORB_FULL is for externalle generated FOCK matrix and not needed here. Can be deleted along with SYMDIM_F
       call findhigh(NORB_FULL(1),NIRR_PN,IMXDIM_F)
       if (NTEST.ge.1) write(6,*) 'Thing else high is IMXDIM_F ',IMXDIM_F
-      if (IMXDDIM.gt.MXNSPIPDMGRP) then
-        write(6,*) 'Spinor expansion too long for double dim. arrays.'
-        write(6,*) 'MXNSPIPDMGRP is  ',MXNSPIPDMGRP
-        write(6,*) 'IMXDDIM is ',IMXDDIM
-        write(6,*) 'Adjust MXNSPIPDMGRP in mxpdim.inc or reconsider.'
-        Call Abend2( 'Quitting.' )
-      end if
       call findhigh(SYDI(1),NIRR_DG,IMXDIM)
       if (NTEST.ge.1) write(6,*) 'Something else high is IMXDIM ',IMXDIM
-      INTSPACE = (2*MXGSDIM)**2*NGASPI**2*32
-      ITRALINE = (2*MXGSDIM)**2*NGASPI**2
+      INTSPACE = (2*MXGSDIM)**2*NGAS**2*32
+      ITRALINE = (2*MXGSDIM)**2*NGAS**2
 *
 *
       CALL MEMGET('INTE',KBOSYM,2*NDIM_TOT,WORK,KFREE,LFREE)
@@ -231,13 +197,8 @@ c     call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
 *
 *  2) Local memory
 *  Some index and GAS info
-      CALL MEMGET('INTE',KIGSOFF,2*NGASPI,WORK,KFREE,LFREE)
 *  Scratch space, HELPMAT2
-      CALL MEMGET('REAL',KPICHE2,(2*IMXDDIM)**2,WORK,KFREE,LFREE)
         NUM_ONEI = (2*NDIM_TOT)**2
-      CALL MEMGET('REAL',KDUMAR,NDIM_TOT*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIDUMAR,NDIM_TOT*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDIONEE,2*NUM_ONEI,WORK,KFREE,LFREE)
         NUM_TWEI = (2*NDIM_TOT)**4
       CALL MEMGET('INTE',KKR,(2*NDIM_TOT+1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINVREO,2*NDIM_TOT+1,WORK,KFREE,LFREE)
@@ -248,8 +209,8 @@ c     call memmar(KDUM,IDUM,'MARK  ',IDUM,'ITRCTL')
          IHELEN = IHELEN + (ITOTDM(I)**2 + ITOTDM(I)) / 2
       end do
 *
-      write(6,*) 'ENVIRO(1:6),IOPER,IHAM12,ITRA_TYPE',
-     &            ENVIRO(1:6),IOPER,IHAM12,ITRA_TYPE
+      write(6,*) 'IOPER,ITRA_TYPE',
+     &            IOPER,ITRA_TYPE
 *
 *******************************************************
 *  Reading integrals from DIRAC
@@ -308,7 +269,7 @@ C       stop 'after dist_ints_sigden_KRCC'
 *
 *  Flush local memory to mark set at beginning of do loop
 C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
-      CALL MEMREL('ITRCTRL',WORK,1,KIGSOFF,KFREE,LFREE)
+      CALL MEMREL('ITRCTRL',WORK,1,KKR,KFREE,LFREE)
 *
       call qexit('ITRCTRL')
       return
@@ -355,7 +316,6 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
       implicit real*8 (A-H,O-Z)
 #include "ipoist8.inc"
 *
-#include "input.inc"
 *
       character*14 CHA(8)
       common/CECORER/ECORE
@@ -490,6 +450,7 @@ C
       DIMENSION WORK(*)
 C
 C
+      NTEST = 0
 C#include "memint.h"
 *
       CALL QENTER('KRCC_INT')
@@ -541,7 +502,7 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,2,
      &                  WORK,KFREE,LFREE)
             CLOSE(LUCOEF,STATUS='KEEP')
-            IF (IPRINT .GE. 0) THEN
+            IF (NTEST.GE. 0) THEN
                WRITE(LUPRI,'(/A)')
      &              ' (ROPTST)  Start orbitals read from' //
      &              ' file DFCOEF'
@@ -615,8 +576,6 @@ C     orbital symmetry info array
       call RGETH2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
      &            .true.,.true.,work(kfree),lfree)
 
-      CALL MEMCHK('cemory3',WORK,KCMO)
-C     call memrel('rgeth2',work,kwork,kwork,kfree,lfree)
 *
       CALL QEXIT('KRCC_INT')
 *
@@ -657,7 +616,6 @@ C     call memrel('rgeth2',work,kwork,kwork,kfree,lfree)
 #include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-!#include "wrkspc.inc"
 #include "ctcc.inc"
 #include "symm.inc"
 #include "cgas.inc"
@@ -754,9 +712,6 @@ C     NTEST = max(NTESTL,IPRNT)
 *
 * Loop over real/imaginary part
       ICOUNT = 1
-      NDIAINT = 0
-      N1DIAINT = 0
-      N2DIAINT = 0
       ICOUNT2 = 1
       IISUM = 0
       INAC = 0
@@ -1234,9 +1189,6 @@ C an increasing number for the next HTYPE in IOFFINTTYPE
       if (NTEST.ge.1) then
         write(6,*) ' DIST_INTS_SIGDEN reporting   : '
         write(6,*) '  Total number of integrals   : ',NALLINT
-        write(6,*) '  Number of diagonal integrals: ',NDIAINT
-        write(6,*) '    Number of diagonal 1-el. integrals: ',N1DIAINT
-        write(6,*) '    Number of diagonal 2-el. integrals: ',N2DIAINT
       end if
       IF(NTEST.GE.100) THEN
         DO I=1,10
@@ -1489,7 +1441,6 @@ C
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-C#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "crun.inc"
 #include "symm.inc"

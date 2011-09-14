@@ -167,7 +167,7 @@ C
 C
 C     Extend RKB coeffcients with complementary UKB space
 C
-      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK)
+      IF(DORKBIMP) CALL RKBIMP(WORK,LWORK,IPRGEN)
 C
 C***********************************************************************
 C*****  G E T    W A V E    F U N C T I O N   **************************
