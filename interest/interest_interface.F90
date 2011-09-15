@@ -246,6 +246,7 @@ CONTAINS
     !> local
        integer              :: i 
        integer              :: nrow
+       integer              :: nnrow
        real(8), allocatable :: Smat(:,:)
     !> end
 
@@ -254,18 +255,17 @@ CONTAINS
     !> end
 
 
-    nrow = sum(gto(:)%cdegen) 
-    allocate( Smat( nrow*nrow, 2 ) ); Smat = 0.0d0
+    nrow  = sum(gto(:)%cdegen) 
+    nnrow = nrow*nrow
+    allocate( Smat( nnrow, 2 ) ); Smat = 0.0d0
 
-    !> calculate overlap-Smat(:,1) and kinetic-Smat(:,2) integrals
-    !> note: Smat(:,2) is not devided by the factor 2.0d0
-       call two_center_integrals( interest_overlap, Smat, nrow )
-       call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )
-       call symmetrize_matrix( factor = 4.0d0*constant%alpha2, A = Smat(1,2), ida = nrow )
-    !> end
+    call two_center_integrals( interest_overlap, Smat, nrow )
 
-    S(            1:  (nrow*nrow)) = Smat(1:nrow*nrow,1)
-    S((nrow*nrow)+1:2*(nrow*nrow)) = Smat(1:nrow*nrow,2)
+    call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )  !Re(A )
+    call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
+
+    S(      1:  nnrow) = Smat(1:nnrow,1)
+    S(nnrow+1:2*nnrow) = Smat(1:nnrow,2)
 
     deallocate( Smat )
 
@@ -281,6 +281,7 @@ CONTAINS
     !> local
        integer              :: i 
        integer              :: nrow
+       integer              :: nnrow
        real(8), allocatable :: Vmat(:,:)
     !> end
 
@@ -289,24 +290,23 @@ CONTAINS
     !> end
 
 
-    nrow = sum(gto(:)%cdegen) 
-    allocate( Vmat( nrow*nrow, 5 ) ); Vmat = 0.0d0
+    nrow  = sum(gto(:)%cdegen) 
+    nnrow = nrow*nrow
+    allocate( Vmat( nnrow, 5 ) ); Vmat = 0.0d0
 
-    !> calculate nuclear attraction integrals in RKB basis
-       allocate( Vmat( nrow*nrow, 5 ) ); Vmat = 0.0d0
-       call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
-       call symmetrize_matrix    (                           A = Vmat(1,1), ida = nrow )   !Re(A )
-       call symmetrize_matrix    ( factor = constant%alpha2, A = Vmat(1,2), ida = nrow )   !Re(A') = (xx + yy + zz)*alpha^{2}
-       call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,3), ida = nrow )   !Im(A') = (xy - yx)     *alpha^{2} 
-       call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,4), ida = nrow )   !Re(B') = (zx - xz)     *alpha^{2} 
-       call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,5), ida = nrow )   !Im(B') = (yz - zy)     *alpha^{2}
-    !> end
+    call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
 
-    V(              1:  (nrow*nrow)) = Vmat(1:nrow*nrow,1)
-    V(  (nrow*nrow)+1:2*(nrow*nrow)) = Vmat(1:nrow*nrow,2)
-    V(2*(nrow*nrow)+1:3*(nrow*nrow)) = Vmat(1:nrow*nrow,3)
-    V(3*(nrow*nrow)+1:4*(nrow*nrow)) = Vmat(1:nrow*nrow,4)
-    V(4*(nrow*nrow)+1:5*(nrow*nrow)) = Vmat(1:nrow*nrow,5)
+    call symmetrize_matrix    (                                 A = Vmat(1,1), ida = nrow )  !Re(A )
+    call symmetrize_matrix    ( factor = constant%alpha2/4.0d0, A = Vmat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
+    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,3), ida = nrow )  !Im(A') = (xy - yx)      
+    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,4), ida = nrow )  !Re(B') = (zx - xz)      
+    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,5), ida = nrow )  !Im(B') = (yz - zy)     
+
+    V(        1:  nnrow) = Vmat(1:nnrow,1)
+    V(  nnrow+1:2*nnrow) = Vmat(1:nnrow,2)
+    V(2*nnrow+1:3*nnrow) = Vmat(1:nnrow,3)
+    V(3*nnrow+1:4*nnrow) = Vmat(1:nnrow,4)
+    V(4*nnrow+1:5*nnrow) = Vmat(1:nnrow,5)
 
     deallocate( Vmat )
 
@@ -356,34 +356,34 @@ CONTAINS
 
     do j=1,size(gto)
       do i=j,size(gto)
-        call interest_routine(rkb,                                &
-                              gout, ni, nj, nrkb,                 &
+        call interest_routine(rkb,                               &
+                              gout, ni, nj, nrkb,                &
                               !> bra-function
-                              gto(i)%lvalue,                      &
-                              gto(i)%exponent(1),                 &
-                              atom( gto(i)%origin )%coordinate_x, &
-                              atom( gto(i)%origin )%coordinate_y, &
-                              atom( gto(i)%origin )%coordinate_z, &
-                              gto(i)%coefficient(1),              &
+                              gto(i)%lvalue,                     &
+                              gto(i)%exponent(1),                &
+                              atom( gto(i)%origin )%coordinate_x,&
+                              atom( gto(i)%origin )%coordinate_y,&
+                              atom( gto(i)%origin )%coordinate_z,&
+                              gto(i)%coefficient(1),             &
                               !> ket-function
-                              gto(j)%lvalue,                      &
-                              gto(j)%exponent(1),                 &
-                              atom( gto(j)%origin )%coordinate_x, &
-                              atom( gto(j)%origin )%coordinate_y, &
-                              atom( gto(j)%origin )%coordinate_z, &
-                              gto(j)%coefficient(1),              &
+                              gto(j)%lvalue,                     &
+                              gto(j)%exponent(1),                &
+                              atom( gto(j)%origin )%coordinate_x,&
+                              atom( gto(j)%origin )%coordinate_y,&
+                              atom( gto(j)%origin )%coordinate_z,&
+                              gto(j)%coefficient(1),             &
                               !> atomic data 
-                              size(atom),                         &
-                              (/atom(1:size(atom))%charge,        &
-                                atom(1:size(atom))%coordinate_x,  &
-                                atom(1:size(atom))%coordinate_y,  &
-                                atom(1:size(atom))%coordinate_z,  &
-                                atom(1:size(atom))%gnu_exponent/) )
+                              size(atom),                        &
+                              (/atom(1:size(atom))%charge,       &
+                                atom(1:size(atom))%coordinate_x, &
+                                atom(1:size(atom))%coordinate_y, &
+                                atom(1:size(atom))%coordinate_z, &
+                                atom(1:size(atom))%gnu_exponent/))
 
-        call store_batch(gout, ni, nj,  nrkb,              &
-                         final_integrals, ida, ida,        &
-                         gto(i)%offset,                    &
-                         gto(j)%offset                     )
+        call store_batch(gout, ni, nj,  nrkb,      &
+                         final_integrals, ida, ida,&
+                         gto(i)%offset,            &
+                         gto(j)%offset             )
 
       enddo
     enddo    

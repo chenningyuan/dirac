@@ -3639,31 +3639,9 @@ C
         IF(NBSYM.GT.1) THEN
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
-        call initialize_interest  !fixme michal: should be move to another place ...
+        call initialize_interest              !fixme michal: should be move to another place ...
+        call process_overlap_integrals( smat )
         stop
-        IOFF = 1
-        DO I = 1,NFSYM
-          IC = 1
-C.........Insert overlap integrals
-          DO JSYM = 1,NBRP
-             ISYM           = JFSYM(JSYM,I)
-             IREP           = ISYM - 1
-             IF(NBBAS(IREP,IC).GT.0) THEN
-C.....please add your INTEREST stuff here ....SMAT(IOFF)
-               IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
-             ENDIF
-          ENDDO
-          IC = 2
-C.........Insert scaled kinetic energy integrals
-          DO JSYM = 1,NBRP
-             ISYM           = JFSYM(JSYM,I)
-             IREP           = ISYM - 1
-             IF(NBBAS(IREP,IC).GT.0) THEN
-C.....please add your INTEREST stuff here ....SMAT(IOFF)
-               IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
-             ENDIF
-          ENDDO
-        ENDDO
       ELSE
         call alloc(sbuf, n2bbasx)
         call alloc(stri, nnbbasx)
