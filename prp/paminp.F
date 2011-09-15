@@ -1479,7 +1479,6 @@ C
 C        ALPHA and GAMMA5:
 C
     2    PCOMB = '0++0'
-Chj      PCOMB = 'FTTF'
          GO TO 100
 C
 C        "BETA" and "BETA SIGMA":

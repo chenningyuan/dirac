@@ -306,6 +306,7 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "dcb_rkbimp.h"
 #include "logging.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
@@ -314,7 +315,7 @@ C
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.PCMOI3','.FAMILY',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.XXXXXX',
+     &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP
@@ -327,6 +328,7 @@ C
       LOWJACO = .FALSE.
       LOGMEMGET = .FALSE.
       DOQJACO  = .FALSE.
+      RKBIMP_PRJTHR = 1.0D-5
 C
 C     Look for 2c. Hamiltonians
 C
@@ -472,6 +474,8 @@ C&&&& RKBIMP: import RKB coefficients
             DORKBIMP=.TRUE.
             GO TO 100
   120    CONTINUE
+C&&&& PRJTHR
+            READ(5,*) RKBIMP_PRJTHR
             GO TO 100
   121    CONTINUE
             GO TO 100
@@ -591,6 +595,8 @@ C
         WRITE(LUPRI,'(1X,A,A)')
      &    '* Read RKB coefficients ',
      &    'and extended with complementary UKB space'
+        WRITE(LUPRI,'(3X,A,E9.2)')
+     &    ' Projection threshold: ',RKBIMP_PRJTHR
       ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
