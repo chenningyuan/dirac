@@ -64,8 +64,8 @@ So the structure of the routine shall be as::
   end subroutine
 
 
-What are all the "/* Decks */" before the subroutines good for?
----------------------------------------------------------------
+What are all the "Decks" before the subroutines good for?
+---------------------------------------------------------
 
 Historical reasons.
 They have no meaning today.

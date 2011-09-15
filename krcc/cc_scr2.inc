@@ -4,10 +4,7 @@
      &              KIX1_AA,KSX1_AA,KIX1_AB,KSX1_AB,
      &              KIX2_CA,KSX2_CA,KIX2_CB,KSX2_CB,
      &              KIX2_AA,KSX2_AA,KIX2_AB,KSX2_AB,
-     &              KLTSCR1,KLTSCR2,
-     &              KLOPSCR,
-     &              KLIOD1_ST,KLIOD2_ST,KLIOEX_ST,
+     &              KLTSCR1,KLTSCR2,KLOPSCR,
      &              KLSMD1,KLSMEX,KLSMK1,KLSML1,
      &              KLNMD1,KLNMEX,KLNMK1,KLNML1,
-     &              KLOCK1,KLOCL1,KLOCOT1T2,KL_IBF,
-     &              KLEXEORD
+     &              KLOCK1,KLOCL1
