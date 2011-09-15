@@ -3595,6 +3595,7 @@ CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
       use memory_allocator
+      use interest_interface
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3619,9 +3620,10 @@ C     Allocate integral buffer
 C     ========================
 C
       CALL DZERO(SMAT,N2BAST)
-      NBRP     = 4/NZ
+      NBRP = 4/NZ
 
       IF(MDIRAC) THEN
+        call initialize_interest
         IF(NBSYM.GT.1) THEN
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
@@ -3630,23 +3632,24 @@ C
           IC = 1
 C.........Insert overlap integrals
           DO JSYM = 1,NBRP
-              ISYM           = JFSYM(JSYM,I)
-              IREP           = ISYM - 1
-              IF(NBBAS(IREP,IC).GT.0) THEN
+             ISYM           = JFSYM(JSYM,I)
+             IREP           = ISYM - 1
+             IF(NBBAS(IREP,IC).GT.0) THEN
 C.....please add your INTEREST stuff here ....SMAT(IOFF)
-                IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
-              ENDIF
+               IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
+             ENDIF
           ENDDO
           IC = 2
 C.........Insert scaled kinetic energy integrals
           DO JSYM = 1,NBRP
-              ISYM           = JFSYM(JSYM,I)
-              IREP           = ISYM - 1
-              IF(NBBAS(IREP,IC).GT.0) THEN
+             ISYM           = JFSYM(JSYM,I)
+             IREP           = ISYM - 1
+             IF(NBBAS(IREP,IC).GT.0) THEN
 C.....please add your INTEREST stuff here ....SMAT(IOFF)
-                IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
-              ENDIF
+               IOFF = IOFF + NBBAS(IREP,IC)*NBBAS(IREP,IC)
+             ENDIF
           ENDDO
+        ENDDO
       ELSE
         call alloc(sbuf, n2bbasx)
         call alloc(stri, nnbbasx)

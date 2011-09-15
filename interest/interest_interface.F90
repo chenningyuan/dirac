@@ -4,7 +4,7 @@
 !
 ! Module:       interest_interface 
 !
-! Description:  - interfacing basis set data between Dirac & InteRest program 
+! Description:  - interfacing basic data between Dirac & InteRest program 
 !               - providing two- and four-center integrals in RKB/RMB balanced basis
 !
 ! Contains:     
@@ -49,6 +49,13 @@ MODULE INTEREST_INTERFACE
 
   private
 
+  !> definition of "constant" data type 
+     type type_constant
+          real(8) :: alpha2      !=(1/c)^2 
+     end  type
+     type(type_constant) :: constant 
+  !> end
+
   !> definition of "atom" data type 
      type type_atom
           real(8) :: charge 
@@ -75,32 +82,35 @@ MODULE INTEREST_INTERFACE
      type(type_gto), allocatable, target :: gto(:)
   !> end
 
-  !> definition of "real_matrix" data type 
   !> fixme: temporary
-     type real_matrix
-          integer          :: nrow 
-          integer          :: ncol  
-          real(8), pointer :: elms(:,:) 
-     end  type
-  !> end
-  
-  
-  !> definition of "complex_pointer" data type 
-  !> fixme: temporary
-     type complex_pointer
-          complex(8), pointer :: p => NULL()
-     end  type
-  !> end
-  
-  
-  !> definition of "complex_matrix" data type 
-  !> fixme: temporary
-     type complex_matrix
-          integer                 :: nrow 
-          integer                 :: ncol  
-          type(complex_pointer)   :: info(4,4)  
-          complex(8), allocatable :: elms(:,:,:) 
-     end  type
+     !> definition of "real_vector" data type
+        type real_vector
+             real(8), pointer :: elms(:)
+        end  type
+     !> end
+
+     !> definition of "real_matrix" data type 
+        type real_matrix
+             integer          :: nrow 
+             integer          :: ncol  
+             real(8), pointer :: elms(:,:) 
+        end  type
+     !> end
+     
+     !> definition of "complex_pointer" data type 
+        type complex_pointer
+             complex(8), pointer :: p => NULL()
+        end  type
+     !> end
+     
+     !> definition of "complex_matrix" data type 
+        type complex_matrix
+             integer                 :: nrow 
+             integer                 :: ncol  
+             type(complex_pointer)   :: info(4,4)  
+             complex(8), allocatable :: elms(:,:,:) 
+        end  type
+     !> end
   !> end
 
   interface process_overlap_integrals 
@@ -122,6 +132,8 @@ CONTAINS
 ! ------------------------------------------------------------------------------------
 !> 
   SUBROUTINE initialize_interest()
+
+  use codata
 
 #include "mxcent.h"
 #include "maxorb.h"
@@ -153,6 +165,10 @@ CONTAINS
        endif
     !> end
   
+    !> interface constants
+       constant = type_constant( alpha2 )
+    !> end
+
     !> interface molecular data
        allocate( atom(nucind), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: atom(:)'
        do i=1,size(atom)
@@ -195,13 +211,13 @@ CONTAINS
 
     !> temporary print ... 
        do i=1,size(gto)
-         write(6,'(1x,5(a,i3,3x),3(a,d15.5,3x))') ' i = ',i,                            &
-                                                  ' index  = ',gto(i)%index,            &
-                                                  ' offset = ',gto(i)%offset,           &
-                                                  ' lvalue = ',gto(i)%lvalue,           &
-                                                  ' origin = ',gto(i)%origin,           &
-                                                  ' norm = ',  gto(i)%norm(1),          &
-                                                  ' exponent = ',gto(i)%exponent(1),    &
+         write(6,'(1x,5(a,i3,3x),3(a,d15.5,3x))') ' i = ',i,                             &
+                                                  ' index  = ',     gto(i)%index,        &
+                                                  ' offset = ',     gto(i)%offset,       &
+                                                  ' lvalue = ',     gto(i)%lvalue,       &
+                                                  ' origin = ',     gto(i)%origin,       &
+                                                  ' norm = ',       gto(i)%norm(1),      &
+                                                  ' exponent = ',   gto(i)%exponent(1),  &
                                                   ' coefficient = ',gto(i)%coefficient(1)
        enddo
       !write(6,*) 
@@ -319,12 +335,12 @@ CONTAINS
 
     if( present(S) )then
       !> alpha-alpha 
-         S%elms(:,1,1) = dcmplx(          Smat(:,1), 0.0d0 ); S%info(1,1)%p => S%elms(1,1,1)   !> (L,L)
-         S%elms(:,2,2) = dcmplx( alpha2 * Smat(:,2), 0.0d0 ); S%info(2,2)%p => S%elms(1,2,2)   !> (S,S)
+         S%elms(:,1,1) = dcmplx(                   Smat(:,1), 0.0d0 ); S%info(1,1)%p => S%elms(1,1,1)   !> (L,L)
+         S%elms(:,2,2) = dcmplx( constant%alpha2 * Smat(:,2), 0.0d0 ); S%info(2,2)%p => S%elms(1,2,2)   !> (S,S)
       !> end
       !> beta-beta 
-         S%elms(:,3,3) = dcmplx(          Smat(:,1), 0.0d0 ); S%info(3,3)%p => S%elms(1,3,3)   !> (L,L)
-         S%elms(:,4,4) = dcmplx( alpha2 * Smat(:,2), 0.0d0 ); S%info(4,4)%p => S%elms(1,4,4)   !> (S,S)
+         S%elms(:,3,3) = dcmplx(                   Smat(:,1), 0.0d0 ); S%info(3,3)%p => S%elms(1,3,3)   !> (L,L)
+         S%elms(:,4,4) = dcmplx( constant%alpha2 * Smat(:,2), 0.0d0 ); S%info(4,4)%p => S%elms(1,4,4)   !> (S,S)
       !> end
     endif
 
@@ -346,7 +362,7 @@ CONTAINS
     !> note: S12 must be the last option, because Smat is destroyed in output
     if( present(S12) )then
       !> rescale the small component block by c^{-2}
-         Smat(:,2) = alpha2*Smat(:,2)
+         Smat(:,2) = constant%alpha2*Smat(:,2)
       !> end
       call invert_matrix('H', Smat(1,1), nrow )
       call invert_matrix('H', Smat(1,2), nrow )
@@ -426,11 +442,11 @@ CONTAINS
     !> calculate nuclear attraction integrals in RKB basis
        allocate( Vmat( nrow*nrow, 5 ) ); Vmat = 0.0d0
        call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
-       call symmetrize_matrix    (                  A = Vmat(1,1), ida = nrow )   !Re(A )
-       call symmetrize_matrix    ( factor = alpha2, A = Vmat(1,2), ida = nrow )   !Re(A') = (xx + yy + zz)*alpha^{2}
-       call antisymmetrize_matrix( factor = alpha2, A = Vmat(1,3), ida = nrow )   !Im(A') = (xy - yx)     *alpha^{2} 
-       call antisymmetrize_matrix( factor = alpha2, A = Vmat(1,4), ida = nrow )   !Re(B') = (zx - xz)     *alpha^{2} 
-       call antisymmetrize_matrix( factor = alpha2, A = Vmat(1,5), ida = nrow )   !Im(B') = (yz - zy)     *alpha^{2}
+       call symmetrize_matrix    (                           A = Vmat(1,1), ida = nrow )   !Re(A )
+       call symmetrize_matrix    ( factor = constant%alpha2, A = Vmat(1,2), ida = nrow )   !Re(A') = (xx + yy + zz)*alpha^{2}
+       call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,3), ida = nrow )   !Im(A') = (xy - yx)     *alpha^{2} 
+       call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,4), ida = nrow )   !Re(B') = (zx - xz)     *alpha^{2} 
+       call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,5), ida = nrow )   !Im(B') = (yz - zy)     *alpha^{2}
     !> end
 
 
