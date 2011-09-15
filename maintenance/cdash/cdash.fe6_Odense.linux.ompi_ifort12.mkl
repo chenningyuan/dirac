@@ -9,15 +9,12 @@
 ##PBS -o cdash_buildup_log
 
 # intel fortran/MKL stuff
-export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
-export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
-export PATH=/opt/intel/composerxe-2011.2.137/bin/intel64:$PATH
-export PATH=/opt/intel/composerxe/bin:$PATH
+export PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/bin/intel64:$PATH
+export PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
 
-export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/opt/intel/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
 
 # OpenMPI stuff
 export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin:$PATH
