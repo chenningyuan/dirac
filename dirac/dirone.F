@@ -741,6 +741,10 @@ CMI   ... control output ...
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix - nonrelativistic'//
      &   '  Hamiltonian (BSS=.false.,TWOCOMP=.true.)',-1)
+          ELSEIF(MDIRAC) THEN
+         CALL HEADER(
+     &   'ONEFCK: One-electron Fock matrix from the'//
+     &   ' modified Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)',-1)
           ELSE
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix from the'//
@@ -760,19 +764,24 @@ C
 C     Memory allocation
 C
 cisl-b    getting NZ*N2BBASX instead of NZ*NNBBASX
-       CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KONEIN,   N2BBASX,WORK,KFREE,LFREE)
-       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 C
 C     ************************************************
 C     ****** Construct one-electron Fock matrix ******
 C     ************************************************
 C
-       CALL ONEFC1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
+       IF(MDIRAC) THEN
+C.........insert INTEREST ROUTINE Here
+C         The dimension of the Fock matrix is N2BBASXQ
+       ELSE
+         CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KONEIN,   N2BBASX,WORK,KFREE,LFREE)
+         CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+         CALL ONEFC1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
      &              WORK(KFREE),LFREE)
 C
-C     Memory deallocation
-       CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
+C        Memory deallocation
+         CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
+       ENDIF
 
       end if
 C
@@ -803,6 +812,10 @@ C
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix - nonrelativistic'//
      &   '  Hamiltonian (BSS=.false.,TWOCOMP=.true.)',-1)
+          ELSEIF(MDIRAC) THEN
+         CALL HEADER(
+     &   'ONEFCK: One-electron Fock matrix from the'//
+     &   ' modified Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)',-1)
           ELSE
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix from the'//

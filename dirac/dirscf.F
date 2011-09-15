@@ -1064,7 +1064,7 @@ C  /* Deck dhfscf */
 C*****************************************************************************
 C
 C
-C    Solve Hartree-Fock.
+C    Solve SCF
 C
 C
 C   Called from PSIDHF
@@ -1086,8 +1086,6 @@ C
 
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
-
-
 C
 C     Generate one-electron Fock matrix and write to file
 C     ===================================================
