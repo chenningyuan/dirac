@@ -316,37 +316,42 @@ CONTAINS
   SUBROUTINE two_center_integrals( interest_routine, final_integrals, ida ) 
 
     !> input
-    interface 
-      subroutine interest_routine(rkb,                    &
-                                  fint,na,nb,nrkb,        &
-                                  la,alpha,ax,ay,az,anorm,&
-                                  lb,beta, bx,by,bz,bnorm,&
-                                  ncentr,atomic_data      )
+       interface 
+         subroutine interest_routine(rkb,                    &
+                                     fint,na,nb,nrkb,        &
+                                     la,alpha,ax,ay,az,anorm,&
+                                     lb,beta, bx,by,bz,bnorm,&
+                                     ncentr,atomic_data      )
+       
+           integer, intent(out) :: na 
+           integer, intent(out) :: nb 
+           logical, intent(in)  :: rkb
+           integer, intent(out) :: nrkb
+           integer, intent(in)  :: la,lb
+           integer, intent(in)  :: ncentr
+           real(8), intent(out) :: fint(*)
+           real(8), intent(in)  :: alpha,ax,ay,az,anorm
+           real(8), intent(in)  :: beta, bx,by,bz,bnorm
+           real(8), intent(in)  :: atomic_data(ncentr,5)
+         end subroutine
+       end interface
+    !> end
 
-        integer, intent(out) :: na 
-        integer, intent(out) :: nb 
-        logical, intent(in)  :: rkb
-        integer, intent(out) :: nrkb
-        integer, intent(in)  :: la,lb
-        integer, intent(in)  :: ncentr
-        real(8), intent(out) :: fint(*)
-        real(8), intent(in)  :: alpha,ax,ay,az,anorm
-        real(8), intent(in)  :: beta, bx,by,bz,bnorm
-        real(8), intent(in)  :: atomic_data(ncentr,5)
-      end subroutine
-    end interface
-
-    integer, intent(in)  :: ida           !fixme:umelo dodane
-    logical              :: rkb = .true.  !fixme:umelo dodane
+    !> input
+       integer, intent(in)  :: ida           !fixme:umelo dodane
+       logical              :: rkb = .true.  !fixme:umelo dodane
+    !> end
 
     !> output
-    real(8) :: final_integrals(*)
+       real(8) :: final_integrals(*)
+    !> end
 
     !> local
-    integer :: nrkb
-    integer :: i, ni
-    integer :: j, nj
-    real(8) :: gout(4410)  !todo: rozumnejsia definicia
+       integer :: nrkb
+       integer :: i, ni
+       integer :: j, nj
+       real(8) :: gout(4410)  !todo: rozumnejsia definicia
+    !> end
 
 
     do j=1,size(gto)
@@ -389,20 +394,23 @@ CONTAINS
   SUBROUTINE store_batch( A, ida, jda, nrkb, B, idb, jdb, ioffset, joffset )
 
     !> input 
-    integer :: nrkb
-    integer :: ioffset 
-    integer :: joffset 
-    integer :: ida, jda 
-    integer :: idb, jdb
-    real(8) :: A(ida,jda,nrkb)
+       integer :: nrkb
+       integer :: ioffset 
+       integer :: joffset 
+       integer :: ida, jda 
+       integer :: idb, jdb
+       real(8) :: A(ida,jda,nrkb)
+    !> end
 
     !> output
-    real(8) :: B(idb,jdb,nrkb)
+       real(8) :: B(idb,jdb,nrkb)
+    !> end
 
     !> local
-    integer :: i
-    integer :: j
-    integer :: k
+       integer :: i
+       integer :: j
+       integer :: k
+    !> end
 
 
     do k=1,nrkb
