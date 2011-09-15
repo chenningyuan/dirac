@@ -257,8 +257,6 @@ files_never_compiled.append('dirrci/cimain.F')
 files_never_compiled.append('xcint/xcfun/fortran/example.F90')
 files_never_compiled.append('fmm/mm_standalone_drv.f90')
 files_never_compiled.append('fmm/mm_standalone_aux.F')
-files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
-files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
 files_never_compiled.append('xcint/src/test_driver.F90')
 files_never_compiled.append('xcint/src/fake_input.F90')
 
@@ -336,7 +334,7 @@ dirac_modules[this_module].add_directory('gp/xml')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'interest'
-dirac_modules[this_module] = dirac_module('interest', 'Interest module')
+dirac_modules[this_module] = dirac_module('interest', 'InteRest module')
 dirac_modules[this_module].add_cppflag('MOD_INTEREST')
 dirac_modules[this_module].add_directory('interest')
 dirac_modules[this_module].take_out_of_adm()
