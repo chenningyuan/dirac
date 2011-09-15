@@ -3623,10 +3623,11 @@ C
       NBRP = 4/NZ
 
       IF(MDIRAC) THEN
-        call initialize_interest
         IF(NBSYM.GT.1) THEN
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
+        call initialize_interest  !fixme michal: should be move to another place ...
+        stop
         IOFF = 1
         DO I = 1,NFSYM
           IC = 1

@@ -56,6 +56,14 @@ MODULE INTEREST_INTERFACE
      type(type_constant) :: constant 
   !> end
 
+  !> definition of "symmetry" data type 
+     !fixme: not initialized yet ...
+     type type_symmetry
+          integer :: dummy 
+     end  type
+     type(type_symmetry) :: symmetry 
+  !> end
+
   !> definition of "atom" data type 
      type type_atom
           real(8) :: charge 
@@ -113,16 +121,7 @@ MODULE INTEREST_INTERFACE
      !> end
   !> end
 
-  interface process_overlap_integrals 
-    module procedure process_overlap_integrals_1comp
-    module procedure process_overlap_integrals_4comp
-  end interface
-  
-  interface process_nuclear_attraction_integrals
-    module procedure process_nuclear_attraction_integrals_1comp
-    module procedure process_nuclear_attraction_integrals_4comp
-  end interface
-  
+ 
   interface two_electron_integrals 
     module procedure two_electron_integrals_1comp
    !module procedure two_electron_integrals_4comp
@@ -237,207 +236,61 @@ CONTAINS
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!> PROCESS THE FOLLOWING TASKS WITH THE OVERLAP INTEGRALS ACCORDING TO OPTIONAL DUMMY ARGUMENTS
-!> S    - calculate the four-component metric matrix in RKB basis 
-!> S12  - calculate the inverse square root of the metric matrix S
-!> Fock - add the kinetic energy integrals to the Fock matrix   
 !>
-  SUBROUTINE process_overlap_integrals_1comp( S, S12, Fock ) 
+  SUBROUTINE process_overlap_integrals( S ) 
 
     !> input
-    type(real_matrix), optional :: S 
-    type(real_matrix), optional :: S12 
-    type(real_matrix), optional :: Fock
+       real(8) :: S(*) 
+    !> end
 
     !> local
-    integer              :: i 
-    integer              :: nrow
-    real(8), allocatable :: Smat(:,:)
+       integer              :: i 
+       integer              :: nrow
+       real(8), allocatable :: Smat(:,:)
+    !> end
 
     !> external InteRest integral routines
-    external :: interest_overlap 
+       external :: interest_overlap 
+    !> end
 
 
-    nrow = 0
-
-    if( present(S   ) ) nrow = S%nrow
-    if( present(S12 ) ) nrow = S12%nrow
-    if( present(Fock) ) nrow = Fock%nrow
-    
+    nrow = sum(gto(:)%cdegen) 
+    allocate( Smat( nrow*nrow, 2 ) ); Smat = 0.0d0
 
     !> calculate overlap-Smat(:,1) and kinetic-Smat(:,2) integrals
     !> note: Smat(:,2) is not devided by the factor 2.0d0
-    allocate( Smat( nrow*nrow, 2 ) ); Smat = 0.0d0
-    call two_center_integrals( interest_overlap, Smat, nrow   )
-    call symmetrize_matrix( A = Smat(1,1), ida = nrow )
-    call symmetrize_matrix( A = Smat(1,2), ida = nrow )
+       call two_center_integrals( interest_overlap, Smat, nrow )
+       call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )
+       call symmetrize_matrix( factor = 4.0d0*constant%alpha2, A = Smat(1,2), ida = nrow )
+    !> end
 
-    
-    if( present(S) )then
-      do i=1,size(S%elms,2)
-         S%elms(:,i) = Smat(:,1)
-      enddo
-    endif
-
-
-    if( present(Fock) )then
-      do i=1,size(Fock%elms,2)
-         Fock%elms(:,i) = Fock%elms(:,i) + Smat(:,2)/2.0d0
-      enddo
-    endif
-
-    !> note: S12 must be the last option, because Smat is destroyed in output
-    if( present(S12) )then  
-      call invert_matrix('H', Smat(1,1), nrow )
-      do i=1,size(S12%elms,2)
-         S12%elms(:,i) = Smat(:,1)
-      enddo
-    endif
+    S(            1:  (nrow*nrow)) = Smat(1:nrow*nrow,1)
+    S((nrow*nrow)+1:2*(nrow*nrow)) = Smat(1:nrow*nrow,2)
 
     deallocate( Smat )
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!> PROCESS THE FOLLOWING TASKS WITH THE OVERLAP INTEGRALS ACCORDING TO OPTIONAL DUMMY ARGUMENTS
-!> S    - calculate the four-component metric matrix in RKB basis 
-!> S12  - calculate the inverse square root of the metric matrix S
-!> Fock - add the kinetic energy integrals to the Fock matrix   
-!>
-  SUBROUTINE process_overlap_integrals_4comp( S, S12, Fock ) 
-
-    !> input
-    type(complex_matrix), optional, target :: S 
-    type(complex_matrix), optional, target :: S12 
-    type(complex_matrix), optional, target :: Fock
-
-    !> local
-    integer              :: nrow
-    real(8), allocatable :: Smat(:,:)
-
-    !> external InteRest integral routines
-    external :: interest_overlap 
-
-
-    nrow = 0
-
-    if( present(S   ) ) nrow = S%nrow
-    if( present(S12 ) ) nrow = S12%nrow
-    if( present(Fock) ) nrow = Fock%nrow
-    
-
-    !> calculate overlap integrals in RKB basis
-    allocate( Smat( nrow*nrow, 2 ) ); Smat = 0.0d0
-    call two_center_integrals( interest_overlap, Smat, nrow   )
-    call symmetrize_matrix( A = Smat(1,1), ida = nrow )
-    call symmetrize_matrix( A = Smat(1,2), ida = nrow )
-
-    
-
-    if( present(S) )then
-      !> alpha-alpha 
-         S%elms(:,1,1) = dcmplx(                   Smat(:,1), 0.0d0 ); S%info(1,1)%p => S%elms(1,1,1)   !> (L,L)
-         S%elms(:,2,2) = dcmplx( constant%alpha2 * Smat(:,2), 0.0d0 ); S%info(2,2)%p => S%elms(1,2,2)   !> (S,S)
-      !> end
-      !> beta-beta 
-         S%elms(:,3,3) = dcmplx(                   Smat(:,1), 0.0d0 ); S%info(3,3)%p => S%elms(1,3,3)   !> (L,L)
-         S%elms(:,4,4) = dcmplx( constant%alpha2 * Smat(:,2), 0.0d0 ); S%info(4,4)%p => S%elms(1,4,4)   !> (S,S)
-      !> end
-    endif
-
-
-    if( present(Fock) )then
-      !> alpha-alpha 
-         Fock%elms(:,2,1) = Fock%elms(:,2,1) + dcmplx(         Smat(:,2), 0.0d0 ); Fock%info(2,1)%p => Fock%elms(1,2,1)   !> (S,L)
-         Fock%elms(:,1,2) = Fock%elms(:,1,2) + dcmplx(         Smat(:,2), 0.0d0 ); Fock%info(1,2)%p => Fock%elms(1,1,2)   !> (L,S)
-         Fock%elms(:,2,2) = Fock%elms(:,2,2) - dcmplx( 2.0d0 * Smat(:,2), 0.0d0 ); Fock%info(2,2)%p => Fock%elms(1,2,2)   !> (S,S)
-      !> end
-      !> beta-beta 
-         Fock%elms(:,4,3) = Fock%elms(:,4,3) + dcmplx(         Smat(:,2), 0.0d0 ); Fock%info(4,3)%p => Fock%elms(1,4,3)   !> (S,L)
-         Fock%elms(:,3,4) = Fock%elms(:,3,4) + dcmplx(         Smat(:,2), 0.0d0 ); Fock%info(3,4)%p => Fock%elms(1,3,4)   !> (L,S)
-         Fock%elms(:,4,4) = Fock%elms(:,4,4) - dcmplx( 2.0d0 * Smat(:,2), 0.0d0 ); Fock%info(4,4)%p => Fock%elms(1,4,4)   !> (S,S)
-      !> end
-    endif
-
-
-    !> note: S12 must be the last option, because Smat is destroyed in output
-    if( present(S12) )then
-      !> rescale the small component block by c^{-2}
-         Smat(:,2) = constant%alpha2*Smat(:,2)
-      !> end
-      call invert_matrix('H', Smat(1,1), nrow )
-      call invert_matrix('H', Smat(1,2), nrow )
-      !> alpha-alpha 
-         S12%elms(:,1,1) = dcmplx( Smat(:,1), 0.0d0 ); S12%info(1,1)%p => S12%elms(1,1,1)   !> (L,L)
-         S12%elms(:,2,2) = dcmplx( Smat(:,2), 0.0d0 ); S12%info(2,2)%p => S12%elms(1,2,2)   !> (S,S)
-      !> end
-      !> beta-beta 
-         S12%elms(:,3,3) = dcmplx( Smat(:,1), 0.0d0 ); S12%info(3,3)%p => S12%elms(1,3,3)   !> (L,L)
-         S12%elms(:,4,4) = dcmplx( Smat(:,2), 0.0d0 ); S12%info(4,4)%p => S12%elms(1,4,4)   !> (S,S)
-      !> end
-    endif
-
-    deallocate( Smat )
-
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!> PROCESS THE FOLLOWING TASKS WITH THE NUCLEAR ATTRACTION INTEGRALS ACCORDING TO OPTIONAL DUMMY ARGUMENTS
-!> Fock - add the nuclear attraction integrals to the Fock matrix   
-!>
-  SUBROUTINE process_nuclear_attraction_integrals_1comp( Fock ) 
+!> 
+  SUBROUTINE process_nuclear_attraction_integrals( V ) 
  
     !> input
-    type(real_matrix), optional :: Fock
+       real(8) :: V(*) 
+    !> end
 
     !> local
-    integer              :: i 
-    integer              :: nrow
-    real(8), allocatable :: Vmat(:,:)
+       integer              :: i 
+       integer              :: nrow
+       real(8), allocatable :: Vmat(:,:)
+    !> end
 
     !> external InteRest integral routines
-    external :: interest_nuclear_attraction_point_nucleus 
-
-
-
-    nrow = Fock%nrow
-
-    !> calculate nuclear attraction integrals
-    !> note: tmp solution that we calculate integrals in RKB basis
-       allocate( Vmat( nrow*nrow, 5 ) ); Vmat = 0.0d0
-       call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
-       call symmetrize_matrix   ( A = Vmat(1,1), ida = nrow )
+       external :: interest_nuclear_attraction_point_nucleus 
     !> end
 
 
-    !> add the nuclear attraction integrals to the Fock matrix
-       if( present(Fock) )then
-         do i=1,size(Fock%elms,2)
-           Fock%elms(:,i) = Fock%elms(:,i) + Vmat(:,1)
-         enddo
-       endif
-    !> end
-
-    deallocate( Vmat )
-
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!> PROCESS THE FOLLOWING TASKS WITH THE NUCLEAR ATTRACTION INTEGRALS ACCORDING TO OPTIONAL DUMMY ARGUMENTS
-!> Fock - add the nuclear attraction integrals to the Fock matrix   
-!>
-  SUBROUTINE process_nuclear_attraction_integrals_4comp( Fock ) 
- 
-    !> input
-    type(complex_matrix), optional, target :: Fock
-
-    !> local
-    integer              :: nrow
-    real(8), allocatable :: Vmat(:,:)
-
-    !> external InteRest integral routines
-    external :: interest_nuclear_attraction_point_nucleus 
-
-
-
-    nrow = Fock%nrow
+    nrow = sum(gto(:)%cdegen) 
+    allocate( Vmat( nrow*nrow, 5 ) ); Vmat = 0.0d0
 
     !> calculate nuclear attraction integrals in RKB basis
        allocate( Vmat( nrow*nrow, 5 ) ); Vmat = 0.0d0
@@ -449,30 +302,11 @@ CONTAINS
        call antisymmetrize_matrix( factor = constant%alpha2, A = Vmat(1,5), ida = nrow )   !Im(B') = (yz - zy)     *alpha^{2}
     !> end
 
-
-
-    !> add the nuclear attraction integrals to the four-component Fock matrix (complex algebra)
-    if( present(Fock) )then
-       !> alpha-alpha 
-          Fock%elms(:,1,1) = Fock%elms(:,1,1) + dcmplx( Vmat(:,1), 0.0d0     ); Fock%info(1,1)%p => Fock%elms(1,1,1)   !> (L,L)
-          Fock%elms(:,2,2) = Fock%elms(:,2,2) + dcmplx( Vmat(:,2), 0.0d0     ); Fock%info(2,2)%p => Fock%elms(1,2,2)   !> (S,S)
-          Fock%elms(:,2,2) = Fock%elms(:,2,2) + dcmplx( 0.0d0    , Vmat(:,3) )
-       !> end
-       !> alpha-beta 
-          Fock%elms(:,2,4) = Fock%elms(:,2,4) + dcmplx( Vmat(:,4), 0.0d0     ); Fock%info(2,4)%p => Fock%elms(1,2,4)   !> (S,S)
-          Fock%elms(:,2,4) = Fock%elms(:,2,4) + dcmplx( 0.0d0    , Vmat(:,5) )
-       !> end
-       !> beta-alpha 
-          Fock%elms(:,4,2) = Fock%elms(:,4,2) + dcmplx(-Vmat(:,4), 0.0d0     ); Fock%info(4,2)%p => Fock%elms(1,4,2)   !> (S,S)
-          Fock%elms(:,4,2) = Fock%elms(:,4,2) + dcmplx( 0.0d0    , Vmat(:,5) )
-       !> end 
-       !> beta-beta 
-          Fock%elms(:,3,3) = Fock%elms(:,3,3) + dcmplx( Vmat(:,1), 0.0d0     ); Fock%info(3,3)%p => Fock%elms(1,3,3)   !> (L,L)
-          Fock%elms(:,4,4) = Fock%elms(:,4,4) + dcmplx( Vmat(:,2), 0.0d0     ); Fock%info(4,4)%p => Fock%elms(1,4,4)   !> (S,S)
-          Fock%elms(:,4,4) = Fock%elms(:,4,4) + dcmplx( 0.0d0    ,-Vmat(:,3) )
-       !> end
-    endif
-    !> end
+    V(              1:  (nrow*nrow)) = Vmat(1:nrow*nrow,1)
+    V(  (nrow*nrow)+1:2*(nrow*nrow)) = Vmat(1:nrow*nrow,2)
+    V(2*(nrow*nrow)+1:3*(nrow*nrow)) = Vmat(1:nrow*nrow,3)
+    V(3*(nrow*nrow)+1:4*(nrow*nrow)) = Vmat(1:nrow*nrow,4)
+    V(4*(nrow*nrow)+1:5*(nrow*nrow)) = Vmat(1:nrow*nrow,5)
 
     deallocate( Vmat )
 
@@ -1550,88 +1384,6 @@ lloop:       do l=1,k
       enddo
     endif
      
-  END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!> 
-  SUBROUTINE invert_matrix(pow,a,lda)
-
-    !> input
-    character*1, intent(in) :: pow
-    integer,     intent(in) :: lda
-
-    !> output
-    real(8), intent(out) :: a(lda,lda)
-
-    !> local
-    integer              :: ierr 
-    integer              :: i, j
-    real(8)              :: factor 
-    real(8), allocatable :: v(:)
-    real(8), allocatable :: eval(:)
-    real(8), allocatable :: evec(:,:)
-    real(8), allocatable :: fevec(:,:)
-    real(8), parameter   :: tsmale=1.0d-08
-
-
-
-    allocate( evec ( lda,lda ), &
-              fevec( lda,lda ), &
-              eval ( lda     ), &
-              v    ( lda     )  )
-
-    call tred2(lda,lda,a,eval,v,evec)
-    call tql2(lda,lda,eval,v,evec,ierr)
-
-    if(ierr.ne.0)then
-      write(6,*) 'ierr = ',ierr
-      write(6,*) 'Problem in the diagonalisation procedure => stop'
-      stop ' in matrix_inversion '
-    endif
-
-    write(6,'(2x,a,3(a,e8.2))')'Matrix inversion:',' min: ',eval(1),' max: ',eval(lda),' thr: ',tsmale
-
-    !> calcuate a^{-1)
-    if( pow.eq.'O' )then
-      do j=1,lda
-        if( eval(j) .le. tsmale )then
-          write(6,'(5x,a,i4,a,e15.7,a)')'Eigenvector eliminated for ',j,' (',eval(j),')'
-          factor = 0.0d0
-        else
-          factor = 1.0d0/eval(j)
-        endif
-        do i=1,lda
-          fevec(i,j) = evec(i,j)*factor
-        enddo
-      enddo
-      call dgemm('n','t',lda,lda,lda,1.0d0,fevec,lda,evec,lda,0.0d0,a,lda)
-
-    !> calcuate a^{-1/2)
-    elseif( pow.eq.'H' )then
-      do j=1,lda
-        if( eval(j) .le. tsmale )then
-          write(6,'(5x,a,i4,a,e15.7,a)')'Eigenvector eliminated for ',j,' (',eval(j),')'
-          factor = 0.0d0
-        else
-          factor = 1.0d0/dsqrt(eval(j))
-        endif
-        do i=1,lda
-          fevec(i,j) = evec(i,j)*factor
-        enddo
-      enddo
-      call dgemm('n','t',lda,lda,lda,1.0d0,fevec,lda,evec,lda,0.0d0,a,lda)
-
-    !> bug report 
-    else
-      write(6,*) " "
-      write(6,*) " improper choice of input option"
-      write(6,*) " expected: 'O' or 'H'" 
-      write(6,*) " required: '",pow,"'" 
-      write(6,*) " abnormal termination => stop "
-      stop       " in matrix_inversion"
-    endif
-
-    deallocate( evec, fevec, eval, v )
-
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 END MODULE

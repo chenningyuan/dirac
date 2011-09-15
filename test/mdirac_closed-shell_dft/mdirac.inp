@@ -1,6 +1,6 @@
 **DIRAC
 .WAVE F
-.INPTES
+!.INPTES
 **GENERAL
 ! We do not transform to spherical Cartesians
 .SPHTRA
