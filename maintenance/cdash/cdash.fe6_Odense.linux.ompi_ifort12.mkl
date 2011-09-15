@@ -9,14 +9,15 @@
 ##PBS -o cdash_buildup_log
 
 # intel fortran/MKL stuff
-#export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/bin/intel64:$PATH
-#export PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
-export PATH=/opt/intel/composerxe/bin:$PATH
+export PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/bin/intel64:$PATH
+export PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mpirt/bin/intel64:$PATH
 
-#export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=/people/disk2/ilias/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/opt/intel/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/compiler/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mpirt/lib/intel64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
+
+#licence
+export INTEL_LICENSE_FILE=/people/disk2/magnus/intel/licenses:$INTEL_LICENSE_FILE
 
 # OpenMPI stuff
 export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin:$PATH
@@ -29,16 +30,23 @@ export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "running dirac cdash buildup at "$timestamp
 
+which ifort
+which icc
+
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
 BUILD=build_ompi_ifort_icc_mkl_ilp64
 OMPI=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin
 cd $DIRAC
 /bin/rm -rf $BUILD
 ./pamadm -a 
-export MATH_ROOT=/opt/intel/mkl
+
+#export MATH_ROOT=/opt/intel/mkl
+export MATH_ROOT=/people/disk2/magnus/intel/mkl/
+
 ./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
 cd $DIRAC/$BUILD
 make Experimental 
+
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp
 exit 0
