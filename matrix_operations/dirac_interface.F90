@@ -124,7 +124,7 @@ contains
 
    subroutine di_get_geomDeriv_molgrad_DFT(g, nr_atoms, D)
 
-      use xc_driver
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
@@ -136,7 +136,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim           = ntbas(0), &
+      call integrate_xc(xc_mat_dim           = ntbas(0), &
                          xc_nz                = nz,       &
                          xc_dmat_0            = D%elms,   &
                          xc_nr_dmat           = 0,        &
@@ -149,7 +149,7 @@ contains
 
    subroutine di_get_geomderiv_fxd_dft(g, nr_atoms, D, T1)
 
-      use xc_driver
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
@@ -165,7 +165,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim           = ntbas(0),    &
+      call integrate_xc(xc_mat_dim           = ntbas(0),    &
                          xc_nz                = nz,          &
                          xc_dmat_0            = D%elms,      &
                          xc_nr_dmat           = 1,           &
@@ -179,7 +179,7 @@ contains
 
    subroutine di_get_geomderiv_gxd_dft(g, nr_atoms, D, T1, T2)
 
-      use xc_driver
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       real(8),      intent(inout) :: g(*)
@@ -195,7 +195,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim           = ntbas(0),             &
+      call integrate_xc(xc_mat_dim           = ntbas(0),             &
                          xc_nz                = nz,                   &
                          xc_dmat_0            = D%elms,               &
                          xc_nr_dmat           = 2,                    &
@@ -209,7 +209,7 @@ contains
 
    subroutine di_get_magderiv_fxd_dft(F, D)
 
-      use xc_driver
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       type(matrix)              :: F(3)
@@ -225,7 +225,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim      = ntbas(0),    &
+      call integrate_xc(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
                          xc_nr_dmat      = 0,           &
@@ -243,7 +243,7 @@ contains
 
    subroutine di_get_magderiv_gxd_dft(D, T, F)
 
-      use xc_driver
+      use xcint_main
 
 !     --------------------------------------------------------------------------
       type(matrix), intent(in)  :: D
@@ -260,7 +260,7 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call xc_integrator(xc_mat_dim      = ntbas(0),    &
+      call integrate_xc(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
                          xc_nr_dmat      = 1,           &
@@ -563,7 +563,7 @@ contains
 
   subroutine get_F(D, F)
 
-      use xc_driver
+      use xcint_main
 
     type(matrix), intent(in)    :: D
     type(matrix), intent(inout) :: F
@@ -598,7 +598,7 @@ contains
 #ifdef VAR_MPI
         if (parcal) call dirac_parctl(4)
 #endif
-        call xc_integrator(xc_mat_dim      = ntbas(0), &
+        call integrate_xc(xc_mat_dim      = ntbas(0), &
                            xc_nz           = nz,       &
                            xc_dmat_0       = D%elms,   &
                            xc_nr_dmat      = 0,        &

@@ -401,7 +401,8 @@ C                 .INP file, which has to be opened and read.
         END IF
 
 
-C     JHS050707 Read the actual files.
+C     In the XYZ format coordinates are supposed to start at the third line
+        CALL RDLINE(LUINFO)
         CALL READ_XYZ(LUINFO, inpfile, LUPRI)
 
 C     JHS050707 Write the coordinates to the commonblocks

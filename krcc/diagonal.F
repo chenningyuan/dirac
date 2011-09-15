@@ -10,9 +10,9 @@
 *              Oct 2002 ( to see if this improves converegence for Open shell)
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
       DIMENSION T(*)
 #include "mxpdim.inc"
-C#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "cintfo.inc"
@@ -22,7 +22,6 @@ C#include "wrkspc.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
 #include "crun.inc"
-#include "ipoist8.inc"
 *
       DIMENSION VEC1(*),VEC2(*)
 *
@@ -64,13 +63,10 @@ C
       LBLK = -1
 C      CALL COPVCDC(LUC,LUSC1,VEC1,1,LBLK)
 C      CALL WRTVCDC(VEC1,LUC,1,LBLK)
-Cori      CALL DENSI2_REL(1,WORK(KRHO1),WORK(KRHO2),VEC1,VEC2,
-Cori     &                LUSC1,LUC,EXPS2,0,WORK(KRHO1))
 C      CALL SIGDEN_CTRL(WORK(KVEC1),WORK(KVEC2),LUC,LUHC,WORK(KT_CC),2)
 C      CALL SIGDEN_CTRL(VEC1,VEC2,LUC,LUSC1,WORK(KT_CC),2)
       CALL REWINO(LUC)
       CALL REWINO(LUHC)
-CTEMP      CALL SIGDEN_CTRL(VEC1,VEC2,LUC,LUSC1,WORK(KRHO1),2)
 C      stop 'after sigden ctrl call'
 * NOTE : THIS MAY BE USED LATER, LASSE 011205
 *CTF:
@@ -87,14 +83,7 @@ C      stop 'after sigden ctrl call'
       I_RES_OR_UNRES = 2
       IF(I_RES_OR_UNRES.EQ.1) THEN
 *. Standard spinrestricted Fock matrices
-C       CALL COPVEC(WORK(KINT1O),WORK(KFI),NINT1)
-C       CALL FIFAM_REL(WORK(KFI))
-C       CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
-C       ECORE_H = 0.0D0
 *. Extract diagonal of fock-matrix
-C       CALL GT1DIS(WORK(KFDIA_AL),WORK(KPINT1),
-C    &            WORK(KFI),ISMFTO,IBSO,NACOB)
-C       CALL COPVEC(WORK(KFDIA_AL),WORK(KFDIA_BE),NACOB)
       ELSE
 C NOTE ONLY DIAGONAL IS USED!!!
 C THEREFORE ONLY THAT WILL BE GENERATED
@@ -104,9 +93,8 @@ C THEREFORE ONLY THAT WILL BE GENERATED
      &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IDOH2,
-     &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC,
-     &               WORK,KFREE,LFREE)
+     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),NELEC)
 *
           IF(IRECOM.NE.1) THEN
             print*,'img dia'
@@ -114,36 +102,9 @@ C THEREFORE ONLY THAT WILL BE GENERATED
      &               IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IDOH2,
-     &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),
-     &               WORK,KFREE,LFREE)
+     &               ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),NELEC)
           END IF
-        ELSE
-*. Spin unrestricted Fock matrices
-C        CALL FI_HS_REL(WORK(KINT1O),WORK(KFI_AL),WORK(KFI_BE),ECORE_X,1)
-C      Note from Lasse to self. Check if FI_AL + more is correct
-C         CALL FI_HS_REL(T,ECC,IBSO,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
-C    &               NGAS,NGSSH,IHPVGAS_AB,
-C    &               NTOOBS,NTOOB,IDOH2,
-C    &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-C    &               NTOOB,WORK(KFI_AL),WORK(KFI_BE))
-C and now the imaginary part
-C          CALL FI_HS_REL(T(N1ELINT+N2ELINT+1),ECCCOM,IBSO,NSMOB,
-C         CALL FI_HS_REL(T,ECCCOM,IBSO,NSMOB,
-C    &               ITPFSO,ITPFSO2,IPHGAS,
-C    &               NGAS,NGSSH,IHPVGAS_AB,
-C    &               NTOOBS,NTOOB,IDOH2,
-C    &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-C    &               NTOOB,WORK(KFI_AL_IM),WORK(KFI_BE_IM))
-*. Extract diagonal of fock-matrix
-COri        CALL GT1DIS(WORK(KFDIA_AL),WORK(KPINT1),
-COri     &            WORK(KFI_AL),ISMFTO,IBSO,NACOB)
-COri        CALL GT1DIS(WORK(KFDIA_BE),WORK(KPINT1),
-COri     &            WORK(KFI_BE),ISMFTO,IBSO,NACOB)
-* Replaced with
-C         print*,'before FOCK_DIA'
-C         CALL FOCK_DIA(WORK(KFI_AL),WORK(KFDIA_AL),NACOB)
-C         CALL FOCK_DIA(WORK(KFI_BE),WORK(KFDIA_BE),NACOB)
         END IF
 * end replacement. Lasse
       END IF
@@ -180,29 +141,19 @@ C      end do
      &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8),
      &     WORK,KFREE,LFREE)
       END IF
-C      CALL GENCC_F_DIAG_REL(ITSS_TP,NTSS_TP,CCDIA(NTSS_TP+1),ISM,
-C     &     WORK(KFDIA_AL),WORK(KFDIA_BE),
-C     &     WORK(KFI_AL_IM),WORK(KFI_BE_IM),
-C     &     WORK(KLSTR1_OCC),WORK(KLSTR2_OCC),
-C     &     WORK(KLSTR3_OCC),WORK(KLSTR4_OCC),
-C     &     WORK(KLSTR1),WORK(KLSTR2),WORK(KLSTR3),WORK(KLSTR4),
-C     &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8))
 *
 C?    WRITE(6,*) ' Enforced stop in GENCC_F_DIAG_M '
 C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
-C      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GCC_FD')
       CALL MEMREL('F_DIAG',WORK,KFDIA_AL,KFDIA_AL,KFREE,LFREE)
 *
       RETURN
       END
 *
-C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
       SUBROUTINE FI_HS_DIA_KRCC(T,ECC,IOBSM,NSMOB,ITPFSO,ITPFSO2,IPHGAS,
      &                   NGAS,NGSSH,IHPVGAS_AB,
      &                   LOBSM,NORBT,IDOH2,
-     &                   ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &                   NTOOB,FI_AL,FI_BE,NELEC,
-     &                   WORK,KFREE,LFREE)
+     &                   ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &                   NTOOB,FI_AL,FI_BE,NELEC)
 *
 * Obtain core energy and alpha and beta part of inactive Fock-matrix
 * / effective 1- electron operator for high spin openshell
@@ -241,23 +192,15 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 *
 #include "implicit.inc"
 *. General input
-C#include "wrkspc.inc"
 #include "mxpdim.inc"
-#include "ipoist8.inc"
 #include "ctcc.inc"
-#include "glbbas.inc"
 #include "gasstr.inc"
-C#include "cgas.inc"
-C#include "orbinp.inc"
-C#include "lucinp.inc"
 *
-      DIMENSION WORK(*)
 *. Standard 1+2 electron integrals
       DIMENSION T(*)
 *. Output
       DIMENSION FI_AL(*), FI_BE(*)
 *. Input
-      CHARACTER*6 ENVIRO
       INTEGER IOBSM(*),LOBSM(*)
       INTEGER NGSSH(MXPIRR,NGAS), NELEC(*)
       INTEGER ITPFSO(*), ITPFSO2(*), IPHGAS(*), IKPERM(4)
@@ -268,9 +211,8 @@ C#include "lucinp.inc"
       ISYMPACK = 1
       ZERO = 0.0D0
       HALF = 0.5D0
-C      print*,'N1DIAINT',N1DIAINT
-      CALL SETVEC(FI_AL,ZERO,N1DIAINT/2)
-      CALL SETVEC(FI_BE,ZERO,N1DIAINT/2)
+      CALL SETVEC(FI_AL,ZERO,NORBT)
+      CALL SETVEC(FI_BE,ZERO,NORBT)
 *
       NTEST = 00
       print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
@@ -357,7 +299,6 @@ C IINT is dimension of FI, ISIDE is square root of IINT
         JGSOFF = 0
         ISMOFF = 0
         JSMOFF = 0
-C        IJ = 1 + N1DIAINT/2
         IJ = 1
         do IGS = 1,NGAS,1
           print*,'NGASOCC,IGS',NGASOCC(IGS),IGS
@@ -390,7 +331,7 @@ C Assuming a bottom up occupation of electrons
 C IUB loop to only count occpied contributions for IAB
 C                   DO IUB = 1,2,1
 C                     DO IAB = 1,NELEC(IUB)
-                      print*,'I,J,IAB,IPOS',I,J,IAB,IPOS
+C                     print*,'I,J,IAB,IPOS',I,J,IAB,IPOS
 C
 C Here a call to get int with nalpha = 0 will fetch first term in sum
 C and nalpha = 2 second part ( which is the one with the special exchange 2 integrals)
@@ -440,9 +381,6 @@ C                     print*,'XOUT',XOUT
 C
 C Add the integrals to inactive fock matrix
 C
-                      print*,'XOUT,XOUT2',XOUT,XOUT2
-                      print*,'XOUT3,XOUT4',XOUT3,XOUT4
-                      print*,'J many times',J,J,J,J,J
                       FI_AL(J) = (XOUT + XOUT2) + FI_AL(J)
                       FI_BE(J) = (XOUT + XOUT2) + FI_BE(J)
 C                     END DO
@@ -527,12 +465,12 @@ C          print*,'ARR(I)',ARR(I),I
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
 #include "csm.inc"
 #include "orbinp.inc"
-#include "cc_exc.inc"
 #include "symm.inc"
 *. Specific input
       INTEGER ITSS_TP(4*NGAS,NTSS_TP)
@@ -549,7 +487,7 @@ C          print*,'ARR(I)',ARR(I),I
 *
       DIMENSION WORK(*)
 *
-      NTEST = 100
+      NTEST = 00
       IT = 0
 C      print*,'NTSS_TP',NTSS_TP
 C      II = 4*NGAS
@@ -579,7 +517,7 @@ C      END DO
      &                  ITSS_TP(1+1*NGAS,ITSS),
      &                  ITSS_TP(1+2*NGAS,ITSS),
      &                  ITSS_TP(1+3*NGAS,ITSS),NGAS,IDIAG)
-       IF(MSCOMB_CC.EQ.0.OR.IDIAG.EQ.0) THEN
+       IF(IDIAG.EQ.0) THEN
          IRESTRICT = 0
        ELSE
          IRESTRICT = 1
@@ -659,8 +597,8 @@ C    &               NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                  IT = IT + 1
                  CCDIA(IT) =
      &           E_CA(I_CA) + E_CB(I_CB) - E_AA(I_AA) - E_AB(I_AB)
-                 print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
-                 print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
+C                print*,'E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)'
+C                print*, E_CA(I_CA),E_CB(I_CB),E_AA(I_AA),E_AB(I_AB)
                  IF(IRECOM.NE.1) THEN
                  CCDIA(IT+N_CC_AMP) =
      &           E_CA_IM(I_CA)+E_CB_IM(I_CB)-E_AA_IM(I_AA)-E_AB_IM(I_AB)
@@ -718,7 +656,6 @@ C                                                         Lasse
 C
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -726,7 +663,7 @@ C
       DIMENSION XINT(*),XOUT(ISIDE**2)
       INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
 *
-      NTESTL = 100
+      NTESTL = 00
       NTEST = max(NTESTL,IPRNT)
 *
       IPOS = 0

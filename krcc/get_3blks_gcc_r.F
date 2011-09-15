@@ -13,9 +13,9 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
-!#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -23,10 +23,7 @@
 #include "crun.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "strbas.inc"
 #include "glbbas.inc"
-#include "cprnt.inc"
-#include "oper.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
@@ -36,7 +33,6 @@
       IDUM = 1
 *
       NTEST = 000
-      NTEST = MAX(NTEST,IPRDIA)
 *
 * 1 : Memory required for CC
 *
@@ -61,9 +57,6 @@
       LSCR12 = MAX(LSCR12,LC2)
 *
       print*,'lblock,lscr12  in GET_3BLKS_GCC_REL: ',LBLOCK,LSCR12
-C     CALL MEMMAR(KVEC1,IRECOM*LBLOCK,'ADDS  ',2,'VEC1  ')
-C     CALL MEMMAR(KVEC2,IRECOM*LBLOCK,'ADDS  ',2,'VEC2  ')
-C     CALL MEMMAR(KC2,IRECOM*LSCR12,'ADDS  ',2,'C2    ')
       CALL MEMGET('REAL',KVEC1,IRECOM*LBLOCK,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KVEC2,IRECOM*LBLOCK,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KC2,IRECOM*LSCR12,WORK,KFREE,LFREE)
