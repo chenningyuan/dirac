@@ -237,8 +237,6 @@ set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
-    gp/compilation_info.F90
-    gp/git_revision_info.F90
     )
 
 add_library(
