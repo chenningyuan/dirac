@@ -17,7 +17,7 @@ export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mpirt/li
 export LD_LIBRARY_PATH=/people/disk2/magnus/intel/composerxe-2011.2.137/mkl/lib/intel64:$LD_LIBRARY_PATH
 
 #licence
-INTEL_LICENSE_FILE=/people/disk2/magnus/intel/licenses:$INTEL_LICENSE_FILE
+export INTEL_LICENSE_FILE=/people/disk2/magnus/intel/licenses:$INTEL_LICENSE_FILE
 
 # OpenMPI stuff
 export PATH=/people/disk2/ilias/bin/openmpi_ifort_icc_ilp64/bin:$PATH
