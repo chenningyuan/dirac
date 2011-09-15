@@ -190,7 +190,7 @@ C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
 C
-CTRNOD: to fix      CALL GETLAB(WORK,LWORK,IPREAD)
+      IF(.NOT.MDIRAC) CALL GETLAB(WORK,LWORK,IPREAD)
 C
 C     Define Hamiltonian
 C
