@@ -59,11 +59,11 @@ module FDE_ImportPotentials
  
             use memory_allocator
             use numoper_integrals
-            use fde_mod
-!           use fde_types
-!           use fde_cfg
-!           use fde_data
-!           use fde_io
+!           use fde_mod
+            use fde_types
+            use fde_cfg
+            use fde_data
+            use fde_io
 
 #include "implicit.h"
 #include "priunit.h"
@@ -96,11 +96,11 @@ module FDE_ImportPotentials
             a_oneint = 0.0d0
             call NumOper_OneElOpMatrix(a_oneint,file_unit,doint,irrep_vemb)
 
-!           IF(IPRINT.GE.4) THEN
+            IF(IPRINT.GE.4) THEN
               write (string,*) 'Integrals over (numerical) operator: '//label
               call HEADER(string,-1)
               call OUTPAK(a_oneint,NTBAS(0),1,6)
-!           ENDIF
+            ENDIF
 !
 !        Generate integral labels
 !

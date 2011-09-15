@@ -106,6 +106,7 @@ C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
         call fde_get_import_info(itmp)
         if (itmp%im_vemb) then
+            write (*,*) 'debug, calling embpot import in dirone'
             CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
          endif
 C
@@ -886,18 +887,21 @@ CMI     ... dcbham.h is needed
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
-C
+
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
+
       call fde_get_import_info(itmp)
       if (dirac_cfg_fde .and. itmp%im_vemb) then
+         write (*,*) 'debug, calling prpmao for embpot'
          IOP = IPVEMB0
          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &          OP1INT,FIRST,IPRHAM)
+         write (*,*) 'debug, after calling prpmao for embpot'
       ENDIF
 
 C

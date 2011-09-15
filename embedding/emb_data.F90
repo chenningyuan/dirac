@@ -35,7 +35,6 @@ module fde_data
    public fde_cleanup_data
    public get_fde_grid_coord
    public get_fde_grid_weight
-   public set_pointer_fde_grid
    public fde_test_frozen_density
    public fde_import_frozen
    public fde_import_static
@@ -64,6 +63,7 @@ module fde_data
    public fde_grid_np
 
    integer, save :: fde_grid_np = 0
+   logical, save :: data_is_initialized = .false.
 
    real(kind=8), save, allocatable, target :: fde_frozen_n(:)
    real(kind=8), save, allocatable, target :: fde_frozen_gn(:,:)
@@ -122,32 +122,6 @@ module fde_data
          enddo
       end subroutine get_fde_grid_weight_block
 
-
-      subroutine set_pointer_fde_grid(p) 
-         real(kind=8), pointer, intent(out) :: p(:,:)
-!         p => fde_grid
-         
-         write(6,*) 'debug, checking grid elements, in set_pointer_fde_grid'
-         write(6,*) ' '
-         write(6,*) '       for i = 2, internal (fde_grid)'
-         write(6,*) '               x :',fde_grid(1,2)
-         write(6,*) '               y :',fde_grid(2,2)
-         write(6,*) '               z :',fde_grid(3,2)
-         write(6,*) '               w :',fde_grid(4,2)
-         write(6,*) ' '
-         if (allocated(fde_vemb)) then
-            write(6,*) '       for i = 2, vemb '
-            write(6,*) '               v :',fde_vemb(2)
-            write(6,*) ' '
-         endif
-!         write(6,*) '       for i = 2, pointer to fde_grid'
-!         write(6,*) '               x :',p(1,2)
-!         write(6,*) '               y :',p(2,2)
-!         write(6,*) '               z :',p(3,2)
-!         write(6,*) '               w :',p(4,2)
-!         write(6,*) ' '
-
-      end subroutine set_pointer_fde_grid
 
 !!!!!!!
 !  subroutine fde_data_set_active_n(i,n)
@@ -215,8 +189,6 @@ module fde_data
       file_unit = ftmp%frozen%unit
       file_name = ftmp%frozen%name
 
-      write (*,*) 'debug: unit, name',file_unit,file_name
-
       gridp => fde_grid
       call fde_open_file(file_name,file_unit)
       call read_grid(file_unit,gridp,fde_frozen_prp)
@@ -237,29 +209,6 @@ module fde_data
          fde_grid(2,i)       = gridp(2,i)
          fde_grid(3,i)       = gridp(3,i)
          fde_grid(4,i)       = gridp(4,i)
-
-         if ((i .eq. 2).or.(i.eq.12)) then
-            write (*,*) ' '
-            write (*,*) 'debug, in import from ',file_name
-            write (*,*) ' '
-            write (*,*) '       at point ',i
-            write (*,*) ' '
-            write (*,*) '       n  : ',fde_frozen_n(i)
-            write (*,*) '       gn : (',fde_frozen_gn(i,1),',',fde_frozen_gn(i,2),',',fde_frozen_gn(i,3),')'
-            write (*,*) '       elp: ',fde_frozen_elpot(i)
-            write (*,*) '           =',fde_frozen_prp(1,i)
-            write (*,*) '           +',fde_frozen_prp(2,i)
-            write (*,*) ' tmpvars '
-            write (*,*) '       n  : ',fde_frozen_prp(3,i)
-            write (*,*) '       gn : (',fde_frozen_prp(4,i),',',fde_frozen_prp(5,i),',',fde_frozen_prp(6,i),')'
-            write (*,*) '       elp: ',fde_frozen_prp(1,i)
-            write (*,*) '           +',fde_frozen_prp(2,i)
-            write (*,*) ' grid coords'
-            write (*,*) '       x  : ',fde_grid(1,i)
-            write (*,*) '       y  : ',fde_grid(2,i)
-            write (*,*) '       z  : ',fde_grid(3,i)
-            write (*,*) '       w  : ',fde_grid(4,i)
-         endif
       enddo
 
       call deallocp(fde_frozen_prp)
@@ -268,13 +217,16 @@ module fde_data
 
 
    subroutine fde_initialize_data
-      if (fde_grid_np > 0) then
-         call alloc(fde_grid, 4,fde_grid_np, id="fde_grid")
+      if (.not.data_is_initialized) then
+         data_is_initialized = .true.
+         if (fde_grid_np > 0) then
+            call alloc(fde_grid, 4,fde_grid_np, id="fde_grid")
          
-         call fde_initialize_frozen_data
-         call fde_initialize_active_data
-      else
-         call quit('there are no grid points for fde!')
+            call fde_initialize_frozen_data
+            call fde_initialize_active_data
+         else
+            call quit('there are no grid points for fde!')
+         endif
       endif
       
    end subroutine fde_initialize_data
@@ -305,9 +257,11 @@ module fde_data
    
 
    subroutine fde_cleanup_data
-      call dealloc(fde_grid)
-      call fde_cleanup_active_data
-      call fde_cleanup_frozen_data
+      if (data_is_initialized) then
+         call dealloc(fde_grid)
+         call fde_cleanup_active_data
+         call fde_cleanup_frozen_data
+      endif
    end subroutine fde_cleanup_data
 
 
@@ -334,8 +288,8 @@ module fde_data
          frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_n(point) 
       end do
       
-      write (*,*) '  FDE info: imported frozen density integrates to ',frozen_particle_number,' electrons'
-      write (*,*) '            grid points processed ',fde_grid_np
+      write (*,*) '  Imported frozen density integrates to ',frozen_particle_number,' electrons'
+      write (*,*) '  Grid points processed ',fde_grid_np
 
       frozen_particle_number = 0.0
 

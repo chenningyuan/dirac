@@ -181,9 +181,8 @@ contains
       integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
-
       integer, parameter :: max_response_order_mo = 5
-
+      
 !     start timer
       time_integration_start = second()
 !     reset timer
@@ -209,7 +208,6 @@ contains
          if (present(fde_do_potential))          do_potential          = fde_do_potential
          if (present(fde_response_order_mo))     response_order_mo     = fde_response_order_mo
          if (present(fde_response_order_ao))     response_order_ao     = fde_response_order_ao
-
 
 !     nullify(tmat_1)
 !     nullify(tmat_2)
@@ -258,11 +256,24 @@ contains
           stop 'response_order_mo > max_response_order_mo'
       end if
 
+!
+!     we initialize the fde functionals for this order
+!
+!      if (fde_set_functionals(order)) then
+!          write(*,*) 'debug, setting up functionals for order ',max_response_order_mo
+!          write(*,*) 'debug, setting fde_xcf'
+!          call xcfun_set_functional(fde_xcf     , max_response_order_mo, parallel_fde) 
+!          write(*,*) 'debug, setting fde_xcf_alda'
+!          call xcfun_set_functional(fde_xcf_alda, max_response_order_mo, parallel_fde) 
+!          write(*,*) 'debug, setting fde_kef'
+!          call xcfun_set_functional(fde_kef,      max_response_order_mo, parallel_fde)
+!          write(*,*) 'debug, setting fde_xcf_alda'
+!          call xcfun_set_functional(fde_kef_alda, max_response_order_mo, parallel_fde)
+!         fde_set_functionals(order) = .false.
+!      endif
+!
 !     check whether gga code structure will be used
 !
-! aspg: TODO! think about what to do if KEF is lda and XCF is gga,
-!       or the reverse... perhaps this has to be caught at input
-!       reading time and throw an error
       use_gga_qr = (fde_xc_fun_is_gga())
       use_gga_qi = (fde_xc_fun_is_gga())
 
@@ -278,6 +289,8 @@ contains
       write (6,*) 'debug, in integrate_fde: use_gga ',use_gga
       write (6,*) '       fde_xc_fun_is_lda()       ',fde_xc_fun_is_lda()
       write (6,*) '       fde_xc_fun_is_gga()       ',fde_xc_fun_is_gga()
+      write (6,*) '       fde_ke_fun_is_lda()       ',fde_ke_fun_is_lda()
+      write (6,*) '       fde_ke_fun_is_gga()       ',fde_ke_fun_is_gga()
       
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
@@ -482,7 +495,6 @@ contains
       real(8) :: VT(3)
     integer              :: derv_length, im, i
     real(8), allocatable :: derv(:, :)
-    real(8), allocatable :: derv_nadd(:, :)
 
     logical :: print_data_at_point
     logical :: is_rsp_alda, skip_xc, skip_kin
@@ -522,11 +534,9 @@ contains
 
       derv_length = nr_nonzero_derv
       allocate(derv(max_block_length, 0:derv_length))
-      allocate(derv_nadd(max_block_length, 0:derv_length))
 
 !       better safe than sorry
         derv      = 0.0d0
-        derv_nadd = 0.0d0
 
 !       set it to zero, otherwise it is undefined with lda
         gnn_0 = 0.0d0
@@ -538,10 +548,6 @@ contains
       buffer = 0.0d0
 
    print_data_at_point = .true.
-
-!   call fde_get_is_alda(is_rsp_alda)
-!   call fde_get_skip_xc(skip_xc)
-!   call fde_get_skip_kin(skip_kin)
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -562,7 +568,9 @@ contains
       if (need_ao_order(1, 0)) then
 !        density and density gradient
          call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
-         gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) + gn_0_pointwise(2)*gn_0_pointwise(2) + gn_0_pointwise(3)*gn_0_pointwise(3)
+         gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) &
+                  + gn_0_pointwise(2)*gn_0_pointwise(2) &
+                  + gn_0_pointwise(3)*gn_0_pointwise(3)
       else
 !        density
          call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
@@ -815,15 +823,6 @@ contains
             nr_points_on_this_proc = nr_points_batch
 
             call integrate()
-
-         i = 12 
-         write (*,*) 'debug, checking data copied in loop_over_batches'
-         write (*,*) '       point ',i
-         write (*,*) '           x ',rx(i)
-         write (*,*) '           y ',ry(i)
-         write (*,*) '           z ',rz(i)
-         write (*,*) '           w ',rw(i)
-
 
             deallocate(rx)
             deallocate(ry)

@@ -1,7 +1,6 @@
 
 module fde_nadd_derv
 
-      use dirac_cfg   ! why?
       use xcfun
       use interface_functional_read
       use xc_derv
@@ -32,8 +31,8 @@ module fde_nadd_derv
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
       character(len=80), save :: kefun_fde='kin_tf'
       character(len=80), save :: xcfun_fde='lda'
-!       character(len=80), save :: kefun_fde='kin_pw91'
-!       character(len=80), save :: xcfun_fde='pbe'
+!      character(len=80), save :: kefun_fde='kin_pw91'
+!      character(len=80), save :: xcfun_fde='pbe'
 
       character(len=80), save :: kefun_fde_alda='kin_tf'
       character(len=80), save :: xcfun_fde_alda='lda'
@@ -99,29 +98,33 @@ module fde_nadd_derv
 !   ----------------------------------------------------------------------------
          subroutine fde_initialize_nadd_functionals
 !   ----------------------------------------------------------------------------
-            integer :: i, order
+            integer :: i, order = 5
             logical :: parallel_fde
             
             parallel_fde = .false.
-            order = 0
-
             fun_is_automatic = .true. 
             
+            write (*,*) 'debug: will parse ke ',kefun_fde
             call parse_functional(kefun_fde,      fde_kef,      hfx_out, mu_out, beta_out, .false.)
-!            call parse_functional(kefun_fde_alda, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
+            write (*,*) 'debug: will parse xc ',xcfun_fde
             call parse_functional(xcfun_fde,      fde_xcf,      hfx_out, mu_out, beta_out, .false.)
-!            call parse_functional(xcfun_fde_alda, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
+            write (*,*) 'debug: will parse ke alda ',xcfun_fde_alda
+            call parse_functional(kefun_fde_alda, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
+            write (*,*) 'debug: will parse xc alda ',xcfun_fde_alda
+            call parse_functional(xcfun_fde_alda, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
 
-            call set_kin_fun_alda(fde_kef_alda)
-            call set_xc_fun_alda(fde_xcf_alda)             
+!           do i = 1, 20
+!               fde_set_functionals(i) = .true.
+!            enddo
 
-            do i = 1, 20
-               fde_set_functionals(i) = .true.
-            enddo
-
+!            ! we set them now so that we can verify whether or not they
+            write (*,*) 'debug, xcfun_set_functional for fde xcf',order
             call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
-            call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
+            write (*,*) 'debug, xcfun_set_functional for fde kef',order
             call xcfun_set_functional(fde_kef,      order, parallel_fde)
+            write (*,*) 'debug, xcfun_set_functional for fde xcf alda',order
+            call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
+            write (*,*) 'debug, xcfun_set_functional for fde kef alda',order
             call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
             
          end subroutine fde_initialize_nadd_functionals
@@ -133,8 +136,6 @@ module fde_nadd_derv
             character(len=80) :: id
 
             write(kefun_fde,'(A)') id
-            write (*,*) 'debug, nadd ke is ',id, kefun_fde
-            call parse_functional(kefun_fde, fde_kef,      hfx_out, mu_out, beta_out, .false.)
          end subroutine fde_set_nadd_kef
 
 
@@ -144,20 +145,13 @@ module fde_nadd_derv
             character(len=80) :: id
 
             write(xcfun_fde,'(A)') id 
-            write (*,*) 'debug, nadd xc is ',id, xcfun_fde
-            call parse_functional(xcfun_fde, fde_xcf,      hfx_out, mu_out, beta_out, .false.)
          end subroutine fde_set_nadd_xcf
 
 
 !   ----------------------------------------------------------------------------
          subroutine fde_set_nadd_all_alda
 !   ----------------------------------------------------------------------------
-            is_fdersp_alda = .true.
-
-             call set_kin_fun_alda(fde_kef)
-             call set_xc_fun_alda(fde_xcf)
-!            call parse_functional(kefun_fde_alda, fde_kef,      hfx_out, mu_out, beta_out, .false.)
-!            call parse_functional(xcfun_fde_alda, fde_xcf,      hfx_out, mu_out, beta_out, .false.)
+             is_fdersp_alda = .true.
          end subroutine fde_set_nadd_all_alda 
 
 
@@ -166,10 +160,12 @@ module fde_nadd_derv
 !   ----------------------------------------------------------------------------
             integer :: unit 
 
-            write(unit,'(A,A20)') ' * Non-additive KE functional : ',kefun_fde
-            write(unit,'(A,A20)') ' * Non-additive XC functional : ',xcfun_fde
-!            write(unit,'(A,A20)') '   if .ALDA set, wil use : (XC) ',xcfun_fde_alda
-!            write(unit,'(A,A20)') '                           (KE) ',kefun_fde_alda
+            write(unit,'(A,A20)') ' * Non-additive functional : (KE) ',kefun_fde
+            write(unit,'(A,A20)') '                             (XC) ',xcfun_fde
+            write(unit,'(A)') ' ' 
+            write(unit,'(A,A20)') '   if .RSPLDA set will use : (XC) ',xcfun_fde_alda
+            write(unit,'(A,A20)') '                             (KE) ',kefun_fde_alda
+            write(unit,'(A)') ' '
          end subroutine fde_print_nadd_functionals
 
 
@@ -199,14 +195,6 @@ module fde_nadd_derv
          integer :: i, j
 
          derv = 0.0d0
-
-         if (fde_set_functionals(order)) then
-            call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
-            call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
-            call xcfun_set_functional(fde_kef,      order, parallel_fde)
-            call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
-            fde_set_functionals(order) = .false.
-         endif
 
          if (.not.skip_xc_contribution) then
 

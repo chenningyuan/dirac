@@ -36,6 +36,8 @@ module fde_cfg
    public fde_get_import_info
    public fde_get_export_info
    public fde_get_files_info
+   
+   public parallel_fde
 
 #ifdef FOOBAR   
    public fde_what_to_do_with_vemb
@@ -67,14 +69,11 @@ module fde_cfg
 
    integer, save :: fde_print_level = 0
    real(kind=8), save :: fde_cfg_screening = 1e-8
-   ! options controlling other things
-   logical,save :: fde_update_vemb = .false.
-   logical,save :: fde_have_frozen_density = .false.
+   logical,save :: parallel_fde = .false.
 
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control
    type(fde_files),  save :: fde_f
-
 
    contains
    

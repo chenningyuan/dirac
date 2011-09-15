@@ -187,8 +187,6 @@ module fde_eval_dirac
 
          call alloc(work,wsize)
 
-         call set_pointer_fde_grid(gp)
-
          call emb_vc(dmat,             &
                      gp,               &
                      fde_active_elpot, &

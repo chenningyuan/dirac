@@ -211,7 +211,7 @@ C***********************************************************************
 C ***** cleaning up data stored in fde calculations ********************
 C***********************************************************************
 C
-      if (dirac_cfg_fde.or.dirac_cfg_fde_response) 
+      if (dirac_cfg_fde) 
      &   call fde_cleanup_data()
 
 
