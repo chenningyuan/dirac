@@ -3739,7 +3739,6 @@ C
         ENDDO
       ENDIF    
 C
-        stop 'End of test,,'
       CALL QEXIT('GTOVLT')
       RETURN
       END
