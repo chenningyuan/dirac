@@ -49,6 +49,11 @@ MODULE INTEREST_INTERFACE
 
   private
 
+  !> matrix dimensions
+     nrow = 0
+     ncol = 0
+  !> end
+
   !> definition of "constant" data type 
      type type_constant
           real(8) :: alpha2      !=(1/c)^2 
@@ -227,6 +232,10 @@ CONTAINS
       !write(6,'(2x,a)')    'label    atom   charge   prim   cont   L-basis   RKB     S-basis'
       !write(6,'(2x,70a1)') ('-',i=1,70)
       !write(6,'(2x,70a1)') ('-',i=1,70)
+
+       nrow = sum(gto(:)%cdegen)
+       ncol = sum(gto(:)%cdegen)
+
        write(6,*) 
        write(6,'(2x,a,i5  )') 'Total number of basis function shells:    ',size(gto)
        write(6,'(2x,a,i5  )') 'Total number of spherical basis functions:',sum(gto(:)%sdegen)
@@ -245,8 +254,6 @@ CONTAINS
 
     !> local
        integer              :: i, j 
-       integer              :: nrow
-       integer              :: nnrow
        real(8), allocatable :: Smat(:,:)
     !> end
 
@@ -255,22 +262,16 @@ CONTAINS
     !> end
 
 
-    nrow  = sum(gto(:)%cdegen) 
-    nnrow = nrow*nrow
-    allocate( Smat( nnrow, 2 ) ); Smat = 0.0d0
-
+    allocate( Smat( nrow*ncol, 2 ) ); Smat = 0.0d0
     call two_center_integrals( interest_overlap, Smat, nrow )
-
     call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )  !Re(A )
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
-
     do j=1,nrow
       do i=1,nrow
-        S(index(i,     j,     2*nrow)) = Smat(index(i,j,nrow),1) 
-        S(index(i+nrow,j+nrow,2*nrow)) = Smat(index(i,j,nrow),2) 
+        S(index(i,     j,     nrow*2)) = Smat(index(i,j,nrow),1) 
+        S(index(i+nrow,j+nrow,nrow*2)) = Smat(index(i,j,nrow),2) 
       enddo
     enddo
-
     deallocate( Smat )
 
   END SUBROUTINE
@@ -284,8 +285,6 @@ CONTAINS
 
     !> local
        integer              :: i 
-       integer              :: nrow
-       integer              :: nnrow
        real(8), allocatable :: Vmat(:,:)
     !> end
 
@@ -294,25 +293,19 @@ CONTAINS
     !> end
 
 
-    nrow  = sum(gto(:)%cdegen) 
-    nnrow = nrow*nrow
-    allocate( Vmat( nnrow, 5 ) ); Vmat = 0.0d0
-
+    allocate( Vmat( nrow*ncol, 5 ) ); Vmat = 0.0d0
     call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
-
     call symmetrize_matrix    (                                 A = Vmat(1,1), ida = nrow )  !Re(A )
     call symmetrize_matrix    ( factor = constant%alpha2/4.0d0, A = Vmat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,3), ida = nrow )  !Im(A') = (xy - yx)      
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,4), ida = nrow )  !Re(B') = (zx - xz)      
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,5), ida = nrow )  !Im(B') = (yz - zy)     
-
     !fixme: michal
     V(        1:  nnrow) = Vmat(1:nnrow,1)
     V(  nnrow+1:2*nnrow) = Vmat(1:nnrow,2)
     V(2*nnrow+1:3*nnrow) = Vmat(1:nnrow,3)
     V(3*nnrow+1:4*nnrow) = Vmat(1:nnrow,4)
     V(4*nnrow+1:5*nnrow) = Vmat(1:nnrow,5)
-
     deallocate( Vmat )
 
   END SUBROUTINE
