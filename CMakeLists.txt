@@ -302,3 +302,15 @@ add_custom_target(
     info_ext
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
 )
+
+if(VERBOSE_OUTPUT)
+add_custom_command(
+    TARGET dirac.x Experimental Nightly
+    POST_BUILD COMMAND 
+       execute_process(COMMAND make info_ext)
+    COMMENT flush out list of object sizes
+)
+endif()
+
+
+
