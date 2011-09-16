@@ -45,6 +45,7 @@ MODULE INTEREST_INTERFACE
   public initialize_interest 
   public two_electron_integrals
   public process_overlap_integrals 
+  public process_kinetic_energy_integrals 
   public process_nuclear_attraction_integrals
 
   private
@@ -276,6 +277,37 @@ CONTAINS
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
+!>
+  SUBROUTINE process_kinetic_energy_integrals( T ) 
+
+    !> input
+       real(8) :: T(*) 
+    !> end
+
+    !> local
+       integer              :: i, j 
+       real(8), allocatable :: Tmat(:,:)
+    !> end
+
+    !> external InteRest integral routines
+       external :: interest_overlap 
+    !> end
+
+
+    allocate( Tmat( nrow*ncol, 2 ) ); Tmat = 0.0d0
+    call two_center_integrals( interest_overlap, Tmat, nrow )
+    call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
+    do j=1,nrow
+      do i=1,nrow
+        T(index(i+nrow,j,     nrow*2)) = T(index(i+nrow,j,     nrow*2)) + Tmat(index(i,j,nrow),2) 
+        T(index(i,     j+nrow,nrow*2)) = T(index(i,     j+nrow,nrow*2)) + Tmat(index(i,j,nrow),2) 
+        T(index(i+nrow,j+nrow,nrow*2)) = T(index(i+nrow,j+nrow,nrow*2)) - Tmat(index(i,j,nrow),2) 
+      enddo
+    enddo
+    deallocate( Tmat )
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
 !> 
   SUBROUTINE process_nuclear_attraction_integrals( V ) 
  
@@ -284,7 +316,7 @@ CONTAINS
     !> end
 
     !> local
-       integer              :: i 
+       integer              :: i, j 
        real(8), allocatable :: Vmat(:,:)
     !> end
 
@@ -300,12 +332,13 @@ CONTAINS
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,3), ida = nrow )  !Im(A') = (xy - yx)      
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,4), ida = nrow )  !Re(B') = (zx - xz)      
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,5), ida = nrow )  !Im(B') = (yz - zy)     
-    !fixme: michal
-    !V(        1:  nnrow) = Vmat(1:nnrow,1)
-    !V(  nnrow+1:2*nnrow) = Vmat(1:nnrow,2)
-    !V(2*nnrow+1:3*nnrow) = Vmat(1:nnrow,3)
-    !V(3*nnrow+1:4*nnrow) = Vmat(1:nnrow,4)
-    !V(4*nnrow+1:5*nnrow) = Vmat(1:nnrow,5)
+    !do j=1,nrow
+    !  do i=1,nrow
+    !    V(index(i+nrow,j,     nrow*2)) = V(index(i+nrow,j,     nrow*2)) + Vmat(index(i,j,nrow),2) 
+    !    V(index(i,     j+nrow,nrow*2)) = V(index(i,     j+nrow,nrow*2)) + Vmat(index(i,j,nrow),2) 
+    !    V(index(i+nrow,j+nrow,nrow*2)) = V(index(i+nrow,j+nrow,nrow*2)) - Vmat(index(i,j,nrow),2) 
+    !  enddo
+    !enddo
     deallocate( Vmat )
 
   END SUBROUTINE

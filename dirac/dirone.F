@@ -704,6 +704,9 @@ C*****************************************************************************
       use x2cmod_cfg
       use x2c_utils, only:
      &    read_1fock_x2c
+#ifdef MOD_INTEREST
+      use interest_interface
+#endif
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -770,8 +773,11 @@ C     ****** Construct one-electron Fock matrix ******
 C     ************************************************
 C
        IF(MDIRAC) THEN
-C.........insert INTEREST ROUTINE Here
-C         The dimension of the Fock matrix is N2BBASXQ
+         !the dimension of the Fock matrix is n2bbasxq
+#ifdef MOD_INTEREST
+         call process_kinetic_energy_integrals( Fock )
+         call process_nuclear_attraction_integrals( Fock ) 
+#endif
        ELSE
          CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KONEIN,   N2BBASX,WORK,KFREE,LFREE)
