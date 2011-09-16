@@ -9,7 +9,7 @@ export PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/bin:$PATH
 export PATH=/home/ilias/bin/python_install/Python-2.7.1:$PATH
 export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_gfor_gcc_ILP64/lib:$LD_LIBRARY_PATH
 
-echo "Welcome to the DIRAC CDash buildup."
+echo -e "Welcome to the DIRAC CDash buildup - \c";date
 
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/QCH_Work/qch_softs/dirac_space/dirac-git-repo

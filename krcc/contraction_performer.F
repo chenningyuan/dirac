@@ -703,6 +703,7 @@ C IPERM_PARITY(IPERM,NELMNT)
 * Lasse 2011
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cc_scr2.inc"
@@ -731,7 +732,7 @@ C
      &    WORK(KLNMEX),WORK(KLNMK1),WORK(KLNML1),
      &    IOPINDX,NRANK,
      &    WORK(KLZ),WORK(KLZSCR),WORK(KLSTREO),
-     &    ISIGN,IFHM,INTEGRALS,N_TDL_MAX,
+     &    ISIGN,IFHM,INTEGRALS,
      &    WORK,KFREE,LFREE)
 *
       RETURN
@@ -760,7 +761,7 @@ C
      &           INM_CAAB_EX,INM_CAAB_K,INM_CAAB_L,
      &           IEXD1234_INDX,NRANK,
      &           IZ,IZSCR,ISTREO,
-     &           ISIGNG,IFHM,INTEGRALS,N_TDL_MAX,
+     &           ISIGNG,IFHM,INTEGRALS,
      &           WORK,KFREE,LFREE)
 *
 * Contract indeces of Operator O with indeces of 
@@ -833,9 +834,6 @@ C
 *. For intermediates with both strings batched
 *. Changed from squared to cubed by Lasse
       DIMENSION TSCR1(*),TSCR2(*)
-*. For an intermediate with only one string batched. Now allocated
-*. inside since problems with dimensioning. Lasse
-C      DIMENSION TSCR4(N_TDL_MAX), TSCR5(N_TDL_MAX),TSCR6(N_TDL_MAX)
 *. For a batch of coefficients for Operator
 *. Operator accessed as OP(EX,D2,D1) so
       DIMENSION OPSCR(*)
@@ -892,8 +890,6 @@ C      DIMENSION TSCR4(N_TDL_MAX), TSCR5(N_TDL_MAX),TSCR6(N_TDL_MAX)
         CALL WRT_SPOX_TP_CC_KRCC(IT1,1)
 *
       END IF
-      IF(NTEST.GE.100) 
-     &WRITE(6,*) ' N_TDL_MAX in OPCT1T2 ', N_TDL_MAX
       SIGNG = DFLOAT(ISIGNG)
 *. Symmetry of final type  
       IF(NTEST.GE.100) WRITE(6,*) ' IT1SM : ',IT1SM
@@ -1778,6 +1774,7 @@ C        ISM_A = IDBGMULT(ISM_C,ITSYM)
 * Jeppe Olsen, Oct 2000     
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "multd2h.inc"
 #include "csm.inc"
@@ -2267,7 +2264,6 @@ C          print*,'ISM(JGRP)',ISM(JGRP)
 #include "multd2h.inc"
 #include "csm.inc"
 #include "orbinp.inc"
-#include "cc_exc.inc"
 #include "symm.inc"
 *. Specific input
       INTEGER NS_CAAB(8,4)             
@@ -2996,6 +2992,7 @@ C      print*,'TI,TOPK',TI(1),TOPK(1)
 * a rainy day at HNIE, July 2002
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -3161,7 +3158,6 @@ C     INTEGER LS12_STR(8), IBS12_STR(8)
 * Change of phase of annihilations strings, Oct2000
 *
 #include "implicit.inc"
-#include "newccp.inc"
 *. Input
       INTEGER ICR(NCR),IAN(NAN)
       INTEGER ISTR_IN(NEL_IN)
@@ -3250,10 +3246,10 @@ C?   &    IANNI,IEL,ISTR_OUT(IEL),IAN(NAN-IANNI+1)
  1001 CONTINUE
 *. A bit on the sign : In LUCIA the order of the annihilation is actually 
 * descending !, find permutation sign
-      IF(I_USE_NEWCCP.EQ.0.AND.NAN.GT.1) THEN
-        NPERM = NAN*(NAN-1)/2
-        ISIGN = ISIGN*(-1)**NPERM
-      END IF
+C     IF(I_USE_NEWCCP.EQ.0.AND.NAN.GT.1) THEN
+C       NPERM = NAN*(NAN-1)/2
+C       ISIGN = ISIGN*(-1)**NPERM
+C     END IF
 *
       IF(NTEST.GE.100) THEN 
         IF(IZERO_STR.EQ.0) THEN
@@ -3711,6 +3707,7 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
 * Lasse 2011 
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"

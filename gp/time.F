@@ -310,6 +310,7 @@ C
 C     CALL HOSTNM(HSTNAM)
 C
       CALL GETENV('HOSTNAME',HSTNAM)
+      if (HSTNAM=="") HSTNAM="not found"
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #endif
@@ -322,6 +323,7 @@ C
 C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
 C     CALL hostnm_(HSTNAM)
       CALL hostnm(HSTNAM)
+      if (HSTNAM=="") HSTNAM="not found"
       WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
 C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
