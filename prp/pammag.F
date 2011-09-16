@@ -45,6 +45,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
+#include "dcbxlr.h"
 C
 
       PARAMETER (NTABLE = 15)
@@ -98,14 +99,12 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       ENDIF
       MODRDSUSLL = .FALSE.
 
-CMI     as the default, do not sum reorthonormalization terms 
-C     over negative("positronic") shells 
-      DOEPRN = .FALSE.
-C ... for the unrestricted kinetic balance sum by default
-C     reorthonormalization terms over positronic shells
-C ... when you want to change the DOEPRN default value in URKBAL,
-C      use the NOEPRN keyword (see below)
-      !IF (URKBAL) DOEPRN=.TRUE.
+! gosia: DOEPRN=true unless skipep is on
+      if (XLR_SKIPEP) then
+         DOEPRN = .FALSE.
+      else
+         DOEPRN = .TRUE.
+      end if
 
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
@@ -322,17 +321,11 @@ C ... call the routine in abacus/hergp.F
        IF (.NOT.DOEPRN) THEN
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over '//
-     & 'electronic shells (default for ee-LR rotations )'
-!        IF (URKBAL) WRITE(LUPRI,'(/1X,A)')
-!     &'...though the URKBAL scheme is on, the DOEPRN is .false.!'
+     & 'electronic shells'
        ELSE
          WRITE(LUPRI,'(/,1X,A)')
      & ': Reorthonormalization terms over both '//
-     & '"positronic" and electronic shells '//
-     &' (recommended as the default for ee+ep rotations in the LR) '
-        IF (.NOT.URKBAL) WRITE(LUPRI,'(1X,A,/,1X,A)')
-     & 'THIS IS WRONG FOR THE RESTRICTED KINETIC BALANCE SCHEME !',
-     & '------  This option is only experimental ! --------'
+     & 'positronic and electronic shells '
        ENDIF
 
        IF (SYMCON) THEN
