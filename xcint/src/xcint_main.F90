@@ -423,8 +423,11 @@ contains
 !        call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
 !        call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
 !radovan: hack - this is needed otherwise with rhs_direct we go out of the array
+         write (*,*) 'debug, xcfun_set_functional for xc xcf',max_response_order_mo
          call xcfun_set_functional(xc_fun,       max_response_order_mo, parallel_xc)
+         write (*,*) 'debug, xcfun_set_functional for xc xcf alda'
          call xcfun_set_functional(xc_fun_alda,  max_response_order_mo, parallel_xc)
+         write (*,*) 'debug, xcfun_set_functional for xc xcf xalda'
          call xcfun_set_functional(xc_fun_xalda, max_response_order_mo, parallel_xc)
       else
 #endif
@@ -438,8 +441,8 @@ contains
 #endif
 
 !     check whether gga code structure will be used
-      use_gga_qr = (fun_is_gga() .or. fun_is_tau_mgga())
-      use_gga_qi = (fun_is_gga() .or. fun_is_tau_mgga())
+      use_gga_qr = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
+      use_gga_qi = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
       if (response_order_mo > 0) then
          if (dft_cfg_alda_hs) use_gga_qr = .false.
          if (dft_cfg_alda_ha) use_gga_qi = .false.
@@ -965,7 +968,7 @@ contains
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
    do ipoint = 1, nr_points_on_this_proc
-
+   
       time_ao_start = second()
       call get_ao(1,          &
                   rx(ipoint), &
@@ -1009,7 +1012,7 @@ contains
          w(1) = rw(ipoint)
 
 #ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga()) then
+         if (fun_is_tau_mgga(xc_fun)) then
             call get_tau(tau,     &
                          0,       &
                          mat_dim, &
@@ -1022,7 +1025,7 @@ contains
 
 !       number of electrons
         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
-
+        
         time_derv_start = second()
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
@@ -1045,7 +1048,6 @@ contains
                                    alda_imag=dft_cfg_alda_ha, &
                                    xalda=dft_cfg_xalda,       &
                                    tau=tau)
-
 
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
@@ -1096,7 +1098,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
 #ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga()) then
+         if (fun_is_tau_mgga(xc_fun)) then
             u%tn(1) = derv(1, d0000010)
          end if
 #endif
@@ -1707,8 +1709,8 @@ contains
          interface_file_open = .false. 
          open(interface_file_unit,       &
 ! aspg debug
-!              file   = 'numerical_grid', &
-              file   = 'ADFGRID',        &
+             file   = 'numerical_grid', &
+!            file   = 'ADFGRID',        &
               status = 'unknown',        &
               form   = 'formatted',      &
               access = 'sequential')
@@ -1857,7 +1859,7 @@ contains
       if (calculate_qr) then
 
 #ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga()) then
+         if (fun_is_tau_mgga(xc_fun)) then
             call get_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
@@ -1909,7 +1911,7 @@ contains
         end if
 
 #ifdef MOD_UNRELEASED
-        if (fun_is_tau_mgga()) then
+        if (fun_is_tau_mgga(xc_fun)) then
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
@@ -1951,7 +1953,7 @@ contains
                    ao)
         end if
 #ifdef MOD_UNRELEASED
-        if (fun_is_tau_mgga()) then
+        if (fun_is_tau_mgga(xc_fun)) then
            call get_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
@@ -1976,7 +1978,7 @@ contains
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
 #ifdef MOD_UNRELEASED
-           if (fun_is_tau_mgga()) then
+           if (fun_is_tau_mgga(xc_fun)) then
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)

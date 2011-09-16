@@ -99,13 +99,14 @@ module xc_derv
 
 contains
 
-   function fun_is_lda()
+   function fun_is_lda(f)
+      type(functional) :: f
       logical :: fun_is_lda
 
       fun_is_lda = .false.
       if (fun_is_automatic) then
 #ifdef MOD_XCFUN
-         fun_is_lda = (xc_get_type(xc_fun%id) == 0)
+         fun_is_lda = (xc_get_type(f%id) == 0)
 #endif
       else
 #ifdef PRG_DIRAC
@@ -114,13 +115,14 @@ contains
       end if
    end function
 
-   function fun_is_gga()
+   function fun_is_gga(f)
+      type(functional) :: f
       logical :: fun_is_gga
 
       fun_is_gga = .false.
       if (fun_is_automatic) then
 #ifdef MOD_XCFUN
-         fun_is_gga = (xc_get_type(xc_fun%id) == 1)
+         fun_is_gga = (xc_get_type(f%id) == 1)
 #endif
       else
 #ifdef PRG_DIRAC
@@ -129,13 +131,14 @@ contains
       end if
    end function
 
-   function fun_is_tau_mgga()
+   function fun_is_tau_mgga(f)
+      type(functional) :: f
       logical :: fun_is_tau_mgga
 
       fun_is_tau_mgga = .false.
       if (fun_is_automatic) then
 #ifdef MOD_XCFUN
-         fun_is_tau_mgga = (xc_get_type(xc_fun%id) == 2)
+         fun_is_tau_mgga = (xc_get_type(f%id) == 2)
 #endif
       else
          fun_is_tau_mgga = .false.
@@ -270,12 +273,12 @@ contains
       do k = 1, block_length
          f%input(1, k) = r_0(k)
       end do
-      if (fun_is_gga()) then
+      if (fun_is_gga(f)) then
          do k = 1, block_length
             f%input(3, k) = z_0(k)
          end do
       end if
-      if (fun_is_tau_mgga()) then
+      if (fun_is_tau_mgga(f)) then
          do k = 1, block_length
             f%input(3, k) = z_0(k)
          end do
@@ -315,12 +318,12 @@ contains
          end if
 
          if (order > 0) then
-               if (fun_is_lda()) then
+               if (fun_is_lda(f)) then
                   derv(k, d1000000) = f%output(XC_D10, k)
-               else if (fun_is_gga()) then
+               else if (fun_is_gga(f)) then
                   derv(k, d1000000) = f%output(XC_D10000, k)
                   derv(k, d0010000) = f%output(XC_D00100, k)
-               else if (fun_is_tau_mgga()) then
+               else if (fun_is_tau_mgga(f)) then
                   derv(k, d1000000) = f%output(XC_D1000000, k)
                   derv(k, d0010000) = f%output(XC_D0010000, k)
                   derv(k, d0000010) = f%output(XC_D0000010, k)
@@ -332,14 +335,14 @@ contains
                if (do_alda_real) then
                   derv(k, d2000000) = f_alda%output(XC_D20, k)
                else
-                  if (fun_is_lda()) then
+                  if (fun_is_lda(f)) then
                      derv(k, d2000000) = f%output(XC_D20, k)
-                  else if (fun_is_gga()) then
+                  else if (fun_is_gga(f)) then
                      derv(k, d2000000) = f%output(XC_D20000, k)
                      derv(k, d1010000) = f%output(XC_D10100, k)
                      derv(k, d0020000) = f%output(XC_D00200, k)
                      derv(k, d0010000) = f%output(XC_D00100, k)
-                  else if (fun_is_tau_mgga()) then
+                  else if (fun_is_tau_mgga(f)) then
                      derv(k, d0010000) = f%output(XC_D0010000, k)
                      derv(k, d2000000) = f%output(XC_D2000000, k)
                      derv(k, d1010000) = f%output(XC_D1010000, k)
@@ -354,14 +357,14 @@ contains
                if (do_alda_imag) then
                   derv(k, d0200000) = f_alda%output(XC_D02, k)
                else
-                  if (fun_is_lda()) then
+                  if (fun_is_lda(f)) then
                      derv(k, d0200000) = f%output(XC_D02, k)
-                  else if (fun_is_gga()) then
+                  else if (fun_is_gga(f)) then
                      derv(k, d0200000) = f%output(XC_D02000, k)
                      derv(k, d0101000) = f%output(XC_D01010, k)
                      derv(k, d0002000) = f%output(XC_D00020, k)
                      derv(k, d0000100) = f%output(XC_D00001, k)
-                  else if (fun_is_tau_mgga()) then
+                  else if (fun_is_tau_mgga(f)) then
                      derv(k, d0000100) = f%output(XC_D0000100, k)
                      derv(k, d0200000) = f%output(XC_D0200000, k)
                      derv(k, d0101000) = f%output(XC_D0101000, k)
@@ -378,12 +381,12 @@ contains
                if (do_alda_real .or. do_alda_imag) then
                   call my_quit('get_functional_derv: xcfun alda qr not implemented')
                end if
-               if (fun_is_lda()) then
+               if (fun_is_lda(f)) then
                   derv(k, d2000000) = f%output(XC_D20, k)
                   derv(k, d0200000) = f%output(XC_D02, k)
                   derv(k, d1200000) = f%output(XC_D12, k)
                   derv(k, d3000000) = f%output(XC_D30, k)
-               else if (fun_is_gga()) then
+               else if (fun_is_gga(f)) then
                   derv(k, d0010000) = f%output(XC_D00100, k)
                   derv(k, d0000100) = f%output(XC_D00001, k)
                   derv(k, d2000000) = f%output(XC_D20000, k)
@@ -404,7 +407,7 @@ contains
                   derv(k, d0111000) = f%output(XC_D01110, k)
                   derv(k, d0030000) = f%output(XC_D00300, k)
                   derv(k, d0012000) = f%output(XC_D00120, k)
-               else if (fun_is_tau_mgga()) then
+               else if (fun_is_tau_mgga(f)) then
                   call my_quit('get_functional_derv: tau mgga qr not implemented')
                end if
          end if

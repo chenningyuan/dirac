@@ -24,6 +24,7 @@ module fde_integrate
 
    public integrate_fde
    public fde_get_nr_electrons_integrated
+   public fde_get_active_density
 
    real(8) :: fde_get_nr_electrons_integrated
 
@@ -133,6 +134,8 @@ module fde_integrate
 
 contains
 
+
+!   ----------------------------------------------------------------------------
     subroutine integrate_fde(fde_mat_dim,               &
                              fde_nz,                    &
                              fde_dmat_0,                &
@@ -274,8 +277,10 @@ contains
 !
 !     check whether gga code structure will be used
 !
-      use_gga_qr = (fde_xc_fun_is_gga())
-      use_gga_qi = (fde_xc_fun_is_gga())
+!      use_gga_qr = (fde_xc_fun_is_gga())
+!      use_gga_qi = (fde_xc_fun_is_gga())
+      use_gga_qr = (fun_is_gga(fde_xcf))
+      use_gga_qi = (fun_is_gga(fde_kef))
 
       if (response_order_mo > 0) then
          if (dft_cfg_alda_hs) use_gga_qr = .false.
@@ -287,10 +292,11 @@ contains
       end if
       
       write (6,*) 'debug, in integrate_fde: use_gga ',use_gga
-      write (6,*) '       fde_xc_fun_is_lda()       ',fde_xc_fun_is_lda()
-      write (6,*) '       fde_xc_fun_is_gga()       ',fde_xc_fun_is_gga()
-      write (6,*) '       fde_ke_fun_is_lda()       ',fde_ke_fun_is_lda()
-      write (6,*) '       fde_ke_fun_is_gga()       ',fde_ke_fun_is_gga()
+      write (6,*) '       fun_is_lda(fxc)       ',fun_is_lda(fde_xcf)
+      write (6,*) '       fun_is_gga(fxc)       ',fun_is_gga(fde_xcf)
+      write (6,*) '       fun_is_lda(fke)       ',fun_is_lda(fde_kef)
+      write (6,*) '       fun_is_gga(fke)       ',fun_is_gga(fde_kef)
+      write (6,*) '       is fde alda ?         ',is_fdersp_alda
       
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
@@ -337,19 +343,14 @@ contains
 
       call interface_mo_read()
 
-!#ifdef MOD_UNRELEASED
-!!     aspg, toying with having the frozen density and adfgrid available
-!!     for the respose calcs or otherwise...
-!      if (fde_have_frozen_density) then
-!         call FDE_testFrozenDensity()
-!      endif
-!#endif
 
 #ifdef DEBUG_XC
       write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
       fmat = 0.0d0
 #endif
 
+! aspg, 
+!     call fde_get_active_density(dmat, mat_dim, use_gga)
       call loop_over_batches()
 
 #ifdef PRG_DIRAC
@@ -397,7 +398,10 @@ contains
 
    end subroutine
 
+
+!   ----------------------------------------------------------------------------
    subroutine nullify_and_release()
+!   ----------------------------------------------------------------------------
 
       if (associated(dmat)) then
          nullify(dmat)
@@ -420,11 +424,11 @@ contains
 
    end subroutine
 
-   subroutine scale_density_matrices(f)
 
-!     --------------------------------------------------------------------------
+!   ----------------------------------------------------------------------------
+   subroutine scale_density_matrices(f)
+!   ----------------------------------------------------------------------------
       real(8) :: f
-!     --------------------------------------------------------------------------
 
       call dscal(mat_dim*mat_dim, f, dmat_0, 1)
       if (nr_dmat > 0) then
@@ -433,11 +437,12 @@ contains
 
    end subroutine
 
-   subroutine insert_half_phases()
 
-!     --------------------------------------------------------------------------
+!   ----------------------------------------------------------------------------
+   subroutine insert_half_phases()
+!   ----------------------------------------------------------------------------
       integer :: iz, im, iq
-!     --------------------------------------------------------------------------
+
 
       if (nz < 4) then
          if (nr_dmat > 0) then
@@ -463,62 +468,61 @@ contains
 
 
 
+! ------------------------------------------------------------------------------
+      subroutine integrate()
+! ------------------------------------------------------------------------------
+!        unperturbed density
+         real(8) :: n_0(max_block_length)
+!        unperturbed density gradient
+         real(8) :: gn_0_pointwise(3)
 
-   subroutine integrate()
-
-!     --------------------------------------------------------------------------
-!     unperturbed density
-      real(8) :: n_0(max_block_length)
-!     unperturbed density gradient
-      real(8) :: gn_0_pointwise(3)
-
-      real(8) :: gnn_0(max_block_length)
-      real(8) :: n_0_t(max_block_length)
-      real(8) :: gnn_0_t(max_block_length)
-      real(8) :: w(max_block_length)
-!     --------------------------------------------------------------------------
+         real(8) :: gnn_0(max_block_length)
+         real(8) :: n_0_t(max_block_length)
+         real(8) :: gnn_0_t(max_block_length)
+         real(8) :: w(max_block_length)
+!        --------------------------------------------------------------------------
 !     geometric business
-      real(8) :: r_t1(max_block_length)
-      real(8) :: r_t2(max_block_length)
+         real(8) :: r_t1(max_block_length)
+         real(8) :: r_t2(max_block_length)
 !     --------------------------------------------------------------------------
 !     fde and fde response
-      logical :: fde_resp_verbose =.false.
-      real(8) :: z0tt(3)
+!      logical :: fde_resp_verbose =.false.
+         real(8) :: z0tt(3)
 !     --------------------------------------------------------------------------
-      integer :: id, m
-      integer :: ii, ji
-      real(8) :: temp
-      real(8) :: block_threshold
-      real(8) :: rho13, rho_outer, rho_resp, f
-    integer :: ipoint
-    integer :: k
-      real(8) :: VT(3)
-    integer              :: derv_length, im, i
-    real(8), allocatable :: derv(:, :)
+         integer :: id, m
+         integer :: ii, ji
+         real(8) :: temp
+         real(8) :: block_threshold
+         real(8) :: rho13, rho_outer, rho_resp, f
+         integer :: ipoint
+         integer :: k
+         real(8) :: VT(3)
+         integer              :: derv_length, im, i
+         real(8), allocatable :: derv(:, :)
 
-    logical :: print_data_at_point
-    logical :: is_rsp_alda, skip_xc, skip_kin
+         logical :: print_data_at_point
 
-    real(8) :: n_b(3)
-    real(8) :: gnn_b(3)
-    real(8) :: gn_b(3, 3)
+         real(8) :: n_b(3)
+         real(8) :: gnn_b(3)
+         real(8) :: gn_b(3, 3)
 
-      logical :: un_above_threshold
-      logical :: us_above_threshold
-      logical :: ugn_above_threshold
-      logical :: ugs_above_threshold
-      logical :: utn_above_threshold
-      logical :: uts_above_threshold
-      logical :: us_lao_above_threshold
-      logical :: ugs_lao_above_threshold
+         logical :: un_above_threshold
+         logical :: us_above_threshold
+         logical :: ugn_above_threshold
+         logical :: ugs_above_threshold
+         logical :: utn_above_threshold
+         logical :: uts_above_threshold
+         logical :: us_lao_above_threshold
+         logical :: ugs_lao_above_threshold
 
-      real(8), allocatable :: ao(:, :)
-      real(8), allocatable :: buffer(:, :)
+         real(8), allocatable :: ao(:, :)
+         real(8), allocatable :: buffer(:, :)
 
-    type(fde_omega_prefactor) :: u
+         type(fde_omega_prefactor) :: u
 
-    allocate(u%n (      nr_fmat))
-    allocate(u%gn(   3, nr_fmat))
+
+         allocate(u%n (      nr_fmat))
+         allocate(u%gn(   3, nr_fmat))
 
 !   check what functional derivatives do we need
 !   ============================================
@@ -729,19 +733,22 @@ contains
     deallocate(u%n)
     deallocate(u%gn)
 
-   end subroutine
+   end subroutine integrate
 
-   subroutine report()
-    real(8) :: error_nr_electrons, fde_nr_electrons = 0
+   
+!   ----------------------------------------------------------------------------
+      subroutine report()
+!   ----------------------------------------------------------------------------
+         real(8) :: error_nr_electrons, fde_nr_electrons = 0
 
-      error_nr_electrons = nr_electrons_integrated - fde_nr_electrons
+         error_nr_electrons = nr_electrons_integrated - fde_nr_electrons
 
-      write(file_unit, *)
+         write(file_unit, *)
 
-      write(file_unit, '(3x, a, i9)')                            &
+         write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
             nr_points_total
-      write(file_unit, '(3x, a, i9)')                            &
+         write(file_unit, '(3x, a, i9)')                            &
             'number of grid points below density threshold  = ', &
             nr_points_total - nr_points_used
 
@@ -780,18 +787,20 @@ contains
                   time_integration, file_unit)
       write(file_unit, *)
 
-   end subroutine
+   end subroutine report
 
 
-
-
+!   ----------------------------------------------------------------------------
    function fde_get_nr_electrons_integrated()
+!   ----------------------------------------------------------------------------
       real(8) :: get_nr_electrons_integrated
       fde_get_nr_electrons_integrated = nr_electrons_integrated
-   end function
+   end function fde_get_nr_electrons_integrated
 
 
+!   ----------------------------------------------------------------------------
       subroutine loop_over_batches()
+!   ----------------------------------------------------------------------------
          real(8) :: dummy
          integer :: idummy
          integer :: ibatch
@@ -806,7 +815,6 @@ contains
 
 !        loop over batches
          do
-
             if (nr_points_batch < 0) exit
 
             allocate(rx(nr_points_batch))
@@ -834,33 +842,29 @@ contains
 
 !     end loop over batches
          end do
-                  
  999     continue
-
-      end subroutine
-
+      end subroutine loop_over_batches
 
 
-
-  subroutine lr(block_length,       &
-                mat_dim,            &
-                nz,                 &
-                nr_mat,             &
-                dmaterturbed,     &
-                isym,               &
-                ih,                 &
-                allow_nonhermitian, &
-                ao,               &
-                n_0,                &
-                gn_0_pointwise,               &
-                gnn_0,                &
-                w,                  &
-                is_gga_qr,          &
-                is_gga_qi,          &
-                buffer,             &
-                n,                  &
-                derv, u)
-
+!   ----------------------------------------------------------------------------
+      subroutine lr(block_length,       &
+                    mat_dim,            &
+                    nz,                 &
+                    nr_mat,             &
+                    dmaterturbed,       &
+                    isym,               &
+                    ih,                 &
+                    allow_nonhermitian, &
+                    ao,                 &
+                    n_0,                &
+                    gn_0_pointwise,     &
+                    gnn_0,              &
+                    w,                  &
+                    is_gga_qr,          &
+                    is_gga_qi,          &
+                    buffer,             &
+                    n,                  &
+                    derv, u)
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
@@ -963,6 +967,5 @@ contains
     end do
 
   end subroutine
-
 
 end module

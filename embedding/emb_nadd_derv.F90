@@ -19,6 +19,7 @@ module fde_nadd_derv
       public fde_xc_fun_is_gga
       public fde_ke_fun_is_lda
       public fde_ke_fun_is_gga
+      public is_fdersp_alda
 
       logical,save :: skip_kin_contribution = .false.
       logical,save :: skip_xc_contribution  = .false.
@@ -42,6 +43,7 @@ module fde_nadd_derv
       real(8) :: hfx_out, mu_out, beta_out
       
       contains
+
 
 !   ----------------------------------------------------------------------------
       function fde_xc_fun_is_lda()

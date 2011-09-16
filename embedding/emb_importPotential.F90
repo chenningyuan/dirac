@@ -55,7 +55,9 @@ module FDE_ImportPotentials
 !                                 a numerical operator on the grid 
 !
 !
+!   ----------------------------------------------------------------------------
          subroutine FDE_SaveAOPROPER_StaticEmbPot(comb,iprint)
+!   ----------------------------------------------------------------------------
  
             use memory_allocator
             use numoper_integrals

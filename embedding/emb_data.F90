@@ -25,6 +25,12 @@ module fde_data
    use fde_types
    use fde_cfg
    use fde_io
+   use interface_ao
+   use interface_mo
+   use ao_eval
+   use density_eval
+   use xc_max_block_length
+
 
    implicit none
 
@@ -38,6 +44,8 @@ module fde_data
    public fde_test_frozen_density
    public fde_import_frozen
    public fde_import_static
+   public fde_get_active_density
+   
 
    interface get_fde_grid_coord
       module procedure get_fde_grid_coords_single
@@ -49,9 +57,6 @@ module fde_data
       module procedure get_fde_grid_weight_block
    end interface get_fde_grid_weight
 
-!!!public fde_setFrozenN, fde_setFrozenGN, fde_setFrozenEP
-!!!public fde_setActiveEP
-!  public fde_setActiveN, fde_setActiveGN
 
 !
 ! variables 
@@ -79,7 +84,9 @@ module fde_data
 
    contains
 
+!   ----------------------------------------------------------------------------
       subroutine get_fde_grid_coords_single(i,x,y,z)
+!   ----------------------------------------------------------------------------
          integer, intent(in) :: i
          real(kind=8), intent (out) :: x, y, z
 
@@ -88,7 +95,10 @@ module fde_data
          z = fde_grid(3,i)
       end subroutine get_fde_grid_coords_single
 
+
+!   ----------------------------------------------------------------------------
       subroutine get_fde_grid_coords_block(first,last,x,y,z)
+!   ----------------------------------------------------------------------------
          integer, intent(in) :: first, last
          integer :: j, k 
          real(kind=8), intent (out) :: x(:), y(:), z(:)
@@ -103,14 +113,19 @@ module fde_data
       end subroutine get_fde_grid_coords_block
 
 
+!   ----------------------------------------------------------------------------
       subroutine get_fde_grid_weight_single(i,w)
+!   ----------------------------------------------------------------------------
          integer, intent(in) :: i
          real(kind=8), intent (out) :: w
 
          w = fde_grid(4,i)
       end subroutine get_fde_grid_weight_single
 
+
+!   ----------------------------------------------------------------------------
       subroutine get_fde_grid_weight_block(first,last,w)
+!   ----------------------------------------------------------------------------
          integer, intent(in) :: first, last
          integer :: j, k
          real(kind=8), intent (out) :: w(:)
@@ -123,28 +138,9 @@ module fde_data
       end subroutine get_fde_grid_weight_block
 
 
-!!!!!!!
-!  subroutine fde_data_set_active_n(i,n)
-!     integer, intent(in) :: i
-!     real(kind=8), intent(in) : n, gnx,gny,gnz
-!  end fde_data_set_active_n
-!
-!  subroutine fde_data_set_active_ngn(i,n,gnx,gny,gnz)
-!     integer, intent(in) :: i
-!     real(kind=8), intent(in) : n, gnx,gny,gnz
-!
-!     call fde_data_set_active_n(i,n)
-!     call fde_data_set_active_gn(i,gnx,gny,gnz)
-!
-!     fde_active_n(i) = n
-!     fde_active_gn(1,i) = gn(1)
-!     fde_active_gn(2,i) = gn(2)
-!     fde_active_gn(3,i) = gn(3)
-!
-!  end subroutine fde_data_set_active_ngn
-!!!!!!!
-
+!   ----------------------------------------------------------------------------
    subroutine fde_import_static
+!   ----------------------------------------------------------------------------
       integer :: file_unit
       character(len=60) :: file_name
       integer :: i
@@ -177,7 +173,9 @@ module fde_data
    end subroutine fde_import_static
 
 
+!   ----------------------------------------------------------------------------
    subroutine fde_import_frozen
+!   ----------------------------------------------------------------------------
       integer :: file_unit
       character(len=60) :: file_name
       integer :: i
@@ -216,7 +214,9 @@ module fde_data
    end subroutine fde_import_frozen
 
 
+!   ----------------------------------------------------------------------------
    subroutine fde_initialize_data
+!   ----------------------------------------------------------------------------
       if (.not.data_is_initialized) then
          data_is_initialized = .true.
          if (fde_grid_np > 0) then
@@ -232,7 +232,9 @@ module fde_data
    end subroutine fde_initialize_data
 
 
+!   ----------------------------------------------------------------------------
    subroutine fde_initialize_frozen_data
+!   ----------------------------------------------------------------------------
          call alloc(fde_vemb, fde_grid_np, id="fde_vemb")
          call alloc(fde_frozen_n,     fde_grid_np, id="fde_frozen_n")
          call alloc(fde_frozen_gn,    fde_grid_np,3, id="fde_frozen_gn")
@@ -245,7 +247,9 @@ module fde_data
    end subroutine fde_initialize_frozen_data
 
 
+!   ----------------------------------------------------------------------------
    subroutine fde_initialize_active_data
+!   ----------------------------------------------------------------------------
          call alloc(fde_active_n,     fde_grid_np, id="fde_active_n")
          call alloc(fde_active_gn,    fde_grid_np,3, id="fde_active_gn")
          call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
@@ -256,7 +260,9 @@ module fde_data
    end subroutine fde_initialize_active_data
    
 
+!   ----------------------------------------------------------------------------
    subroutine fde_cleanup_data
+!   ----------------------------------------------------------------------------
       if (data_is_initialized) then
          call dealloc(fde_grid)
          call fde_cleanup_active_data
@@ -265,7 +271,9 @@ module fde_data
    end subroutine fde_cleanup_data
 
 
+!   ----------------------------------------------------------------------------
    subroutine fde_cleanup_frozen_data
+!   ----------------------------------------------------------------------------
       call dealloc(fde_vemb)
       call dealloc(fde_frozen_n)
       call dealloc(fde_frozen_gn)
@@ -273,14 +281,18 @@ module fde_data
    end subroutine fde_cleanup_frozen_data
 
    
+!   ----------------------------------------------------------------------------
    subroutine fde_cleanup_active_data
+!   ----------------------------------------------------------------------------
       call dealloc(fde_active_n)
       call dealloc(fde_active_gn)
       call dealloc(fde_active_elpot)
    end subroutine fde_cleanup_active_data
 
 
+!   ----------------------------------------------------------------------------
    subroutine fde_test_frozen_density
+!   ----------------------------------------------------------------------------
       integer      :: point = 0
       real(kind=8) :: frozen_particle_number = 0.0
 
@@ -295,4 +307,86 @@ module fde_data
 
    end subroutine fde_test_frozen_density
 
+
+!   ----------------------------------------------------------------------------
+   subroutine fde_get_active_density(dmat, mat_dim, get_gradient)
+!   ----------------------------------------------------------------------------
+      real(kind=8), intent(in) :: dmat(*)
+      integer, intent(in)      :: mat_dim
+      logical, intent(in) :: get_gradient
+ 
+      real(kind=8) :: n_0(max_block_length)
+      real(kind=8) :: gn_0_pointwise(3)
+      real(8), allocatable :: ao(:, :)
+      real(8), allocatable :: buffer(:, :)
+      integer :: ipoint
+      integer :: i
+      integer :: nr_ao
+      integer :: max_ao_g_order, max_ao_m_order
+
+
+      max_ao_g_order = 0
+      if (get_gradient) then
+        max_ao_g_order = 1
+      end if
+     
+      max_ao_m_order = 0
+     
+      call ao_eval_init(max_ao_g_order, &
+                        max_ao_m_order, &
+                        .true.)
+                        
+      nr_ao = nr_ao_slices*nr_ao_cartesian
+      
+      call alloc(ao,     1, nr_ao, id="ao")
+      call alloc(buffer, 1, nr_ao, id="buffer")
+
+      ao     = 0.0d0
+      buffer = 0.0d0
+
+
+      fde_active_n  = 0.0d0
+      fde_active_gn = 0.0d0
+      
+      do ipoint = 1, fde_grid_np
+         
+!         time_ao_start = second()
+         call get_ao(1,          &
+                     fde_grid(ipoint,1), &
+                     fde_grid(ipoint,2), &
+                     fde_grid(ipoint,3), &
+                     ao,         &
+                     buffer)
+                     
+!         time_ao = time_ao + second() - time_ao_start
+
+!         time_density_start = second()
+         
+         if (need_ao_order(1, 0)) then
+!        density and density gradient
+            call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat, buffer, ao)
+         else
+!        density
+            call get_n(n_0(1), 0, mat_dim, dmat, buffer, ao)
+!           for mcscf/srdft also evaluate spin density here
+!          call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
+         end if
+
+         if ( n_0(1) > fde_cfg_screening ) then
+            fde_active_n(ipoint) = n_0(1)
+            if (get_gradient) then
+               fde_active_gn(1,ipoint) = gn_0_pointwise(1)
+               fde_active_gn(2,ipoint) = gn_0_pointwise(2)
+               fde_active_gn(3,ipoint) = gn_0_pointwise(3)
+            endif                     
+         endif
+
+!         time_density = time_density + second() - time_density_start
+
+      enddo
+      call dealloc(ao)
+      call dealloc(buffer)
+   end subroutine fde_get_active_density
+   
+   
 end module fde_data

@@ -118,8 +118,6 @@ contains
       integer                    :: u
 !     --------------------------------------------------------------------------
       
-      write(*,*) ' debug, line is ',line
-      
       write(*, '(a)') '* Using the automatic differentiation xc functional:'
       write(*, '(a)') '   (weight: functional)'
 
