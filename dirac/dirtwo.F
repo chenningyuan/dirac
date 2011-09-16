@@ -26,12 +26,10 @@ C  /* Deck twofck */
      &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Driver for the construction of the two-electron Fock matrix in SO-basis
+C     Driver for the construction of the two-electron Fock matrix 
 C     
 C
 C     Written by T.Saue - January 1995
-C     tsaue - Sep 3 1996    Extended to include parameter NFMAT, number of
-C                           Fock matrices
 C     
 C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
@@ -3499,7 +3497,7 @@ C  /* Deck diraof */
      &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Driver for direct SCF calculations
+C     Driver for direct SCF calculations in AO-basis
 C
 C     Written by T.Saue July 2 1995
 C     tsaue -    Sep 2 1996 Generalized to NFMAT 
@@ -3515,6 +3513,7 @@ C
       LOGICAL LBIT
 #include "maxorb.h"
 #include "aovec.h"
+#include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
@@ -3561,6 +3560,11 @@ C           IGTYP 2 will add also the SL (Gaunt) type integrals
 C
 CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
       IF(NBSYM.GT.1) THEN
+        IF(MDIRAC) THEN
+          IF(NBSYM.GT.1) THEN
+            CALL QUIT('DIRAOF: Dont know how to handle symmetry yet..')
+          ENDIF
+        ENDIF
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
 C
@@ -3645,7 +3649,13 @@ C  /* Deck dirao1 */
      &                  IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Driver for direct SCF calculations
+C     Driver for direct SCF calculations in AO-basis
+C
+C        FAO - Fock matrix in AO-basis
+C        DAO - density matrix in AO-basis
+C        IFCTYP - array indicating Fock-matrix type, see routine SETFCK
+C        ISYMOP - array indicating spatial symmetry, see routine SETFCK
+C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
       use quaternion_algebra
@@ -4766,9 +4776,9 @@ C aspg, timing
         ENDIF
       ELSE
 C
-C     **********************************************
-C     *****  C o n v e n t i o n a l    S C F  *****
-C     **********************************************
+C     ******************************************
+C     *****  D i s k - b a s e d    S C F  *****
+C     ******************************************
 C
         IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
      &       CALL QUIT('HFXFAC not implemented in CONSCF !')

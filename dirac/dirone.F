@@ -3540,10 +3540,14 @@ C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
       use memory_allocator
+#ifdef MOD_INTEREST
+      use interest_interface
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
+#include "dcbham.h"
 #include "dcbgen.h"
 #include "cbihr1.h"
 #include "dcbbas.h"
@@ -3552,47 +3556,57 @@ C
       CHARACTER*8 RTNLBL(2)
       real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLX')
+C
+      IF(MDIRAC) THEN
+        IF(NBSYM.GT.1) THEN
+          CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
+        ENDIF
+#ifdef MOD_INTEREST
+        call process_overlap_integrals( smat )
+#endif
+      ELSE
 C      
-C     Allocate integral buffer
-C     ========================
+C       Allocate integral buffer
+C       ========================
 C
-      call alloc(sbuf, NNBBASX)
-C
-C     Read integral from file
-C     =======================
-C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',sbuf,NNBBASX,
-     &            IPRONE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
-C
-C     Make full matrix
-C     ================
-C
-      CALL DSPTSI(NTBAS(0),SBUF,SMAT)
-C
-C     Memory deallocation
-C     ===================
-C
-      call dealloc(sbuf)
-C
-C     Reindex to sorted basis
-C     =======================
-C
-      CALL BUTOBS_no_work(SMAT,1)
-C
-C     Scale SS-block
-C     ==============
-C
-      IF(SSMETR.NE.D1) THEN
-        DO I = 1,NFSYM
-           JJ =  I2BASX(I,I) + (NFBAS(I,1) * NTBAS(0)) + NFBAS(I,1) + 1
-           DO J = 1, NFBAS(I,2)
-              CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
-              JJ = JJ + NTBAS(0)
-           ENDDO
-        ENDDO
+        call alloc(sbuf, NNBBASX)
+C       
+C       Read integral from file
+C       =======================
+C       
+        OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &           FILE='AOPROPER')
+        CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',sbuf,NNBBASX,
+     &              IPRONE)
+        CLOSE(LU1INT,STATUS = 'KEEP')
+C       
+C       Make full matrix
+C       ================
+C       
+        CALL DSPTSI(NTBAS(0),SBUF,SMAT)
+C       
+C       Memory deallocation
+C       ===================
+C       
+        call dealloc(sbuf)
+C       
+C       Reindex to sorted basis
+C       =======================
+C       
+        CALL BUTOBS_no_work(SMAT,1)
+C       
+C       Scale SS-block
+C       ==============
+C       
+        IF(SSMETR.NE.D1) THEN
+          DO I = 1,NFSYM
+             JJ = I2BASX(I,I)+(NFBAS(I,1)*NTBAS(0))+NFBAS(I,1)+1
+             DO J = 1, NFBAS(I,2)
+                CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
+                JJ = JJ + NTBAS(0)
+             ENDDO
+          ENDDO
+        ENDIF
       ENDIF
 C
       CALL QEXIT('GTOVLX')
@@ -3635,9 +3649,6 @@ C
       real(8), allocatable :: stri(:)
       real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLT')
-!#include "memint.h"
-CTROND
-      WRITE(6,*) 'TEST. IPRINT =',IPRINT
 C      
 C     Allocate integral buffer
 C     ========================

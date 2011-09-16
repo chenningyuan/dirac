@@ -369,7 +369,8 @@ C
      &        'Max',MXBBAS
         WRITE(LUPRI,'(/3X,2(A,I6,2X))') 'NNBBAST = ',NNBBAST,
      &        'NNBBASX ',NNBBASX
-         WRITE(LUPRI,'(/A)') '* Matrix offsets to symmetry  blocks (I2BBASX):'
+         WRITE(LUPRI,'(/A)') '* Matrix offsets to symmetry',
+     &                       ' blocks (I2BBASX):'
          WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
      &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
      &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)
