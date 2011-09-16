@@ -6,8 +6,8 @@ module file_units
    character(*), parameter, public :: interface_file_name_mo      = 'interface_mo'
    character(*), parameter, public :: interface_file_name_mo_coef = 'interface_mo_coef'
    integer,      parameter, public :: interface_file_unit = 137
-   logical                , public :: interface_file_exists
-   logical                , public :: interface_file_open
+   logical                , public :: interface_file_exists = .false.
+   logical                , public :: interface_file_open   = .false.
 
    private
 

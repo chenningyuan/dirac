@@ -664,6 +664,13 @@ for directory in directories_with_sources:
         source = string.replace(source, '\\', '/')  # fix cmake on Windows
         list_of_c_sources.append(source)
 
+# add compilation_info.F90 and git_revision_info.F90 unless
+# pamadm found them already
+if not 'gp/git_revision_info.F90' in list_of_free_fortran_sources:
+    list_of_free_fortran_sources.append('gp/git_revision_info.F90')
+if not 'gp/compilation_info.F90' in list_of_free_fortran_sources:
+    list_of_free_fortran_sources.append('gp/compilation_info.F90')
+
 # remove files never compiled (listed in dontbuild)
 list_of_c_sources = set(list_of_c_sources)
 list_of_c_sources = list_of_c_sources.difference(set(files_never_compiled))

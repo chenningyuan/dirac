@@ -595,6 +595,8 @@ C
         WRITE(LUPRI,'(1X,A,A)')
      &    '* Read RKB coefficients ',
      &    'and extended with complementary UKB space'
+        WRITE(LUPRI,'(3X,A,E9.2)')
+     &    ' Projection threshold: ',RKBIMP_PRJTHR
       ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN

@@ -4,6 +4,9 @@
 * Hamiltonian and the Intermediates.
 *
 *
+#include "implicit.inc"
+#include "ipoist8.inc"
+*
       DIMENSION WORK(*)
 *
 * 1. Find individual contractions
@@ -73,10 +76,11 @@
 * Perhaps the longest subroutine in the world. Lasse 2010
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "interm.inc"
-#include "ipoist8.inc"
 *
       DIMENSION WORK(*)
 *
@@ -2792,6 +2796,7 @@
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "interm.inc"
 *
       DIMENSION WORK(*)
@@ -2901,6 +2906,7 @@
 *
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
 *
 *

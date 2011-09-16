@@ -17,6 +17,7 @@
 * Lasse 2010
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "cgas.inc"
@@ -909,7 +910,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
-#include "tempint.inc"
+#include "ctccp.inc"
 *
       DIMENSION WORK(*)
 *
@@ -939,11 +940,9 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
      &     WORK(KLLSOBEX_M01),WORK(KLIBSOBEX_M01),LEN_M01_VEC_CC,
 * output   number of elements, offset, total length. Names needs to be
 * found
-     &     IDUM,MX_SBSTR_INT,
+     &     MX_SBSTR_INT,
 * seems to be dummy/not used
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-* all not in use
-     &     IDUM)
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM01,IMULTFAC*LEN_M01_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -972,9 +971,8 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
       CALL IDIM_TCC_KRCC(WORK(KINTM10),NINTER10,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M10),WORK(KLIBSOBEX_M10),LEN_M10_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM10,IMULTFAC*LEN_M10_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1003,9 +1001,8 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
       CALL IDIM_TCC_KRCC(WORK(KINTM02),NINTER02,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M02),WORK(KLIBSOBEX_M02),LEN_M02_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM02,IMULTFAC*LEN_M02_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1034,9 +1031,8 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
       CALL IDIM_TCC_KRCC(WORK(KINTM11),NINTER11,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M11),WORK(KLIBSOBEX_M11),LEN_M11_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM11,IMULTFAC*LEN_M11_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1065,9 +1061,8 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
       CALL IDIM_TCC_KRCC(WORK(KINTM12),NINTER12,ISYMINT,
      &     MX_ST_TSOSO_INT,MX_ST_TSOSO_BLK_INT,MX_TBLK_INT,
      &     WORK(KLLSOBEX_M12),WORK(KLIBSOBEX_M12),LEN_M12_VEC_CC,
-     &     IDUM,MX_SBSTR_INT,
-     &     IDUM,IDUM,-1,IDUM,IDUM,
-     &     IDUM)
+     &     MX_SBSTR_INT,
+     &     IDUM,IDUM,-1,IDUM,IDUM)
 *
       CALL MEMGET('REAL',KM12,IMULTFAC*LEN_M12_VEC_CC,
      &            WORK,KFREE,LFREE)
@@ -1126,6 +1121,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 * Lasse 2011
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -1190,6 +1186,7 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
 * Based on ANA_GENCCS_CC_KRCC just with more loops.
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "multd2h.inc"

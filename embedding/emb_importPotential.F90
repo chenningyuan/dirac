@@ -81,6 +81,7 @@ module FDE_ImportPotentials
             call FDE_ImportStaticPotential_FileOpen(fde_gridfile_unit)
 
             call alloc(a_oneint,nnbbasx)  
+            a_oneint = 0.0d0
             call NumOper_OneElOpMatrix(a_oneint,fde_gridfile_unit,doint,irrep_vemb)
 
             IF(IPRINT.GE.4) THEN

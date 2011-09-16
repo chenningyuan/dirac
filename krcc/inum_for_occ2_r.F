@@ -12,10 +12,11 @@
 * Jeppe Olsen, November 2000
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
-!#include "wrkspc.inc"
+#include "ctccp.inc"
 *
       DIMENSION WORK(*)
 *
