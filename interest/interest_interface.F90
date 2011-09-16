@@ -263,7 +263,7 @@ CONTAINS
 
     call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )  !Re(A )
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
-
+! TROND: fix here !
     S(      1:  nnrow) = Smat(1:nnrow,1)
     S(nnrow+1:2*nnrow) = Smat(1:nnrow,2)
 

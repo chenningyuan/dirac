@@ -2616,7 +2616,7 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
       CALL RFBSSMAT(LBL,.TRUE.,'GET_A_FAC',TMAT,ISIZE,LUBSS,IPRINT)
 
-      CALL GTOVLT(TBUF,D0)
+      CALL GTOVLT(TBUF,D0,IPRINT)
 
       CVAL2 = CVAL*CVAL
 
@@ -2764,7 +2764,7 @@ C
 #include "memint.h"
 
 C     Get AO_LL overlap matrix , S(LL), WITH SS part ZEROED, into VMAT
-      CALL GTOVLT(VMAT,D0)
+      CALL GTOVLT(VMAT,D0,IPRINT)
 
       IOFF = 1
       JOFFESH = 0
@@ -8062,9 +8062,9 @@ C#include "dcbham.h"
 
 C ... get full S matrix into TMAT
       IF (.NOT.Le) THEN
-        CALL GTOVLT(TMAT,D1)
+        CALL GTOVLT(TMAT,D1,IPRINT)
       ELSE
-        CALL GTOVLT(TMAT,D0)
+        CALL GTOVLT(TMAT,D0,IPRINT)
       ENDIF
 
 C ...  transform S to the MO's          :   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1

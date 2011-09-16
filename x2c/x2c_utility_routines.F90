@@ -1083,7 +1083,7 @@ contains
        if(task_id >= 0)then
 
 !        compute Sao_LL overlap matrix where the SS part is set to zero
-         call gtovlt(scr_mat1,val_d0)
+         call gtovlt(scr_mat1,val_d0,0)
 
 !        store matrix on file in "gerade/ungerade" format (if applicable)
          ioff_ovl = 1

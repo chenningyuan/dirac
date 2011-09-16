@@ -35,6 +35,9 @@ C
 C***********************************************************************
       use visual_cfg
       use x2cmod_cfg
+#ifdef MOD_INTEREST
+      use interest_interface
+#endif
 #ifdef MOD_CAP
       USE Memory
 #endif
@@ -83,6 +86,9 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
+#ifdef MOD_INTEREST
+      IF(MDIRAC) call initialize_interest
+#endif
 #ifdef MOD_ECP
       IF (ECPCALC) CALL ECPINT(WORK,LWORK)
 #endif

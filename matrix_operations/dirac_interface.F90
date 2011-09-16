@@ -816,7 +816,6 @@ contains
     if (.not. isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
-!   call gtovlt(S%elms, ssmtrc)
     call gtovlx(S%elms, ssmtrc)
 
   end subroutine

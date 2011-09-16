@@ -2079,7 +2079,7 @@ C
 C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
-      CALL GTOVLT(SMAT,D1)
+      CALL GTOVLT(SMAT,D1,IPRINT)
 C
 C     Generate IRKB array for use in RKBLOW
 C     =====================================
@@ -3594,7 +3594,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gtovlt */
-      SUBROUTINE GTOVLT(SMAT,SSMETR)
+      SUBROUTINE GTOVLT(SMAT,SSMETR,IPRINT)
 C*****************************************************************************
 C
 C     Get overlap matrix from file AOPROPER
@@ -3608,7 +3608,9 @@ CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
       use memory_allocator
+#ifdef MOD_INTEREST
       use interest_interface
+#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3628,6 +3630,8 @@ C
       real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLT')
 !#include "memint.h"
+CTROND
+      WRITE(6,*) 'TEST. IPRINT =',IPRINT
 C      
 C     Allocate integral buffer
 C     ========================
@@ -3639,9 +3643,9 @@ C
         IF(NBSYM.GT.1) THEN
           CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
         ENDIF
-        call initialize_interest              !fixme michal: should be move to another place ...
+#ifdef MOD_INTEREST
         call process_overlap_integrals( smat )
-        stop
+#endif
       ELSE
         call alloc(sbuf, n2bbasx)
         call alloc(stri, nnbbasx)
@@ -3701,6 +3705,24 @@ C
         ENDDO
       ENDIF
 C
+C     Print section
+C     =============
+C
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('GTOVLT: Overlap (metric) matrix:',-1)
+        IOFF = 1
+        DO I = 1,NFSYM
+        IF(NFBAS(I,0).GT.0) THEN
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &     '* Fermion ircop no.',I,'/',NFSYM   
+          CALL PRQMAT(SMAT(IOFF),NFBAS(I,0),NFBAS(I,0),
+     &                NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),LUPRI)
+          IOFF = IOFF + N2BAS(I)
+        ENDIF
+        ENDDO
+      ENDIF    
+C
+        stop 'End of test,,'
       CALL QEXIT('GTOVLT')
       RETURN
       END
