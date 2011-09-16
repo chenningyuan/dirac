@@ -47,7 +47,7 @@
 #include "symm.inc"
 #include "csm.inc"
 *
-      NTEST = 10
+      NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
 *. Well we first need to get the info from dirac common blocks
       CALL SYM_INF_DIRAC
@@ -624,7 +624,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
         continue
       END IF
 *
-      NTEST = 100
+      NTEST = 00
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Symmetry Information from GET_DBGSYM'
@@ -830,7 +830,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
         Call Abend1( 5 )
       END IF
 *
-      NTEST = 10
+      NTEST = 0
       NTEST = MAX(IPRNT,NTEST)
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' OSPIR speaking '
@@ -900,7 +900,7 @@ C         IISM = IOSPIR(ISM,IRREP)
           NOB = NOB + NSHPIR(IRREP)
   100 CONTINUE
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.NE.0) THEN
          WRITE(6,*) ' SHTOOB Speaking '
          WRITE(6,*) ' =============== '
@@ -993,7 +993,7 @@ C         IISM = IOSPIR(ISM,IRREP)
 *
 *. 1:  Construct ISFTO, ITFTO, IREOST,IREOTS,NOBPTS,IOBPTS
 *
-      NTEST = 10
+      NTEST = 0
       NTEST = MAX(IPRNT,NTEST)
 *
       if (NTEST.ge.10) then
@@ -1115,7 +1115,7 @@ C         IISM = IOSPIR(ISM,IRREP)
 *. Output
 #include "cstate.inc"
 *
-      NTEST = 100
+      NTEST = 00
       NTEST = MAX(NTEST,IPRNT)
 *
       if (NTEST.ge.10) then
@@ -1421,7 +1421,7 @@ C       MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
   190   CONTINUE
   200 CONTINUE
 *
-      NTEST = 10
+      NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.GE.10) THEN
          WRITE(6,*) ' ADASX '
@@ -1616,7 +1616,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
      &              MNMLCI,MXMLCI,NMLCI,
      &              MXMLDX,MNMLDX,NMLDX
 *
-      NTEST = 10
+      NTEST = 0
       NTEST = MAX(IPRNT,NTEST)
 *. Inversion symmetry
       IF( INVCEN .EQ. 0 ) THEN
@@ -1816,7 +1816,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.10) THEN
          WRITE(6,*)  ' OCCLS in action '
          WRITE(6,*) ' =================='
@@ -2514,7 +2514,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
       DIMENSION IBLTP(*)
 *
       CALL QENTER('NGASD')
-      NTEST = 1000
+      NTEST = 000
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' NGASDT speaking'
         WRITE(6,*) ' ==============='
@@ -2550,7 +2550,9 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
           END IF
           DO 200 IATP = 1, NOCTPA
            IF(ISYM.EQ.1) THEN
-             MXBTP = IATP
+C Lasse change
+C            MXBTP = IATP
+             MXBTP = MIN(IATP,NOCTPB)
            ELSE
              MXBTP = NOCTPB
            END IF
@@ -2567,6 +2569,8 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              IF(IOCOC(IATP,IBTP).EQ.1) THEN
 *. Size of unpacked block
                LTTSUP =  LTSSA*NSSOB(IBSM,IBTP)
+C              print*,'LTTSUP,LTSSA,NSSOB(IBSM,IBTP),IBSM,IBTP',
+C    &                 LTTSUP,LTSSA,NSSOB(IBSM,IBTP),IBSM,IBTP
 *. Size of packed block
                IF(ISYM.EQ.0.OR.IATP.NE.IBTP) THEN
                  LTTSBL = LTSSA*NSSOB(IBSM,IBTP)
@@ -2612,11 +2616,11 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
 #include "cgas.inc"
 #include "gasstr.inc"
 *
-      print*,'enter GET_GASOCC_KRCC'
-      print*,'JCMBSPC',JCMBSPC
-      NTEST = 10
+C     print*,'enter GET_GASOCC_KRCC'
+C     print*,'JCMBSPC',JCMBSPC
+      NTEST = 0
       NELTOT2 = IGSOCCX(NGAS,2,JCMBSPC)
-      print*,'NELTOT2',NELTOT2
+C     print*,'NELTOT2',NELTOT2
       DO IGAS=1,NGAS
         IDIFF = IGSOCCX(IGAS,2,JCMBSPC) - IGSOCCX(IGAS,1,JCMBSPC)
         IF(IDIFF.eq.0.and.IGAS.ne.1) THEN
@@ -2720,12 +2724,10 @@ C
 *. Output
 *
 *  Scratch
-      print*,'NIRR_DG',NIRR_DG
       do IRREP=1,NIRR_DG,1
          NBSPFSM(IRREP) = 0
          NUSPFSM(IRREP) = 0
       end do
-      print*,'DOUGRP',DOUGRP
 *
       if (DOUGRP.eq.1) then
 *=======
@@ -2868,7 +2870,7 @@ C#include "wrkspc.inc"
       INTEGER NBLK_MS2(*), IBLK_MS2(*)
       INTEGER NBAT_MS2(*), IBAT_MS2(*)
 *
-      NTEST = 1000
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' =================== '
@@ -3287,7 +3289,7 @@ C     end do
 #include "crun.inc"
 #include "cgas.inc"
 *
-      NTEST = 10
+      NTEST = 0
       NAELRF  = (MK2REF + NACTEL)/2
       NBELRF  = NACTEL - NAELRF
       NELEC(1) = NAELRF
@@ -3401,11 +3403,6 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
 *
 * A more recent code without assuming that the hole spaces
 * occur first ( for the QD project)
-       print*,'ISPC ',ISPC
-       CALL IWRTMA(IGSOCCX(1,1,ISPC),1,NGAS,1,NGAS)
-      DO I=1,NGAS
-        print*,'NGSOBT(I),I',NGSOBT(I),I
-      END DO
       NELECTOT = 0
       DO IGAS = 1, NGAS
 *. Minimum number of electrons in this space
@@ -3492,7 +3489,7 @@ C      print*,'NEL_AL,NEL_BE',NEL_AL,NEL_BE
       END DO
 *
 
-      NTEST = 1000
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' CC division of orbitals '
         WRITE(6,*) ' ======================= '
@@ -3589,7 +3586,7 @@ C End Lasse
         MX_AAEXC = NVAL
       END IF
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
 *
         WRITE(6,*) ' Allowed types of active-active excitations '
@@ -3662,7 +3659,7 @@ C End Lasse
       INTEGER IOCMIN(MXPNGAS),IOCMAX(MXPNGAS),IREFOCCLSE(MXPNGAS)
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
-      NTEST = 1000
+      NTEST = 000
       IF(NTEST.GE.100) THEN
          WRITE(6,*)  ' OCCLS in action '
          WRITE(6,*) ' =================='
@@ -3672,8 +3669,6 @@ C End Lasse
       DO IGAS = 1, NGAS
         KMIN = IGSOCCX(IGAS,1,ICMBSPC(1,ICISPC))
         KMAX = IGSOCCX(IGAS,2,ICMBSPC(1,ICISPC))
-        print*,'ngas,kmin,kmax',ngas,kmin,kmax
-        print*,'ICMBSPC(1,ICISPC)',ICMBSPC(1,ICISPC)
         DO JSPC = 2, LCMBSPC(ICISPC)
           LSPC = ICMBSPC(JSPC,ICISPC)
           KMIN = MIN(KMIN, IGSOCCX(IGAS,1,LSPC))
@@ -3786,9 +3781,6 @@ C Find reference OCCLSE
               IREFOCCLSE(IGAS) = IOCMAX(IGAS) - IOCMAX(IGAS-1)
             END DO
             IREFOCCLSE(NGAS) = 0
-C           DO II=1,NGAS
-C             print*,'IREFOCCLSE,IGAS',IREFOCCLSE(II),II
-C           END DO
 C Find current mixed excitation
             IMIX = IREFOCCLSE(1) - IOC(1)
             IF(IMIX.GE.1) THEN
@@ -3966,7 +3958,7 @@ C?    WRITE(6,*) ' TP_OBEX2 : MX_AAEXC ', MX_AAEXC
 *
 * IEXTP_TO_OCCLS is map from orbital excitation type to occupation
 * class for CI coefficients
-      NTEST = 100
+      NTEST = 00
       NTEST = MAX(NTEST,IPRCC)
       MX_NCREA = 0
       MX_NANNI = 0
@@ -4113,7 +4105,7 @@ C#include "wrkspc.inc"
 *. Local scratch for occ of reference alpha and beta
       INTEGER IREF_AL(MXPNGAS),IREF_BE(MXPNGAS)
 *
-      NTEST = 100
+      NTEST = 00
       NTEST = MAX(NTEST,IPRDIA)
 *
       IDUM = 0
@@ -4146,19 +4138,12 @@ Cori  MX_SOEX_BLK = IBION(MX_OPS,MX_UP)
         MX_SOEX_BLK_TEMP = IBION(MX_OPS/2,TEMP)
         MX_SOEX_BLK = MX_SOEX_BLK + MX_SOEX_BLK_TEMP
       END DO
-C      print*,'MX_SOEX_BLK,MX_OPS',MX_SOEX_BLK,MX_OPS
 Cori      CALL MEMMAR(KLSOEX ,MX_SOEX_BLK*MX_OPS,'ADDL  ',2,'SOEXBL')
 C
 C
 C     CHECK IF THIS IS OK FOR OPEN SHELL!!!!!
 C
 C
-C     print*,'MX_SOEX_BLK,MX_OPS,NMS2VAL',MX_SOEX_BLK,MX_OPS,NMS2VAL
-C     print*,'MX_SOEX_BLK*MX_OPS*NMS2VAL*2*40',
-C    &        MX_SOEX_BLK*MX_OPS*NMS2VAL*2*40
-      
-C     CALL MEMMAR(KLSOEX,MX_SOEX_BLK*MX_OPS*NMS2VAL*2*40,
-C    &            'ADDL  ',2,'SOEXBL')
       CALL MEMGET('REAL',KLSOEX,MX_SOEX_BLK*MX_OPS*NMS2VAL*2*40,
      &            WORK,KFREE,LFREE)
       CALL MEMCHK_KRCC(WORK)
@@ -4367,7 +4352,7 @@ C?   &                 ISOX_TO_OX(ISOX)
         NSOX_FOR_OCCLS(IOCCLS) = N
       END DO
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' spin-orbital excitations to occupations '
         DO IOCCLS = 1, NOCCLS
@@ -4440,7 +4425,6 @@ C      CALL ISETVC(ISPOBEX_PAIRS,IZERO,NSPOBEX_TP)
           CALL ICOPVE(IABFLIP,ISPOBEX_TP(1,NSPOBEX_TPX),4*NGAS)
           ISPOBEX_PAIRS(ITP) = NSPOBEX_TPX
           ISPOBEX_PAIRS(NSPOBEX_TPX) = ITP
-          print*,'NSPOBEX_TPX',NSPOBEX_TPX
          END IF
         END IF
 * End Lasse addition
@@ -4449,7 +4433,7 @@ C      CALL ISETVC(ISPOBEX_PAIRS,IZERO,NSPOBEX_TP)
       END IF
       END DO
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Table of paired spin-orbital excitations '
 C        CALL IWRTMA(ISPOBEX_PAIRS,1,NSPOBEX_TP,1,NSPOBEX_TP)
@@ -4519,7 +4503,7 @@ C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX_CC : NSPOBEX_TP = ', NSPOBEX_TP
       END DO
 *     ^ End of loop over IAB
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.3) THEN
        WRITE(6,*) ' Number of alpha-excitation operators ', NAOBEX_TP
        WRITE(6,*) ' Number of beta-excitation operators ',  NBOBEX_TP
@@ -4639,7 +4623,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END DO
       END DO
 *
-      NTEST = 1000
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
       END IF
@@ -4709,7 +4693,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       INTEGER ITSOSO_TP(4*NGAS,NTSOSO_TP)
       DO J=1,4*NGAS
       DO I = 1,NTSOSO_TP
-        print*,'ITSOSO_TP',ITSOSO_TP(J,I)
+        WRITE(6,*),'ITSOSO_TP',ITSOSO_TP(J,I)
       END DO
       END DO
       END
@@ -4748,7 +4732,7 @@ C#include "wrkspc.inc"
 *.Output : Length of each type and offset for each type
       INTEGER LTSOSO_TP(NTSOSO_TP),IBTSOSO_TP(NTSOSO_TP)
 *
-      NTEST = 000
+      NTEST = 0005
       NTEST = MAX(NTEST,IPRCC)
 *
       IF(NTEST.GE.100) THEN
@@ -4765,6 +4749,7 @@ C#include "wrkspc.inc"
 *
       DO ITSS_TP = 1, NTSOSO_TP
        IF(NTEST.GE.100) WRITE(6,*) ' ITSS_TP = ', ITSS_TP
+       IF(NTEST.GE.100) CALL WRT_SPOX_TP_CC_KRCC(ITSOSO_TP(1,ITSS_TP),1)
 *. Occupation to group translation
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+0*NGAS,ITSS_TP),ICA_GRP,1)
        CALL OCC_TO_GRP_KRCC(ITSOSO_TP(1+1*NGAS,ITSS_TP),ICB_GRP,1)
@@ -4931,7 +4916,7 @@ C     END IF
         CALL FIND_ALL_ABOBEX(INI,NGAS,WORK(KLBOBEX_CC),
      &                       NBOBEX_TP,WORK(KLBOBEX_KRCC),LENB_KRCC)
         CALL MEMCHK_KRCC(WORK)
-      END IF  
+      END IF 
 *
 * Values
 *
@@ -4981,7 +4966,6 @@ C     END IF
 *
 * Allocate permanent array
 *
-      print*,'NINTER10',NINTER10
       CALL MEMGET('INTE',KINTM10,4*NGAS*NINTER10,WORK,KFREE,LFREE)
 *
 * Allocate a few dummy arrays
@@ -5170,7 +5154,6 @@ C     END IF
 *
       CALL MEMCHK_KRCC(WORK)
       CALL MEMREL('INT11',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
-      print*,'20interme'
 *
 * Setup (2,0)
 *
@@ -5444,9 +5427,9 @@ C     END IF
       IPARTBIDENT = 0
       NINTER = 0
       IALLOWIDENT = 0
-      print*,'start'
-      print*,IHOLEA(1,1),IHOLEA(2,1)
-      print*,IHOLEB(1,1),IHOLEB(2,1)
+C     print*,'start'
+C     print*,IHOLEA(1,1),IHOLEA(2,1)
+C     print*,IHOLEB(1,1),IHOLEB(2,1)
 *
 * Now distribute IH number of holes in IHOLEATOT + IHOLEBTOT number of GAS
       IF(IH.GE.1) THEN
@@ -5509,20 +5492,20 @@ C     END IF
       END IF
 *
 * Now create the intermediate supergroups
-      print*,'NAOBEX_TP,NBOBEX_TP',NAOBEX_TP,NBOBEX_TP
-      print*,'IPARTATOT,IPARTBTOT',IPARTATOT,IPARTBTOT
-      print*,IPARTICLEA(1,1),IPARTICLEA(2,1)
-      print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
-      print*,'IHOLEATOT,IHOLEBTOT',IHOLEATOT,IHOLEBTOT
-      print*,IHOLEA(1,1),IHOLEA(2,1)
-      print*,IHOLEB(1,1),IHOLEB(2,1)
+C     print*,'NAOBEX_TP,NBOBEX_TP',NAOBEX_TP,NBOBEX_TP
+C     print*,'IPARTATOT,IPARTBTOT',IPARTATOT,IPARTBTOT
+C     print*,IPARTICLEA(1,1),IPARTICLEA(2,1)
+C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
+C     print*,'IHOLEATOT,IHOLEBTOT',IHOLEATOT,IHOLEBTOT
+C     print*,IHOLEA(1,1),IHOLEA(2,1)
+C     print*,IHOLEB(1,1),IHOLEB(2,1)
       DO IAOBEX =1,NAOBEX_TP
         DO IBOBEX =1,NBOBEX_TP
 * List the five cases of (P,H)
 C     print*,IPARTICLEA(1,1),IPARTICLEA(2,1)
 C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
-      print*,IHOLEA(1,1),IHOLEA(2,1)
-      print*,IHOLEB(1,1),IHOLEB(2,1)
+C     print*,IHOLEA(1,1),IHOLEA(2,1)
+C     print*,IHOLEB(1,1),IHOLEB(2,1)
           IF(IH.EQ.0.AND.IP.EQ.1) THEN
             CALL IH0IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
      &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),
@@ -5664,7 +5647,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5672,7 +5655,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -5710,7 +5693,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5718,7 +5701,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -5756,7 +5739,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5764,7 +5747,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -5829,7 +5812,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                           IPARTICLEB(IGAS,IBP)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5837,7 +5820,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -5875,7 +5858,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5883,7 +5866,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -5921,7 +5904,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
      &                           IPARTICLEB(IGAS,IBP)   +
      &                           IPARTICLEB(IGAS,IBP2)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5929,7 +5912,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -6010,7 +5993,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
               ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
             END DO
-            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C           CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
             CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
             IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6018,7 +6001,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               IF(IINI.EQ.1) THEN
 * Store super group
                 CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
               END IF
             END IF
           END DO
@@ -6046,7 +6029,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                             IPARTICLEB(IGAS,IBP)
             END DO
-            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C           CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
             CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
             IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6054,7 +6037,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               IF(IINI.EQ.1) THEN
 * Store super group
                 CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
               END IF
             END IF
           END DO
@@ -6104,7 +6087,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
               ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
             END DO
-            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C           CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
             CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
             IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6112,7 +6095,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               IF(IINI.EQ.1) THEN
 * Store super group
                 CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
               END IF
             END IF
           END DO
@@ -6140,7 +6123,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                             IPARTICLEB(IGAS,IBP)
             END DO
-            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C           CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
             CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
             IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6148,7 +6131,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               IF(IINI.EQ.1) THEN
 * Store super group
                 CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
               END IF
             END IF
           END DO
@@ -6198,7 +6181,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
               ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
             END DO
-            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C           CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
             CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
             IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6206,7 +6189,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               IF(IINI.EQ.1) THEN
 * Store super group
                 CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
               END IF
             END IF
           END DO
@@ -6234,7 +6217,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                             IPARTICLEB(IGAS,IBP)
             END DO
-            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C           CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
             CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
             IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6242,7 +6225,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
               IF(IINI.EQ.1) THEN
 * Store super group
                 CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C               CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
               END IF
             END IF
           END DO
@@ -6315,7 +6298,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6323,7 +6306,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -6361,7 +6344,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                           IPARTICLEB(IGAS,IBP)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6369,7 +6352,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO                   
@@ -6407,7 +6390,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
           END DO
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6415,7 +6398,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -6453,17 +6436,15 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                           IPARTICLEB(IGAS,IBP)
           END DO
-          print*,' 1hole 1part'
-          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C         CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
           CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
-          print*,'IANSWER',IANSWER
           IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
             NINTER = NINTER + 1
             IF(IINI.EQ.1) THEN
 * Store super group
               CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C             CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
             END IF
           END IF
         END DO
@@ -6512,7 +6493,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
           ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
         END DO
-        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
         CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
         IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6520,7 +6501,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
           IF(IINI.EQ.1) THEN
 * Store super group
             CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
       END DO
@@ -6544,7 +6525,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
         END DO
-        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
         CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
         IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6552,7 +6533,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
           IF(IINI.EQ.1) THEN
 * Store super group
             CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
       END DO
@@ -6600,7 +6581,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Annihilator Beta
           ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
         END DO
-        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
         CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
         IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6608,7 +6589,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
           IF(IINI.EQ.1) THEN
 * Store super group
             CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
       END DO
@@ -6632,7 +6613,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
             ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
      &                           IPARTICLEB(IGAS,IB)
         END DO
-        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+C       CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
         CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
         IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -6640,7 +6621,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
           IF(IINI.EQ.1) THEN
 * Store super group
             CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
-            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
       END DO
@@ -6675,6 +6656,8 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 *
       INTEGER IOP(4*NGAS)
 *
+      NTEST = 00
+*
       IANSWER = 0
 *
 * Conservation of particle number
@@ -6687,7 +6670,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
      &          ICONS
       END DO
       IF(ICONS.NE.0) RETURN
-      print*,' we have conservation'
+      IF(NTEST.EQ.100) WRITE(6,*),' we have conservation '
 *
 * Particle rank cannot excede max excitation level
       IPART = 0
@@ -6699,7 +6682,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
      &          IPART
       END DO
       IF(IPART.GT.2*MX_EXC_LEVEL) RETURN
-      print*,'not too highly excited'
+      IF(NTEST.EQ.100) WRITE(6,*),'not too highly excited',IPART
 *
 * Must contain the correct number of holes and particles
       NHOLE = 0
@@ -6735,9 +6718,8 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
           END IF
         END DO
       END DO
-      print*,'NHOLE,NPART',NHOLE,NPART
       IF(IH.NE.NHOLE.AND.IP.NE.NPART) RETURN
-      print*,' right number of holes '
+      IF(NTEST.EQ.100) WRITE(6,*),' right number of holes ',NHOLE,NPART
       
 *
 * Is this an allowed operator in the GAS.
@@ -6746,11 +6728,9 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
 * Should still check if valence space (consider this)
       DO IGAS=1,NGAS
         ICOMP = 0
-        print*,'NFSYM',NFSYM
         DO J=1,NFSYM
           ICOMP = ICOMP + NGSSH(J,IGAS)
         END DO
-        print*,'ICOMP',ICOMP
         IF(IHPVGAS(IGAS).NE.1) THEN
           IF(IOP(IGAS+0*NGAS).GT.ICOMP) RETURN
           IF(IOP(IGAS+1*NGAS).GT.ICOMP) RETURN
@@ -6760,7 +6740,7 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
           IF(IOP(IGAS+3*NGAS).GT.ICOMP) RETURN
         END IF
       END DO
-      print*,' operator allowed for GAS'
+      IF(NTEST.EQ.100) WRITE(6,*),' operator allowed for GAS'
 *
 * Kramers flipping of operator
       IKRFLIP = 0
@@ -6772,19 +6752,19 @@ C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
      &            IKRFLIP
       END DO
       IF(ABS(IKRFLIP).GT.IKRFLIPMAX) RETURN
-      print*,' I flip ok '
+      IF(NTEST.EQ.100) WRITE(6,*),' I flip ok ',IKRFLIP/2
 *
 * Even or Odd Kramers flip
       IF(NZ.LT.4) THEN
         IKRFLIP = IKRFLIP/2
-        print*,'IKRFLIP',IKRFLIP
         CALL EVENODD(ITEST,ABS(IKRFLIP))
         IF(ITEST.EQ.1) RETURN
-        print*,' even KRAMERS FLIP'
+        IF(NTEST.EQ.100) WRITE(6,*),' even KRAMERS FLIP'
       END IF
 *
 * An operator has been found
       IANSWER = 1
+      IF(NTEST.EQ.100) WRITE(6,*),' An operator has been found '
 *
       RETURN
       END
@@ -6869,6 +6849,11 @@ C       END DO
       ELSE
         WRITE(6,*) ' Unknown parameter in INI_CC_AMP ',IFORM
         STOP       ' Unknown parameter in INI_CC_AMP '
+      END IF
+*
+      IF(IFORM.EQ.2) THEN
+        WRITE(6,*) ' A set of amplitudes have been found '
+        WRITE(6,*) ' This is a restarted calculation '
       END IF
 *
       NTEST = 00
@@ -7548,7 +7533,7 @@ C
 *.Output
       INTEGER ISPCOMP_ACT(4*NGAS,*)
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' ACT_SPOEX....: Orbital excitation '
         CALL IWRTMA(IOBEX_TP,1,2*NGAS,1,2*NGAS)
@@ -7805,7 +7790,7 @@ C     Double group
 *
       INTEGER IVEC(0:IEXCITE,0:IKRFLIP,-IEXCITE:IEXCITE)
 *
-      NTEST = 100
+      NTEST = 00
 *
       DO I = 0,IEXCITE
         DO J = 0,MIN(I,IKRFLIP)
@@ -7850,15 +7835,15 @@ C     Double group
       INTEGER IOP(4*NGAS,IDIMOP)
       INTEGER IHELP_OP(4*NGAS,IDIMOP),IHELP_IDX(IDIMOP)
 *
-      NTEST = 100
+      NTEST = 00
 *
 * Find the number of operators with given N,Mk,Mub
 *
-      print*,'NGAS,IDIMOP',NGAS,IDIMOP
+C     print*,'NGAS,IDIMOP',NGAS,IDIMOP
       DO I =1,IDIMOP
         CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
         IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
-        print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
+C       print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
       END DO
 *
       IF(NTEST.GE.100) THEN
@@ -7946,7 +7931,7 @@ C     Double group
 *
       INTEGER IOP(4*NGAS)
 *
-      NTEST = 100
+      NTEST = 00
 *
       NCA = 0
       NCB = 0
@@ -7965,7 +7950,6 @@ C     Double group
 * Annihilator Beta
         NAB = NAB + IOP(IGAS+3*NGAS)
       END DO
-      print*,'NCA,NCB,NAA,NAB,NGAS',NCA,NCB,NAA,NAB,NGAS
 *
 * Particle rank
 *
@@ -7986,6 +7970,13 @@ C     Double group
         WRITE(6,*) ' Particle rank = ',N
         WRITE(6,*) ' Kramers flip  = ',MK
         WRITE(6,*) ' MUB           = ',MUB
+        IF(NTEST.EQ.1000) THEN
+          WRITE(6,*) ' Number of GAS = ',NGAS
+          WRITE(6,*) ' Number of CA  = ',NCA
+          WRITE(6,*) ' Number of CB  = ',NCB
+          WRITE(6,*) ' Number of AA  = ',NAA
+          WRITE(6,*) ' Number of AB  = ',NAB
+        END IF
       END IF
 *
       RETURN

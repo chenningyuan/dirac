@@ -398,9 +398,10 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
- 9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+ 9001 FORMAT(4I5,5X,2F20.10)
 C
       IF (IPRINT .GE. 30) THEN
+         THR_PRINT = 1.0D-12
          WRITE(LUPRI,'(/A,3(1X,L1)//A)')
      &        ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM,
      &        ' (M2DNZ3) Input VUUUU matrix in Molfdir format'
@@ -408,13 +409,10 @@ C
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
-                     IF ( NZ.EQ.1 .AND. ABS(VMUUUU(I,J,K,L,1)).GT.D0 )
+                     IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT 
+     &                .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT))
      &                    WRITE(LUPRI,9001)
-     &                    I,J,K,L,VMUUUU(I,J,K,L,1)
-                     IF ( NZ.GE.2 .AND. (ABS(VMUUUU(I,J,K,L,1)) .GT. D0 
-     &                    .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. D0))
-     &                    WRITE(LUPRI,9001)
-     &                    I,J,K,L,VMUUUU(I,J,K,L,1),VMUUUU(I,J,K,L,2)
+     &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
                   END DO
                END DO
             END DO
@@ -918,7 +916,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-      PARAMETER (THROUT = 1.0D-50)
+      PARAMETER (THROUT = 1.0D-10)
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1139,12 +1137,13 @@ C
 C
 C
 C
- 9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+ 9001 FORMAT(4I5,5X,2F20.10)
 C
       IF (IPRINT .GE. 30) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' (DNZ32M) Output VUUUU matrix in Molfdir format'
-         MZ = MIN(NZ,2)
+         WRITE(LUPRI,'(A,1P,D10.2)')
+     &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
+     &   ' print threshold =',THROUT
          DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
@@ -1152,7 +1151,7 @@ C
                      IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
      &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
-     &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MZ)
+     &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
                   END DO
                END DO
             END DO
@@ -1341,7 +1340,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
-      PARAMETER (THROUT = 1.0D-16)
+      PARAMETER (THROUT = 1.0D-10)
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1601,11 +1600,13 @@ C
 C
 C
 C
- 9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+ 9001 FORMAT(4I5,5X,2F20.10)
 C
       IF (IPRINT .GE. 30) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '(DNZ32M) Output VUUUU matrix in Molfdir format'
+         WRITE(LUPRI,'(A,1P.D10.2)')
+     &   ' (DNZ32ML) Output VUUUU matrix in Molfdir format,'//
+     &   ' print threshold =',THROUT
          DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT

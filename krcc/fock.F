@@ -330,6 +330,7 @@ C
 C Add the integrals to inactive fock matrix
 C
                       FI(IPOS) = HALF * (XOUT + XOUT2) + FI(IPOS)
+C                     print*,'XOUT,XOUT2,IPOS',XOUT,XOUT2,IPOS
                       END DO
                     END DO
                   end do
@@ -353,7 +354,7 @@ C           ^ JGAS
 C         ^ NGASOCC
         end do
 C       ^ IGAS
-       NTEST = 00
+       NTEST = 100
        IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Printing entire inactive Fock-matrix '
          DO I = 1, ISIDE

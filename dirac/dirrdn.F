@@ -518,14 +518,14 @@ C
 
       IF (TWOCOMP) THEN
         WRITE(LUPRI,'(A)')
-     &  ' * running in two-component mode'
+     &  ' * Running in two-component mode'
         INTGEN = 1
         ISLDIR = 0
         ISSDIR = 0
         IGTDIR = 0
       ELSE
         WRITE(LUPRI,'(A)')
-     &  ' * running in four-component mode'
+     &  ' * Running in four-component mode'
       ENDIF
 
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
@@ -1360,7 +1360,7 @@ C&&&& OWNBASis: Use local basis for projection
                PROOWN = .TRUE.
                GO TO 100
    23          CONTINUE
-C&&&& BNCRON : Deactivate screening for use with bare nucleus start guess
+C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
                GO TO 100
    24          CONTINUE
@@ -1788,7 +1788,7 @@ C
 C     tsaue -
 C     Temporary fix: load HF occupation numbers into dcborb.h
 C
-      CALL TDHFORB
+      CALL TDHFORB('NO SETDC2')
 C
 C     Print section
 C     =============
@@ -2315,7 +2315,6 @@ C
 #include "dcbham.h"
 #include "dcbreo.h"
 #include "dcbrot.h"
-#include "dcbgos2.h"
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
@@ -2357,14 +2356,6 @@ C     ===================
 C
       LMOORD    = .FALSE.
       LMOORF    = .FALSE.
-C
-C.s/sya,2007.02.08
-C
-C     Initialize /DCIGOS2/ in dcbgos2.h
-C     ===================
-C
-      KDOGASCIP= .FALSE.
-C.q
 C
 C     Read menu file
 C     ==============
@@ -5464,9 +5455,9 @@ C         .... two-step method of Barysz
         ENDIF
 
         IF (TWOCOMP) THEN
-          WRITE(LUPRI,'(A)') ' * running in two-component mode'
+          WRITE(LUPRI,'(A)') ' * Running in two-component mode'
         ELSE
-          WRITE(LUPRI,'(A)') ' * running in four-component mode'
+          WRITE(LUPRI,'(A)') ' * Running in four-component mode'
         ENDIF
 
 C       ... take care of AMFI contribution
@@ -6815,8 +6806,8 @@ C
          END DO
       ELSE
          DTEMP = D0
-         DO IFRP = 1,NFSYM
-            DO IOPEN = 1,NOPEN
+         DO IOPEN = 1,NOPEN
+            DO IFRP = 1,NFSYM
                DTEMP          = DTEMP +
      &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
             END DO
@@ -6844,7 +6835,7 @@ C
             IF (NFSYM .EQ. 1) THEN
                WRITE(LUPRI,1011)
      &            IOPEN,
-     &            DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN)),
+     &            DF(IOPEN)*D2*NACSH(1,IOPEN),
      &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
             ELSE
                WRITE(LUPRI,1012)
@@ -6855,12 +6846,14 @@ C
             END IF
          END DO
          WRITE(LUPRI,1020)
+         DTEMP      = NELECT_DHF+DTEMP
+         NELECT_TOT = NINT(DTEMP)
          IF (NFSYM .EQ. 1) THEN
             WRITE(LUPRI,1031)
-     &         NELECT_DHF+DTEMP,NISH_DHF(1)+NASH_DHF(1)
+     &         DTEMP,NISH_DHF(1)+NASH_DHF(1)
          ELSE
             WRITE(LUPRI,1032)
-     &         NELECT_DHF+DTEMP,NISH_DHF(1)+NASH_DHF(1),
+     &         DTEMP,NISH_DHF(1)+NASH_DHF(1),
      &         NISH_DHF(2)+NASH_DHF(2)
          END IF
          WRITE(LUPRI,'(/,3X,A,/)')
@@ -6868,13 +6861,13 @@ C
      &      'coupling coefficients.'
       END IF
       RETURN
- 1001 FORMAT(3X,'Closed shell',9X,I4,10X,I4,6X,'N/A ',3(3X,F6.4))
- 1002 FORMAT(3X,'Closed shell',9X,I4,10X,I4,5X,I4,1X,3(3X,F6.4))
- 1011 FORMAT(3X,'Open shell no.',I2,6X,F6.2,7X,I4,6X,'N/A ',3(3X,F6.4))
- 1012 FORMAT(3X,'Open shell no.',I2,6X,F6.2,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1001 FORMAT(3X,'Closed shell',I13,I14,6X,'N/A ',3(3X,F6.4))
+ 1002 FORMAT(3X,'Closed shell',I13,I14,I9,1X,3(3X,F6.4))
+ 1011 FORMAT(3X,'Open shell no.',I2,F12.2,I11,6X,'N/A ',3(3X,F6.4))
+ 1012 FORMAT(3X,'Open shell no.',I2,F12.2,I11,I9,1X,3(3X,F6.4))
  1020 FORMAT(3X,76('-'))
- 1031 FORMAT(3X,'Total',17X,F6.2,7X,I4)
- 1032 FORMAT(3X,'Total',17X,F6.2,7X,I4,5X,I4)
+ 1031 FORMAT(3X,'Total',F23.2,I11)
+ 1032 FORMAT(3X,'Total',F23.2,I11,I9)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rho1in */

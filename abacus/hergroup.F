@@ -483,6 +483,8 @@ C       NZ = 4  quaternionic group        no    totally symmetric rotations
 C       NZ = 2  complex group             one   totally symmetric rotation
 C       NZ = 1  real group                three totally symmetric rotations
 C
+C       NZ_in_CI is 1 for real CI coefficients, 2 for complex CI coefficients
+C
       NZ = 1
       DO 30 I = 1,3
         IF(ISYMAX(I,2).EQ.0) THEN
@@ -490,6 +492,7 @@ C
           ITOT = I
         ENDIF
    30 CONTINUE
+      NZ_in_CI = MIN(2,NZ)
 C
 C     Align rotations and quaternion irreps,
 C     for complex groups this is important....
