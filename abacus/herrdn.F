@@ -408,10 +408,10 @@ C     In the XYZ format coordinates are supposed to start at the third line
 C     JHS050707 Write the coordinates to the commonblocks
         CALL WRITE_ATOMS(LUPRI)
 C     JHS050707 Write the basisset data to the commonblocks
-        CALL WRITE_BASIS(inpfile, LUPRI,WORK,LWORK,
+        CALL WRITE_ATOMTYPES(inpfile, LUPRI,WORK,LWORK,
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C     JHS050707 Free the reserved memory.
-        CALL CLEAR_XYZ(LUPRI)
+        CALL CLEAR_XYZ()
         CLOSE(inpfile)
 
       CASE DEFAULT

@@ -201,7 +201,8 @@
         IMPLICIT NONE
 
         PRIVATE
-        PUBLIC READ_XYZ,WRITE_ATOMS,WRITE_BASIS,CLEAR_XYZ
+
+        PUBLIC READ_XYZ,WRITE_ATOMS,WRITE_ATOMTYPES,CLEAR_XYZ
 !     DETERMINES HOW DIFFERENT MOLECULE FILES SHOULD BE READ.
 !     !!! PAM CAPITALIZES THE EXTENSIONS !!!
 
@@ -217,7 +218,6 @@
           REAL(KIND=8)            :: nucexp=0.0
           TYPE(atom), POINTER     :: next
         END TYPE atom
-        TYPE(atom), POINTER :: firstatom
 
         TYPE basistype
 !     Defines a list for storing the information about the basis sets.
@@ -230,36 +230,65 @@
           REAL, POINTER              :: FAM(:)
           TYPE(basistype), POINTER   :: next
         END TYPE basistype
-        TYPE(basistype), POINTER :: firstbas
+
+        TYPE atomtype
+             TYPE(atom), POINTER      :: start
+             TYPE(basistype), POINTER :: basis
+             INTEGER                  :: natom
+        END TYPE atomtype
 
 !     Global variables
+!     Start of linked lists of atoms, basistypes and atomtypes
+        TYPE(atom), POINTER :: firstatom
+        TYPE(basistype), POINTER :: firstbas
+        TYPE(atomtype), POINTER  :: firstatomtype
+
 !     Symmetry of the molecule
         LOGICAL :: ADDSYM=.TRUE.
         INTEGER :: NSYMOP=0
         CHARACTER(LEN=1) :: KASYM(3,3)=' '
 
-
-
       CONTAINS
 
-
-        SUBROUTINE ADD_ATOM(prevmol, fatom, name,x)
+        SUBROUTINE ADD_ATOM(latom, fatom, name,x)
+!
+!       fatom: pointer to the first atom in the list
+!       latom: pointer to the last atom in the list
+!
 !     JHS050707 Adds a new node to the atom list.
-          TYPE(atom), POINTER :: prevmol,fatom,mol
+!     LV2001-simplified and added on-the-fly sort
+
+          TYPE(atom), POINTER :: latom,fatom,newatom,sameatom
           CHARACTER(LEN=*), INTENT(IN)     :: name
           REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
 
-          ALLOCATE(mol)
-          mol%name=name
-          IF (PRESENT(x)) mol%x=x
+!         Make a new atom
+          ALLOCATE(newatom)
+          newatom%name=name
+          IF (PRESENT(x)) newatom%x=x
+          newatom%next=>NULL()
+!
+!         This might be the first call, if so: set fatom to this atom 
+!         and allocate also the last atom pointer
 
-          mol%next=>NULL()
-          IF (associated(prevmol)) THEN
-            prevmol%next=>mol
-          ELSE
-            fatom=>mol
+          IF (.not. associated(latom)) THEN
+             fatom=>newatom
+             ALLOCATE(latom)
           END IF
-          prevmol=>mol
+
+!         Find out whether we already have atoms of this type 
+          sameatom=>find_atom(fatom, name)
+          IF (associated(sameatom)) THEN
+!            insert after the others of this type
+             newatom%next=>sameatom%next
+             sameatom%next=>newatom
+          ELSE
+!            we did not see this type before, put at the end of the list
+             latom%next=>newatom
+             latom=>newatom
+          END IF
+
+
         END SUBROUTINE ADD_ATOM
 
         SUBROUTINE ADD_BASIS(prevbas, fbas,basdata,basnext)
@@ -365,7 +394,7 @@
 #include "cbirea.h"
           TYPE(atom), POINTER :: fatom
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
-          TYPE(atom), POINTER                :: mol
+          TYPE(atom), POINTER                :: latom
           CHARACTER(len=linelen)             :: str
           CHARACTER(LEN=namelen)             :: name
           REAL(KIND=8)                       :: x(3)
@@ -373,7 +402,7 @@
  
           CALL QENTER('READ_ATOMS')
 
-          mol=>null()
+          latom=>null()
           IF (.NOT.(PARHER).AND.IPREAD>1)                               &
      &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
 
@@ -391,10 +420,9 @@
 
 !           todo : the current reading relies on ios giving an error for no-atom lines, improve upon this
             if (ios.eq.0.AND.name.ne.'init') then
-              CALL ADD_ATOM(mol,fatom,name,x)  
+              CALL ADD_ATOM(latom,fatom,name,x)  
             end if
           end do
-
 
           IF(.NOT.(PARHER).AND. IPREAD>1) WRITE(LUPRI,*) 'Done'
 
@@ -404,26 +432,23 @@
 
       
         FUNCTION find_atom(fatom, name)
-!     JHS050707 Returns a pointer to the next atom in the list with name 
+!     JHS050707 Returns a pointer to the first atom in the list with name 
 !               or NULL() if is no such atom. 
-          ! TYPE(atom), POINTER, INTENT(IN) :: fatom 
            TYPE(atom), POINTER :: fatom 
-           TYPE(atom), POINTER             :: find_atom
-          CHARACTER(LEN=*), INTENT(IN)     :: name
-           TYPE(atom), POINTER             :: mol
+           TYPE(atom), POINTER :: find_atom
+           TYPE(atom), POINTER :: mol
+           CHARACTER(LEN=*), INTENT(IN)    :: name
+
            mol=>fatom
-           DO 
-             IF (associated(mol)) THEN
-               IF (mol%name==name) THEN
+           DO WHILE(ASSOCIATED(mol))
+              IF (mol%name==name) THEN
                  find_atom=>mol
                  EXIT
-               END IF
-               mol=>mol%next
-             ELSE
-               find_atom=>NULL()
-               EXIT
-             ENDIF 
+              END IF
+              mol=>mol%next
            END DO
+
+           find_atom=>NULL()
 
         END FUNCTION find_atom
 
@@ -433,12 +458,11 @@
 !               or NULL() if there is no such basis.
           ! TYPE(basistype), POINTER, INTENT(IN) :: fbas
            TYPE(basistype), POINTER :: fbas
-           TYPE(basistype), POINTER                :: find_basis
-           TYPE(basistype), POINTER                :: bas
-           CHARACTER(LEN=*), INTENT(IN)        :: name
+           TYPE(basistype), POINTER :: find_basis
+           TYPE(basistype), POINTER :: bas
+           CHARACTER(LEN=*), INTENT(IN)       :: name
 
            bas=>fbas
-           find_basis=>NULL()
            DO WHILE(ASSOCIATED(bas))
              IF (bas%name==name) THEN
                find_basis=>bas
@@ -446,6 +470,8 @@
              END IF
              bas=>bas%next
            END DO
+
+           find_basis=>NULL()
 
         END FUNCTION find_basis
 
@@ -470,57 +496,11 @@
           END IF
         END FUNCTION count_atoms
 
-        SUBROUTINE SORT_ATOMS(fatom,fbas,lupri)
-!     JHS050707 Sorts the atomlist in the same order as the basissets 
-!               delets atoms that don't have a associated basisset
-         ! TYPE(atom),     POINTER,INTENT(INOUT) :: fatom
-          TYPE(atom),     POINTER :: fatom
-         ! TYPE(basistype),POINTER,INTENT(INOUT) :: fbas
-          TYPE(basistype),POINTER :: fbas
-          INTEGER, INTENT(IN),OPTIONAL       :: lupri
-          TYPE(atom), POINTER                :: mol=>NULL()
-          TYPE(atom), POINTER                :: newmol=>NULL()
-          TYPE(atom), POINTER                :: newfirstatom=>NULL()
-          TYPE(basistype), POINTER           :: bas=>NULL(),tmpbas
-          CHARACTER(LEN=namelen)             :: name,oldname
-          
-          mol=>fatom
-          bas=>fbas
-          newfirstatom=>NULL()
-          newmol=>newfirstatom
-
-          DO WHILE(ASSOCIATED(bas))
-!     Look wether we have already ordered this species of atoms
-            mol=>find_atom(newfirstatom,bas%name)
-            IF (ASSOCIATED(mol)) THEN
-              bas=>bas%next
-              CYCLE
-            END IF
-
-            mol=>fatom               
-              mol=>find_atom(mol, bas%name)
-            DO WHILE (ASSOCIATED(mol))
-              CALL ADD_ATOM(newmol,newfirstatom,mol%name,mol%x)
-              newmol%charge=mol%charge
-              newmol%nucexp=mol%nucexp
-              mol=>mol%next
-              mol=>find_atom(mol, bas%name)
-            END DO
-            bas=>bas%next
-          END DO
-          mol=>fatom
-          CALL DEL_ATOMS(mol)
-          fatom=>newfirstatom       
-
-        END SUBROUTINE SORT_ATOMS
-
 
         SUBROUTINE SORT_BASIS(fatom,fbas,usecomp,lupri)
 !     JHS050707 Sorts the basisinput in the same order as the atoms 
 !               and issues warnings if no basis can be found
-         ! TYPE(atom),     POINTER, INTENT(INOUT) :: fatom
           TYPE(atom),     POINTER :: fatom
-         ! TYPE(basistype),POINTER, INTENT(INOUT) :: fbas
           TYPE(basistype),POINTER :: fbas
           INTEGER, INTENT(IN),OPTIONAL       :: lupri
           LOGICAL,INTENT(IN),OPTIONAL        :: usecomp
@@ -640,17 +620,20 @@
 !     !!! TMP: TESTED FOR: 
 !                         - 'LARGE BASIS'
 !     (Implemented also for the rest)
+!         Needed to read the basis set information
           INTEGER, INTENT(IN)                :: filenum, linelen,lupri
-          TYPE(atom), POINTER                :: mol
-          TYPE(atom)                         :: tmpmol
           TYPE(basistype),POINTER            :: bas
           TYPE(basistype)                    :: tmpbas
           integer                            :: tmp_file,ios
 
-!     FOR UNIT CONVERSION
+!     FOR explicitly typed basissets.
+          INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
+
+!     FOR UNIT CONVERSION and explicitly defined charges and/or nuclear exponents
           REAL(KIND=8)      :: UNIT_CONVERSION,ONE=1.0
           CHARACTER(LEN=32) :: UNITNAME='Angstrom'
-        
+          TYPE(atom), POINTER                :: mol
+
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
           CHARACTER(LEN=namelen)             :: name, prevname
@@ -658,8 +641,6 @@
           LOGICAL                            :: CONT=.FALSE.
           CHARACTER(LEN=9) :: symtxt
 
-!     FOR explicitely typed basissets.
-          INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
@@ -675,7 +656,6 @@
 
 !     Standard for xyz is angstrom, initialize with the AU/ANG conversion factor
           UNIT_CONVERSION = ONE / XTANG
-
 
           DO
             read(tmp_file,*,iostat=ios) str
@@ -697,25 +677,10 @@
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
 
-!            Symmetry specification
+!            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
               IF (section(2)=='*SYMMETRY'.AND.                          &
      &            section(3)=='.NOSYM') THEN
                       ADDSYM=.FALSE.
-!             ELSE IF(section(2)=='*SYMMETRY') THEN
-!                BACKSPACE(tmp_file)
-!                CALL READ_VAR(tmp_file,linelen,NSYMOP,index,skip=.FALSE.)                
-!                do i=1,3
-!                  do j=1,3
-!                    if (index<=0) then
-!                      write(LUPRI,*)                                    & 
-!     &                   'ERROR:hermodules.F reading symmetry.'
-!            CALL QUIT('*** ERROR READ_BASIS, symmetry not               &
-!     &                     correctly specified')
-!                    CALL READ_VAR(tmp_file,linelen,kasym(i,j),           &
-!     &           index,1,.FALSE.)
-!                    end if
-!                  end do
-!                end do
 
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
@@ -724,7 +689,7 @@
 !               like cc-pVDZ etc. This will be the basisset for all atoms that are not
 !               specified in the .SPECIAL section.
                 read(tmp_file,*,iostat=ios) tmpbas%file
-                if (.not.(ios.ne.0) .and. tmpbas%file>' ') then         
+                if (ios.eq.0 .and. tmpbas%file>' ') then         
                   tmpbas%name='DEFAULT'
                   tmpbas%comp='LARGE'
                   tmpbas%type='BASIS'
@@ -883,32 +848,13 @@
 
 !         We want users to specify the default basis, quit if they don't
           IF(.NOT.(ASSOCIATED(firstbas))) THEN
-            WRITE(LUPRI,*) 'No basisset given in input file.            & 
+            WRITE(LUPRI,*) 'No default basisset given in input file.    & 
      &            Specify a basisset in  **MOLECULE *BASIS .DEFAULT'
             CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis given in   & 
      &           input file.')
           END IF
           
 !     We now have add all data that was explicitly added in the .INP file.
-!     Add default basis.
-          IF(.NOT.(PARHER).AND.IPREAD>1)                                &
-     &         WRITE(LUPRI,*) 'Processing basissets...'
-          CALL SORT_BASIS(firstatom,firstbas,.TRUE.,lupri)
-!     Sort the atoms according to the bases.
-          CALL SORT_ATOMS(firstatom,firstbas,lupri)
-!     Add charges if they are missing
-          mol=>firstatom
-          prevname=' '
-          DO WHILE(ASSOCIATED(mol))
-            IF (mol%charge==0) THEN
-              IF(.NOT.(mol%name)==prevname)                             & 
-     &              charge=FIND_CHARGE(mol%name,lupri)                
-              mol%charge=charge
-            END IF
-  
-            prevname=mol%name
-            mol=>mol%next
-          END DO
           
 !     Convert units
           IF(.NOT.(unitname=='bohr')) THEN
@@ -1007,20 +953,10 @@
           CHARGE(natom)=mol%charge
           GNUEXP(natom)=mol%nucexp
 
-!MI     ... control printout
-          IF (IPREAD.GE.4) THEN
-            write(LUPRI,*) 'NAMN(natom)=',NAMN(natom)
-            write(LUPRI,*) 'mol%x:',mol%x(1),mol%x(2),mol%x(3)
-            write(LUPRI,*) 'CORD(:,natom)',                             &
-     &      CORD(1,natom),CORD(2,natom),CORD(3,natom)
-          ENDIF
-          
           mol=>mol%next
         END IF
       END DO
 
-!      IF (ADDSTO) CALL STOADD()
-!
 !     ***************************************
 !     ***** Process symmetry input data *****
 !     ***************************************
@@ -1029,7 +965,6 @@
 !      CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
 
 !
-
       NUCIND=natom
 
       CALL QEXIT('WRITE_ATOMS')
@@ -1068,7 +1003,7 @@
           END DO
         END SUBROUTINE POS_FILE
 
-        SUBROUTINE WRITE_BASIS(infile,lupri,WORK,LWORK,                 &
+        SUBROUTINE WRITE_ATOMTYPES(infile,lupri,WORK,LWORK,                 &
      &                  KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 !     JHS050707 Writes the contained in the basisset list to the commonblocks.
 !               Note the routine is higly similar tot the subroutine READI1 for
@@ -1106,6 +1041,7 @@
 
       TYPE(basistype),POINTER       :: baspointer
       TYPE(atom),POINTER            :: mol
+      TYPE(atomtype),POINTER        :: typepointer
 
       REAL(KIND=8):: WORK(LWORK) 
       REAL(KIND=8),ALLOCATABLE::                                        & 
@@ -1125,12 +1061,6 @@
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-!#include "primit.h"
-!#include "shells.h"
-!#include "symmet.h"
-!#include "aosotr.h"
-!#include "infpar.h"
-!#include "dcbrkb.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -1138,8 +1068,6 @@
 #include "gnrinf.h"
       LOGICAL LINEAR
 #endif
-!#include "ibtfun.h"
-      
       
       katom=count_atoms(firstatom)
 
@@ -1183,20 +1111,24 @@
 !     nuclei.h
       CALL SPHINP(infile, WORK, LWORK, DOOWN, MXSPD)
 
-      baspointer=>firstbas
-      mol=>firstatom
+      typepointer=>firstatomtype
       basindex=0
       NONTYP=0
 
       DO
-!     Loop over all basissets
+!     Loop over all atomtypes
         NOORBTS=.TRUE.
         NOFITFS=.TRUE.
 
-        IF (.NOT.(associated(baspointer))) EXIT
+        IF (.NOT.(associated(typepointer))) EXIT
         basindex=basindex+1
         NONTYP=NONTYP+1
-        NONT(basindex)=count_atoms(firstatom,baspointer%name)
+        NONT(basindex)=typepointer%natom
+
+!       easier to use the original pointers now
+        baspointer=>typepointer%basis
+        mol=>typepointer%start
+
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
 
@@ -1242,7 +1174,6 @@
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
 
           NBLOCK=basindex+1
-          mol=>find_atom(mol,baspointer%name)
           CALL BASLIB(IQM(basindex,1),JCO(1,basindex,1),                &
      &             NUC(IBLOCK(1),1),                                    &
      &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),                   &
@@ -1311,6 +1242,7 @@
            DIRCON(1) = .TRUE.
         END IF
           
+!       Explicit SC will probably not work, worry about that later
         IF(.NOT.TWOCOMP) THEN
           IF (ASSOCIATED(baspointer%next)) THEN
             IF (baspointer%next%name==baspointer%name)                    &
@@ -1485,7 +1417,7 @@
           DEALLOCATE(CPRIM)
           DEALLOCATE(CPRIMU)
 
-        END SUBROUTINE WRITE_BASIS
+        END SUBROUTINE WRITE_ATOMTYPES
 
         SUBROUTINE PRINT_ATOMS(firstatom, lupri)
           !TYPE(atom), POINTER, INTENT(IN) :: firstatom
@@ -1537,15 +1469,14 @@
 
         END SUBROUTINE PRINT_BASIS
 
-        SUBROUTINE DEL_ATOMS(firstatom, lupri)
+        SUBROUTINE DEL_ATOMS(firstatom)
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
         
-          !TYPE(atom),POINTER,INTENT(INOUT) :: firstatom
           TYPE(atom),POINTER :: firstatom
-          INTEGER, OPTIONAL, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
           IF (.NOT.associated(firstatom)) RETURN
+
           mol=>firstatom
           DO
             IF (associated(mol%next)) THEN
@@ -1554,21 +1485,20 @@
               mol=>firstatom
             ELSE
               NULLIFY(firstatom)
-              exit
+              EXIT
             ENDIF
           END DO
 
         END SUBROUTINE DEL_ATOMS
 
-        SUBROUTINE DEL_BASIS(firstbas, lupri)
+        SUBROUTINE DEL_BASIS(firstbas)
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
         
-          !TYPE(basistype),POINTER,INTENT(INOUT) :: firstbas
           TYPE(basistype),POINTER :: firstbas
-          INTEGER, OPTIONAL, INTENT(IN) :: lupri
           TYPE(basistype), POINTER :: bas
 
           IF (.NOT.associated(firstbas)) RETURN
+
           bas=>firstbas
           DO
             IF (associated(bas%next)) THEN
@@ -1585,12 +1515,11 @@
 
         END SUBROUTINE DEL_BASIS
 
-        SUBROUTINE CLEAR_XYZ(lupri)
+        SUBROUTINE CLEAR_XYZ
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
         
-          INTEGER, OPTIONAL, INTENT(IN) :: lupri
-          CALL DEL_ATOMS(firstatom, lupri)
-          CALL DEL_BASIS(firstbas, lupri)
+          CALL DEL_ATOMS(firstatom)
+          CALL DEL_BASIS(firstbas)
 
         END SUBROUTINE CLEAR_XYZ
 
@@ -1603,11 +1532,11 @@
 
           CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
           CALL READ_BASIS(inpfile, linelen,lupri)
+!         Nog te doen
+!          CALL MAKE_ATOMTYPES(lupri)
 
           IF(.NOT.(PARHER)) CALL PRINT_ATOMS(firstatom,lupri)
           IF(.NOT.(PARHER)) CALL PRINT_BASIS(firstbas,lupri)
-            
-
 
         END SUBROUTINE READ_XYZ
 
