@@ -291,16 +291,26 @@ endif()
 
 include(Documentation)
 
-# get size of static allocations
+# get size of static allocations in dirac.x
 add_custom_target(
     info
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
     )
 
-# custom commands on created dirac.x executable
-add_custom_command(
-    TARGET Nightly Experimental dirac.x 
-    if(VERBOSE_OUTPUT)
-        POST_BUILD COMMAND ../utils/diagn.py
-    endif()
+# get size of static allocations in dirac.x, plus print short list of biggest objects inside
+add_custom_target(
+    info_ext
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
 )
+
+if(VERBOSE_OUTPUT)
+add_custom_command(
+    TARGET dirac.x Experimental Nightly
+    POST_BUILD COMMAND 
+       execute_process(COMMAND make info_ext)
+    COMMENT flush out list of object sizes
+)
+endif()
+
+
+
