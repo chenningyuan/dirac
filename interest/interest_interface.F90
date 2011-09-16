@@ -244,7 +244,7 @@ CONTAINS
     !> end
 
     !> local
-       integer              :: i 
+       integer              :: i, j 
        integer              :: nrow
        integer              :: nnrow
        real(8), allocatable :: Smat(:,:)
@@ -263,9 +263,13 @@ CONTAINS
 
     call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )  !Re(A )
     call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
-! TROND: fix here !
-    S(      1:  nnrow) = Smat(1:nnrow,1)
-    S(nnrow+1:2*nnrow) = Smat(1:nnrow,2)
+
+    do j=1,nrow
+      do i=1,nrow
+        S(index(i,     j,     2*nrow)) = Smat(index(i,j,nrow),1) 
+        S(index(i+nrow,j+nrow,2*nrow)) = Smat(index(i,j,nrow),2) 
+      enddo
+    enddo
 
     deallocate( Smat )
 
@@ -302,6 +306,7 @@ CONTAINS
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,4), ida = nrow )  !Re(B') = (zx - xz)      
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,5), ida = nrow )  !Im(B') = (yz - zy)     
 
+    !fixme: michal
     V(        1:  nnrow) = Vmat(1:nnrow,1)
     V(  nnrow+1:2*nnrow) = Vmat(1:nnrow,2)
     V(2*nnrow+1:3*nnrow) = Vmat(1:nnrow,3)
@@ -1393,5 +1398,22 @@ lloop:       do l=1,k
     endif
      
   END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!> 
+  FUNCTION index( i, j, n )
+
+    !> input
+       integer :: i
+       integer :: j
+       integer :: n
+    !> end
+
+    !> output 
+       integer :: index
+    !> end
+
+    index = (j-1)*n + i
+     
+  END FUNCTION
 ! ------------------------------------------------------------------------------------
 END MODULE
