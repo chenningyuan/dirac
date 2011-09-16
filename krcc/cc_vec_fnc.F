@@ -27,10 +27,10 @@
 #include "cands.inc"
 #include "cstate.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 #include "cecore.inc"
 #include "interm.inc"
-#include "cc_scr2.inc"
       COMMON/CMXCJ/MXCJ
 *. Local scratch 
       INTEGER ISX(2*MXPNGAS*MXPNGAS)

@@ -17,7 +17,6 @@
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
-#include "strbas.inc"
 #include "cicisp.inc"
 #include "cstate.inc"
 #include "strinp.inc"
@@ -26,6 +25,7 @@
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 *
       DIMENSION WORK(*)
 *

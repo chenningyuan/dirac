@@ -4,7 +4,6 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Output
-#include "ipoist8.inc"
 #include "irat.inc"
 *
       IRAT = 1
@@ -38,7 +37,6 @@
 * Much in this routine should be deleted!! Lasse 2011
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
       INTEGER CITYP
 #include "mxpdim.inc"
 #include "lucinp.inc"
@@ -332,7 +330,6 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 *
       subroutine grinfo_KRCC(PNTGRP)
       implicit real*8 (A-H,O-Z)
-#include "ipoist8.inc"
 *
       integer PNTGRP
 *
@@ -712,7 +709,6 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 *              Updated, July 97 : Double group symmetry added
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
       INTEGER PNTGRP
@@ -881,7 +877,6 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 * Jeppe Olsen, Winter of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION NSHPIR(*),NOSPIR(*),IOSPIR(*)
 *. Output
@@ -954,7 +949,6 @@ C         IISM = IOSPIR(ISM,IRREP)
 * Jeppe Olsen, Winter 1994
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION NGSOB(MXPOBS,MXPNGAS),NOCOBS(*),NTOOBS(*)
       DIMENSION NGSOBT(MXPNGAS)
@@ -1105,7 +1099,6 @@ C         IISM = IOSPIR(ISM,IRREP)
 * Timo Fleig, August '97
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -1209,7 +1202,6 @@ C         IISM = IOSPIR(ISM,IRREP)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
 #include "lucinp.inc"
@@ -1276,7 +1268,6 @@ C         IISM = IOSPIR(ISM,IRREP)
 * Symmetry connecting arrays
 * ( trivial, written for compatibility with higher point groups)
 *
-#include "ipoist8.inc"
       INTEGER SYMPRO(8,8)
       DATA  SYMPRO/1,2,3,4,5,6,7,8,
      &             2,1,4,3,6,5,8,7,
@@ -1320,7 +1311,6 @@ C     COPMT2(AIN,AOUT,NINR,NINC,NOUTR,NOUTC,IZERO)
 *. Input
 * ======
 *
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 *./NONAB/
@@ -1419,7 +1409,6 @@ C       MLSM_REL(IML,IPARI,ISM,TYPE,IWAY)
 * TYPE : 'SX','OB','ST','DX','CI'
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 #include "mxpdim.inc"
       CHARACTER*2 TYPE
 *./NONAB/
@@ -1538,7 +1527,6 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 * General input
 * =============
 *
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "csm.inc"
@@ -1679,7 +1667,6 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 * Symmetry connecting arrays
 *
 *
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "csm.inc"
 #include "symm.inc"
@@ -1742,7 +1729,6 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION IGSMIN(NGAS),IGSMAX(NGAS)
 *. Output
@@ -1836,7 +1822,6 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *. Last modifications : Jan 98, relativistic integrals added
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *
 * =====
 *.Input
@@ -1977,7 +1962,6 @@ C    &         IS12,IS34,IS1234,IPRNT)
 *     Timo Fleig, December 2000
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *.output
       INTEGER IUB1(2,10),IUB2(4,10),ISM2(3,10)
 *
@@ -2310,7 +2294,6 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
 * Jeppe Olsen , Spring of 1991
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
       DIMENSION ISMOST(MXPCSM,MXPCSM)
 *
       DO 1000 ITOTSM = 1, NSMCI
@@ -2360,7 +2343,6 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
 * = 2 : symmetry block is included , lower OO types
 *
 *. Input
-#include "ipoist8.inc"
       DIMENSION ISMOST(*)
 *. Output
       DIMENSION ICBLTP(*)
@@ -2413,7 +2395,6 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Allowed combinations of alpha and beta types
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *. Occupation constraints
@@ -2570,7 +2551,6 @@ C
 C Due to some silly renaming this routine is here
 C 
       implicit real*8(A-H,O-Z)
-#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -2593,7 +2573,6 @@ C
       subroutine sspir_KRCC
 *
       implicit real*8(A-H,O-Z)
-#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -2743,7 +2722,6 @@ Cjan      end do
 *       Timo Fleig, 1999
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -2817,7 +2795,6 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 * ISIMSYM added 2006 Lasse
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
@@ -4237,7 +4214,6 @@ C?    WRITE(6,*) ' SPOBEX_TO_ABOBEX_CC : NSPOBEX_TP = ', NSPOBEX_TP
 * Jeppe Olsen, July 2000 ( At summerschool, HNIE)
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 *. Specific input
@@ -4327,7 +4303,6 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * Jeppe Olsen, Summer of 99
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. Input/Output
       INTEGER IOPGAS(NGAS),IOP(MXNOP)
 *
@@ -4397,10 +4372,8 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * Double group version
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
-#include "glbbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "csm.inc"
@@ -4563,6 +4536,7 @@ C     END IF
 #include "crun.inc"
 #include "lucinp.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 * for real or complex groups
 #include "../include/dgroup.h"
 *
@@ -6560,7 +6534,6 @@ C       END DO
 * Jeppe Olsen, March 1999
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -6700,7 +6673,6 @@ C     INTEGER JGRP(MXPNGAS)
 *
 *. Double group version
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Specific Input
       DIMENSION IGRP(NIGRP)
@@ -6792,10 +6764,8 @@ C     DIMENSION NSTSGP(NSMST,*)
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Include blocks
 #include "mxpdim.inc"
-#include "strbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "csm.inc"
@@ -6862,7 +6832,6 @@ C Requires setting up of  MINMAX_SM_GP and  MINMAX_SM_GP2
 * Jeppe Olsen, Sept 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION MINVAL(NGAS),MAXVAL(NGAS)
 *. Input and output
@@ -6931,7 +6900,6 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
 *. Driver routine
 * ================
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 *
@@ -6974,7 +6942,6 @@ C       CALL SYMCMDG_KRCC(ITASK,IOBJ,I1,I2,I12)
 * Double group version, written for compatibility with general symmetry
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
 *
@@ -6999,7 +6966,6 @@ C       CALL SYMCMDG_KRCC(ITASK,IOBJ,I1,I2,I12)
 *
 *
 #include "implicit.inc"
-#include "ipoist8.inc"
 *. Input
       INTEGER NCA(NGAS),NCB(NGAS),NAA(NGAS),NAB(NGAS)
 *

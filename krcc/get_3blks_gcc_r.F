@@ -23,7 +23,6 @@
 #include "crun.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "strbas.inc"
 #include "glbbas.inc"
 #include "gasstr.inc"
 #include "cgas.inc"

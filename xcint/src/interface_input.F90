@@ -152,6 +152,10 @@ contains
          dft_cfg_blocked = .true.
       end if
 
+      if (kw_matches(word, '.POINTW')) then
+         dft_cfg_blocked = .false.
+      end if
+
 !radovan: not documented on wiki, code not perfectly tested
       if (kw_matches(word, '.OVLDIA')) then
          dirac_cfg_overlap_diagnostic = .true.
