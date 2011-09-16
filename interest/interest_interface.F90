@@ -50,8 +50,8 @@ MODULE INTEREST_INTERFACE
   private
 
   !> matrix dimensions
-     nrow = 0
-     ncol = 0
+     integer :: nrow = 0
+     integer :: ncol = 0
   !> end
 
   !> definition of "constant" data type 
@@ -301,11 +301,11 @@ CONTAINS
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,4), ida = nrow )  !Re(B') = (zx - xz)      
     call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,5), ida = nrow )  !Im(B') = (yz - zy)     
     !fixme: michal
-    V(        1:  nnrow) = Vmat(1:nnrow,1)
-    V(  nnrow+1:2*nnrow) = Vmat(1:nnrow,2)
-    V(2*nnrow+1:3*nnrow) = Vmat(1:nnrow,3)
-    V(3*nnrow+1:4*nnrow) = Vmat(1:nnrow,4)
-    V(4*nnrow+1:5*nnrow) = Vmat(1:nnrow,5)
+    !V(        1:  nnrow) = Vmat(1:nnrow,1)
+    !V(  nnrow+1:2*nnrow) = Vmat(1:nnrow,2)
+    !V(2*nnrow+1:3*nnrow) = Vmat(1:nnrow,3)
+    !V(3*nnrow+1:4*nnrow) = Vmat(1:nnrow,4)
+    !V(4*nnrow+1:5*nnrow) = Vmat(1:nnrow,5)
     deallocate( Vmat )
 
   END SUBROUTINE
