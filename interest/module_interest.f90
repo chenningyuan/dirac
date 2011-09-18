@@ -26,6 +26,7 @@
     else
       write(6,*)
       write(6,'(2x,a)')'Integral module InteRest is initialized'
+      call print_interest_git_revision_info
       write(6,*)
       call interest_osr_initialize()
       is_interest_initialized = .true.
