@@ -3,7 +3,7 @@ implicit none
 
 public :: ORBLOC
 
-private :: ORBLP1, ORBLP2, ORBLO1, ORBLO2, ORBLO4, ORBLO5, ROTCMO_MOD
+private :: ORBLP1, ORBLP2, ORBLO1, orblo2, ORBLO4, ORBLO5, ROTCMO_MOD, GETH
 
 contains
 
@@ -63,11 +63,12 @@ contains
 
 ! Memory allocation
 
+      NISH12 = ( NISH(IFRP)*NISH(IFRP) + NISH(IFRP) ) / 2.0D0
       CALL ALLOC(SCOEF ,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEF IN ORBLOC')
       CALL ALLOC(SCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEFO IN ORBLOC')
       CALL ALLOC(SMAT  ,N2BBASX,ID='SMAT IN ORBLOC')
       CALL ALLOC(CMO   ,N2BBASXQ,ID='CMO IN ORBLOC')
-      CALL ALLOC(HAMAT ,NISH(IFRP),NISH(IFRP),4,ID='HAMAT IN ORBLOC')
+      CALL ALLOC(HAMAT ,NISH12,NISH12,4,ID='HAMAT IN ORBLOC')
       CALL ALLOC(XKAPPA,NISH(IFRP),NISH(IFRP),4,ID='XKAPPA IN ORBLOC')
       CALL ALLOC(PMAT  ,NISH(IFRP),NISH(IFRP),4,NUCDEP,ID='PMAT IN ORBLOC')
 
@@ -134,6 +135,7 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
+        CALL GETH(PMAT,HAMAT)
         CALL ORBLO2(PMAT,XKAPPA,HAMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
@@ -732,13 +734,10 @@ contains
   subroutine orblo2(pmat,xkappa,hamat,xnrm,flag,hesloc,iprloc,ipqtoq,lupri)
   !******************************************************************************!
   !                                                                              !
-  !     Written by S.Dubillard Jan 21 2004                                       !
-  !     Last revision:                                                           !
-  !                                                                              !
-  !     Construction of the XKAPPA matrix                                        !
+  !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
   !                                                                              !
   !******************************************************************************!
-  IMPLICIT NONE
+  implicit none
 
   ! external variables
   logical flag, hesloc
@@ -1197,6 +1196,40 @@ contains
       CALL QEXIT('ROTCMO_MOD')
 
   END SUBROUTINE ROTCMO_MOD
+
+!================================================================================!
+!================================================================================!
+
+  subroutine geth(pmat,hamat)
+  !******************************************************************************!
+  !                                                                              !
+  !  Construction of full hessian                                                !
+  !                                                                              !
+  !******************************************************************************!
+  implicit none
+
+  ! external variables
+  real*8, dimension(:,:,:)   ::  hamat
+  real*8, dimension(:,:,:,:) ::  pmat
+
+  ! internal variables
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
+
+  integer*4 :: i, j, k, iz, nucdep, ni
+
+  !------------------------------------------------------------------------------!
+  call qenter('geth')
+
+  write(6,*) "I'm in geth", size(hamat,1)
+  stop
+
+  ! Get some dimensions
+  nucdep = size(pmat,4)
+  ni     = size(pmat,1)
+
+  call qexit('geth')
+
+  end subroutine geth
 
 !================================================================================!
 !                             END OF THE MODULE                                  !
