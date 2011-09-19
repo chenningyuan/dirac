@@ -773,8 +773,8 @@ C     ****** Construct one-electron Fock matrix ******
 C     ************************************************
 C
        IF(MDIRAC) THEN
-         !the dimension of the Fock matrix is n2bbasxq
 #ifdef MOD_INTEREST
+         fock(1:n2bbasxq) = 0.0d0
          call process_kinetic_energy_integrals( Fock )
          call process_nuclear_attraction_integrals( Fock ) 
 #endif
@@ -2114,7 +2114,7 @@ C
         IF(MDIRAC) THEN
           IP = IFRP
         ELSE
-          IP    = MOD(IFRP+IC,NFSYM) + 1
+          IP = MOD(IFRP+IC,NFSYM) + 1
         ENDIF
         DO JSYM = 1,NBRP
           NBORB(JSYM,IFRP,IC) = 0
@@ -2156,9 +2156,9 @@ C
         IC = 2
         NFORB(IFRP,IC) = 0
         IF(MDIRAC) THEN 
-          IP=IFRP
+          IP = IFRP
         ELSE
-          IP    = MOD(IFRP+IC,NFSYM) + 1
+          IP = MOD(IFRP+IC,NFSYM) + 1
         ENDIF
         DO JSYM = 1,NBRP
           NBORB(JSYM,IFRP,IC) = 0
@@ -2212,7 +2212,6 @@ C
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
-
 
       CALL QEXIT('LOWDI1')
       RETURN

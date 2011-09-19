@@ -250,12 +250,12 @@ CONTAINS
   SUBROUTINE process_overlap_integrals( S ) 
 
     !> input
-       real(8) :: S(4*nrow*ncol) 
+       real(8) :: S(2*nrow,2*ncol) 
     !> end
 
     !> local
        integer              :: i, j 
-       real(8), allocatable :: Smat(:,:)
+       real(8), allocatable :: Smat(:,:,:)
     !> end
 
     !> external InteRest integral routines
@@ -263,14 +263,14 @@ CONTAINS
     !> end
 
 
-    allocate( Smat( nrow*ncol, 2 ) ); Smat = 0.0d0
+    allocate( Smat( nrow,ncol,2 ) ); Smat = 0.0d0
     call two_center_integrals( interest_overlap, Smat, nrow )
-    call symmetrize_matrix(                                 A = Smat(1,1), ida = nrow )  !Re(A)
-    call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
+    call symmetrize_matrix(                                 A = Smat(1,1,1), ida = nrow )  !Re(A)
+    call symmetrize_matrix( factor = constant%alpha2/4.0d0, A = Smat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
     do j=1,ncol
       do i=1,nrow
-        S(index(i,     j,     nrow*2)) = Smat(index(i,j,nrow),1) 
-        S(index(i+nrow,j+ncol,nrow*2)) = Smat(index(i,j,nrow),2) 
+        S(i     ,j     ) = Smat(i,j,1) 
+        S(i+nrow,j+ncol) = Smat(i,j,2) 
       enddo
     enddo
     deallocate( Smat )
@@ -281,12 +281,12 @@ CONTAINS
   SUBROUTINE process_kinetic_energy_integrals( T ) 
 
     !> input
-       real(8) :: T(4*nrow*ncol) 
+       real(8) :: T(2*nrow,2*ncol) 
     !> end
 
     !> local
        integer              :: i, j 
-       real(8), allocatable :: Tmat(:,:)
+       real(8), allocatable :: Tmat(:,:,:)
     !> end
 
     !> external InteRest integral routines
@@ -294,14 +294,14 @@ CONTAINS
     !> end
 
 
-    allocate( Tmat( nrow*ncol, 2 ) ); Tmat = 0.0d0
+    allocate( Tmat( nrow,ncol,2 ) ); Tmat = 0.0d0
     call two_center_integrals( interest_overlap, Tmat, nrow )
-    call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
+    call symmetrize_matrix( factor = 0.5d0, A = Tmat(1,1,2), ida = nrow )  !Re(A') = (xx + yy + zz)
     do j=1,ncol
       do i=1,nrow
-        T(index(i+nrow,j,     nrow*2)) = T(index(i+nrow,j,     nrow*2)) + Tmat(index(i,j,nrow),2) !Re(A)  
-        T(index(i,     j+ncol,nrow*2)) = T(index(i,     j+ncol,nrow*2)) + Tmat(index(i,j,nrow),2) !Re(A)
-        T(index(i+nrow,j+ncol,nrow*2)) = T(index(i+nrow,j+ncol,nrow*2)) - Tmat(index(i,j,nrow),2) !Re(A)
+        T(i+nrow,j     ) = T(i+nrow,j     ) + Tmat(i,j,2) !Re(A)  
+        T(i     ,j+ncol) = T(i     ,j+ncol) + Tmat(i,j,2) !Re(A)
+        T(i+nrow,j+ncol) = T(i+nrow,j+ncol) - Tmat(i,j,2) !Re(A)
       enddo
     enddo
     deallocate( Tmat )
@@ -312,12 +312,12 @@ CONTAINS
   SUBROUTINE process_nuclear_attraction_integrals( V ) 
  
     !> input
-       real(8) :: V(4*nrow*ncol,4)
+       real(8) :: V(2*nrow,2*ncol,4)
     !> end
 
     !> local
        integer              :: i, j 
-       real(8), allocatable :: Vmat(:,:)
+       real(8), allocatable :: Vmat(:,:,:)
     !> end
 
     !> external InteRest integral routines
@@ -325,20 +325,20 @@ CONTAINS
     !> end
 
 
-    allocate( Vmat( nrow*ncol, 5 ) ); Vmat = 0.0d0
+    allocate( Vmat( nrow,ncol,5 ) ); Vmat = 0.0d0
     call two_center_integrals( interest_nuclear_attraction_point_nucleus, Vmat, nrow )
-    call symmetrize_matrix    (                                 A = Vmat(1,1), ida = nrow )  !Re(A)
-    call symmetrize_matrix    ( factor = constant%alpha2/4.0d0, A = Vmat(1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
-    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,3), ida = nrow )  !Im(A) = (xy - yx)      
-    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,4), ida = nrow )  !Re(B) = (zx - xz)      
-    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,5), ida = nrow )  !Im(B) = (yz - zy)     
+    call symmetrize_matrix    (                                 A = Vmat(1,1,1), ida = nrow )  !Re(A)
+    call symmetrize_matrix    ( factor = constant%alpha2/4.0d0, A = Vmat(1,1,2), ida = nrow )  !Re(A) = (xx + yy + zz)
+    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,1,3), ida = nrow )  !Im(A) = (xy - yx)      
+    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,1,4), ida = nrow )  !Re(B) = (zx - xz)      
+    call antisymmetrize_matrix( factor = constant%alpha2/4.0d0, A = Vmat(1,1,5), ida = nrow )  !Im(B) = (yz - zy)     
     do j=1,ncol
       do i=1,nrow
-        V(index(i,     j,     nrow*2),1) = V(index(i,     j,     nrow*2),1) + Vmat(index(i,j,nrow),1) !Re(A) 
-        V(index(i+nrow,j+ncol,nrow*2),1) = V(index(i+nrow,j+ncol,nrow*2),1) + Vmat(index(i,j,nrow),2) !Re(A)
-        V(index(i+nrow,j+ncol,nrow*2),2) = V(index(i+nrow,j+ncol,nrow*2),2) + Vmat(index(i,j,nrow),3) !Im(A)
-        V(index(i+nrow,j+ncol,nrow*2),3) = V(index(i+nrow,j+ncol,nrow*2),3) + Vmat(index(i,j,nrow),4) !Re(B) 
-        V(index(i+nrow,j+ncol,nrow*2),4) = V(index(i+nrow,j+ncol,nrow*2),4) + Vmat(index(i,j,nrow),5) !Im(B)
+        V(i     ,j     ,1) = V(i     ,j     ,1) + Vmat(i,j,1) !Re(A) 
+        V(i+nrow,j+ncol,1) = V(i+nrow,j+ncol,1) + Vmat(i,j,2) !Re(A)
+        V(i+nrow,j+ncol,2) = V(i+nrow,j+ncol,2) + Vmat(i,j,3) !Im(A)
+        V(i+nrow,j+ncol,3) = V(i+nrow,j+ncol,3) + Vmat(i,j,4) !Re(B) 
+        V(i+nrow,j+ncol,4) = V(i+nrow,j+ncol,4) + Vmat(i,j,5) !Im(B)
       enddo
     enddo
     deallocate( Vmat )
@@ -1426,22 +1426,5 @@ lloop:       do l=1,k
     endif
      
   END SUBROUTINE
-! ------------------------------------------------------------------------------------
-!> 
-  FUNCTION index( i, j, n )
-
-    !> input
-       integer :: i
-       integer :: j
-       integer :: n
-    !> end
-
-    !> output 
-       integer :: index
-    !> end
-
-    index = (j-1)*n + i
-     
-  END FUNCTION
 ! ------------------------------------------------------------------------------------
 END MODULE
