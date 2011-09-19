@@ -269,8 +269,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
-        USE READFILE
-        USE FILE
+        USE READ_XYZFILE
 
 #include "implicit.h"
 #include "priunit.h"
@@ -391,28 +390,9 @@ C               These are the only two extensions at the moment.
 
 
       CASE ('XYZ')
-C       JHS050707 Information of the basisset and charges are stored in the 
-C                 .INP file, which has to be opened and read.
-        inpfile=OPEN_FILE('DIRAC.INP',LUCMD,'FORMATTED',LUPRI)
-        
-        IF (.NOT.(inpfile>0)) THEN
-          WRITE(LUPRI, '(a)') 'ERROR, could not open DIRAC.INP'
-          CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
-        END IF
 
-
-C     In the XYZ format coordinates are supposed to start at the third line
-        CALL RDLINE(LUINFO)
-        CALL READ_XYZ(LUINFO, inpfile, LUPRI)
-
-C     JHS050707 Write the coordinates to the commonblocks
-        CALL WRITE_ATOMS(LUPRI)
-C     JHS050707 Write the basisset data to the commonblocks
-        CALL WRITE_ATOMTYPES(inpfile, LUPRI,WORK,LWORK,
-     &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
-C     JHS050707 Free the reserved memory.
-        CALL CLEAR_XYZ()
-        CLOSE(inpfile)
+        CALL READ_XYZ(LUINFO, LUCMD, LUPRI, PARHER, WORK, LWORK,
+     &                KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
       CASE DEFAULT
         WRITE(LUPRI, '(//A)') ' *** ERROR *** extension of MOLECULE'

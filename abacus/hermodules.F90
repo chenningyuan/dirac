@@ -196,15 +196,17 @@
 !     In the long run the readingsection for the .inp file move to dirac/dirrdn.F
 !     JHS 05-07-07
 
-      MODULE READFILE
+      MODULE READ_XYZFILE
         USE FILE
         IMPLICIT NONE
 
         PRIVATE
 
         PUBLIC READ_XYZ,WRITE_ATOMS,WRITE_ATOMTYPES,CLEAR_XYZ
-!     DETERMINES HOW DIFFERENT MOLECULE FILES SHOULD BE READ.
-!     !!! PAM CAPITALIZES THE EXTENSIONS !!!
+!     Module to read xyz files with the format
+!       Line 1: Number of atoms
+!       Line 2: Comment
+!       Other lines: atom name, coordinates 
 
         INTEGER, PARAMETER :: namelen=8, basislen=32,linelen=192
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
@@ -232,9 +234,10 @@
         END TYPE basistype
 
         TYPE atomtype
-             TYPE(atom), POINTER      :: start
+             TYPE(atom), POINTER      :: first
              TYPE(basistype), POINTER :: basis
              INTEGER                  :: natom
+             TYPE(atomtype), POINTER  :: next
         END TYPE atomtype
 
 !     Global variables
@@ -266,6 +269,7 @@
           ALLOCATE(newatom)
           newatom%name=name
           IF (PRESENT(x)) newatom%x=x
+          newatom%charge=find_charge(name)
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
@@ -496,6 +500,49 @@
           END IF
         END FUNCTION count_atoms
 
+
+        SUBROUTINE MAKE_ATOMTYPES(lupri)
+!         Matches basis sets and atoms: an atomtype 
+!         consists of a set of identical nuclei (same charge, same basis)
+
+          INTEGER, INTENT(IN),OPTIONAL       :: lupri
+          TYPE(atom), POINTER                :: fatom=>NULL()
+          TYPE(basistype), POINTER           :: basis=>NULL()
+          TYPE(basistype), POINTER           :: defaultbasis=>NULL()
+          TYPE(atomtype), POINTER            :: ltype=>NULL(),newtype
+          CHARACTER(LEN=namelen)             :: name
+          INTEGER                            :: i
+          
+!       Find default basis
+        defaultbasis=>find_basis(firstbas,'DEFAULT')
+!       Set atom pointer to the first atom
+        fatom=>firstatom
+!       Loop over atoms
+        DO WHILE (associated(fatom))
+!         Make a new type
+          ALLOCATE(newtype)
+          name=fatom%name
+          basis=>find_basis(firstbas,name)
+          IF (.not. associated(basis)) basis=>defaultbasis
+          newtype%first=>fatom
+          newtype%basis=>basis
+          newtype%natom=count_atoms(fatom,name)
+          newtype%next=>NULL()
+!         Check whether this is the first type
+          IF (.not. associated(ltype)) THEN
+             firstatomtype=>newtype
+          ELSE
+             ltype%next=>newtype
+          END IF
+          ltype=>newtype
+!         Skip to the end of the list of atoms of this type
+          DO  i = 1, ltype%natom
+              fatom=>fatom%next
+          END DO
+          DEALLOCATE(newtype)
+        END DO
+
+        END SUBROUTINE MAKE_ATOMTYPES
 
         SUBROUTINE SORT_BASIS(fatom,fbas,usecomp,lupri)
 !     JHS050707 Sorts the basisinput in the same order as the atoms 
@@ -807,7 +854,7 @@
 
                 mol=>firstatom
                 DO 
-                  mol=>FIND_ATOM(mol,name)
+                  mol=>find_atom(mol,name)
                   IF (associated(mol)) THEN 
                     mol%charge=charge
                     mol%nucexp=nucexp
@@ -1127,7 +1174,7 @@
 
 !       easier to use the original pointers now
         baspointer=>typepointer%basis
-        mol=>typepointer%start
+        mol=>typepointer%first
 
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
@@ -1139,8 +1186,6 @@
           IQM(basindex,1)=SIZE(baspointer%jco)
           DO i=1,IQM(basindex,1)
             JCO(i,basindex,1)=baspointer%jco(i)
-!MI         write(lupri,*) 'JCO(i,basindex,1)=',JCO(i,basindex,1)
-!MI         call flshfo(lupri)
           END DO           
           BASNAM=baspointer%file
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
@@ -1524,22 +1569,52 @@
         END SUBROUTINE CLEAR_XYZ
 
 
-        SUBROUTINE READ_XYZ(molfile,inpfile, lupri)
-#include "infpar.h"        
-!     THE MAIN SUBROUTINE THAT READS AN XYZ FILE
+        SUBROUTINE READ_XYZ(molfile,cmdfile, lupri, suppress_output,    &
+     &                      work,lwork,kang,ksets,kblock,kprim,hermit)
 
-          INTEGER, INTENT(IN) :: molfile,inpfile,lupri
+        INTEGER, INTENT(IN) :: molfile,cmdfile,lupri
+        LOGICAL, INTENT(IN) :: suppress_output
+        INTEGER,INTENT(IN)   :: KANG,KSETS,KBLOCK,KPRIM
+        LOGICAL,INTENT(IN)   :: HERMIT
+        INTEGER,INTENT(INOUT):: lwork
+        REAL(KIND=8):: WORK(LWORK) 
+        INTEGER ::     inpfile
 
-          CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
-          CALL READ_BASIS(inpfile, linelen,lupri)
-!         Nog te doen
-!          CALL MAKE_ATOMTYPES(lupri)
+!       Driver for reading coordinates and basis set information from xyz file and DIRAC.INP
 
-          IF(.NOT.(PARHER)) CALL PRINT_ATOMS(firstatom,lupri)
-          IF(.NOT.(PARHER)) CALL PRINT_BASIS(firstbas,lupri)
+!       In the XYZ format coordinates are supposed to start at the third line
+        REWIND (molfile)
+        CALL RDLINE(molfile)
+        CALL RDLINE(molfile)
+        CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
 
-        END SUBROUTINE READ_XYZ
+!       Read the basis set information from DIRAC.INP
+        inpfile=OPEN_FILE('DIRAC.INP',cmdfile,'FORMATTED',LUPRI)
+        IF (.NOT.(inpfile>0)) THEN
+          WRITE(LUPRI, '(a)') 'ERROR, could not open DIRAC.INP'
+          CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
+        END IF
+        CALL READ_BASIS(inpfile, linelen,lupri)
+        CLOSE(inpfile)
+
+!       Define the list of atomtypes
+        CALL MAKE_ATOMTYPES(lupri)
+
+!       Write the coordinates to the commonblocks
+        CALL WRITE_ATOMS(LUPRI)
+!       Write the basisset data to the commonblocks
+        CALL WRITE_ATOMTYPES(inpfile, LUPRI,WORK,LWORK,                 &
+     &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
+
+!       Give some feedback via the output
+        IF(.NOT.(suppress_output)) CALL PRINT_ATOMS(firstatom,lupri)
+        IF(.NOT.(suppress_output)) CALL PRINT_BASIS(firstbas,lupri)
+
+!       Free the reserved memory.
+        CALL CLEAR_XYZ()
+
+       END SUBROUTINE READ_XYZ
 
 
-      END MODULE READFILE
+      END MODULE READ_XYZFILE
 
