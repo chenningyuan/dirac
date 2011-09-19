@@ -24,7 +24,7 @@ module fde_integrate
 
    public integrate_fde
    public fde_get_nr_electrons_integrated
-   public fde_get_active_density
+!   public fde_get_active_density
 
    real(8) :: fde_get_nr_electrons_integrated
 
@@ -110,12 +110,6 @@ module fde_integrate
    integer                      :: nr_atoms
    real(8), pointer             :: property_gradient(:)
    real(8), allocatable, target :: property_gradient_container(:)
-
-#ifdef MOD_UNRELEASED
-   real(8), allocatable :: fde_froz_n(:)
-   real(8), allocatable :: fde_froz_ng(:,:)
-   real(8), allocatable :: fde_elpot(:)
-#endif
 
    logical :: do_potential
    integer :: response_order_mo

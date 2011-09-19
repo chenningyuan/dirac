@@ -81,7 +81,6 @@ module FDE_ImportPotentials
             character(len=60) :: file_name
             type(fde_files)   :: ftmp
 
-            call fde_import_static
             call fde_get_files_info(ftmp)
       
             file_unit = ftmp%embpot%unit

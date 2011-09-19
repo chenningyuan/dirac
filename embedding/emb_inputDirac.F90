@@ -48,6 +48,7 @@ module fde_inputDirac
          ftmp%logfile%name = log_name
          call fde_set_files_info(ftmp)
          
+         call dirac_data_interface
       end subroutine fdeini
 
 
@@ -137,9 +138,6 @@ module fde_inputDirac
             CASE ('.GRIDOU')
                read(lucmd,*) ftmp%export%name
                etmp%do_grid_out = .true.
-               etmp%ex_n        = .true.
-               etmp%ex_coulomb  = .true.
-               etmp%ex_gn       = .true.
 ! doprp is part of dcbgen.h
                doprp = .true.
 
@@ -179,15 +177,31 @@ module fde_inputDirac
          itmp%im_n        = .true.
          itmp%im_gn       = .true.
          itmp%im_coulomb  = .true.
-         call fde_import_frozen
-         call fde_initialize_nadd_functionals         
       endif
+
+      if (etmp%do_grid_out) then
+         etmp%ex_n        = .true.
+         etmp%ex_coulomb  = .true.
+         etmp%ex_gn       = .true.
+      endif
+
 
 ! saving information on 
       call fde_set_files_info(ftmp)
       call fde_set_export_info(etmp)
       call fde_set_import_info(itmp)
 
+
+      if (itmp%im_vemb) then
+         call fde_import_static      
+      endif
+
+      if (itmp%im_frozen) then
+         call fde_import_frozen
+         call fde_initialize_nadd_functionals         
+      endif
+      
+      
 !     options are echoed
          if (Echo_Input) then
 

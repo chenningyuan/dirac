@@ -42,10 +42,10 @@ module fde_data
    public get_fde_grid_coord
    public get_fde_grid_weight
    public fde_test_frozen_density
+   public fde_test_active_density
    public fde_import_frozen
    public fde_import_static
-   public fde_get_active_density
-   
+   public fde_initialize_data
 
    interface get_fde_grid_coord
       module procedure get_fde_grid_coords_single
@@ -220,8 +220,10 @@ module fde_data
       if (.not.data_is_initialized) then
          data_is_initialized = .true.
          if (fde_grid_np > 0) then
-            call alloc(fde_grid, 4,fde_grid_np, id="fde_grid")
-         
+            
+            if (.not.allocated(fde_grid)) then
+               call alloc(fde_grid, 4,fde_grid_np, id="fde_grid")
+            endif
             call fde_initialize_frozen_data
             call fde_initialize_active_data
          else
@@ -235,28 +237,49 @@ module fde_data
 !   ----------------------------------------------------------------------------
    subroutine fde_initialize_frozen_data
 !   ----------------------------------------------------------------------------
-         call alloc(fde_vemb, fde_grid_np, id="fde_vemb")
-         call alloc(fde_frozen_n,     fde_grid_np, id="fde_frozen_n")
-         call alloc(fde_frozen_gn,    fde_grid_np,3, id="fde_frozen_gn")
-         call alloc(fde_frozen_elpot, fde_grid_np, id="fde_frozen_elpot")
+         if (.not.allocated(fde_vemb)) then
+            call alloc(fde_vemb, fde_grid_np, id="fde_vemb")
+            fde_vemb         = 0.0d0
+         endif
          
-         fde_vemb         = 0.0d0  
-         fde_frozen_n     = 0.0d0
-         fde_frozen_gn    = 0.0d0
-         fde_frozen_elpot = 0.0d0
+         if (.not.allocated(fde_frozen_n)) then
+            call alloc(fde_frozen_n,     fde_grid_np, id="fde_frozen_n")
+            fde_frozen_n     = 0.0d0
+         endif
+         
+         if (.not.allocated(fde_frozen_gn)) then
+            call alloc(fde_frozen_gn,    fde_grid_np,3, id="fde_frozen_gn")
+            fde_frozen_gn    = 0.0d0
+         endif
+         
+         if (.not.allocated(fde_frozen_elpot)) then
+            call alloc(fde_frozen_elpot, fde_grid_np, id="fde_frozen_elpot")
+            fde_frozen_elpot = 0.0d0
+         endif
    end subroutine fde_initialize_frozen_data
 
 
 !   ----------------------------------------------------------------------------
    subroutine fde_initialize_active_data
 !   ----------------------------------------------------------------------------
+      if (.not.allocated(fde_active_n)) then
+         write (*,*) 'debug, allocating fde_active_n(',fde_grid_np,')'
          call alloc(fde_active_n,     fde_grid_np, id="fde_active_n")
-         call alloc(fde_active_gn,    fde_grid_np,3, id="fde_active_gn")
-         call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
-         
          fde_active_n     = 0.0d0
+      endif
+
+      if (.not.allocated(fde_active_gn)) then
+         write (*,*) 'debug, allocating fde_active_gn(',fde_grid_np,',3)'
+         call alloc(fde_active_gn,    fde_grid_np,3, id="fde_active_gn")
          fde_active_gn    = 0.0d0
+      endif
+
+      if (.not.allocated(fde_active_elpot)) then
+         write (*,*) 'debug, allocating fde_active_elpot(',fde_grid_np,')'
+         call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
          fde_active_elpot = 0.0d0
+      endif
+
    end subroutine fde_initialize_active_data
    
 
@@ -264,6 +287,7 @@ module fde_data
    subroutine fde_cleanup_data
 !   ----------------------------------------------------------------------------
       if (data_is_initialized) then
+         write (*,*) 'debug, cleaning up internal fde data'
          call dealloc(fde_grid)
          call fde_cleanup_active_data
          call fde_cleanup_frozen_data
@@ -300,7 +324,7 @@ module fde_data
          frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_n(point) 
       end do
       
-      write (*,*) '  Imported frozen density integrates to ',frozen_particle_number,' electrons'
+      write (*,*) '  Imported (frozen) density integrates to ',frozen_particle_number,' electrons'
       write (*,*) '  Grid points processed ',fde_grid_np
 
       frozen_particle_number = 0.0
@@ -309,84 +333,21 @@ module fde_data
 
 
 !   ----------------------------------------------------------------------------
-   subroutine fde_get_active_density(dmat, mat_dim, get_gradient)
+   subroutine fde_test_active_density
 !   ----------------------------------------------------------------------------
-      real(kind=8), intent(in) :: dmat(*)
-      integer, intent(in)      :: mat_dim
-      logical, intent(in) :: get_gradient
- 
-      real(kind=8) :: n_0(max_block_length)
-      real(kind=8) :: gn_0_pointwise(3)
-      real(8), allocatable :: ao(:, :)
-      real(8), allocatable :: buffer(:, :)
-      integer :: ipoint
-      integer :: i
-      integer :: nr_ao
-      integer :: max_ao_g_order, max_ao_m_order
+      integer      :: point = 0
+      real(kind=8) :: active_particle_number = 0.0
 
-
-      max_ao_g_order = 0
-      if (get_gradient) then
-        max_ao_g_order = 1
-      end if
-     
-      max_ao_m_order = 0
-     
-      call ao_eval_init(max_ao_g_order, &
-                        max_ao_m_order, &
-                        .true.)
-                        
-      nr_ao = nr_ao_slices*nr_ao_cartesian
+      do point = 1, fde_grid_np 
+         active_particle_number = active_particle_number + fde_grid(4,point)*fde_active_n(point) 
+      end do
       
-      call alloc(ao,     1, nr_ao, id="ao")
-      call alloc(buffer, 1, nr_ao, id="buffer")
+      write (*,*) '  Exported (active) density integrates to ',active_particle_number,' electrons'
+      write (*,*) '  Grid points processed ',fde_grid_np
 
-      ao     = 0.0d0
-      buffer = 0.0d0
+      active_particle_number = 0.0
 
+   end subroutine fde_test_active_density
 
-      fde_active_n  = 0.0d0
-      fde_active_gn = 0.0d0
-      
-      do ipoint = 1, fde_grid_np
-         
-!         time_ao_start = second()
-         call get_ao(1,          &
-                     fde_grid(ipoint,1), &
-                     fde_grid(ipoint,2), &
-                     fde_grid(ipoint,3), &
-                     ao,         &
-                     buffer)
-                     
-!         time_ao = time_ao + second() - time_ao_start
-
-!         time_density_start = second()
-         
-         if (need_ao_order(1, 0)) then
-!        density and density gradient
-            call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat, buffer, ao)
-         else
-!        density
-            call get_n(n_0(1), 0, mat_dim, dmat, buffer, ao)
-!           for mcscf/srdft also evaluate spin density here
-!          call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
-         end if
-
-         if ( n_0(1) > fde_cfg_screening ) then
-            fde_active_n(ipoint) = n_0(1)
-            if (get_gradient) then
-               fde_active_gn(1,ipoint) = gn_0_pointwise(1)
-               fde_active_gn(2,ipoint) = gn_0_pointwise(2)
-               fde_active_gn(3,ipoint) = gn_0_pointwise(3)
-            endif                     
-         endif
-
-!         time_density = time_density + second() - time_density_start
-
-      enddo
-      call dealloc(ao)
-      call dealloc(buffer)
-   end subroutine fde_get_active_density
-   
    
 end module fde_data

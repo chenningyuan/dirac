@@ -20,15 +20,15 @@
 !dirac_copyright_end
 
 module FDE_exportPotentials
+   use memory_allocator
    use fde_types
    use fde_cfg
    use fde_data
    use fde_io
    use xml_parser
    use xml_file
-   use interface_ao
-   use interface_mo_specific
-
+   use fde_eval_dirac
+   
    private
    
    public fde_export_write_data_to_file
@@ -54,97 +54,29 @@ module FDE_exportPotentials
       end subroutine fde_export_write_data_to_file
 
 
-#ifdef FOOBAR
-!   ----------------------------------------------------------------------------
-      subroutine fde_get_density_matrix(dmat,mat_dim,level)
-!   ----------------------------------------------------------------------------
-#include "priunit.h"
-#include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "mxcent.h"
-#include "nuclei.h"
-         character(len=3), intent(in) :: level
-         real(kind=8), allocatable, intent(out) :: dmat(:)
-         integer, itent(out) :: mat_dim
-         real(kind=8), allocatable :: cmo(:)
-         integer :: ierr
-
-         call alloc(dmat, n2bbasxq)
-         call alloc(cmo, ncmotq)
-         mat_dim = n2bbasxq
-
-         dmat = 0.0d0
-         cmo  = 0.0d0
-
-         select case(level)
-            case('MP2')
-               write(lupri,*) 'Reading CC_DENSITY'
-               call GET_CC_DENSITY(level,'AO',DMAT,ierr)
-               if (ierr.ne.0) then
-                  write(lupri,*) 'Error in reading density matrix'
-                  call quit('error readin density matrix')
-               end if
-            case default
-!     HF density used
-               write(lupri,*) 'Reading DFCOEF'
-               CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
-               call reacmo_no_work(lucoef,    &
-                                  'DFCOEF',  &
-                                  cmo,       &
-                                  (/0.0d0/), &
-                                  (/0/),     &
-                                  dummy,     &
-                                  2)
-               if (fde_print_level.gt.20) then
-                  WRITE(LUPRI,*) 'CMO', CMO
-                  WRITE(LUPRI,*) 'DMAT OLD', DMAT
-               end if
-!     SCF construct density matrix
-         call denmat(dmat,cmo,fde_print_level)
-         call dealloc(cmo)
-
-         end select
-!     Correct DMAT for occupationnumbers, both for scf and mp2...
-         dmat = 2.0d0*dmat
-
-      end subroutine fde_get_density_matrix
-
-
-!   ----------------------------------------------------------------------------
-      subroutine fde_calculate_active_elpot(dmat)
-!   ----------------------------------------------------------------------------
-         real(kind=8) :: dmat(:)
-         real(kind=8), allocat
-      
-         call emb_vc(dmat,points,fde_active_coulomb,WORK,LWORK) 
-      end subroutine fde_calculate_active_elpot
-
-
 !   ----------------------------------------------------------------------------
       subroutine fde_prepare_export(export_control)
 !   ----------------------------------------------------------------------------
         type(fde_export) :: export_control
         real(kind=8), allocatable :: dmat(:)
         integer :: mat_dim
-         
+
+         write (*,*) 'debug, testing active density'
+         call fde_test_active_density
+
 ! calculate vc, density and gradient
          call fde_get_density_matrix(dmat,mat_dim,export_control%ex_level)
 
 ! calculate vc, density and gradient, will be stored at the fde_data module
          call fde_get_active_density(dmat, mat_dim, .true.)
+         call fde_test_active_density
          call fde_calculate_active_elpot(dmat)
 
-         call fde_cleanup_density_matrix(dmat)
-#else
-      subroutine fde_prepare_export(export_control)
-         type(fde_export) :: export_control
-#endif
+         call dealloc(dmat)
+!#else
+!      subroutine fde_prepare_export(export_control)
+!         type(fde_export) :: export_control
+!#endif
       end subroutine fde_prepare_export
 
 
@@ -164,16 +96,29 @@ module FDE_exportPotentials
          type(fde_export) :: etmp
 
 
-         if (allocated(fde_grid))         write (*,*) 'ok 1!'
-         if (allocated(fde_active_n))     write (*,*) 'ok 2!'
-         if (allocated(fde_active_gn))    write (*,*) 'ok 3!'
-         if (allocated(fde_active_elpot)) write (*,*) 'ok 4!'
+         if (allocated(fde_grid)) then                
+            gp  => fde_grid
+         else
+            call quit('grid not available in fde export')
+         endif
+
+         if (allocated(fde_active_n)) then
+            np  => fde_active_n
+         else
+            call quit('density not available in fde export')
+         endif
          
-         gp  => fde_grid
-         np  => fde_active_n
-         gnp => fde_active_gn
-         vcp => fde_active_elpot
+         if (allocated(fde_active_gn)) then
+            gnp => fde_active_gn
+         else
+            call quit('density gradient not available in fde export')
+         endif   
          
+         if (allocated(fde_active_elpot)) then
+            vcp => fde_active_elpot
+         else
+            call quit('potential not available in fde export')
+         endif
          
          call fde_get_files_info(ftmp)
          call fde_get_export_info(etmp)

@@ -10,21 +10,21 @@ module fde_evaluators
    public fde_cleanup_density_matrix
    public fde_calculate_embpot 
 
-   interface fde_get_density_matrix
-      module procedure fde_get_dmat_dirac
-   end interface
+!   interface fde_get_density_matrix
+!      module procedure fde_get_dmat_dirac
+!   end interface
 
-   interface fde_calculate_active_n_gn
-      module procedure fde_get_ngn_dirac
-   end interface
+!   interface fde_calculate_active_n_gn
+!      module procedure fde_get_ngn_dirac
+!   end interface
 
-   interface fde_calculate_active_elpot
-      module procedure fde_get_vc_dirac
-   end interface
+!   interface fde_calculate_active_elpot
+!      module procedure fde_get_vc_dirac
+!   end interface
 
-   interface fde_cleanup_density_matrix
-      module procedure fde_free_dmat_dirac
-   end interface
+!   interface fde_cleanup_density_matrix
+!      module procedure fde_free_dmat_dirac
+!   end interface
 
    interface fde_calculate_embpot
       module procedure fde_calculate_vemb_dirac
