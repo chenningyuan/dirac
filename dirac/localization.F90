@@ -43,7 +43,7 @@ contains
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:) :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
       REAL*8,    ALLOCATABLE, DIMENSION(:) :: SCOEF, SCOEFO, SMAT, CMO
-      REAL*8,    ALLOCATABLE :: PMAT(:,:,:,:), XKAPPA(:,:,:), HAMAT(:,:,:)
+      REAL*8,    ALLOCATABLE :: PMAT(:,:,:,:), XKAPPA(:,:,:), HMAT(:,:,:)
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLOC')
@@ -68,7 +68,7 @@ contains
       CALL ALLOC(SCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEFO IN ORBLOC')
       CALL ALLOC(SMAT  ,N2BBASX,ID='SMAT IN ORBLOC')
       CALL ALLOC(CMO   ,N2BBASXQ,ID='CMO IN ORBLOC')
-      CALL ALLOC(HAMAT ,NISH12,NISH12,4,ID='HAMAT IN ORBLOC')
+      CALL ALLOC(HMAT  ,NISH12,NISH12,4,ID='HMAT IN ORBLOC')
       CALL ALLOC(XKAPPA,NISH(IFRP),NISH(IFRP),4,ID='XKAPPA IN ORBLOC')
       CALL ALLOC(PMAT  ,NISH(IFRP),NISH(IFRP),4,NUCDEP,ID='PMAT IN ORBLOC')
 
@@ -135,8 +135,8 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL GETH(PMAT,HAMAT)
-        CALL ORBLO2(PMAT,XKAPPA,HAMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
+        CALL GETH(PMAT,HMAT)
+        CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
@@ -182,7 +182,7 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL ORBLO2(PMAT,XKAPPA,HAMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
+        CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,HESLOC,IPRLOC,IPQTOQ,LUPRI)
         CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
         CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4, &
                         XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC)
@@ -228,7 +228,7 @@ contains
       CALL DEALLOC(SMAT  ,ID='SMAT   IN ORBLOC')
       CALL DEALLOC(PMAT  ,ID='PMAT   IN ORBLOC')
       CALL DEALLOC(XKAPPA,ID='XKAPPA IN ORBLOC')
-      CALL DEALLOC(HAMAT ,ID='HAMAT  IN ORBLOC')
+      CALL DEALLOC(HMAT  ,ID='HMAT   IN ORBLOC')
       CALL DEALLOC(CMO   ,ID='CMO    IN ORBLOC')
 
       CALL DEALLOC(NFNUC ,ID='NFNUC  IN ORBLOC')
@@ -731,7 +731,7 @@ contains
 !================================================================================!
 !================================================================================!
 
-  subroutine orblo2(pmat,xkappa,hamat,xnrm,flag,hesloc,iprloc,ipqtoq,lupri)
+  subroutine orblo2(pmat,xkappa,hmat,xnrm,flag,hesloc,iprloc,ipqtoq,lupri)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
@@ -749,7 +749,7 @@ contains
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
   real*8 :: xnrm
-  real*8, dimension(:,:,:)   ::  xkappa, hamat
+  real*8, dimension(:,:,:)   ::  xkappa, hmat
   real*8, dimension(:,:,:,:) ::  pmat
 
   integer*4 :: i, j, k, iz, nucdep, ni, ndim
@@ -763,18 +763,25 @@ contains
   ni     = size(pmat,1)
 
   ! Construct unbared diagonal Hessian matrix
-  ndim = ni*ni*4
-  call dzero(hamat,ndim)
+  hmat(:,:,:) = d0
   do j = 1,ni
     do i = 1,ni
       do k = 1,nucdep
         pii = pmat(i,i,1,k)
         pjj = pmat(j,j,1,k)
-        pn2 = pmat(j,i,1,k)*pmat(j,i,1,k) + pmat(j,i,2,k)*pmat(j,i,2,k)
-        if(i /= j)hamat(i,j,1) = hamat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
+        pn2 = pmat(i,j,1,k)*pmat(i,j,1,k) + pmat(i,j,2,k)*pmat(i,j,2,k)
+        if(i /= j)hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
       enddo
     enddo
   enddo
+
+! write(6,*)
+! write(6,'(a)') 'Print diagonal of hmat'
+! do j=1,ni
+!   do i=j,ni
+!     write(6,'(15f10.5)') hmat(i,j,1)
+!   enddo
+! enddo
 
   ! Construction and print of the unbared kappa matrix
   ndim = ni*ni*4
@@ -786,8 +793,8 @@ contains
         do k = 1,nucdep
           gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
         enddo
-!ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hamat(i,j,1)
-        if(i /= j)xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+!ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hmat(i,j,1)
+        if(i /= j)xkappa(i,j,iz) = - gradient / hmat(i,j,1)
         if(i == j)xkappa(i,j,iz) = d0
       enddo
     enddo
@@ -795,14 +802,14 @@ contains
 
   ! Construct bared diagonal Hessian matrix
   ndim = ni*ni*4
-  call dzero(hamat,ndim)
+  call dzero(hmat,ndim)
   do j = 1,ni
     do i = 1,ni
       do k = 1,nucdep
         pii = pmat(i,i,1,k)
         pjj = pmat(j,j,1,k)
         pn2 = pmat(j,i,3,k)*pmat(j,i,3,k) + pmat(j,i,4,k)*pmat(j,i,4,k)
-        if(i /= j)hamat(i,j,1) = hamat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
+        if(i /= j)hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
       enddo
     enddo
   enddo
@@ -816,8 +823,8 @@ contains
         do k = 1,nucdep
           gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
         enddo
-!ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hamat(i,j,1)
-        if(i /= j)xkappa(i,j,iz) = - gradient / hamat(i,j,1)
+!ST     if(flag .and. (.not.hesloc)) xkappa(i,j,iz) = - gradient / hmat(i,j,1)
+        if(i /= j)xkappa(i,j,iz) = - gradient / hmat(i,j,1)
         if(i == j)xkappa(i,j,iz) = d0
       enddo
     enddo
@@ -1200,7 +1207,7 @@ contains
 !================================================================================!
 !================================================================================!
 
-  subroutine geth(pmat,hamat)
+  subroutine geth(pmat,hmat)
   !******************************************************************************!
   !                                                                              !
   !  Construction of full hessian                                                !
@@ -1209,23 +1216,94 @@ contains
   implicit none
 
   ! external variables
-  real*8, dimension(:,:,:)   ::  hamat
+  real*8, dimension(:,:,:)   ::  hmat
   real*8, dimension(:,:,:,:) ::  pmat
 
   ! internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
+  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0
 
-  integer*4 :: i, j, k, iz, nucdep, ni
+  real*8 :: pij1, pij2, pkl1, pkl2, pjl1, pjl2, pki1, pki2
+  real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond
+
+  integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ni12
 
   !------------------------------------------------------------------------------!
   call qenter('geth')
 
-  write(6,*) "I'm in geth", size(hamat,1)
-  stop
+  hmat(:,:,:) = d0
+  sumdiag = d0
+  sumnond = d0
 
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
+  ni12   = size(hmat,1)
+
+  ij = 0
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = 0
+      do l=1,ni
+        do k=l,ni
+          kl = kl + 1
+          if(k==l) cycle
+          do m = 1,nucdep
+            pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
+            pkl1 = pmat(k,l,1,m); pkl2 = pmat(k,l,2,m)
+            pjl1 = pmat(j,l,1,m); pjl2 = pmat(j,l,2,m)
+            pki1 = pmat(k,i,1,m); pki2 = pmat(k,i,2,m)
+            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
+            dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
+            dtmp2= d2*(pij1*pkl2 - pij2*pkl1)
+
+            if(j==k)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
+              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
+            endif
+
+            if(i==l)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
+              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
+            endif
+
+            if(i==k)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl1
+              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
+            endif
+
+            if(j==l)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
+            endif
+
+          enddo
+          if(ij==kl)then
+            sumdiag = sumdiag + dabs(hmat(ij,kl,1))
+          else
+            sumnond = sumnond + dabs(hmat(ij,kl,1))
+          endif
+        enddo
+      enddo
+    enddo
+  enddo
+
+  write(6,*)
+  write(6,'(a,2f10.5)') 'Print hmat(:,:,1)',sumdiag,sumnond
+  do j=1,ni12
+    write(6,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+  enddo
+
+! write(6,'(a)') 'Print diagonal hmat (geth)'
+! write(6,'(15f10.5)') (hmat(i,i,1),i=1,ni12)
+
+! write(6,*)
+! write(6,'(a)') 'Print hmat(:,:,2)'
+! do j=1,ni12
+!   write(6,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+! enddo
 
   call qexit('geth')
 
