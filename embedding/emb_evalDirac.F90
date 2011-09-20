@@ -4,6 +4,7 @@ module fde_eval_dirac
    use fde_types
    use fde_cfg
    use fde_data
+   use fde_io
    use fde_integrate
    use vc_grid
    use density_eval
@@ -23,7 +24,8 @@ module fde_eval_dirac
    public fde_get_active_density
    public fde_get_density_matrix
    public dirac_data_interface
-
+   public fde_old_density_matrix_generator
+   
    private 
 
    integer, save :: nba, nba_orb, nba_aux
@@ -66,7 +68,7 @@ module fde_eval_dirac
          call emb_vc(dmat,fde_grid,fde_active_elpot,iprint,WORK,work_dim) 
          write (*,*) 'done!'
          call dealloc(work)
-         
+                           
       end subroutine fde_calculate_active_elpot  
       
 
@@ -77,10 +79,12 @@ module fde_eval_dirac
          real(kind=8), target, intent(in) :: dmat(*)
          real(kind=8), target  :: vmat(*)
 
+! aspg, 
+!         write (*,*) 'debug, before getting active density'
+!         call fde_get_active_density(dmat, mat_dim, .true.)
+!         write (*,*) 'debug, after  getting active density'
+
          write (*,*) 'debug, inside fde_calculate_vemb_dirac'
-!        write (*,*) '       before fde_get_ngn_dirac'
-!        call fde_get_ngn_dirac(dmat,mat_dim)
-!        write (*,*) '       after  fde_get_ngn_dirac'
          write (*,*) '       before integrate_fde'
          call integrate_fde(fde_mat_dim   = mat_dim, &
                             fde_nz        = nz,      &
@@ -124,139 +128,23 @@ module fde_eval_dirac
       integer, intent(in)      :: mat_dim
       logical, intent(in) :: get_gradient
  
-      integer :: ipoint
-      real(8) :: nelec, x(1), y(1), z(1), w(1)
-      integer :: nr_ao
- 
-#ifndef NEWSCHEME    
-      real(kind=8) :: n_0(max_block_length)
-      real(kind=8) :: gn_0_pointwise(3)
-      real(8), allocatable :: ao(:, :)
-      real(8), allocatable :: buffer(:, :)
-      integer :: i
-      integer :: max_ao_g_order, max_ao_m_order
-
-      max_ao_g_order = 0
-      if (get_gradient) then
-        max_ao_g_order = 1
-      end if
-     
-      max_ao_m_order = 0
-     
-      call ao_eval_init(max_ao_g_order, &
-                        max_ao_m_order, &
-                        .true.)
-     
-                         
-      nr_ao = nr_ao_slices*nr_ao_cartesian
-      
-      call alloc(ao,     1, nr_ao, id="ao")
-      call alloc(buffer, 1, nr_ao, id="buffer")
-#else
-      INTEGER :: NDER=0, DOLND=0
-      integer :: pl
-      real(kind=8), allocatable :: GAO(:), GAO1(:),GAO2(:)
-      real(kind=8), allocatable :: GAB1(:),BUF(:),NCNT(:)
-      
-      nr_ao = nba
-      write (*,*) 'debug, nr_ao is',nr_ao
-      
-      call fde_get_print_level(pl)
-      call alloc(gao ,   nr_ao, id="gao")
-      call alloc(gao1, 3*nr_ao, id="gao1")
-      call alloc(gao2, 6*nr_ao, id="gao2")
-      call alloc(gab1, 3*nr_ao, id="gab1")
-      call alloc(ncnt,   nr_ao, id="ncnt")
-      call alloc(buf , 4*nr_ao, id="buf")
-      
-#endif
-      nelec = 0.0
-      do ipoint = 1, fde_grid_np
-
-         x(1) = fde_grid(ipoint,1)
-         y(1) = fde_grid(ipoint,2)
-         z(1) = fde_grid(ipoint,3)
-         w(1) = fde_grid(ipoint,4)
-
-#ifndef NEWSCHEME         
-         ao     = 0.0d0
-         buffer = 0.0d0
-!         time_ao_start = second()
-         call get_ao(1,    &
-                     x(1), &
-                     y(1), &
-                     z(1), &
-                     ao,   &
-                     buffer)
-                     
-!         time_ao = time_ao + second() - time_ao_start
-!         time_density_start = second()
-         if (need_ao_order(1, 0)) then
-!        density and density gradient
-            call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat, buffer, ao)
-         else
-!        density
-            call get_n(n_0(1), 0, mat_dim, dmat, buffer, ao)
-!           for mcscf/srdft also evaluate spin density here
-!          call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
-         end if
-         
-         if ( n_0(1) > fde_cfg_screening ) then
-            fde_active_n(ipoint) = n_0(1)
-            if (get_gradient) then
-               fde_active_gn(ipoint,1) = gn_0_pointwise(1)
-               fde_active_gn(ipoint,2) = gn_0_pointwise(2)
-               fde_active_gn(ipoint,3) = gn_0_pointwise(3)
-            endif
-         else
-            fde_active_n(ipoint)    = 0.0
-            fde_active_gn(ipoint,1) = 0.0 
-            fde_active_gn(ipoint,2) = 0.0 
-            fde_active_gn(ipoint,3) = 0.0 
-         endif
-
-#else
-      GAO  = 0.0
-      GAO1 = 0.0
-      GAO2 = 0.0
-      BUF  = 0.0
-      NCNT = 0.0
-      GAB1 = 0.0
-
-        CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,  &
-                    x(1),y(1),z(1), &
-                    BUF,nr_ao,2,DOLND,pl)
-        CALL GETRHO(fde_active_n(ipoint),0,GAO,DMAT,BUF)
-        CALL GETGRHO(fde_active_gn(ipoint,1:3),0,GAO,GAO1,DMAT,BUF)
-#endif
-         write (*,*) 'i:',ipoint,' (',x(1),',',y(1),',',z(1),') = ', &
-                     fde_active_n(ipoint),'  w*n =',w(1) * fde_active_n(ipoint)
-         nelec = nelec + w(1) * fde_active_n(ipoint)
-
-!         time_density = time_density + second() - time_density_start
-
-      enddo
-      write (*,*) 'debug, nelec is ',nelec
-
-#ifndef NEWSCHEME      
-      call dealloc(ao)
-      call dealloc(buffer)
-#else
-      call dealloc(gao )
-      call dealloc(gao1)
-      call dealloc(gao2)
-      call dealloc(gab1)
-      call dealloc(ncnt)
-      call dealloc(buf )
-
-#endif      
+      call quit('write me!')
    end subroutine fde_get_active_density
    
 
 !   ----------------------------------------------------------------------------
       subroutine fde_get_density_matrix(dmat,mat_dim,level)
 !   ----------------------------------------------------------------------------
-#include "implicit.h"
+         character(len=3), intent(in) :: level
+         real(kind=8), allocatable, intent(out) :: dmat(:)
+         integer, intent(out) :: mat_dim
+         call quit('write me!')
+      end subroutine fde_get_density_matrix
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_old_density_matrix_generator(dmat)
+!   ----------------------------------------------------------------------------
 #include "priunit.h"
 #include "dcbbas.h"
 #include "maxaqn.h"
@@ -268,52 +156,144 @@ module fde_eval_dirac
 #include "dcborb.h"
 #include "mxcent.h"
 #include "nuclei.h"
-         character(len=3), intent(in) :: level
-         real(kind=8), allocatable, intent(out) :: dmat(:)
-         integer, intent(out) :: mat_dim
-         real(kind=8), allocatable :: cmo(:)
-         integer :: ierr
+!     Passed variables
+      type(fde_files)  :: ftmp
+      type(fde_export) :: etmp
+      integer :: file_unit
+      character(len=60) :: file_name
+      character(len=3) :: level
+      real(kind=8), allocatable, intent(out) :: dmat(:)
+      real(kind=8) :: test_int_density
 
-         call alloc(dmat, n2bbasxq)
-         call alloc(cmo, ncmotq)
-         mat_dim = n2bbasxq
+      real(kind=8), allocatable :: cmo(:)
+      REAL(kind=8), pointer :: points(:,:)
+      real(8), allocatable :: grad_rho(:, :), hes_rho(:, :), vc(:), rho(:, :)
 
-         dmat = 0.0d0
-         cmo  = 0.0d0
+      INTEGER ::i,ierr
+      INTEGER :: NDIMENSION
+!     JHS THROW AWAY IN THE END?
+      INTEGER :: NDER=0, DOLND=0
 
-         select case(level)
-            case('MP2')
-               write(lupri,*) 'Reading CC_DENSITY'
-               call GET_CC_DENSITY(level,'AO',DMAT,ierr)
-               if (ierr.ne.0) then
-                  write(lupri,*) 'Error in reading density matrix'
-                  call quit('error readin density matrix')
-               end if
-            case default
+      REAL(KIND=8),ALLOCATABLE :: GAO(:), GAO1(:),GAO2(:),BUF(:),NCNT(:)
+      REAL(KIND=8),ALLOCATABLE :: GAB1(:)
+
+      REAL(KIND=8)::dummy,TOLS,TOLOG
+      REAL(KIND=8)::gexp=0.0,ncentc=1.0,factor=1.0
+      
+      NDIMENSION=NTBAS(0)
+
+      call alloc(gao ,   ndimension)
+      call alloc(gao1, 3*ndimension)
+      call alloc(gao2, 6*ndimension)
+      call alloc(gab1, 3*ndimension)
+      call alloc(ncnt,   ndimension)
+      call alloc(buf , 4*ndimension)
+
+!     Initialize the matrices to zero.
+
+      GAO  = 0.0
+      GAO1 = 0.0
+      GAO2 = 0.0
+      BUF  = 0.0
+      NCNT = 0.0
+      GAB1 = 0.0
+
+      call alloc(dmat, n2bbasxq)
+      dmat = 0.0d0
+      call alloc(cmo, ncmotq)
+      cmo = 0.0d0
+
+      call fde_get_export_info(etmp)
+      level = etmp%ex_level
+      
+      select case(level)
+      case('MP2')
+         write(lupri,*) 'Reading CC_DENSITY'
+         call GET_CC_DENSITY(level,'AO',DMAT,ierr)
+         if (ierr.ne.0) then
+            write(lupri,*) 'Error in reading density matrix'
+            call quit('error readin density matrix')
+         end if
+      case default
 !     HF density used
-               write(lupri,*) 'Reading DFCOEF'
-               CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
-               call reacmo_no_work(lucoef,    &
-                                  'DFCOEF',  &
-                                  cmo,       &
-                                  (/0.0d0/), &
-                                  (/0/),     &
-                                  dummy,     &
-                                  2)
-               if (fde_print_level.gt.20) then
-                  WRITE(LUPRI,*) 'CMO', CMO
-                  WRITE(LUPRI,*) 'DMAT OLD', DMAT
-               end if
+         write(lupri,*) 'Reading DFCOEF'
+         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
+         call reacmo_no_work(lucoef,    &
+                             'DFCOEF',  &
+                             cmo,       &
+                             (/0.0d0/), &
+                             (/0/),     &
+                             dummy,     &
+                             2)
 !     SCF construct density matrix
-         call denmat(dmat,cmo,fde_print_level)
-         call dealloc(cmo)
+      CALL DENMAT(DMAT,CMO,0)
 
-         end select
+!     TMP scaling
+      end select
 !     Correct DMAT for occupationnumbers, both for scf and mp2...
-         dmat = 2.0d0*dmat
-         
-         write (*,*) 'debug, in fde_get_dm, dim is',mat_dim
-      end subroutine fde_get_density_matrix
+      dmat = 2.0d0*dmat
 
+!     GET an id for LUGRIDOUT.
+      call fde_get_files_info(ftmp)
+      
+      file_unit = ftmp%export%unit
+      file_name = ftmp%export%name
+      call fde_open_file(file_name,file_unit)
+
+      WRITE(LUPRI,*) 'Reading grid.'
+      nullify(points)
+      CALL READ_GRID(file_unit,points)
+      call fde_close_file(file_unit)
+      WRITE(LUPRI,*) 'Grid read from file.'
+      write(lupri,*) 'Number of gridpoints:', size(points,2)
+
+      call alloc(rho,     1,SIZE(points,2))
+      call alloc(grad_rho,3,SIZE(points,2))
+      call alloc(hes_rho, 6,SIZE(points,2))
+      call alloc(vc,        SIZE(points,2))
+
+      rho      = 0.0d0
+      grad_rho = 0.0d0
+      hes_rho  = 0.0d0
+      vc       = 0.0d0
+
+      test_int_density = 0.0d0
+
+      WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
+      DO i=1,size(points,2)
+!     JHS Get the values of the basisfunctions in every gridpoint
+        CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,  &
+                    points(1,i),points(2,i),points(3,i), &
+                    BUF,NDIMENSION,2,DOLND,0)
+!     JHS calculate the SCF density and its derivatives. 
+        CALL GETRHO(rho(1,i),0,GAO,DMAT,BUF)
+        CALL GETGRHO(grad_rho(1:3,i),0,GAO,GAO1,DMAT,BUF)
+        CALL GETLRHO(hes_rho(1,i),hes_rho(2,i),hes_rho(3,i), &
+             hes_rho(4,i),hes_rho(5,i),hes_rho(6,i), &
+             GAO,GAO1,GAO2,DMAT,BUF)
+!     JHS Calculate the coulomb potential.
+         test_int_density = test_int_density + rho(1,i)*points(4,i)
+
+         fde_active_n(i) = rho(1,i)
+         fde_active_gn(i,1) = grad_rho(1,i)
+         fde_active_gn(i,2) = grad_rho(2,i)
+         fde_active_gn(i,3) = grad_rho(3,i)
+      END DO
+
+      WRITE(LUPRI,*) ' Integrated density adds up to ',test_int_density,&
+     &               ' electrons.'
+
+      call dealloc (cmo)
+      call dealloc (gao)
+      call dealloc (gao1)
+      call dealloc (gao2)
+      call dealloc (gab1)
+      call dealloc (ncnt) 
+      call dealloc (rho)
+      call dealloc (grad_rho)
+      call dealloc (hes_rho)
+      call dealloc (vc)
+      call deallocp (points)     
+      end  subroutine fde_old_density_matrix_generator
 
 end module fde_eval_dirac

@@ -69,7 +69,7 @@ module fde_cfg
    private
 
    integer, save :: fde_print_level = 0
-   real(kind=8), save :: fde_cfg_screening = 1e-8
+   real(kind=8), save :: fde_cfg_screening = 1.0d-9
    logical,save :: parallel_fde = .false.
 
    type(fde_export), save :: fde_ex_control

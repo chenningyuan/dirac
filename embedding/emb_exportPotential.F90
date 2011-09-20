@@ -64,19 +64,19 @@ module FDE_exportPotentials
          write (*,*) 'debug, testing active density'
          call fde_test_active_density
 
-! calculate vc, density and gradient
-         call fde_get_density_matrix(dmat,mat_dim,export_control%ex_level)
-
-! calculate vc, density and gradient, will be stored at the fde_data module
-         call fde_get_active_density(dmat, mat_dim, .true.)
+!! calculate vc, density and gradient
+!         call fde_get_density_matrix(dmat,mat_dim,export_control%ex_level)
+!         call fde_get_active_density(dmat, mat_dim, .true.)
+!
+! not so nice solution: while i don't get around to writing the ones above,
+! just reuse the old code in the routine below
+         call fde_old_density_matrix_generator(dmat)
+         
          call fde_test_active_density
          call fde_calculate_active_elpot(dmat)
 
          call dealloc(dmat)
-!#else
-!      subroutine fde_prepare_export(export_control)
-!         type(fde_export) :: export_control
-!#endif
+
       end subroutine fde_prepare_export
 
 

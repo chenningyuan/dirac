@@ -343,8 +343,6 @@ contains
       fmat = 0.0d0
 #endif
 
-! aspg, 
-!     call fde_get_active_density(dmat, mat_dim, use_gga)
       call loop_over_batches()
 
 #ifdef PRG_DIRAC
@@ -373,7 +371,7 @@ contains
             write (6,*) 'debug, fde_mat_energy :',fde_mat_energy
          end if
 
-!        call report()
+        call report()
 
       call nullify_and_release()
 
@@ -463,7 +461,7 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-      subroutine integrate()
+   subroutine integrate()
 ! ------------------------------------------------------------------------------
 !        unperturbed density
          real(8) :: n_0(max_block_length)
@@ -521,112 +519,113 @@ contains
 !   check what functional derivatives do we need
 !   ============================================
 
-    max_fun_derv = 0
+         max_fun_derv = 0
 
-    if (do_potential) then
-       max_fun_derv = 1
-    end if
-    if (response_order_mo > 0) then
-       max_fun_derv = response_order_mo + 1
-    end if
+         if (do_potential) then
+            max_fun_derv = 1
+         end if
+         if (response_order_mo > 0) then
+            max_fun_derv = response_order_mo + 1
+         end if
 
-      derv_length = nr_nonzero_derv
-      allocate(derv(max_block_length, 0:derv_length))
+         derv_length = nr_nonzero_derv
+         allocate(derv(max_block_length, 0:derv_length))
 
-!       better safe than sorry
-        derv      = 0.0d0
+!  better safe than sorry
+         derv      = 0.0d0
 
-!       set it to zero, otherwise it is undefined with lda
-        gnn_0 = 0.0d0
+!  set it to zero, otherwise it is undefined with lda
+         gnn_0 = 0.0d0
 
+         allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
+         ao = 0.0d0
+         allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
+         buffer = 0.0d0
 
-      allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
-      ao = 0.0d0
-      allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
-      buffer = 0.0d0
-
-   print_data_at_point = .true.
+         print_data_at_point = .true.
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
+   
+         do ipoint = 1, nr_points_on_this_proc
 
-   do ipoint = 1, nr_points_on_this_proc
-
-      time_ao_start = second()
-      call get_ao(1,          &
+            time_ao_start = second()
+            call get_ao(1,          &
                   rx(ipoint), &
                   ry(ipoint), &
                   rz(ipoint), &
                   ao,         &
                   buffer)
-      time_ao = time_ao + second() - time_ao_start
+            time_ao = time_ao + second() - time_ao_start
 
-      time_density_start = second()
-      if (need_ao_order(1, 0)) then
+            time_density_start = second()
+
+            if (need_ao_order(1, 0)) then
 !        density and density gradient
-         call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
-         gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) &
-                  + gn_0_pointwise(2)*gn_0_pointwise(2) &
-                  + gn_0_pointwise(3)*gn_0_pointwise(3)
-      else
+               call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
+               gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) &
+                        + gn_0_pointwise(2)*gn_0_pointwise(2) &
+                        + gn_0_pointwise(3)*gn_0_pointwise(3)
+            else
 !        density
-         call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
-!        for mcscf/srdft also evaluate spin density here
-!        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
-      end if
-      time_density = time_density + second() - time_density_start
+               call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
+            endif
 
-      if (n_0(1) > dft_cfg_small_density_threshold) then
-         nr_points_used = nr_points_used + 1
+            time_density = time_density + second() - time_density_start
 
-         u%n  = 0.0d0
-         u%gn = 0.0d0
+            if (n_0(1) > dft_cfg_small_density_threshold) then
+               nr_points_used = nr_points_used + 1
 
-         w(1) = rw(ipoint)
+               u%n  = 0.0d0
+               u%gn = 0.0d0
 
-         if ( fde_frozen_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
-            n_0_t(1) = n_0(1) + fde_frozen_n(ipoint)
+               w(1) = rw(ipoint)
 
-            z0tt(1)  = gn_0_pointwise(1) + fde_frozen_gn(ipoint,1)
-            z0tt(2)  = gn_0_pointwise(2) + fde_frozen_gn(ipoint,2)
-            z0tt(3)  = gn_0_pointwise(3) + fde_frozen_gn(ipoint,3)
+               fde_active_n(ipoint)    = n_0(1)
+               fde_active_gn(ipoint,1) = gn_0_pointwise(1)
+               fde_active_gn(ipoint,2) = gn_0_pointwise(2)
+               fde_active_gn(ipoint,3) = gn_0_pointwise(3)
 
-            gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
+               if ( fde_frozen_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
+                  n_0_t(1) = fde_active_n(ipoint)    + fde_frozen_n(ipoint)
+                  z0tt(1)  = fde_active_gn(ipoint,1) + fde_frozen_gn(ipoint,1)
+                  z0tt(2)  = fde_active_gn(ipoint,2) + fde_frozen_gn(ipoint,2)
+                  z0tt(3)  = fde_active_gn(ipoint,3) + fde_frozen_gn(ipoint,3)
 
-         else
-            n_0_t(1) = n_0(1)
-            gnn_0_t(1) = gnn_0(1)
-         endif
+                  gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
+               else
+                  n_0_t(1)   = n_0(1)
+                  gnn_0_t(1) = gnn_0(1)
+               endif
 !       number of electrons
-         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
+               nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
 
-         time_derv_start = second()
+               time_derv_start = second()
 
 ! aspg: this way we are forcing the same xc functional for the active and non-additive
 !       contributions. this is not desired, but we have to overcome xcfun's limitation
 !       on using only up to 5 functionals...
 !
-         call get_fde_nadd_fun_derv(max_fun_derv, &
-                                         bllen,        &
-                                         w,            &
-                                         n_0,          &
-                                         n_0_t,        &
-                                         gnn_0,        &
-                                         gnn_0_t,      &
-                                         derv_length,  &
-                                         derv,         &
-                                         parallel_xc)
+               call get_fde_nadd_fun_derv(max_fun_derv, &
+                                          bllen,        &
+                                          w,            &
+                                          n_0,          &
+                                          n_0_t,        &
+                                          gnn_0,        &
+                                          gnn_0_t,      &
+                                          derv_length,  &
+                                          derv,         &
+                                          parallel_xc)
 
 
-          do ii = 1, max_block_length
-             derv(ii,1) = derv(ii,1) + w(1)*fde_frozen_elpot(ipoint)
-          enddo
+               derv(1, d1000000) = derv(1, d1000000) &
+                                 + w(1)*fde_frozen_elpot(ipoint)
 
-         time_derv = time_derv + second() - time_derv_start
+               time_derv = time_derv + second() - time_derv_start
 
-         time_matrix_dist_start = second()
+               time_matrix_dist_start = second()
 
 !       exchange-correlation potential
 !       ==============================
@@ -748,7 +747,7 @@ contains
 
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
-               'DFT exchange-correlation energy:               = ', &
+               'FDE "energy":               = ', &
                fde_energy
       end if
 

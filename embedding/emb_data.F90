@@ -25,12 +25,6 @@ module fde_data
    use fde_types
    use fde_cfg
    use fde_io
-   use interface_ao
-   use interface_mo
-   use ao_eval
-   use density_eval
-   use xc_max_block_length
-
 
    implicit none
 
@@ -187,7 +181,6 @@ module fde_data
       file_unit = ftmp%frozen%unit
       file_name = ftmp%frozen%name
 
-      gridp => fde_grid
       call fde_open_file(file_name,file_unit)
       call read_grid(file_unit,gridp,fde_frozen_prp)
       call fde_close_file(file_unit)
