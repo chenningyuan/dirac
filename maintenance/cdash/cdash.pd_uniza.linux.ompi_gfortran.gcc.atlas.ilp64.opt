@@ -26,6 +26,7 @@ git pull origin master
 #
 cd $DIRAC/$BUILD
 make Experimental
+make info_ext
 
 ##
 ## Do the regular Nightly build
