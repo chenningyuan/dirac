@@ -2472,35 +2472,38 @@ C
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
          END DO
 C
+         NUCLEI_IN_TYPE = 0
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
             NCHARG = NINT(CHARGE(ICENT))
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
-            IF (IPREAD .GT. 0) THEN
-               IF(DIRAC) THEN
-                  WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
-     &                   NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),
-     &                   'L  - ',TSTRING(1)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
-                  IF (DOFIT) THEN
-                     IF (NPRIM(3).GT.0)
-     &                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                     NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
-                     IF (NPRIM(4).GT.0)
-     &                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                     NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
-                  ENDIF
-               ELSE
-                  WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
-     &                 NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),TSTRING(1)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(3),NBAS(2),'Aux - ',TSTRING(2)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
-               ENDIF
-            END IF
+            NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
    20    CONTINUE
+         
+         IF (IPREAD .GT. 0) THEN
+            IF(DIRAC) THEN
+               WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
+     &                NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NBAS(1),
+     &                'L  - ',TSTRING(1)
+               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
+               IF (DOFIT) THEN
+                  IF (NPRIM(3).GT.0)
+     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
+                  IF (NPRIM(4).GT.0)
+     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
+               ENDIF
+            ELSE
+               WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
+     &              NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NBAS(1),TSTRING(1)
+               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(3),NBAS(2),'Aux - ',TSTRING(2)
+               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
+            ENDIF
+         END IF
   100 CONTINUE
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
@@ -6925,11 +6928,6 @@ C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
 C
       WRITE (LUTMP2,'(A)') 'END'
       CALL GPCLOSE(LUTMP2,'KEEP')
-
-      if(ipread .gt. 0)then
-        WRITE(LUPRI,'(/A)')
-     &  '  MNF.INP input file (for the AMFI stuff) is ready.'
-      end if
 
       CALL FLSHFO(LUPRI)
 

@@ -315,8 +315,7 @@
             fbas=>bas
           END IF
           prevbas=>bas
-          bas%jco=>NULL()
-          bas%fam=>NULL()
+
         END SUBROUTINE ADD_BASIS
 
         SUBROUTINE ADD_JCO(bas,JCO)
@@ -487,6 +486,18 @@
             END DO
           END IF
         END FUNCTION count_atoms
+
+        INTEGER FUNCTION count_types(ftype)
+          TYPE(atomtype), POINTER :: ftype
+          TYPE(atomtype), POINTER :: typepointer
+
+          count_types=0
+          typepointer=>ftype
+          DO WHILE (associated(typepointer))
+             count_types=count_types+1
+             typepointer=>typepointer%next
+          END DO
+        END FUNCTION count_types
 
 
         SUBROUTINE MAKE_ATOMTYPES(lupri)
@@ -690,15 +701,16 @@
 !     TMP We read the coefficients in in the old way in write commonblock
                     read(tmp_file,*,iostat=ios) iqm
                     if ( ios.ne.0 .or. iqm.eq.0) then
-                      write(tmp_file,*) "ERROR(readbasis) :",           &
+                      write(lupri,*) "ERROR(readbasis) :",           &
      &                 "No iqm for ",tmpbas%type," specified."
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
+                    backspace(tmp_file)               
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
                     if (ios.ne.0) then
-                      write(tmp_file,*) "ERROR(readbasis) :",           &
-     &                 "Specify at least ",iqm," coefficients"
+                      write(lupri,*) "ERROR(readbasis) :",           &
+     &                 "Specify at least ",iqm," numbers"
                       cycle
                     end if
                     CALL ADD_JCO(tmpbas,JCO)
@@ -710,15 +722,15 @@
                     
                     read(tmp_file,*,iostat=ios) iqm
                     if (ios.ne.0 .or. iqm==0) then
-                      write(tmp_file,*) "ERROR(readbasis) :",           &
+                      write(lupri,*) "ERROR(readbasis) :",           &
      &                 "No iqm for ",tmpbas%type," specified."
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
                     if (ios.ne.0) then
-                      write(tmp_file,*) "ERROR(readbasis) :",           &
-     &                 "Specify at least ",iqm," coefficients"
+                      write(lupri,*) "ERROR(readbasis) :",           &
+     &                 "Specify at least ",iqm," numbers"
                       cycle
                     end if
                     CALL ADD_JCO(tmpbas,JCO)
@@ -834,7 +846,7 @@
 
       INTEGER, INTENT(IN)             :: lupri
 
-      INTEGER :: KATOM,natom,count
+      INTEGER :: ncent,natom
       TYPE(atom), POINTER             :: mol
 
 #include "molinp.h"
@@ -846,12 +858,12 @@
 
       CALL QENTER('WRITE_ATOMS')
 
-      KATOM=count_atoms(firstatom)
-      IF (KATOM>MXCENT) THEN
-         WRITE(lupri,*) 'Number of atoms specified greater max number   & 
-     &        of atoms'
+!     Check that we do not exceed the maximum number of centers in the common block
+      ncent=count_atoms(firstatom)
+      IF (NCENT>MXCENT) THEN
+         WRITE(lupri,*) 'Too many centers for this version of DIRAC'
          WRITE(lupri,*) 'Adjust maxorb.h'
-         CALL QUIT('*** ERROR (READIN) natom>mxcent')
+         CALL QUIT('*** ERROR (READIN) ncent>mxcent')
       END IF
 
 !     nuclei.h
@@ -885,7 +897,7 @@
             mol%nucexp=D0
           END IF
 
-!     REALLY WRITE COMMONBLOCKS
+!     WRITE COMMONBLOCKS
           NAMN(natom)=mol%name
           CORD(:,natom)=mol%x
           NAMEX(3*natom)=TRIM(mol%name)//' z'
@@ -898,14 +910,6 @@
         END IF
       END DO
 
-!     ***************************************
-!     ***** Process symmetry input data *****
-!     ***************************************
-!     TMP DETECT SYM?
-
-!      CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
-
-!
       NUCIND=natom
 
       CALL QEXIT('WRITE_ATOMS')
@@ -914,19 +918,20 @@
 
         SUBROUTINE POS_FILE(infile,lupri,linelen,                       &
      &     section,subsection,name,comp)
-!     JHS050707 A function for later use, positions a file to a specific keyword.
+!         Position a file to a specific keyword.
         
           INTEGER, INTENT(IN)   :: infile,lupri,linelen
           CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name,comp
           CHARACTER(LEN=linelen) :: str,pressect,pressub
           character(len=linelen) :: tmp_name,tmp_comp
-          INTEGER                :: index
+          INTEGER                :: ios
 
           REWIND(infile)
           DO            
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
+              WRITE(lupri,*) section,subsection,name,comp
               CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
               pressect=str              
@@ -938,7 +943,7 @@
                 tmp_name=' '
                 tmp_comp=' '
                 read(infile,*,iostat=ios) tmp_name,tmp_comp
-                IF (.not.(ios.ne.0) .and. str==comp) EXIT
+                IF (ios.eq.0 .and. tmp_comp==comp) EXIT
               END IF
             END IF
           END DO
@@ -969,7 +974,7 @@
       INTEGER,INTENT(INOUT)::LWORK
 
       INTEGER      :: KLAST,i,j,IBSFLAG, KAOVEC, NBLOCK,                &
-     &                katom,basindex,index
+     &                katom,basindex,index, iqm_check
 
       REAL(KIND=8) :: QEXP=D0
       REAL         :: MXSPD
@@ -1010,7 +1015,7 @@
       LOGICAL LINEAR
 #endif
       
-      katom=count_atoms(firstatom)
+      katom=count_types(firstatomtype)
 
       ALLOCATE(JCO(KANG,KATOM,KSETS))
       ALLOCATE(JCO2(KANG,KATOM))
@@ -1086,7 +1091,11 @@
 
 !     POSITION the input file.
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+!     Additional check : read iqm once more
+            READ (infile,*) IQM_CHECK
+            IF (IQM_CHECK .NE. IQM(basindex,1))                         &
+     &         CALL QUIT ('Error in write_atomtypes')
           CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),         &
      &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
      &         SEG(IBLOCK(1),1),                                        &
@@ -1125,7 +1134,7 @@
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
           FAMPAR(1:i)=baspointer%fam(1:i)
@@ -1143,7 +1152,7 @@
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
           CALL GENFAMEXP(infile,i)
@@ -1163,15 +1172,16 @@
           CALL QUIT('ERROR: READING BASISSET')
         END SELECT
 
-!     PRINT BASISSET
         NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
-        IF (IQM(basindex,1).GT.0) THEN
-          WRITE(lupri,'(3X,A)') 'Large component set:'
-          WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-     &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & 
-     &    '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
-          NHTYP  =   MAX(NHTYP,IQM(basindex,1))
-        ENDIF
+        NHTYP  =   MAX(NHTYP,IQM(basindex,1))
+
+!     PRINT BASISSET
+!       IF (IQM(basindex,1).GT.0) THEN
+!         WRITE(lupri,'(3X,A)') 'Large component set:'
+!         WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
+!    &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & 
+!    &    '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
+!       ENDIF
 
         DO i = 1, NBLCK(basindex,1)
            IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))              &
@@ -1191,8 +1201,6 @@
           END IF
 
           IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
-            WRITE(lupri,*) 'Small component not specified.'
-            WRITE(lupri,*) 'Assuming kinetic balance.'
             IBSFLAG=4
             CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
      &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
@@ -1211,7 +1219,11 @@
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     POSITION the input file.
             CALL POS_FILE(infile, lupri, linelen,                       &
-     &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp) 
+     &           '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp) 
+!     Additional check : read iqm once more
+            READ (infile,*) IQM_CHECK
+            IF (IQM_CHECK .NE. IQM(basindex,2))                           &
+     &         CALL QUIT ('Error in write_atomtypes')
             CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),         &
      &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),                       &
      &           SEG(IBLOCK(2),2),                                        &
@@ -1245,12 +1257,12 @@
 
           NOORBTS = NOORBTS.AND.IQM(basindex,2).EQ.0
 
-          IF (IQM(basindex,2).GT.0) THEN
-            WRITE(lupri,'(3X,A)') 'Small component set:'
-            WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-     &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &
-     &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
-          ENDIF
+!         IF (IQM(basindex,2).GT.0) THEN
+!           WRITE(lupri,'(3X,A)') 'Small component set:'
+!           WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
+!    &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &
+!    &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
+!         ENDIF
 
           NHTYP = MAX(NHTYP,IQM(basindex,2))
           
@@ -1262,7 +1274,6 @@
      &              '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
             ENDIF
             NHTYP     = MAX(NHTYP,IQM(basindex,2))
-!            IF(NHTYP.GT.MXQN) GOTO 5000
           ENDIF
           
           DO i = 1, NBLCK(basindex,2)
@@ -1504,7 +1515,6 @@
           CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
         END IF
         CALL READ_BASIS(inpfile, linelen,lupri)
-        CLOSE(inpfile)
 
 !       Define the list of atomtypes
         CALL MAKE_ATOMTYPES(lupri)
@@ -1517,6 +1527,7 @@
 
 !       Free the reserved memory.
         CALL CLEAR_XYZ()
+        CLOSE(inpfile)
 
        END SUBROUTINE READ_XYZ
 
