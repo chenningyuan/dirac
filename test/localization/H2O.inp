@@ -1,6 +1,7 @@
 **DIRAC
 .TITLE
-Projection CH4 pour diff. bases
+H2O
+.WAVE FUNCTION
 .ANALYZE
 **HAMILTONIAN
 .LVCORR
@@ -15,10 +16,8 @@ Projection CH4 pour diff. bases
  10
 .EVCCNV
  1.0D-7
+.CNVINT
+ 1.0D-6 1.0D-16
 **ANALYZE
 .MULPOP
-.LOCALIZE
-*LOCALIZE
-.THRESH
-1.0D-04
 *END OF 

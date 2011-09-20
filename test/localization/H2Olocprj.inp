@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
-Projection CH4 pour diff. bases
+Projection H2O
 .ANALYZE
 **HAMILTONIAN
 .LVCORR
@@ -21,18 +21,14 @@ Projection CH4 pour diff. bases
 *LOCALIZE
 .PRJLOC
 .THRESH
-1.0D-04
+1.0D-15
 .OWNBAS
 .VECREF
-5
-DFC1AT
-1..5
+3
+DFO1AT
+1..6
 DFH1AT
 1
 DFH2AT
-1
-DFH3AT
-1
-DFH4AT
 1
 *END OF 

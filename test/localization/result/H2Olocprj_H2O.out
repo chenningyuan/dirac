@@ -1,0 +1,2883 @@
+DIRAC pam run in /home/uachstno/APPL/Dirac/Localization/H2O
+DIRAC serial starts by allocating 65536000 words (500 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsø              Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ 
+ 
+Compilation info
+----------------
+ 
+ System                   | Linux-2.6.31.14-0.8-desktop
+ Processor                | x86_64
+ Internal math            | OFF
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ XCFun                    | ON
+ Fortran compiler         | /opt/intel/composerxe-2011.4.191/bin/intel64/ifort
+ Fortran compiler version | ifort (IFORT) 12.0.4 20110427
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (SUSE Linux) 4.4.1 [gcc-4_4-branch revision 15
+                          | 0839]
+ C flags                  |   -O0 -g3
+ BLAS                     | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
+                          | /mkl/lib/intel64/libmkl_core.so;/opt/intel/compose
+                          | rxe-2011.4.191/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o;/opt/intel/composerxe-2011.4.191/mkl/lib/intel64
+                          | /libmkl_sequential.so;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
+                          | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
+                          | group
+ Configuration time       | 2011-09-19 15:25:43.045498
+ Last commit rev          | 2d576f943209bbde4304fe167d7c3961fd601f74
+ Last commit author       | Stano 
+ Last commit time         | Fri Sep 2 18:40:57 2011 +0200
+ 
+ 
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Tue Sep 20 18:42:14 2011
+     Host name              : Bassilus                                
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.TITLE                                                                                              
+Projection H2O                                                                                      
+.ANALYZE                                                                                            
+**HAMILTONIAN                                                                                       
+.LVCORR                                                                                             
+**INTEGRALS                                                                                         
+*TWOINT                                                                                             
+.SCREEN                                                                                             
+ 1.0D-11                                                                                            
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 10                                                                                                 
+.EVCCNV                                                                                             
+ 1.0D-7                                                                                             
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+.LOCALIZE                                                                                           
+*LOCALIZE                                                                                           
+.PRJLOC                                                                                             
+.THRESH                                                                                             
+1.0D-15                                                                                             
+.OWNBAS                                                                                             
+.VECREF                                                                                             
+3                                                                                                   
+DFO1AT                                                                                              
+1..6                                                                                                
+DFH1AT                                                                                              
+1                                                                                                   
+DFH2AT                                                                                              
+1                                                                                                   
+*END OF                                                                                             
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+INTGRL                                                                                              
+Localization of H2O                                                                                 
+DunningDZ                                                                                           
+C   2    0                                                                                          
+        8.    1                                                                                     
+O      .0000000000        0.0000000000        -.2249058930                                          
+LARGE BASIS DZ(Dunning)                                                                             
+        1.    2                                                                                     
+H1   -1.4523499293         .0000000000         .8996235720                                          
+H2    1.4523499293         .0000000000         .8996235720                                          
+LARGE BASIS DZ(Dunning)                                                                             
+FINISH                                                                                              
+
+
+    **************************************************************************
+    ***************************** Projection H2O *****************************
+    **************************************************************************
+
+ Jobs in this run:
+   * Analysis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+ * Direct calculation of Fock matrices in SO-basis.
+ * User specified screening threshold in direct Fock matrix construction: 1.00E-11
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Localization of H2O                                                     
+  DunningDZ                                                               
+
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
+
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :    9.055003146800
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    9.055003146800
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      24      10      L  - [9s5p|4s2p]                                                    
+                             62      62      S  - [5s9p5d|5s9p5d]                                                
+  H1          1       1       4       2      L  - [4s|2s]                                                        
+                             12      12      S  - [4p|4p]                                                        
+  H2          1       1       4       2      L  - [4s|2s]                                                        
+                             12      12      S  - [4p|4p]                                                        
+  ----------------------------------------------------------------------
+                             32      14      L  - large components
+                             86      86      S  - small components
+  ----------------------------------------------------------------------
+  total:      3      10     118     100
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+    T.H. DUNNING, JR., J. CHEM. PHYS. 53, 2823 (1970).                            
+    T.H. DUNNING, JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
+    VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                          
+  ***********************************************************************         
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.2249058930
+
+   4   H1       x     -1.4523499293
+   5            y      0.0000000000
+   6            z      0.8996235720
+
+   7   H2       x      1.4523499293
+   8            y      0.0000000000
+   9            z      0.8996235720
+
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    3
+ 
+O      0.0000000000   0.0000000000  -0.1190150726
+H1    -0.7685504811   0.0000000000   0.4760602904
+H2     0.7685504811   0.0000000000   0.4760602904
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H1          H2  
+
+   O       0.000000
+   H1      0.972000    0.000000
+   H2      0.972000    1.537101    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H1         O                              0.972000
+  bond distance:    H2         O                              0.972000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H2         O          H1                   104.500
+
+
+  Nuclear repulsion energy :    9.055003146800
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    6
+     1  L O   1 s        2  L O   1 px       3  L O   1 py       4  L O   1 pz       5  L H1  1 s        6  L H2  1 s   
+   * Small components:   16
+     7  S O   1 s        8  S O   1 px       9  S O   1 py      10  S O   1 pz      11  S O   1 dxx     12  S O   1 dxy 
+    13  S O   1 dxz     14  S O   1 dyy     15  S O   1 dyz     16  S O   1 dzz     17  S H1  1 px      18  S H1  1 py  
+    19  S H1  1 pz      20  S H2  1 px      21  S H2  1 py      22  S H2  1 pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          100
+  Number of large orbitals in each symmetry:     14
+  Number of small orbitals in each symmetry:     86
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        4 functions:    O  s   
+        2 functions:    O  px  
+        2 functions:    O  py  
+        2 functions:    O  pz  
+        2 functions:    H1 s   
+        2 functions:    H2 s   
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        5 functions:    O  s   
+        9 functions:    O  px  
+        9 functions:    O  py  
+        9 functions:    O  pz  
+        5 functions:    O  dxx 
+        5 functions:    O  dxy 
+        5 functions:    O  dxz 
+        5 functions:    O  dyy 
+        5 functions:    O  dyz 
+        5 functions:    O  dzz 
+        4 functions:    H1 px  
+        4 functions:    H1 py  
+        4 functions:    H1 pz  
+        4 functions:    H2 px  
+        4 functions:    H2 py  
+        4 functions:    H2 pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - contracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+===========================================================================
+ SCFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with   10 electrons in
+       5 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-07
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Analysis module *****************************
+   ***************************************************************************
+
+ Jobs in this run:
+ * Mulliken population analysis
+ * Molecular orbital localization
+===========================================================================
+ LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
+===========================================================================
+ * Molecular orbital localization from projection analysis
+ * Threshold for convergence of the localization process : 0.10D-14
+   (based on the inverse mean delocalization)
+ * Maximum number of iterations :   100
+ * Fragments are calculated in their individual bases !
+     The indexing of fragment spinor sets is assumed 
+     to follow list of symmetry independent nuclei.
+ * Fragment spinor set   1 --> O     
+  - read from file DFO1AT
+    - Orbitals in fermion ircop E1  :1..6                                                                    
+ * Fragment spinor set   2 --> H1    
+  - read from file DFH1AT
+    - Orbitals in fermion ircop E1  :1                                                                       
+ * Fragment spinor set   3 --> H2    
+  - read from file DFH2AT
+    - Orbitals in fermion ircop E1  :1                                                                       
+ * Localised MO are written in file DFCOEF !!!
+ * Print level :    0
+===========================================================================
+ POPINP: Mulliken population analysis
+===========================================================================
+ * Gross populations
+ * Label definitions based on SO-labels
+ * Number of spinors analyzed:
+    - Orbitals in fermion ircop E1  :   1..   5                                                              
+ * Print level:    0
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A     * Deleted:          5(Proj:          5, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    14
+No. of negative energy orbitals (NPSH):    14
+Total no. of orbitals           (NORB):    28
+
+
+    **************************************************************************
+    ********************** Mulliken population analysis **********************
+    **************************************************************************
+
+
+
+                         Output from GETPLB: Group labels
+                         --------------------------------
+
+* Total number :     9
+     1  L A  O  s        2  L A  O  px       3  L A  O  py       4  L A  O  pz       5  L A  H1 s        6  L A  H2 s   
+     7  A  O  _small     8  A  H1 _small     9  A  H2 _small
+
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+* Electronic eigenvalue no.  1: -20.579619716836       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  O  s      A  O  _small
+-----------------------------------------------------
+ alpha    0.9995  |      0.9992         0.0003
+ beta     0.0005  |      0.0000         0.0005
+
+* Electronic eigenvalue no.  2: -1.3557242021260       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  O  s      L A  O  pz     L A  H1 s      L A  H2 s   
+-----------------------------------------------------------------------------------
+ alpha    1.0000  |      0.8302         0.0313         0.0692         0.0692
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  3: -0.7086954293985       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  O  px     L A  H1 s      L A  H2 s   
+--------------------------------------------------------------------
+ alpha    0.0000  |      0.0000         0.0000         0.0000
+ beta     1.0000  |      0.6300         0.1850         0.1850
+
+* Electronic eigenvalue no.  4: -0.5645993718008       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  O  s      L A  O  pz     L A  H1 s      L A  H2 s   
+-----------------------------------------------------------------------------------
+ alpha    0.9999  |      0.1011         0.7950         0.0519         0.0519
+ beta     0.0001  |      0.0000         0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  5: -0.5051353114669       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  O  py  
+--------------------------------------
+ alpha    0.0001  |      0.0000
+ beta     0.9999  |      0.9999
+
+
+*** Total gross population ***
+
+Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz     L A  H1 s      L A  H2 s      A  O  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ total    10.00000  |      3.86122        1.26001        1.99988        1.65272        0.61208        0.61208        0.00200
+
+
+   ****************************************************************************
+   ********************** Molecular orbital localization **********************
+   ****************************************************************************
+
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -7.0E-03  7.4E-04  1.1E-02 -7.7E-04
+   2 -7.0E-03  8.5E-01  8.1E-03  1.3E-01 -7.5E-03
+   3  7.4E-04  8.1E-03  6.4E-01  3.8E-03  9.2E-03
+   4  1.1E-02  1.3E-01  3.8E-03  9.2E-01  4.2E-03
+   5 -7.7E-04 -7.5E-03  9.2E-03  4.2E-03  1.0E+00
+ 
+ Nucleus #   2
+   1 -2.3E-05  3.5E-03 -3.8E-04 -5.3E-03  3.9E-04
+   2  3.5E-03  6.9E-02 -4.2E-03 -6.4E-02  3.9E-03
+   3 -3.8E-04 -4.2E-03  1.7E-01 -2.4E-03 -5.4E-03
+   4 -5.3E-03 -6.4E-02 -2.4E-03  3.8E-02 -1.6E-03
+   5  3.9E-04  3.9E-03 -5.4E-03 -1.6E-03  5.3E-05
+ 
+ Nucleus #   3
+   1 -2.3E-05  3.5E-03 -3.8E-04 -5.3E-03  3.9E-04
+   2  3.5E-03  6.9E-02 -4.2E-03 -6.4E-02  3.9E-03
+   3 -3.8E-04 -4.2E-03  1.7E-01 -2.4E-03 -5.4E-03
+   4 -5.3E-03 -6.4E-02 -2.4E-03  3.8E-02 -1.6E-03
+   5  3.9E-04  3.9E-03 -5.4E-03 -1.6E-03  5.3E-05
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -1.7E-16  5.0E-13 -2.4E-15  6.5E-13
+   2  1.7E-16  0.0E+00  5.4E-12 -2.4E-14  6.0E-12
+   3 -5.0E-13 -5.4E-12  0.0E+00 -2.1E-12 -1.4E-11
+   4  2.4E-15  2.4E-14  2.1E-12  0.0E+00 -3.4E-12
+   5 -6.5E-13 -6.0E-12  1.4E-11  3.4E-12  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -6.4E-16 -2.4E-13 -1.0E-14 -3.1E-13
+   2  6.4E-16  0.0E+00 -2.7E-12 -1.0E-13 -2.9E-12
+   3  2.4E-13  2.7E-12  0.0E+00  1.5E-12  8.3E-12
+   4  1.0E-14  1.0E-13 -1.5E-12  0.0E+00  1.1E-12
+   5  3.1E-13  2.9E-12 -8.3E-12 -1.1E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00  7.9E-16 -2.7E-13  1.3E-14 -3.6E-13
+   2 -7.9E-16  0.0E+00 -3.0E-12  1.3E-13 -3.4E-12
+   3  2.7E-13  3.0E-12  0.0E+00  1.3E-12  8.0E-12
+   4 -1.3E-14 -1.3E-13 -1.3E-12  0.0E+00  1.3E-12
+   5  3.6E-13  3.4E-12 -8.0E-12 -1.3E-12  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00  2.5E-15 -6.3E-13 -9.8E-15 -1.4E-11
+   2 -2.5E-15  0.0E+00 -7.0E-12 -1.3E-13 -1.4E-10
+   3  6.3E-13  7.0E-12  0.0E+00  2.5E-12  1.8E-10
+   4  9.8E-15  1.3E-13 -2.5E-12  0.0E+00  7.8E-11
+   5  1.4E-11  1.4E-10 -1.8E-10 -7.8E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  8.1E-05 -1.2E-02  4.8E-04  7.1E-04
+   2 -8.1E-05  0.0E+00 -1.4E-01  5.0E-03  6.9E-03
+   3  1.2E-02  1.4E-01  0.0E+00 -8.1E-02  3.2E-03
+   4 -4.8E-04 -5.0E-03  8.1E-02  0.0E+00 -2.7E-03
+   5 -7.1E-04 -6.9E-03 -3.2E-03  2.7E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -8.1E-05  1.2E-02 -4.8E-04 -7.1E-04
+   2  8.1E-05  0.0E+00  1.4E-01 -5.0E-03 -6.9E-03
+   3 -1.2E-02 -1.4E-01  0.0E+00  8.1E-02 -3.2E-03
+   4  4.8E-04  5.0E-03 -8.1E-02  0.0E+00  2.7E-03
+   5  7.1E-04  6.9E-03  3.2E-03 -2.7E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  3.6E-16  1.3E-14 -3.0E-15 -4.9E-14
+   2 -3.6E-16  0.0E+00  1.3E-13 -2.5E-14 -4.6E-13
+   3 -1.3E-14 -1.3E-13  0.0E+00 -9.5E-14  3.3E-13
+   4  3.0E-15  2.5E-14  9.5E-14  0.0E+00  2.6E-13
+   5  4.9E-14  4.6E-13 -3.3E-13 -2.6E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  5.4E-14 -3.5E-14  3.2E-13  1.2E-12
+   2 -5.4E-14  0.0E+00 -3.4E-13  3.3E-12  1.1E-11
+   3  3.5E-14  3.4E-13  0.0E+00 -4.7E-14  2.2E-12
+   4 -3.2E-13 -3.3E-12  4.7E-14  0.0E+00 -4.2E-12
+   5 -1.2E-12 -1.1E-11 -2.2E-12  4.2E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -5.5E-14  2.2E-14 -3.2E-13 -1.1E-12
+   2  5.5E-14  0.0E+00  2.0E-13 -3.3E-12 -1.1E-11
+   3 -2.2E-14 -2.0E-13  0.0E+00  1.7E-13 -2.6E-12
+   4  3.2E-13  3.3E-12 -1.7E-13  0.0E+00  4.0E-12
+   5  1.1E-12  1.1E-11  2.6E-12 -4.0E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  0.9999
+* Orbital   2 Pipek-Mezey localization measure d =  1.3548
+* Orbital   3 Pipek-Mezey localization measure d =  2.1138
+* Orbital   4 Pipek-Mezey localization measure d =  1.1865
+* Orbital   5 Pipek-Mezey localization measure d =  1.0046
+
+* Inverse mean delocalization =   0.8099090494014
+
+########## START ITERATION NO.   1 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.06179   0.00612   0.04450  -0.00164   0.00000   0.00017   0.00277  -0.00016   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00612  -0.37084   0.00266   0.00512   0.00000   0.00587   0.00000   0.00000   0.00000  -0.00001  -0.00002   0.00000   0.00000   0.00000
+   4   0.00000   0.04450   0.00266  -0.01916   0.00046   0.00000   0.00000   0.00438   0.00000   0.00000   0.00034   0.00000   0.00000  -0.00012   0.00000
+   5   0.00000  -0.00164   0.00512   0.00046  -0.00001   0.00000   0.00000   0.00000  -0.00145   0.00000   0.00000   0.00036   0.00000   0.00123   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00017   0.00587   0.00000   0.00000   0.00000  -0.12906   0.00416   0.00076   0.00000  -0.00010  -0.00024   0.00000   0.00000   0.00000
+   8   0.00000   0.00277   0.00000   0.00438   0.00000   0.00000   0.00416   0.09346  -0.00421   0.00000   0.00573   0.00000   0.00000  -0.00154   0.00000
+   9   0.00000  -0.00016   0.00000   0.00000  -0.00145   0.00000   0.00076  -0.00421  -0.06034   0.00000   0.00000   0.00587   0.00000   0.04399   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000  -0.00001   0.00034   0.00000   0.00000  -0.00010   0.00573   0.00000   0.00000  -0.21911  -0.00347   0.00000  -0.00005   0.00000
+  12   0.00000   0.00000  -0.00002   0.00000   0.00036   0.00000  -0.00024   0.00000   0.00587   0.00000  -0.00347  -0.36687   0.00000   0.00273   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000  -0.00012   0.00123   0.00000   0.00000  -0.00154   0.04399   0.00000  -0.00005   0.00273   0.00000  -0.01895   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.33960   0.30046
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -4.9E-02  2.1E-03  1.3E-01 -5.1E-01
+   2  4.9E-02  0.0E+00  4.0E-02  2.7E-01  5.4E-02
+   3 -2.1E-03 -4.0E-02  0.0E+00 -1.5E-02 -2.8E-02
+   4 -1.3E-01 -2.7E-01  1.5E-02  0.0E+00 -4.9E-02
+   5  5.1E-01 -5.4E-02  2.8E-02  4.9E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -4.9E-02  2.1E-03  1.3E-01 -5.1E-01
+   2  4.9E-02  0.0E+00  4.0E-02  2.7E-01  5.4E-02
+   3 -2.1E-03 -4.0E-02  0.0E+00 -1.5E-02 -2.8E-02
+   4 -1.3E-01 -2.7E-01  1.5E-02  0.0E+00 -4.9E-02
+   5  5.1E-01 -5.4E-02  2.8E-02  4.9E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -4.9E-02  2.1E-03  1.3E-01 -5.1E-01
+   2  4.9E-02  0.0E+00  4.0E-02  2.7E-01  5.4E-02
+   3 -2.1E-03 -4.0E-02  0.0E+00 -1.5E-02 -2.8E-02
+   4 -1.3E-01 -2.7E-01  1.5E-02  0.0E+00 -4.9E-02
+   5  5.1E-01 -5.4E-02  2.8E-02  4.9E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -4.9E-02  2.1E-03  1.3E-01 -5.1E-01
+   2  4.9E-02  0.0E+00  4.0E-02  2.7E-01  5.4E-02
+   3 -2.1E-03 -4.0E-02  0.0E+00 -1.5E-02 -2.8E-02
+   4 -1.3E-01 -2.7E-01  1.5E-02  0.0E+00 -4.9E-02
+   5  5.1E-01 -5.4E-02  2.8E-02  4.9E-02  0.0E+00
+Norm of gradient:     0.92E+00
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00  1.6E-02 -2.6E-03 -1.4E-02 -8.3E-05
+   2  1.6E-02  9.3E-01 -4.0E-03  1.3E-01  8.2E-03
+   3 -2.6E-03 -4.0E-03  6.4E-01 -5.9E-03 -1.5E-03
+   4 -1.4E-02  1.3E-01 -5.9E-03  8.4E-01 -9.3E-03
+   5 -8.3E-05  8.2E-03 -1.5E-03 -9.3E-03  1.0E+00
+ 
+ Nucleus #   2
+   1  1.1E-05 -8.0E-03  1.7E-03  5.9E-03  4.8E-04
+   2 -8.0E-03  3.4E-02  1.5E-03 -6.3E-02 -3.6E-03
+   3  1.7E-03  1.5E-03  1.7E-01  2.4E-03 -1.2E-04
+   4  5.9E-03 -6.3E-02  2.4E-03  7.3E-02  4.5E-03
+   5  4.8E-04 -3.6E-03 -1.2E-04  4.5E-03  1.6E-04
+ 
+ Nucleus #   3
+   1  1.1E-05 -8.0E-03  1.7E-03  5.9E-03  4.8E-04
+   2 -8.0E-03  3.4E-02  1.5E-03 -6.3E-02 -3.6E-03
+   3  1.7E-03  1.5E-03  1.7E-01  2.4E-03 -1.2E-04
+   4  5.9E-03 -6.3E-02  2.4E-03  7.3E-02  4.5E-03
+   5  4.8E-04 -3.6E-03 -1.2E-04  4.5E-03  1.6E-04
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00  1.7E-14 -1.7E-12 -3.6E-14  4.6E-14
+   2 -1.7E-14  0.0E+00 -2.6E-12 -9.0E-15 -6.6E-12
+   3  1.7E-12  2.6E-12  0.0E+00  4.0E-12  2.4E-12
+   4  3.6E-14  9.0E-15 -4.0E-12  0.0E+00  7.4E-12
+   5 -4.6E-14  6.6E-12 -2.4E-12 -7.4E-12  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -8.1E-14  1.2E-12  4.5E-14 -3.9E-13
+   2  8.1E-14  0.0E+00  9.9E-13 -3.4E-13  2.9E-12
+   3 -1.2E-12 -9.9E-13  0.0E+00 -1.6E-12 -1.5E-13
+   4 -4.5E-14  3.4E-13  1.6E-12  0.0E+00 -3.6E-12
+   5  3.9E-13 -2.9E-12  1.5E-13  3.6E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00  2.1E-14  1.2E-12 -4.6E-14 -4.0E-13
+   2 -2.1E-14  0.0E+00  8.1E-13  3.6E-13  2.7E-12
+   3 -1.2E-12 -8.1E-13  0.0E+00 -1.7E-12  7.2E-13
+   4  4.6E-14 -3.6E-13  1.7E-12  0.0E+00 -3.6E-12
+   5  4.0E-13 -2.7E-12 -7.2E-13  3.6E-12  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00  7.4E-13 -7.0E-13  7.5E-13 -2.8E-13
+   2 -7.4E-13  0.0E+00 -4.8E-11 -4.0E-13  1.5E-10
+   3  7.0E-13  4.8E-11  0.0E+00  1.4E-11 -3.0E-11
+   4 -7.5E-13  4.0E-13 -1.4E-11  0.0E+00 -1.7E-10
+   5  2.8E-13 -1.5E-10  3.0E-11  1.7E-10  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  2.2E-03  7.0E-03 -1.2E-03  6.2E-05
+   2 -2.2E-03  0.0E+00 -1.1E-01 -8.2E-04  2.2E-03
+   3 -7.0E-03  1.1E-01  0.0E+00 -1.2E-01 -7.5E-03
+   4  1.2E-03  8.2E-04  1.2E-01  0.0E+00 -8.7E-04
+   5 -6.2E-05 -2.2E-03  7.5E-03  8.7E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -2.2E-03 -7.0E-03  1.2E-03 -6.2E-05
+   2  2.2E-03  0.0E+00  1.1E-01  8.2E-04 -2.2E-03
+   3  7.0E-03 -1.1E-01  0.0E+00  1.2E-01  7.5E-03
+   4 -1.2E-03 -8.2E-04 -1.2E-01  0.0E+00  8.7E-04
+   5  6.2E-05  2.2E-03 -7.5E-03 -8.7E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00 -1.1E-14 -3.8E-14  8.2E-15  2.4E-15
+   2  1.1E-14  0.0E+00  8.6E-13 -2.7E-14  5.1E-13
+   3  3.8E-14 -8.6E-13  0.0E+00 -2.6E-13 -4.3E-14
+   4 -8.2E-15  2.7E-14  2.6E-13  0.0E+00 -5.6E-13
+   5 -2.4E-15 -5.1E-13  4.3E-14  5.6E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.7E-12 -6.3E-15 -9.3E-13  1.4E-13
+   2 -1.7E-12  0.0E+00 -6.8E-13 -4.5E-13  3.6E-12
+   3  6.3E-15  6.8E-13  0.0E+00 -5.1E-14 -6.1E-12
+   4  9.3E-13  4.5E-13  5.1E-14  0.0E+00 -1.2E-12
+   5 -1.4E-13 -3.6E-12  6.1E-12  1.2E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-12  7.5E-14  9.2E-13 -8.1E-14
+   2  1.7E-12  0.0E+00 -1.8E-13  4.8E-13 -4.0E-12
+   3 -7.5E-14  1.8E-13  0.0E+00  3.2E-13  6.1E-12
+   4 -9.2E-13 -4.8E-13 -3.2E-13  0.0E+00  1.8E-12
+   5  8.1E-14  4.0E-12 -6.1E-12 -1.8E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0017
+* Orbital   2 Pipek-Mezey localization measure d =  1.1608
+* Orbital   3 Pipek-Mezey localization measure d =  2.1151
+* Orbital   4 Pipek-Mezey localization measure d =  1.3827
+* Orbital   5 Pipek-Mezey localization measure d =  1.0042
+
+* Inverse mean delocalization =   0.8103307026404
+DIFFA =   1  0.4217D-03
+
+########## START ITERATION NO.   2 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.01352  -0.00246   0.04246   0.00083   0.00000   0.00018  -0.00628  -0.00038   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000  -0.00246  -0.37040  -0.00410  -0.00050   0.00000  -0.01536   0.00000   0.00000   0.00000  -0.00005  -0.00001   0.00000   0.00000   0.00000
+   4   0.00000   0.04246  -0.00410  -0.06825  -0.00209   0.00000   0.00000  -0.01070   0.00000   0.00000   0.00001   0.00000   0.00000  -0.00036   0.00000
+   5   0.00000   0.00083  -0.00050  -0.00209   0.00000   0.00000   0.00000   0.00000   0.00167   0.00000   0.00000  -0.00150   0.00000  -0.00292   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00018  -0.01536   0.00000   0.00000   0.00000  -0.23589  -0.00444  -0.00038   0.00000  -0.00006  -0.00001   0.00000   0.00000   0.00000
+   8   0.00000  -0.00628   0.00000  -0.01070   0.00000   0.00000  -0.00444   0.07998   0.00288   0.00000  -0.00281   0.00000   0.00000   0.00355   0.00000
+   9   0.00000  -0.00038   0.00000   0.00000   0.00167   0.00000  -0.00038   0.00288  -0.01434   0.00000   0.00000  -0.00233   0.00000   0.04251   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000  -0.00005   0.00001   0.00000   0.00000  -0.00006  -0.00281   0.00000   0.00000  -0.11918   0.00760   0.00000  -0.00015   0.00000
+  12   0.00000   0.00000  -0.00001   0.00000  -0.00150   0.00000  -0.00001   0.00000  -0.00233   0.00000   0.00760  -0.36848   0.00000  -0.00417   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000  -0.00036  -0.00292   0.00000   0.00000   0.00355   0.04251   0.00000  -0.00015  -0.00417   0.00000  -0.06791   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.33794   0.32555
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00  2.6E-01 -8.2E-03 -8.7E-02 -3.8E-01
+   2 -2.6E-01  0.0E+00 -1.3E-02 -3.9E-01 -1.1E-01
+   3  8.2E-03  1.3E-02  0.0E+00  2.8E-02  2.7E-03
+   4  8.7E-02  3.9E-01 -2.8E-02  0.0E+00  6.1E-02
+   5  3.8E-01  1.1E-01 -2.7E-03 -6.1E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00  2.6E-01 -8.2E-03 -8.7E-02 -3.8E-01
+   2 -2.6E-01  0.0E+00 -1.3E-02 -3.9E-01 -1.1E-01
+   3  8.2E-03  1.3E-02  0.0E+00  2.8E-02  2.7E-03
+   4  8.7E-02  3.9E-01 -2.8E-02  0.0E+00  6.1E-02
+   5  3.8E-01  1.1E-01 -2.7E-03 -6.1E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00  2.6E-01 -8.2E-03 -8.7E-02 -3.8E-01
+   2 -2.6E-01  0.0E+00 -1.3E-02 -3.9E-01 -1.1E-01
+   3  8.2E-03  1.3E-02  0.0E+00  2.8E-02  2.7E-03
+   4  8.7E-02  3.9E-01 -2.8E-02  0.0E+00  6.1E-02
+   5  3.8E-01  1.1E-01 -2.7E-03 -6.1E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00  2.6E-01 -8.2E-03 -8.7E-02 -3.8E-01
+   2 -2.6E-01  0.0E+00 -1.3E-02 -3.9E-01 -1.1E-01
+   3  8.2E-03  1.3E-02  0.0E+00  2.8E-02  2.7E-03
+   4  8.7E-02  3.9E-01 -2.8E-02  0.0E+00  6.1E-02
+   5  3.8E-01  1.1E-01 -2.7E-03 -6.1E-02  0.0E+00
+Norm of gradient:     0.94E+00
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  9.9E-01 -3.1E-02  1.2E-03  2.6E-02 -1.6E-03
+   2 -3.1E-02  8.3E-01  3.8E-03  1.2E-01 -1.8E-02
+   3  1.2E-03  3.8E-03  6.4E-01  3.0E-03 -6.1E-04
+   4  2.6E-02  1.2E-01  3.0E-03  9.5E-01  1.5E-02
+   5 -1.6E-03 -1.8E-02 -6.1E-04  1.5E-02  1.0E+00
+ 
+ Nucleus #   2
+   1  1.9E-03  1.5E-02  1.7E-05 -1.3E-02  1.3E-03
+   2  1.5E-02  8.2E-02 -2.1E-03 -5.6E-02  8.6E-03
+   3  1.7E-05 -2.1E-03  1.7E-01 -2.1E-03 -3.6E-04
+   4 -1.3E-02 -5.6E-02 -2.1E-03  2.2E-02 -7.3E-03
+   5  1.3E-03  8.6E-03 -3.6E-04 -7.3E-03  7.1E-04
+ 
+ Nucleus #   3
+   1  1.9E-03  1.5E-02  1.7E-05 -1.3E-02  1.3E-03
+   2  1.5E-02  8.2E-02 -2.1E-03 -5.6E-02  8.6E-03
+   3  1.7E-05 -2.1E-03  1.7E-01 -2.1E-03 -3.6E-04
+   4 -1.3E-02 -5.6E-02 -2.1E-03  2.2E-02 -7.3E-03
+   5  1.3E-03  8.6E-03 -3.6E-04 -7.3E-03  7.1E-04
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -8.6E-15  1.0E-12 -8.5E-14  1.3E-12
+   2  8.6E-15  0.0E+00  2.6E-12  1.5E-15  1.4E-11
+   3 -1.0E-12 -2.6E-12  0.0E+00 -2.0E-12  9.4E-13
+   4  8.5E-14 -1.5E-15  2.0E-12  0.0E+00 -1.2E-11
+   5 -1.3E-12 -1.4E-11 -9.4E-13  1.2E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  5.3E-14  1.8E-13  3.4E-13 -1.0E-12
+   2 -5.3E-14  0.0E+00 -1.3E-12  1.7E-12 -6.8E-12
+   3 -1.8E-13  1.3E-12  0.0E+00  1.5E-12  1.5E-12
+   4 -3.4E-13 -1.7E-12 -1.5E-12  0.0E+00  5.4E-12
+   5  1.0E-12  6.8E-12 -1.5E-12 -5.4E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.1E-13  3.3E-14 -3.6E-13 -1.1E-12
+   2  1.1E-13  0.0E+00 -1.6E-12 -1.7E-12 -6.8E-12
+   3 -3.3E-14  1.6E-12  0.0E+00  1.4E-12 -1.6E-13
+   4  3.6E-13  1.7E-12 -1.4E-12  0.0E+00  5.9E-12
+   5  1.1E-12  6.8E-12  1.6E-13 -5.9E-12  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -1.3E-11  2.0E-11  2.1E-11 -3.3E-11
+   2  1.3E-11  0.0E+00  1.8E-10  5.9E-13 -3.0E-10
+   3 -2.0E-11 -1.8E-10  0.0E+00 -6.9E-10 -1.0E-11
+   4 -2.1E-11 -5.9E-13  6.9E-10  0.0E+00  2.3E-10
+   5  3.3E-11  3.0E-10  1.0E-11 -2.3E-10  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  2.3E-03 -3.3E-02  1.0E-03  9.0E-04
+   2 -2.3E-03  0.0E+00 -1.5E-01  4.0E-03  1.6E-03
+   3  3.3E-02  1.5E-01  0.0E+00 -6.2E-02  1.8E-02
+   4 -1.0E-03 -4.0E-03  6.2E-02  0.0E+00 -4.8E-04
+   5 -9.0E-04 -1.6E-03 -1.8E-02  4.8E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -2.3E-03  3.3E-02 -1.0E-03 -9.0E-04
+   2  2.3E-03  0.0E+00  1.5E-01 -4.0E-03 -1.6E-03
+   3 -3.3E-02 -1.5E-01  0.0E+00  6.2E-02 -1.8E-02
+   4  1.0E-03  4.0E-03 -6.2E-02  0.0E+00  4.8E-04
+   5  9.0E-04  1.6E-03  1.8E-02 -4.8E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00 -1.1E-14 -7.9E-14  2.6E-14 -1.0E-13
+   2  1.1E-14  0.0E+00 -1.4E-12 -6.8E-14 -9.5E-13
+   3  7.9E-14  1.4E-12  0.0E+00  3.7E-12 -9.4E-15
+   4 -2.6E-14  6.8E-14 -3.7E-12  0.0E+00  7.3E-13
+   5  1.0E-13  9.5E-13  9.4E-15 -7.3E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  2.0E-12 -7.8E-14  7.1E-13  1.6E-12
+   2 -2.0E-12  0.0E+00  3.7E-13  2.8E-12  3.3E-12
+   3  7.8E-14 -3.7E-13  0.0E+00 -1.9E-12  1.4E-11
+   4 -7.1E-13 -2.8E-12  1.9E-12  0.0E+00 -1.1E-12
+   5 -1.6E-12 -3.3E-12 -1.4E-11  1.1E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -2.0E-12  1.8E-13 -7.3E-13 -1.4E-12
+   2  2.0E-12  0.0E+00  9.5E-13 -2.7E-12 -2.4E-12
+   3 -1.8E-13 -9.5E-13  0.0E+00 -1.7E-12 -1.4E-11
+   4  7.3E-13  2.7E-12  1.7E-12  0.0E+00  3.8E-13
+   5  1.4E-12  2.4E-12  1.4E-11 -3.8E-13  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0111
+* Orbital   2 Pipek-Mezey localization measure d =  1.4380
+* Orbital   3 Pipek-Mezey localization measure d =  2.1157
+* Orbital   4 Pipek-Mezey localization measure d =  1.1061
+* Orbital   5 Pipek-Mezey localization measure d =  1.0045
+
+* Inverse mean delocalization =   0.8113264359511
+DIFFA =   2  0.9957D-03
+
+########## START ITERATION NO.   3 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.07742   0.00296   0.03398  -0.00411   0.00000   0.00036   0.01053  -0.00159   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00296  -0.36153   0.00206  -0.00009   0.00000   0.02401   0.00000   0.00000   0.00000  -0.00001   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.03398   0.00206  -0.00145   0.00076   0.00000   0.00000   0.00544   0.00000   0.00000   0.00059   0.00000   0.00000  -0.00119   0.00000
+   5   0.00000  -0.00411  -0.00009   0.00076   0.00000   0.00000   0.00000   0.00000  -0.00772   0.00000   0.00000   0.00044   0.00000   0.00183   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00036   0.02401   0.00000   0.00000   0.00000  -0.09807   0.00166  -0.00021   0.00000  -0.00004   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.01053   0.00000   0.00544   0.00000   0.00000   0.00166   0.03491  -0.01272   0.00000   0.00371   0.00000   0.00000  -0.00526   0.00000
+   9   0.00000  -0.00159   0.00000   0.00000  -0.00772   0.00000  -0.00021  -0.01272  -0.08406   0.00000   0.00000   0.00308   0.00000   0.03659   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000  -0.00001   0.00059   0.00000   0.00000  -0.00004   0.00371   0.00000   0.00000  -0.27745  -0.01487   0.00000  -0.00015   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00044   0.00000   0.00000   0.00000   0.00308   0.00000  -0.01487  -0.36768   0.00000   0.00201   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000  -0.00119   0.00183   0.00000   0.00000  -0.00526   0.03659   0.00000  -0.00015   0.00201   0.00000  -0.00496   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.30753   0.35593
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -2.0E-01  2.4E-03  2.3E+00  6.4E+00
+   2  2.0E-01  0.0E+00  2.2E-02  1.2E+00  1.1E-01
+   3 -2.4E-03 -2.2E-02  0.0E+00 -1.1E-02  5.1E-04
+   4 -2.3E+00 -1.2E+00  1.1E-02  0.0E+00 -4.2E-01
+   5 -6.4E+00 -1.1E-01 -5.1E-04  4.2E-01  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -2.0E-01  2.4E-03  2.3E+00  6.4E+00
+   2  2.0E-01  0.0E+00  2.2E-02  1.2E+00  1.1E-01
+   3 -2.4E-03 -2.2E-02  0.0E+00 -1.1E-02  5.1E-04
+   4 -2.3E+00 -1.2E+00  1.1E-02  0.0E+00 -4.2E-01
+   5 -6.4E+00 -1.1E-01 -5.1E-04  4.2E-01  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -2.0E-01  2.4E-03  2.3E+00  6.4E+00
+   2  2.0E-01  0.0E+00  2.2E-02  1.2E+00  1.1E-01
+   3 -2.4E-03 -2.2E-02  0.0E+00 -1.1E-02  5.1E-04
+   4 -2.3E+00 -1.2E+00  1.1E-02  0.0E+00 -4.2E-01
+   5 -6.4E+00 -1.1E-01 -5.1E-04  4.2E-01  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -2.0E-01  2.4E-03  2.3E+00  6.4E+00
+   2  2.0E-01  0.0E+00  2.2E-02  1.2E+00  1.1E-01
+   3 -2.4E-03 -2.2E-02  0.0E+00 -1.1E-02  5.1E-04
+   4 -2.3E+00 -1.2E+00  1.1E-02  0.0E+00 -4.2E-01
+   5 -6.4E+00 -1.1E-01 -5.1E-04  4.2E-01  0.0E+00
+Norm of gradient:     0.31E+01
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00  1.0E-02  1.3E-03  2.8E-02 -5.4E-04
+   2  1.0E-02  1.0E+00 -4.0E-03 -1.9E-02  8.9E-03
+   3  1.3E-03 -4.0E-03  6.4E-01 -1.3E-03 -1.1E-04
+   4  2.8E-02 -1.9E-02 -1.3E-03  7.6E-01  3.2E-02
+   5 -5.4E-04  8.9E-03 -1.1E-04  3.2E-02  1.0E+00
+ 
+ Nucleus #   2
+   1 -4.7E-04 -5.5E-03 -4.7E-04 -1.4E-02  5.9E-04
+   2 -5.5E-03 -9.3E-03  1.5E-03  8.8E-03 -4.0E-03
+   3 -4.7E-04  1.5E-03  1.7E-01  4.6E-04 -9.8E-04
+   4 -1.4E-02  8.8E-03  4.6E-04  1.2E-01 -1.6E-02
+   5  5.9E-04 -4.0E-03 -9.8E-04 -1.6E-02  1.1E-03
+ 
+ Nucleus #   3
+   1 -4.7E-04 -5.5E-03 -4.7E-04 -1.4E-02  5.9E-04
+   2 -5.5E-03 -9.3E-03  1.5E-03  8.8E-03 -4.0E-03
+   3 -4.7E-04  1.5E-03  1.7E-01  4.6E-04 -9.8E-04
+   4 -1.4E-02  8.8E-03  4.6E-04  1.2E-01 -1.6E-02
+   5  5.9E-04 -4.0E-03 -9.8E-04 -1.6E-02  1.1E-03
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -2.9E-13  1.0E-12 -4.7E-13  5.6E-13
+   2  2.9E-13  0.0E+00 -2.8E-12 -3.6E-13 -7.0E-12
+   3 -1.0E-12  2.8E-12  0.0E+00  9.7E-13  2.9E-13
+   4  4.7E-13  3.6E-13 -9.7E-13  0.0E+00 -2.6E-11
+   5 -5.6E-13  7.0E-12 -2.9E-13  2.6E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  4.4E-13 -7.4E-13 -8.0E-14 -3.2E-13
+   2 -4.4E-13  0.0E+00  1.0E-12  2.0E-12  2.8E-12
+   3  7.4E-13 -1.0E-12  0.0E+00  6.9E-13  1.8E-12
+   4  8.0E-14 -2.0E-12 -6.9E-13  0.0E+00  1.2E-11
+   5  3.2E-13 -2.8E-12 -1.8E-12 -1.2E-11  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-13  1.1E-13  5.4E-13 -8.3E-13
+   2  1.7E-13  0.0E+00  1.2E-12 -1.6E-12  3.3E-12
+   3 -1.1E-13 -1.2E-12  0.0E+00 -1.3E-12  1.4E-12
+   4 -5.4E-13  1.6E-12  1.3E-12  0.0E+00  1.4E-11
+   5  8.3E-13 -3.3E-12 -1.4E-12 -1.4E-11  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -4.0E-11 -2.4E-10 -2.5E-10  5.6E-11
+   2  4.0E-11  0.0E+00  2.7E-09 -2.1E-11  7.2E-11
+   3  2.4E-10 -2.7E-09  0.0E+00  3.9E-10 -7.0E-10
+   4  2.5E-10  2.1E-11 -3.9E-10  0.0E+00  1.3E-10
+   5 -5.6E-11 -7.2E-11  7.0E-10 -1.3E-10  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  3.0E-04 -2.8E-02  2.7E-04  1.1E-03
+   2 -3.0E-04  0.0E+00 -8.7E-03 -1.6E-04  1.3E-03
+   3  2.8E-02  8.7E-03  0.0E+00 -1.6E-01  2.7E-02
+   4 -2.7E-04  1.6E-04  1.6E-01  0.0E+00 -3.2E-03
+   5 -1.1E-03 -1.3E-03 -2.7E-02  3.2E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -3.0E-04  2.8E-02 -2.7E-04 -1.1E-03
+   2  3.0E-04  0.0E+00  8.7E-03  1.6E-04 -1.3E-03
+   3 -2.8E-02 -8.7E-03  0.0E+00  1.6E-01 -2.7E-02
+   4  2.7E-04 -1.6E-04 -1.6E-01  0.0E+00  3.2E-03
+   5  1.1E-03  1.3E-03  2.7E-02 -3.2E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00 -1.7E-13  4.0E-13 -8.0E-13  1.6E-13
+   2  1.7E-13  0.0E+00 -4.8E-12 -2.1E-13  2.9E-13
+   3 -4.0E-13  4.8E-12  0.0E+00 -9.0E-13  2.4E-12
+   4  8.0E-13  2.1E-13  9.0E-13  0.0E+00  4.3E-13
+   5 -1.6E-13 -2.9E-13 -2.4E-12 -4.3E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  3.2E-13  9.6E-14  4.7E-13  1.8E-12
+   2 -3.2E-13  0.0E+00  2.4E-12 -8.7E-14  2.0E-12
+   3 -9.6E-14 -2.4E-12  0.0E+00 -7.3E-13  2.0E-11
+   4 -4.7E-13  8.7E-14  7.3E-13  0.0E+00 -5.6E-12
+   5 -1.8E-12 -2.0E-12 -2.0E-11  5.6E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-13 -4.4E-13  3.1E-13 -1.9E-12
+   2  1.7E-13  0.0E+00  2.2E-12  2.8E-13 -2.3E-12
+   3  4.4E-13 -2.2E-12  0.0E+00  1.6E-12 -2.3E-11
+   4 -3.1E-13 -2.8E-13 -1.6E-12  0.0E+00  5.2E-12
+   5  1.9E-12  2.3E-12  2.3E-11 -5.2E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  0.9992
+* Orbital   2 Pipek-Mezey localization measure d =  0.9674
+* Orbital   3 Pipek-Mezey localization measure d =  2.1157
+* Orbital   4 Pipek-Mezey localization measure d =  1.6750
+* Orbital   5 Pipek-Mezey localization measure d =  1.0079
+
+* Inverse mean delocalization =   0.8192817621921
+DIFFA =   3  0.7955D-02
+
+########## START ITERATION NO.   4 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00017  -0.00183  -0.00540  -0.00019   0.00000   0.00012   0.00059  -0.00027   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000  -0.00183  -0.37314  -0.00098   0.00030   0.00000  -0.01145   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000  -0.00540  -0.00098  -0.16975   0.01165   0.00000   0.00000  -0.00944   0.00000   0.00000  -0.00033   0.00000   0.00000  -0.00263   0.00000
+   5   0.00000  -0.00019   0.00030   0.01165  -0.00004   0.00000   0.00000   0.00000  -0.00041   0.00000   0.00000   0.00061   0.00000   0.00956   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00012  -0.01145   0.00000   0.00000   0.00000  -0.40923  -0.00093   0.00024   0.00000  -0.00001   0.00001   0.00000   0.00000   0.00000
+   8   0.00000   0.00059   0.00000  -0.00944   0.00000   0.00000  -0.00093  -0.19718   0.01283   0.00000   0.00088   0.00000   0.00000   0.00178   0.00000
+   9   0.00000  -0.00027   0.00000   0.00000  -0.00041   0.00000   0.00024   0.01283  -0.00083   0.00000   0.00000  -0.00181   0.00000  -0.00523   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000  -0.00033   0.00000   0.00000  -0.00001   0.00088   0.00000   0.00000  -0.03740  -0.02201   0.00000   0.00012   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00061   0.00000   0.00001   0.00000  -0.00181   0.00000  -0.02201  -0.36478   0.00000  -0.00101   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000  -0.00263   0.00956   0.00000   0.00000   0.00178  -0.00523   0.00000   0.00012  -0.00101   0.00000  -0.16250   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.71503   0.20526
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -3.2E+00  3.4E-03  1.2E-01 -1.9E-01
+   2  3.2E+00  0.0E+00 -1.0E-02 -7.3E-02  6.4E-01
+   3 -3.4E-03  1.0E-02  0.0E+00  1.1E-02 -1.6E-03
+   4 -1.2E-01  7.3E-02 -1.1E-02  0.0E+00 -1.4E-01
+   5  1.9E-01 -6.4E-01  1.6E-03  1.4E-01  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -3.2E+00  3.4E-03  1.2E-01 -1.9E-01
+   2  3.2E+00  0.0E+00 -1.0E-02 -7.3E-02  6.4E-01
+   3 -3.4E-03  1.0E-02  0.0E+00  1.1E-02 -1.6E-03
+   4 -1.2E-01  7.3E-02 -1.1E-02  0.0E+00 -1.4E-01
+   5  1.9E-01 -6.4E-01  1.6E-03  1.4E-01  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -3.2E+00  3.4E-03  1.2E-01 -1.9E-01
+   2  3.2E+00  0.0E+00 -1.0E-02 -7.3E-02  6.4E-01
+   3 -3.4E-03  1.0E-02  0.0E+00  1.1E-02 -1.6E-03
+   4 -1.2E-01  7.3E-02 -1.1E-02  0.0E+00 -1.4E-01
+   5  1.9E-01 -6.4E-01  1.6E-03  1.4E-01  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -3.2E+00  3.4E-03  1.2E-01 -1.9E-01
+   2  3.2E+00  0.0E+00 -1.0E-02 -7.3E-02  6.4E-01
+   3 -3.4E-03  1.0E-02  0.0E+00  1.1E-02 -1.6E-03
+   4 -1.2E-01  7.3E-02 -1.1E-02  0.0E+00 -1.4E-01
+   5  1.9E-01 -6.4E-01  1.6E-03  1.4E-01  0.0E+00
+Norm of gradient:     0.21E+01
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00  6.8E-03 -4.0E-03 -4.4E-02 -1.9E-03
+   2  6.8E-03  1.0E+00  2.8E-03 -9.5E-03 -1.2E-03
+   3 -4.0E-03  2.8E-03  6.4E-01 -6.1E-05 -1.3E-03
+   4 -4.4E-02 -9.5E-03 -6.1E-05  7.5E-01 -1.1E-02
+   5 -1.9E-03 -1.2E-03 -1.3E-03 -1.1E-02  1.0E+00
+ 
+ Nucleus #   2
+   1  2.1E-03 -3.5E-03  2.1E-03  2.1E-02  8.8E-04
+   2 -3.5E-03 -1.1E-02 -8.5E-04  5.0E-03  9.5E-05
+   3  2.1E-03 -8.5E-04  1.7E-01 -9.8E-05 -3.8E-04
+   4  2.1E-02  5.0E-03 -9.8E-05  1.2E-01  5.1E-03
+   5  8.8E-04  9.5E-05 -3.8E-04  5.1E-03  7.1E-05
+ 
+ Nucleus #   3
+   1  2.1E-03 -3.5E-03  2.1E-03  2.1E-02  8.8E-04
+   2 -3.5E-03 -1.1E-02 -8.5E-04  5.0E-03  9.5E-05
+   3  2.1E-03 -8.5E-04  1.7E-01 -9.8E-05 -3.8E-04
+   4  2.1E-02  5.0E-03 -9.8E-05  1.2E-01  5.1E-03
+   5  8.8E-04  9.5E-05 -3.8E-04  5.1E-03  7.1E-05
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -2.9E-13 -2.8E-12  8.3E-14  1.4E-12
+   2  2.9E-13  0.0E+00  1.9E-12  1.6E-13  4.2E-13
+   3  2.8E-12 -1.9E-12  0.0E+00  4.0E-14  2.0E-12
+   4 -8.3E-14 -1.6E-13 -4.0E-14  0.0E+00  8.9E-12
+   5 -1.4E-12 -4.2E-13 -2.0E-12 -8.9E-12  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  8.4E-13  1.4E-12  1.6E-12 -5.9E-13
+   2 -8.4E-13  0.0E+00 -2.8E-13 -1.9E-12  8.3E-14
+   3 -1.4E-12  2.8E-13  0.0E+00  1.1E-12  1.4E-12
+   4 -1.6E-12  1.9E-12 -1.1E-12  0.0E+00 -4.5E-12
+   5  5.9E-13 -8.3E-14 -1.4E-12  4.5E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -5.1E-13  1.6E-12 -1.7E-12 -6.1E-13
+   2  5.1E-13  0.0E+00 -9.1E-13  1.7E-12  4.2E-13
+   3 -1.6E-12  9.1E-13  0.0E+00 -9.2E-13 -1.8E-14
+   4  1.7E-12 -1.7E-12  9.2E-13  0.0E+00 -4.1E-12
+   5  6.1E-13 -4.2E-13  1.8E-14  4.1E-12  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -5.4E-11  1.7E-09  2.0E-10 -3.2E-11
+   2  5.4E-11  0.0E+00 -2.4E-09  2.4E-10 -4.2E-11
+   3 -1.7E-09  2.4E-09  0.0E+00 -2.7E-10 -3.7E-10
+   4 -2.0E-10 -2.4E-10  2.7E-10  0.0E+00 -9.1E-11
+   5  3.2E-11  4.2E-11  3.7E-10  9.1E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.1E-04  3.6E-02 -2.6E-03 -1.1E-03
+   2  3.1E-04  0.0E+00  2.7E-02 -7.4E-04 -1.6E-03
+   3 -3.6E-02 -2.7E-02  0.0E+00 -1.6E-01 -7.4E-03
+   4  2.6E-03  7.4E-04  1.6E-01  0.0E+00 -2.3E-03
+   5  1.1E-03  1.6E-03  7.4E-03  2.3E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00  3.1E-04 -3.6E-02  2.6E-03  1.1E-03
+   2 -3.1E-04  0.0E+00 -2.7E-02  7.4E-04  1.6E-03
+   3  3.6E-02  2.7E-02  0.0E+00  1.6E-01  7.4E-03
+   4 -2.6E-03 -7.4E-04 -1.6E-01  0.0E+00  2.3E-03
+   5 -1.1E-03 -1.6E-03 -7.4E-03 -2.3E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00 -3.5E-13 -3.4E-12  1.2E-13 -2.9E-13
+   2  3.5E-13  0.0E+00  4.8E-12  9.7E-13 -6.8E-13
+   3  3.4E-12 -4.8E-12  0.0E+00 -1.3E-12  1.0E-13
+   4 -1.2E-13 -9.7E-13  1.3E-12  0.0E+00  1.6E-13
+   5  2.9E-13  6.8E-13 -1.0E-13 -1.6E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -1.1E-13  1.6E-12 -1.9E-12 -1.8E-12
+   2  1.1E-13  0.0E+00 -2.1E-12 -9.2E-13 -2.4E-12
+   3 -1.6E-12  2.1E-12  0.0E+00 -4.8E-13 -7.0E-12
+   4  1.9E-12  9.2E-13  4.8E-13  0.0E+00 -4.0E-12
+   5  1.8E-12  2.4E-12  7.0E-12  4.0E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00  4.5E-13  1.6E-12  1.8E-12  2.0E-12
+   2 -4.5E-13  0.0E+00 -2.6E-12 -2.7E-15  3.1E-12
+   3 -1.6E-12  2.6E-12  0.0E+00  1.8E-12  6.8E-12
+   4 -1.8E-12  2.7E-15 -1.8E-12  0.0E+00  3.8E-12
+   5 -2.0E-12 -3.1E-12 -6.8E-12 -3.8E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0089
+* Orbital   2 Pipek-Mezey localization measure d =  0.9603
+* Orbital   3 Pipek-Mezey localization measure d =  2.1157
+* Orbital   4 Pipek-Mezey localization measure d =  1.6770
+* Orbital   5 Pipek-Mezey localization measure d =  1.0045
+
+* Inverse mean delocalization =   0.8193926472394
+DIFFA =   4  0.1109D-03
+
+########## START ITERATION NO.   5 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00162   0.00111  -0.00396   0.00000   0.00000  -0.00005   0.00020   0.00002   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00111  -0.36265   0.00055  -0.00029   0.00000  -0.00748   0.00000   0.00000   0.00000   0.00000  -0.00001   0.00000   0.00000   0.00000
+   4   0.00000  -0.00396   0.00055  -0.15672  -0.00346   0.00000   0.00000  -0.00390   0.00000   0.00000   0.00076   0.00000   0.00000  -0.00137   0.00000
+   5   0.00000   0.00000  -0.00029  -0.00346  -0.00001   0.00000   0.00000   0.00000  -0.00020   0.00000   0.00000  -0.00216   0.00000  -0.01561   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000  -0.00005  -0.00748   0.00000   0.00000   0.00000  -0.41721  -0.00005  -0.00036   0.00000   0.00000   0.00001   0.00000   0.00000   0.00000
+   8   0.00000   0.00020   0.00000  -0.00390   0.00000   0.00000  -0.00005  -0.20499  -0.00448   0.00000  -0.00056   0.00000   0.00000  -0.00031   0.00000
+   9   0.00000   0.00002   0.00000   0.00000  -0.00020   0.00000  -0.00036  -0.00448  -0.00150   0.00000   0.00000   0.00121   0.00000  -0.00312   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00076   0.00000   0.00000   0.00000  -0.00056   0.00000   0.00000  -0.03709   0.00731   0.00000   0.00000   0.00000
+  12   0.00000   0.00000  -0.00001   0.00000  -0.00216   0.00000   0.00001   0.00000   0.00121   0.00000   0.00731  -0.36866   0.00000   0.00004   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000  -0.00137  -0.01561   0.00000   0.00000  -0.00031  -0.00312   0.00000   0.00000   0.00004   0.00000  -0.17124   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.72169   0.11714
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -3.2E-01 -1.2E-02 -2.0E-01  2.5E+00
+   2  3.2E-01  0.0E+00  6.6E-03 -3.7E-02 -3.8E-02
+   3  1.2E-02 -6.6E-03  0.0E+00 -2.2E-04  1.7E-03
+   4  2.0E-01  3.7E-02  2.2E-04  0.0E+00  4.4E-02
+   5 -2.5E+00  3.8E-02 -1.7E-03 -4.4E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -3.2E-01 -1.2E-02 -2.0E-01  2.5E+00
+   2  3.2E-01  0.0E+00  6.6E-03 -3.7E-02 -3.8E-02
+   3  1.2E-02 -6.6E-03  0.0E+00 -2.2E-04  1.7E-03
+   4  2.0E-01  3.7E-02  2.2E-04  0.0E+00  4.4E-02
+   5 -2.5E+00  3.8E-02 -1.7E-03 -4.4E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -3.2E-01 -1.2E-02 -2.0E-01  2.5E+00
+   2  3.2E-01  0.0E+00  6.6E-03 -3.7E-02 -3.8E-02
+   3  1.2E-02 -6.6E-03  0.0E+00 -2.2E-04  1.7E-03
+   4  2.0E-01  3.7E-02  2.2E-04  0.0E+00  4.4E-02
+   5 -2.5E+00  3.8E-02 -1.7E-03 -4.4E-02  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -3.2E-01 -1.2E-02 -2.0E-01  2.5E+00
+   2  3.2E-01  0.0E+00  6.6E-03 -3.7E-02 -3.8E-02
+   3  1.2E-02 -6.6E-03  0.0E+00 -2.2E-04  1.7E-03
+   4  2.0E-01  3.7E-02  2.2E-04  0.0E+00  4.4E-02
+   5 -2.5E+00  3.8E-02 -1.7E-03 -4.4E-02  0.0E+00
+Norm of gradient:     0.19E+01
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  9.9E-01 -8.5E-03  4.1E-03  4.8E-02  6.2E-04
+   2 -8.5E-03  1.0E+00  1.0E-04 -3.7E-04  1.3E-03
+   3  4.1E-03  1.0E-04  6.4E-01  1.6E-05  7.2E-04
+   4  4.8E-02 -3.7E-04  1.6E-05  7.6E-01 -8.2E-04
+   5  6.2E-04  1.3E-03  7.2E-04 -8.2E-04  1.0E+00
+ 
+ Nucleus #   2
+   1  3.1E-03  4.0E-03 -2.7E-03 -2.3E-02  8.2E-05
+   2  4.0E-03 -1.1E-02  2.6E-04  5.9E-04 -1.9E-04
+   3 -2.7E-03  2.6E-04  1.7E-01 -2.7E-04  4.5E-04
+   4 -2.3E-02  5.9E-04 -2.7E-04  1.2E-01  3.0E-04
+   5  8.2E-05 -1.9E-04  4.5E-04  3.0E-04 -1.0E-04
+ 
+ Nucleus #   3
+   1  3.1E-03  4.0E-03 -2.7E-03 -2.3E-02  8.2E-05
+   2  4.0E-03 -1.1E-02  2.6E-04  5.9E-04 -1.9E-04
+   3 -2.7E-03  2.6E-04  1.7E-01 -2.7E-04  4.5E-04
+   4 -2.3E-02  5.9E-04 -2.7E-04  1.2E-01  3.0E-04
+   5  8.2E-05 -1.9E-04  4.5E-04  3.0E-04 -1.0E-04
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00  1.7E-13  2.8E-12  3.7E-13 -3.8E-13
+   2 -1.7E-13  0.0E+00 -5.2E-14 -5.8E-13 -3.7E-13
+   3 -2.8E-12  5.2E-14  0.0E+00  2.8E-14 -1.2E-12
+   4 -3.7E-13  5.8E-13 -2.8E-14  0.0E+00 -9.5E-13
+   5  3.8E-13  3.7E-13  1.2E-12  9.5E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.5E-13 -1.6E-12 -2.1E-12 -7.9E-14
+   2  3.5E-13  0.0E+00 -6.5E-13  6.9E-13 -2.1E-13
+   3  1.6E-12  6.5E-13  0.0E+00  1.5E-12 -2.1E-12
+   4  2.1E-12 -6.9E-13 -1.5E-12  0.0E+00  7.5E-13
+   5  7.9E-14  2.1E-13  2.1E-12 -7.5E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00  3.5E-14 -2.4E-12  1.8E-12 -6.1E-14
+   2 -3.5E-14  0.0E+00  9.2E-13 -8.1E-14 -2.7E-13
+   3  2.4E-12 -9.2E-13  0.0E+00 -1.1E-12  6.1E-13
+   4 -1.8E-12  8.1E-14  1.1E-12  0.0E+00  3.0E-13
+   5  6.1E-14  2.7E-13 -6.1E-13 -3.0E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00  1.8E-11 -2.2E-09 -1.4E-10  9.3E-11
+   2 -1.8E-11  0.0E+00  3.1E-10 -9.5E-11  9.0E-11
+   3  2.2E-09 -3.1E-10  0.0E+00  9.0E-10  6.0E-10
+   4  1.4E-10  9.5E-11 -9.0E-10  0.0E+00 -5.5E-10
+   5 -9.3E-11 -9.0E-11 -6.0E-10  5.5E-10  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.0E-03 -3.9E-02  4.3E-03 -8.3E-04
+   2 -1.0E-03  0.0E+00  2.2E-02 -1.5E-03  1.2E-03
+   3  3.9E-02 -2.2E-02  0.0E+00 -1.6E-01 -6.2E-04
+   4 -4.3E-03  1.5E-03  1.6E-01  0.0E+00  2.1E-03
+   5  8.3E-04 -1.2E-03  6.2E-04 -2.1E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.0E-03  3.9E-02 -4.3E-03  8.3E-04
+   2  1.0E-03  0.0E+00 -2.2E-02  1.5E-03 -1.2E-03
+   3 -3.9E-02  2.2E-02  0.0E+00  1.6E-01  6.2E-04
+   4  4.3E-03 -1.5E-03 -1.6E-01  0.0E+00 -2.1E-03
+   5 -8.3E-04  1.2E-03 -6.2E-04  2.1E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  1.3E-13  3.8E-12  3.3E-13 -1.4E-13
+   2 -1.3E-13  0.0E+00 -3.3E-13 -6.3E-13  8.7E-13
+   3 -3.8E-12  3.3E-13  0.0E+00 -1.9E-12 -2.7E-13
+   4 -3.3E-13  6.3E-13  1.9E-12  0.0E+00 -9.4E-13
+   5  1.4E-13 -8.7E-13  2.7E-13  9.4E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.1E-12 -2.0E-12  3.3E-12 -1.4E-12
+   2 -1.1E-12  0.0E+00  9.8E-13 -5.9E-13  1.7E-12
+   3  2.0E-12 -9.8E-13  0.0E+00 -4.7E-13  1.5E-12
+   4 -3.3E-12  5.9E-13  4.7E-13  0.0E+00  3.8E-12
+   5  1.4E-12 -1.7E-12 -1.5E-12 -3.8E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.1E-12 -1.6E-12 -3.6E-12  1.5E-12
+   2  1.1E-12  0.0E+00 -6.8E-13  1.2E-12 -2.5E-12
+   3  1.6E-12  6.8E-13  0.0E+00  2.3E-12 -1.1E-12
+   4  3.6E-12 -1.2E-12 -2.3E-12  0.0E+00 -2.9E-12
+   5 -1.5E-12  2.5E-12  1.1E-12  2.9E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0143
+* Orbital   2 Pipek-Mezey localization measure d =  0.9597
+* Orbital   3 Pipek-Mezey localization measure d =  2.1159
+* Orbital   4 Pipek-Mezey localization measure d =  1.6734
+* Orbital   5 Pipek-Mezey localization measure d =  1.0017
+
+* Inverse mean delocalization =   0.8192737962287
+DIFFA =   5  0.1189D-03
+
+########## START ITERATION NO.   6 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00196  -0.00016  -0.00138  -0.00006   0.00000   0.00000  -0.00002   0.00002   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000  -0.00016  -0.35754   0.00080   0.00010   0.00000   0.00896   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000  -0.00138   0.00080  -0.14964  -0.00020   0.00000   0.00000   0.00608   0.00000   0.00000  -0.00079   0.00000   0.00000   0.00011   0.00000
+   5   0.00000  -0.00006   0.00010  -0.00020  -0.00012   0.00000   0.00000   0.00000   0.00019   0.00000   0.00000   0.00243   0.00000   0.01748   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000   0.00896   0.00000   0.00000   0.00000  -0.41835   0.00018   0.00011   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000  -0.00002   0.00000   0.00608   0.00000   0.00000   0.00018  -0.20485  -0.00032   0.00000   0.00002   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00002   0.00000   0.00000   0.00019   0.00000   0.00011  -0.00032  -0.00142   0.00000   0.00000  -0.00005   0.00000  -0.00021   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000  -0.00079   0.00000   0.00000   0.00000   0.00002   0.00000   0.00000  -0.03772   0.00052   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00243   0.00000   0.00000   0.00000  -0.00005   0.00000   0.00052  -0.37088   0.00000   0.00016   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00011   0.01748   0.00000   0.00000   0.00000  -0.00021   0.00000   0.00000   0.00016   0.00000  -0.17207   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.71456   0.08072
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00  3.6E-01  1.3E-02  2.2E-01 -5.7E-02
+   2 -3.6E-01  0.0E+00 -2.7E-04 -2.4E-03  4.5E-02
+   3 -1.3E-02  2.7E-04  0.0E+00 -1.7E-03 -5.4E-04
+   4 -2.2E-01  2.4E-03  1.7E-03  0.0E+00  3.1E-03
+   5  5.7E-02 -4.5E-02  5.4E-04 -3.1E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00  3.6E-01  1.3E-02  2.2E-01 -5.7E-02
+   2 -3.6E-01  0.0E+00 -2.7E-04 -2.4E-03  4.5E-02
+   3 -1.3E-02  2.7E-04  0.0E+00 -1.7E-03 -5.4E-04
+   4 -2.2E-01  2.4E-03  1.7E-03  0.0E+00  3.1E-03
+   5  5.7E-02 -4.5E-02  5.4E-04 -3.1E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00  3.6E-01  1.3E-02  2.2E-01 -5.7E-02
+   2 -3.6E-01  0.0E+00 -2.7E-04 -2.4E-03  4.5E-02
+   3 -1.3E-02  2.7E-04  0.0E+00 -1.7E-03 -5.4E-04
+   4 -2.2E-01  2.4E-03  1.7E-03  0.0E+00  3.1E-03
+   5  5.7E-02 -4.5E-02  5.4E-04 -3.1E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00  3.6E-01  1.3E-02  2.2E-01 -5.7E-02
+   2 -3.6E-01  0.0E+00 -2.7E-04 -2.4E-03  4.5E-02
+   3 -1.3E-02  2.7E-04  0.0E+00 -1.7E-03 -5.4E-04
+   4 -2.2E-01  2.4E-03  1.7E-03  0.0E+00  3.1E-03
+   5  5.7E-02 -4.5E-02  5.4E-04 -3.1E-03  0.0E+00
+Norm of gradient:     0.78E+00
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -5.7E-04 -8.1E-04 -8.8E-03  9.3E-04
+   2 -5.7E-04  1.0E+00 -3.0E-04 -5.9E-03 -2.8E-04
+   3 -8.1E-04 -3.0E-04  6.4E-01 -8.0E-04  6.2E-04
+   4 -8.8E-03 -5.9E-03 -8.0E-04  7.5E-01  1.1E-03
+   5  9.3E-04 -2.8E-04  6.2E-04  1.1E-03  1.0E+00
+ 
+ Nucleus #   2
+   1  6.6E-05 -1.0E-04 -2.4E-04  4.0E-03  5.9E-05
+   2 -1.0E-04 -1.3E-02  7.3E-04  3.3E-03  4.3E-04
+   3 -2.4E-04  7.3E-04  1.7E-01  2.8E-04  4.3E-04
+   4  4.0E-03  3.3E-03  2.8E-04  1.2E-01 -7.6E-04
+   5  5.9E-05  4.3E-04  4.3E-04 -7.6E-04 -1.0E-04
+ 
+ Nucleus #   3
+   1  6.6E-05 -1.0E-04 -2.4E-04  4.0E-03  5.9E-05
+   2 -1.0E-04 -1.3E-02  7.3E-04  3.3E-03  4.3E-04
+   3 -2.4E-04  7.3E-04  1.7E-01  2.8E-04  4.3E-04
+   4  4.0E-03  3.3E-03  2.8E-04  1.2E-01 -7.6E-04
+   5  5.9E-05  4.3E-04  4.3E-04 -7.6E-04 -1.0E-04
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00  4.3E-14 -7.2E-13 -1.9E-13 -6.9E-13
+   2 -4.3E-14  0.0E+00 -2.2E-13 -1.0E-13  6.6E-14
+   3  7.2E-13  2.2E-13  0.0E+00  5.4E-13 -9.7E-13
+   4  1.9E-13  1.0E-13 -5.4E-13  0.0E+00 -4.9E-13
+   5  6.9E-13 -6.6E-14  9.7E-13  4.9E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -1.0E-13 -5.3E-13  2.0E-13 -4.1E-14
+   2  1.0E-13  0.0E+00  9.6E-14  7.9E-13 -2.8E-13
+   3  5.3E-13 -9.6E-14  0.0E+00  9.7E-13 -8.7E-13
+   4 -2.0E-13 -7.9E-13 -9.7E-13  0.0E+00  5.5E-13
+   5  4.1E-14  2.8E-13  8.7E-13 -5.5E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-13 -9.7E-14  1.2E-14 -3.9E-14
+   2  1.2E-13  0.0E+00  9.3E-13 -7.0E-13 -3.7E-13
+   3  9.7E-14 -9.3E-13  0.0E+00 -1.4E-12 -6.6E-13
+   4 -1.2E-14  7.0E-13  1.4E-12  0.0E+00  2.1E-13
+   5  3.9E-14  3.7E-13  6.6E-13 -2.1E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00  3.9E-12  5.6E-10  6.0E-11  2.1E-11
+   2 -3.9E-12  0.0E+00  6.9E-11 -1.3E-11 -9.8E-12
+   3 -5.6E-10 -6.9E-11  0.0E+00 -5.2E-10  6.1E-11
+   4 -6.0E-11  1.3E-11  5.2E-10  0.0E+00  7.1E-11
+   5 -2.1E-11  9.8E-12 -6.1E-11 -7.1E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.2E-03  5.9E-03  1.6E-03  4.0E-05
+   2 -1.2E-03  0.0E+00  2.8E-02 -2.3E-03  1.3E-03
+   3 -5.9E-03 -2.8E-02  0.0E+00 -1.6E-01  2.0E-03
+   4 -1.6E-03  2.3E-03  1.6E-01  0.0E+00  2.0E-03
+   5 -4.0E-05 -1.3E-03 -2.0E-03 -2.0E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-03 -5.9E-03 -1.6E-03 -4.0E-05
+   2  1.2E-03  0.0E+00 -2.8E-02  2.3E-03 -1.3E-03
+   3  5.9E-03  2.8E-02  0.0E+00  1.6E-01 -2.0E-03
+   4  1.6E-03 -2.3E-03 -1.6E-01  0.0E+00 -2.0E-03
+   5  4.0E-05  1.3E-03  2.0E-03  2.0E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  1.6E-13  5.0E-14 -1.8E-13  4.9E-15
+   2 -1.6E-13  0.0E+00 -6.4E-13  2.7E-14  5.2E-14
+   3 -5.0E-14  6.4E-13  0.0E+00 -1.6E-12 -1.3E-13
+   4  1.8E-13 -2.7E-14  1.6E-12  0.0E+00 -2.3E-13
+   5 -4.9E-15 -5.2E-14  1.3E-13  2.3E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.1E-12  4.4E-13  1.7E-12  8.3E-14
+   2 -1.1E-12  0.0E+00  8.4E-13 -1.7E-12  2.2E-12
+   3 -4.4E-13 -8.4E-13  0.0E+00 -4.6E-13  1.4E-12
+   4 -1.7E-12  1.7E-12  4.6E-13  0.0E+00  3.4E-12
+   5 -8.3E-14 -2.2E-12 -1.4E-12 -3.4E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-12 -4.4E-13 -1.6E-12 -7.5E-14
+   2  1.2E-12  0.0E+00 -1.8E-13  1.7E-12 -2.2E-12
+   3  4.4E-13  1.8E-13  0.0E+00  2.1E-12 -1.2E-12
+   4  1.6E-12 -1.7E-12 -2.1E-12  0.0E+00 -3.3E-12
+   5  7.5E-14  2.2E-12  1.2E-12  3.3E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0027
+* Orbital   2 Pipek-Mezey localization measure d =  0.9537
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7058
+* Orbital   5 Pipek-Mezey localization measure d =  1.0016
+
+* Inverse mean delocalization =   0.8206086635913
+DIFFA =   6  0.1335D-02
+
+########## START ITERATION NO.   7 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00192  -0.00033  -0.00204   0.00002   0.00000   0.00000  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000  -0.00033  -0.37001  -0.00064   0.00007   0.00000   0.00035   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000  -0.00204  -0.00064  -0.18388   0.00045   0.00000   0.00000   0.00041   0.00000   0.00000   0.00011   0.00000   0.00000   0.00003   0.00000
+   5   0.00000   0.00002   0.00007   0.00045   0.00000   0.00000   0.00000   0.00000   0.00001   0.00000   0.00000  -0.00020   0.00000  -0.00318   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000   0.00035   0.00000   0.00000   0.00000  -0.42523  -0.00069   0.00008   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000  -0.00001   0.00000   0.00041   0.00000   0.00000  -0.00069  -0.22362   0.00057   0.00000   0.00018   0.00000   0.00000   0.00002   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00001   0.00000   0.00008   0.00057  -0.00185   0.00000   0.00000  -0.00033   0.00000  -0.00206   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00011   0.00000   0.00000   0.00000   0.00018   0.00000   0.00000  -0.03204  -0.00086   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000  -0.00020   0.00000   0.00000   0.00000  -0.00033   0.00000  -0.00086  -0.37105   0.00000  -0.00065   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00003  -0.00318   0.00000   0.00000   0.00002  -0.00206   0.00000   0.00000  -0.00065   0.00000  -0.18504   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79465   0.02661
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00  1.2E-02 -1.1E-03 -3.4E-02  3.7E-01
+   2 -1.2E-02  0.0E+00 -1.8E-03 -2.3E-02 -1.9E-02
+   3  1.1E-03  1.8E-03  0.0E+00  7.0E-03 -3.9E-04
+   4  3.4E-02  2.3E-02 -7.0E-03  0.0E+00 -5.1E-03
+   5 -3.7E-01  1.9E-02  3.9E-04  5.1E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00  1.2E-02 -1.1E-03 -3.4E-02  3.7E-01
+   2 -1.2E-02  0.0E+00 -1.8E-03 -2.3E-02 -1.9E-02
+   3  1.1E-03  1.8E-03  0.0E+00  7.0E-03 -3.9E-04
+   4  3.4E-02  2.3E-02 -7.0E-03  0.0E+00 -5.1E-03
+   5 -3.7E-01  1.9E-02  3.9E-04  5.1E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00  1.2E-02 -1.1E-03 -3.4E-02  3.7E-01
+   2 -1.2E-02  0.0E+00 -1.8E-03 -2.3E-02 -1.9E-02
+   3  1.1E-03  1.8E-03  0.0E+00  7.0E-03 -3.9E-04
+   4  3.4E-02  2.3E-02 -7.0E-03  0.0E+00 -5.1E-03
+   5 -3.7E-01  1.9E-02  3.9E-04  5.1E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00  1.2E-02 -1.1E-03 -3.4E-02  3.7E-01
+   2 -1.2E-02  0.0E+00 -1.8E-03 -2.3E-02 -1.9E-02
+   3  1.1E-03  1.8E-03  0.0E+00  7.0E-03 -3.9E-04
+   4  3.4E-02  2.3E-02 -7.0E-03  0.0E+00 -5.1E-03
+   5 -3.7E-01  1.9E-02  3.9E-04  5.1E-03  0.0E+00
+Norm of gradient:     0.73E+00
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -9.4E-05 -1.8E-04  4.8E-04  7.4E-04
+   2 -9.4E-05  1.0E+00  3.7E-04  3.7E-04  2.6E-04
+   3 -1.8E-04  3.7E-04  6.4E-01 -1.1E-04  6.8E-04
+   4  4.8E-04  3.7E-04 -1.1E-04  7.5E-01  1.4E-03
+   5  7.4E-04  2.6E-04  6.8E-04  1.4E-03  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.8E-05 -2.3E-04 -2.3E-04 -4.4E-04  5.5E-05
+   2 -2.3E-04 -1.3E-02  4.0E-04  3.4E-04  2.8E-04
+   3 -2.3E-04  4.0E-04  1.7E-01 -6.9E-05  5.9E-04
+   4 -4.4E-04  3.4E-04 -6.9E-05  1.2E-01 -7.8E-04
+   5  5.5E-05  2.8E-04  5.9E-04 -7.8E-04 -1.4E-04
+ 
+ Nucleus #   3
+   1 -1.8E-05 -2.3E-04 -2.3E-04 -4.4E-04  5.5E-05
+   2 -2.3E-04 -1.3E-02  4.0E-04  3.4E-04  2.8E-04
+   3 -2.3E-04  4.0E-04  1.7E-01 -6.9E-05  5.9E-04
+   4 -4.4E-04  3.4E-04 -6.9E-05  1.2E-01 -7.8E-04
+   5  5.5E-05  2.8E-04  5.9E-04 -7.8E-04 -1.4E-04
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -1.6E-14 -2.2E-13 -2.8E-14 -5.6E-13
+   2  1.6E-14  0.0E+00  2.6E-13  1.3E-14 -2.5E-13
+   3  2.2E-13 -2.6E-13  0.0E+00  7.6E-14 -1.1E-12
+   4  2.8E-14 -1.3E-14 -7.6E-14  0.0E+00 -1.1E-12
+   5  5.6E-13  2.5E-13  1.1E-12  1.1E-12  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -2.4E-14 -1.6E-13  8.1E-14 -3.3E-14
+   2  2.4E-14  0.0E+00 -1.1E-13  5.4E-13 -2.4E-13
+   3  1.6E-13  1.1E-13  0.0E+00  1.2E-12 -9.7E-13
+   4 -8.1E-14 -5.4E-13 -1.2E-12  0.0E+00  7.2E-13
+   5  3.3E-14  2.4E-13  9.7E-13 -7.2E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -6.2E-14 -3.3E-13 -2.3E-14 -3.6E-14
+   2  6.2E-14  0.0E+00  6.7E-13 -5.6E-13 -3.3E-13
+   3  3.3E-13 -6.7E-13  0.0E+00 -1.1E-12 -1.1E-12
+   4  2.3E-14  5.6E-13  1.1E-12  0.0E+00  4.8E-13
+   5  3.6E-14  3.3E-13  1.1E-12 -4.8E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -2.6E-12  1.4E-11 -3.8E-11  3.4E-11
+   2  2.6E-12  0.0E+00  2.0E-10  1.8E-11 -1.0E-11
+   3 -1.4E-11 -2.0E-10  0.0E+00  6.4E-10  1.3E-10
+   4  3.8E-11 -1.8E-11 -6.4E-10  0.0E+00 -1.7E-10
+   5 -3.4E-11  1.0E-11 -1.3E-10  1.7E-10  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  5.4E-04 -8.7E-05  8.8E-04  1.4E-06
+   2 -5.4E-04  0.0E+00  2.4E-02 -2.2E-03  1.6E-03
+   3  8.7E-05 -2.4E-02  0.0E+00 -1.6E-01  1.8E-03
+   4 -8.8E-04  2.2E-03  1.6E-01  0.0E+00  2.6E-03
+   5 -1.4E-06 -1.6E-03 -1.8E-03 -2.6E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -5.4E-04  8.7E-05 -8.8E-04 -1.4E-06
+   2  5.4E-04  0.0E+00 -2.4E-02  2.2E-03 -1.6E-03
+   3 -8.7E-05  2.4E-02  0.0E+00  1.6E-01 -1.8E-03
+   4  8.8E-04 -2.2E-03 -1.6E-01  0.0E+00 -2.6E-03
+   5  1.4E-06  1.6E-03  1.8E-03  2.6E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  4.7E-15 -4.5E-14  6.4E-14  1.6E-14
+   2 -4.7E-15  0.0E+00 -2.0E-14  3.3E-14  5.4E-14
+   3  4.5E-14  2.0E-14  0.0E+00 -1.9E-12  1.2E-14
+   4 -6.4E-14 -3.3E-14  1.9E-12  0.0E+00 -4.0E-14
+   5 -1.6E-14 -5.4E-14 -1.2E-14  4.0E-14  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  6.0E-13  1.8E-13  9.3E-13  2.5E-15
+   2 -6.0E-13  0.0E+00  4.6E-13 -1.6E-12  2.7E-12
+   3 -1.8E-13 -4.6E-13  0.0E+00 -3.3E-13  1.6E-12
+   4 -9.3E-13  1.6E-12  3.3E-13  0.0E+00  4.4E-12
+   5 -2.5E-15 -2.7E-12 -1.6E-12 -4.4E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -5.7E-13 -1.2E-13 -9.9E-13 -2.0E-15
+   2  5.7E-13  0.0E+00 -3.8E-13  1.6E-12 -2.7E-12
+   3  1.2E-13  3.8E-13  0.0E+00  2.2E-12 -1.5E-12
+   4  9.9E-13 -1.6E-12 -2.2E-12  0.0E+00 -4.4E-12
+   5  2.0E-15  2.7E-12  1.5E-12  4.4E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0009
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7073
+* Orbital   5 Pipek-Mezey localization measure d =  1.0029
+
+* Inverse mean delocalization =   0.8206752879115
+DIFFA =   7  0.6662D-04
+
+########## START ITERATION NO.   8 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00184   0.00000   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00000  -0.37148  -0.00003   0.00004   0.00000  -0.00010   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.00001  -0.00003  -0.18597   0.00054   0.00000   0.00000  -0.00007   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   5   0.00000   0.00000   0.00004   0.00054   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00001   0.00000   0.00023   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000  -0.00010   0.00000   0.00000   0.00000  -0.42559  -0.00003   0.00004   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.00000   0.00000  -0.00007   0.00000   0.00000  -0.00003  -0.22479   0.00065   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00004   0.00065  -0.00193   0.00000   0.00000   0.00000   0.00000   0.00001   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.03178  -0.00098   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00098  -0.37020   0.00000  -0.00003   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00000   0.00023   0.00000   0.00000   0.00000   0.00001   0.00000   0.00000  -0.00003   0.00000  -0.18506   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79865   0.00557
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -3.9E-03  6.8E-05  2.5E-03 -1.3E+01
+   2  3.9E-03  0.0E+00 -3.3E-05  1.2E-04 -6.0E-04
+   3 -6.8E-05  3.3E-05  0.0E+00  2.6E-04 -2.0E-04
+   4 -2.5E-03 -1.2E-04 -2.6E-04  0.0E+00 -5.8E-03
+   5  1.3E+01  6.0E-04  2.0E-04  5.8E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -3.9E-03  6.8E-05  2.5E-03 -1.3E+01
+   2  3.9E-03  0.0E+00 -3.3E-05  1.2E-04 -6.0E-04
+   3 -6.8E-05  3.3E-05  0.0E+00  2.6E-04 -2.0E-04
+   4 -2.5E-03 -1.2E-04 -2.6E-04  0.0E+00 -5.8E-03
+   5  1.3E+01  6.0E-04  2.0E-04  5.8E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -3.9E-03  6.8E-05  2.5E-03 -1.3E+01
+   2  3.9E-03  0.0E+00 -3.3E-05  1.2E-04 -6.0E-04
+   3 -6.8E-05  3.3E-05  0.0E+00  2.6E-04 -2.0E-04
+   4 -2.5E-03 -1.2E-04 -2.6E-04  0.0E+00 -5.8E-03
+   5  1.3E+01  6.0E-04  2.0E-04  5.8E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -3.9E-03  6.8E-05  2.5E-03 -1.3E+01
+   2  3.9E-03  0.0E+00 -3.3E-05  1.2E-04 -6.0E-04
+   3 -6.8E-05  3.3E-05  0.0E+00  2.6E-04 -2.0E-04
+   4 -2.5E-03 -1.2E-04 -2.6E-04  0.0E+00 -5.8E-03
+   5  1.3E+01  6.0E-04  2.0E-04  5.8E-03  0.0E+00
+Norm of gradient:     0.43E+01
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -2.6E-04 -6.2E-04 -6.7E-04  4.7E-04
+   2 -2.6E-04  1.0E+00  3.8E-04  3.4E-04  1.1E-04
+   3 -6.2E-04  3.8E-04  6.4E-01 -8.2E-05  3.3E-04
+   4 -6.7E-04  3.4E-04 -8.2E-05  7.5E-01  1.2E-03
+   5  4.7E-04  1.1E-04  3.3E-04  1.2E-03  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.4E-04 -3.6E-04 -5.9E-04  2.6E-04  5.8E-05
+   2 -3.6E-04 -1.3E-02  4.0E-04  3.5E-04  2.7E-05
+   3 -5.9E-04  4.0E-04  1.7E-01 -8.2E-05  2.5E-04
+   4  2.6E-04  3.5E-04 -8.2E-05  1.2E-01 -8.1E-04
+   5  5.8E-05  2.7E-05  2.5E-04 -8.1E-04 -2.2E-05
+ 
+ Nucleus #   3
+   1 -1.4E-04 -3.6E-04 -5.9E-04  2.6E-04  5.8E-05
+   2 -3.6E-04 -1.3E-02  4.0E-04  3.5E-04  2.7E-05
+   3 -5.9E-04  4.0E-04  1.7E-01 -8.2E-05  2.5E-04
+   4  2.6E-04  3.5E-04 -8.2E-05  1.2E-01 -8.1E-04
+   5  5.8E-05  2.7E-05  2.5E-04 -8.1E-04 -2.2E-05
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -5.3E-14 -6.1E-13 -4.5E-14 -3.5E-13
+   2  5.3E-14  0.0E+00  2.7E-13 -2.4E-16 -1.1E-13
+   3  6.1E-13 -2.7E-13  0.0E+00  5.8E-14 -5.2E-13
+   4  4.5E-14  2.4E-16 -5.8E-14  0.0E+00 -9.2E-13
+   5  3.5E-13  1.1E-13  5.2E-13  9.2E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.9E-14 -4.8E-13  1.6E-13 -3.5E-14
+   2  3.9E-14  0.0E+00 -1.3E-13  6.1E-13 -2.5E-14
+   3  4.8E-13  1.3E-13  0.0E+00  1.2E-12 -4.2E-13
+   4 -1.6E-13 -6.1E-13 -1.2E-12  0.0E+00  6.5E-13
+   5  3.5E-14  2.5E-14  4.2E-13 -6.5E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.3E-13 -7.0E-13 -9.4E-14 -3.9E-14
+   2  1.3E-13  0.0E+00  6.9E-13 -6.1E-13 -5.9E-14
+   3  7.0E-13 -6.9E-13  0.0E+00 -1.1E-12 -3.9E-13
+   4  9.4E-14  6.1E-13  1.1E-12  0.0E+00  5.5E-13
+   5  3.9E-14  5.9E-14  3.9E-13 -5.5E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -8.4E-12  8.6E-11 -1.4E-10  3.4E-11
+   2  8.4E-12  0.0E+00 -1.7E-10 -2.0E-11 -4.3E-12
+   3 -8.6E-11  1.7E-10  0.0E+00 -7.5E-10  5.2E-11
+   4  1.4E-10  2.0E-11  7.5E-10  0.0E+00 -8.3E-11
+   5 -3.4E-11  4.3E-12 -5.2E-11  8.3E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.5E-03  1.2E-03  2.5E-03  2.1E-06
+   2 -1.5E-03  0.0E+00  2.4E-02 -2.2E-03  7.2E-04
+   3 -1.2E-03 -2.4E-02  0.0E+00 -1.6E-01  1.2E-03
+   4 -2.5E-03  2.2E-03  1.6E-01  0.0E+00  1.1E-03
+   5 -2.1E-06 -7.2E-04 -1.2E-03 -1.1E-03  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.5E-03 -1.2E-03 -2.5E-03 -2.1E-06
+   2  1.5E-03  0.0E+00 -2.4E-02  2.2E-03 -7.2E-04
+   3  1.2E-03  2.4E-02  0.0E+00  1.6E-01 -1.2E-03
+   4  2.5E-03 -2.2E-03 -1.6E-01  0.0E+00 -1.1E-03
+   5  2.1E-06  7.2E-04  1.2E-03  1.1E-03  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  4.2E-14 -2.1E-14  1.1E-14  1.7E-14
+   2 -4.2E-14  0.0E+00  2.1E-14  9.5E-15  3.2E-14
+   3  2.1E-14 -2.1E-14  0.0E+00 -2.2E-12  3.5E-14
+   4 -1.1E-14 -9.5E-15  2.2E-12  0.0E+00 -7.3E-14
+   5 -1.7E-14 -3.2E-14 -3.5E-14  7.3E-14  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.5E-12  3.1E-13  2.4E-12  3.6E-15
+   2 -1.5E-12  0.0E+00  4.5E-13 -1.6E-12  1.1E-12
+   3 -3.1E-13 -4.5E-13  0.0E+00 -1.6E-13  9.8E-13
+   4 -2.4E-12  1.6E-12  1.6E-13  0.0E+00  1.8E-12
+   5 -3.6E-15 -1.1E-12 -9.8E-13 -1.8E-12  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.5E-12 -2.3E-13 -2.4E-12 -3.1E-15
+   2  1.5E-12  0.0E+00 -4.0E-13  1.6E-12 -1.2E-12
+   3  2.3E-13  4.0E-13  0.0E+00  2.4E-12 -9.8E-13
+   4  2.4E-12 -1.6E-12 -2.4E-12  0.0E+00 -1.8E-12
+   5  3.1E-15  1.2E-12  9.8E-13  1.8E-12  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0034
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7074
+* Orbital   5 Pipek-Mezey localization measure d =  1.0003
+
+* Inverse mean delocalization =   0.8206755760055
+DIFFA =   8  0.2881D-06
+
+########## START ITERATION NO.   9 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00196   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00000  -0.36983   0.00000   0.00003   0.00000  -0.00007   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.00000   0.00000  -0.18480   0.00050   0.00000   0.00000  -0.00005   0.00000   0.00000   0.00001   0.00000   0.00000   0.00000   0.00000
+   5   0.00000   0.00000   0.00003   0.00050   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00002   0.00000  -0.00023   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000  -0.00007   0.00000   0.00000   0.00000  -0.42559   0.00000   0.00004   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.00000   0.00000  -0.00005   0.00000   0.00000   0.00000  -0.22479   0.00060   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00004   0.00060  -0.00182   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.03178  -0.00092   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000  -0.00002   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00092  -0.37186   0.00000   0.00000   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00000  -0.00023   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.18623   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79866   0.00498
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -2.6E-03 -9.7E-05 -2.5E-03 -3.8E-01
+   2  2.6E-03  0.0E+00  5.2E-08  1.4E-06  2.1E-03
+   3  9.7E-05 -5.2E-08  0.0E+00  3.8E-07 -1.8E-04
+   4  2.5E-03 -1.4E-06 -3.8E-07  0.0E+00 -5.4E-03
+   5  3.8E-01 -2.1E-03  1.8E-04  5.4E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -2.6E-03 -9.7E-05 -2.5E-03 -3.8E-01
+   2  2.6E-03  0.0E+00  5.2E-08  1.4E-06  2.1E-03
+   3  9.7E-05 -5.2E-08  0.0E+00  3.8E-07 -1.8E-04
+   4  2.5E-03 -1.4E-06 -3.8E-07  0.0E+00 -5.4E-03
+   5  3.8E-01 -2.1E-03  1.8E-04  5.4E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -2.6E-03 -9.7E-05 -2.5E-03 -3.8E-01
+   2  2.6E-03  0.0E+00  5.2E-08  1.4E-06  2.1E-03
+   3  9.7E-05 -5.2E-08  0.0E+00  3.8E-07 -1.8E-04
+   4  2.5E-03 -1.4E-06 -3.8E-07  0.0E+00 -5.4E-03
+   5  3.8E-01 -2.1E-03  1.8E-04  5.4E-03  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -2.6E-03 -9.7E-05 -2.5E-03 -3.8E-01
+   2  2.6E-03  0.0E+00  5.2E-08  1.4E-06  2.1E-03
+   3  9.7E-05 -5.2E-08  0.0E+00  3.8E-07 -1.8E-04
+   4  2.5E-03 -1.4E-06 -3.8E-07  0.0E+00 -5.4E-03
+   5  3.8E-01 -2.1E-03  1.8E-04  5.4E-03  0.0E+00
+Norm of gradient:     0.73E+00
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -3.4E-04 -6.5E-04 -2.0E-04 -1.9E-04
+   2 -3.4E-04  1.0E+00  3.8E-04  3.4E-04 -5.4E-05
+   3 -6.5E-04  3.8E-04  6.4E-01 -8.5E-05  2.1E-05
+   4 -2.0E-04  3.4E-04 -8.5E-05  7.5E-01 -3.4E-04
+   5 -1.9E-04 -5.4E-05  2.1E-05 -3.4E-04  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.6E-04 -3.2E-04 -6.6E-04  1.2E-04  6.5E-06
+   2 -3.2E-04 -1.3E-02  4.0E-04  3.5E-04 -7.4E-05
+   3 -6.6E-04  4.0E-04  1.7E-01 -8.4E-05  3.8E-05
+   4  1.2E-04  3.5E-04 -8.4E-05  1.2E-01 -8.1E-05
+   5  6.5E-06 -7.4E-05  3.8E-05 -8.1E-05 -8.2E-07
+ 
+ Nucleus #   3
+   1 -1.6E-04 -3.2E-04 -6.6E-04  1.2E-04  6.5E-06
+   2 -3.2E-04 -1.3E-02  4.0E-04  3.5E-04 -7.4E-05
+   3 -6.6E-04  4.0E-04  1.7E-01 -8.4E-05  3.8E-05
+   4  1.2E-04  3.5E-04 -8.4E-05  1.2E-01 -8.1E-05
+   5  6.5E-06 -7.4E-05  3.8E-05 -8.1E-05 -8.2E-07
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -7.9E-14 -6.3E-13  6.2E-15  1.4E-13
+   2  7.9E-14  0.0E+00  2.7E-13  2.8E-16  4.2E-14
+   3  6.3E-13 -2.7E-13  0.0E+00  6.0E-14 -6.8E-15
+   4 -6.2E-15 -2.8E-16 -6.0E-14  0.0E+00  2.5E-13
+   5 -1.4E-13 -4.2E-14  6.8E-15 -2.5E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.6E-14 -5.3E-13  1.1E-13  2.7E-15
+   2  3.6E-14  0.0E+00 -1.4E-13  7.1E-13  5.2E-14
+   3  5.3E-13  1.4E-13  0.0E+00  1.2E-12 -2.9E-14
+   4 -1.1E-13 -7.1E-13 -1.2E-12  0.0E+00  3.2E-14
+   5 -2.7E-15 -5.2E-14  2.9E-14 -3.2E-14  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-13 -7.6E-13 -1.1E-13  1.9E-15
+   2  1.2E-13  0.0E+00  6.9E-13 -7.1E-13  7.5E-14
+   3  7.6E-13 -6.9E-13  0.0E+00 -1.1E-12 -3.2E-14
+   4  1.1E-13  7.1E-13  1.1E-12  0.0E+00  6.0E-14
+   5 -1.9E-15 -7.5E-14  3.2E-14 -6.0E-14  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -1.8E-11 -4.3E-12 -4.9E-11 -5.3E-12
+   2  1.8E-11  0.0E+00  2.0E-10  2.2E-11 -2.2E-12
+   3  4.3E-12 -2.0E-10  0.0E+00  8.8E-10 -2.0E-13
+   4  4.9E-11 -2.2E-11 -8.8E-10  0.0E+00  3.4E-12
+   5  5.3E-12  2.2E-12  2.0E-13 -3.4E-12  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.7E-03  9.9E-04  2.7E-03  1.0E-05
+   2 -1.7E-03  0.0E+00  2.4E-02 -2.2E-03  9.3E-05
+   3 -9.9E-04 -2.4E-02  0.0E+00 -1.6E-01 -1.4E-05
+   4 -2.7E-03  2.2E-03  1.6E-01  0.0E+00  1.6E-04
+   5 -1.0E-05 -9.3E-05  1.4E-05 -1.6E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-03 -9.9E-04 -2.7E-03 -1.0E-05
+   2  1.7E-03  0.0E+00 -2.4E-02  2.2E-03 -9.3E-05
+   3  9.9E-04  2.4E-02  0.0E+00  1.6E-01  1.4E-05
+   4  2.7E-03 -2.2E-03 -1.6E-01  0.0E+00 -1.6E-04
+   5  1.0E-05  9.3E-05 -1.4E-05  1.6E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  3.2E-14  1.4E-14 -3.6E-14 -1.6E-15
+   2 -3.2E-14  0.0E+00  2.2E-14  1.1E-14 -7.2E-15
+   3 -1.4E-14 -2.2E-14  0.0E+00 -2.7E-12 -8.0E-15
+   4  3.6E-14 -1.1E-14  2.7E-12  0.0E+00 -8.9E-15
+   5  1.6E-15  7.2E-15  8.0E-15  8.9E-15  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.6E-12  2.3E-13  2.6E-12  1.6E-14
+   2 -1.6E-12  0.0E+00  4.5E-13 -1.6E-12  7.4E-14
+   3 -2.3E-13 -4.5E-13  0.0E+00  4.7E-14 -5.2E-14
+   4 -2.6E-12  1.6E-12 -4.7E-14  0.0E+00  1.4E-13
+   5 -1.6E-14 -7.4E-14  5.2E-14 -1.4E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.6E-12 -1.9E-13 -2.6E-12 -1.9E-14
+   2  1.6E-12  0.0E+00 -4.0E-13  1.6E-12 -8.0E-14
+   3  1.9E-13  4.0E-13  0.0E+00  2.6E-12  5.9E-14
+   4  2.6E-12 -1.6E-12 -2.6E-12  0.0E+00 -1.5E-13
+   5  1.9E-14  8.0E-14 -5.9E-14  1.5E-13  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0036
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7074
+* Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+* Inverse mean delocalization =   0.8206769221194
+DIFFA =   9  0.1346D-05
+
+########## START ITERATION NO.  10 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00196   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00000  -0.36971   0.00000  -0.00001   0.00000   0.00002   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.00000   0.00000  -0.18474  -0.00006   0.00000   0.00000   0.00002   0.00000   0.00000   0.00001   0.00000   0.00000   0.00000   0.00000
+   5   0.00000   0.00000  -0.00001  -0.00006  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00001   0.00000  -0.00008   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000   0.00002   0.00000   0.00000   0.00000  -0.42559   0.00000  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.00000   0.00000   0.00002   0.00000   0.00000   0.00000  -0.22480  -0.00008   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00001  -0.00008  -0.00181   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.03178   0.00012   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00012  -0.37199   0.00000   0.00000   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00000  -0.00008   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.18635   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79874   0.00084
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00  5.9E-04 -2.7E-05 -8.7E-04  1.1E-01
+   2 -5.9E-04  0.0E+00 -4.0E-08 -5.6E-07  6.4E-04
+   3  2.7E-05  4.0E-08  0.0E+00  2.9E-06  2.8E-05
+   4  8.7E-04  5.6E-07 -2.9E-06  0.0E+00  7.1E-04
+   5 -1.1E-01 -6.4E-04 -2.8E-05 -7.1E-04  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00  5.9E-04 -2.7E-05 -8.7E-04  1.1E-01
+   2 -5.9E-04  0.0E+00 -4.0E-08 -5.6E-07  6.4E-04
+   3  2.7E-05  4.0E-08  0.0E+00  2.9E-06  2.8E-05
+   4  8.7E-04  5.6E-07 -2.9E-06  0.0E+00  7.1E-04
+   5 -1.1E-01 -6.4E-04 -2.8E-05 -7.1E-04  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00  5.9E-04 -2.7E-05 -8.7E-04  1.1E-01
+   2 -5.9E-04  0.0E+00 -4.0E-08 -5.6E-07  6.4E-04
+   3  2.7E-05  4.0E-08  0.0E+00  2.9E-06  2.8E-05
+   4  8.7E-04  5.6E-07 -2.9E-06  0.0E+00  7.1E-04
+   5 -1.1E-01 -6.4E-04 -2.8E-05 -7.1E-04  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00  5.9E-04 -2.7E-05 -8.7E-04  1.1E-01
+   2 -5.9E-04  0.0E+00 -4.0E-08 -5.6E-07  6.4E-04
+   3  2.7E-05  4.0E-08  0.0E+00  2.9E-06  2.8E-05
+   4  8.7E-04  5.6E-07 -2.9E-06  0.0E+00  7.1E-04
+   5 -1.1E-01 -6.4E-04 -2.8E-05 -7.1E-04  0.0E+00
+Norm of gradient:     0.39E+00
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -3.3E-04 -6.3E-04 -7.7E-06  3.6E-06
+   2 -3.3E-04  1.0E+00  3.8E-04  3.4E-04 -3.4E-05
+   3 -6.3E-04  3.8E-04  6.4E-01 -8.5E-05  1.0E-04
+   4 -7.7E-06  3.4E-04 -8.5E-05  7.5E-01 -1.5E-04
+   5  3.6E-06 -3.4E-05  1.0E-04 -1.5E-04  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.6E-04 -3.3E-04 -6.5E-04  5.5E-06  2.4E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.0E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  5.5E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.4E-05 -3.0E-05  1.0E-04 -1.7E-04 -3.9E-06
+ 
+ Nucleus #   3
+   1 -1.6E-04 -3.3E-04 -6.5E-04  5.5E-06  2.4E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.0E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  5.5E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.4E-05 -3.0E-05  1.0E-04 -1.7E-04 -3.9E-06
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -7.6E-14 -6.3E-13  3.6E-15 -4.0E-15
+   2  7.6E-14  0.0E+00  2.7E-13  1.6E-16  2.3E-14
+   3  6.3E-13 -2.7E-13  0.0E+00  6.0E-14 -1.4E-13
+   4 -3.6E-15 -1.6E-16 -6.0E-14  0.0E+00  1.0E-13
+   5  4.0E-15 -2.3E-14  1.4E-13 -1.0E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.6E-14 -5.1E-13  1.2E-13 -1.1E-14
+   2  3.6E-14  0.0E+00 -1.5E-13  8.2E-13  1.4E-14
+   3  5.1E-13  1.5E-13  0.0E+00  1.2E-12 -1.3E-13
+   4 -1.2E-13 -8.2E-13 -1.2E-12  0.0E+00  1.2E-13
+   5  1.1E-14 -1.4E-14  1.3E-13 -1.2E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-13 -7.9E-13 -1.1E-13 -1.1E-14
+   2  1.2E-13  0.0E+00  7.0E-13 -8.2E-13  2.6E-14
+   3  7.9E-13 -7.0E-13  0.0E+00 -1.1E-12 -1.6E-13
+   4  1.1E-13  8.2E-13  1.1E-12  0.0E+00  1.2E-13
+   5  1.1E-14 -2.6E-14  1.6E-13 -1.2E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -1.2E-11 -4.0E-11  3.4E-11 -2.9E-13
+   2  1.2E-11  0.0E+00 -2.3E-10 -2.7E-11 -2.3E-12
+   3  4.0E-11  2.3E-10  0.0E+00 -1.0E-09  1.0E-11
+   4 -3.4E-11  2.7E-11  1.0E-09  0.0E+00 -1.0E-11
+   5  2.9E-13  2.3E-12 -1.0E-11  1.0E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.7E-03  8.6E-04  2.7E-03  7.0E-06
+   2 -1.7E-03  0.0E+00  2.4E-02 -2.2E-03  2.8E-04
+   3 -8.6E-04 -2.4E-02  0.0E+00 -1.6E-01  2.2E-04
+   4 -2.7E-03  2.2E-03  1.6E-01  0.0E+00  4.6E-04
+   5 -7.0E-06 -2.8E-04 -2.2E-04 -4.6E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-03 -8.6E-04 -2.7E-03 -7.0E-06
+   2  1.7E-03  0.0E+00 -2.4E-02  2.2E-03 -2.8E-04
+   3  8.6E-04  2.4E-02  0.0E+00  1.6E-01 -2.2E-04
+   4  2.7E-03 -2.2E-03 -1.6E-01  0.0E+00 -4.6E-04
+   5  7.0E-06  2.8E-04  2.2E-04  4.6E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  2.9E-14  1.6E-14 -1.8E-14  2.4E-16
+   2 -2.9E-14  0.0E+00  2.4E-14  1.3E-14 -9.8E-16
+   3 -1.6E-14 -2.4E-14  0.0E+00 -3.1E-12  5.4E-15
+   4  1.8E-14 -1.3E-14  3.1E-12  0.0E+00 -7.8E-15
+   5 -2.4E-16  9.8E-16 -5.4E-15  7.8E-15  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.6E-12  2.4E-13  2.6E-12  1.0E-14
+   2 -1.6E-12  0.0E+00  4.5E-13 -1.6E-12  3.9E-13
+   3 -2.4E-13 -4.5E-13  0.0E+00  2.9E-13  1.6E-13
+   4 -2.6E-12  1.6E-12 -2.9E-13  0.0E+00  6.3E-13
+   5 -1.0E-14 -3.9E-13 -1.6E-13 -6.3E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.6E-12 -2.0E-13 -2.6E-12 -1.3E-14
+   2  1.6E-12  0.0E+00 -4.0E-13  1.6E-12 -3.9E-13
+   3  2.0E-13  4.0E-13  0.0E+00  2.9E-12 -1.5E-13
+   4  2.6E-12 -1.6E-12 -2.9E-12  0.0E+00 -6.5E-13
+   5  1.3E-14  3.9E-13  1.5E-13  6.5E-13  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0037
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7074
+* Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+* Inverse mean delocalization =   0.8206769833246
+DIFFA =  10  0.6121D-07
+
+########## START ITERATION NO.  11 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00197   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00000  -0.36968   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.00000   0.00000  -0.18471   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   5   0.00000   0.00000   0.00000   0.00001  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.42559   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.22480   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00001  -0.00180   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.03178  -0.00001   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00001  -0.37202   0.00000   0.00000   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.18638   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79875   0.00011
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -1.4E-05 -1.4E-06 -3.5E-05 -4.3E-03
+   2  1.4E-05  0.0E+00  7.0E-10  3.4E-08 -4.6E-05
+   3  1.4E-06 -7.0E-10  0.0E+00  1.6E-08 -2.4E-06
+   4  3.5E-05 -3.4E-08 -1.6E-08  0.0E+00 -5.0E-05
+   5  4.3E-03  4.6E-05  2.4E-06  5.0E-05  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -1.4E-05 -1.4E-06 -3.5E-05 -4.3E-03
+   2  1.4E-05  0.0E+00  7.0E-10  3.4E-08 -4.6E-05
+   3  1.4E-06 -7.0E-10  0.0E+00  1.6E-08 -2.4E-06
+   4  3.5E-05 -3.4E-08 -1.6E-08  0.0E+00 -5.0E-05
+   5  4.3E-03  4.6E-05  2.4E-06  5.0E-05  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -1.4E-05 -1.4E-06 -3.5E-05 -4.3E-03
+   2  1.4E-05  0.0E+00  7.0E-10  3.4E-08 -4.6E-05
+   3  1.4E-06 -7.0E-10  0.0E+00  1.6E-08 -2.4E-06
+   4  3.5E-05 -3.4E-08 -1.6E-08  0.0E+00 -5.0E-05
+   5  4.3E-03  4.6E-05  2.4E-06  5.0E-05  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -1.4E-05 -1.4E-06 -3.5E-05 -4.3E-03
+   2  1.4E-05  0.0E+00  7.0E-10  3.4E-08 -4.6E-05
+   3  1.4E-06 -7.0E-10  0.0E+00  1.6E-08 -2.4E-06
+   4  3.5E-05 -3.4E-08 -1.6E-08  0.0E+00 -5.0E-05
+   5  4.3E-03  4.6E-05  2.4E-06  5.0E-05  0.0E+00
+Norm of gradient:     0.78E-01
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -3.3E-04 -6.3E-04  1.9E-06 -4.1E-06
+   2 -3.3E-04  1.0E+00  3.8E-04  3.4E-04 -3.4E-05
+   3 -6.3E-04  3.8E-04  6.4E-01 -8.5E-05  9.8E-05
+   4  1.9E-06  3.4E-04 -8.5E-05  7.5E-01 -1.6E-04
+   5 -4.1E-06 -3.4E-05  9.8E-05 -1.6E-04  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.6E-04 -3.3E-04 -6.5E-04  2.0E-06  2.3E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.2E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  2.0E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.3E-05 -3.2E-05  1.0E-04 -1.7E-04 -3.7E-06
+ 
+ Nucleus #   3
+   1 -1.6E-04 -3.3E-04 -6.5E-04  2.0E-06  2.3E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.2E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  2.0E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.3E-05 -3.2E-05  1.0E-04 -1.7E-04 -3.7E-06
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -7.6E-14 -6.3E-13  4.1E-15  1.8E-15
+   2  7.6E-14  0.0E+00  2.7E-13  1.6E-16  2.3E-14
+   3  6.3E-13 -2.7E-13  0.0E+00  6.0E-14 -1.4E-13
+   4 -4.1E-15 -1.6E-16 -6.0E-14  0.0E+00  1.1E-13
+   5 -1.8E-15 -2.3E-14  1.4E-13 -1.1E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.6E-14 -4.9E-13  1.2E-13 -1.0E-14
+   2  3.6E-14  0.0E+00 -1.7E-13  9.6E-13  1.6E-14
+   3  4.9E-13  1.7E-13  0.0E+00  1.2E-12 -1.2E-13
+   4 -1.2E-13 -9.6E-13 -1.2E-12  0.0E+00  1.2E-13
+   5  1.0E-14 -1.6E-14  1.2E-13 -1.2E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-13 -8.0E-13 -1.1E-13 -1.1E-14
+   2  1.2E-13  0.0E+00  7.2E-13 -9.6E-13  2.8E-14
+   3  8.0E-13 -7.2E-13  0.0E+00 -1.1E-12 -1.6E-13
+   4  1.1E-13  9.6E-13  1.1E-12  0.0E+00  1.2E-13
+   5  1.1E-14 -2.8E-14  1.6E-13 -1.2E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -1.7E-11 -1.8E-11 -4.0E-11 -5.1E-13
+   2  1.7E-11  0.0E+00  2.7E-10  3.1E-11 -2.8E-12
+   3  1.8E-11 -2.7E-10  0.0E+00  1.2E-09  7.6E-12
+   4  4.0E-11 -3.1E-11 -1.2E-09  0.0E+00 -1.8E-11
+   5  5.1E-13  2.8E-12 -7.6E-12  1.8E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.7E-03  8.5E-04  2.7E-03  7.2E-06
+   2 -1.7E-03  0.0E+00  2.4E-02 -2.2E-03  2.7E-04
+   3 -8.5E-04 -2.4E-02  0.0E+00 -1.6E-01  2.0E-04
+   4 -2.7E-03  2.2E-03  1.6E-01  0.0E+00  4.4E-04
+   5 -7.2E-06 -2.7E-04 -2.0E-04 -4.4E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-03 -8.5E-04 -2.7E-03 -7.2E-06
+   2  1.7E-03  0.0E+00 -2.4E-02  2.2E-03 -2.7E-04
+   3  8.5E-04  2.4E-02  0.0E+00  1.6E-01 -2.0E-04
+   4  2.7E-03 -2.2E-03 -1.6E-01  0.0E+00 -4.4E-04
+   5  7.2E-06  2.7E-04  2.0E-04  4.4E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  2.9E-14  1.9E-14 -2.2E-14  1.9E-16
+   2 -2.9E-14  0.0E+00  2.6E-14  1.5E-14 -1.1E-15
+   3 -1.9E-14 -2.6E-14  0.0E+00 -3.7E-12  4.0E-15
+   4  2.2E-14 -1.5E-14  3.7E-12  0.0E+00 -7.3E-15
+   5 -1.9E-16  1.1E-15 -4.0E-15  7.3E-15  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.6E-12  2.4E-13  2.6E-12  1.1E-14
+   2 -1.6E-12  0.0E+00  4.5E-13 -1.6E-12  3.8E-13
+   3 -2.4E-13 -4.5E-13  0.0E+00  5.7E-13  1.5E-13
+   4 -2.6E-12  1.6E-12 -5.7E-13  0.0E+00  6.1E-13
+   5 -1.1E-14 -3.8E-13 -1.5E-13 -6.1E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.6E-12 -2.0E-13 -2.6E-12 -1.3E-14
+   2  1.6E-12  0.0E+00 -4.0E-13  1.6E-12 -3.8E-13
+   3  2.0E-13  4.0E-13  0.0E+00  3.1E-12 -1.4E-13
+   4  2.6E-12 -1.6E-12 -3.1E-12  0.0E+00 -6.3E-13
+   5  1.3E-14  3.8E-13  1.4E-13  6.3E-13  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0037
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7074
+* Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+* Inverse mean delocalization =   0.8206769834869
+DIFFA =  11  0.1622D-09
+
+########## START ITERATION NO.  12 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00197   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00000  -0.36968   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.00000   0.00000  -0.18471   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   5   0.00000   0.00000   0.00000   0.00000  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.42559   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.22480   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00180   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.03178   0.00000   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.37202   0.00000   0.00000   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.18638   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79875   0.00007
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00 -3.0E-07  1.5E-09 -1.2E-07  4.8E-06
+   2  3.0E-07  0.0E+00 -4.5E-12 -1.8E-09  3.2E-06
+   3 -1.5E-09  4.5E-12  0.0E+00 -5.0E-09  3.4E-08
+   4  1.2E-07  1.8E-09  5.0E-09  0.0E+00  7.7E-08
+   5 -4.8E-06 -3.2E-06 -3.4E-08 -7.7E-08  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00 -3.0E-07  1.5E-09 -1.2E-07  4.8E-06
+   2  3.0E-07  0.0E+00 -4.5E-12 -1.8E-09  3.2E-06
+   3 -1.5E-09  4.5E-12  0.0E+00 -5.0E-09  3.4E-08
+   4  1.2E-07  1.8E-09  5.0E-09  0.0E+00  7.7E-08
+   5 -4.8E-06 -3.2E-06 -3.4E-08 -7.7E-08  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00 -3.0E-07  1.5E-09 -1.2E-07  4.8E-06
+   2  3.0E-07  0.0E+00 -4.5E-12 -1.8E-09  3.2E-06
+   3 -1.5E-09  4.5E-12  0.0E+00 -5.0E-09  3.4E-08
+   4  1.2E-07  1.8E-09  5.0E-09  0.0E+00  7.7E-08
+   5 -4.8E-06 -3.2E-06 -3.4E-08 -7.7E-08  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00 -3.0E-07  1.5E-09 -1.2E-07  4.8E-06
+   2  3.0E-07  0.0E+00 -4.5E-12 -1.8E-09  3.2E-06
+   3 -1.5E-09  4.5E-12  0.0E+00 -5.0E-09  3.4E-08
+   4  1.2E-07  1.8E-09  5.0E-09  0.0E+00  7.7E-08
+   5 -4.8E-06 -3.2E-06 -3.4E-08 -7.7E-08  0.0E+00
+Norm of gradient:     0.29E-02
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -3.3E-04 -6.3E-04  1.9E-06 -4.1E-06
+   2 -3.3E-04  1.0E+00  3.8E-04  3.4E-04 -3.4E-05
+   3 -6.3E-04  3.8E-04  6.4E-01 -8.5E-05  9.8E-05
+   4  1.9E-06  3.4E-04 -8.5E-05  7.5E-01 -1.6E-04
+   5 -4.1E-06 -3.4E-05  9.8E-05 -1.6E-04  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.6E-04 -3.3E-04 -6.5E-04  2.0E-06  2.3E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.2E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  2.0E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.3E-05 -3.2E-05  1.0E-04 -1.7E-04 -3.7E-06
+ 
+ Nucleus #   3
+   1 -1.6E-04 -3.3E-04 -6.5E-04  2.0E-06  2.3E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.2E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  2.0E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.3E-05 -3.2E-05  1.0E-04 -1.7E-04 -3.7E-06
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -7.6E-14 -6.3E-13  4.1E-15  1.8E-15
+   2  7.6E-14  0.0E+00  2.7E-13  1.6E-16  2.3E-14
+   3  6.3E-13 -2.7E-13  0.0E+00  6.0E-14 -1.4E-13
+   4 -4.1E-15 -1.6E-16 -6.0E-14  0.0E+00  1.1E-13
+   5 -1.8E-15 -2.3E-14  1.4E-13 -1.1E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.6E-14 -4.7E-13  1.2E-13 -1.0E-14
+   2  3.6E-14  0.0E+00 -1.8E-13  1.1E-12  1.6E-14
+   3  4.7E-13  1.8E-13  0.0E+00  1.2E-12 -1.2E-13
+   4 -1.2E-13 -1.1E-12 -1.2E-12  0.0E+00  1.2E-13
+   5  1.0E-14 -1.6E-14  1.2E-13 -1.2E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-13 -8.2E-13 -1.2E-13 -1.1E-14
+   2  1.2E-13  0.0E+00  7.3E-13 -1.1E-12  2.8E-14
+   3  8.2E-13 -7.3E-13  0.0E+00 -1.1E-12 -1.7E-13
+   4  1.2E-13  1.1E-12  1.1E-12  0.0E+00  1.2E-13
+   5  1.1E-14 -2.8E-14  1.7E-13 -1.2E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -1.1E-11 -4.0E-11  4.7E-11 -4.1E-13
+   2  1.1E-11  0.0E+00 -3.2E-10 -3.7E-11 -1.8E-12
+   3  4.0E-11  3.2E-10  0.0E+00 -1.4E-09  5.9E-12
+   4 -4.7E-11  3.7E-11  1.4E-09  0.0E+00 -3.4E-12
+   5  4.1E-13  1.8E-12 -5.9E-12  3.4E-12  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.7E-03  8.5E-04  2.7E-03  7.2E-06
+   2 -1.7E-03  0.0E+00  2.4E-02 -2.2E-03  2.7E-04
+   3 -8.5E-04 -2.4E-02  0.0E+00 -1.6E-01  2.0E-04
+   4 -2.7E-03  2.2E-03  1.6E-01  0.0E+00  4.4E-04
+   5 -7.2E-06 -2.7E-04 -2.0E-04 -4.4E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-03 -8.5E-04 -2.7E-03 -7.2E-06
+   2  1.7E-03  0.0E+00 -2.4E-02  2.2E-03 -2.7E-04
+   3  8.5E-04  2.4E-02  0.0E+00  1.6E-01 -2.0E-04
+   4  2.7E-03 -2.2E-03 -1.6E-01  0.0E+00 -4.4E-04
+   5  7.2E-06  2.7E-04  2.0E-04  4.4E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  2.9E-14  1.9E-14 -2.6E-14  1.9E-16
+   2 -2.9E-14  0.0E+00  2.8E-14  1.7E-14 -1.1E-15
+   3 -1.9E-14 -2.8E-14  0.0E+00 -4.4E-12  5.2E-15
+   4  2.6E-14 -1.7E-14  4.4E-12  0.0E+00 -7.9E-15
+   5 -1.9E-16  1.1E-15 -5.2E-15  7.9E-15  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.6E-12  2.4E-13  2.6E-12  1.1E-14
+   2 -1.6E-12  0.0E+00  4.5E-13 -1.6E-12  3.8E-13
+   3 -2.4E-13 -4.5E-13  0.0E+00  9.1E-13  1.5E-13
+   4 -2.6E-12  1.6E-12 -9.1E-13  0.0E+00  6.1E-13
+   5 -1.1E-14 -3.8E-13 -1.5E-13 -6.1E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.6E-12 -2.0E-13 -2.6E-12 -1.3E-14
+   2  1.6E-12  0.0E+00 -4.0E-13  1.6E-12 -3.8E-13
+   3  2.0E-13  4.0E-13  0.0E+00  3.5E-12 -1.4E-13
+   4  2.6E-12 -1.6E-12 -3.5E-12  0.0E+00 -6.3E-13
+   5  1.3E-14  3.8E-13  1.4E-13  6.3E-13  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0037
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7074
+* Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+* Inverse mean delocalization =   0.8206769834869
+DIFFA =  12  0.5995D-14
+
+########## START ITERATION NO.  13 ##########   Tue Sep 20 18:42:14 2011
+
+ 
+Print hmat(:,:,1)
+   1   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   2   0.00000  -0.00197   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   3   0.00000   0.00000  -0.36968   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   4   0.00000   0.00000   0.00000  -0.18471   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   5   0.00000   0.00000   0.00000   0.00000  -0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   6   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   7   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.42559   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   8   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.22480   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+   9   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.00180   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  10   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  11   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.03178   0.00000   0.00000   0.00000   0.00000
+  12   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.37202   0.00000   0.00000   0.00000
+  13   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+  14   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000  -0.18638   0.00000
+  15   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
+ Sum of diagonal vs non-diagonal elements (in absolute value):
+Diag vs. non-diag:   1.79875   0.00007
+ 
+Print xkappa matrix, IZ =   1
+   1  0.0E+00  2.0E-09 -1.0E-11  1.1E-11 -7.1E-07
+   2 -2.0E-09  0.0E+00 -6.1E-12  7.2E-12 -3.7E-09
+   3  1.0E-11  6.1E-12  0.0E+00 -1.6E-11 -1.9E-11
+   4 -1.1E-11 -7.2E-12  1.6E-11  0.0E+00  4.0E-11
+   5  7.1E-07  3.7E-09  1.9E-11 -4.0E-11  0.0E+00
+ 
+Print xkappa matrix, IZ =   2
+   1  0.0E+00  2.0E-09 -1.0E-11  1.1E-11 -7.1E-07
+   2 -2.0E-09  0.0E+00 -6.1E-12  7.2E-12 -3.7E-09
+   3  1.0E-11  6.1E-12  0.0E+00 -1.6E-11 -1.9E-11
+   4 -1.1E-11 -7.2E-12  1.6E-11  0.0E+00  4.0E-11
+   5  7.1E-07  3.7E-09  1.9E-11 -4.0E-11  0.0E+00
+ 
+Print xkappa matrix, IZ =   3
+   1  0.0E+00  2.0E-09 -1.0E-11  1.1E-11 -7.1E-07
+   2 -2.0E-09  0.0E+00 -6.1E-12  7.2E-12 -3.7E-09
+   3  1.0E-11  6.1E-12  0.0E+00 -1.6E-11 -1.9E-11
+   4 -1.1E-11 -7.2E-12  1.6E-11  0.0E+00  4.0E-11
+   5  7.1E-07  3.7E-09  1.9E-11 -4.0E-11  0.0E+00
+ 
+Print xkappa matrix, IZ =   4
+   1  0.0E+00  2.0E-09 -1.0E-11  1.1E-11 -7.1E-07
+   2 -2.0E-09  0.0E+00 -6.1E-12  7.2E-12 -3.7E-09
+   3  1.0E-11  6.1E-12  0.0E+00 -1.6E-11 -1.9E-11
+   4 -1.1E-11 -7.2E-12  1.6E-11  0.0E+00  4.0E-11
+   5  7.1E-07  3.7E-09  1.9E-11 -4.0E-11  0.0E+00
+Norm of gradient:     0.10E-02
+ 
+Print Q^A matrices, IZ =   1
+ Nucleus #   1
+   1  1.0E+00 -3.3E-04 -6.3E-04  1.9E-06 -4.1E-06
+   2 -3.3E-04  1.0E+00  3.8E-04  3.4E-04 -3.4E-05
+   3 -6.3E-04  3.8E-04  6.4E-01 -8.5E-05  9.8E-05
+   4  1.9E-06  3.4E-04 -8.5E-05  7.5E-01 -1.6E-04
+   5 -4.1E-06 -3.4E-05  9.8E-05 -1.6E-04  1.0E+00
+ 
+ Nucleus #   2
+   1 -1.6E-04 -3.3E-04 -6.5E-04  2.0E-06  2.3E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.2E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  2.0E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.3E-05 -3.2E-05  1.0E-04 -1.7E-04 -3.7E-06
+ 
+ Nucleus #   3
+   1 -1.6E-04 -3.3E-04 -6.5E-04  2.0E-06  2.3E-05
+   2 -3.3E-04 -1.3E-02  4.0E-04  3.5E-04 -3.2E-05
+   3 -6.5E-04  4.0E-04  1.7E-01 -8.5E-05  1.0E-04
+   4  2.0E-06  3.5E-04 -8.5E-05  1.2E-01 -1.7E-04
+   5  2.3E-05 -3.2E-05  1.0E-04 -1.7E-04 -3.7E-06
+ 
+ 
+Print Q^A matrices, IZ =   2
+ Nucleus #   1
+   1  0.0E+00 -7.6E-14 -6.3E-13  4.1E-15  1.8E-15
+   2  7.6E-14  0.0E+00  2.7E-13  1.6E-16  2.3E-14
+   3  6.3E-13 -2.7E-13  0.0E+00  6.0E-14 -1.4E-13
+   4 -4.1E-15 -1.6E-16 -6.0E-14  0.0E+00  1.1E-13
+   5 -1.8E-15 -2.3E-14  1.4E-13 -1.1E-13  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00 -3.6E-14 -4.5E-13  1.3E-13 -1.0E-14
+   2  3.6E-14  0.0E+00 -2.0E-13  1.3E-12  1.6E-14
+   3  4.5E-13  2.0E-13  0.0E+00  1.2E-12 -1.2E-13
+   4 -1.3E-13 -1.3E-12 -1.2E-12  0.0E+00  1.2E-13
+   5  1.0E-14 -1.6E-14  1.2E-13 -1.2E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.2E-13 -8.4E-13 -1.2E-13 -1.1E-14
+   2  1.2E-13  0.0E+00  7.5E-13 -1.3E-12  2.8E-14
+   3  8.4E-13 -7.5E-13  0.0E+00 -1.1E-12 -1.7E-13
+   4  1.2E-13  1.3E-12  1.1E-12  0.0E+00  1.1E-13
+   5  1.1E-14 -2.8E-14  1.7E-13 -1.1E-13  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   3
+ Nucleus #   1
+   1  0.0E+00 -1.9E-11 -1.4E-11 -5.5E-11 -5.2E-13
+   2  1.9E-11  0.0E+00  3.7E-10  4.2E-11 -3.0E-12
+   3  1.4E-11 -3.7E-10  0.0E+00  1.6E-09  7.6E-12
+   4  5.5E-11 -4.2E-11 -1.6E-09  0.0E+00 -2.0E-11
+   5  5.2E-13  3.0E-12 -7.6E-12  2.0E-11  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.7E-03  8.5E-04  2.7E-03  7.2E-06
+   2 -1.7E-03  0.0E+00  2.4E-02 -2.2E-03  2.7E-04
+   3 -8.5E-04 -2.4E-02  0.0E+00 -1.6E-01  2.0E-04
+   4 -2.7E-03  2.2E-03  1.6E-01  0.0E+00  4.4E-04
+   5 -7.2E-06 -2.7E-04 -2.0E-04 -4.4E-04  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.7E-03 -8.5E-04 -2.7E-03 -7.2E-06
+   2  1.7E-03  0.0E+00 -2.4E-02  2.2E-03 -2.7E-04
+   3  8.5E-04  2.4E-02  0.0E+00  1.6E-01 -2.0E-04
+   4  2.7E-03 -2.2E-03 -1.6E-01  0.0E+00 -4.4E-04
+   5  7.2E-06  2.7E-04  2.0E-04  4.4E-04  0.0E+00
+ 
+ 
+Print Q^A matrices, IZ =   4
+ Nucleus #   1
+   1  0.0E+00  2.9E-14  1.9E-14 -3.1E-14  2.0E-16
+   2 -2.9E-14  0.0E+00  3.0E-14  2.0E-14 -1.1E-15
+   3 -1.9E-14 -3.0E-14  0.0E+00 -5.2E-12  6.5E-15
+   4  3.1E-14 -2.0E-14  5.2E-12  0.0E+00 -8.7E-15
+   5 -2.0E-16  1.1E-15 -6.5E-15  8.7E-15  0.0E+00
+ 
+ Nucleus #   2
+   1  0.0E+00  1.6E-12  2.4E-13  2.6E-12  1.1E-14
+   2 -1.6E-12  0.0E+00  4.6E-13 -1.6E-12  3.8E-13
+   3 -2.4E-13 -4.6E-13  0.0E+00  1.3E-12  1.5E-13
+   4 -2.6E-12  1.6E-12 -1.3E-12  0.0E+00  6.1E-13
+   5 -1.1E-14 -3.8E-13 -1.5E-13 -6.1E-13  0.0E+00
+ 
+ Nucleus #   3
+   1  0.0E+00 -1.6E-12 -2.0E-13 -2.6E-12 -1.3E-14
+   2  1.6E-12  0.0E+00 -3.9E-13  1.6E-12 -3.8E-13
+   3  2.0E-13  3.9E-13  0.0E+00  3.9E-12 -1.4E-13
+   4  2.6E-12 -1.6E-12 -3.9E-12  0.0E+00 -6.3E-13
+   5  1.3E-14  3.8E-13  1.4E-13  6.3E-13  0.0E+00
+ 
+
+** Pipek-Mezey localization criteria **
+  ===================================  
+* Orbital   1 Pipek-Mezey localization measure d =  1.0037
+* Orbital   2 Pipek-Mezey localization measure d =  0.9534
+* Orbital   3 Pipek-Mezey localization measure d =  2.1160
+* Orbital   4 Pipek-Mezey localization measure d =  1.7074
+* Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+* Inverse mean delocalization =   0.8206769834869
+DIFFA =  13  0.9992D-15
+
+ >>> Convergence in    13 iterations
+ >>> Time used in localization is :   0.02 seconds
+
+ 
+     Date and time (Linux)  : Tue Sep 20 18:42:14 2011
+     Host name              : Bassilus                                
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :         1.16
+  
+  Largest          10  allocations
+  
+      500.00 Mb at subroutine                                            for work array at main                        
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+        0.31 Mb at subroutine                                            for CMO in ORBLP1                             
+  
+  Peak memory usage    (Mb) :       501.00
+       reached at subroutine :                                           
+              for variable   : KBAS in SELOWN_mod                        
+  
+ MEMGET high-water mark:     1.41 MB
+
+*****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 131592, majflt: 0, nvcsw: 0, nivcsw: 98, maxrss: 0
+>>>> Total WALL time used in DIRAC: 1s
