@@ -471,18 +471,16 @@ contains
       DINV = D0
       DO I = 1,NI
         QLOC2 = D0
-        SUMD  = D0
         DO J = 1,NUCDEP
           QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)
-          SUMD  = SUMD + PMAT(I,I,1,J)
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
         WRITE(LUPRI,'(A,I3,A,2F7.4)') &
-        '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC,SUMD
+        '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
       DINVM = DINV/NI
-      WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM,1.0D0/DINVM
+      WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -1291,10 +1289,12 @@ contains
   enddo
 
   write(6,*)
-  write(6,'(a,2f10.5)') 'Print hmat(:,:,1)',sumdiag,sumnond
+  write(6,'(a,2f10.5)') 'Print hmat(:,:,1)'
   do j=1,ni12
     write(6,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
+  write(6,*) 'Sum of diagonal vs non-diagonal elements (in absolute value):'
+  write(6,'(a,2f10.5)') 'Diag vs. non-diag:',sumdiag,sumnond
 
 ! write(6,'(a)') 'Print diagonal hmat (geth)'
 ! write(6,'(15f10.5)') (hmat(i,i,1),i=1,ni12)
