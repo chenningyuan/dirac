@@ -391,7 +391,7 @@ C               These are the only two extensions at the moment.
 
       CASE ('XYZ')
 
-        CALL READ_XYZ(LUINFO, LUCMD, LUPRI, PARHER, WORK, LWORK,
+        CALL READ_XYZ(LUINFO, LUCMD, LUPRI, WORK, LWORK,
      &                KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
       CASE DEFAULT
