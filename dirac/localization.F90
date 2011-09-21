@@ -74,7 +74,7 @@ contains
 
 ! Memory allocation
 
-      NISH12 = ( NISH(IFRP)*NISH(IFRP) + NISH(IFRP) ) / 2.0D0
+      NISH12 = 2 * ( NISH(IFRP)*NISH(IFRP) + NISH(IFRP) ) / 2
       CALL ALLOC(SCOEF ,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEF IN ORBLOC')
       CALL ALLOC(SCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEFO IN ORBLOC')
       CALL ALLOC(SMAT  ,N2BBASX,ID='SMAT IN ORBLOC')
@@ -807,17 +807,8 @@ contains
     enddo
   enddo
 
-! write(6,*)
-! write(6,'(a)') 'Print diagonal of hmat'
-! do j=1,ni
-!   do i=j,ni
-!     write(6,'(15f10.5)') hmat(i,j,1)
-!   enddo
-! enddo
-
   ! Construction and print of the unbared kappa matrix
-  ndim = ni*ni*4
-  call dzero(xkappa,ndim)
+  xkappa(:,:,:) = d0
   do iz = 1,2
     do j = 1,ni
       do i = 1,ni
@@ -833,8 +824,7 @@ contains
   enddo
 
   ! Construct bared diagonal Hessian matrix
-  ndim = ni*ni*4
-  call dzero(hmat,ndim)
+  hmat(:,:,:) = d0
   do j = 1,ni
     do i = 1,ni
       do k = 1,nucdep
@@ -846,8 +836,21 @@ contains
     enddo
   enddo
 
+! write(6,*)
+! write(6,'(a)') 'Print diagonal of hmat'
+! do j=1,ni
+!   do i=j,ni
+!     write(6,'(15f10.5)') d4*hmat(i,j,1)
+!   enddo
+! enddo
+! do j=1,ni
+!   do i=j,ni
+!     write(6,'(15f10.5)') d4*hmat(i,j,2)
+!   enddo
+! enddo
+! stop
+
   ! Construction and print of the bared kappa matrix
-  ndim = ni*ni*4
   do iz = 3,4
     do j = 1,ni
       do i = 1,ni
@@ -877,6 +880,7 @@ contains
   endif
 
   ! Norm of the gradient
+  ndim = ni*ni*4
   xnrm = dnrm2(ndim,xkappa,1)
   write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
 
@@ -1262,7 +1266,11 @@ contains
   !******************************************************************************!
   !                                                                              !
   !  Construction of full hessian                                                !
-  !                                                                              !
+  !                                                                              ! 
+  !     HMAT         A = d^2 G / dK* dK     B = d^2 G / dK dK          K         !
+  !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
+  !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
+  !                                                                              ! 
   !******************************************************************************!
   implicit none
 
@@ -1273,23 +1281,29 @@ contains
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0
 
-  real*8 :: pij1, pij2, pkl1, pkl2, pjl1, pjl2, pki1, pki2
+  real*8 :: pij1, pkl1, pjl1, pki1, pil1, pkj1
+  real*8 :: pij2, pkl2, pjl2, pki2, pil2, pkj2
   real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond
 
-  integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ni12
+  integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12
 
   !------------------------------------------------------------------------------!
   call qenter('geth')
 
   hmat(:,:,:) = d0
-  sumdiag = d0
-  sumnond = d0
 
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
-  ni12   = size(hmat,1)
+  ndimh  = size(hmat,1)
+  ni12   = ndimh / 2
 
+  !------------------------------------------------------------------------------!
+  !                 Unbared-unbared contribution to the hessian                  !
+  !------------------------------------------------------------------------------!
+  !  d^2 G / dK* dK
+  sumdiag = d0
+  sumnond = d0
   ij = 0
   do j=1,ni
     do i=j,ni
@@ -1342,21 +1356,82 @@ contains
   enddo
 
   write(6,*)
-  write(6,'(a,2f10.5)') 'Print hmat(:,:,1)'
+  write(6,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
   do j=1,ni12
     write(6,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-  write(6,*) 'Sum of diagonal vs non-diagonal elements (in absolute value):'
-  write(6,'(a,2f10.5)') 'Diag vs. non-diag:',sumdiag,sumnond
-
-! write(6,'(a)') 'Print diagonal hmat (geth)'
-! write(6,'(15f10.5)') (hmat(i,i,1),i=1,ni12)
-
 ! write(6,*)
-! write(6,'(a)') 'Print hmat(:,:,2)'
+! write(6,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
 ! do j=1,ni12
 !   write(6,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
 ! enddo
+  write(6,*) 'Sum of diagonal vs non-diagonal elements of A_uu (in absolute value):'
+  write(6,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
+
+  !  d^2 G / dK dK
+  sumnond = d0
+  ij = ni12
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = 0
+      do l=1,ni
+        do k=l,ni
+          kl = kl + 1
+          if(k==l) cycle
+          do m = 1,nucdep
+            pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
+            pkl1 = pmat(k,l,1,m); pkl2 = pmat(k,l,2,m)
+            pil1 = pmat(i,l,1,m); pjl2 = pmat(i,l,2,m)
+            pkj1 = pmat(k,j,1,m); pki2 = pmat(k,j,2,m)
+            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
+            dtmp1= d2*(pij1*pkl1 - pij2*pkl2)
+            dtmp2= d2*(pij1*pkl2 + pij2*pkl1)
+
+            if(j==k)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 - d2 * ( pjj - dhalf*(pii + pll) ) * pil1
+              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pjj - dhalf*(pii + pll) ) * pil2
+            endif
+
+            if(i==l)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
+            endif
+
+            if(i==k)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
+              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
+            endif
+
+            if(j==l)then
+              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
+              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
+            endif
+
+          enddo
+          sumnond = sumnond + dabs(hmat(ij,kl,1)) + dabs(hmat(ij,kl,2))
+        enddo
+      enddo
+    enddo
+  enddo
+
+  write(6,*)
+  write(6,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
+  do j=ni12+1, ndimh
+    write(6,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+  enddo
+! write(6,*)
+! write(6,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
+! do j=ni12+1, ndimh
+!   write(6,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+! enddo
+  write(6,*) 'Sum of elements of B_uu (in absolute value):'
+  write(6,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumnond
+
+! write(6,'(a)') 'Print diagonal hmat (geth)'
+! write(6,'(15f10.5)') (hmat(i+ni12,i,1),i=1,ni12)
 
   call qexit('geth')
 
