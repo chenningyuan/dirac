@@ -1623,6 +1623,8 @@ contains
       error_nr_electrons = nr_electrons_integrated - nr_electrons
 
       write(file_unit, *)
+      write(file_unit, *) 'DFT integration'
+      write(file_unit, *)
 
       write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &

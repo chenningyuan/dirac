@@ -737,19 +737,14 @@ contains
          error_nr_electrons = nr_electrons_integrated - fde_nr_electrons
 
          write(file_unit, *)
-
+         write(file_unit, *) 'FDE integration'
+         write(file_unit, *)
          write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
             nr_points_total
          write(file_unit, '(3x, a, i9)')                            &
             'number of grid points below density threshold  = ', &
             nr_points_total - nr_points_used
-
-      if (do_potential) then
-         write(file_unit, '(3x, a, f26.16)')                        &
-               'FDE "energy":               = ', &
-               fde_energy
-      end if
 
       write(file_unit, '(3x, a, f26.16)')                        &
             'number of electrons from numerical integration = ', &
