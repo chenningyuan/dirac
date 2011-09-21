@@ -1,13 +1,12 @@
-WHATEVER
-O: Even-tempered, see Laerdahl and Schwerdtfeger, PRA 60(1999)4439
-H: uncontracted Dunning aug-cc-pVDZ
-#C   2    0         A 
-C   2              A 
-        8.    1
-O      .0000000000        0.0000000000        0.00000000000
-LARGE BASIS cc-pVDZ
+INTGRL
+water
+
+C   2   0
         1.    2
-H 1    0.972000000000000   0.000000000000000   0.000000000000000
-H 2   -0.972000000000000   0.000000000000000   0.000000000000000
-LARGE BASIS cc-pVDZ
+H1   -1.4523499293         .0000000000         .8996235720
+H2    1.4523499293         .0000000000         .8996235720
+LARGE BASIS 6-31G 
+        8.    1
+O      .0000000000        0.0000000000        -.2249058930
+LARGE BASIS 6-31G 
 FINISH

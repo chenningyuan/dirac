@@ -3561,9 +3561,7 @@ C
 CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
       IF(NBSYM.GT.1) THEN
         IF(MDIRAC) THEN
-          IF(NBSYM.GT.1) THEN
-            CALL QUIT('DIRAOF: Dont know how to handle symmetry yet..')
-          ENDIF
+          CALL QUIT('DIRAOF: Dont know how to handle symmetry yet..')
         ENDIF
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)

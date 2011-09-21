@@ -177,7 +177,7 @@ CMI      ... prepare the starting 4c Fock MO matrix
         CALL MEMREL('FDTR4C',WORK,KWORK,K2,KFREE,LFREE)
         CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
         ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
-C         .... prepare the DFCOEF file with staring MO's
+C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)
         CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),   WORK,KFREE,LFREE)
@@ -455,6 +455,7 @@ C     1) - atomic start
 C     -------------------------
       IF(ATOMST) THEN
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
+        !fixme: michal for InteRest                            
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C
@@ -528,6 +529,7 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
+          !fixme: michal for InteRest                            
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
@@ -545,6 +547,7 @@ C         restore density matrix in DMAT/tsaue
           CALL READNS(LUDENS,DMAT)
         ELSE
           CALL WRIDNS(LUDENS,DMAT)
+          !fixme: michal for InteRest                            
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
         ENDIF
@@ -1324,6 +1327,7 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
+            !fixme: michal for InteRest                            
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
