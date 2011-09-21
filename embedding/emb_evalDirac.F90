@@ -161,7 +161,7 @@ module fde_eval_dirac
       type(fde_export) :: etmp
       integer :: file_unit
       character(len=60) :: file_name
-      character(len=3) :: level
+      character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
       real(kind=8) :: test_int_density
 
