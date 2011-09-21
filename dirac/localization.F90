@@ -12,7 +12,9 @@ type :: localization_flags
 end type localization_flags
 
 type :: external_variales
-  integer*4 :: lupri
+  integer*4 :: lupri, lucoef
+  real*8    :: ssmtrc
+  logical   :: twocompbss, levyle
 end type external_variales
 
 type( localization_flags ), private :: loc
@@ -30,8 +32,10 @@ contains
   integer*4 :: iprloc, itrloc
   real*8    :: thrloc, hesthr
 
-#include "dcbloc.h"
 #include "priunit.h"
+#include "dcbgen.h"
+#include "dcbloc.h"
+#include "dcbham.h"
 
   !------------------------------------------------------------------------------!
   loc%iprloc = iprloc
@@ -43,6 +47,10 @@ contains
   loc%auto   = auto
 
   var%lupri  = lupri
+  var%lucoef = lucoef
+  var%ssmtrc = ssmtrc
+  var%twocompbss = twocompbss
+  var%levyle = levyle
 
   !------------------------------------------------------------------------------!
   end subroutine initialize_localization
@@ -65,12 +73,9 @@ contains
       ! External variables
 
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbham.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -126,13 +131,13 @@ contains
 
 ! Read coefficients
 
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,IDUM,IDUM,TOTERG,2)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,IDUM,IDUM,TOTERG,2)
+      CLOSE(VAR%LUCOEF,STATUS='KEEP')
 
 ! Get overlap matrix 
 
-      CALL GTOVLX(SMAT,SSMTRC)
+      CALL GTOVLX(SMAT,VAR%SSMTRC)
       IF(LOC%IPRLOC.GE.6) THEN
         WRITE(VAR%LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
         CALL PRQMAT(CMO,NFBAS(IFRP,0),NORB(IFRP), &
@@ -189,7 +194,7 @@ contains
         CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
-          CALL GTOVLX(SMAT,SSMTRC)
+          CALL GTOVLX(SMAT,VAR%SSMTRC)
           CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
@@ -232,7 +237,7 @@ contains
         CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
-          CALL GTOVLX(SMAT,SSMTRC)
+          CALL GTOVLX(SMAT,VAR%SSMTRC)
           CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
@@ -304,12 +309,10 @@ contains
       REAL*8    :: DINVM
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
-#include "dcbgen.h"
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -388,11 +391,11 @@ contains
           WRITE(VAR%LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
           CALL QUIT('PRJANA: No reference coefficients !')
         ENDIF
-        CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
+        CALL OPNFIL(VAR%LUCOEF,REFFIL(I),'OLD','PRJANA')
         IF(OWNBAS) THEN
-          CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,           &
-               I,1,LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
-               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,             &
+          CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
+               I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
+               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
                NSTR(1,0,I))
           IF(LOC%IPRLOC .GE. 5) THEN
             WRITE(VAR%LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
@@ -407,7 +410,7 @@ contains
           WRITE(0,*) 'Current version work only with .OWNBAS option'
           STOP
         ENDIF
-        CLOSE(LUCOEF,STATUS='KEEP')
+        CLOSE(VAR%LUCOEF,STATUS='KEEP')
       ENDDO
 
 !     Throw away the full coefficients and eigenvalues
@@ -575,7 +578,6 @@ contains
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -672,12 +674,9 @@ contains
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -706,7 +705,7 @@ contains
            'N','N',IPQTOQ(1,0),SMAT,NB,NB,1,  &
            'N','N',IPQTOQ(1,0),SCOEF,NB,NI,4, &
            D0,IPQTOQ(1,0),WLMAT,NBL,NI,4)
-      IF(.NOT.TWOCOMPBSS) THEN
+      IF(.NOT.VAR%TWOCOMPBSS) THEN
          CALL QGEMM(NBS,NI,NBS,D1,                            &
               'N','N',IPQTOQ(1,0),SMAT(1+NB*NBL+NBL),NB,NB,1, &
               'N','N',IPQTOQ(1,0),SCOEF(1+NBL),NB,NI,4,       &
@@ -716,7 +715,7 @@ contains
       IF(LOC%IPRLOC.GE.5) THEN
          WRITE(VAR%LUPRI,'(/A)') '* WL matrix :'
          CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),VAR%LUPRI)
-         IF(.NOT.TWOCOMPBSS) THEN
+         IF(.NOT.VAR%TWOCOMPBSS) THEN
             WRITE(VAR%LUPRI,'(/A)') '* WS matrix :'
             CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),VAR%LUPRI)
          ENDIF
@@ -731,7 +730,7 @@ contains
               'H','N',IPQTOQ(1,0),SCOEF(1+IOFFL),NB,NI,4,  &
               'N','N',IPQTOQ(1,0),WLMAT(1+IOFFL),NBL,NI,4, &
               D0,IPQTOQ(1,0),PMAT(1,1,1,I),NI,NI,4)
-         IF(.NOT.TWOCOMPBSS) THEN
+         IF(.NOT.VAR%TWOCOMPBSS) THEN
             CALL QGEMM(NI,NI,NFNUC(I+NUCDEP),D1,                 &
                  'H','N',IPQTOQ(1,0),SCOEF(1+NBL+IOFFS),NB,NI,4, &
                  'N','N',IPQTOQ(1,0),WSMAT(1+IOFFS),NBS,NI,4,    &
@@ -933,10 +932,8 @@ contains
       INTEGER*4 :: INDNAO(2,*), NFNUC(2*NUCDEP)
 
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -981,12 +978,9 @@ contains
       REAL*8    :: SCOEF(NB,NI,4)
 
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -1011,15 +1005,15 @@ contains
       CALL ALLOC(IBEIG,NORBT  ,ID='IBEIG IN ORBLO5')
 
       ! open DFCOEF file and read EIG, IBEIG and TOTERG
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
 
       ! reorganize MO
       DO I = 1,NB
         DO J = 1,NI
           DO K = 1,4
             L = J + NO/2
-            IF (LEVYLE) L = J
+            IF (VAR%LEVYLE) L = J
             CMO(I,L,K) = SCOEF(I,J,K)
           ENDDO
         ENDDO
@@ -1030,8 +1024,8 @@ contains
       ENDIF
 
       ! write MO to file and close him
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL WRICMO(VAR%LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CLOSE(VAR%LUCOEF,STATUS='KEEP')
 
       ! deallocate arrays
       CALL DEALLOC(CMO  ,ID='CMO   IN ORBLO5')
