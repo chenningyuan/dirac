@@ -6215,7 +6215,6 @@ C
         write(MSLVOUT_REL,*) ' ------           '
         write(MSLVOUT_REL,*) '   Computing a sigma vector.'
         write(MSLVOUT_REL,*) '     Saving H diagonal also.'
-        write(LUPRI,*)
       else if (CIRUN.eq.'DENS1 ') then
         write(MSLVOUT_REL,*)
         write(MSLVOUT_REL,*) ' DENS1  flag call '
@@ -7441,6 +7440,16 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
+      THR_CVEC = 1.0d-03
+      THR_CVEC = -1.0d-03
+!     write(luwrt,*) 'THR_CVEC ==>', THR_CVEC
+
+      IROUND = 0
+ 10   CONTINUE 
+      IROUND = IROUND + 1
+      I_ZERO = 0
+      I_REMOVED = 0
+    
 C     initialize scratch offsets
       NUM_BLK           = 0
       IOFFSET_SCRATCH   = 0
@@ -7671,6 +7680,20 @@ CSK     &                 LUWRT)
 
 C
          CALL DSCAL(LEBATCH(ISBATCH),FACTOR,VEC2,1)
+
+         
+         IF (THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 1) THEN
+           DO I = 1,LEBATCH(ISBATCH) 
+             IF(ABS(VEC2(I)) .LT. THR_CVEC) THEN
+               IF(VEC2(I) .EQ. 0.0D0) THEN
+                 I_ZERO = I_ZERO + 1
+               ELSE
+                  VEC2(I) = 0.0D0
+                  I_REMOVED = I_REMOVED + 1
+               END IF
+             END IF
+           END DO
+         END IF
 C
 C        set new offset
 C
@@ -7702,6 +7725,22 @@ C       keep track of correct offset
         NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
 C
       END DO
+      ! need to do a MPI_ALLREDUCE to check whether any slave has removed an element in the trial vector
+      IF(THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 1) THEN
+         I_REMOVED_total = 0
+         I_ZERO_total    = 0
+         CALL REDVEC_REL(I_REMOVED,I_REMOVED_total,1,1,
+     &                MPI_SUM,MPI_COMM_WORLD,-1)
+         CALL REDVEC_REL(I_ZERO,I_ZERO_total,1,1,
+     &                MPI_SUM,MPI_COMM_WORLD,-1)
+         IF(I_REMOVED_total .GT. 0) THEN
+            WRITE (luwrt,'(/A,I8,A,I4,A,1P,D10.2,I8)')
+     &       'info: Removed',I_REMOVED_total,
+     &       ' elements in new CI trial vector no.',IADD,
+     &       '; threshold & zeroes',THR_CVEC, I_ZERO_total
+            GO TO 10
+         END IF
+      END IF
 C
       END
 ***********************************************************************
