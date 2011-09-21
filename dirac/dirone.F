@@ -777,6 +777,7 @@ C
          fock(1:n2bbasxq) = 0.0d0
          call process_kinetic_energy_integrals( Fock )
          call process_nuclear_attraction_integrals( Fock ) 
+         print *,'InteRest done one-electron Fock matrix'
 #endif
        ELSE
          CALL MEMGET('REAL',KFTRI ,NZ*N2BBASX,WORK,KFREE,LFREE)

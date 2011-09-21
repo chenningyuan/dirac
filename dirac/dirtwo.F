@@ -39,6 +39,9 @@ C*****************************************************************************
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
 #endif
+#ifdef MOD_INTEREST
+      use interest_interface
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -137,7 +140,6 @@ C     ================================
 C
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
       IF (HFXMU.NE.D0) THEN
-
 C
 C       Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C       NOTE that this extra part has to be calculated first,
@@ -173,8 +175,14 @@ C
 #endif
          HFXTMP = HFXMU
          HFXMU = D0
-         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                 IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+         IF(MDIRAC)THEN
+#ifdef MOD_INTEREST
+!          print *,'InteRest done two-electron Fock matrix'
+#endif
+         ELSE
+           CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                    IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+         ENDIF
          HFXMU = HFXTMP
 #ifdef MOD_SRDFT
       end if 

@@ -43,16 +43,18 @@ MODULE INTEREST_INTERFACE
   implicit none
 
   public initialize_interest 
-  public two_electron_integrals
   public process_overlap_integrals 
+  public process_two_electron_integrals
   public process_kinetic_energy_integrals 
   public process_nuclear_attraction_integrals
 
   private
 
   !> matrix dimensions
+     integer :: nshl = 1
      integer :: nrow = 0
      integer :: ncol = 0
+     real(8) :: prescreening_treshold = 1.d-15
   !> end
 
   !> definition of "constant" data type 
@@ -126,12 +128,6 @@ MODULE INTEREST_INTERFACE
         end  type
      !> end
   !> end
-
- 
-  interface two_electron_integrals 
-    module procedure two_electron_integrals_1comp
-   !module procedure two_electron_integrals_4comp
-  end interface
 
 CONTAINS
 ! ------------------------------------------------------------------------------------
@@ -457,14 +453,15 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE two_electron_integrals_1comp( interest_routine, G, TrGP ) 
+  SUBROUTINE process_two_electron_integrals( G, P ) 
 
     !> input
+       type(real_matrix) :: P
        interface 
-         subroutine interest_routine(rkb,                                            &
-                                     factor,fint,nint,                               &
-                                     la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
-                                     lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
+         subroutine interest_eri(rkb,                                            &
+                                 factor,fint,nint,                               &
+                                 la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
+                                 lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
        
            integer, intent(out) :: nint
            real(8), intent(out) :: fint(*)
@@ -481,347 +478,390 @@ CONTAINS
 
     !> output
        type(real_matrix)    :: G
-       real(8), intent(out) :: TrGP
     !> end
 
     !> local
-       integer :: nint
-       integer :: ni, nj, nk, nl
-       integer :: i, j, k, l, ij, kl, lmax 
-       integer :: nij,  nkl,  nik,  njk,  nil,  njl
-       integer :: nij2, nkl2, nik2, njk2, nil2, njl2
-       real(8) :: gout(441)                           !todo: rozumnejsia definicia
+       integer :: i, j, k, l
+       integer :: li, ni, oi   
+       integer :: lj, nj, oj   
+       integer :: lk, nk, ok   
+       integer :: ll, nl, ol   
+       integer :: nint, lmax
+       integer :: ibas, nr_shells
+       integer :: nij, nkl, ij, kl
+       integer :: nr_integrals_total
+       integer :: nr_integrals_pased
+       real(8) :: ei, ci, xi, yi, zi 
+       real(8) :: ej, cj, xj, yj, zj 
+       real(8) :: ek, ck, xk, yk, zk 
+       real(8) :: el, cl, xl, yl, zl 
+
+       real(8) :: screened 
+       real(8) :: max_ijij
+       real(8) :: max_dens
+       real(8) :: max_dpij
+       real(8) :: max_dpki
+       real(8) :: max_dpkj
+       real(8) :: gout(441*441)                      !todo: rozumnejsia definicia
        real(8) :: fij, fkl, fijkl
-       real(8), allocatable :: dpij(:) 
-       real(8), allocatable :: dpkl(:) 
-       real(8), allocatable :: dplj(:) 
-       real(8), allocatable :: dpkj(:) 
-       real(8), allocatable :: dpli(:) 
-       real(8), allocatable :: dpki(:) 
-       real(8), allocatable :: dgij(:) 
-       real(8), allocatable :: dgkl(:) 
-       real(8), allocatable :: dgjl(:) 
-       real(8), allocatable :: dgjk(:) 
-       real(8), allocatable :: dgil(:) 
-       real(8), allocatable :: dgik(:) 
-       type(real_vector), allocatable :: dP(:,:,:) 
+
+       real(8), allocatable :: dPi (:)
+       real(8), allocatable :: dPj (:)  
+       real(8), allocatable :: dGi (:)
+       real(8), allocatable :: dGj (:)  
+       real(8), allocatable :: dPij(:)
+       real(8), allocatable :: dGij(:)
+
+       integer              :: record_length
+       real(8), allocatable :: dG_guess(:,:,:)
     !> end
     
    
+    nr_shells = size(gto) 
+    nr_integrals_total = 0   
+    nr_integrals_pased = 0
 
     !> allocate the working temporary fields
-       allocate( dpij(2*441) )                   !todo: zmenit do buducna
-       allocate( dpkl(2*441) )                   !todo: zmenit do buducna
-       allocate( dplj(2*441) )                   !todo: zmenit do buducna
-       allocate( dpkj(2*441) )                   !todo: zmenit do buducna
-       allocate( dpli(2*441) )                   !todo: zmenit do buducna
-       allocate( dpki(2*441) )                   !todo: zmenit do buducna
-       allocate( dgij(2*441) )                   !todo: zmenit do buducna
-       allocate( dgkl(2*441) )                   !todo: zmenit do buducna
-       allocate( dgjl(2*441) )                   !todo: zmenit do buducna
-       allocate( dgjk(2*441) )                   !todo: zmenit do buducna
-       allocate( dgil(2*441) )                   !todo: zmenit do buducna
-       allocate( dgik(2*441) )                   !todo: zmenit do buducna
-       allocate( dP( 2, size(gto), size(gto) ) )
+       allocate( dPij    ( nshl*21*21            ) ) !todo: rozumnejsia definicia
+       allocate( dGij    ( nshl*21*21            ) ) !todo: rozumnejsia definicia
+       allocate( dPi     ( nshl*21*P%nrow        ) ) !todo: rozumnejsia definicia
+       allocate( dPj     ( nshl*21*P%nrow        ) ) !todo: rozumnejsia definicia
+       allocate( dGi     ( nshl*21*G%nrow        ) ) !todo: rozumnejsia definicia
+       allocate( dGj     ( nshl*21*G%nrow        ) ) !todo: rozumnejsia definicia
+       allocate( dG_guess( 2,nr_shells,nr_shells ) )
+    !> end
+
+!   select case( scf%difference_density )
+!   !> dG(n) = G[dP(n)], where dP(n)=P(n)-P(n-1)
+!      case( 1 ) 
+!          record_length = 8*size(P%elms)  !todo: consider perhaps double integer????
+!          open ( 16, file='Fock_matrix_two_electron', access='direct', recl=record_length, form='unformatted' )
+!          read ( 16, rec=1 ) G%elms       !read  P(n-1) 
+!          write( 16, rec=1 ) P%elms       !write P(n)
+!               P%elms=P%elms-G%elms       !dP(n)=P(n)-P(n-1)
+!          read ( 16, rec=2 ) G%elms       !read  G(n-1) 
+!   !> G(n) := G[P(n)]
+!      case default
+            G%elms = 0.0d0
+!   end select
+          
+    !> precalculate maximum shell pair contributions to the Fock matrix
+       call max_shell_pair_contributions( P%elms(:,1), P%nrow, dG_guess )
     !> end
 
 
-    !> create shell-blocks of AO(-difference) density
-       !> allocation 
-          call doP_1comp( 0, G%elms(:,1), G%nrow, dP, size(gto) )
-       !> alpha
-          call doP_1comp( 1, G%elms(:,1), G%nrow, dP, size(gto) )
-       !> beta
-          call doP_1comp( 2, G%elms(:,2), G%nrow, dP, size(gto) )
-    !> end
-
-
-    !> loop over shells
-iloop: do i=1,size(gto)
-         ni = gto(i)%cdegen
-         ij = (i-1)*size(gto)
+iloop: do i=1,nr_shells
+         ij = (i-1)*nr_shells
+         li =       gto(i)%lvalue
+         oi =       gto(i)%offset
+         ni =       gto(i)%cdegen
+         ei =       gto(i)%exponent(1)
+         xi = atom( gto(i)%origin )%coordinate_x
+         yi = atom( gto(i)%origin )%coordinate_y
+         zi = atom( gto(i)%origin )%coordinate_z
+         ci =       gto(i)%coefficient(1)
+     
+         !> K-preparation
+            ibas = oi+ni
+            call get_dP_exchange( P%elms(:,1), P%nrow, i, ibas,  dPi, dGi )
+         !> end
+       
 
 jloop:   do j=1,i
-           ij  = ij+1 
-           fij = 1.0d0 
-           nj  = gto(j)%cdegen
-           if( j == i ) fij=0.5d0
-
-           !> J-preparation
-              nij  = ni*nj
-              nij2 = 2*nij
-              dgij(1:nij2)=0.0d0
-             !dpij = dP(1,i,j)%elms  !komentovane pre trojuholnik
+           ij = ij+1             
+           lj =       gto(j)%lvalue
+           oj =       gto(j)%offset
+           nj =       gto(j)%cdegen
+           ej =       gto(j)%exponent(1)
+           xj = atom( gto(j)%origin )%coordinate_x
+           yj = atom( gto(j)%origin )%coordinate_y
+           zj = atom( gto(j)%origin )%coordinate_z
+           cj =       gto(j)%coefficient(1)
+           fij= 1.0d0;if( j==i )fij=0.5d0
+       
+           !> prescreening
+              max_ijij = dG_guess(1,j,i)
+              max_dpij = dG_guess(2,j,i)
            !> end
 
-kloop:     do k=1,size(gto)
-             nk = gto(k)%cdegen
-             kl = (k-1)*size(gto)
+           !> K-preparation
+              call get_dP_exchange( P%elms(:,1), P%nrow, j, ibas,  dPj, dGj )
+           !> end
 
-             !> K-preparation
-                nik  = ni*nk
-                njk  = nj*nk
-                nik2 = 2*nik
-                njk2 = 2*njk
-                dgik(1:nik2) = 0.0d0
-                dgjk(1:njk2) = 0.0d0
-                dpkj = dP(1,k,j)%elms
-                dpki = dP(1,k,i)%elms
+           !> J-preparation
+              call get_dP_coulomb( P%elms(:,1), P%nrow, i, j, dPij, dGij )
+           !> end
+
+
+kloop:     do k=1,i
+             kl = (k-1)*nr_shells
+             lk =       gto(k)%lvalue
+             ok =       gto(k)%offset
+             nk =       gto(k)%cdegen
+             ek =       gto(k)%exponent(1)
+             xk = atom( gto(k)%origin )%coordinate_x
+             yk = atom( gto(k)%origin )%coordinate_y
+             zk = atom( gto(k)%origin )%coordinate_z
+             ck =       gto(k)%coefficient(1)
+       
+             !> prescreening
+                max_dpkj = dG_guess(2,k,j)
+                max_dpki = dG_guess(2,k,i)
              !> end
 
-lloop:       do l=1,k
-               kl  = kl+1
-               fkl = 1.0d0 
-               nl  = gto(l)%cdegen
-               if(  k ==  l ) fkl=0.5d0
-               !if( ij == kl )fijkl=0.5d0*fijkl  zakomentovany prefaktor lebo nerobim ij<->kl
 
-               !> J-preparation
-                  nkl  = nk*nl
-                  nkl2 = 2*nkl
-                 !dgkl(1:nkl2) = 0.0d0 !komentovane pre trojuholnik
-                  dpkl = dP(1,k,l)%elms
-               !> end
-
-               !> K-preparation
-                  nil  = ni*nl
-                  njl  = nj*nl
-                  nil2 = 2*nil
-                  njl2 = 2*njl
-                  dgil(1:nil2) = 0.0d0
-                  dgjl(1:njl2) = 0.0d0
-                  dplj = dP(1,l,j)%elms
-                  dpli = dP(1,l,i)%elms
-               !> end
-
+             lmax=k
+             if( k==i )lmax=j
+lloop:       do l=1,lmax
+               kl   = kl+1
+               ll   =       gto(l)%lvalue
+               nl   =       gto(l)%cdegen
+               ol   =       gto(l)%offset
+               el   =       gto(l)%exponent(1)
+               xl   = atom( gto(l)%origin )%coordinate_x
+               yl   = atom( gto(l)%origin )%coordinate_y
+               zl   = atom( gto(l)%origin )%coordinate_z
+               cl   =       gto(l)%coefficient(1)
+               fijkl= fij;if(  k==l  )fijkl=0.5d0*fijkl
+                          if( ij==kl )fijkl=0.5d0*fijkl
+       
+               !> prescreening
+                  nr_integrals_total = nr_integrals_total + ni*nj*nk*nl
+                  max_dens = max(max_dpij,max_dpki,max_dpkj,dG_guess(2,l,j),dG_guess(2,l,i),dG_guess(2,l,k))
+                  if( max_dens*max_ijij*dG_guess(1,l,k) < prescreening_treshold )cycle
+                  nr_integrals_pased = nr_integrals_pased + ni*nj*nk*nl
+               !> end          
 
                !> call InteRest library routine for a given batch
-                  call interest_routine(.false.,                            &
-                                        1.0d0,gout,nint,                    &
-                                        !> bra-function(1)
-                                        gto(i)%lvalue,                      &
-                                        gto(i)%exponent(1),                 &
-                                        atom( gto(i)%origin )%coordinate_x, &
-                                        atom( gto(i)%origin )%coordinate_y, &
-                                        atom( gto(i)%origin )%coordinate_z, &
-                                        gto(i)%coefficient(1),              &
-                                        !> ket-function(1)
-                                        gto(j)%lvalue,                      &
-                                        gto(j)%exponent(1),                 &
-                                        atom( gto(j)%origin )%coordinate_x, &
-                                        atom( gto(j)%origin )%coordinate_y, &
-                                        atom( gto(j)%origin )%coordinate_z, &
-                                        gto(j)%coefficient(1),              &
-                                        !> bra-function(2)
-                                        gto(k)%lvalue,                      &
-                                        gto(k)%exponent(1),                 &
-                                        atom( gto(k)%origin )%coordinate_x, &
-                                        atom( gto(k)%origin )%coordinate_y, &
-                                        atom( gto(k)%origin )%coordinate_z, &
-                                        gto(k)%coefficient(1),              &
-                                        !> ket-function(2)
-                                        gto(l)%lvalue,                      &
-                                        gto(l)%exponent(1),                 &
-                                        atom( gto(l)%origin )%coordinate_x, &
-                                        atom( gto(l)%origin )%coordinate_y, &
-                                        atom( gto(l)%origin )%coordinate_z, &
-                                        gto(l)%coefficient(1)               )
+                  call interest_eri(.false.,          &
+                                    fijkl,gout,nint,  &
+                                    li,ei,xi,yi,zi,ci,&
+                                    lj,ej,xj,yj,zj,cj,&
+                                    lk,ek,xk,yk,zk,ck,&
+                                    ll,el,xl,yl,zl,cl )
                !> end
-
-               !> process integral batch with the density matrix to get JK terms 
-                  call process_1comp_JK( gout, nij, nkl,       dpij, dgij, &
-                                                               dpkl, dgkl, &
-                                                               fkl,        &
-                                               ni, nj, nk, nl, dplj, dgjl, &
-                                                               dpkj, dgjk, &   
-                                                               dpli, dgil, &
-                                                               dpki, dgik, &
-                                                               fij*fkl     )
+       
+               !> process integral batch with the density matrix
+                  call process_dG( ni, nj, nk, nl, oi, oj, ok, ol, gout, &
+                                   P%elms(:,1), G%elms(:,1), P%nrow,     & 
+                                   dPij, dGij, dPi, dPj, dGi, dGj, ibas  )
                !> end 
 
-               !> add K-contribution
-                  dP(2,j,l)%elms(1:njl2) = dP(2,j,l)%elms(1:njl2) - dgjl(1:njl2)
-                  dP(2,i,l)%elms(1:nil2) = dP(2,i,l)%elms(1:nil2) - dgil(1:nil2)
-               !> end
              enddo lloop
-
-             !> add K-contribution
-                dP(2,j,k)%elms(1:njk2) = dP(2,j,k)%elms(1:njk2) - dgjk(1:njk2)
-                dP(2,i,k)%elms(1:nik2) = dP(2,i,k)%elms(1:nik2) - dgik(1:nik2)
-             !> end
-           enddo kloop   
-
+           enddo kloop
+       
            !> add J-contribution
-              dP(2,i,j)%elms(1:nij2) = dP(2,i,j)%elms(1:nij2) + 2.0d0*dgij(1:nij2)
-           !> end 
+              call add_dG_coulomb( G%elms(:,1), G%nrow, dGij, ni, nj, oi, oj )
+           !> end
+
+           !> add K-contribution
+              call add_dG_exchange( G%elms(:,1), G%nrow, j, ibas, dGj )
+           !> end
+
          enddo jloop
 
-       enddo iloop   
+         !> add K-contribution
+            call add_dG_exchange( G%elms(:,1), G%nrow, i, ibas, dGi )
+         !> end
+       
+       enddo iloop
+    !> end
+
+    !> make full G matrix 
+                    call symmetrize_matrix( A = G%elms(:,1), ida = G%nrow )
+       if( nshl==2 )call symmetrize_matrix( A = G%elms(:,2), ida = G%nrow )
     !> end
 
 
-    !> add G-contribution to the Fock matrix and calculate Tr(GP) 
-       TrGP = 0.0d0
-       !> alpha
-          call doG_1comp( 1, dP, size(gto), G%elms(:,1), G%nrow, TrGP )
-          call symmetrize_matrix( A = G%elms(:,1), ida = G%nrow       )
-       !> beta
-          call doG_1comp( 2, dP, size(gto), G%elms(:,2), G%nrow, TrGP )
-          call symmetrize_matrix( A = G%elms(:,2), ida = G%nrow       )
-       !> deallocation 
-          call doG_1comp( 0, dP, size(gto), G%elms(:,2), G%nrow, TrGP )
+    !> prescreening
+       screened = 100.d0*(1.0d0-real(nr_integrals_pased)/real(nr_integrals_total))  
     !> end
-    
 
-    deallocate( dpij )
-    deallocate( dpkl )
-    deallocate( dplj )
-    deallocate( dpkj )
-    deallocate( dpli )
-    deallocate( dpki )
-    deallocate( dgij )
-    deallocate( dgkl )
-    deallocate( dgjl )
-    deallocate( dgjk )
-    deallocate( dgil )
-    deallocate( dgik )
-    deallocate( dP   )
+!   select case( scf%difference_density )
+!      case( 1 ) 
+!          read ( 16, rec=1         ) P%elms   !read  P(n)
+!          write( 16, rec=2         ) G%elms   !write G(n)
+!          close( 16, status='keep' ) 
+!   end select
+
+    deallocate( dPi      )
+    deallocate( dPj      )
+    deallocate( dGi      )
+    deallocate( dGj      )
+    deallocate( dPij     )
+    deallocate( dGij     )
+    deallocate( dG_guess )
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!>note: doP_1comp a doP_4comp sa da pekne unifikovat, pokial budem mat optional GR a GI pre 1comp a 4comp data structure 
-!>note: a pokial dlzku dat (v tomto pripade 2) nastavim ako vstupny parameter ktory mozem lahko menit z calling routine 
-  SUBROUTINE doP_1comp( index, GR, idg, P, idp )
+!
+  SUBROUTINE get_dP_coulomb( dP, idP, ishell, jshell, dP_block, dG_block )
 
     !> input
-       integer, intent(in) :: idg 
-       integer, intent(in) :: idp 
-       integer, intent(in) :: index 
-       real(8), intent(in) :: GR(idg,idg)
+       integer, intent(in) :: idP 
+       integer, intent(in) :: ishell 
+       integer, intent(in) :: jshell 
+       real(8), intent(in) :: dP(idP,idP,nshl)
     !> end
 
     !> output
-       type(real_vector) :: P(2,idp,idp)
+       real(8), intent(out) :: dP_block(*)
+       real(8), intent(out) :: dG_block(*)
     !> end
 
     !> local
-       integer :: ij
-       integer :: i, ii, io, icc
-       integer :: j, jj, jo, jcc
+       integer :: n, ns
+       integer :: ij, jbas
+       integer :: i, io, ic
+       integer :: j, jo, jc
     !> end
 
 
-    if( index == 0 )then
-      do i=1,size(gto)
-        icc = gto(i)%cdegen
-        do j=1,size(gto)                           !fixme: reduce to lower/upper triangular form (i.le.j)
-          jcc = gto(j)%cdegen
-          allocate( P(1,i,j)%elms(2*icc*jcc) )     !fixme: always open-shell case 
-          allocate( P(2,i,j)%elms(2*icc*jcc) )     !fixme: always open-shell case 
-        enddo
-      enddo 
-      return
-    endif
+    ij = 0
+    ns = nshl
+    io = gto(ishell)%offset
+    ic = gto(ishell)%cdegen
+    jo = gto(jshell)%offset
+    jc = gto(jshell)%cdegen
 
-    do i=1,size(gto)
-      io  = gto(i)%offset
-      icc = gto(i)%cdegen
-      do j=1,size(gto)                             !fixme: reduce to lower/upper triangular form (i.le.j)
-        jo  = gto(j)%offset
-        jcc = gto(j)%cdegen
-        ij  =  index
-        !> density-block
-        do jj=1,jcc
-          do ii=1,icc
-            P(1,i,j)%elms(ij) = GR( jo+jj, io+ii ) !note:  P(ba) -> sa uklada ako (ab)
-            ij = ij + 2                            !fixme: tu je 2 pre open-shell case 
-          enddo
+    do n=1,ns
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          dG_block(ij+i) = 0.0d0
+          dP_block(ij+i) = dP(io+i,jbas,n) !note that we use here: P(ab) = P(ba)
         enddo
-        !> fock-block 
-        ij =  index
-        do jj=1,jcc
-          do ii=1,icc
-            P(2,i,j)%elms(ij) = 0.0d0
-            ij = ij + 2                            !fixme: tu je 2 pre open-shell case 
-          enddo
-        enddo
+        ij=ij+ic
       enddo
     enddo
- 
+
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!> Process Coulomb and Exchange contributions to Fock matrix 
-  SUBROUTINE process_1comp_JK( gout, nij, nkl, pij, gij, pkl, gkl, fkl, &
-                                               ni,  nj,  nk,  nl,       &
-                           plj, gjl, pkj, gjk, pli, gil, pki, gik, fijkl)
+!
+  SUBROUTINE get_dP_exchange( dP, idP, ishell, jbas, dP_block, dG_block )
 
-    !> input 
-       integer, intent(in) :: nij, nkl
-       real(8), intent(in) :: fkl, fijkl 
-       integer, intent(in) :: ni, nj, nk, nl 
-       real(8), intent(in) :: gout(nkl,nij) 
+    !> input
+       integer, intent(in) :: idP 
+       integer, intent(in) :: jbas
+       integer, intent(in) :: ishell 
+       real(8), intent(in) :: dP(idP,idP,nshl)
     !> end
 
-    !> input/output
-       real(8), intent(inout) :: pij(2,nij), gij(2,nij)
-       real(8), intent(inout) :: pkl(2,nkl), gkl(2,nkl)
-
-       real(8), intent(inout) :: plj(2,nl,nj), gik(2,ni,nk)  !input P(l,j) -> output G(ik)
-       real(8), intent(inout) :: pkj(2,nk,nj), gil(2,ni,nl)  !input P(k,j) -> output G(il)
-       real(8), intent(inout) :: pli(2,nl,ni), gjk(2,nj,nk)  !input P(l,i) -> output G(jk)
-       real(8), intent(inout) :: pki(2,nk,ni), gjl(2,nj,nl)  !input P(k,i) -> output G(jl)
+    !> output
+       real(8), intent(out) :: dP_block(*)
+       real(8), intent(out) :: dG_block(*)
     !> end
 
     !> local
-       integer :: ij, kl
+       integer :: n, ns
+       integer :: i, j, ij
+       integer :: ibas, io, ic
+    !> end
+
+
+    ij = 0
+    ns = nshl
+    io = gto(ishell)%offset
+    ic = gto(ishell)%cdegen
+
+    do n=1,ns
+      do i=1,ic
+        ibas = io+i
+        do j=1,jbas
+          dG_block(ij+j) = 0.0d0
+          dP_block(ij+j) = dP(j,ibas,n) !vertical stripe (:,ibas) recorder from the UT of P=CC^{dag}
+        enddo
+        ij=ij+jbas
+      enddo
+    enddo
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!
+  SUBROUTINE process_dG( ic, jc, kc, lc, io, jo, ko, lo, gout, dP, dG, &
+                         idP, dPij, dGij, dPi, dPj, dGi, dGj, nbas     )
+
+    !> input
+       integer, intent(in) :: idP 
+       integer, intent(in) :: nbas
+       integer, intent(in) :: ic, jc
+       integer, intent(in) :: kc, lc
+       integer, intent(in) :: io, jo, ko, lo
+       real(8), intent(in) :: gout(kc,lc,ic,jc)
+       real(8), intent(in) :: dPi (nbas,ic, nshl)
+       real(8), intent(in) :: dPj (nbas,jc, nshl)
+       real(8), intent(in) :: dPij(ic,  jc, nshl)
+       real(8), intent(in) :: dP  (idP, idP,nshl)
+    !> end
+
+    !> output
+       real(8), intent(out) :: dGij(ic,jc)
+       real(8), intent(out) :: dGi (nbas,ic,nshl)
+       real(8), intent(out) :: dGj (nbas,jc,nshl)
+       real(8), intent(out) :: dG  (idP,idP,nshl)
+    !> end
+
+    !> local
+       integer :: n, ns
        integer :: i, j, k, l
-       real(8) :: tk, pij1, pij2
+       real(8) :: dPli, dPlj
+       real(8) :: dGli, dGlj
+       real(8) :: dPkl, dGkl
+       real(8) :: coulomb_factor
+       integer :: ibas, jbas, kbas, lbas
     !> end
 
 
-    !> Coulomb contribution
-       !> contribution to G(ij)
-          do ij=1,nij
-            tk = 0.0d0
-            do kl=1,nkl
-              tk = tk + gout(kl,ij) * pkl(1,kl) !P_alpha
-              tk = tk + gout(kl,ij) * pkl(2,kl) !P_beta
-            enddo
-            gij(1,ij) = gij(1,ij) + tk * fkl    !G_alpha
-            gij(2,ij) = gij(2,ij) + tk * fkl    !G_beta
-          enddo
-       !> end
-       
-!      !> contribution to G(kl)
-!         do ij=1,nij
-!           pij1 = pij(1,ij,1) !P_alpha
-!           pij2 = pij(2,ij,1) !P_beta
-!           do kl=1,nkl
-!             pkl(1,kl,2) = pkl(1,kl,2) + gout(kl,ij)*pij1 !G_alpha
-!             pkl(2,kl,2) = pkl(2,kl,2) + gout(kl,ij)*pij2 !G_beta
-!           enddo
-!         enddo
-!      !> end
+                ns = nshl
+                coulomb_factor = 4.0d0/real(ns)
+    if( ko==lo )coulomb_factor = 2.0d0*coulomb_factor
+
+    !> coulomb part
+       do n=1,ns
+         do l=1,lc
+           lbas=lo+l
+           do k=1,kc
+             kbas=ko+k
+             dGkl=0.0d0
+             dPkl=dP(kbas,lbas,n)
+             do j=1,jc
+               do i=1,ic
+                 dGkl      = dGkl      + gout(k,l,i,j)*dPij(i,j,n)
+                 dGij(i,j) = dGij(i,j) + gout(k,l,i,j)*dPkl
+               enddo
+             enddo
+             dG(kbas,lbas,n) = dG(kbas,lbas,n) + coulomb_factor*dGkl
+           enddo
+         enddo
+       enddo
     !> end
 
 
-    !> Exchange contribution
-       ij = 0
-       do j=1,nj
-         do i=1,ni
-           kl = 0
-           ij = ij + 1
-           do l=1,nl
-             do k=1,nk
-               kl = kl + 1
-               gil( 1,i,l ) = gil( 1,i,l ) + gout(kl,ij) * pkj( 1,k,j ) * fijkl
-               gil( 2,i,l ) = gil( 2,i,l ) + gout(kl,ij) * pkj( 2,k,j ) * fijkl
-               gjl( 1,j,l ) = gjl( 1,j,l ) + gout(kl,ij) * pki( 1,k,i ) * fijkl
-               gjl( 2,j,l ) = gjl( 2,j,l ) + gout(kl,ij) * pki( 2,k,i ) * fijkl
-               gik( 1,i,k ) = gik( 1,i,k ) + gout(kl,ij) * plj( 1,l,j ) * fijkl  
-               gik( 2,i,k ) = gik( 2,i,k ) + gout(kl,ij) * plj( 2,l,j ) * fijkl
-               gjk( 1,j,k ) = gjk( 1,j,k ) + gout(kl,ij) * pli( 1,l,i ) * fijkl
-               gjk( 2,j,k ) = gjk( 2,j,k ) + gout(kl,ij) * pli( 2,l,i ) * fijkl
+    !> exchange part 
+       do n=1,ns
+         do j=1,jc
+           jbas=jo+j
+           do i=1,ic
+             ibas=io+i
+             do l=1,lc
+               lbas=lo+l 
+               dGli=0.0d0
+               dGlj=0.0d0
+               dPlj=dPj(lbas,j,n)
+               dPli=dPi(lbas,i,n)
+               do k=1,kc
+                 kbas=ko+k 
+                             dGli          = dGli          - gout(k,l,i,j)*dPj(kbas,j,n)
+                             dGi(kbas,i,n) = dGi(kbas,i,n) - gout(k,l,i,j)*dPlj
+                 if( io==ko )dGi(ibas,k,n) = dGi(ibas,k,n) - gout(k,l,i,j)*dPlj
+                             dGlj          = dGlj          - gout(k,l,i,j)*dPi(kbas,i,n)
+                             dGj(kbas,j,n) = dGj(kbas,j,n) - gout(k,l,i,j)*dPli
+                 if( jo==ko )dGj(jbas,k,n) = dGj(jbas,k,n) - gout(k,l,i,j)*dPli
+               enddo
+                           dGi(lbas,i,n) = dGi(lbas,i,n) + dGli
+               if( io==lo )dGi(ibas,l,n) = dGi(ibas,l,n) + dGli 
+                           dGj(lbas,j,n) = dGj(lbas,j,n) + dGlj 
+               if( jo==lo )dGj(jbas,l,n) = dGj(jbas,l,n) + dGlj
              enddo
            enddo
          enddo
@@ -830,80 +870,211 @@ lloop:       do l=1,k
 
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!>tuto routinu je mozne generalizovat podla popisu postupu v doP routine ...
-  SUBROUTINE doG_1comp( index, P, idp, GR, idg, TrGP )
+!> add the coulomb contribution to the G-matrix lower triangle  
+  SUBROUTINE add_dG_coulomb( dG, idG, dG_block, ic, jc, io, jo )
 
     !> input
-       integer, intent(in) :: idg 
-       integer, intent(in) :: idp 
-       integer, intent(in) :: index 
-       type(real_vector) :: P(2,idp,idp)
+       integer, intent(in) :: idG 
+       integer, intent(in) :: ic, jc
+       integer, intent(in) :: io, jo
+       real(8), intent(in) :: dG_block(ic,jc)
     !> end
 
     !> output
-       real(8), intent(  out) :: TrGP 
-       real(8), intent(inout) :: GR(idg,idg)
+       real(8), intent(out) :: dG(idG,idG,nshl)
     !> end
 
     !> local
-       integer :: ij
-       integer :: i, ii, io, icc
-       integer :: j, jj, jo, jcc
+       integer :: n, ns
+       integer :: i, j, ibas, jbas
+       real(8) :: coulomb_factor
+    !> end
+
+                ns = nshl
+                coulomb_factor = 4.0d0/real(ns)
+    if( io==jo )coulomb_factor = 2.0d0*coulomb_factor
+
+
+    do n=1,ns
+      do j=1,jc
+        jbas=jo+j
+        do i=1,ic
+          ibas=io+i
+          dG(ibas,jbas,n) = dG(ibas,jbas,n) + coulomb_factor*dG_block(i,j)
+        enddo
+      enddo
+    enddo
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!> add the exchange contribution to the G-matrix lower triangle  
+  SUBROUTINE add_dG_exchange( dG, idG, jshell, nbas, dG_block )
+
+    !> input
+       integer, intent(in) :: idG 
+       integer, intent(in) :: nbas
+       integer, intent(in) :: jshell 
+       real(8), intent(in) :: dG_block(*)
+    !> end
+
+    !> output
+       real(8), intent(out) :: dG(idG,idG,nshl)
+    !> end
+
+    !> local
+       integer :: i, j, ij, jbas
+       integer :: n, ns, jo, jc, min
     !> end
 
 
-    if( index == 0 )then
-      do j=1,size(gto)                    !fixme: reduce to lower/upper triangular form (i.le.j)
-        do i=1,size(gto)
-          deallocate( P(1,i,j)%elms )     !fixme: always open-shell case 
-          deallocate( P(2,i,j)%elms )     !fixme: always open-shell case 
+    ij  = 0
+    ns  = nshl
+    jo  = gto(jshell)%offset
+    jc  = gto(jshell)%cdegen
+    min = jo+jc 
+
+    do n=1,ns
+      do j=1,jc
+        jbas=jo+j
+        do i=1,min
+          dG(jbas,i,n) = dG(jbas,i,n) + dG_block(ij+i)
         enddo
-      enddo 
-      TrGP = 2.0d0*TrGP
-      return
-    endif
-
-
-    do j=1,size(gto)
-      jo  = gto(j)%offset
-      jcc = gto(j)%cdegen
-      !> energy / fock-block 
-         ij =  index
-         do jj=1,jcc
-           do ii=1,jcc
-             TrGP = TrGP + P(1,j,j)%elms(ij)*P(2,j,j)%elms(ij)*0.5d0
-             GR( jo+ii, jo+jj ) = P(2,j,j)%elms(ij)
-             ij = ij + 2                              !fixme: tu je 2 pre open-shell case 
-           enddo
-         enddo
-      !> end
-      do i=(j+1),size(gto),1
-        io  = gto(i)%offset
-        icc = gto(i)%cdegen
-        !> energy / fock-block 
-           ij =  index
-           do jj=1,jcc
-             do ii=1,icc
-               TrGP = TrGP + P(1,i,j)%elms(ij)*P(2,i,j)%elms(ij)
-               GR( io+ii, jo+jj ) = P(2,i,j)%elms(ij)
-               ij = ij + 2                            !fixme: tu je 2 pre open-shell case 
-             enddo
-           enddo
-        !> end
+        do i=(min+1),nbas
+          dG(i,jbas,n) = dG(i,jbas,n) + dG_block(ij+i)
+        enddo
+        ij=ij+nbas
       enddo
     enddo
- 
+
+  END SUBROUTINE
+! ------------------------------------------------------------------------------------
+!> calculate the maximum value of diagonal (i.e. [ij|ij]) integrals and differential density matrix elements over 
+!> all pairs of basis functions within a given shell pair in order to estimate the shell pair contribution 
+!> to the Fock matrix
+  SUBROUTINE max_shell_pair_contributions( dP, idP, dG )
+
+    !> input
+       integer :: idP
+       real(8) :: dP(idP,idP,nshl)
+    !> end
+
+    !> output
+       real(8) :: dG(2,size(gto),size(gto))
+    !> end
+
+    !> local 
+       interface
+         subroutine interest_eri(rkb,                                            &
+                                 factor,fint,nint,                               &
+                                 la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
+                                 lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
+
+           integer, intent(out) :: nint
+           real(8), intent(out) :: fint(*)
+           logical, intent(in ) :: rkb
+           real(8), intent(in ) :: factor
+           integer, intent(in ) :: la,lb,lc,ld
+           real(8), intent(in ) :: alpha,ax,ay,az,anorm
+           real(8), intent(in ) :: beta, bx,by,bz,bnorm
+           real(8), intent(in ) :: gamma,cx,cy,cz,cnorm
+           real(8), intent(in ) :: delta,dx,dy,dz,dnorm
+         end subroutine
+       end interface
+
+       integer :: n, nint
+       integer :: i, ii, io, ic
+       integer :: j, jj, jo, jc
+
+       real(8) :: maximum
+       real(8) :: current
+       real(8) :: gout(441*441)   !todo: rozumnejsia definicia
+    !> end
+
+
+    !> initiate dG
+       dG = 1.0d-20
+    !> end
+
+    !> find max{dsqrt(abs[ij|ij])}
+iloop: do i=1,size(gto)
+jloop:   do j=1,i
+           !> call InteRest library routine for a given batch
+              call interest_eri(.false.,                            &
+                                1.0d0,gout,nint,                    &
+                                !> bra-function(1)
+                                gto(i)%lvalue,                      &
+                                gto(i)%exponent(1),                 &
+                                atom( gto(i)%origin )%coordinate_x, &
+                                atom( gto(i)%origin )%coordinate_y, &
+                                atom( gto(i)%origin )%coordinate_z, &
+                                gto(i)%coefficient(1),              &
+                                !> ket-function(1)
+                                gto(j)%lvalue,                      &
+                                gto(j)%exponent(1),                 &
+                                atom( gto(j)%origin )%coordinate_x, &
+                                atom( gto(j)%origin )%coordinate_y, &
+                                atom( gto(j)%origin )%coordinate_z, &
+                                gto(j)%coefficient(1),              &
+                                !> bra-function(2)
+                                gto(i)%lvalue,                      &
+                                gto(i)%exponent(1),                 &
+                                atom( gto(i)%origin )%coordinate_x, &
+                                atom( gto(i)%origin )%coordinate_y, &
+                                atom( gto(i)%origin )%coordinate_z, &
+                                gto(i)%coefficient(1),              &
+                                !> ket-function(2)
+                                gto(j)%lvalue,                      &
+                                gto(j)%exponent(1),                 &
+                                atom( gto(j)%origin )%coordinate_x, &
+                                atom( gto(j)%origin )%coordinate_y, &
+                                atom( gto(j)%origin )%coordinate_z, &
+                                gto(j)%coefficient(1)               )
+           !> end
+
+           maximum = dG(1,j,i) 
+           do n=1,nint
+             current = dsqrt(abs(gout(n)))
+             if( current > maximum ) maximum = current
+           enddo
+           dG(1,j,i) = maximum
+           dG(1,i,j) = maximum
+         enddo jloop
+       enddo iloop
+    !> end
+
+    !> find max{abs(dP(i,j))}
+       do n=1,nshl
+         do j=1,size(gto)
+           jo = gto(j)%offset
+           jc = gto(j)%cdegen
+           do i=j,size(gto)
+             io = gto(i)%offset
+             ic = gto(i)%cdegen
+             maximum = dG(2,i,j) 
+             do jj=1,jc
+               do ii=1,ic
+                 current = abs( dP(io+ii,jo+jj,n) )
+                 if( current > maximum ) maximum = current
+               enddo
+             enddo
+             dG(2,i,j) = maximum
+             dG(2,j,i) = maximum
+           enddo
+         enddo
+       enddo
+    !> end
+
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 !> 
-  SUBROUTINE two_electron_integrals_4comp( interest_routine, G ) 
+  SUBROUTINE process_two_electron_integrals_old( G, D ) 
 
     !> input
     interface 
-      subroutine interest_routine(rkb,                                            &
-                                  fint,nint,                                      &
-                                  la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
-                                  lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
+      subroutine interest_eri(rkb,                                            &
+                              fint,nint,                                      &
+                              la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
+                              lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm )
 
         integer, intent(out) :: nint
         real(8), intent(out) :: fint(*)
@@ -916,16 +1087,17 @@ lloop:       do l=1,k
       end subroutine
     end interface
 
-    logical :: rkb = .true. !todo: zmenit do buducna, umelo dodane
+    logical :: rkb = .true. !todo: umelo dodane
 
     !> output
     type(complex_matrix) :: G
+    type(complex_matrix) :: D
 
     !> local
     integer :: nint
     integer :: ni, nj, nk, nl
     integer :: i, j, k, l, lmax 
-    real(8) :: gout(44100)                    !todo: rozumnejsia definicia
+    real(8) :: gout(44100) !fixme: chyba!!!   !todo: rozumnejsia definicia
     real(8),           allocatable :: dpij(:) 
     type(real_vector), allocatable :: dp(:,:) 
     
@@ -970,36 +1142,36 @@ lloop:       do l=1,k
 
 
                !> call InteRest library routine for a given batch
-                  call interest_routine(rkb,                                &
-                                        gout, nint,                         &
-                                        !> bra-function(1)
-                                        gto(i)%lvalue,                      &
-                                        gto(i)%exponent(1),                 &
-                                        atom( gto(i)%origin )%coordinate_x, &
-                                        atom( gto(i)%origin )%coordinate_y, &
-                                        atom( gto(i)%origin )%coordinate_z, &
-                                        gto(i)%coefficient(1),              &
-                                        !> ket-function(1)
-                                        gto(j)%lvalue,                      &
-                                        gto(j)%exponent(1),                 &
-                                        atom( gto(j)%origin )%coordinate_x, &
-                                        atom( gto(j)%origin )%coordinate_y, &
-                                        atom( gto(j)%origin )%coordinate_z, &
-                                        gto(j)%coefficient(1),              &
-                                        !> bra-function(2)
-                                        gto(k)%lvalue,                      &
-                                        gto(k)%exponent(1),                 &
-                                        atom( gto(k)%origin )%coordinate_x, &
-                                        atom( gto(k)%origin )%coordinate_y, &
-                                        atom( gto(k)%origin )%coordinate_z, &
-                                        gto(k)%coefficient(1),              &
-                                        !> ket-function(2)
-                                        gto(l)%lvalue,                      &
-                                        gto(l)%exponent(1),                 &
-                                        atom( gto(l)%origin )%coordinate_x, &
-                                        atom( gto(l)%origin )%coordinate_y, &
-                                        atom( gto(l)%origin )%coordinate_z, &
-                                        gto(l)%coefficient(1)               )
+                  call interest_eri(rkb,                                &
+                                    gout, nint,                         &
+                                    !> bra-function(1)
+                                    gto(i)%lvalue,                      &
+                                    gto(i)%exponent(1),                 &
+                                    atom( gto(i)%origin )%coordinate_x, &
+                                    atom( gto(i)%origin )%coordinate_y, &
+                                    atom( gto(i)%origin )%coordinate_z, &
+                                    gto(i)%coefficient(1),              &
+                                    !> ket-function(1)
+                                    gto(j)%lvalue,                      &
+                                    gto(j)%exponent(1),                 &
+                                    atom( gto(j)%origin )%coordinate_x, &
+                                    atom( gto(j)%origin )%coordinate_y, &
+                                    atom( gto(j)%origin )%coordinate_z, &
+                                    gto(j)%coefficient(1),              &
+                                    !> bra-function(2)
+                                    gto(k)%lvalue,                      &
+                                    gto(k)%exponent(1),                 &
+                                    atom( gto(k)%origin )%coordinate_x, &
+                                    atom( gto(k)%origin )%coordinate_y, &
+                                    atom( gto(k)%origin )%coordinate_z, &
+                                    gto(k)%coefficient(1),              &
+                                    !> ket-function(2)
+                                    gto(l)%lvalue,                      &
+                                    gto(l)%exponent(1),                 &
+                                    atom( gto(l)%origin )%coordinate_x, &
+                                    atom( gto(l)%origin )%coordinate_y, &
+                                    atom( gto(l)%origin )%coordinate_z, &
+                                    gto(l)%coefficient(1)               )
 
                !> process JK-contribution
                   call process_JK( gout, ni*nj, nk*nl, dpij, dp(k,l)%elms, &
