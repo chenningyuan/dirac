@@ -13,6 +13,9 @@ end type localization_flags
 
 type :: external_variales
   integer*4 :: lupri, lucoef
+  integer*4 :: nfbas(2,0:2), n2bbasx, n2bbasxq
+  integer*4 :: nish(2), norb(2), npsh(2), nesh(2)
+  integer*4 :: norbt
   real*8    :: ssmtrc
   logical   :: twocompbss, levyle
 end type external_variales
@@ -36,6 +39,8 @@ contains
 #include "dcbgen.h"
 #include "dcbloc.h"
 #include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 
   !------------------------------------------------------------------------------!
   loc%iprloc = iprloc
@@ -46,11 +51,19 @@ contains
   loc%hesloc = hesloc
   loc%auto   = auto
 
-  var%lupri  = lupri
-  var%lucoef = lucoef
-  var%ssmtrc = ssmtrc
+  var%lupri      = lupri
+  var%lucoef     = lucoef
+  var%nfbas      = nfbas
+  var%n2bbasx    = n2bbasx
+  var%n2bbasxq   = n2bbasxq
+  var%nish       = nish
+  var%norb       = norb
+  var%npsh       = npsh
+  var%nesh       = nesh
+  var%norbt      = norbt
+  var%ssmtrc     = ssmtrc
   var%twocompbss = twocompbss
-  var%levyle = levyle
+  var%levyle     = levyle
 
   !------------------------------------------------------------------------------!
   end subroutine initialize_localization
@@ -73,8 +86,6 @@ contains
       ! External variables
 
 #include "maxorb.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -88,7 +99,7 @@ contains
       CHARACTER :: SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
       LOGICAL   :: TOBE,FLAG
 
-      INTEGER*4 :: IFRP, NISH12, IDUM, ITR
+      INTEGER*4 :: IFRP, NISH12, IDUM, ITR, NISH, NORB, NFBAS(0:2)
 
       REAL*8    :: TOTERG, DINVMO, DINVM, XNRM, DIFF, DIFFA
       REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
@@ -101,6 +112,9 @@ contains
       CALL QENTER('ORBLOC')
 
       IFRP = 1
+      NISH = VAR%NISH(IFRP)
+      NORB = VAR%NORB(IFRP)
+      NFBAS(:) = VAR%NFBAS(IFRP,:)
 
       CALL TITLER('Molecular orbital localization','*',122)
 
@@ -114,19 +128,19 @@ contains
 
 ! Memory allocation
 
-      NISH12 = 2 * ( NISH(IFRP)*NISH(IFRP) + NISH(IFRP) ) / 2
-      CALL ALLOC(SCOEF ,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEF IN ORBLOC')
-      CALL ALLOC(SCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,ID='SCOEFO IN ORBLOC')
-      CALL ALLOC(SMAT  ,N2BBASX,ID='SMAT IN ORBLOC')
-      CALL ALLOC(CMO   ,N2BBASXQ,ID='CMO IN ORBLOC')
+      NISH12 = 2 * ( NISH*NISH + NISH ) / 2
+      CALL ALLOC(SCOEF ,NISH*NFBAS(0)*4,ID='SCOEF IN ORBLOC')
+      CALL ALLOC(SCOEFO,NISH*NFBAS(0)*4,ID='SCOEFO IN ORBLOC')
+      CALL ALLOC(SMAT  ,VAR%N2BBASX,ID='SMAT IN ORBLOC')
+      CALL ALLOC(CMO   ,VAR%N2BBASXQ,ID='CMO IN ORBLOC')
       CALL ALLOC(HMAT  ,NISH12,NISH12,4,ID='HMAT IN ORBLOC')
-      CALL ALLOC(XKAPPA,NISH(IFRP),NISH(IFRP),4,ID='XKAPPA IN ORBLOC')
-      CALL ALLOC(PMAT  ,NISH(IFRP),NISH(IFRP),4,NUCDEP,ID='PMAT IN ORBLOC')
+      CALL ALLOC(XKAPPA,NISH,NISH,4,ID='XKAPPA IN ORBLOC')
+      CALL ALLOC(PMAT  ,NISH,NISH,4,NUCDEP,ID='PMAT IN ORBLOC')
 
       CALL ALLOC(NFNUC ,2*NUCDEP,ID='NFNUC IN ORBLOC')
-      CALL ALLOC(ISEL  ,NISH(IFRP),ID='ISEL IN ORBLOC')
-      CALL ALLOC(INDAO ,NFBAS(IFRP,0),ID='INDAO IN ORBLOC')
-      CALL ALLOC(INDAOS,NFBAS(IFRP,0),ID='INDAOS IN ORBLOC')
+      CALL ALLOC(ISEL  ,NISH,ID='ISEL IN ORBLOC')
+      CALL ALLOC(INDAO ,NFBAS(0),ID='INDAO IN ORBLOC')
+      CALL ALLOC(INDAOS,NFBAS(0),ID='INDAOS IN ORBLOC')
       CALL ALLOC(INDNAO,2*NUCDEP+2,ID='INDNAO IN ORBLOC')
 
 ! Read coefficients
@@ -140,22 +154,20 @@ contains
       CALL GTOVLX(SMAT,VAR%SSMTRC)
       IF(LOC%IPRLOC.GE.6) THEN
         WRITE(VAR%LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
-        CALL PRQMAT(CMO,NFBAS(IFRP,0),NORB(IFRP), &
-                    NFBAS(IFRP,0),NORB(IFRP),4,IPQTOQ(1,0),VAR%LUPRI)
+        CALL PRQMAT(CMO,NFBAS(0),NORB,NFBAS(0),NORB,4,IPQTOQ(1,0),VAR%LUPRI)
 
         WRITE(VAR%LUPRI,'(/A)') '* ORBLOC: Overlap matrix' 
-        CALL PRQMAT(SMAT,NFBAS(IFRP,0),NFBAS(IFRP,0), &
-                    NFBAS(IFRP,0),NFBAS(IFRP,0),1,IPQTOQ(1,0),VAR%LUPRI)
+        CALL PRQMAT(SMAT,NFBAS(0),NFBAS(0), &
+                    NFBAS(0),NFBAS(0),1,IPQTOQ(1,0),VAR%LUPRI)
       ENDIF
 
 ! Occupied electronic orbital coeffients selection
 
-      CALL OCCUPY(ISEL,NISH(IFRP))
-      CALL SELCFS(CMO,IFRP,SCOEF,NISH(IFRP),ISEL,D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
+      CALL OCCUPY(ISEL,NISH)
+      CALL SELCFS(CMO,IFRP,SCOEF,NISH,ISEL,D0,NISH,NFBAS(0),NORB)
       IF(LOC%IPRLOC.GE.5) THEN
         WRITE(VAR%LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
-        CALL PRQMAT(SCOEF,NFBAS(IFRP,0),NISH(IFRP), &
-                    NFBAS(IFRP,0),NISH(IFRP),4,IPQTOQ(1,0),VAR%LUPRI)
+        CALL PRQMAT(SCOEF,NFBAS(0),NISH,NFBAS(0),NISH,4,IPQTOQ(1,0),VAR%LUPRI)
       ENDIF
 
 ! Get the number of functions per center
@@ -171,10 +183,10 @@ contains
       XNRM  = D0
       IF(LOC%PRJLOC) THEN
 !       PRJLOC = TRUE localization with projection analysis
-        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
       ELSE
 !       PRJLOC = FALSE localization with Mulliken analysis
-        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
+        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
       ENDIF
       TOBE = .FALSE.
       ITR = 0
@@ -189,21 +201,21 @@ contains
         CALL GETH(PMAT,HMAT)
         CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
         IF (.NOT. FLAG) THEN
-          CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
+          CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
-        CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0))
+        CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
+          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
         ENDIF
         DIFF  = DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
         IF (DIFF .LT. D0 .AND. .NOT. FLAG) THEN
-          CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEFO,1,SCOEF,1)
+          CALL DCOPY(NISH*NFBAS(0)*4,SCOEFO,1,SCOEF,1)
           DINVM = DINVMO
           ITR = ITR - 1
           FLAG = .TRUE.
@@ -211,9 +223,9 @@ contains
           WRITE(VAR%LUPRI,'(5X,A)') '! Restart from  previous iteration !'
           WRITE(VAR%LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
           IF(LOC%PRJLOC) THEN
-            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
           ELSE
-            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
+            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
           ENDIF
           GOTO 100
         ELSE
@@ -233,15 +245,15 @@ contains
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
         CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
-        CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,SCOEF,1,SCOEFO,1)
-        CALL ROTCMO_MOD(SCOEF,NFBAS(IFRP,0),NISH(IFRP),4,XKAPPA,NISH(IFRP),IPQTOQ(IFRP,0))
+        CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
+        CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),DINVM)
+          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(IFRP,1),NFBAS(IFRP,2),NISH(IFRP),NFNUC,DINVM)
+          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
         ENDIF
         DIFF  =     DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
@@ -267,7 +279,7 @@ contains
 
 ! Put the localised coefficients in DFCOEF
 
-      CALL ORBLO5(SCOEF,NFBAS(IFRP,0),NISH(IFRP),IFRP)
+      CALL ORBLO5(SCOEF,NFBAS(0),NISH,NORB)
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -311,8 +323,6 @@ contains
 
 #include "dcbprj.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -323,7 +333,7 @@ contains
       LOGICAL   :: TOBE
 
       INTEGER*4 :: I, J, K, IZ, IER, KFRSAV, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, KBUF, NMOL
-      INTEGER*4 :: IVEC, JOFF, NREF, N2REF
+      INTEGER*4 :: IVEC, JOFF, NREF, N2REF, NPSH, NESH, NORB
       INTEGER*4 :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2)
 
       REAL*8    :: DDUMARR(2), DINV, QLOC2, DLOC
@@ -338,6 +348,11 @@ contains
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
 
   !------------------------------------------------------------------------------!
+      IFRP   = 1
+      NPSH = VAR%NPSH(IFRP)
+      NESH = VAR%NESH(IFRP)
+      NORB = VAR%NORB(IFRP)
+
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
         WRITE(VAR%LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
@@ -353,18 +368,17 @@ contains
 
       CALL QENTER('ORBLP1')
       KFRSAV = KFREE
-      IFRP   = 1
       NB     = NBL + NBS
 !     DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
-        CALL ALLOC(KVECTMP,NORB(IFRP),ID='KVECTMP IN ORBLP1')
+        CALL ALLOC(KVECTMP,NORB,ID='KVECTMP IN ORBLP1')
         DO I = 1,NREFS
           NSTR(IFRP,0,I) = 1
-          CALL NUMLST(VECREF(IFRP,I),KVECTMP,     &
-               NORB(IFRP),-NPSH(IFRP),NESH(IFRP), &
+          CALL NUMLST(VECREF(IFRP,I),KVECTMP, &
+               NORB,-NPSH,NESH,               &
                IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(KVECTMP,NSTR(IFRP,0,I), &
-               NPSH(IFRP),NESH(IFRP),         &
+               NPSH,NESH,                     &
                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NVECS(IFRP,1) = NVECS(IFRP,1) + NSTR(IFRP,0,I)
@@ -381,7 +395,7 @@ contains
 
       ICFS = 6
       IF(IPRPRJ.GE.5) ICFS = 7
-      CALL ALLOC(CMO,N2BBASXQ,ID="CMO in ORBLP1")
+      CALL ALLOC(CMO,VAR%N2BBASXQ,ID="CMO in ORBLP1")
 
       IOFF(1) = 0
       IPRPRJ = 4
@@ -576,8 +590,6 @@ contains
       REAL*8    :: SMAT(*), SCOEF(*), RCOEF(*), AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4), GVEC(*)
 
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -674,8 +686,6 @@ contains
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
 #include "maxorb.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -932,8 +942,6 @@ contains
       INTEGER*4 :: INDNAO(2,*), NFNUC(2*NUCDEP)
 
 #include "maxorb.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -953,7 +961,7 @@ contains
       DO I = 1,NUCDEP-1
          NFNUC(I+NUCDEP)=INDNAO(2,I+1)-INDNAO(2,I)
       ENDDO
-      NFNUC(2*NUCDEP)=NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
+      NFNUC(2*NUCDEP)=VAR%NFBAS(IFRP,0)-INDNAO(2,NUCDEP)
       CALL QEXIT('ORBLO4')
 
   END SUBROUTINE ORBLO4
@@ -961,7 +969,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO5(SCOEF,NB,NI,IFRP)
+  SUBROUTINE ORBLO5(SCOEF,NB,NI,NO)
 !***********************************************************************
 !
 !     Written by S.Dubillard Apr 13 2004
@@ -974,19 +982,17 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NB, NI, IFRP
+      INTEGER*4 :: NB, NI, NO
       REAL*8    :: SCOEF(NB,NI,4)
 
 #include "maxorb.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 
       ! Internal variables
-      INTEGER*4 :: I, J, K, L, NO
+      INTEGER*4 :: I, J, K, L
       REAL*8    :: TOTERG
       REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
@@ -996,13 +1002,10 @@ contains
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLO5')
 
-      IFRP = 1
-      NO = NORB(IFRP)
-
       ! allocate arrays
       CALL ALLOC(CMO  ,NB,NO,4,ID='CMO   IN ORBLO5')
-      CALL ALLOC(EIG  ,NORBT  ,ID='EIG   IN ORBLO5')
-      CALL ALLOC(IBEIG,NORBT  ,ID='IBEIG IN ORBLO5')
+      CALL ALLOC(EIG  ,VAR%NORBT  ,ID='EIG   IN ORBLO5')
+      CALL ALLOC(IBEIG,VAR%NORBT  ,ID='IBEIG IN ORBLO5')
 
       ! open DFCOEF file and read EIG, IBEIG and TOTERG
       CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
