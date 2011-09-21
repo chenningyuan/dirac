@@ -20,10 +20,13 @@ contains
 !
 !***********************************************************************
       USE MEMORY_ALLOCATOR
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT NONE
+
+      ! External variables
+      INTEGER*4 :: IPRLOC, ITRLOC
+      REAL*8    :: THRLOC, HESTHR
+
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -37,9 +40,17 @@ contains
 #include "nuclei.h"
 #include "symmet.h"
 #include "cbiher.h"
-      PARAMETER(D0 = 0.0D0)
-      LOGICAL TOBE,FLAG
-      CHARACTER SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
+
+      ! Internal variables
+      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
+
+      CHARACTER :: SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
+      LOGICAL   :: TOBE,FLAG
+
+      INTEGER*4 :: IFRP, NISH12, IDUM, ITR
+
+      REAL*8    :: TOTERG, DINVMO, DINVM, XNRM, DIFF, DIFFA
+      REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:) :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
       REAL*8,    ALLOCATABLE, DIMENSION(:) :: SCOEF, SCOEFO, SMAT, CMO
@@ -253,11 +264,14 @@ contains
 !***********************************************************************
       USE MEMORY_ALLOCATOR
       USE SELECT_COEFF_OWN_BAS
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0,DM1=-1.0D0,D1=1.0D0)
+      IMPLICIT NONE
 
+      ! External variables
+      INTEGER*4 :: NBL, NBS, NI, KFREE, IPRLOC, ITRLOC
+      REAL*8    :: DINVM, THRLOC, HESTHR
+      REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
+
+#include "priunit.h"
 #include "dcbgen.h"
 #include "dcbloc.h"
 #include "dcbprj.h"
@@ -269,10 +283,16 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
-      LOGICAL TOBE
-      DIMENSION NSTR(2,0:2,0:MAXREF),NVECS(2,0:2), &
-                SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),IOFF(2)
-      DIMENSION DDUMARR(2),IDUMARR(2)
+      ! Internal variables
+      REAL*8, PARAMETER :: D0=0.0D0, D2=2.0D0, DM1=-1.0D0, D1=1.0D0
+
+      LOGICAL   :: TOBE
+
+      INTEGER*4 :: I, J, K, IZ, IER, KFRSAV, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, KBUF, NMOL
+      INTEGER*4 :: IVEC, JOFF, NREF, N2REF
+      INTEGER*4 :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2)
+
+      REAL*8    :: DDUMARR(2), DINV, QLOC2, DLOC
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:) :: KVECTMP, JREF, IPIV
       REAL*8,    ALLOCATABLE, DIMENSION(:) :: RCOEF, CMO, BV, GVEC, AMAT, WMAT
@@ -513,13 +533,17 @@ contains
 !     Written by T.Saue March 26 1999
 !
 !***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0)
+      IMPLICIT NONE
 
-#include "dcbloc.h"
 #include "dcbprj.h"
+      ! External variables
+      INTEGER*4 :: NB, NMOL, NREF, KFREE, ITRLOC, IPRLOC
+      INTEGER*4 :: JMOL(*), JREF(3,*), NSTR(2,0:2,0:MAXREF), IPIVOT(*)
+      REAL*8    :: THRLOC, HESTHR
+      REAL*8    :: SMAT(*), SCOEF(*), RCOEF(*), AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4), GVEC(*)
+
+#include "priunit.h"
+#include "dcbloc.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -528,10 +552,12 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
+      ! Internal variables
+      INTEGER*4 :: I, J, IFRP, KFRSAV, JOFF, KOFF, JOB, NEFF
+      REAL*8    :: PTOL
+      REAL*8, PARAMETER :: D0=0.0D0, DC=1.0D-2, D2=2.0D0
+
       LOGICAL DOPOP
-      DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),SCOEF(*), &
-           RCOEF(*),AMAT(NREF,NREF,4),BVEC(NREF,NMOL,4),SMAT(*), &
-           GVEC(*),IPIVOT(*)
 
   !------------------------------------------------------------------------------!
       IFRP = 1
@@ -609,11 +635,15 @@ contains
 !
 !***********************************************************************
       USE MEMORY_ALLOCATOR
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT NONE
+
+      ! External variables
+      INTEGER*4 :: NBL, NBS, NI, IPRLOC, ITRLOC
+      REAL*8    :: DINVM, THRLOC, HESTHR
+      INTEGER*4 :: NFNUC(*)
+      REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
+
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-      PARAMETER(D0 = 0.0D0)
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbloc.h"
@@ -626,7 +656,11 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
-      DIMENSION SMAT(*),SCOEF(*),PMAT(NI,NI,4,NUCDEP),NFNUC(*)
+      ! Internal variables
+      INTEGER*4 :: I, J, IZ, NB, IOFFL, IOFFS
+      REAL*8    :: DINV, QLOC2, DLOC
+
+      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
       REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
 
@@ -737,13 +771,13 @@ contains
   !******************************************************************************!
   implicit none
 
-  ! external variables
+  ! External variables
   logical flag, hesloc
 
   integer*4 :: iprloc, lupri
   integer*4, dimension(:,:) :: ipqtoq
 
-  ! internal variables
+  ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
   real*8 :: xnrm
@@ -864,10 +898,14 @@ contains
 !     number of small components basis functions for each center
 !
 !***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT NONE
+
+      ! External variables
+      INTEGER*4 :: IPRLOC, ITRLOC
+      REAL*8    :: THRLOC, HESTHR
+      INTEGER*4 :: INDNAO(2,*), NFNUC(2*NUCDEP)
+
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbloc.h"
@@ -879,8 +917,9 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
-      DIMENSION INDNAO(2,*)
-      DIMENSION NFNUC(2*NUCDEP)
+      ! Internal variables
+      INTEGER*4 :: IFRP, I
+      REAL*8, PARAMETER :: D1 = 1.0D0
 
   !------------------------------------------------------------------------------!
       IFRP = 1
@@ -910,11 +949,14 @@ contains
 !
 !***********************************************************************
       USE MEMORY_ALLOCATOR
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT NONE
+
+      ! External variables
+      INTEGER*4 :: IPRLOC, ITRLOC, NB, NI, IFRP
+      REAL*8    :: THRLOC, HESTHR
+      REAL*8    :: SCOEF(NB,NI,4)
+
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-      PARAMETER(D0 = 0.0D0)
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbloc.h"
@@ -927,7 +969,10 @@ contains
 #include "maxaqn.h"
 #include "nuclei.h"
 
-      DIMENSION SCOEF(NB,NI,4)
+      ! Internal variables
+      INTEGER*4 :: I, J, K, L, NO
+      REAL*8    :: TOTERG
+      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
       INTEGER*4, ALLOCATABLE :: IBEIG(:)
       REAL*8,    ALLOCATABLE :: CMO(:,:,:), EIG(:)
@@ -998,17 +1043,25 @@ contains
 !
 !***********************************************************************
       USE MEMORY_ALLOCATOR
-      IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT NONE
+
+      ! External variables
+      INTEGER*4 :: NBASI, NORBI, NZ, NORBT, IPRINT, IP(4)
+      REAL*8    :: CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ)
+
 #include "priunit.h"
 #include "thrzer.h"
 
-      PARAMETER (D1 = 1.00D00, D0 = 0.00D00, DM1 = -D1)
-      PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
-      PARAMETER (D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12)
+      ! Internal variables
+      REAL*8, PARAMETER :: D1 = 1.00D00, D0 = 0.00D00, DM1 = -D1
+      REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
+      REAL*8, PARAMETER :: D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12
 
-      DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ), IP(4)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
+
+      INTEGER*4 :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX
+      REAL*8    :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
+      REAL*8    :: ABS, SQRT, COS, SIN
 
       REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
 
@@ -1213,11 +1266,11 @@ contains
   !******************************************************************************!
   implicit none
 
-  ! external variables
+  ! External variables
   real*8, dimension(:,:,:)   ::  hmat
   real*8, dimension(:,:,:,:) ::  pmat
 
-  ! internal variables
+  ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0
 
   real*8 :: pij1, pij2, pkl1, pkl2, pjl1, pjl2, pki1, pki2
