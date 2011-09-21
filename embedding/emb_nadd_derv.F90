@@ -110,24 +110,16 @@ module fde_nadd_derv
         if (.not.functionals_initialized) then
             functionals_initialized = .true.
             
-            write (*,*) 'debug: will parse ke ',kefun_fde
             call parse_functional(kefun_fde,      fde_kef,      hfx_out, mu_out, beta_out, .false.)
-            write (*,*) 'debug: will parse xc ',xcfun_fde
             call parse_functional(xcfun_fde,      fde_xcf,      hfx_out, mu_out, beta_out, .false.)
-            write (*,*) 'debug: will parse ke alda ',xcfun_fde_alda
             call parse_functional(kefun_fde_alda, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
-            write (*,*) 'debug: will parse xc alda ',xcfun_fde_alda
             call parse_functional(xcfun_fde_alda, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
 
 
 !            ! we set them now so that we can verify whether or not they
-            write (*,*) 'debug, xcfun_set_functional for fde xcf',order
             call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
-            write (*,*) 'debug, xcfun_set_functional for fde kef',order
             call xcfun_set_functional(fde_kef,      order, parallel_fde)
-            write (*,*) 'debug, xcfun_set_functional for fde xcf alda',order
             call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
-            write (*,*) 'debug, xcfun_set_functional for fde kef alda',order
             call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
         endif
         

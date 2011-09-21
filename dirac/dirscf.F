@@ -567,32 +567,22 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDXC = SECOND()
-        TDF2 = TDXC - TDF2
+        TDfde = SECOND()
+        TDF2 = TDfde - TDF2
 
         call interface_mo_write()
         
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-
-!           if (.not.dirac_cfg_dft_calculation) then
-!              call interface_mo_write()
-!           endif
-           write(*,*) 'debug, before fde_calculate_embpot 1'
            call fde_set_nz(nz)
            call fde_calculate_embpot(ntbas(0),dmat,fock)
-           write(*,*) 'debug, after  fde_calculate_embpot 1'    
 
-           tdfde =  second() - tdxc
+           tdfde =  second() - tdfde
         endif
 
-
+        tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
- 
-!          write mo info to file
-!          read by the dft module
-!           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
@@ -777,6 +767,11 @@ C
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
           ENDIF
+          if (dirac_cfg_fde) then
+             cputid = sectid(tdfde)
+             write(lupri,'(3X,A,A12)')
+     &      '* FDE Fock matrix           (CPU):',CPUTID
+          endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
@@ -1388,30 +1383,20 @@ C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
 !       mi - variable initialization (otherwise runtime-check failure)
-        TDXC = SECOND()
-
+        
+        tdfde= second()
         call interface_mo_write()
 
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-
-!           if (.not.dirac_cfg_dft_calculation) then
-!              call interface_mo_write()
-!           endif
-           write (*,*) 'debug, before fde_calculate_embpot 2'
            call fde_set_nz(nz)
            call fde_calculate_embpot(ntbas(0),dmat,fock)
-           write (*,*) 'debug, after  fde_calculate_embpot 2'
-
-           tdfde =  second() - tdxc
+           tdfde = second() - tdfde
         endif
         
+        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
- 
-!          write mo info to file
-!          read by the dft module
-!           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)

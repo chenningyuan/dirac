@@ -175,7 +175,6 @@ contains
             end if
          end do
          f%xcfun_id_is_set = .true.
-         write(*,*) 'debug, id is set to ',f%id
       end if
 
       if (allocated(f%input)) then

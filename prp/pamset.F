@@ -696,8 +696,6 @@ C          Hermitian operator
               call genden(fao, cmo, 1, iprint)
            endif
 
-           write (*,*) 'debug, before getting the response 3'
-
 !          call fde_set_nz(nz)
 !          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
 
@@ -709,7 +707,6 @@ C          Hermitian operator
      &                       fde_fmat               = fmo,
      &                       fde_do_potential       = .true.)
 
-           write (*,*) 'debug, after  getting the response 3'
         endif
 !!!!!
 C

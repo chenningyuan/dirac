@@ -61,7 +61,6 @@ module FDE_exportPotentials
         real(kind=8), allocatable :: dmat(:)
         integer :: mat_dim
 
-         write (*,*) 'debug, testing active density'
          call fde_test_active_density
 
 !! calculate vc, density and gradient

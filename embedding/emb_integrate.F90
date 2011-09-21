@@ -253,26 +253,6 @@ contains
           stop 'response_order_mo > max_response_order_mo'
       end if
 
-!
-!     we initialize the fde functionals for this order
-!
-!      if (fde_set_functionals(order)) then
-!          write(*,*) 'debug, setting up functionals for order ',max_response_order_mo
-!          write(*,*) 'debug, setting fde_xcf'
-!          call xcfun_set_functional(fde_xcf     , max_response_order_mo, parallel_fde) 
-!          write(*,*) 'debug, setting fde_xcf_alda'
-!          call xcfun_set_functional(fde_xcf_alda, max_response_order_mo, parallel_fde) 
-!          write(*,*) 'debug, setting fde_kef'
-!          call xcfun_set_functional(fde_kef,      max_response_order_mo, parallel_fde)
-!          write(*,*) 'debug, setting fde_xcf_alda'
-!          call xcfun_set_functional(fde_kef_alda, max_response_order_mo, parallel_fde)
-!         fde_set_functionals(order) = .false.
-!      endif
-!
-!     check whether gga code structure will be used
-!
-!      use_gga_qr = (fde_xc_fun_is_gga())
-!      use_gga_qi = (fde_xc_fun_is_gga())
       use_gga_qr = (fun_is_gga(fde_xcf))
       use_gga_qi = (fun_is_gga(fde_kef))
 
@@ -284,13 +264,15 @@ contains
       if (use_gga_qr .or. use_gga_qi) then
          use_gga = .true.
       end if
-      
+
+if (.false.) then      
       write (6,*) 'debug, in integrate_fde: use_gga ',use_gga
       write (6,*) '       fun_is_lda(fxc)       ',fun_is_lda(fde_xcf)
       write (6,*) '       fun_is_gga(fxc)       ',fun_is_gga(fde_xcf)
       write (6,*) '       fun_is_lda(fke)       ',fun_is_lda(fde_kef)
       write (6,*) '       fun_is_gga(fke)       ',fun_is_gga(fde_kef)
       write (6,*) '       is fde alda ?         ',is_fdersp_alda
+endif
       
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
@@ -368,7 +350,6 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
             fde_mat_energy = save_ddot2 - save_ddot1
-            write (6,*) 'debug, fde_mat_energy :',fde_mat_energy
          end if
 
         call report()

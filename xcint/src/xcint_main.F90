@@ -423,11 +423,8 @@ contains
 !        call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
 !        call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
 !radovan: hack - this is needed otherwise with rhs_direct we go out of the array
-         write (*,*) 'debug, xcfun_set_functional for xc xcf',max_response_order_mo
          call xcfun_set_functional(xc_fun,       max_response_order_mo, parallel_xc)
-         write (*,*) 'debug, xcfun_set_functional for xc xcf alda'
          call xcfun_set_functional(xc_fun_alda,  max_response_order_mo, parallel_xc)
-         write (*,*) 'debug, xcfun_set_functional for xc xcf xalda'
          call xcfun_set_functional(xc_fun_xalda, max_response_order_mo, parallel_xc)
       else
 #endif
@@ -642,7 +639,6 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
-            write (6,*) 'debug, xc_mat_energy :',xc_mat_energy
          end if
 
          call report()

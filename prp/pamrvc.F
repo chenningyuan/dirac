@@ -3637,8 +3637,6 @@ C
               call genden(work(kbuf), cmo, 1, iprxrs)
            endif
 
-           write (*,*) 'debug, before getting the response 2'
-
 !          call fde_set_nz(nz)
 !          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
 
@@ -3653,8 +3651,6 @@ C
      &                       fde_dmat_pg_sym        = isymop,
      &                       fde_dmat_ih_sym        = ihrmop,
      &                       fde_response_order_mo = 1)
-
-           write (*,*) 'debug, after  getting the response 2'
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 

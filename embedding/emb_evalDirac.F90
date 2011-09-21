@@ -79,13 +79,6 @@ module fde_eval_dirac
          real(kind=8), target, intent(in) :: dmat(*)
          real(kind=8), target  :: vmat(*)
 
-! aspg, 
-!         write (*,*) 'debug, before getting active density'
-!         call fde_get_active_density(dmat, mat_dim, .true.)
-!         write (*,*) 'debug, after  getting active density'
-
-         write (*,*) 'debug, inside fde_calculate_vemb_dirac'
-         write (*,*) '       before integrate_fde'
          call integrate_fde(fde_mat_dim   = mat_dim, &
                             fde_nz        = nz,      &
                             fde_dmat_0    = dmat,    &
@@ -93,7 +86,6 @@ module fde_eval_dirac
                             fde_nr_fmat   = 1,       &
                             fde_fmat      = vmat,    &
                             fde_do_potential = .true.)
-         write (*,*) '       after  integrate_fde'
 
       end subroutine fde_calculate_vemb_dirac
       

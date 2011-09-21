@@ -264,12 +264,8 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-!     call fde_get_export_level(wfexport)
-!     call fde_get_what_to_export(export_n,export_gn,export_vc)
-!     IF (export_vc.and.(WF.eq.wfexport)) THEN
       if (dirac_cfg_fde) then
 #ifdef MOD_XML
-!        call fde_export(WORK,LFREE)
          call fde_export_write_data_to_file(wf)
 #else
          call quit("FDE density export unsupported in this version.")

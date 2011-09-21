@@ -256,19 +256,16 @@ module fde_data
    subroutine fde_initialize_active_data
 !   ----------------------------------------------------------------------------
       if (.not.allocated(fde_active_n)) then
-         write (*,*) 'debug, allocating fde_active_n(',fde_grid_np,')'
          call alloc(fde_active_n,     fde_grid_np, id="fde_active_n")
          fde_active_n     = 0.0d0
       endif
 
       if (.not.allocated(fde_active_gn)) then
-         write (*,*) 'debug, allocating fde_active_gn(',fde_grid_np,',3)'
          call alloc(fde_active_gn,    fde_grid_np,3, id="fde_active_gn")
          fde_active_gn    = 0.0d0
       endif
 
       if (.not.allocated(fde_active_elpot)) then
-         write (*,*) 'debug, allocating fde_active_elpot(',fde_grid_np,')'
          call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
          fde_active_elpot = 0.0d0
       endif
@@ -280,7 +277,6 @@ module fde_data
    subroutine fde_cleanup_data
 !   ----------------------------------------------------------------------------
       if (data_is_initialized) then
-         write (*,*) 'debug, cleaning up internal fde data'
          call dealloc(fde_grid)
          call fde_cleanup_active_data
          call fde_cleanup_frozen_data
