@@ -1255,6 +1255,9 @@ C
      &     BVBUF(NBDIM),IVECS(NBNEW),BVNRM(NBNEW)
       CHARACTER BTYP(-1:2)*1,XTYP(-1:1)*3
       DATA BTYP/'C',' ','E','P'/,XTYP/'(-)','   ','(+)'/
+#ifdef TO_REMEMBER_FOR_STEFAN
+      implement the MCSCF screening here!!!
+#endif
 C     
 C     
 C     Take norm of new trial vectors
