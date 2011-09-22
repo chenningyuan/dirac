@@ -177,7 +177,9 @@ C
          HFXMU = D0
          IF(MDIRAC)THEN
 #ifdef MOD_INTEREST
-!          print *,'InteRest done two-electron Fock matrix'
+           print *,'Entering InteRest two-electron Fock matrix part'
+           print *,'nz = ',nz, 'nfmat = ',nfmat
+           call process_two_electron_integrals( fmat, dmat ) 
 #endif
          ELSE
            CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,

@@ -1346,9 +1346,7 @@ C           restore density matrix in DMAT/hj
             CALL READNS(LUDENS,DMAT)
          ELSE
             CALL WRIDNS(LUDENS,DMAT)
-
-            !michal work
-
+            !fixme: michal for InteRest                            
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
          ENDIF

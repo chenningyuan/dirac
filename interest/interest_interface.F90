@@ -456,11 +456,13 @@ CONTAINS
      
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
-!> note: on input G, P must have the dimension of cartesian GTOs 
-  SUBROUTINE process_two_electron_integrals( G, P ) 
+!> note: on input G, P are assumed to be in cartesian GTOs 
+  SUBROUTINE process_two_electron_integrals( Gmat, Pmat ) 
 
     !> input
-       real(8), intent(in) :: P(*)
+    !> note:  we assume nz=4 !!!
+    !> fixme: the case when nz!=4
+       real(8), intent(in) :: Pmat(2*nrow,2*ncol,4)
        interface 
          subroutine interest_eri(rkb,factor,fint,nint,   &
                                  la,alpha,ax,ay,az,anorm,&
@@ -482,7 +484,7 @@ CONTAINS
     !> end
 
     !> output
-       real(8), intent(out) :: G(*)
+       real(8), intent(out) :: Gmat(2*nrow,2*ncol,4)
     !> end
 
     !> local
@@ -516,6 +518,9 @@ CONTAINS
        real(8), allocatable :: dPij(:)
        real(8), allocatable :: dGij(:)
 
+       real(8), allocatable :: P(:,:)
+       real(8), allocatable :: G(:,:)  
+
        integer              :: record_length
        real(8), allocatable :: dG_guess(:,:,:)
     !> end
@@ -525,6 +530,8 @@ CONTAINS
     nr_integrals_pased = 0
 
     !> allocate working/temporary fields
+       allocate( P       ( nrow,ncol             ) )
+       allocate( G       ( nrow,ncol             ) )
        allocate( dPij    ( nshl*21*21            ) ) !todo: better definition 
        allocate( dGij    ( nshl*21*21            ) ) !todo: better definition 
        allocate( dPi     ( nshl*21*nrow          ) ) !todo: better definition 
@@ -532,6 +539,15 @@ CONTAINS
        allocate( dGi     ( nshl*21*nrow          ) ) !todo: better definition 
        allocate( dGj     ( nshl*21*nrow          ) ) !todo: better definition 
        allocate( dG_guess( 2,nr_shells,nr_shells ) )
+    !> end
+
+    !> resorting of the P-matrix for better integral performance 
+       G(:,:)=0.0d0
+       do j=1,ncol
+         do i=1,nrow
+           P(i,j) = Pmat(i,j,1)  !Re(A,LL)
+         enddo
+       enddo
     !> end
 
 !   select case( scf%difference_density )
@@ -686,6 +702,16 @@ lloop:       do l=1,lmax
 !          close( 16, status='keep' ) 
 !   end select
 
+    !> backward resorting of the Fock matrix
+       do j=1,ncol
+         do i=1,nrow
+           Gmat(i,j,1) = G(i,j)  !Re(A,LL)
+         enddo
+       enddo
+    !> end
+
+    deallocate( P        )
+    deallocate( G        )
     deallocate( dPi      )
     deallocate( dPj      )
     deallocate( dGi      )
