@@ -18,6 +18,14 @@ type :: external_variales
   real*8    :: ssmtrc
   logical   :: twocompbss, levyle
   integer*4 :: nz, ipqtoq(4,0:7)
+  integer*4 :: nucdep
+  integer*4 :: thrzer
+  integer*4 :: nrefs, iprprj
+  integer*4 :: maxref
+  real*8    :: prothr
+  logical   :: ownbas
+  character*6  :: reffil(15)    ! reffil(maxref)    \
+  character*72 :: vecref(2,15)  ! vecref(2,maxref)  /  see dcbprj.h
 end type external_variales
 
 type( localization_flags ), private :: loc
@@ -38,39 +46,69 @@ contains
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "thrzer.h"
+#include "dcbprj.h"
+
+  ! Internal variables
+  integer*4 :: i
 
   !------------------------------------------------------------------------------!
   ! dcbloc.h
-  loc%iprloc = iprloc
-  loc%itrloc = itrloc
-  loc%thrloc = thrloc
-  loc%hesthr = hesthr
-  loc%prjloc = prjloc
-  loc%hesloc = hesloc
-  loc%auto   = auto
+  loc%iprloc     = iprloc
+  loc%itrloc     = itrloc
+  loc%thrloc     = thrloc
+  loc%hesthr     = hesthr
+  loc%prjloc     = prjloc
+  loc%hesloc     = hesloc
+  loc%auto       = auto
   ! priunit.h
   var%lupri      = lupri
   ! dcbgen.h
   var%lucoef     = lucoef
   ! dcbbas.h
-  var%nfbas      = nfbas
+  var%nfbas(:,:) = nfbas(:,:)
   var%n2bbasx    = n2bbasx
   var%n2bbasxq   = n2bbasxq
   ! dcborb.h
-  var%nish       = nish
-  var%norb       = norb
-  var%npsh       = npsh
-  var%nesh       = nesh
+  var%nish(:)    = nish(:)
+  var%norb(:)    = norb(:)
+  var%npsh(:)    = npsh(:)
+  var%nesh(:)    = nesh(:)
   var%norbt      = norbt
   ! dcbham.h
   var%ssmtrc     = ssmtrc
   var%twocompbss = twocompbss
   var%levyle     = levyle
   ! dgroup.h
-  var%ipqtoq     = ipqtoq
+  var%ipqtoq(:,:)= ipqtoq(:,:)
   var%nz         = nz
+  ! nuclei.h
+  var%nucdep     = nucdep
+  ! thrzer.h
+  var%thrzer     = thrzer
+  ! dcbprj.h
+  var%nrefs      = nrefs
+  var%iprprj     = iprprj
+  var%maxref     = min(maxref,15)
+  var%prothr     = prothr
+  var%ownbas     = ownbas
 
-  !------------------------------------------------------------------------------!
+  if(maxref /= 15)then
+    write(lupri,'(a)')' WARNING: The maxref dimension in localization module and Dirac differ'
+    write(lupri,'(a)')'          See type external_variales in localization.f90 '
+    write(lupri,'(a,I4)')' maxref(Dirac) =',maxref
+    write(lupri,'(a,I4)')' maxref(Localization module) = 15'
+  endif
+
+  do i=1,var%maxref
+    var%reffil(i)   = reffil(i)
+    var%vecref(1,i) = vecref(1,i)
+    var%vecref(2,i) = vecref(2,i)
+  enddo
+
+  !==============================================================================!
   end subroutine initialize_localization
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -88,23 +126,14 @@ contains
       USE MEMORY_ALLOCATOR
       IMPLICIT NONE
 
-      ! External variables
-
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "cbiher.h"
-
       ! Internal variables
       REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
       CHARACTER :: SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
       LOGICAL   :: TOBE,FLAG
 
-      INTEGER*4 :: IFRP, NISH12, IDUM, ITR, NISH, NORB, NFBAS(0:2)
-      INTEGER*4 :: IPQTOQ(4,0:7)
+      INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
+      INTEGER*4 :: NFBAS(0:2), IPQTOQ(4,0:7)
 
       REAL*8    :: TOTERG, DINVMO, DINVM, XNRM, DIFF, DIFFA
       REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
@@ -116,9 +145,12 @@ contains
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLOC')
 
-      IFRP = 1
-      NISH = VAR%NISH(IFRP)
-      NORB = VAR%NORB(IFRP)
+      IFRP   = 1
+      LUPRI  = VAR%LUPRI
+      NISH   = VAR%NISH(IFRP)
+      NORB   = VAR%NORB(IFRP)
+      NUCDEP = VAR%NUCDEP
+      MAXREF = VAR%MAXREF
 
       NFBAS(:)    = VAR%NFBAS(IFRP,:)
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
@@ -129,7 +161,7 @@ contains
 
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE)THEN
-        WRITE(VAR%LUPRI,'(A)') 'ORBLOC: Coefficient file not found !'
+        WRITE(LUPRI,'(A)') 'ORBLOC: Coefficient file not found !'
         CALL QUIT('ORBLOC: Coefficients not found !')
       ENDIF
 
@@ -160,12 +192,12 @@ contains
 
       CALL GTOVLX(SMAT,VAR%SSMTRC)
       IF(LOC%IPRLOC.GE.6) THEN
-        WRITE(VAR%LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
-        CALL PRQMAT(CMO,NFBAS(0),NORB,NFBAS(0),NORB,4,IPQTOQ(1,0),VAR%LUPRI)
+        WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
+        CALL PRQMAT(CMO,NFBAS(0),NORB,NFBAS(0),NORB,4,IPQTOQ(1,0),LUPRI)
 
-        WRITE(VAR%LUPRI,'(/A)') '* ORBLOC: Overlap matrix' 
+        WRITE(LUPRI,'(/A)') '* ORBLOC: Overlap matrix' 
         CALL PRQMAT(SMAT,NFBAS(0),NFBAS(0), &
-                    NFBAS(0),NFBAS(0),1,IPQTOQ(1,0),VAR%LUPRI)
+                    NFBAS(0),NFBAS(0),1,IPQTOQ(1,0),LUPRI)
       ENDIF
 
 ! Occupied electronic orbital coeffients selection
@@ -173,14 +205,14 @@ contains
       CALL OCCUPY(ISEL,NISH)
       CALL SELCFS(CMO,IFRP,SCOEF,NISH,ISEL,D0,NISH,NFBAS(0),NORB)
       IF(LOC%IPRLOC.GE.5) THEN
-        WRITE(VAR%LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
-        CALL PRQMAT(SCOEF,NFBAS(0),NISH,NFBAS(0),NISH,4,IPQTOQ(1,0),VAR%LUPRI)
+        WRITE(LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
+        CALL PRQMAT(SCOEF,NFBAS(0),NISH,NFBAS(0),NISH,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
 ! Get the number of functions per center
 
       CALL INDAOC(INDAO,INDAOS,INDNAO)
-      CALL ORBLO4(INDNAO,NFNUC)
+      CALL ORBLO4(INDNAO,NFNUC,NUCDEP)
 
 ! We do orbital rotation until the difference between two succesive
 ! localisation criteria is less than a threshold
@@ -190,10 +222,10 @@ contains
       XNRM  = D0
       IF(LOC%PRJLOC) THEN
 !       PRJLOC = TRUE localization with projection analysis
-        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
+        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
       ELSE
 !       PRJLOC = FALSE localization with Mulliken analysis
-        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
+        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
       ENDIF
       TOBE = .FALSE.
       ITR = 0
@@ -202,7 +234,7 @@ contains
  100    CONTINUE
         ITR = ITR + 1
         CALL GTINFO(DAYTID)
-        WRITE(VAR%LUPRI,'(/A,I4,A,3X,A24/)') &
+        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
         CALL GETH(PMAT,HMAT)
@@ -214,10 +246,10 @@ contains
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
+          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
+          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
         ENDIF
         DIFF  = DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
@@ -226,29 +258,29 @@ contains
           DINVM = DINVMO
           ITR = ITR - 1
           FLAG = .TRUE.
-          WRITE(VAR%LUPRI,'(/5X,A)')'! Localization criterion decreases !'
-          WRITE(VAR%LUPRI,'(5X,A)') '! Restart from  previous iteration !'
-          WRITE(VAR%LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
+          WRITE(LUPRI,'(/5X,A)')'! Localization criterion decreases !'
+          WRITE(LUPRI,'(5X,A)') '! Restart from  previous iteration !'
+          WRITE(LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
           IF(LOC%PRJLOC) THEN
-            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
+            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
           ELSE
-            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
+            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
           ENDIF
           GOTO 100
         ELSE
-          WRITE(VAR%LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
+          WRITE(LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
           IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
           IF(DIFFA .LE. LOC%THRLOC) THEN
-            WRITE(VAR%LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
+            WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
           ELSE
-            WRITE(VAR%LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
+            WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
           ENDIF
         ENDIF
       ELSE
  200    CONTINUE
         ITR = ITR + 1
         CALL GTINFO(DAYTID)
-        WRITE(VAR%LUPRI,'(/A,I4,A,3X,A24/)') &
+        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
         CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
@@ -257,32 +289,32 @@ contains
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,DINVM)
+          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
         ELSE
 !         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NFNUC,DINVM)
+          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
         ENDIF
         DIFF  =     DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
         IF (DIFF .LT. D0) THEN
-          WRITE(VAR%LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(VAR%LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
-          WRITE(VAR%LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+          WRITE(LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+          WRITE(LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
+          WRITE(LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
         ENDIF
         IF (.NOT. FLAG .AND. DIFFA .LE. LOC%HESTHR) THEN
           FLAG = .TRUE.
-          WRITE(VAR%LUPRI,'(/5X,A)')  '!!! Hessian activated !!!'
+          WRITE(LUPRI,'(/5X,A)')  '!!! Hessian activated !!!'
         ENDIF
         IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 200
         IF(DIFFA .LE. LOC%THRLOC) THEN
-          WRITE(VAR%LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
+          WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
         ELSE
-          WRITE(VAR%LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
+          WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
         ENDIF
       ENDIF
       TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
-      CALL TIMTXT('>>> Time used in localization is :',TIME,VAR%LUPRI)
+      CALL TIMTXT('>>> Time used in localization is :',TIME,LUPRI)
 
 ! Put the localised coefficients in DFCOEF
 
@@ -312,7 +344,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,DINVM)
+  SUBROUTINE ORBLP1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,MAXREF,DINVM)
 !***********************************************************************
 !
 !     Based on T.Saue March 26 1999 : SUBROUTINE ANAPRJ
@@ -324,22 +356,19 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NBL, NBS, NI, KFREE
+      INTEGER*4 :: NBL, NBS, NI, NUCDEP, MAXREF
       REAL*8    :: DINVM
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
-#include "dcbprj.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-
       ! Internal variables
+      CHARACTER*6  :: REFFIL(MAXREF)
+      CHARACTER*72 :: VECREF(2,MAXREF)
       REAL*8, PARAMETER :: D0=0.0D0, D2=2.0D0, DM1=-1.0D0, D1=1.0D0
 
       LOGICAL   :: TOBE
 
-      INTEGER*4 :: I, J, K, IZ, IER, KFRSAV, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, KBUF, NMOL
-      INTEGER*4 :: IVEC, JOFF, NREF, N2REF, NPSH, NESH, NORB
+      INTEGER*4 :: I, J, K, IZ, IER, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, NMOL
+      INTEGER*4 :: IVEC, JOFF, NREF, N2REF, LUPRI, NPSH, NESH, NORB, NREFS
       INTEGER*4 :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2), IPQTOQ(4,0:7)
 
       REAL*8    :: DDUMARR(2), DINV, QLOC2, DLOC
@@ -355,15 +384,19 @@ contains
 
   !------------------------------------------------------------------------------!
       IFRP   = 1
+      LUPRI= VAR%LUPRI
       NPSH = VAR%NPSH(IFRP)
       NESH = VAR%NESH(IFRP)
       NORB = VAR%NORB(IFRP)
+      NREFS= VAR%NREFS
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
+      VECREF(:,:) = VAR%VECREF(:,:)
+      REFFIL(:)   = VAR%REFFIL(:)
 
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
-        WRITE(VAR%LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
-        WRITE(VAR%LUPRI,*) "STAT=",IER
+        WRITE(LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
+        WRITE(LUPRI,*) "STAT=",IER
         WRITE(0,*) "Error in allocation ==> see output file "
         STOP
       ENDIF
@@ -374,7 +407,6 @@ contains
       ENDDO
 
       CALL QENTER('ORBLP1')
-      KFRSAV = KFREE
       NB     = NBL + NBS
 !     DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
@@ -401,33 +433,33 @@ contains
 !     =====================
 
       ICFS = 6
-      IF(IPRPRJ.GE.5) ICFS = 7
+      IF(VAR%IPRPRJ.GE.5) ICFS = 7
       CALL ALLOC(CMO,VAR%N2BBASXQ,ID="CMO in ORBLP1")
 
       IOFF(1) = 0
-      IPRPRJ = 4
+      VAR%IPRPRJ = 4
       DO I = 1,NREFS
         INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
-          WRITE(VAR%LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
+          WRITE(LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
           CALL QUIT('PRJANA: No reference coefficients !')
         ENDIF
         CALL OPNFIL(VAR%LUCOEF,REFFIL(I),'OLD','PRJANA')
-        IF(OWNBAS) THEN
+        IF(VAR%OWNBAS)THEN
           CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
                NSTR(1,0,I))
           IF(LOC%IPRLOC .GE. 5) THEN
-            WRITE(VAR%LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
+            WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
-            CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),VAR%LUPRI)
+            CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
           ENDIF
 !         DO IFRP = 1, NFSYM
             IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,I)
 !         ENDDO
         ELSE
-          WRITE(VAR%LUPRI,*) 'Current version work only with .OWNBAS option'
+          WRITE(LUPRI,*) 'Current version work only with .OWNBAS option'
           WRITE(0,*) 'Current version work only with .OWNBAS option'
           STOP
         ENDIF
@@ -449,7 +481,6 @@ contains
       CALL ALLOC(BV,NBDIM,ID="BV in ORBLP1")
 !     DO IFRP = 1,NFSYM
 !     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-      KBUF   = KFREE
       NMOL   = NI
       NREF   = NVECS(IFRP,1)
       N2REF  = NREF*NREF
@@ -464,7 +495,7 @@ contains
       ENDDO
       CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,   &
            NVECS(IFRP,1),BV,GVEC,KVEC(IFRP,1)%P, &
-           JREF,NSTR,IPIV)
+           JREF,NSTR,IPIV,MAXREF)
 
 ! Memory allocation for the matrix W = Ac
 
@@ -473,10 +504,10 @@ contains
 ! Construction of W = Ac
 
       IF(LOC%IPRLOC .GE. 5) THEN
-        WRITE(VAR%LUPRI,'(/A)') '* Matrice BV'
-        CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),VAR%LUPRI)
-        WRITE(VAR%LUPRI,'(/A)') '* Matrice AMAT'
-        CALL PRQMAT(AMAT,NREF,NREF,NREF,NI,4,IPQTOQ(1,0),VAR%LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice BV'
+        CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice AMAT'
+        CALL PRQMAT(AMAT,NREF,NREF,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
       CALL QGEMM(NREF,NI,NREF,D1,                &
            'N','N',IPQTOQ(1,0),AMAT,NREF,NREF,4, &
@@ -484,8 +515,8 @@ contains
            D0,IPQTOQ(1,0),WMAT,NREF,NI,4)
 
       IF(LOC%IPRLOC.GE.5) THEN
-        WRITE(VAR%LUPRI,'(/A)') '* Matrice W'
-        CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),VAR%LUPRI)
+        WRITE(LUPRI,'(/A)') '* Matrice W'
+        CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
 ! Construct P_A for each center A
@@ -520,29 +551,29 @@ contains
       ENDDO
 
       DO IZ=1,4
-        WRITE(VAR%LUPRI,*)
-        WRITE(VAR%LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
         DO I=1, NUCDEP
-          WRITE(VAR%LUPRI,'(A,I4)') ' Nucleus #',I
+          WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
           DO J=1,NI
-            WRITE(VAR%LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
+            WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
           ENDDO
-          WRITE(VAR%LUPRI,*)
+          WRITE(LUPRI,*)
         ENDDO
       ENDDO
 
       IF(LOC%IPRLOC .GE. 1) THEN
         DO I = 1,NUCDEP
-          WRITE(VAR%LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-          WRITE(VAR%LUPRI,'(A)') '  ============================'
-          CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),VAR%LUPRI)
+          WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
+          WRITE(LUPRI,'(A)') '  ============================'
+          CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(VAR%LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(VAR%LUPRI,'(A)')  '  ===================================  '
+      WRITE(LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
+      WRITE(LUPRI,'(A)')  '  ===================================  '
       DINV = D0
       DO I = 1,NI
         QLOC2 = D0
@@ -551,11 +582,11 @@ contains
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
-        WRITE(VAR%LUPRI,'(A,I3,A,2F7.4)') &
+        WRITE(LUPRI,'(A,I3,A,2F7.4)') &
         '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
       DINVM = DINV/NI
-      WRITE(VAR%LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -580,7 +611,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
  SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,GVEC, &
-                   JMOL,JREF,NSTR,IPIVOT)
+                   JMOL,JREF,NSTR,IPIVOT,MAXREF)
 !***********************************************************************
 !
 !     Projection analysis for fermion ircop IFRP
@@ -590,19 +621,16 @@ contains
 !***********************************************************************
       IMPLICIT NONE
 
-#include "dcbprj.h"
       ! External variables
-      INTEGER*4 :: NB, NMOL, NREF, KFREE
+      INTEGER*4 :: NB, NMOL, NREF, MAXREF
       INTEGER*4 :: JMOL(*), JREF(3,*), NSTR(2,0:2,0:MAXREF), IPIVOT(*)
       REAL*8    :: SMAT(*), SCOEF(*), RCOEF(*), AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4), GVEC(*)
 
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-
       ! Internal variables
-      INTEGER*4 :: I, J, IFRP, KFRSAV, JOFF, KOFF, JOB, NEFF
-      INTEGER*4 :: IPQTOQ(4,0:7)
+      CHARACTER*6  :: REFFIL(MAXREF)
+      CHARACTER*72 :: VECREF(2,MAXREF)
+      INTEGER*4    :: I, J, IFRP, JOFF, KOFF, JOB, NEFF, NREFS, LUPRI
+      INTEGER*4    :: IPQTOQ(4,0:7)
 
       REAL*8    :: PTOL
       REAL*8, PARAMETER :: D0=0.0D0, DC=1.0D-2, D2=2.0D0
@@ -611,10 +639,14 @@ contains
 
   !------------------------------------------------------------------------------!
       IFRP = 1
-      KFRSAV = KFREE
+      NREFS = VAR%NREFS
+
       DOPOP = NREFS.GT.1
-      PTOL = PROTHR*DC
+      PTOL  = VAR%PROTHR*DC
+      LUPRI = VAR%LUPRI
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
+      VECREF(:,:) = VAR%VECREF(:,:)
+      REFFIL(:)   = VAR%REFFIL(:)
 
 !     Make projection vector
 
@@ -622,7 +654,7 @@ contains
                     SMAT,NB,NB,1,IPQTOQ(1,0),      &
                     BVEC,NREF,NMOL,4,IPQTOQ(1,0),  &
                     RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
-                    SCOEF,NB,NMOL,4,IPQTOQ(1,0),IPRPRJ)
+                    SCOEF,NB,NMOL,4,IPQTOQ(1,0),VAR%IPRPRJ)
       IF(NREFS.GT.1) THEN
 
 !       Make overlap matrix
@@ -631,7 +663,7 @@ contains
                       SMAT,NB,NB,1,IPQTOQ(1,0),      &
                       AMAT,NREF,NREF,4,IPQTOQ(1,0),  &
                       RCOEF,NB,NREF,4,IPQTOQ(1,0),   &
-                      RCOEF,NB,NREF,4,IPQTOQ(1,0),IPRPRJ)
+                      RCOEF,NB,NREF,4,IPQTOQ(1,0),VAR%IPRPRJ)
 
 !       Print overlaps
 
@@ -640,10 +672,10 @@ contains
            DO J = 1,NREFS
               KOFF = 1
               DO I = 1,(J-1)
-                 WRITE(VAR%LUPRI,'(A,2(3X,A6))') '*Overlaps :',REFFIL(I),REFFIL(J)
+                 WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',REFFIL(I),REFFIL(J)
                  CALL PRQMAT(AMAT(KOFF,JOFF,1),                  &
                       NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,4, &
-                      IPQTOQ(1,0),VAR%LUPRI)
+                      IPQTOQ(1,0),LUPRI)
                  KOFF = KOFF + NSTR(IFRP,0,I)
               ENDDO
               JOFF = JOFF + NSTR(IFRP,0,J)
@@ -659,9 +691,9 @@ contains
         CALL QCHOLS(AMAT,NREF,NEFF,NMOL,4,NREF,NREF,SMAT,BVEC, &
              NREF,NMOL,BVEC,NREF,NMOL,JOB,IPIVOT,SMAT(1+NREF))
         IF(NEFF.LT.NREF) THEN
-          WRITE(VAR%LUPRI,'(A,A)') '* WARNING: ', &
+          WRITE(LUPRI,'(A,A)') '* WARNING: ', &
            ' linear dependencies detected in Cholesky decomposition'
-          WRITE(VAR%LUPRI,'(11X,A,I5,A,I5)') ' Reduced dimensionality: ',NREF,' --> ',NEFF
+          WRITE(LUPRI,'(11X,A,I5,A,I5)') ' Reduced dimensionality: ',NREF,' --> ',NEFF
         ENDIF
 
 !       Restore overlap matrix
@@ -674,7 +706,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NFNUC,DINVM)
+  SUBROUTINE ORBLO1(SMAT,SCOEF,PMAT,NBL,NBS,NI,NUCDEP,NFNUC,DINVM)
 !***********************************************************************
 !
 !     Written by S.Dubillard Jan 21 2004
@@ -689,18 +721,13 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NBL, NBS, NI
+      INTEGER*4 :: NBL, NBS, NI, NUCDEP
       REAL*8    :: DINVM
       INTEGER*4 :: NFNUC(*)
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-
       ! Internal variables
-      INTEGER*4 :: I, J, IZ, NB, IOFFL, IOFFS
+      INTEGER*4 :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
       INTEGER*4 :: IPQTOQ(4,0:7)
       REAL*8    :: DINV, QLOC2, DLOC
 
@@ -713,6 +740,7 @@ contains
 
       NB = NBL + NBS
 
+      LUPRI       = VAR%LUPRI
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
 
 ! Memory allocation for the matrix W = Sc
@@ -734,11 +762,11 @@ contains
       ENDIF
 
       IF(LOC%IPRLOC.GE.5) THEN
-         WRITE(VAR%LUPRI,'(/A)') '* WL matrix :'
-         CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),VAR%LUPRI)
+         WRITE(LUPRI,'(/A)') '* WL matrix :'
+         CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
          IF(.NOT.VAR%TWOCOMPBSS) THEN
-            WRITE(VAR%LUPRI,'(/A)') '* WS matrix :'
-            CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),VAR%LUPRI)
+            WRITE(LUPRI,'(/A)') '* WS matrix :'
+            CALL PRQMAT(WSMAT,NBS,NI,NBS,NI,4,IPQTOQ(1,0),LUPRI)
          ENDIF
       ENDIF
 
@@ -772,16 +800,16 @@ contains
 !
       IF(LOC%IPRLOC.GE.1) THEN
          DO I = 1,NUCDEP
-            WRITE(VAR%LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
-            WRITE(VAR%LUPRI,'(A)') '  ============================'
-            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),VAR%LUPRI)
+            WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
+            WRITE(LUPRI,'(A)') '  ============================'
+            CALL PRQMAT(PMAT(1,1,1,I),NI,NI,NI,NI,4,IPQTOQ(1,0),LUPRI)
          ENDDO
       ENDIF
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(VAR%LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(VAR%LUPRI,'(A)')  '  ===================================  '
+      WRITE(LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
+      WRITE(LUPRI,'(A)')  '  ===================================  '
       DINV = D0
       DO I = 1,NI
          QLOC2 = D0
@@ -790,11 +818,11 @@ contains
          ENDDO
          DLOC = D1/QLOC2
          DINV = DINV + QLOC2
-         WRITE(VAR%LUPRI,'(A,I3,A,F7.4)') &
+         WRITE(LUPRI,'(A,I3,A,F7.4)') &
          '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
       ENDDO
       DINVM = DINV/NI
-      WRITE(VAR%LUPRI,'(/A,F15.13)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/A,F15.13)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -829,13 +857,14 @@ contains
   real*8, dimension(:,:,:)   ::  xkappa, hmat
   real*8, dimension(:,:,:,:) ::  pmat
 
-  integer*4 :: i, j, k, iz, nucdep, ni, ndim
+  integer*4 :: i, j, k, iz, nucdep, ni, ndim, lupri
   real*8    :: pii, pjj, pn2, dnrm2, gradient
 
   !------------------------------------------------------------------------------!
   call qenter('orblo2')
 
   ! Get some dimensions
+  lupri  = var%lupri
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
 
@@ -881,16 +910,16 @@ contains
     enddo
   enddo
 
-! write(var%lupri,*)
-! write(var%lupri,'(a)') 'Print diagonal of hmat'
+! write(lupri,*)
+! write(lupri,'(a)') 'Print diagonal of hmat'
 ! do j=1,ni
 !   do i=j,ni
-!     write(var%lupri,'(15f10.5)') d4*hmat(i,j,1)
+!     write(lupri,'(15f10.5)') d4*hmat(i,j,1)
 !   enddo
 ! enddo
 ! do j=1,ni
 !   do i=j,ni
-!     write(var%lupri,'(15f10.5)') d4*hmat(i,j,2)
+!     write(lupri,'(15f10.5)') d4*hmat(i,j,2)
 !   enddo
 ! enddo
 ! stop
@@ -911,23 +940,23 @@ contains
   enddo
 
   do iz=1,4
-    write(var%lupri,*)
-    write(var%lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
+    write(lupri,*)
+    write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
     do j=1,ni
-      write(var%lupri,'(i4,10es9.1)') j,(xkappa(j,k,1),k=1,ni)
+      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,1),k=1,ni)
     enddo
   enddo
 
   ! Print some kappa matrix
   if(loc%iprloc .ge. 5) then
-     write (var%lupri,'(/a)') '* KAPPA matrix :'
-     call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),var%lupri)
+     write (lupri,'(/a)') '* KAPPA matrix :'
+     call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
   endif
 
   ! Norm of the gradient
   ndim = ni*ni*4
   xnrm = dnrm2(ndim,xkappa,1)
-  write (var%lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
+  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
 
   call qexit('orblo2')
 
@@ -936,7 +965,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLO4(INDNAO,NFNUC)
+  SUBROUTINE ORBLO4(INDNAO,NFNUC,NUCDEP)
 !***********************************************************************
 !
 !     Written by S.Dubillard Jan 21 2004
@@ -950,12 +979,8 @@ contains
       IMPLICIT NONE
 
       ! External variables
+      INTEGER*4 :: NUCDEP
       INTEGER*4 :: INDNAO(2,*), NFNUC(2*NUCDEP)
-
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
 
       ! Internal variables
       INTEGER*4 :: IFRP, I
@@ -994,11 +1019,6 @@ contains
       ! External variables
       INTEGER*4 :: NB, NI, NO
       REAL*8    :: SCOEF(NB,NI,4)
-
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
 
       ! Internal variables
       INTEGER*4 :: I, J, K, L
@@ -1077,8 +1097,6 @@ contains
       INTEGER*4 :: NBASI, NORBI, NZ, NORBT, IP(4)
       REAL*8    :: CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ)
 
-#include "thrzer.h"
-
       ! Internal variables
       REAL*8, PARAMETER :: D1 = 1.00D00, D0 = 0.00D00, DM1 = -D1
       REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
@@ -1086,7 +1104,7 @@ contains
 
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 
-      INTEGER*4 :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX
+      INTEGER*4 :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI
       REAL*8    :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
       REAL*8    :: ABS, SQRT, COS, SIN
 
@@ -1094,6 +1112,8 @@ contains
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ROTCMO_MOD')
+
+      LUPRI  = VAR%LUPRI
 
       CALL GETTIM(CPU1,WALL1)
       IF (LOC%IPRLOC .GE. 5) CALL HEADER('Output from ROTCMO_MOD',-1)
@@ -1117,7 +1137,7 @@ contains
 
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: -kappa^2',-1)
-         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Diagonalize -\kappa^2
@@ -1127,9 +1147,9 @@ contains
                    REIG,1,RV,NORBI,NORBI,IERR)
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: V matrix (eigenvector)',-1)
-         CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
          CALL HEADER('ROTCMO_MOD: eigenvalues',-1)
-         CALL PRQMAT(REIG,1,NORBI,1,NORBI,1,IP,VAR%LUPRI)
+         CALL PRQMAT(REIG,1,NORBI,1,NORBI,1,IP,LUPRI)
       END IF
 
 !     Make cos(d) and sin(d)/d ; d = sqrt(eigenvalues)
@@ -1142,7 +1162,7 @@ contains
          IADDR = (I-1) + (I-1)*NORBI
          EIG = REIG(I)
          IF (EIG .LT. D0) THEN
-            IF (LOC%IPRLOC .GE. 3 .AND. ABS(EIG).GT. THRZER) WRITE(VAR%LUPRI,9010) EIG
+            IF (LOC%IPRLOC .GE. 3 .AND. ABS(EIG).GT. VAR%THRZER) WRITE(LUPRI,9010) EIG
             EIG = D0
             REIG(I)   = D0
          END IF
@@ -1163,9 +1183,9 @@ contains
       END DO
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: sin(d)/d',-1)
-         CALL PRQMAT(RSIN,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RSIN,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
          CALL HEADER('ROTCMO_MOD: cos(d)',-1)
-         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
       CALL GETTIM(CPU3,WALL3)
  9010 FORMAT('WARNING from ROTCMO_MOD: Negative eigenvalue ',1P,D15.6)
@@ -1181,7 +1201,7 @@ contains
                     RV,NORBI,NORBI,NZ,IP,LOC%IPRLOC)
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: V cos(d) V^{dagger}',-1)
-         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Make V sin(d)/d V^{\dagger}
@@ -1195,7 +1215,7 @@ contains
                     RV,NORBI,NORBI,NZ,IP,LOC%IPRLOC)
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: V sin(d)/d V^{dagger}',-1)
-         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Make V cos(d) V^{\dagger} - V sin(d)/d V^{\dagger} \kappa
@@ -1207,7 +1227,7 @@ contains
                  D1,IP,RTMP,NORBI,NORBI,NZ)
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: exp(-kappa)',-1)
-         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 
 !     Check if unitary
@@ -1238,9 +1258,9 @@ contains
          IOFF = IOFF + 1
       END DO
       END DO
-      IF (D_MAX .GT. THRZER) THEN
-         WRITE(VAR%LUPRI,*) 'ROTCMO_MOD: maximum deviation from unitary matrix'
-         WRITE(VAR%LUPRI,*) 'Element ',J_MAX,I_MAX,' value :',D_MAX
+      IF (D_MAX .GT. VAR%THRZER) THEN
+         WRITE(LUPRI,*) 'ROTCMO_MOD: maximum deviation from unitary matrix'
+         WRITE(LUPRI,*) 'Element ',J_MAX,I_MAX,' value :',D_MAX
       END IF
 
 !     Calculate new orbitals: CMO_{old} exp(-kappa)
@@ -1248,7 +1268,7 @@ contains
 
       IF (LOC%IPRLOC .GE. 10) THEN
          CALL HEADER('ROTCMO_MOD: old orbitals',-1)
-         CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
 !SK   CALL DZERO(RCOS,NORBXQ)
       CALL QGEMM(NBASI,NORBI,NORBI,D1,           &
@@ -1258,16 +1278,16 @@ contains
       CALL DCOPY(NBASI*NORBI*NZ,RCOS,1,CMO,1)
       IF (LOC%IPRLOC .GE. 5) THEN
          CALL HEADER('ROTCMO_MOD: new orbitals',-1)
-         CALL PRQMAT(cmo,NBASI,NORBI,NBASI,NORBI,NZ,IP,VAR%LUPRI)
+         CALL PRQMAT(cmo,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
       CALL GETTIM(CPU4,WALL4)
       IF (LOC%IPRLOC .GE. 2) THEN
          CPUTID = SECTID(CPU4-CPU1)
          WALLTID = SECTID(WALL4-WALL1)
-         WRITE(VAR%LUPRI,9020) CPUTID,WALLTID
+         WRITE(LUPRI,9020) CPUTID,WALLTID
          CPUTID = SECTID(CPU3-CPU2)
          WALLTID = SECTID(WALL3-WALL2)
-         WRITE(VAR%LUPRI,9021) CPUTID,WALLTID
+         WRITE(LUPRI,9021) CPUTID,WALLTID
       END IF
  9020 FORMAT(/'ROTCMO_MOD: total CPU (WALL) time       : ',A12,' (',A12,')')
  9021 FORMAT( 'ROTCMO_MOD: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
@@ -1308,11 +1328,12 @@ contains
   real*8 :: pij2, pkl2, pjl2, pki2, pil2, pkj2
   real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond
 
-  integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12
+  integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
   !------------------------------------------------------------------------------!
   call qenter('geth')
 
+  lupri = var%lupri
   hmat(:,:,:) = d0
 
   ! Get some dimensions
@@ -1407,18 +1428,18 @@ contains
     enddo
   enddo
 
-  write(var%lupri,*)
-  write(var%lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
+  write(lupri,*)
+  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
   do j=1,ni12
-    write(var%lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-! write(var%lupri,*)
-! write(var%lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
+! write(lupri,*)
+! write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
 ! do j=1,ni12
-!   write(var%lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+!   write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
 ! enddo
-  write(var%lupri,*) 'Sum of diagonal vs non-diagonal elements of A_uu (in absolute value):'
-  write(var%lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
+  write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_uu (in absolute value):'
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
 
   !  d^2 G / dK_ij dK_kl
   sumnond = d0
@@ -1498,21 +1519,21 @@ contains
     enddo
   enddo
 
-  write(var%lupri,*)
-  write(var%lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
+  write(lupri,*)
+  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
   do j=ni12+1, ndimh
-    write(var%lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-! write(var%lupri,*)
-! write(var%lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
+! write(lupri,*)
+! write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
 ! do j=ni12+1, ndimh
-!   write(var%lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+!   write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
 ! enddo
-  write(var%lupri,*) 'Sum of elements of B_uu (in absolute value):'
-  write(var%lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumnond
+  write(lupri,*) 'Sum of elements of B_uu (in absolute value):'
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumnond
 
-! write(var%lupri,'(a)') 'Print diagonal hmat (geth)'
-! write(var%lupri,'(15f10.5)') (hmat(i+ni12,i,1),i=1,ni12)
+! write(lupri,'(a)') 'Print diagonal hmat (geth)'
+! write(lupri,'(15f10.5)') (hmat(i+ni12,i,1),i=1,ni12)
 
   call qexit('geth')
 
