@@ -14,10 +14,10 @@ end type localization_flags
 type :: external_variales
   integer*4 :: lupri, lucoef
   integer*4 :: nfbas(2,0:2), n2bbasx, n2bbasxq
-  integer*4 :: nish(2), norb(2), npsh(2), nesh(2)
-  integer*4 :: norbt
+  integer*4 :: nish(2), norb(2), npsh(2), nesh(2), norbt
   real*8    :: ssmtrc
   logical   :: twocompbss, levyle
+  integer*4 :: nz, ipqtoq(4,0:7)
 end type external_variales
 
 type( localization_flags ), private :: loc
@@ -31,18 +31,16 @@ contains
   !==============================================================================!
   implicit none
 
-  ! External variables
-  integer*4 :: iprloc, itrloc
-  real*8    :: thrloc, hesthr
-
+#include "dcbloc.h"
 #include "priunit.h"
 #include "dcbgen.h"
-#include "dcbloc.h"
-#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
 
   !------------------------------------------------------------------------------!
+  ! dcbloc.h
   loc%iprloc = iprloc
   loc%itrloc = itrloc
   loc%thrloc = thrloc
@@ -50,20 +48,27 @@ contains
   loc%prjloc = prjloc
   loc%hesloc = hesloc
   loc%auto   = auto
-
+  ! priunit.h
   var%lupri      = lupri
+  ! dcbgen.h
   var%lucoef     = lucoef
+  ! dcbbas.h
   var%nfbas      = nfbas
   var%n2bbasx    = n2bbasx
   var%n2bbasxq   = n2bbasxq
+  ! dcborb.h
   var%nish       = nish
   var%norb       = norb
   var%npsh       = npsh
   var%nesh       = nesh
   var%norbt      = norbt
+  ! dcbham.h
   var%ssmtrc     = ssmtrc
   var%twocompbss = twocompbss
   var%levyle     = levyle
+  ! dgroup.h
+  var%ipqtoq     = ipqtoq
+  var%nz         = nz
 
   !------------------------------------------------------------------------------!
   end subroutine initialize_localization
@@ -86,7 +91,6 @@ contains
       ! External variables
 
 #include "maxorb.h"
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -100,6 +104,7 @@ contains
       LOGICAL   :: TOBE,FLAG
 
       INTEGER*4 :: IFRP, NISH12, IDUM, ITR, NISH, NORB, NFBAS(0:2)
+      INTEGER*4 :: IPQTOQ(4,0:7)
 
       REAL*8    :: TOTERG, DINVMO, DINVM, XNRM, DIFF, DIFFA
       REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
@@ -114,7 +119,9 @@ contains
       IFRP = 1
       NISH = VAR%NISH(IFRP)
       NORB = VAR%NORB(IFRP)
-      NFBAS(:) = VAR%NFBAS(IFRP,:)
+
+      NFBAS(:)    = VAR%NFBAS(IFRP,:)
+      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
 
       CALL TITLER('Molecular orbital localization','*',122)
 
@@ -322,7 +329,6 @@ contains
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
 #include "dcbprj.h"
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -334,7 +340,7 @@ contains
 
       INTEGER*4 :: I, J, K, IZ, IER, KFRSAV, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, KBUF, NMOL
       INTEGER*4 :: IVEC, JOFF, NREF, N2REF, NPSH, NESH, NORB
-      INTEGER*4 :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2)
+      INTEGER*4 :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2), IPQTOQ(4,0:7)
 
       REAL*8    :: DDUMARR(2), DINV, QLOC2, DLOC
 
@@ -352,6 +358,7 @@ contains
       NPSH = VAR%NPSH(IFRP)
       NESH = VAR%NESH(IFRP)
       NORB = VAR%NORB(IFRP)
+      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
 
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
@@ -589,13 +596,14 @@ contains
       INTEGER*4 :: JMOL(*), JREF(3,*), NSTR(2,0:2,0:MAXREF), IPIVOT(*)
       REAL*8    :: SMAT(*), SCOEF(*), RCOEF(*), AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4), GVEC(*)
 
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 
       ! Internal variables
       INTEGER*4 :: I, J, IFRP, KFRSAV, JOFF, KOFF, JOB, NEFF
+      INTEGER*4 :: IPQTOQ(4,0:7)
+
       REAL*8    :: PTOL
       REAL*8, PARAMETER :: D0=0.0D0, DC=1.0D-2, D2=2.0D0
 
@@ -606,6 +614,7 @@ contains
       KFRSAV = KFREE
       DOPOP = NREFS.GT.1
       PTOL = PROTHR*DC
+      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
 
 !     Make projection vector
 
@@ -657,7 +666,7 @@ contains
 
 !       Restore overlap matrix
 
-        CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
+        CALL QHMRST(AMAT,NREF,VAR%NZ,NREF,NREF)
       ENDIF
 
       END SUBROUTINE ORBLP2
@@ -686,13 +695,13 @@ contains
       REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
 
 #include "maxorb.h"
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 
       ! Internal variables
       INTEGER*4 :: I, J, IZ, NB, IOFFL, IOFFS
+      INTEGER*4 :: IPQTOQ(4,0:7)
       REAL*8    :: DINV, QLOC2, DLOC
 
       REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
@@ -703,6 +712,8 @@ contains
       CALL QENTER('ORBLO1')
 
       NB = NBL + NBS
+
+      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
 
 ! Memory allocation for the matrix W = Sc
 
@@ -942,7 +953,6 @@ contains
       INTEGER*4 :: INDNAO(2,*), NFNUC(2*NUCDEP)
 
 #include "maxorb.h"
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -986,7 +996,6 @@ contains
       REAL*8    :: SCOEF(NB,NI,4)
 
 #include "maxorb.h"
-#include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -1023,7 +1032,7 @@ contains
       ENDDO
       IF (LOC%IPRLOC .GE. 5) THEN
          WRITE(VAR%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
-         CALL PRQMAT(CMO,NB,NO,NB,NO,4,IPQTOQ(1,0),VAR%LUPRI)
+         CALL PRQMAT(CMO,NB,NO,NB,NO,4,VAR%IPQTOQ(1,0),VAR%LUPRI)
       ENDIF
 
       ! write MO to file and close him
