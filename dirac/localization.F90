@@ -3,7 +3,8 @@ implicit none
 
 public :: ORBLOC, initialize_localization
 
-private :: ORBLP1, ORBLP2, ORBLO1, orblo2, ORBLO4, ORBLO5, ROTCMO_MOD, geth
+private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
+private :: getk_diag, get_hessian, get_gradient
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
@@ -138,9 +139,11 @@ contains
       REAL*8    :: TOTERG, DINVMO, DINVM, XNRM, DIFF, DIFFA
       REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
 
-      INTEGER*4, ALLOCATABLE, DIMENSION(:) :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
-      REAL*8,    ALLOCATABLE, DIMENSION(:) :: SCOEF, SCOEFO, SMAT, CMO
-      REAL*8,    ALLOCATABLE :: PMAT(:,:,:,:), XKAPPA(:,:,:), HMAT(:,:,:)
+      INTEGER*4, ALLOCATABLE, DIMENSION(:)       :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
+      REAL*8,    ALLOCATABLE, DIMENSION(:)       :: SCOEF, SCOEFO, SMAT, CMO
+      REAL*8,    ALLOCATABLE, DIMENSION(:,:)     :: GRADIENT
+      REAL*8,    ALLOCATABLE, DIMENSION(:,:,:)   :: XKAPPA, HMAT
+      REAL*8,    ALLOCATABLE, DIMENSION(:,:,:,:) :: PMAT
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLOC')
@@ -168,18 +171,19 @@ contains
 ! Memory allocation
 
       NISH12 = 4 * ( NISH*NISH + NISH ) / 2
-      CALL ALLOC(SCOEF ,NISH*NFBAS(0)*4,ID='SCOEF IN ORBLOC')
-      CALL ALLOC(SCOEFO,NISH*NFBAS(0)*4,ID='SCOEFO IN ORBLOC')
-      CALL ALLOC(SMAT  ,VAR%N2BBASX,ID='SMAT IN ORBLOC')
-      CALL ALLOC(CMO   ,VAR%N2BBASXQ,ID='CMO IN ORBLOC')
-      CALL ALLOC(HMAT  ,NISH12,NISH12,2,ID='HMAT IN ORBLOC')
-      CALL ALLOC(XKAPPA,NISH,NISH,4,ID='XKAPPA IN ORBLOC')
-      CALL ALLOC(PMAT  ,NISH,NISH,4,NUCDEP,ID='PMAT IN ORBLOC')
+      CALL ALLOC(SCOEF   ,NISH*NFBAS(0)*4,   ID='SCOEF    IN ORBLOC')
+      CALL ALLOC(SCOEFO  ,NISH*NFBAS(0)*4,   ID='SCOEFO   IN ORBLOC')
+      CALL ALLOC(SMAT    ,VAR%N2BBASX,       ID='SMAT     IN ORBLOC')
+      CALL ALLOC(CMO     ,VAR%N2BBASXQ,      ID='CMO      IN ORBLOC')
+      CALL ALLOC(HMAT    ,NISH12,NISH12,2,   ID='HMAT     IN ORBLOC')
+      CALL ALLOC(GRADIENT,NISH12,4,          ID='GRADIENT IN ORBLOC')
+      CALL ALLOC(XKAPPA  ,NISH,NISH,4,       ID='XKAPPA   IN ORBLOC')
+      CALL ALLOC(PMAT    ,NISH,NISH,4,NUCDEP,ID='PMAT     IN ORBLOC')
 
-      CALL ALLOC(NFNUC ,2*NUCDEP,ID='NFNUC IN ORBLOC')
-      CALL ALLOC(ISEL  ,NISH,ID='ISEL IN ORBLOC')
-      CALL ALLOC(INDAO ,NFBAS(0),ID='INDAO IN ORBLOC')
-      CALL ALLOC(INDAOS,NFBAS(0),ID='INDAOS IN ORBLOC')
+      CALL ALLOC(NFNUC ,2*NUCDEP,  ID='NFNUC  IN ORBLOC')
+      CALL ALLOC(ISEL  ,NISH,      ID='ISEL   IN ORBLOC')
+      CALL ALLOC(INDAO ,NFBAS(0),  ID='INDAO  IN ORBLOC')
+      CALL ALLOC(INDAOS,NFBAS(0),  ID='INDAOS IN ORBLOC')
       CALL ALLOC(INDNAO,2*NUCDEP+2,ID='INDNAO IN ORBLOC')
 
 ! Read coefficients
@@ -237,8 +241,9 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL GETH(PMAT,HMAT)
-        CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
+        CALL GET_HESSIAN(PMAT,HMAT)
+        CALL GET_GRADIENT(PMAT,GRADIENT)
+        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
@@ -283,7 +288,7 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL ORBLO2(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
+        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
         CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
@@ -323,19 +328,20 @@ contains
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      CALL DEALLOC(SCOEF ,ID='SCOEF  IN ORBLOC')
-      CALL DEALLOC(SCOEFO,ID='SCOEFO IN ORBLOC')
-      CALL DEALLOC(SMAT  ,ID='SMAT   IN ORBLOC')
-      CALL DEALLOC(PMAT  ,ID='PMAT   IN ORBLOC')
-      CALL DEALLOC(XKAPPA,ID='XKAPPA IN ORBLOC')
-      CALL DEALLOC(HMAT  ,ID='HMAT   IN ORBLOC')
-      CALL DEALLOC(CMO   ,ID='CMO    IN ORBLOC')
+      CALL DEALLOC(SCOEF   ,ID='SCOEF    IN ORBLOC')
+      CALL DEALLOC(SCOEFO  ,ID='SCOEFO   IN ORBLOC')
+      CALL DEALLOC(SMAT    ,ID='SMAT     IN ORBLOC')
+      CALL DEALLOC(PMAT    ,ID='PMAT     IN ORBLOC')
+      CALL DEALLOC(XKAPPA  ,ID='XKAPPA   IN ORBLOC')
+      CALL DEALLOC(HMAT    ,ID='HMAT     IN ORBLOC')
+      CALL DEALLOC(GRADIENT,ID='GRADIENT IN ORBLOC')
+      CALL DEALLOC(CMO     ,ID='CMO      IN ORBLOC')
 
-      CALL DEALLOC(NFNUC ,ID='NFNUC  IN ORBLOC')
-      CALL DEALLOC(ISEL  ,ID='ISEL   IN ORBLOC')
-      CALL DEALLOC(INDAO ,ID='INDAO  IN ORBLOC')
-      CALL DEALLOC(INDAOS,ID='INDAOS IN ORBLOC')
-      CALL DEALLOC(INDNAO,ID='INDNAO IN ORBLOC')
+      CALL DEALLOC(NFNUC   ,ID='NFNUC    IN ORBLOC')
+      CALL DEALLOC(ISEL    ,ID='ISEL     IN ORBLOC')
+      CALL DEALLOC(INDAO   ,ID='INDAO    IN ORBLOC')
+      CALL DEALLOC(INDAOS  ,ID='INDAOS   IN ORBLOC')
+      CALL DEALLOC(INDNAO  ,ID='INDNAO   IN ORBLOC')
 
       CALL QEXIT('ORBLOC')
 
@@ -837,7 +843,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine orblo2(pmat,xkappa,hmat,xnrm,flag,ipqtoq)
+  subroutine getk_diag(pmat,xkappa,hmat,xnrm,flag,ipqtoq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
@@ -861,7 +867,7 @@ contains
   real*8    :: pii, pjj, pn2, dnrm2, gradient
 
   !------------------------------------------------------------------------------!
-  call qenter('orblo2')
+  call qenter('getk_diag')
 
   ! Get some dimensions
   lupri  = var%lupri
@@ -944,9 +950,9 @@ contains
   xnrm = dnrm2(ndim,xkappa,1)
   write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
 
-  call qexit('orblo2')
+  call qexit('getk_diag')
 
-  end subroutine orblo2
+  end subroutine getk_diag
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1291,7 +1297,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine geth(pmat,hmat)
+  subroutine get_hessian(pmat,hmat)
   !******************************************************************************!
   !                                                                              !
   !  Construction of full hessian                                                !
@@ -1317,7 +1323,7 @@ contains
   integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
   !------------------------------------------------------------------------------!
-  call qenter('geth')
+  call qenter('get_hessian')
 
   lupri = var%lupri
   hmat(:,:,:) = d0
@@ -1991,8 +1997,65 @@ contains
     enddo
   enddo
 
-  call qexit('geth')
+  call qexit('get_hessian')
 
-  end subroutine geth
+  end subroutine get_hessian
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine get_gradient(pmat,gradient)
+  !******************************************************************************!
+  !                                                                              !
+  !  Construction of gradient                                                    !
+  !                                                                              ! 
+  !     HMAT         A = d^2 G / dK* dK     B = d^2 G / dK dK          K         !
+  !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
+  !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
+  !                                                                              ! 
+  !******************************************************************************!
+  implicit none
+
+  ! External variables
+  real*8, dimension(:,:)     ::  gradient
+  real*8, dimension(:,:,:,:) ::  pmat
+
+  ! Internal variables
+  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
+
+  real*8 :: pij1, pij2, pii, pjj
+
+  integer*4 :: i, j, k, iz, ij, nucdep, ni, ndimg, ni12, lupri
+
+  !------------------------------------------------------------------------------!
+  call qenter('get_gradient')
+
+  lupri = var%lupri
+  gradient(:,:) = d0
+
+  ! Get some dimensions
+  nucdep = size(pmat,4)
+  ni     = size(pmat,1)
+  ndimg  = size(gradient,1)
+  ni12   = ndimg / 4
+
+  !------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------!
+  do iz = 1,2
+    ij = 0
+    do j=1,ni
+      do i=j,ni
+        ij = ij + 1
+        if(i==j) cycle
+        do k = 1,nucdep
+          pij1 = pmat(i,j,1,k); pij2 = pmat(i,j,2,k)
+        enddo
+      enddo
+    enddo
+  enddo
+
+  call qexit('get_gradient')
+
+  end subroutine get_gradient
 
 end module localization
