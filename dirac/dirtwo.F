@@ -107,7 +107,7 @@ C
      &                  IPQTOQ(1,IREP),LUPRI)
           ENDIF
         ENDIF
-        CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
+        IF(.NOT.MDIRAC)CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
       ENDDO
 C
 C     ===========================
