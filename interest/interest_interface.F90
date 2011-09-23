@@ -545,7 +545,7 @@ CONTAINS
        G(:,:)=0.0d0
        do j=1,ncol
          do i=1,nrow
-           P(i,j) = Pmat(i,j,1)  !Re(A,LL)
+           P(i,j) = 0.5d0*Pmat(i,j,1)  !Re(A,LL)
          enddo
        enddo
     !> end
