@@ -1,0 +1,1732 @@
+DIRAC pam run in /Users/visscher/sources/dum/Dirac/test/xyz_input
+DIRAC serial starts by allocating 52428800 words (400 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsoe,            Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linkoeing University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe,            Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsoe,            Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ 
+ 
+Compilation info
+----------------
+ 
+ System                   | Darwin-10.8.0
+ Processor                | i386
+ Internal math            | OFF
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ XCFun                    | ON
+ Fortran compiler         | /opt/intel/Compiler/11.1/067/bin/intel64/ifort
+ Fortran compiler version | ifort (IFORT) 11.1 20090827
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -Qop
+                          | tion,ld,-w -O3 -ip
+ C compiler               | /opt/intel/Compiler/11.1/067/bin/intel64/icc
+ C compiler version       | icc (ICC) 11.1 20090827
+ C flags                  | -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -
+                          | g -O2
+ BLAS                     | /usr/lib/libatlas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Configuration time       | 2011-09-24 12:02:31.385815
+ Last commit rev          | 73f2e511f049b65450b5f5112570567b30548601
+ Last commit author       | Lucas Visscher 
+ Last commit time         | Sat Sep 24 10:55:37 2011 +0200
+
+
+Execution time and host
+-----------------------
+
+ 
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.TITLE                                                                                              
+Testing xyz-reader with ghost centers and point charges (this requires nosym)                       
+.WAVE FUNCTION                                                                                      
+.ANALYZE                                                                                            
+**HAMILTONIAN                                                                                       
+.X2C                                                                                                
+.SPINFREE                                                                                           
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+**MOLECULE                                                                                          
+*SYMMETRY                                                                                           
+.NOSYM                                                                                              
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+cc-pVDZ                                                                                             
+.SPECIAL                                                                                            
+O.PC NOBASIS                                                                                        
+.SPECIAL                                                                                            
+H.PC NOBASIS                                                                                        
+.SPECIAL                                                                                            
+O.GH EXPLICIT                                                                                       
+    3   1   1   1                                                                                   
+    9    0    3                                                                                     
+  11720.0000000                                                                                     
+   1759.0000000                                                                                     
+    400.8000000                                                                                     
+    113.7000000                                                                                     
+     37.0300000                                                                                     
+     13.2700000                                                                                     
+      5.0250000                                                                                     
+      1.0130000                                                                                     
+      0.3023000                                                                                     
+    4    0    3                                                                                     
+     17.7000000                                                                                     
+      3.8540000                                                                                     
+      1.0460000                                                                                     
+      0.2753000                                                                                     
+    1    0    3                                                                                     
+      1.1850000                                                                                     
+        1.    1                                                                                     
+.SPECIAL                                                                                            
+H.GH EXPLICIT                                                                                       
+    2   1   1                                                                                       
+    4    0    3                                                                                     
+     13.0100000                                                                                     
+      1.9620000                                                                                     
+      0.4446000                                                                                     
+      0.1220000                                                                                     
+    1    0    3                                                                                     
+      0.7270000                                                                                     
+*CENTERS                                                                                            
+.NUCLEUS                                                                                            
+O.GH 0.0                                                                                            
+.NUCLEUS                                                                                            
+H.GH 0.0                                                                                            
+.NUCLEUS                                                                                            
+O.PC -0.6                                                                                           
+.NUCLEUS                                                                                            
+H.PC  0.3                                                                                           
+**ANALYSIS                                                                                          
+.MULPOP                                                                                             
+*END OF                                                                                             
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+18                                                                                                  
+Methanol in water, demonstrating ghosts and points                                                  
+C      -0.000000010000       0.138569980000       0.355570700000   b=Solute                         
+O      -0.000000010000       0.187935770000      -1.074466460000   b=Solute                         
+H       0.882876920000      -0.383123830000       0.697839450000   b=Solute                         
+H      -0.882876940000      -0.383123830000       0.697839450000   b=Solute                         
+H      -0.000000010000       1.145042790000       0.750208830000   b=Solute                         
+H      -0.000000010000      -0.705300580000      -1.426986340000   b=Solute                         
+O.GH   -3.210610000000      -0.001780000000      -1.695770000000   b=Solvent                        
+H.GH   -3.614920000000      -0.714050000000      -2.191180000000   b=Solvent                        
+H.GH   -3.124300000000      -0.346450000000      -0.806960000000   b=Solvent                        
+O.PC            2.1694   -1.4071    1.6399                                                          
+H.PC            1.4375   -0.8985    1.9889                                                          
+H.PC            1.7718   -2.2241    1.3387                                                          
+O.PC            2.5732   -1.0341   -1.7207                                                          
+H.PC            2.4926   -1.9486   -1.9915                                                          
+H.PC            2.1597   -0.5374   -2.4267                                                          
+O.PC            0.1459    3.4195    0.1673                                                          
+H.PC            0.0767    2.4785    0.0062                                                          
+H.PC            0.9079    3.5097    0.7395                                                          
+                                                                                                    
+
+
+    **************************************************************************
+    *********** Testing xyz-reader with ghost centers and point ch ***********
+    **************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Analysis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in two-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+ Coordinates were entered in Angstrom                        
+ Converting to atomic units with conversion factor=   1.88972613392125     
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :   44.907961268507
+  QM-pc interaction energy       :   -4.823953677038
+  pc-pc interaction energy       :   -0.017463776312
+  Total interaction energy       :   40.066543815157
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     7
+  Total number of atoms:   18
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  C           1       6      27      27      L  - [9s4p1d|9s4p1d]                                                
+                              0       0      S  - No small component basis functions attached                    
+  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+                              0       0      S  - No small component basis functions attached                    
+  H           4       1       7       7      L  - [4s1p|4s1p]                                                    
+                              0       0      S  - No small component basis functions attached                    
+  O.GH        1       0      27      27      L  - [9s4p1d|9s4p1d]                                                
+                              0       0      S  - No small component basis functions attached                    
+  H.GH        2       0       7       7      L  - [4s1p|4s1p]                                                    
+                              0       0      S  - No small component basis functions attached                    
+  O.PC        3      -1       0       0      L  - No large component basis functions attached                    
+                              0       0      S  - No small component basis functions attached                    
+  H.PC        6       0       0       0      L  - No large component basis functions attached                    
+                              0       0      S  - No small component basis functions attached                    
+  ----------------------------------------------------------------------
+                            123     123      L  - large components
+                              0       0      S  - small components
+  ----------------------------------------------------------------------
+  total:     18      15     123     123
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2   3
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+  Atom type   4   5
+  Basis set typed explicitly in input file                                        
+
+  Atom type   6   7
+  No basis functions (point charge)                                               
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 54
+
+
+   1   C z      x     -0.0000000189
+   2            y      0.2618593126
+   3            z      0.6719312442
+
+   4   O z      x     -0.0000000189
+   5            y      0.3551471361
+   6            z     -2.0304473495
+
+   7   H z      x      1.6683955888
+   8            y     -0.7239991141
+   9            z      1.3187254459
+
+  10   H z      x     -1.6683956266
+  11            y     -0.7239991141
+  12            z      1.3187254459
+
+  13   H z      x     -0.0000000189
+  14            y      2.1638172847
+  15            z      1.4176892319
+
+  16   H z      x     -0.0000000189
+  17            y     -1.3328249383
+  18            z     -2.6966133794
+
+  19   O.GH     x     -6.0671736228
+  20            y     -0.0033637125
+  21            z     -3.2045408861
+
+  22   H.GH     x     -6.8312087960
+  23            y     -1.3493589459
+  24            z     -4.1407301101
+
+  25   H.GH     x     -5.9040713602
+  26            y     -0.6546956191
+  27            z     -1.5249334010
+
+  28   O.PC     x      4.0995718749
+  29            y     -2.6590336430
+  30            z      3.0989618870
+
+  31   O.PC     x      4.8626432878
+  32            y     -1.9541657951
+  33            z     -3.2516517586
+
+  34   O.PC     x      0.2757110429
+  35            y      6.4619185149
+  36            z      0.3161511822
+
+  37   H.PC     x      2.7164813175
+  38            y     -1.6979189313
+  39            z      3.7584763078
+
+  40   H.PC     x      3.3482167641
+  41            y     -4.2029398945
+  42            z      2.5297763755
+
+  43   H.PC     x      4.7103313614
+  44            y     -3.6823203446
+  45            z     -3.7633895957
+
+  46   H.PC     x      4.0812415314
+  47            y     -1.0155388244
+  48            z     -4.5857984092
+
+  49   H.PC     x      0.1449419945
+  50            y      4.6836862229
+  51            z      0.0117163020
+
+  52   H.PC     x      1.7156823570
+  53            y      6.6323718122
+  54            z      1.3974524760
+
+
+
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+   18
+ 
+C z   -0.0000000100   0.1385699800   0.3555707000
+O z   -0.0000000100   0.1879357700  -1.0744664600
+H z    0.8828769200  -0.3831238300   0.6978394500
+H z   -0.8828769400  -0.3831238300   0.6978394500
+H z   -0.0000000100   1.1450427900   0.7502088300
+H z   -0.0000000100  -0.7053005800  -1.4269863400
+O.GH  -3.2106100000  -0.0017800000  -1.6957700000
+H.GH  -3.6149200000  -0.7140500000  -2.1911800000
+H.GH  -3.1243000000  -0.3464500000  -0.8069600000
+O.PC   2.1694000000  -1.4071000000   1.6399000000
+O.PC   2.5732000000  -1.0341000000  -1.7207000000
+O.PC   0.1459000000   3.4195000000   0.1673000000
+H.PC   1.4375000000  -0.8985000000   1.9889000000
+H.PC   1.7718000000  -2.2241000000   1.3387000000
+H.PC   2.4926000000  -1.9486000000  -1.9915000000
+H.PC   2.1597000000  -0.5374000000  -2.4267000000
+H.PC   0.0767000000   2.4785000000   0.0062000000
+H.PC   0.9079000000   3.5097000000   0.7395000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C z         O z         H z         H z         H z         H z 
+
+   C z     0.000000
+   O z     1.430889    0.000000
+   H z     1.081103    2.060740    0.000000
+   H z     1.081103    2.060740    1.765754    0.000000
+   H z     1.081077    2.060460    1.765646    1.765646    0.000000
+   H z     1.972214    0.960282    2.323393    2.323393    2.857263    0.000000
+   O.GH    3.812573    3.275672    4.757250    3.360525    4.195954    3.297757
+   H.GH    4.503393    3.889508    5.355943    3.989988    5.017533    3.694823
+   H.GH    3.368675    3.180940    4.280565    2.699953    3.796126    3.205379
+   O.PC    2.957177    3.823378    1.895032    3.354460    3.465729    3.821598
+   O.PC    3.508192    2.921018    3.021638    4.268205    4.180360    2.610696
+   O.PC    3.289564    3.465008    3.909547    3.974896    2.352493    4.424592
+   H.PC    2.410329    3.554007    1.496682    2.704921    2.788697    3.711066
+   H.PC    3.112560    3.844550    2.142447    3.293510    3.851846    3.618708
+   H.PC    4.009747    3.408635    3.503494    4.590981    4.827074    2.842099
+   H.PC    3.586401    2.649330    3.378879    4.363923    4.193765    2.385775
+   H.PC    2.367111    2.533852    3.052405    3.096457    1.528902    3.492348
+   H.PC    3.512293    3.892155    3.893127    4.285172    2.532983    4.825368
+
+            O.GH        H.GH        H.GH        O.PC        O.PC        O.PC
+
+   O.GH    0.000000
+   H.GH    0.957197    0.000000
+   H.GH    0.957199    1.513903    0.000000
+   O.PC    6.484298    6.972507    5.927509    0.000000
+   O.PC    5.875267    6.214227    5.811135    3.405263    0.000000
+   O.PC    5.142212    6.065676    5.081906    5.436835    5.412105    0.000000
+   H.PC    5.998819    6.560033    5.378811    0.957159    3.881924    4.861232
+   H.PC    6.242686    6.614912    5.665794    0.957234    3.379093    5.988819
+   H.PC    6.033587    6.234243    5.959831    3.685749    0.957152    6.243710
+   H.PC    5.446226    5.782120    5.529980    4.158570    0.957146    5.142109
+   H.PC    4.455884    5.352468    4.346030    4.705981    4.642527    0.957195
+   H.PC    5.934910    6.847251    5.789652    5.155291    5.428805    0.957180
+
+            H.PC        H.PC        H.PC        H.PC        H.PC        H.PC
+
+   H.PC    0.000000
+   H.PC    1.513847    0.000000
+   H.PC    4.249651    3.418433    0.000000
+   H.PC    4.488818    4.144112    1.513838    0.000000
+   H.PC    4.145721    5.173332    5.424628    4.399266    0.000000
+   H.PC    4.612343    5.829393    6.305765    5.288747    1.513934    0.000000
+
+
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR           -1 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            6  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            8  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER           -1  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER            0  OR            0 
+  ARE UNAVAILABLE 
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    O z        C z                            1.430889
+  bond distance:    H z        C z                            1.081103
+  bond distance:    H z        C z                            1.081103
+  bond distance:    H z        C z                            1.081077
+  bond distance:    H z        O z                            0.960282
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H z        C z        O z                  109.454
+  bond angle:       H z        C z        O z                  109.454
+  bond angle:       H z        C z        H z                  109.501
+  bond angle:       H z        C z        O z                  109.433
+  bond angle:       H z        C z        H z                  109.493
+  bond angle:       H z        C z        H z                  109.493
+  bond angle:       H z        O z        C z                  109.560
+
+
+  Nuclear repulsion energy :   40.084007591469
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   54
+     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L C   1 dxx      6  L C   1 dxy 
+     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L O   1 s       12  L O   1 px  
+    13  L O   1 py      14  L O   1 pz      15  L O   1 dxx     16  L O   1 dxy     17  L O   1 dxz     18  L O   1 dyy 
+    19  L O   1 dyz     20  L O   1 dzz     21  L H   1 s       22  L H   1 px      23  L H   1 py      24  L H   1 pz  
+    25  L H   1 s       26  L H   1 px      27  L H   1 py      28  L H   1 pz      29  L H   1 s       30  L H   1 px  
+    31  L H   1 py      32  L H   1 pz      33  L H   1 s       34  L H   1 px      35  L H   1 py      36  L H   1 pz  
+    37  L O.G 1 s       38  L O.G 1 px      39  L O.G 1 py      40  L O.G 1 pz      41  L O.G 1 dxx     42  L O.G 1 dxy 
+    43  L O.G 1 dxz     44  L O.G 1 dyy     45  L O.G 1 dyz     46  L O.G 1 dzz     47  L H.G 1 s       48  L H.G 1 px  
+    49  L H.G 1 py      50  L H.G 1 pz      51  L H.G 1 s       52  L H.G 1 px      53  L H.G 1 py      54  L H.G 1 pz  
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          123
+  Number of large orbitals in each symmetry:    123
+  Number of small orbitals in each symmetry:      0
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        9 functions:    O  s   
+        4 functions:    O  px  
+        4 functions:    O  py  
+        4 functions:    O  pz  
+        1 functions:    O  dxx 
+        1 functions:    O  dxy 
+        1 functions:    O  dxz 
+        1 functions:    O  dyy 
+        1 functions:    O  dyz 
+        1 functions:    O  dzz 
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        9 functions:    O.Gs   
+        4 functions:    O.Gpx  
+        4 functions:    O.Gpy  
+        4 functions:    O.Gpz  
+        1 functions:    O.Gdxx 
+        1 functions:    O.Gdxy 
+        1 functions:    O.Gdxz 
+        1 functions:    O.Gdyy 
+        1 functions:    O.Gdyz 
+        1 functions:    O.Gdzz 
+        4 functions:    H.Gs   
+        1 functions:    H.Gpx  
+        1 functions:    H.Gpy  
+        1 functions:    H.Gpz  
+        4 functions:    H.Gs   
+        1 functions:    H.Gpx  
+        1 functions:    H.Gpy  
+        1 functions:    H.Gpz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * One-step Infinite-Order Two-component Hamiltonian
+   Reference: 
+    M. Ilias and T. Saue:
+    "Implementation of an infinite-order two-component relativistic Hamiltonian 
+    by a simple one-step transformation." 
+    J. Chem. Phys., 126 (2007) 064102. 
+ * Running in two-component mode
+   with the following modifications:
+   - Spin-orbit interactions neglected
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  18
+   Charge of molecule    =   0
+   i.e. no. of electrons =  18
+===========================================================================
+ SCFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with   18 electrons in
+       9 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+ * NB!!! No e-p rotations in 2nd order optimization.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Analysis module *****************************
+   ***************************************************************************
+
+ Jobs in this run:
+ * Mulliken population analysis
+===========================================================================
+ POPINP: Mulliken population analysis
+===========================================================================
+ * Gross populations
+ * Label definitions based on SO-labels
+ * Number of spinors analyzed:
+    - Orbitals in fermion ircop E1  :   1..   9                                                              
+ * Print level:    0
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+ Coordinates were entered in Angstrom                        
+ Converting to atomic units with conversion factor=   1.88972613392125     
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x     -0.52768747     -1.34126017
+                    y      2.90129765      7.37443132
+                    z    -11.14707134    -28.33329151
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          3(Proj:          3, Lindep:          0)
+   S   A     * Deleted:         27(Proj:         27, Lindep:          0)
+ >>> Time used in Lwdn_a is   0.12 seconds
+
+
+                  *** Output from the EXTR_BSS_INFO routine ***
+                  ---------------------------------------------
+
+  * Transforming the one-electron DIRAC bare nucleus operator.
+  * Order of the Douglas-Kroll-Hess/BSS transformation :...infinite  !
+  * Only the RKB basis (one-step method). No preliminary free-particle basis transformation according to Barysz.
+  * R-equation solving applied : YR-equation 2 (Trond) 
+  * Elimination of spin-orbit terms from the 2comp.Ham.  in RKB/"k" basis (spinfree "AFTER / AT THE END")
+  * AMFI contribution is NOT included.
+  * Prepare the picture-change transformation matrixes
+      - special case - spin-free  
+  * I2COFK parameter for H2c specification set to:1
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+ >>> Time used in mk_bss is   2.65 seconds
+
+  MAKE_H2C: Two-component BSS mode - positronic shells deleted !
+ >>> Time used in mk_h2c is   2.97 seconds
+ Coordinates were entered in Angstrom                        
+ Converting to atomic units with conversion factor=   1.88972613392125     
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x     -0.52768747     -1.34126017
+                    y      2.90129765      7.37443132
+                    z    -11.14707134    -28.33329151
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          3(Proj:          3, Lindep:          0)
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):   120
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):   120
+ >>> Time used in PAMSET is   3.28 seconds
+
+
+ *******************************************************************************
+ ************** Two-component BSS/DKH relativistic HF calculation **************
+ *******************************************************************************
+
+
+  GETH2CAO: asked for 2c Hamiltonian (param.I2COFK=7):H2CAO_LL
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########                           
+
+It.   1     152.7410669703      1.00D+20  0.00D+00  0.00D+00               0.10543203s   Scr. nuclei              
+
+########## START ITERATION NO.   2 ##########                           
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.72%   35.35%    0.14%   48.15%   2.13464499s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.20555186s
+
+########## END ITERATION NO.   2 ##########                           
+
+It.   2    -50.71158566778      2.03D+02 -1.91D+01  5.46D+00               2.20555186s   LL                       
+
+########## START ITERATION NO.   3 ##########                           
+
+    3 *** Differential density matrix. DCOVLP     = 0.0016
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    1.03%   39.22%    0.25%   45.15%   2.10392523s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.13050508s
+
+########## END ITERATION NO.   3 ##########                           
+
+It.   3    -104.3428018102      5.36D+01  9.52D+00  7.65D+00   DIIS   2    2.13050508s   LL                       
+
+########## START ITERATION NO.   4 ##########                           
+
+    4 *** Differential density matrix. DCOVLP     = 0.6521
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    1.19%   40.26%    0.22%   44.30%   2.08815384s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.11602354s
+
+########## END ITERATION NO.   4 ##########                           
+
+It.   4    -112.0584404690      7.72D+00 -1.59D+00  4.06D+00   DIIS   3    2.11602354s   LL                       
+
+########## START ITERATION NO.   5 ##########                           
+
+    5 *** Differential density matrix. DCOVLP     = 0.7259
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    1.36%   41.10%    0.19%   43.60%   2.07664680s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.10508728s
+
+########## END ITERATION NO.   5 ##########                           
+
+It.   5    -114.9076310595      2.85D+00 -1.01D+00  1.70D+00   DIIS   4    2.10508728s   LL                       
+
+########## START ITERATION NO.   6 ##########                           
+
+    6 *** Differential density matrix. DCOVLP     = 0.8418
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    1.31%   41.14%    0.18%   43.59%   2.08286095s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.11173534s
+
+########## END ITERATION NO.   6 ##########                           
+
+It.   6    -115.5861127753      6.78D-01 -8.57D-01  2.45D-01   DIIS   5    2.11173534s   LL                       
+
+########## START ITERATION NO.   7 ##########                           
+
+    7 *** Differential density matrix. DCOVLP     = 0.9865
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    1.77%   44.20%    0.18%   41.14%   2.04875946s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.07841396s
+
+########## END ITERATION NO.   7 ##########                           
+
+It.   7    -115.6002234760      1.41D-02 -1.08D-01  8.79D-02   DIIS   6    2.07841396s   LL                       
+
+########## START ITERATION NO.   8 ##########                           
+
+    8 *** Differential density matrix. DCOVLP     = 1.0014
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    2.23%   46.98%    0.20%   38.91%   2.01769257s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.04697227s
+
+########## END ITERATION NO.   8 ##########                           
+
+It.   8    -115.6019409612      1.72D-03  3.19D-02  2.04D-02   DIIS   7    2.04697227s   LL                       
+
+########## START ITERATION NO.   9 ##########                           
+
+    9 *** Differential density matrix. DCOVLP     = 1.0005
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    2.68%   48.59%    0.20%   37.56%   1.99771118s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 2.02856445s
+
+########## END ITERATION NO.   9 ##########                           
+
+It.   9    -115.6021046074      1.64D-04  5.25D-03  4.63D-03   DIIS   8    2.02856445s   LL                       
+
+########## START ITERATION NO.  10 ##########                           
+
+   10 *** Differential density matrix. DCOVLP     = 1.0002
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    3.54%   51.36%    0.23%   35.22%   1.95234489s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.98364830s
+
+########## END ITERATION NO.  10 ##########                           
+
+It.  10    -115.6021166558      1.20D-05 -1.42D-03  1.08D-03   DIIS   9    1.98364830s   LL                       
+
+########## START ITERATION NO.  11 ##########                           
+
+   11 *** Differential density matrix. DCOVLP     = 1.0001
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    4.29%   54.00%    0.29%   33.05%   1.91289902s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.94371414s
+
+########## END ITERATION NO.  11 ##########                           
+
+It.  11    -115.6021173777      7.22D-07  7.04D-05  2.36D-04   DIIS   9    1.94371414s   LL                       
+
+########## START ITERATION NO.  12 ##########                           
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    5.64%   57.54%    0.40%   30.09%   1.85377312s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.88414383s
+
+########## END ITERATION NO.  12 ##########                           
+
+It.  12    -115.6021174165      3.88D-08  2.54D-05  5.61D-05   DIIS   9    1.88414383s   LL                       
+
+########## START ITERATION NO.  13 ##########                           
+
+   13 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.35%   61.05%    0.46%   27.13%   1.78623390s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.81695175s
+
+########## END ITERATION NO.  13 ##########                           
+
+It.  13    -115.6021174187      2.29D-09  4.00D-06  1.37D-05   DIIS   9    1.81695175s   LL                       
+
+########## START ITERATION NO.  14 ##########                           
+
+   14 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    9.03%   63.90%    0.55%   24.73%   1.73029518s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.76093864s
+
+########## END ITERATION NO.  14 ##########                           
+
+It.  14    -115.6021174189      1.39D-10 -1.62D-06  2.97D-06   DIIS   9    1.76093864s   LL                       
+
+########## START ITERATION NO.  15 ##########                           
+
+   15 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   11.64%   66.68%    0.59%   22.22%   1.64414406s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.67507553s
+
+########## END ITERATION NO.  15 ##########                           
+
+It.  15    -115.6021174189      1.36D-11 -2.40D-07  7.09D-07   DIIS   9    1.67507553s   LL                       
+
+########## START ITERATION NO.  16 ##########                           
+
+   16 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   15.38%   67.62%    0.66%   20.75%   1.54903603s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.58003235s
+
+########## END ITERATION NO.  16 ##########                           
+
+It.  16    -115.6021174189      1.01D-11 -6.93D-08  1.58D-07   DIIS   9    1.58003235s   LL                       
+
+########## START ITERATION NO.  17 ##########                           
+
+   17 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   21.54%   66.85%    0.82%   19.92%   1.40827560s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.42438889s
+
+########## END ITERATION NO.  17 ##########                           
+
+It.  17    -115.6021174189      3.50D-12  2.20D-08  4.07D-08   DIIS   9    1.42438889s   LL                       
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1     152.7410669703      1.00D+20  0.00D+00  0.00D+00               0.10543203s   Scr. nuclei              
+It.   2    -50.71158566778      2.03D+02 -1.91D+01  5.46D+00               2.20555186s   LL                       
+It.   3    -104.3428018102      5.36D+01  9.52D+00  7.65D+00   DIIS   2    2.13050508s   LL                       
+It.   4    -112.0584404690      7.72D+00 -1.59D+00  4.06D+00   DIIS   3    2.11602354s   LL                       
+It.   5    -114.9076310595      2.85D+00 -1.01D+00  1.70D+00   DIIS   4    2.10508728s   LL                       
+It.   6    -115.5861127753      6.78D-01 -8.57D-01  2.45D-01   DIIS   5    2.11173534s   LL                       
+It.   7    -115.6002234760      1.41D-02 -1.08D-01  8.79D-02   DIIS   6    2.07841396s   LL                       
+It.   8    -115.6019409612      1.72D-03  3.19D-02  2.04D-02   DIIS   7    2.04697227s   LL                       
+It.   9    -115.6021046074      1.64D-04  5.25D-03  4.63D-03   DIIS   8    2.02856445s   LL                       
+It.  10    -115.6021166558      1.20D-05 -1.42D-03  1.08D-03   DIIS   9    1.98364830s   LL                       
+It.  11    -115.6021173777      7.22D-07  7.04D-05  2.36D-04   DIIS   9    1.94371414s   LL                       
+It.  12    -115.6021174165      3.88D-08  2.54D-05  5.61D-05   DIIS   9    1.88414383s   LL                       
+It.  13    -115.6021174187      2.29D-09  4.00D-06  1.37D-05   DIIS   9    1.81695175s   LL                       
+It.  14    -115.6021174189      1.39D-10 -1.62D-06  2.97D-06   DIIS   9    1.76093864s   LL                       
+It.  15    -115.6021174189      1.36D-11 -2.40D-07  7.09D-07   DIIS   9    1.67507553s   LL                       
+It.  16    -115.6021174189      1.01D-11 -6.93D-08  1.58D-07   DIIS   9    1.58003235s   LL                       
+It.  17    -115.6021174189      3.50D-12  2.20D-08  4.07D-08   DIIS   9    1.42438889s   LL                       
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   17 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL           :    0.00000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -155.68612501037748
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      40.08400759146898
+
+   Sum of all contributions to the energy
+   Total energy                             :    -115.60211741890851
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Boson symmetry A  
+  * Closed shell, f = 1.0000
+   -20.57551454693  ( 2)      -11.29297910059  ( 2)       -1.35981113520  ( 2)       -0.94457659254  ( 2)       -0.69562123018  ( 2)
+    -0.63128599391  ( 2)       -0.60755925380  ( 2)       -0.51299160292  ( 2)       -0.45623729217  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     0.12273458368  ( 2)        0.18419379802  ( 2)        0.20308566072  ( 2)        0.23187444413  ( 2)        0.26166427460  ( 2)
+     0.29241085721  ( 2)        0.34716368805  ( 2)        0.51154363462  ( 2)        0.53548840398  ( 2)        0.56004174071  ( 2)
+     0.62167110663  ( 2)        0.66456374895  ( 2)        0.70762920258  ( 2)        0.75749314860  ( 2)        0.81407874858  ( 2)
+     0.83107082413  ( 2)        0.85761889318  ( 2)        0.85901729666  ( 2)        0.98313843004  ( 2)        1.06208671554  ( 2)
+     1.08919110614  ( 2)        1.15233429636  ( 2)        1.18561842420  ( 2)        1.22960094014  ( 2)        1.29078522950  ( 2)
+     1.34777993792  ( 2)        1.57302629395  ( 2)        1.62774360486  ( 2)        1.66001709865  ( 2)        1.73248221739  ( 2)
+     1.75246464537  ( 2)        1.82463915868  ( 2)        1.85519480845  ( 2)        1.86057752879  ( 2)        1.89317569503  ( 2)
+     1.93050683546  ( 2)        2.06858305186  ( 2)        2.07228268621  ( 2)        2.21680904543  ( 2)        2.24251805322  ( 2)
+     2.26474892694  ( 2)        2.29150348373  ( 2)        2.34279496299  ( 2)        2.46981300435  ( 2)        2.50560244731  ( 2)
+     2.66925391499  ( 2)        2.67388574266  ( 2)        2.70711841018  ( 2)        2.71731819748  ( 2)        3.10665123104  ( 2)
+     3.22089593801  ( 2)        3.24036669160  ( 2)        3.31024276242  ( 2)        3.38441750932  ( 2)        3.46289074952  ( 2)
+     3.53444307707  ( 2)        3.54344628525  ( 2)        3.62119040131  ( 2)        3.73899003993  ( 2)        3.80923284408  ( 2)
+     4.01802049778  ( 2)        4.39797772352  ( 2)        4.41528137501  ( 2)        4.42479301371  ( 2)        4.43242111306  ( 2)
+     4.44649018243  ( 2)        4.49282567271  ( 2)        4.50812183341  ( 2)        4.72523487914  ( 2)        5.27679500173  ( 2)
+     5.85244690283  ( 2)        6.19378098702  ( 2)        6.50870273391  ( 2)        6.82813404911  ( 2)        8.13938341808  ( 2)
+    10.34662583369  ( 2)       12.31524962835  ( 2)       12.69371585816  ( 2)       12.90779219606  ( 2)       13.22297577987  ( 2)
+    18.54388657452  ( 2)       18.57485450085  ( 2)       18.58995531723  ( 2)       22.26167606309  ( 2)       22.29739930285  ( 2)
+    22.30205118778  ( 2)       22.35120616286  ( 2)       26.70791875712  ( 2)       26.89562445318  ( 2)       33.45801182453  ( 2)
+    33.60052040770  ( 2)       33.81719555436  ( 2)       35.15311760999  ( 2)       35.87450346735  ( 2)       54.64807849554  ( 2)
+    54.88498774349  ( 2)       55.03630914538  ( 2)       61.67044102934  ( 2)      106.12524818436  ( 2)      133.10688200612  ( 2)
+   230.69094486164  ( 2)      320.06275344540  ( 2)      493.28244746140  ( 2)      852.09788451529  ( 2)     1040.54610939701  ( 2)
+  2026.16774377576  ( 2)     3409.98097946542  ( 2)     3843.39076492097  ( 2)     9969.64375816496  ( 2)    15466.34711504363  ( 2)
+ 16670.81844283816  ( 2)
+
+* Occupation of subblocks
+                       E1 :  A                                                                              
+  closed shells (f=1.0000):    9
+ virtual shells (f=0.0000):  111
+tot.num. of pos.erg shells:  120
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.12273458 au (symmetry A  )
+  - E(HOMO) :    -0.45623729 au (symmetry A  )
+  ------------------------------------------
+    gap     :     0.57897188 au
+
+
+
+    **************************************************************************
+    ********************** Mulliken population analysis **********************
+    **************************************************************************
+
+
+
+                         Output from GETPLB: Group labels
+                         --------------------------------
+
+* Total number :    54
+     1  L A  C  s        2  L A  C  px       3  L A  C  py       4  L A  C  pz       5  L A  C  dxx      6  L A  C  dxy 
+     7  L A  C  dxz      8  L A  C  dyy      9  L A  C  dyz     10  L A  C  dzz     11  L A  O  s       12  L A  O  px  
+    13  L A  O  py      14  L A  O  pz      15  L A  O  dxx     16  L A  O  dxy     17  L A  O  dxz     18  L A  O  dyy 
+    19  L A  O  dyz     20  L A  O  dzz     21  L A  H  s       22  L A  H  px      23  L A  H  py      24  L A  H  pz  
+    25  L A  H  s       26  L A  H  px      27  L A  H  py      28  L A  H  pz      29  L A  H  s       30  L A  H  px  
+    31  L A  H  py      32  L A  H  pz      33  L A  H  s       34  L A  H  px      35  L A  H  py      36  L A  H  pz  
+    37  L A  O.Gs       38  L A  O.Gpx      39  L A  O.Gpy      40  L A  O.Gpz      41  L A  O.Gdxx     42  L A  O.Gdxy 
+    43  L A  O.Gdxz     44  L A  O.Gdyy     45  L A  O.Gdyz     46  L A  O.Gdzz     47  L A  H.Gs       48  L A  H.Gpx  
+    49  L A  H.Gpy      50  L A  H.Gpz      51  L A  H.Gs       52  L A  H.Gpx      53  L A  H.Gpy      54  L A  H.Gpz  
+
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+* Electronic eigenvalue no.  1: -20.575514546935       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s      L A  O  s   
+-----------------------------------------------------
+ alpha    1.0000  |      0.0001         0.9998
+ beta     0.0000  |      0.0000         0.0000
+
+* Electronic eigenvalue no.  2: -11.292979100593       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s   
+--------------------------------------
+ alpha    1.0000  |      0.9999
+ beta     0.0000  |      0.0000
+
+* Electronic eigenvalue no.  3: -1.3598111352000       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s      L A  C  pz     L A  C  dxx    L A  C  dyy    L A  C  dzz    L A  O  s      L A  O  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.0676         0.0378        -0.0037        -0.0037         0.0152         0.7562         0.0099
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  O  pz     L A  O  dxx    L A  O  dyy    L A  O  dzz    L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0076        -0.0052         0.0027         0.0030         0.0056         0.0005         0.0001         0.0003
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  py     L A  H  pz     L A  H  s   
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0056         0.0004         0.0001         0.0003         0.0059         0.0005         0.0004         0.0821
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  py     L A  H  pz  
+--------------------------------------
+ alpha |   0.0084         0.0023
+ beta  |   0.0000         0.0000
+
+* Electronic eigenvalue no.  4: -0.9445765925400       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s      L A  C  py     L A  C  pz     L A  C  dxx    L A  C  dyy    L A  C  dzz    L A  O  s   
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.4688        -0.0002         0.0210        -0.0003         0.0019        -0.0013         0.0460
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  O  py     L A  O  pz     L A  O  dxx    L A  O  dyy    L A  O  dyz    L A  O  dzz    L A  H  s      L A  H  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0106         0.0968         0.0003         0.0021         0.0002        -0.0013         0.0922         0.0042
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0014         0.0001         0.0936         0.0039         0.0014         0.0002         0.1114         0.0052
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  pz     L A  H  s      L A  H  py  
+-----------------------------------------------------
+ alpha |   0.0005         0.0384         0.0029
+ beta  |   0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  5: -0.6956212301842       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s      L A  C  py     L A  C  pz     L A  C  dxx    L A  C  dyy    L A  C  dyz    L A  C  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.0079         0.1590         0.0842         0.0040         0.0002         0.0010         0.0012
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  O  s      L A  O  py     L A  O  pz     L A  O  dxx    L A  O  dyy    L A  O  dzz    L A  H  s      L A  H  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0265         0.3568         0.0833         0.0006        -0.0007         0.0020         0.0474         0.0013
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  s      L A  H  px     L A  H  s      L A  H  pz     L A  H  s      L A  H  py     L A  H  pz  
+-----------------------------------------------------------------------------------------------------------------
+ alpha |   0.0483         0.0011         0.0125         0.0005         0.1596         0.0025         0.0006
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  6: -0.6312859939147       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  O  px     L A  O  pz     L A  O  dxy 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.4250         0.0001         0.0003         0.0045         0.2716         0.0003         0.0001
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  O  dxz    L A  H  s      L A  H  px     L A  H  py     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0008         0.1409         0.0003         0.0012         0.1473         0.0003         0.0011         0.0004
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  s      L A  H  px     L A  H  px     L A  H.Gs   
+--------------------------------------------------------------------
+ alpha |   0.0003         0.0021         0.0028         0.0002
+ beta  |   0.0000         0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  7: -0.6075592537977       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s      L A  C  px     L A  C  py     L A  C  pz     L A  C  dyy    L A  C  dyz    L A  C  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.0010         0.0005         0.2188         0.1770         0.0050         0.0009         0.0032
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  O  s      L A  O  px     L A  O  py     L A  O  pz     L A  O  dxx    L A  O  dyy    L A  O  dyz    L A  H  s   
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0084         0.0003         0.0171         0.3212         0.0003         0.0005         0.0014         0.0031
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  py     L A  H  pz     L A  H  s      L A  H  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0001         0.0004         0.0009         0.0008         0.0006         0.0008         0.2128         0.0018
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  s      L A  H  py     L A  H  pz  
+-----------------------------------------------------
+ alpha |   0.0189         0.0017         0.0025
+ beta  |   0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  8: -0.5129916029228       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  s      L A  C  py     L A  C  pz     L A  C  dxx    L A  C  dyy    L A  C  dyz    L A  C  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.0019         0.1582         0.0374         0.0026         0.0004         0.0091         0.0011
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  O  s      L A  O  py     L A  O  pz     L A  O  dxx    L A  O  dyy    L A  O  dyz    L A  O  dzz    L A  H  s   
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0450         0.3277         0.1393         0.0017        -0.0009        -0.0001        -0.0001         0.0562
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  px     L A  H  py     L A  H  s      L A  H  px     L A  H  py     L A  H  s      L A  H  py     L A  H  pz  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0012         0.0003         0.0570         0.0010         0.0003         0.1093         0.0003         0.0011
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  s      L A  H  py     L A  H  pz  
+-----------------------------------------------------
+ alpha |   0.0469        -0.0004         0.0035
+ beta  |   0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  9: -0.4562372921723       (Occupation : f = 1.0000)  sym= A   
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L A  C  px     L A  C  dxy    L A  C  dxz    L A  O  px     L A  O  dxy    L A  H  s      L A  H  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.0986         0.0022         0.0129         0.6903         0.0002         0.0901         0.0001
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A  H  py     L A  H  s      L A  H  py     L A  H  px     L A  H  px     L A  O.Gpx     L A  H.Gs   
+-----------------------------------------------------------------------------------------------------------------
+ alpha |   0.0005         0.0948         0.0006         0.0009         0.0082         0.0004         0.0003
+ beta  |   0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+
+*** Total gross population ***
+
+Gross      Total    |    L A  C  s      L A  C  px     L A  C  py     L A  C  pz     L A  C  dxx    L A  C  dxy    L A  C  dxz 
+--------------------------------------------------------------------------------------------------------------------------------
+ total    18.00000  |      3.09447        1.04800        1.07203        0.71565        0.00514        0.01335        0.02586
+
+Gross  | L A  C  dyy    L A  C  dyz    L A  C  dzz    L A  O  s      L A  O  px     L A  O  py     L A  O  pz     L A  O  dxx 
+--------------------------------------------------------------------------------------------------------------------------------
+ total |   0.00748        0.02202        0.03875        3.76389        1.92458        1.44408        1.29686       -0.00466
+
+Gross  | L A  O  dxy    L A  O  dxz    L A  O  dyy    L A  O  dyz    L A  O  dzz    L A  H  s      L A  H  px     L A  H  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ total |   0.00063        0.00140        0.00760        0.00297        0.00698        0.87125        0.01535        0.00803
+
+Gross  | L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ total |   0.00300        0.89506        0.01365        0.00825        0.00352        0.90457        0.00600        0.01526
+
+Gross  | L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  O.Gpx     L A  H.Gs      L A  H.Gs   
+--------------------------------------------------------------------------------------------------------------------------------
+ total |   0.00495        0.69177        0.02200        0.03007        0.01778        0.00101        0.00013        0.00124
+
+ 
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :        27.13
+  
+  Largest          10  allocations
+  
+      400.00 Mb at subroutine unknown                                    for work array at main                        
+        1.48 Mb at subroutine unknown                                    for unnamed variable                          
+        1.48 Mb at subroutine unknown                                    for unnamed variable                          
+        1.48 Mb at subroutine unknown                                    for unnamed variable                          
+        0.74 Mb at subroutine unknown                                    for unnamed variable                          
+        0.74 Mb at subroutine unknown                                    for unnamed variable                          
+        0.74 Mb at subroutine unknown                                    for unnamed variable                          
+        0.12 Mb at subroutine unknown                                    for buf in butobs                             
+        0.12 Mb at subroutine unknown                                    for buf in butobs                             
+        0.12 Mb at subroutine unknown                                    for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       402.00
+       reached at subroutine : unknown                                   
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:    31.17 MB
+
+*****************************************************
+>>>> Node 0, utime: 33, stime: 1, minflt: 21601, majflt: 0, nvcsw: 28, nivcsw: 31307, maxrss: 53358592
+>>>> Total WALL time used in DIRAC: 39s
