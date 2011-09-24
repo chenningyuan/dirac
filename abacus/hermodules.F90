@@ -34,7 +34,7 @@
 
         PRIVATE
 
-        PUBLIC READ_XYZ,WRITE_ATOMS,WRITE_ATOMTYPES,CLEAR_XYZ
+        PUBLIC READ_XYZ
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
@@ -160,9 +160,8 @@
           INTEGER            :: JCO(:)
           INTEGER,TARGET,ALLOCATABLE,SAVE :: JCO2(:)
           
-          ALLOCATE(JCO2(SIZE(JCO)))
-          JCO2=JCO
-          bas%jco=>JCO2
+          ALLOCATE(bas%jco(SIZE(JCO)))
+          bas%jco=JCO
         END SUBROUTINE
 
         SUBROUTINE ADD_FAM(filenum,linelen,bas)
@@ -503,34 +502,27 @@
      &                section(3)=='.SPECIAL') THEN
 !     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
                 tmpbas%name=' '
-                tmpbas%comp=' '
+                tmpbas%comp='LARGE'
                 tmpbas%type=' '
                 tmpbas%file=' '
                 tmpbas%next=>NULL()
                 
-                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,    &
-     &                                      tmpbas%type
+                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%type
+
+!               Check whether the user has specified less than two keywords
                 if (ios.ne.0) then
-                  backspace(tmp_file)
-                  read(tmp_file,*,iostat=ios) tmpbas%name
-                  if(.not.(ios.ne.0) .and. tmpbas%name>' ') then
-                    tmpbas%file=tmpbas%name
-                    tmpbas%comp='LARGE'
-                    tmpbas%type='BASIS'
-                    CALL ADD_BASIS(bas,firstbas,tmpbas)
-                    CYCLE
-                  else if (ios.ne.0) then
-                     write(tmp_file,*) "ERROR(readbasis) :",            &
-     &                 "Specify a filename or full basisname for ",     &
+                     write(lupri,*) "ERROR(readbasis) :",            &
+     &                 "Specify the atom name plus an option forr ",    &
      &                 ".SPECIAL basis."
-                     exit
-                  end if
-                else if(tmpbas%name>' ' .and. tmpbas%type>' '           &
-     &            .and. tmpbas%comp>' ') then
+                     CALL QUIT ('Input Error')
+                end if
+                if(tmpbas%name>' ' .and. tmpbas%type>' ' ) then
                   SELECT CASE(tmpbas%type)
+                  CASE ('NOBASIS','POINTCHARGE')
+                     CALL ADD_BASIS(bas,firstbas,tmpbas)
                   CASE ('BASIS','MOLFBAS')
                     backspace(tmp_file)               
-                    read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,&
+                    read(tmp_file,*,iostat=ios) tmpbas%name,&
      &                                      tmpbas%type,tmpbas%file
                     if (.not.(ios.ne.0) .and. tmpbas%file>' ') then
                       CALL ADD_BASIS(bas,firstbas,tmpbas)
@@ -629,6 +621,9 @@
                 CASE('AU','a.u.','bohr')
                   UNIT_CONVERSION = ONE
                   unitname='bohr'
+                CASE('PM', 'pm', 'picometer')
+                  UNIT_CONVERSION = ONE / (100.D0 * XTANG)
+                  unitname='picometer'
                 CASE DEFAULT
                   backspace (tmp_file)
                   read(tmp_file,*,iostat=ios) unitname,unit_conversion
@@ -759,13 +754,13 @@
       END SUBROUTINE WRITE_ATOMS
 
         SUBROUTINE POS_FILE(infile,lupri,linelen,                       &
-     &     section,subsection,name,comp)
+     &     section,subsection,name)
 !         Position a file to a specific keyword.
         
           INTEGER, INTENT(IN)   :: infile,lupri,linelen
-          CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name,comp
+          CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name
           CHARACTER(LEN=linelen) :: str,pressect,pressub
-          character(len=linelen) :: tmp_name,tmp_comp
+          character(len=linelen) :: tmp_name
           INTEGER                :: ios
 
           REWIND(infile)
@@ -773,20 +768,14 @@
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
-              WRITE(lupri,*) section,subsection,name,comp
+              WRITE(lupri,*) section,subsection,name
               CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
               pressect=str              
             ELSE IF (str(1:1)=='*') THEN
               pressub=str
             ELSE IF (pressect==section.AND.pressub==subsection) THEN
-              IF (str==name) THEN
-                BACKSPACE(infile)
-                tmp_name=' '
-                tmp_comp=' '
-                read(infile,*,iostat=ios) tmp_name,tmp_comp
-                IF (ios.eq.0 .and. tmp_comp==comp) EXIT
-              END IF
+              IF (str==name) EXIT
             END IF
           END DO
         END SUBROUTINE POS_FILE
@@ -920,8 +909,13 @@
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
 
-!     JHS060707 TMP We could introduce some additional error checks?
         SELECT CASE (baspointer%type)
+        CASE ('NOBASIS','POINTCHARGE')
+          IQM(basindex,1)=0
+          JCO(1,basindex,1)=0
+          BASNAM='Explicit'
+          BASREF(1,basindex,1) =                                        &
+     &          "No basis functions (point charge)"
         CASE ('INTGRL','EXPLICIT')
           IBSFLAG=1
           IQM(basindex,1)=SIZE(baspointer%jco)
@@ -933,7 +927,7 @@
 
 !     POSITION the input file.
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name)
 !     Additional check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,1))                         &
@@ -976,7 +970,7 @@
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
           FAMPAR(1:i)=baspointer%fam(1:i)
@@ -994,7 +988,7 @@
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
           CALL GENFAMEXP(infile,i)
@@ -1017,14 +1011,6 @@
         NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
         NHTYP  =   MAX(NHTYP,IQM(basindex,1))
 
-!     PRINT BASISSET
-!       IF (IQM(basindex,1).GT.0) THEN
-!         WRITE(lupri,'(3X,A)') 'Large component set:'
-!         WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-!    &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & 
-!    &    '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
-!       ENDIF
-
         DO i = 1, NBLCK(basindex,1)
            IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))              &
      &          CNTBAS = .TRUE.
@@ -1038,11 +1024,10 @@
           IF (ASSOCIATED(baspointer%next)) THEN
             IF (baspointer%next%name==baspointer%name)                    &
      &            baspointer=>baspointer%next
-!     JHS060707 Move to small component.
-!               TMP We can extend it to include a search for the small component
           END IF
 
           IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
+!       We should typically go via this routine
             IBSFLAG=4
             CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
      &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
@@ -1061,7 +1046,7 @@
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     POSITION the input file.
             CALL POS_FILE(infile, lupri, linelen,                       &
-     &           '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp) 
+     &           '**MOLECULE', '*BASIS', baspointer%name) 
 !     Additional check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,2))                           &
@@ -1099,22 +1084,9 @@
 
           NOORBTS = NOORBTS.AND.IQM(basindex,2).EQ.0
 
-!         IF (IQM(basindex,2).GT.0) THEN
-!           WRITE(lupri,'(3X,A)') 'Small component set:'
-!           WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-!    &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &
-!    &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
-!         ENDIF
-
           NHTYP = MAX(NHTYP,IQM(basindex,2))
           
           IF (IQM(basindex,2).GT.0) THEN
-            IF(INPTST) THEN
-               WRITE(lupri,'(3X,A)') 'Small component set:'
-               WRITE(lupri,'(6X,A,I5,A,12I5)')                            &
-     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),           &
-     &              '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
-            ENDIF
             NHTYP     = MAX(NHTYP,IQM(basindex,2))
           ENDIF
           
