@@ -238,32 +238,32 @@ C ::: The reduced coordinates are moved back. :::
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
             CHARGE(I) = CHARGE(IOLD)
-C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
             GNUEXP(I) = GNUEXP(IOLD)
-#ifndef PRG_DIRAC
-            MULBSI(I) = MULBSI(IOLD)
-#endif
             NCLINE(I) = NCLINE(IOLD)
- 250     CONTINUE
-C ::: Then the different elements are counted, and arrays updated. :::
-         NONTYP = 1
-         CALL IZERO(NONT, KATOM)
-         IELMNT = NINT(ATMARR(4,1))
-         DO 275 I = 1, NINT(ATMARR(1,0))
-            IF (NINT(ATMARR(4,I)) .NE. IELMNT) THEN
-               NONTYP = NONTYP + 1
-               IELMNT = NINT(ATMARR(4,I))
-            END IF
-            NONT(NONTYP) = NONT(NONTYP) + 1
-            NAMN(I) = NAMN(NINT(ATMARR(5,I)))
+            NAMN(I)   = NAMN(IOLD)
             NAMEX(3*I)   = NAMN(I)//'z'
             NAMEX(3*I-1) = NAMN(I)//'y'
             NAMEX(3*I-2) = NAMN(I)//'x'
 #ifndef PRG_DIRAC
             ISOTOP(I) = NINT(ATMARR(6,I))
+            MULBSI(I) = MULBSI(IOLD)
 #endif
+ 250     CONTINUE
+C ::: Then the different elements are counted, and arrays updated. :::
+         NONTYP = 1
+         CALL IZERO(NONT, KATOM)
+         NONTYP = 1
+         NONT(NONTYP) = 1
+         DO 275 I = 2, NINT(ATMARR(1,0))
+            IF (NAMN(I) .NE. NAMN(I-1)) THEN
+               NONTYP = NONTYP + 1
+            END IF
+            NONT(NONTYP) = NONT(NONTYP) + 1
  275     CONTINUE
+
          NUCIND = NINT(ATMARR(1,0))
+         IF (NUCIND .LE. 0) CALL QUIT ('No atoms defined')
+
          DO 300 I = NUCIND + 1, KATOM
             NAMN(I) = '    '
             NAMEX(3*I)   = '      '
