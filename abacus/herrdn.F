@@ -6759,7 +6759,7 @@ C
 C***********************************************************************
 #include "mxcent.h"
       DIMENSION I_SET(MXCENT),I_EQUAL(MXCENT)
-      LOGICAL FIRST(MXCENT)
+      LOGICAL FIRST(MXCENT),EQUAL
       CHARACTER*80 BASREF(10,*)
 C
 C     Check for common sets, the first set is always unique
@@ -6768,13 +6768,20 @@ C
       DO I = 2, NONTYP
          FIRST(I) = .TRUE.
          DO J = 1, I - 1
-            IF (BASREF(1,I).EQ.BASREF(1,J)) THEN
+            EQUAL = .TRUE.
+            DO K = 1, 10
+               IF (BASREF(K,I).NE.BASREF(K,J)) THEN
+                   EQUAL = .FALSE.
+                   EXIT
+               ENDIF
+            ENDDO
+!        If equal is still true, then we have a match and can exit the loop over J
+            IF (EQUAL) THEN
                FIRST(I) = .FALSE.
                I_SET(I) = J
-               GOTO 1
+               EXIT
             ENDIF
          ENDDO
-   1     CONTINUE
       ENDDO
 C
       WRITE (LUPRI,1000)
