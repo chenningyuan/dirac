@@ -688,6 +688,7 @@ C
       OPT_UCIBOS     = .FALSE.
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
+      no1pdens_save  = .true.
 C
 C     Set common block DCCOPT
 C
@@ -795,6 +796,7 @@ C
       OPT_NOCI       = KRMC_NOCI
       OPT_UCIBOS     = KRMC_UCIBOS
       OPT_CHCKJZ     = KRMC_CHCKJZ
+      no1pdens_save  = KRMC_NO1pdens
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -918,6 +920,7 @@ C
 !     required for KR-CI in linear symmetry set-up
       if(linear) opt_chckjz = .true.
 !     opt_chckjz = .true.
+      no1pdens_save  = .true.
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.
@@ -1450,6 +1453,7 @@ C at the moment no fock type orbitlas
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
       CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI
+      no1pdens_save  = .true.
 C
       CALL QEXIT('TKRCCORB')
       END
