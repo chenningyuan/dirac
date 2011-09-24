@@ -70,6 +70,7 @@
       CHARACTER(LEN=4),SAVE :: xmlexport_dens_level='HF'
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
 
+      logical, save :: skip_all_imports = .false.
 #ifdef MOD_UNRELEASED
 !     public fde_kef,       fde_xcf
 !     public fde_kef_alda,  fde_xcf_alda
@@ -347,6 +348,14 @@
               READ(LUCMD,'(A60)') GRIDOUT_NAME
               DO_GRID_OUT=.TRUE.
               DOPRP=.TRUE.
+
+            CASE ('.EXONLY')
+! WRITE TO THIS GRIDFILE
+              READ(LUCMD,'(A60)') GRIDOUT_NAME
+              DO_GRID_OUT=.TRUE.
+              DOPRP=.TRUE.
+              skip_all_imports = .true.
+
 #endif /* MOD_UNRELEASED */
             CASE DEFAULT
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD, &
@@ -390,6 +399,7 @@
          write(LUPRI,'(A,A20)') ' * Non-additive KE functional : ',kefun_fde
          write(LUPRI,'(A,A20)') ' * Non-additive XC functional : ',xcfun_fde
 !        write(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
+           if (.not.skip_all_imports) then
 #endif
          if (import_vemb) then
             write(LUPRI,'(A,A60)')  ' * FDE Potential to be read from file: ',FDEPOT
@@ -410,6 +420,8 @@
             write(LUPRI,'(A,A60)') &
                 ' * Density (and gradient) from frozen subsystems read from file: ',FDEDNS
          endif
+
+           endif
 
          IF (DO_GRID_OUT) then
             write(LUPRI,'(2A)') &
