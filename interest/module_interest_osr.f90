@@ -4,6 +4,7 @@
 ! Date:     27.08.2010 University of Tromsø - create a nuclear class 
 !           29.11.2010 University of Tromsø - update the nuclear class
 !           02.12.2010 University of Tromsø - create an overlap class 
+!           17.06.2011 University of Tromsø - switching to TRS for RKB  
 ! ---------------------------------------------------------------------------------------
 
 module module_interest_osr
@@ -182,8 +183,8 @@ contains
 !
 !note: na vstupe musi byt pre RKB bazu: (la-1), (lc-1), (lab+2), (lcd+2)
 !note: na vstupe musi byt pre 2-centrove integraly, lcd=1 
-!note: lf1 (on input ) - dlzka finalneho batchu (prvy  electron),t.j.  ncc(la)*ncc(lb)(*10)
-!note: lf2 (on input ) - dlzka finalneho batchu (druhy electron),t.j.  ncc(lc)*ncc(ld)(*10)
+!note: lf1 (on input ) - dlzka finalneho batchu (prvy  electron),t.j.  ncc(la)*ncc(lb)(*5)
+!note: lf2 (on input ) - dlzka finalneho batchu (druhy electron),t.j.  ncc(lc)*ncc(ld)(*5)
 !note: li1 (on output) - dlzka intermediates    (prvy  electron)
 !note: li2 (on output) - dlzka intermediates    (druhy electron)
 !
@@ -1195,7 +1196,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,4,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 4    - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,4,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1223,7 +1226,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,10,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 10   - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,10,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1257,7 +1262,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,20,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 20   - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,20,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1295,7 +1302,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,35,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 35   - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,35,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1339,7 +1348,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,56,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 56   - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,56,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1394,7 +1405,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,84,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 84   - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,84,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1462,7 +1475,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,120,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 120  - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,120,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1545,7 +1560,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,165,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 165  - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,165,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1642,7 +1659,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,220,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 220  - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,220,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1755,7 +1774,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,286,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 286  - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,286,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -1886,7 +1907,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,364,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 364  - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,364,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -2037,7 +2060,9 @@ contains
     enddo
     if( mmax.eq.1 )then
       mmin = max(1,(lc*(lc-1)*(lc+1))/6+1)
-      call nuclear_getket(mmin,455,nmin,nmax,waux,fint,lf2,li1,li2)
+      li2  = 455  - mmin + 1
+      li1  = nmax - nmin + 1
+      call nuclear_getket(mmin,455,nmin,nmax,waux,fint,max(li2,lf2))
       return
     endif
 
@@ -2137,8 +2162,8 @@ contains
 ! ---------------------------------------------------------------------------------------
 ! accumulate ket results 
 ! ---------------------------------------------------------------------------------------
-  subroutine nuclear_getket(jini,jend,iini,iend,a,b,ldb,li1,li2)
-    integer :: ldb,li1,li2 
+  subroutine nuclear_getket(jini,jend,iini,iend,a,b,ldb)
+    integer :: ldb
     integer :: i,ii,iini,iend
     integer :: j,jj,jini,jend
     real(8) :: a(ncc2,*),b(ldb,*)
@@ -2152,9 +2177,7 @@ contains
         b(jj,ii)=a(j,i)
       enddo
     enddo
-    li1=ii
-    li2=jj
-    if(li2.gt.ldb)then
+    if(jj.gt.ldb)then
       write(6,*) ' Error: (li2>lf2)' 
       write(6,*) ' Abnormal termination in module: interest_osr, class: nuclear, routine: getket'
       stop

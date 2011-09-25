@@ -64,18 +64,11 @@
     real(8) :: pexp,rexp,rxpa,rypa,rzpa,cntr
 
 
-    na   = ncc(la)
-    nb   = ncc(lb)
-    nint = ncc(la)*ncc(lb)
-
     rxab = ax - bx
     ryab = ay - by
     rzab = az - bz
     pexp = alpha + beta
     rrab = rxab*rxab + ryab*ryab + rzab*rzab
-
-! todo: set the prescreening here 
-!       then also set fint(1:nint*10) = 0.0d0 and nrkb
 
     if( rrab.lt.1.d-12 )then
       rxpa = 0.0d0 
@@ -93,23 +86,19 @@
       cntr = anorm*bnorm*dexp(-rexp*rrab)
     endif
 
+    na = ncc(la)
+    nb = ncc(lb)
     if( .not. rkb )then
       nrkb = 1
+      nint = na*nb
       call interest_osr_class_overlap(n1,fint,cntr,(la  ),(la+lb-1),pexp,rxpa,rypa,rzpa)
       call interest_hrr_bra(fint,nint,1,la,lb,rxab,ryab,rzab)
     else
       nrkb = 2
+      nint = 5*na*nb
       call interest_osr_class_overlap(n1,fint,cntr,(la-1),(la+lb+1),pexp,rxpa,rypa,rzpa)
-      call interest_hrr_bra_rkb(fint,nint*10,1,la,lb,rxab,ryab,rzab,alpha,beta)
-      call interest_rkb_operator_0(fint,nint,nrkb)
+      call interest_hrr_bra_rkb(fint,max(n1,nint),1,la,lb,rxab,ryab,rzab,alpha,beta)
     endif
-
-!   lab = 10*la + lb
-!   if( do_spherical .and. lab > 30 )then
-!     na = nsc(la)
-!     nb = nsc(lb)
-!     call interest_cartesian2spherical(fint,nint,nrkb,la,lb,lab)
-!   endif
 
   end subroutine
 
@@ -145,18 +134,11 @@
     real(8), dimension(ncc2) :: fintl
 
 
-    na   = ncc(la)            !this is true until cartesian are considered on output
-    nb   = ncc(lb)            !this is true until cartesian are considered on output
-    nint = ncc(la)*ncc(lb)
-
     rxab = ax - bx
     ryab = ay - by
     rzab = az - bz
     pexp = alpha + beta
     rrab = rxab*rxab + ryab*ryab + rzab*rzab
-
-! todo: set the prescreening here
-!       then also set fint(1:nint*10) = 0.0d0 and nrkb
 
     if( rrab.lt.1.d-12 )then
       px    = ax 
@@ -180,9 +162,10 @@
       cntr1 = 2.0d0*(pi/pexp)*anorm*bnorm*dexp(-rexp*rrab)
     endif
 
-    fnbra           = 1.0d0 
-    fdbra           = 1.0d0/(2.0d0*pexp)  
-    fint(1:nint*10) = 0.0d0
+    na    = ncc(la)
+    nb    = ncc(lb)
+    fnbra = 1.0d0 
+    fdbra = 1.0d0/(2.0d0*pexp)  
 
     do iat=1,ncentr
       if( atomic_data(iat,1) <= 0.0d0 )cycle
@@ -203,16 +186,18 @@
                                         1,fnbra,fdbra,rxpa,rypa,rzpa,rxcp,rycp,rzcp,  &
                                         1,1,1,0.0d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
       endif
+      if( iat==1 ) fint(1:n1) = 0.0d0
       fint(1:n1) = fint(1:n1) - fintl(1:n1)                 
     enddo  
 
     if( .not.rkb )then
       nrkb = 1
+      nint = na*nb
       call interest_hrr_bra(fint,nint,1,la,lb,rxab,ryab,rzab)
     else
       nrkb = 5
-      call interest_hrr_bra_rkb(fint,nint*10,1,la,lb,rxab,ryab,rzab,alpha,beta)
-      call interest_rkb_operator_0(fint,nint,nrkb)
+      nint = 5*na*nb
+      call interest_hrr_bra_rkb(fint,max(n1,nint),1,la,lb,rxab,ryab,rzab,alpha,beta)
     endif
   end subroutine
 
@@ -249,17 +234,7 @@
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
     real(8), parameter :: pi52 = 2.0d0*dsqrt(pi*pi*pi*pi*pi)
 
-! todo: set the prescreening here
 
-    if( .not.rkb )then
-      nab  = ncc(la)*ncc(lb)
-      ncd  = ncc(lc)*ncc(ld)
-    else
-      nab  = ncc(la)*ncc(lb)*10
-      ncd  = ncc(lc)*ncc(ld)*10
-    endif
-    nint = nab*ncd 
-    fint(1:nint) = 0.0d0
 
     !-- AB-pair --!
     lab  = la + lb - 1
@@ -347,19 +322,25 @@
     rywq  = ( pexp*py + qexp*qy )/psq - qy
     rzwq  = ( pexp*pz + qexp*qz )/psq - qz
 
+
     if( .not.rkb )then
+      nab  = ncc(la)*ncc(lb)
+      ncd  = ncc(lc)*ncc(ld)
       call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                         &
                                      (la  ),(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
                                      (lc  ),(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
       call interest_hrr_ket(fint,ncd,nab,la,lb,rxab,ryab,rzab,n2)
       call interest_hrr_bra(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd) 
     else
+      nab  = ncc(la)*ncc(lb)*5
+      ncd  = ncc(lc)*ncc(ld)*5
       call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                         &
                                      (la-1),(la+lb+1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
                                      (lc-1),(lc+ld+1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
-      call interest_hrr_ket_rkb(fint,ncd,nab,la,lb,rxab,ryab,rzab,alpha,beta,n2)
-      call interest_hrr_bra_rkb(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd,gamma,delta) 
+      call interest_hrr_ket_rkb(fint,max(n2,ncd),max(n1,nab),la,lb,rxab,ryab,rzab,alpha,beta,n2)
+      call interest_hrr_bra_rkb(fint,max(n2,ncd),       nab ,lc,ld,rxcd,rycd,rzcd,gamma,delta) 
     endif
+    nint = nab*ncd 
 
   end subroutine
 
@@ -394,7 +375,7 @@
     if( .not.rkb )then
       nint = ncc(la)*ncc(lb)
     else
-      nint = ncc(la)*ncc(lb)*10
+      nint = ncc(la)*ncc(lb)*5
     endif
     fintx(1:nint) = 0.0d0
     finty(1:nint) = 0.0d0
@@ -406,7 +387,6 @@
     pexp = alpha + beta
     rrab = rxab*rxab + ryab*ryab + rzab*rzab
 
-! todo: set the prescreening here
 
     if( rrab.lt.1.d-12 )then
       rxpa = 0.0d0 
@@ -434,6 +414,7 @@
       call interest_hrr_bra(finty,nint,1,la,lb,rxab,ryab,rzab)
       call interest_hrr_bra(fintz,nint,1,la,lb,rxab,ryab,rzab)
     else
+      stop 'fix rkb case => stop'
       call interest_osr_class_dipole(n1,fintx,finty,fintz,cntr,(la-1),(la+lb+1),pexp,rxpa,rypa,rzpa,rxpg,rypg,rzpg)
       call interest_hrr_bra_rkb(fintx,nint,1,la,lb,rxab,ryab,rzab,alpha,beta)
       call interest_hrr_bra_rkb(finty,nint,1,la,lb,rxab,ryab,rzab,alpha,beta)
@@ -441,50 +422,3 @@
     endif
 
   end subroutine
-
-! --------------------------------------------------------------------------
-  subroutine interest_rkb_operator_0(fint,nint,nrkb)
-    implicit none
-
-    !-- input --!
-    integer, intent(in) :: nint 
-    integer, intent(in) :: nrkb 
-    !-- output --!
-    real(8), intent(out) :: fint(nint,10)
-    !-- local --!
-    integer :: i
-    real(8) :: xx, xy, xz
-    real(8) :: yx, yy, yz
-    real(8) :: zx, zy, zz
-
-    select case(nrkb)
-      case(2)
-             do i=1,nint
-               xx = fint(i, 2)
-               yy = fint(i, 6)
-               zz = fint(i,10)
-               fint(i,2) = xx + yy + zz 
-             enddo
-      case(5)
-             do i=1,nint
-               xx = fint(i, 2)
-               yx = fint(i, 3)
-               zx = fint(i, 4)
-               xy = fint(i, 5)
-               yy = fint(i, 6)
-               zy = fint(i, 7)
-               xz = fint(i, 8)
-               yz = fint(i, 9)
-               zz = fint(i,10)
-               fint(i,2) = xx + yy + zz
-               fint(i,3) = xy - yx
-               fint(i,4) = zx - xz
-               fint(i,5) = yz - zy
-             enddo
-      case default
-        write(6,*) 'This type of transformation has not been imeplemented yet ... => stop'
-        stop
-    end select
-
-  end subroutine
-! --------------------------------------------------------------------------
