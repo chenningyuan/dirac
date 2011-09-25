@@ -291,7 +291,7 @@ C
          IPRGNO = MAX(IPROPT,2)
          IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
            CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
-     &                 .FALSE.,MOISNO,IPRGNO,WORK,KFREE,LFREE)
+     &                 .FALSE.,MOISNO,.false.,IPRGNO,WORK,KFREE,LFREE)
          END IF
 C
 C        Write natural orbitals back to KRMCSCF

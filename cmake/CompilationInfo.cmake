@@ -20,3 +20,13 @@ execute_process(
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+# get revision info for cmake output
+execute_process(
+    COMMAND python ${CMAKE_SOURCE_DIR}/cmake/git_revision_info_cmake.py
+    TIMEOUT 1
+    OUTPUT_VARIABLE GIT_REVISION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
