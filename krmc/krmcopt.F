@@ -594,7 +594,7 @@ C
               CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                    .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
             END IF
@@ -752,6 +752,18 @@ C
 C     ***************************************************
 C     *** We have converged *****************************
 C     ***************************************************
+C
+C     calculate 1-particle density to be exported on file - default
+      if(.not.no1pdens_save)then
+        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
+     &  ' matrix calculated for the converged MCSCF wave function'//
+     &  ' to file.'
+        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &             .false.,.false.,.true.,IPRNO,WORK,KFREE,LFREE)
+        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+      end if
 C
 C
  3000 CONTINUE
@@ -3607,7 +3619,7 @@ C                        natural CI/MCSCF orbitals. They can be useful
 C                        for further analysis, e.g., visualization.
 C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                TRA_NATO,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
          END DO
 C
@@ -3619,7 +3631,7 @@ C
       ELSE IF( OPT_CIPROGRAM .EQ. 'GASCIP' )THEN
 C
          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &               .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &               .FALSE.,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
       END IF
 C
 1000  CONTINUE
