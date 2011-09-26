@@ -100,11 +100,13 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       MODRDSUSLL = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
-      if (XLR_SKIPEP) then
-         DOEPRN = .FALSE.
-      else
-         DOEPRN = .TRUE.
-      end if
+!     if (XLR_SKIPEP) then
+!        DOEPRN = .FALSE.
+!     else
+!        DOEPRN = .TRUE.
+!     end if
+cmi: restore to fix tests, later to be refined throughout the code
+       DOEPRN=.FALSE.
 
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
