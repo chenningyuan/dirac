@@ -176,7 +176,7 @@ contains
       CALL ALLOC(SMAT    ,VAR%N2BBASX,       ID='SMAT     IN ORBLOC')
       CALL ALLOC(CMO     ,VAR%N2BBASXQ,      ID='CMO      IN ORBLOC')
       CALL ALLOC(HMAT    ,NISH12,NISH12,2,   ID='HMAT     IN ORBLOC')
-      CALL ALLOC(GRADIENT,NISH12,4,          ID='GRADIENT IN ORBLOC')
+      CALL ALLOC(GRADIENT,NISH12,2,          ID='GRADIENT IN ORBLOC')
       CALL ALLOC(XKAPPA  ,NISH,NISH,4,       ID='XKAPPA   IN ORBLOC')
       CALL ALLOC(PMAT    ,NISH,NISH,4,NUCDEP,ID='PMAT     IN ORBLOC')
 
@@ -243,7 +243,7 @@ contains
         DINVMO = DINVM
         CALL GET_HESSIAN(PMAT,HMAT)
         CALL GET_GRADIENT(PMAT,GRADIENT)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
+        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,XNRM,FLAG,IPQTOQ)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
@@ -288,7 +288,8 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,XNRM,FLAG,IPQTOQ)
+        CALL GET_GRADIENT(PMAT,GRADIENT)
+        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,XNRM,FLAG,IPQTOQ)
         CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
@@ -843,7 +844,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_diag(pmat,xkappa,hmat,xnrm,flag,ipqtoq)
+  subroutine getk_diag(pmat,xkappa,hmat,gradient,xnrm,flag,ipqtoq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
@@ -856,15 +857,17 @@ contains
 
   integer*4, dimension(:,:) :: ipqtoq
 
+  real*8 :: xnrm
+
+  real*8, dimension(:,:)     :: gradient
+  real*8, dimension(:,:,:)   :: xkappa, hmat
+  real*8, dimension(:,:,:,:) :: pmat
+
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
-  real*8 :: xnrm
-  real*8, dimension(:,:,:)   ::  xkappa, hmat
-  real*8, dimension(:,:,:,:) ::  pmat
-
-  integer*4 :: i, j, k, iz, nucdep, ni, ndim, lupri
-  real*8    :: pii, pjj, pn2, dnrm2, gradient
+  integer*4 :: i, j, k, ij, iz, nucdep, ni, ndim, ni12, lupri
+  real*8    :: pii, pjj, pn2, dnrm2
 
   !------------------------------------------------------------------------------!
   call qenter('getk_diag')
@@ -873,6 +876,7 @@ contains
   lupri  = var%lupri
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
+  ni12   = size(gradient,1) / 4
 
   ! Construct unbared diagonal Hessian matrix
   hmat(:,:,:) = d0
@@ -889,17 +893,15 @@ contains
 
   ! Construction and print of the unbared kappa matrix
   xkappa(:,:,:) = d0
-  do iz = 1,2
-    do j = 1,ni
-      do i = 1,ni
-        gradient = d0
-        do k = 1,nucdep
-          gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
-        enddo
-!ST     if(flag .and. (.not.loc%hesloc)) xkappa(i,j,iz) = - gradient / hmat(i,j,1)
-        if(i /= j)xkappa(i,j,iz) = - gradient / hmat(i,j,1)
-        if(i == j)xkappa(i,j,iz) = d0
-      enddo
+  ij = 0
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      xkappa(j,i,1) = - gradient(ij,1) / hmat(i,j,1)
+      xkappa(i,j,1) = - xkappa(j,i,1)
+      xkappa(j,i,2) =   gradient(ij,2) / hmat(i,j,1)  !!! ??? Why is there no minus
+      xkappa(i,j,2) =   xkappa(j,i,2)
     enddo
   enddo
 
@@ -917,17 +919,15 @@ contains
   enddo
 
   ! Construction and print of the bared kappa matrix
-  do iz = 3,4
-    do j = 1,ni
-      do i = 1,ni
-        gradient = d0
-        do k = 1,nucdep
-          gradient = gradient + d2 * ( pmat(i,j,iz,k)*(pmat(i,i,1,k) - pmat(j,j,1,k)) )
-        enddo
-!ST     if(flag .and. (.not.loc%hesloc)) xkappa(i,j,iz) = - gradient / hmat(i,j,1)
-        if(i /= j)xkappa(i,j,iz) = - gradient / hmat(i,j,1)
-        if(i == j)xkappa(i,j,iz) = d0
-      enddo
+  ij = ni12
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      xkappa(j,i,3) =   gradient(ij,1) / hmat(i,j,1)   !!! ??? Why is there no minus
+      xkappa(i,j,3) =   xkappa(j,i,3)
+      xkappa(j,i,4) =   gradient(ij,2) / hmat(i,j,1)   !!! ??? Why is there no minus
+      xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
 
@@ -935,7 +935,7 @@ contains
     write(lupri,*)
     write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
     do j=1,ni
-      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,1),k=1,ni)
+      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
     enddo
   enddo
 
@@ -948,7 +948,7 @@ contains
   ! Norm of the gradient
   ndim = ni*ni*4
   xnrm = dnrm2(ndim,xkappa,1)
-  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
+  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dsqrt(xnrm)
 
   call qexit('getk_diag')
 
@@ -1319,6 +1319,7 @@ contains
   real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pil1, pli1, pkj1
   real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pil2, pli2, pkj2
   real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond
+  real*8 :: totdiag, totnond
 
   integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
@@ -1327,6 +1328,8 @@ contains
 
   lupri = var%lupri
   hmat(:,:,:) = d0
+  totdiag = d0
+  totnond = d0
 
   ! Get some dimensions
   nucdep = size(pmat,4)
@@ -1432,6 +1435,8 @@ contains
   enddo
   write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_uu:'
   write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
+  totdiag = totdiag + sumdiag
+  totnond = totnond + sumnond
 
   !  d^2 G / dK_ij dK_kl   -->   (36)
   sumnond = d0
@@ -1523,6 +1528,7 @@ contains
   enddo
   write(lupri,*) 'Sum of elements of B_uu:'
   write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumnond
+  totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
   !                   Bared-unbared contribution to the hessian                  !
@@ -1638,6 +1644,7 @@ contains
   enddo
   write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bu:'
   write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumnond
+  totnond = totnond + sumnond
 
   !  d^2 G / dK_ij dK_kl   -->   (38)
   sumnond = d0
@@ -1752,6 +1759,7 @@ contains
   enddo
   write(lupri,*) 'Sum of elements of B_bu:'
   write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumnond
+  totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
   !                   Bared-bared contribution to the hessian                    !
@@ -1854,6 +1862,8 @@ contains
   enddo
   write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bb:'
   write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bb ',sumdiag,sumnond
+  totdiag = totdiag + sumdiag
+  totnond = totnond + sumnond
 
   !  d^2 G / dK_ij dK_kl = 0   -->   (49)
   !  d^2 G / dK_ij dK_kk = 0   -->   (47)
@@ -1972,6 +1982,8 @@ contains
   enddo
   write(lupri,*) 'Sum of elements of B_ub:'
   write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumnond
+  totnond = totnond + sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: Total',totdiag,totnond
 
   !------------------------------------------------------------------------------!
   !                     Get the rest of the hessian matrix                       !
@@ -2009,10 +2021,6 @@ contains
   !                                                                              !
   !  Construction of gradient                                                    !
   !                                                                              ! 
-  !     HMAT         A = d^2 G / dK* dK     B = d^2 G / dK dK          K         !
-  !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
-  !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
-  !                                                                              ! 
   !******************************************************************************!
   implicit none
 
@@ -2023,9 +2031,9 @@ contains
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
 
-  real*8 :: pij1, pij2, pii, pjj
+  real*8 :: pij1, pij2, dtmp, xnrm
 
-  integer*4 :: i, j, k, iz, ij, nucdep, ni, ndimg, ni12, lupri
+  integer*4 :: i, j, k, ij, nucdep, ni, ndimg, ni12, lupri
 
   !------------------------------------------------------------------------------!
   call qenter('get_gradient')
@@ -2041,18 +2049,43 @@ contains
 
   !------------------------------------------------------------------------------!
   !------------------------------------------------------------------------------!
-  do iz = 1,2
-    ij = 0
-    do j=1,ni
-      do i=j,ni
-        ij = ij + 1
-        if(i==j) cycle
-        do k = 1,nucdep
-          pij1 = pmat(i,j,1,k); pij2 = pmat(i,j,2,k)
-        enddo
+  ij = 0
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      do k = 1,nucdep
+        dtmp = d2*(pmat(j,j,1,k) - pmat(i,i,1,k))
+        gradient(ij,1)      = gradient(ij,1)      + dtmp * pmat(i,j,1,k)
+        gradient(ij,2)      = gradient(ij,2)      + dtmp * pmat(i,j,2,k)
+        gradient(ij+ni12,1) = gradient(ij+ni12,1) + dtmp * pmat(i,j,3,k)
+        gradient(ij+ni12,2) = gradient(ij+ni12,2) + dtmp * pmat(i,j,4,k)
       enddo
+      gradient(ij+2*ni12,1) =   gradient(ij,1)
+      gradient(ij+2*ni12,2) = - gradient(ij,2)
+      gradient(ij+3*ni12,1) =   gradient(ij+ni12,1)
+      gradient(ij+3*ni12,2) = - gradient(ij+ni12,2)
     enddo
   enddo
+
+  write(6,*)
+  write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
+  write(lupri,'(9d12.4)') (gradient(j,1),j=1,ni12)
+  write(6,*)
+  write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
+  write(lupri,'(9d12.4)') (gradient(j,2),j=1,ni12)
+  write(6,*)
+  write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
+  write(lupri,'(9d12.4)') (gradient(j,1),j=1+ni12,2*ni12)
+  write(6,*)
+  write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
+  write(lupri,'(9d12.4)') (gradient(j,2),j=1+ni12,2*ni12)
+
+  xnrm = d0
+  do i=1,2*ni12
+    xnrm = xnrm + gradient(i,1)*gradient(i,1) + gradient(i,2)*gradient(i,2)
+  enddo
+  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
 
   call qexit('get_gradient')
 
