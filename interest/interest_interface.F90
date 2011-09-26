@@ -383,7 +383,7 @@ CONTAINS
        integer :: nrkb
        integer :: i, ni
        integer :: j, nj
-       real(8) :: gout(10*441)  !todo: better definition 
+       real(8) :: gout(5*441)  !todo: better definition 
     !> end
 
 
@@ -432,7 +432,7 @@ CONTAINS
        integer :: joffset 
        integer :: ida, jda 
        integer :: idb, jdb
-       real(8) :: A(ida,jda,nrkb)
+       real(8) :: A(5,ida,jda)
     !> end
 
     !> output
@@ -449,7 +449,7 @@ CONTAINS
     do k=1,nrkb
       do j=1,jda
         do i=1,ida
-          B(ioffset+i,joffset+j,k) = A(i,j,k) 
+          B(ioffset+i,joffset+j,k) = A(k,i,j) 
         enddo
       enddo
     enddo
