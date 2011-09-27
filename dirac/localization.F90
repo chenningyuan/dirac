@@ -4,7 +4,7 @@ implicit none
 public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
-private :: getk_diag, get_hessian, get_gradient
+private :: getk_diag, getk_full, get_hessian, get_gradient
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
@@ -244,7 +244,14 @@ contains
         DINVMO = DINVM
         CALL GET_HESSIAN(PMAT,HMAT)
         CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
+        !------------------------------------------------------------------------!
+        !    Solve equation:  H * K = - G*                                       !
+        !------------------------------------------------------------------------!
+!       IF(ITR > 11)THEN
+          CALL GETK_FULL(PMAT,XKAPPA,HMAT,GRADIENT)
+!       ELSE
+!         CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
+!       ENDIF
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
@@ -275,6 +282,7 @@ contains
           GOTO 100
         ELSE
           WRITE(LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
+!         IF(DNRMG .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
           IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
           IF(DIFFA .LE. LOC%THRLOC) THEN
             WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
@@ -963,6 +971,159 @@ contains
   call qexit('getk_diag')
 
   end subroutine getk_diag
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine getk_full(pmat,xkappa,hmat,gradient)
+  !******************************************************************************!
+  !                                                                              !
+  !  Construction of the XKAPPA matrix using full hessian                        !
+  !                                                                              !
+  !******************************************************************************!
+  use memory_allocator
+  implicit none
+
+  ! External variables
+  real*8 :: xnrm
+
+  real*8, dimension(:,:)     :: gradient
+  real*8, dimension(:,:,:)   :: xkappa, hmat
+  real*8, dimension(:,:,:,:) :: pmat
+
+  ! Internal variables
+  real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
+  complex*16, parameter :: c2 = (2.0d0,0.0d0)
+
+  integer*4 :: i, j, k, ij, kl, iz, nucdep, ni, ndimk, ndimh, ni12, lupri, ier
+  real*8    :: pii, pjj, pn2, dnrm2
+
+  integer*4,  allocatable, dimension(:)   :: ipiv
+  complex*16, allocatable, dimension(:)   :: grad_c
+  complex*16, allocatable, dimension(:,:) :: hmat_c
+
+  !------------------------------------------------------------------------------!
+  call qenter('getk_full')
+
+  lupri  = var%lupri
+
+  ! Get some dimensions
+  nucdep = size(pmat,4)
+  ni     = size(pmat,1)
+  ndimh  = size(hmat,1)
+  ni12   = ndimh / 4
+
+  call alloc(ipiv  ,ndimh-ni   ,id='ipiv   in getk_full')
+  allocate( grad_c(ndimh)       ,stat=ier); call errall(ier,'getk_full','grad_c')
+  allocate( hmat_c(ndimh,ndimh) ,stat=ier); call errall(ier,'getk_full','hmat_c')
+
+  ! prepare hmat_c
+  do i=1,ndimh
+    do j=1,ndimh
+      hmat_c(i,j) = dcmplx(hmat(i,j,1),hmat(i,j,2))
+    enddo
+  enddo
+
+  do ij=1,ndimh
+    kl = 1
+    do k=1,ni
+      hmat_c(ij,kl) = c2 * hmat_c(ij,kl)
+      hmat_c(kl,ij) = hmat_c(ij,kl)
+      kl = kl + ni - (k-1)  ! diagonal
+    enddo
+  enddo
+
+  do ij=1,ndimh
+    kl = 1+2*ni12
+    do k=1,ni
+      do j=kl+1,ndimh-k+1
+        hmat_c(ij,j-1) = hmat_c(ij,j)
+      enddo
+      kl = kl + ni - (k-1) - 1 ! diagonal
+    enddo
+  enddo
+
+  do ij=1,ndimh
+    kl = 1+2*ni12
+    do k=1,ni
+      do j=kl+1,ndimh-k+1
+        hmat_c(j-1,ij) = hmat_c(j,ij)
+      enddo
+      kl = kl + ni - (k-1) - 1 ! diagonal
+    enddo
+  enddo
+
+  ! prepare grad_c
+  do i=1,ndimh
+    grad_c(i) = - dcmplx(gradient(i,1), - gradient(i,2))
+  enddo
+
+  kl = 1+2*ni12
+  do k=1,ni
+    do j=kl+1,ndimh-k+1
+      grad_c(j-1) = grad_c(j)
+    enddo
+    kl = kl + ni - (k-1) - 1 ! diagonal
+  enddo
+
+  ! Solve linear set of equations
+  call zgetrf(ndimh-ni,ndimh-ni,hmat_c,ndimh,ipiv,ier)
+  if(ier /= 0)then
+    write(lupri,*) ' ERROR: The zgetrf LAPACK subroutine in getk_full finished unsuccessfully'
+    write(lupri,*) ' info =',ier
+    stop
+  endif
+
+  call zgetrs('N',ndimh-ni,1,hmat_c,ndimh,ipiv,grad_c,ndimh,ier)
+  if(ier /= 0)then
+    write(lupri,*) ' ERROR: The zgetrs LAPACK subroutine in getk_full finished unsuccessfully'
+    write(lupri,*) ' info =',ier
+    stop
+  endif
+
+  ij = 0
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      if(i/=j)then
+        xkappa(j,i,1) = dreal(grad_c(ij))
+        xkappa(i,j,1) = - xkappa(j,i,1)
+      else
+        write(6,*) 'diag kapa(:,1) = ',dreal(grad_c(ij))
+        xkappa(i,j,1) = d0
+      endif
+
+      xkappa(j,i,2) = dimag(grad_c(ij))
+      xkappa(i,j,2) = xkappa(j,i,2)
+
+      xkappa(j,i,3) = dreal(grad_c(ni12+ij))
+      xkappa(i,j,3) = xkappa(j,i,3)
+
+      xkappa(j,i,4) = dimag(grad_c(ni12+ij))
+      xkappa(i,j,4) = xkappa(j,i,4)
+    enddo
+  enddo
+
+  do iz=1,4
+    write(lupri,*)
+    write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
+    do j=1,ni
+      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
+    enddo
+  enddo
+
+  ! Norm of the kappa
+  ndimk = ni*ni*4
+  xnrm  = dnrm2(ndimk,xkappa,1)
+  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dsqrt(xnrm)
+
+  call dealloc(ipiv  ,id='ipiv   in getk_full')
+  deallocate(grad_c)
+  deallocate(hmat_c)
+
+  call qexit('getk_full')
+
+  end subroutine getk_full
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -2105,5 +2266,23 @@ contains
   call qexit('get_gradient')
 
   end subroutine get_gradient
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine errall(ier,chsub,charr)
+  implicit none
+
+  integer*4    :: ier
+  character(*) :: chsub, charr
+
+  if(ier /= 0)then
+    write(6,*)
+    write(6,'(a,a,a,a)')' Error in allocation of ',charr,' in subroutine ',chsub
+    write(6,'(a,i4)'   )' iostat =',ier
+    stop 'ERROR in allocation (see output form more information)'
+  endif
+
+  end subroutine errall
 
 end module localization
