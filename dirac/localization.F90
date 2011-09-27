@@ -849,6 +849,15 @@ contains
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
   !                                                                              !
+  ! Notes: 1. Deffinition of kappa matrix in rotcmo_mod is different as in       !
+  !           calculation of gradient and hessian in get_gradient and get_hessian!
+  !           --> Indexes are exchanged and j quaterion is with minus sign       !
+  !               Qkappa_lk = kappa_kl - bar{kappa}_kl^* j                       !
+  !               It follows from definition of bared unitary matrix:            !
+  !               tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                    !
+  !        2. Be also careful about complex cojnugation of gradient in           !
+  !                                H * K = - G*                                  !
+  !                                                                              !
   !******************************************************************************!
   implicit none
 
@@ -882,11 +891,12 @@ contains
   hmat(:,:,:) = d0
   do j = 1,ni
     do i = 1,ni
+      if(i==j)cycle
       do k = 1,nucdep
         pii = pmat(i,i,1,k)
         pjj = pmat(j,j,1,k)
         pn2 = pmat(i,j,1,k)*pmat(i,j,1,k) + pmat(i,j,2,k)*pmat(i,j,2,k)
-        if(i /= j)hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
+        hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
       enddo
     enddo
   enddo
@@ -900,7 +910,7 @@ contains
       if(i==j) cycle
       xkappa(j,i,1) = - gradient(ij,1) / hmat(i,j,1)
       xkappa(i,j,1) = - xkappa(j,i,1)
-      xkappa(j,i,2) =   gradient(ij,2) / hmat(i,j,1)  !!! ??? Why is there no minus
+      xkappa(j,i,2) =   gradient(ij,2) / hmat(i,j,1)  !!! gradient is complex conjugate
       xkappa(i,j,2) =   xkappa(j,i,2)
     enddo
   enddo
@@ -909,11 +919,12 @@ contains
   hmat(:,:,:) = d0
   do j = 1,ni
     do i = 1,ni
+      if(i==j)cycle
       do k = 1,nucdep
         pii = pmat(i,i,1,k)
         pjj = pmat(j,j,1,k)
-        pn2 = pmat(j,i,3,k)*pmat(j,i,3,k) + pmat(j,i,4,k)*pmat(j,i,4,k)
-        if(i /= j)hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pjj-pii)*(pjj-pii))
+        pn2 = pmat(i,j,3,k)*pmat(i,j,3,k) + pmat(i,j,4,k)*pmat(i,j,4,k)
+        hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
       enddo
     enddo
   enddo
@@ -924,9 +935,9 @@ contains
     do i = j,ni
       ij = ij + 1
       if(i==j) cycle
-      xkappa(j,i,3) =   gradient(ij,1) / hmat(i,j,1)   !!! ??? Why is there no minus
+      xkappa(j,i,3) =   gradient(ij,1) / hmat(i,j,1)   !!! j component is with minus sign
       xkappa(i,j,3) =   xkappa(j,i,3)
-      xkappa(j,i,4) =   gradient(ij,2) / hmat(i,j,1)   !!! ??? Why is there no minus
+      xkappa(j,i,4) =   gradient(ij,2) / hmat(i,j,1)   !!! gradient is complex conjugate
       xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
