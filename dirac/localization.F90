@@ -1998,13 +1998,15 @@ contains
   !------------------------------------------------------------------------------!
   !                     Get the rest of the hessian matrix                       !
   !------------------------------------------------------------------------------!
+  ! 2,1  -->  1,2
   do i=ni12+1,2*ni12
     do j=1,ni12
-      hmat(j,i,1) = hmat(i,j,1)
-      hmat(j,i,2) = hmat(i,j,2)
+      hmat(j,i,1) =   hmat(i,j,1)
+      hmat(j,i,2) = - hmat(i,j,2)
     enddo
   enddo
 
+  ! 12,12  -->  34,34
   do i=1,2*ni12
     do j=1,2*ni12
       hmat( i+2*ni12 , j+2*ni12 , 1 ) =   hmat(i,j,1)
@@ -2012,6 +2014,7 @@ contains
     enddo
   enddo
 
+  ! 34,12  -->  12,34
   do i=2*ni12+1,4*ni12
     do j=1,2*ni12
       hmat(j,i,1) =   hmat(i,j,1)
