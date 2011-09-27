@@ -60,68 +60,6 @@ module fde_io
         close(unit)
      end subroutine fde_close_file
 
-#ifdef FOOBAR
-! FDE_ImportStaticPotential_FileOpen: opens file containing the embedding potential
-!                                    (static) exported on a grid
-!
-         subroutine FDE_importVembStatic_fileOpen(embpot_unit)
-            integer, intent(out) :: embpot_unit
-            logical              :: embpot_found
-            integer :: 
-
-
-
-            inquire(FILE=FDEPOT,EXIST=embpot_found)
-
-            if (embpot_found) then
-                open(lufdepot,               &
-                     FORM   = 'FORMATTED',   &
-                     STATUS = 'UNKNOWN',     &
-                     ACCESS = 'SEQUENTIAL',  &
-                     FILE   =  FDEPOT)
-                embpot_unit = lufdepot
-             else
-                call quit("File with embedding potential not found!")
-             endif
-
-         end subroutine FDE_importVembStatic_fileOpen
-
-         subroutine FDE_ImportStaticPotential_FileClose()
-            close(lufdepot) 
-         end subroutine FDE_ImportStaticPotential_FileClose
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDE_ImportFrozenDensity_FileOpen: opens file containing the exported density and
-!                                    other quantities (density gradient components etc)
-!
-         subroutine FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
-            integer, intent(out) :: frozdens_unit
-            logical              :: frozdens_found
-
-            inquire(FILE=FDEDNS,EXIST=frozdens_found)
-
-            if (frozdens_found) then
-                open(lufdefrzdns,               &
-                     FORM   = 'FORMATTED',   &
-                     STATUS = 'UNKNOWN',     &
-                     ACCESS = 'SEQUENTIAL',  &
-                     FILE   =  FDEDNS)
-                frozdens_unit = lufdefrzdns
-             else
-             call quit("File with Frozen Density(+gradient) not found!")
-             endif
-
-         end subroutine FDE_ImportFrozenDensity_FileOpen
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! FDE_ImportFrozenDensity_FileClose: closes file containing the exported density and
-!                                    other quantities (density gradient components etc)
-!
-         subroutine FDE_ImportFrozenDensity_FileClose()
-            close(lufdefrzdns) 
-         end subroutine FDE_ImportFrozenDensity_FileClose
-
-#endif
 
 
 ! description : this subroutine will read some operator (i.e. an embedding

@@ -40,32 +40,6 @@ module fde_cfg
    public parallel_fde
    public fde_cfg_screening
 
-#ifdef FOOBAR   
-   public fde_what_to_do_with_vemb
-   public fde_parse_export_level
-   public fde_set_frozen_import 
-   public fde_set_export_file
-   public fde_get_export_level
-   public fde_get_export_format
-   public fde_get_embpot_filename
-   public fde_get_frozen_filename
-   public fde_get_export_filename
-   public fde_parse_vemb
-   public fde_parse_frozen
-   public fde_set_vemb_import
-   public fde_set_vemb_update
-   public fde_set_have_frozen, fde_get_have_frozen
-   public fde_get_log_unit,  fde_set_log_unit
-   public fde_get_embpot_unit
-   public fde_get_export_unit
-   public fde_get_testing_unit
-   public fde_get_frozen_unit
-   public fde_get_what_to_export
-   public fde_get_what_to_import
-   public DO_GRID_OUT
-   public fde_export
-#endif
-
    private
 
    integer, save :: fde_print_level = 0
