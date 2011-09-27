@@ -136,7 +136,7 @@ contains
       INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
       INTEGER*4 :: NFBAS(0:2), IPQTOQ(4,0:7)
 
-      REAL*8    :: TOTERG, DINVMO, DINVM, XNRM, DIFF, DIFFA
+      REAL*8    :: TOTERG, DINVMO, DINVM, DNRMK, DNRMG, DIFF, DIFFA
       REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:)       :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
@@ -223,7 +223,8 @@ contains
 
       TIMSTR = SECOND()
       DINVM = D0
-      XNRM  = D0
+      DNRMG = D0
+      DNRMK = D0
       IF(LOC%PRJLOC) THEN
 !       PRJLOC = TRUE localization with projection analysis
         CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
@@ -242,8 +243,8 @@ contains
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
         CALL GET_HESSIAN(PMAT,HMAT)
-        CALL GET_GRADIENT(PMAT,GRADIENT)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,XNRM,FLAG,IPQTOQ)
+        CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
+        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
         IF (.NOT. FLAG) THEN
           CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         ENDIF
@@ -288,8 +289,8 @@ contains
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
           '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL GET_GRADIENT(PMAT,GRADIENT)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,XNRM,FLAG,IPQTOQ)
+        CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
+        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
         CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
         CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
@@ -844,7 +845,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_diag(pmat,xkappa,hmat,gradient,xnrm,flag,ipqtoq)
+  subroutine getk_diag(pmat,xkappa,hmat,gradient,dnrm,ipqtoq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
@@ -862,11 +863,9 @@ contains
   implicit none
 
   ! External variables
-  logical flag
-
   integer*4, dimension(:,:) :: ipqtoq
 
-  real*8 :: xnrm
+  real*8 :: dnrm
 
   real*8, dimension(:,:)     :: gradient
   real*8, dimension(:,:,:)   :: xkappa, hmat
@@ -956,10 +955,10 @@ contains
      call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
   endif
 
-  ! Norm of the gradient
+  ! Norm of the kappa vector
   ndim = ni*ni*4
-  xnrm = dnrm2(ndim,xkappa,1)
-  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dsqrt(xnrm)
+  dnrm = dnrm2(ndim,xkappa,1)
+  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dnrm
 
   call qexit('getk_diag')
 
@@ -2027,7 +2026,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_gradient(pmat,gradient)
+  subroutine get_gradient(pmat,gradient,dnrm)
   !******************************************************************************!
   !                                                                              !
   !  Construction of gradient                                                    !
@@ -2036,13 +2035,14 @@ contains
   implicit none
 
   ! External variables
+  real*8 :: dnrm
   real*8, dimension(:,:)     ::  gradient
   real*8, dimension(:,:,:,:) ::  pmat
 
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
 
-  real*8 :: pij1, pij2, dtmp, xnrm
+  real*8 :: pij1, pij2, dtmp
 
   integer*4 :: i, j, k, ij, nucdep, ni, ndimg, ni12, lupri
 
@@ -2092,11 +2092,12 @@ contains
   write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
   write(lupri,'(9d12.4)') (gradient(j,2),j=1+ni12,2*ni12)
 
-  xnrm = d0
+  dnrm = d0
   do i=1,2*ni12
-    xnrm = xnrm + gradient(i,1)*gradient(i,1) + gradient(i,2)*gradient(i,2)
+    dnrm = dnrm + gradient(i,1)*gradient(i,1) + gradient(i,2)*gradient(i,2)
   enddo
-  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dsqrt(xnrm)
+  dnrm = dsqrt(dnrm)
+  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dnrm
 
   call qexit('get_gradient')
 
