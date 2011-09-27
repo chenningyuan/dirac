@@ -530,7 +530,7 @@ endif
 !  that does not change from point to point
    
          do ipoint = 1, nr_points_on_this_proc
-
+            
             time_ao_start = second()
             call get_ao(1,          &
                   rx(ipoint), &
@@ -596,9 +596,7 @@ endif
                                           n_0_t,        &
                                           gnn_0,        &
                                           gnn_0_t,      &
-                                          derv_length,  &
-                                          derv,         &
-                                          parallel_xc)
+                                          derv)
 
 
                derv(1, d1000000) = derv(1, d1000000) &

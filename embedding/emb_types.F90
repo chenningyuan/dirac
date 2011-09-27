@@ -30,12 +30,53 @@ module fde_types
    end type
    
    type fde_files
-       type(fde_file) :: embpot
-       type(fde_file) :: frozen
-       type(fde_file) :: export
-       type(fde_file) :: test
-       type(fde_file) :: logfile
+      type(fde_file) :: embpot
+      type(fde_file) :: frozen
+      type(fde_file) :: export
+      type(fde_file) :: test
+      type(fde_file) :: logfile
    end type
 
+   type grid_function 
+      integer :: npoints
+      integer :: nspin
+      real(kind=8), allocatable :: n(:)
+      real(kind=8), allocatable :: gn(:,:)
+   end type
 
+   public new_grid_function
+   public del_grid_function
+   public set_grid_function_nspin
+
+   contains
+
+
+      subroutine new_grid_function(gf,size)
+         type(grid_function) :: gf
+         integer :: size
+
+         gf%npoints = size
+         gf%nspin   = 1
+         allocate(gf%n(size))
+         allocate(gf%gn(size,3))
+      end subroutine new_grid_function
+
+
+      subroutine del_grid_function(gf)
+         type(grid_function) :: gf
+         integer :: size
+
+         gf%npoints = 0
+         deallocate(gf%n)
+         deallocate(gf%gn)
+      end subroutine del_grid_function
+
+
+      subroutine set_grid_function_nspin(gf,nspin)
+         type(grid_function) :: gf
+         integer :: nspin 
+
+         gf%nspin = nspin
+      end subroutine set_grid_function_nspin
+      
 end module fde_types

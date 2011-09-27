@@ -9,12 +9,17 @@ module fde_nadd_derv
 
       public fde_initialize_nadd_functionals
       public fde_print_nadd_functionals
+
+      public get_fde_nadd_fun_derv
+      public fde_calc_xc_nadd_fun_derv
+      public fde_calc_ke_nadd_fun_derv
+      
       public fde_set_skip_nadd_xc
       public fde_set_skip_nadd_ke
       public fde_set_nadd_kef
       public fde_set_nadd_xcf
       public fde_set_nadd_all_alda
-      public get_fde_nadd_fun_derv
+
       public fde_xc_fun_is_lda
       public fde_xc_fun_is_gga
       public fde_ke_fun_is_lda
@@ -42,8 +47,43 @@ module fde_nadd_derv
       logical, save :: functionals_initialized = .false.
 
       real(8) :: hfx_out, mu_out, beta_out
+
+! derv_lenght here is set to the appropriate parameter from xc_derv
+! looking at xcint, this would be done differently if using openrsp...
+      integer :: derv_length = nr_nonzero_derv
+
+      public fde_new_derv_result
+      public fde_delete_derv_result
       
+      interface fde_new_derv_result
+         module procedure fde_new_derv_result_partial
+      end interface
+
+      interface fde_delete_derv_result
+         module procedure fde_delete_derv_result_partial
+      end interface
+
       contains
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_new_derv_result_partial(npoints,derv)
+!   ----------------------------------------------------------------------------
+         real(kind=8), allocatable :: derv(:,:)
+         integer :: npoints
+         
+         allocate(derv(npoints, 0:derv_length))
+         derv = 0.0d0
+      end subroutine fde_new_derv_result_partial
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_delete_derv_result_partial(derv)
+!   ----------------------------------------------------------------------------
+         real(kind=8), allocatable :: derv(:,:)
+         
+         deallocate(derv)
+      end subroutine fde_delete_derv_result_partial
 
 
 !   ----------------------------------------------------------------------------
@@ -173,9 +213,7 @@ module fde_nadd_derv
                                           r_0_t,        &
                                           z_0,          &
                                           z_0_t,        &
-                                          n,            &
-                                          derv,         &
-                                          parallel_fde)
+                                          derv)
 !   ----------------------------------------------------------------------------
          integer,          intent(in)  :: order
          integer,          intent(in)  :: block_length
@@ -184,105 +222,175 @@ module fde_nadd_derv
          real(8),          intent(in)  :: z_0(*)
          real(8),          intent(in)  :: r_0_t(*)
          real(8),          intent(in)  :: z_0_t(*)
-         integer,          intent(in)  :: n
-         real(8),          intent(out) :: derv(max_block_length, 0:n)
-         logical,          intent(in)  :: parallel_fde
-         real(8)                       :: dervtmp(max_block_length, 0:n)
+         real(8),          intent(inout) :: derv(max_block_length, 0:derv_length)
+
+          derv      = 0.0d0
+            
+
+         if (.not.skip_xc_contribution) &
+            call get_nadd_fun_derv(fde_xcf,       &
+                                   fde_xcf_alda,  &
+                                   fde_xcf_alda,  &
+                                   order,         &
+                                   block_length,  &
+                                   w,             &
+                                   r_0,           &
+                                   r_0_t,         &
+                                   z_0,           &
+                                   z_0_t,         &
+                                   derv)
+
+         if (.not.skip_kin_contribution) &
+            call get_nadd_fun_derv(fde_kef,       &
+                                   fde_kef_alda,  &
+                                   fde_kef_alda,  &
+                                   order,         &
+                                   block_length,  &
+                                   w,             &
+                                   r_0,           &
+                                   r_0_t,         &
+                                   z_0,           &
+                                   z_0_t,         &
+                                   derv)
+
+         end subroutine get_fde_nadd_fun_derv
+
+
+!   ----------------------------------------------------------------------------
+         subroutine get_xc_nadd_fun_derv(order,        &
+                                         block_length, &
+                                         w,            &
+                                         r_0,          &
+                                         r_0_t,        &
+                                         z_0,          &
+                                         z_0_t,        &
+                                         derv)
+!   ----------------------------------------------------------------------------
+            integer,          intent(in)  :: order
+            integer,          intent(in)  :: block_length
+            real(8),          intent(in)  :: w(*)
+            real(8),          intent(in)  :: r_0(*)
+            real(8),          intent(in)  :: z_0(*)
+            real(8),          intent(in)  :: r_0_t(*)
+            real(8),          intent(in)  :: z_0_t(*)
+            real(8),          intent(inout) :: derv(max_block_length, 0:derv_length)
+
+            call get_nadd_fun_derv(fde_xcf,       &
+                                fde_xcf_alda,  &
+                                fde_xcf_alda,  &
+                                order,         &
+                                block_length,  &
+                                w,             &
+                                r_0,           &
+                                r_0_t,         &
+                                z_0,           &
+                                z_0_t,         &
+                                derv)
+
+         end subroutine get_xc_nadd_fun_derv
+
+
+!   ----------------------------------------------------------------------------
+         subroutine get_ke_nadd_fun_derv(order,        &
+                                      block_length, &
+                                      w,            &
+                                      r_0,          &
+                                      r_0_t,        &
+                                      z_0,          &
+                                      z_0_t,        &
+                                      derv)
+!   ----------------------------------------------------------------------------
+            integer, intent(in)  :: order
+            integer, intent(in)  :: block_length
+            real(8), intent(in)  :: w(*)
+            real(8), intent(in)  :: r_0(*)
+            real(8), intent(in)  :: z_0(*)
+            real(8), intent(in)  :: r_0_t(*)
+            real(8), intent(in)  :: z_0_t(*)
+            real(8), intent(inout) :: derv(max_block_length, 0:derv_length)
+
+            call get_nadd_fun_derv(fde_kef,       &
+                                fde_kef_alda,  &
+                                fde_kef_alda,  &
+                                order,         &
+                                block_length,  &
+                                w,             &
+                                r_0,           &
+                                r_0_t,         &
+                                z_0,           &
+                                z_0_t,         &
+                                derv)
+
+      end subroutine get_ke_nadd_fun_derv
+
+
+
+!   ----------------------------------------------------------------------------
+      subroutine get_nadd_fun_derv(f,            &
+                                    f_alda,       &
+                                    f_xalda,      &
+                                    order,        &
+                                    block_length, &
+                                    w,            &
+                                    r_0,          &
+                                    r_0_t,        &
+                                    z_0,          &
+                                    z_0_t,        &
+                                    derv)
+!   ----------------------------------------------------------------------------
+         type(functional)              :: f
+         type(functional)              :: f_alda, f_xalda
+         integer,          intent(in)  :: order
+         integer,          intent(in)  :: block_length
+         real(8),          intent(in)  :: w(*)
+         real(8),          intent(in)  :: r_0(*)
+         real(8),          intent(in)  :: z_0(*)
+         real(8),          intent(in)  :: r_0_t(*)
+         real(8),          intent(in)  :: z_0_t(*)
+         real(8),          intent(inout) :: derv(max_block_length, 0:derv_length)
+         real(8)                       :: dervtmp(max_block_length, 0:derv_length)
          integer :: i, j
 
-         derv = 0.0d0
-
-         if (.not.skip_xc_contribution) then
-
-         call get_functional_derv(fde_xcf,       &
-                               fde_xcf_alda,  &
-                               fde_xcf_alda,  &
+         call get_functional_derv(f,          &
+                               f_alda,        &
+                               f_xalda,       &
                                order,         &
                                block_length,  &
                                w,             &
                                r_0_t,         &
                                z_0_t,         &
-                               n,             &
+                               derv_length,   &
                                dervtmp,       &
                                alda_real=is_fdersp_alda, &
                                alda_imag=is_fdersp_alda)
 
          do i = 1, max_block_length
-            do j = 0, n
+            do j = 0, derv_length
                derv(i,j) = derv(i,j) + dervtmp(i,j)
             enddo
          enddo
 
-         call get_functional_derv(fde_xcf,       &
-                               fde_xcf_alda,  &
-                               fde_xcf_alda,  &
+         call get_functional_derv(f,          &
+                               f_alda,        &
+                               f_xalda,       &
                                order,         &
                                block_length,  &
                                w,             &
                                r_0,           &
                                z_0,           &
-                               n,             &
+                               derv_length,   &
                                dervtmp,       &
                                alda_real=is_fdersp_alda, &
                                alda_imag=is_fdersp_alda)
 
          do i = 1, max_block_length
-            do j = 0, n
+            do j = 0, derv_length
                derv(i,j) = derv(i,j) - dervtmp(i,j)
             enddo
          enddo
 
-      endif
+      end subroutine get_nadd_fun_derv
 
-! nw we construct the contribution from the kinetic energy to the response
-! o the embedding potential.
-! frst set functional to the of-kef, do the non-additive ke contribution
-
-      if (.not.skip_kin_contribution) then
-
-          call get_functional_derv(fde_kef,       &
-                               fde_kef_alda,  &
-                               fde_kef_alda,  &
-                               order,         &
-                               block_length,  &
-                               w,             &
-                               r_0_t,         &
-                               z_0_t,         &
-                               n,             &
-                               dervtmp,       &
-                               alda_real=is_fdersp_alda, &
-                               alda_imag=is_fdersp_alda)
-
-            do i = 1, max_block_length
-               do j = 0, n
-                  derv(i,j) = derv(i,j) + dervtmp(i,j)
-               enddo
-            enddo
-
-! nw subtract the active subsystem's kinetic energy contribution
-
-            call get_functional_derv(fde_kef,       &
-                               fde_kef_alda,  &
-                               fde_kef_alda,  &
-                               order,         &
-                               block_length,  &
-                               w,             &
-                               r_0,           &
-                               z_0,           &
-                               n,             &
-                               dervtmp,       &
-                               alda_real=is_fdersp_alda, &
-                               alda_imag=is_fdersp_alda)
-
-            do i = 1, max_block_length
-               do j = 0, n
-                  derv(i,j) = derv(i,j) - dervtmp(i,j)
-               enddo
-            enddo
-
-         endif
-
-      end subroutine get_fde_nadd_fun_derv
 
 end module fde_nadd_derv
 
