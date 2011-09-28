@@ -116,13 +116,13 @@ cgendet ( integer *pnElec, integer *pnAsht,
     
   *pnStr = 0;
 
-     printf ("\nHi from cgendet. IEL, NASHT, NGAS %i %i %i\n\n",nElec,nOrb,*pnGAS);
+     // printf ("\nHi from cgendet. IEL, NASHT, NGAS %i %i %i\n\n",nElec,nOrb,*pnGAS);
 
   cgendet1 ( anStr,  nOrb,     nElec,     pnStr,    i8_zero,    0,
 	       *pnGAS, nGASTot, anGASMask, anGASSpc, *pnMaxStr );
 
-     printf ("   cgendet: number of strings %i\n", *pnStr);
-  // fflush(stdout);
+     // printf ("   cgendet: number of strings %i\n", *pnStr);
+     // fflush(stdout);
 
   /*
   integer i;
