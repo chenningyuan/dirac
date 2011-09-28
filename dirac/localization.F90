@@ -995,12 +995,12 @@ contains
   real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
   complex*16, parameter :: c2 = (2.0d0,0.0d0)
 
-  integer*4 :: i, j, k, ij, kl, iz, nucdep, ni, ndimk, ndimh, ni12, lupri, ier
-  real*8    :: pii, pjj, pn2, dnrm2
+  integer*4 :: i, j, i1, j1, k, ij, kl, iz, nucdep, ni, ndimk, ndimh, ni12, lupri, ier
+  real*8    :: pii, pjj, pn2, dnrm2, dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
   integer*4,  allocatable, dimension(:)   :: ipiv
-  complex*16, allocatable, dimension(:)   :: grad_c
-  complex*16, allocatable, dimension(:,:) :: hmat_c
+  real*8, allocatable, dimension(:)   :: grad_c
+  real*8, allocatable, dimension(:,:) :: hmat_c
 
   !------------------------------------------------------------------------------!
   call qenter('getk_full')
@@ -1013,28 +1013,54 @@ contains
   ndimh  = size(hmat,1)
   ni12   = ndimh / 4
 
-  call alloc(ipiv  ,ndimh-ni   ,id='ipiv   in getk_full')
+  ! TMP: check properties of hessian
+  dtmp1 = d0; dtmp2 = d0; dtmp3 = d0; dtmp4 = d0; dtmp5 = d0; dtmp6 = d0
+  do i=1,2*ni12
+    do j=i,2*ni12
+      if(i==j)cycle
+      dtmp1 = dtmp1 + dabs(hmat(i,j,1) - hmat(j,i,1))
+      dtmp2 = dtmp2 + dabs(hmat(i,j,2) + hmat(j,i,2))
+      dtmp3 = dtmp3 + dabs(hmat(i,j+2*ni12,1) - hmat(j,i+2*ni12,1))
+      dtmp4 = dtmp4 + dabs(hmat(i,j+2*ni12,2) - hmat(j,i+2*ni12,2))
+      dtmp5 = dtmp5 + dabs(hmat(i,j,1) - hmat(i+2*ni12,j+2*ni12,1)) &
+                    + dabs(hmat(j,i,1) - hmat(j+2*ni12,i+2*ni12,1)) &
+                    + dabs(hmat(i,j,2) + hmat(i+2*ni12,j+2*ni12,2)) &
+                    + dabs(hmat(j,i,2) + hmat(j+2*ni12,i+2*ni12,2))
+      dtmp6 = dtmp6 + dabs(hmat(i,j+2*ni12,1) - hmat(i+2*ni12,j,1)) &
+                    + dabs(hmat(j,i+2*ni12,1) - hmat(j+2*ni12,i,1)) &
+                    + dabs(hmat(i,j+2*ni12,2) + hmat(i+2*ni12,j,2)) &
+                    + dabs(hmat(j,i+2*ni12,2) + hmat(j+2*ni12,i,2))
+    enddo
+    dtmp2 = dtmp2 + dabs(hmat(i,i,2))
+    dtmp5 = dtmp5 + dabs(hmat(i,i,1) - hmat(i+2*ni12,i+2*ni12,1))
+    dtmp6 = dtmp6 + dabs(hmat(i,i+2*ni12,1) - hmat(i+2*ni12,i,1)) &
+                  + dabs(hmat(i,i+2*ni12,2) + hmat(i+2*ni12,i,2))
+  enddo
+  write(6,*) 'symetry A_R',dtmp1
+  write(6,*) 'anti-symetry A_I',dtmp2
+  write(6,*) 'symetry B_R',dtmp3
+  write(6,*) 'symetry B_I',dtmp4
+  write(6,*) 'A and A*',dtmp5
+  write(6,*) 'B and B*',dtmp6
+
+  call alloc(ipiv  ,ndimh-ni,id='ipiv   in getk_full')
   allocate( grad_c(ndimh)       ,stat=ier); call errall(ier,'getk_full','grad_c')
   allocate( hmat_c(ndimh,ndimh) ,stat=ier); call errall(ier,'getk_full','hmat_c')
 
   ! prepare hmat_c
-  do i=1,ndimh
-    do j=1,ndimh
-      hmat_c(i,j) = dcmplx(hmat(i,j,1),hmat(i,j,2))
+  do i=1,2*ni12
+    do j=1,2*ni12
+      i1 = i + 2*ni12
+      j1 = j + 2*ni12
+      hmat_c(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
+      hmat_c(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
+      hmat_c(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
+      hmat_c(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
     enddo
   enddo
 
   do ij=1,ndimh
     kl = 1
-    do k=1,ni
-      hmat_c(ij,kl) = c2 * hmat_c(ij,kl)
-      hmat_c(kl,ij) = hmat_c(ij,kl)
-      kl = kl + ni - (k-1)  ! diagonal
-    enddo
-  enddo
-
-  do ij=1,ndimh
-    kl = 1+2*ni12
     do k=1,ni
       do j=kl+1,ndimh-k+1
         hmat_c(ij,j-1) = hmat_c(ij,j)
@@ -1044,7 +1070,7 @@ contains
   enddo
 
   do ij=1,ndimh
-    kl = 1+2*ni12
+    kl = 1
     do k=1,ni
       do j=kl+1,ndimh-k+1
         hmat_c(j-1,ij) = hmat_c(j,ij)
@@ -1054,11 +1080,13 @@ contains
   enddo
 
   ! prepare grad_c
-  do i=1,ndimh
-    grad_c(i) = - dcmplx(gradient(i,1), - gradient(i,2))
+  do i=1,2*ni12
+    i1 = i + 2*ni12
+    grad_c(i ) = - gradient(i,1)
+    grad_c(i1) =   gradient(i,2)
   enddo
 
-  kl = 1+2*ni12
+  kl = 1
   do k=1,ni
     do j=kl+1,ndimh-k+1
       grad_c(j-1) = grad_c(j)
@@ -1067,40 +1095,43 @@ contains
   enddo
 
   ! Solve linear set of equations
-  call zgetrf(ndimh-ni,ndimh-ni,hmat_c,ndimh,ipiv,ier)
+  call dgetrf(ndimh-ni,ndimh-ni,hmat_c,ndimh,ipiv,ier)
   if(ier /= 0)then
-    write(lupri,*) ' ERROR: The zgetrf LAPACK subroutine in getk_full finished unsuccessfully'
+    write(lupri,*) ' ERROR: The dgetrf LAPACK subroutine in getk_full finished unsuccessfully'
     write(lupri,*) ' info =',ier
     stop
   endif
 
-  call zgetrs('N',ndimh-ni,1,hmat_c,ndimh,ipiv,grad_c,ndimh,ier)
+  call dgetrs('N',ndimh-ni,1,hmat_c,ndimh,ipiv,grad_c,ndimh,ier)
   if(ier /= 0)then
-    write(lupri,*) ' ERROR: The zgetrs LAPACK subroutine in getk_full finished unsuccessfully'
+    write(lupri,*) ' ERROR: The dgetrs LAPACK subroutine in getk_full finished unsuccessfully'
     write(lupri,*) ' info =',ier
     stop
   endif
 
+  xkappa(:,:,:) = d0
   ij = 0
   do j = 1,ni
     do i = j,ni
+      if(i==j)cycle
       ij = ij + 1
-      if(i/=j)then
-        xkappa(j,i,1) = dreal(grad_c(ij))
-        xkappa(i,j,1) = - xkappa(j,i,1)
-      else
-        write(6,*) 'diag kapa(:,1) = ',dreal(grad_c(ij))
-        xkappa(i,j,1) = d0
-      endif
+      xkappa(j,i,1) =   grad_c(ij)
+      xkappa(i,j,1) = - xkappa(j,i,1)
+    enddo
+  enddo
 
-      xkappa(j,i,2) = dimag(grad_c(ij))
-      xkappa(i,j,2) = xkappa(j,i,2)
+  ij = ni12-ni
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      xkappa(j,i,2) =   grad_c(ni12+ij)
+      xkappa(i,j,2) =   xkappa(j,i,2)
 
-      xkappa(j,i,3) = dreal(grad_c(ni12+ij))
-      xkappa(i,j,3) = xkappa(j,i,3)
+      xkappa(j,i,3) = - grad_c(ij)
+      xkappa(i,j,3) =   xkappa(j,i,3)
 
-      xkappa(j,i,4) = dimag(grad_c(ni12+ij))
-      xkappa(i,j,4) = xkappa(j,i,4)
+      xkappa(j,i,4) =   grad_c(2*ni12+ij)
+      xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
 
