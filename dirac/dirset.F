@@ -955,11 +955,12 @@ C
 #include "dcbham.h"
       DIMENSION SCQ(*)
 C
+      IPRINT_local = IPRINT - 3
       IF (ONECAP .AND. INTV1C .EQ. 2) THEN
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ,IPRINT) - POTNUC
+         CORRLV = GETPOT(SCQ,IPRINT_local) - POTNUC
          IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
      &     ' * ONECAP model 1 classical repulsion from small component',
      &     CORRLV
@@ -967,7 +968,7 @@ C
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ,IPRINT)
+         CORRLV = GETPOT(SCQ,IPRINT_local)
 C
 C        Print section
 C

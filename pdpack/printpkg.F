@@ -999,9 +999,11 @@ C
       IMPLICIT DOUBLE COMPLEX (A-H,O-Z)
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       DIMENSION AMATRX(ROWDIM,COLDIM)
+      COMPLEX   C4_test           ! hjaaj: for testing elements for print
+      REAL*4    R4_test,R4_thrpri !        because no double complex absolute value :-(
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
-      DOUBLE PRECISION ZERO, FFMIN, FFMAX, THRPRI
+      DOUBLE PRECISION ZERO, FFMIN, FFMAX
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
@@ -1041,12 +1043,15 @@ C
          CTL = BLANK
       END IF
 C
+      R4_thrpri = thrpri
       LAST = MIN(COLHI,COLLOW+KCOL-1)
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
             DO 4 I = BEGIN,LAST
-               IF (abs(AMATRX(K,I)).gt.thrpri) GO TO 5
+               C4_test = AMATRX(K,I)   ! hjaaj: all this because no intrinsic routine to
+               R4_test = cabs(C4_test) !        calculate absolute value of double complex number
+               IF (R4_test .gt. R4_thrpri) GO TO 5
     4       CONTINUE
          GO TO 1
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)

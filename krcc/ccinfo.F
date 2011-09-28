@@ -5067,7 +5067,7 @@ C     END IF
 * Input
       INTEGER IAOBEX_TP(2*NGAS,NAOBEX_TP),IBOBEX_TP(2*NGAS,NBOBEX_TP)
 *
-      NTEST = 100
+      NTEST = 00
 *
 * Reset things
 *
