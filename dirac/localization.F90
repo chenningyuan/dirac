@@ -248,7 +248,7 @@ contains
         !    Solve equation:  H * K = - G*                                       !
         !------------------------------------------------------------------------!
 !       IF(ITR > 11)THEN
-          CALL GETK_FULL(PMAT,XKAPPA,HMAT,GRADIENT)
+          CALL GETK_FULL(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK)
 !       ELSE
 !         CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
 !       ENDIF
@@ -975,7 +975,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_full(pmat,xkappa,hmat,gradient)
+  subroutine getk_full(pmat,xkappa,hmat,gradient,dnrm)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using full hessian                        !
@@ -985,7 +985,7 @@ contains
   implicit none
 
   ! External variables
-  real*8 :: xnrm
+  real*8 :: dnrm
 
   real*8, dimension(:,:)     :: gradient
   real*8, dimension(:,:,:)   :: xkappa, hmat
@@ -1114,8 +1114,8 @@ contains
 
   ! Norm of the kappa
   ndimk = ni*ni*4
-  xnrm  = dnrm2(ndimk,xkappa,1)
-  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dsqrt(xnrm)
+  dnrm  = dnrm2(ndimk,xkappa,1)
+  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dnrm
 
   call dealloc(ipiv  ,id='ipiv   in getk_full')
   deallocate(grad_c)
