@@ -127,28 +127,30 @@ C     stop 'just check it'
 *
 * M11' --11--> T    (O11' now goes to M11)
 *
-      IHM = 2
-      IFHM = 2 !integrals are fetched
+      print*,'about to contract from intermediate M11'
       II = 0
       IF(II.GE.1) THEN
-*
-      stop ' not yet done. Check call '
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
+C still needs to consider integrals/intermediates!!!!
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
-     &     IFHM,WORK(KT_CC), 
+     &     IFHM,WORK(KM11), 
      &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
 ! Examine next 3 lines!!!      
      &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
-! End examination
-C    &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
      &     NINTER11,WORK(KINTM11),WORK(KLIHIND),IHSM,
 ! Add info for contractions
-     &     NH22,WORK(KNH22),
-     &     NH22TOT,WORK(KNH22TOT),WORK(KNH22TT),WORK(KCOMBNH22TOT),
-     &     WORK(KPERMNH22TOT),WORK(KFACNH22TOT),WORK(KCOMBFACNH22TOT),
+     &     NINTER11,WORK(KLLSOBEX_M11),
+     &     NM11TOT,WORK(KNM11TOT),WORK(KNM11TT),
+     &     WORK(KCOMBNM11TOT),WORK(KPERMNM11TOT),
+     &     WORK(KFACNM11TOT),WORK(KCOMBFACNM11TOT),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-      stop 'check this out'
+      stop 'after some intermediate'
       END IF
 *
 * H22 --12--> M10
@@ -212,7 +214,31 @@ C
 *
 * M02 --01--> M01
 *
-
+      print*,'about to contract from intermediate M02'
+      II = 1
+      IF(II.GE.1) THEN
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
+C still needs to consider integrals/intermediates!!!!
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
+     &     IFHM,WORK(KM02), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+! Examine next 3 lines!!!      
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
+     &     NINTER02,WORK(KINTM02),WORK(KLIHIND),IHSM,
+! Add info for contractions
+     &     NINTER02,WORK(KLLSOBEX_M02),
+     &     NM02TOM01,WORK(KNM02TOM01),WORK(KNM02T01),
+     &     WORK(KCOMBNM02TOM01),WORK(KPERMNM02TOM01),
+     &     WORK(KFACNM02TOM01),WORK(KCOMBFACNM02TOM01),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
+     &     WORK(KINTM01),NINTER01,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      stop 'after some intermediate'
+      END IF
 *
 * H22 --21--> M01
 *
@@ -272,8 +298,31 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
 *
 * M01 --01--> T
 *
-* Deallocate M01
-
+      print*,'about to contract from intermediate M01'
+      II = 0
+      IF(II.GE.1) THEN
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
+C still needs to consider integrals/intermediates!!!!
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
+     &     IFHM,WORK(KM01), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+! Examine next 3 lines!!!      
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
+     &     NINTER01,WORK(KINTM01),WORK(KLIHIND),IHSM,
+! Add info for contractions
+     &     NINTER01,WORK(KLLSOBEX_M01),
+     &     NM01TOT,WORK(KNM01TOT),WORK(KNM01TT),
+     &     WORK(KCOMBNM01TOT),WORK(KPERMNM01TOT),
+     &     WORK(KFACNM01TOT),WORK(KCOMBFACNM01TOT),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      stop 'after some intermediate'
+      END IF
 *
 * H22 --12--> M10
 *
@@ -301,8 +350,8 @@ C
 * M10 --10--> T
 *
 C     stop 'about to call for intermediate contraction'
-      print*,'about to contract from an intermediate '
-      II = 1
+      print*,'about to contract from intermediate M10'
+      II = 0
       IF(II.GE.1) THEN
       IHM = 2
       IFHM = 2 !intermediates are fetched

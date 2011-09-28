@@ -60,8 +60,8 @@
           CHARACTER(LEN=basislen)    :: comp=' '
           CHARACTER(LEN=basislen)    :: file=' '
 !         The following can be assigned for explicitly given basissets or Family type.
-          INTEGER, POINTER           :: JCO(:)
-          REAL, POINTER              :: FAM(:)
+          INTEGER, POINTER           :: JCO(:) => NULL()
+          REAL, POINTER              :: FAM(:) => NULL()
           TYPE(basistype), POINTER   :: next
         END TYPE basistype
 
