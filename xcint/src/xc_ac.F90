@@ -22,17 +22,22 @@ module xc_ac
 
 contains
 
-      SUBROUTINE DFTAC(derv,WEIGHT,                                     &
-     &                 RHO,RHO13,RHO_RESP,RHO_OUTER,z_0)
+   subroutine dftac(           &
+                    derv,      &
+                    weight,    &
+                    rho,       &
+                    rho_resp,  &
+                    rho_outer, &
+                    z_0        &
+                   )
 
+!     --------------------------------------------------------------------------
       real(8) :: derv(max_block_length, 0:99)
       real(8) :: x, shiftbulk
-      real(8) :: VX_BULK(3),                                       &
-     &          VX_OUTER(3),                                       &
-     &          VX_SLATER(3),                                      &
-     &          VX_RESP(3)
-      real(8) :: RHO43, RHO, RHO13, fade, weight
-      real(8) :: RHO_resp, rho_outer, z_0
+      real(8) :: vx_bulk(3), vx_outer(3), vx_slater(3), vx_resp(3)
+      real(8) :: rho43, rho, f, weight
+      real(8) :: rho_resp, rho_outer, z_0
+!     --------------------------------------------------------------------------
 
 #ifdef PRG_DIRAC
 #include "../../cfun/functionals.h"
@@ -41,84 +46,65 @@ contains
       stop
 #endif
 
-
-!
-!
-!     GRAC parameters
-!     ===============
-!
+!     grac parameters
       if (dft_cfg_grac) then
-        RHO43 = RHO*RHO13
-        X = 0.0d0
-        IF(RHO43 .NE. 0.0d0) THEN
-          X = dsqrt(z_0)/RHO43
-        ELSE
-          RETURN
-        ENDIF
+         rho43 = rho**(4.0d0/3.0d0)
+         if (rho43 /= 0.0d0) then
+            x = dsqrt(z_0)/rho43
+         else
+            x = 0.0d0
+            return
+         end if
       end if
-!
-!
+
 !     shift bulk?
-!     ===========
-!
-      shiftbulk = 0.0d0
       if (dft_cfg_grac) then
-        shiftbulk = dft_cfg_ac_ip + homo_eigenvalue
+         shiftbulk = dft_cfg_ac_ip + homo_eigenvalue
+      else
+         shiftbulk = 0.0d0
       end if
-!
-!
-!     bulk potential
-!     ==============
-!
-      vx_bulk = 0.0d0
-!
-      IF (dft_cfg_saop_with_response_part) THEN
-        vx_slater = 0.0d0
-        vx_resp = 0.0d0
-!
-#ifdef PRG_DIRAC
-        CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,dsqrt(z_0))
-#endif
-        VX_RESP(1) = 0.42D0*WEIGHT*RHO_RESP/RHO
-        VX_BULK(1) = VX_SLATER(1) + VX_RESP(1)
-      ELSE
-        VX_BULK(1) = derv(1, d1000000)
-      END IF
-!
-      VX_BULK(2) = derv(1, d0010000)
-!
-!
-!     asymptotic potential
-!     ====================
-!
-      VX_OUTER = 0.0d0
-!
-#ifdef PRG_DIRAC
-      IF(dft_cfg_asymptote_is_lb94)                                     &
-     &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,dsqrt(z_0))
-      IF(dft_cfg_asymptote_is_lbalpha)                                  &
-     &                CALL LBALPHAPOT(VX_OUTER,WEIGHT,RHO,dsqrt(z_0))
-#endif
-!
-!
-!     howto FADE (with D0 .LE. FADE .LE. D1)
-!     ======================================
-!
-!     SAOP
-      IF(dft_cfg_saop)                                                  &
-     & FADE = RHO_OUTER/RHO
-!     GRAC
-      IF(dft_cfg_grac)                                                  &
-     & FADE = 1.0d0/(1.0d0+                                             &
-     &             EXP(-dft_cfg_GRAC_ALPHA*(X-dft_cfg_GRAC_BETA)))
-!
-!
-!     connection
 
-      derv(1, d0010000) = (1.0d0-FADE)* VX_BULK(2)
-      derv(1, d1000000) = (1.0d0-FADE)*(VX_BULK(1)-WEIGHT*SHIFTBULK)  &
-     &        +     FADE * VX_OUTER(1)*(1.0d0-hf_exchange_factor)
-      end subroutine
+!     bulk potential
+      vx_bulk = 0.0d0
+      if (dft_cfg_saop_with_response_part) then
+         vx_slater = 0.0d0
+         vx_resp = 0.0d0
+#ifdef PRG_DIRAC
+         call gllbholepot(vx_slater, weight, rho, dsqrt(z_0))
+#endif
+         vx_resp(1) = 0.42d0*weight*rho_resp/rho
+         vx_bulk(1) = vx_slater(1) + vx_resp(1)
+      else
+         vx_bulk(1) = derv(1, d1000000)
+      end if
+      vx_bulk(2) = derv(1, d0010000)
+
+!     asymptotic potential
+      vx_outer = 0.0d0
+#ifdef PRG_DIRAC
+      if (dft_cfg_asymptote_is_lb94) then
+         call lb94pot(vx_outer, weight, rho, dsqrt(z_0))
+      end if
+      if (dft_cfg_asymptote_is_lbalpha) then
+         call lbalphapot(vx_outer, weight, rho, dsqrt(z_0))
+      end if
+#endif
+
+!     interpolation
+      if (dft_cfg_saop) then
+        f = rho_outer/rho
+      end if
+      if (dft_cfg_grac) then
+        f = 1.0d0/(1.0d0+exp(-dft_cfg_grac_alpha*(x-dft_cfg_grac_beta)))
+      end if
+
+!     connection
+      derv(1, d0010000) = (1.0d0-f)* vx_bulk(2)
+      derv(1, d1000000) = (1.0d0-f)*(vx_bulk(1) - weight*shiftbulk) + f*vx_outer(1)*(1.0d0 - hf_exchange_factor)
+
+   end subroutine
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* deck dftac_eigenvalues */
       SUBROUTINE DFTAC_EIGENVALUES()

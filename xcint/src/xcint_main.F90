@@ -953,8 +953,8 @@ contains
                      rx(ipoint:ipoint+block_length-1), &
                      ry(ipoint:ipoint+block_length-1), &
                      rz(ipoint:ipoint+block_length-1), &
-                     ao,                         &
-                     buffer                      &
+                     ao,                               &
+                     buffer                            &
                     )
 
          call xc_contribution_blas3(                          &
@@ -965,10 +965,12 @@ contains
                                     mat_dim,                  &
                                     nz,                       &
                                     buffer,                   &
-                                    ao,                 &
+                                    ao,                       &
                                     nr_fmat,                  &
                                     fmat,                     &
                                     dmat_0,                   &
+                                    dmat_saop_outer,          &
+                                    dmat_saop_resp,           &
                                     nr_dmat,                  &
                                     dmat,                     &
                                     dmat_pg_sym,              &
@@ -977,7 +979,7 @@ contains
                                     derv,                     &
                                     max_fun_derv,             &
                                     rw(ipoint),               &
-                                    nr_electrons_integrated,             &
+                                    nr_electrons_integrated,  &
                                     xc_energy                 &
                                    )
 
@@ -1162,9 +1164,7 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = n_0(1)**(1.0d0/3.0d0)
-            call dftac(derv, w(1), n_0(1), rho13, &
-     &                 rho_resp, rho_outer, gnn_0(1))
+             call dftac(derv, w(1), n_0(1), rho_resp, rho_outer, gnn_0(1))
           end if
 
 !         energy density
