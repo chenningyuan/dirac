@@ -1671,8 +1671,6 @@ contains
             hmat(ij,kl,2) = hmat(ij,kl,2) + dhalf * pij2 * ( pjj - pii )
           endif
         enddo
-        hmat(kl,ij,1) = hmat(ij,kl,1)
-        hmat(kl,ij,2) = hmat(ij,kl,2)
         sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
