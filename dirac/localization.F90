@@ -130,7 +130,7 @@ contains
       ! Internal variables
       REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
-      CHARACTER :: SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
+      CHARACTER :: SECTID*12, CPUTID*12, WALLTID*12, DAYTID*24, CONV*20 = 'No convergence after'
       LOGICAL   :: TOBE
 
       INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
@@ -160,16 +160,14 @@ contains
 
       CALL TITLER('Molecular orbital localization','*',122)
 
-! Check if coefficients are on file
-
+      ! Check if coefficients are on file
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE)THEN
         WRITE(LUPRI,'(A)') 'ORBLOC: Coefficient file not found !'
         CALL QUIT('ORBLOC: Coefficients not found !')
       ENDIF
 
-! Memory allocation
-
+      ! Memory allocation
       NISH12 = 4 * ( NISH*NISH + NISH ) / 2
       CALL ALLOC(SCOEF   ,NISH*NFBAS(0)*4,   ID='SCOEF    IN ORBLOC')
       CALL ALLOC(SCOEFO  ,NISH*NFBAS(0)*4,   ID='SCOEFO   IN ORBLOC')
@@ -186,14 +184,12 @@ contains
       CALL ALLOC(INDAOS,NFBAS(0),  ID='INDAOS IN ORBLOC')
       CALL ALLOC(INDNAO,2*NUCDEP+2,ID='INDNAO IN ORBLOC')
 
-! Read coefficients
-
+      ! Read coefficients
       CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,IDUM,IDUM,TOTERG,2)
       CLOSE(VAR%LUCOEF,STATUS='KEEP')
 
-! Get overlap matrix 
-
+      ! Get overlap matrix 
       CALL GTOVLX(SMAT,VAR%SSMTRC)
       IF(LOC%IPRLOC.GE.6) THEN
         WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
@@ -204,8 +200,7 @@ contains
                     NFBAS(0),NFBAS(0),1,IPQTOQ(1,0),LUPRI)
       ENDIF
 
-! Occupied electronic orbital coeffients selection
-
+      ! Occupied electronic orbital coeffients selection
       CALL OCCUPY(ISEL,NISH)
       CALL SELCFS(CMO,IFRP,SCOEF,NISH,ISEL,D0,NISH,NFBAS(0),NORB)
       IF(LOC%IPRLOC.GE.5) THEN
@@ -213,14 +208,12 @@ contains
         CALL PRQMAT(SCOEF,NFBAS(0),NISH,NFBAS(0),NISH,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
-! Get the number of functions per center
-
+      ! Get the number of functions per center
       CALL INDAOC(INDAO,INDAOS,INDNAO)
       CALL ORBLO4(INDNAO,NFNUC,NUCDEP)
 
-! We do orbital rotation until the difference between two succesive
-! localisation criteria is less than a threshold
-
+      ! We do orbital rotation until the difference between two succesive
+      ! localisation criteria is less than a threshold
       TIMSTR = SECOND()
       DINVM = D0
       DNRMG = D0
@@ -236,12 +229,11 @@ contains
       ITR = 0
       WRITE(LUPRI,'(A,4X,A4,2X, 4X,A,4X, 2X,A,1X, 3X,A,3X, 4X,A,3X, 2X,A)') &
         '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
-      IF (LOC%AUTO) THEN
- 100    CONTINUE
 
-        ITR = ITR + 1
+      ! SCF cycle
+      DO ITR=1,LOC%ITRLOC
+
         DINVMO = DINVM
-
         CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/5X,A,I4,A,3X)')'########## START ITERATION NO. ',ITR,' ##########'
         WRITE(LUPRI,'(5X,A,A24,A)')'########## ',DAYTID,' ##########'
@@ -258,6 +250,7 @@ contains
           ! PRJLOC = FALSE localization with Mulliken analysis
           CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
         ENDIF
+
         ! Convergence criterion
         DIFF = DINVM - DINVMO
         IF (DIFF < D0) WRITE(LUPRI,'(A,I4)')' WARNING: DINVM_NEW - DINVM_OLD < 0; ITR =',ITR
@@ -265,51 +258,19 @@ contains
         WRITE(LUPRI,'(/A,4X,A4,2X, 4X,A,4X, 2X,A,1X, 3X,A,3X, 4X,A,3X, 2X,A)') &
           '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
         WRITE(LUPRI,'(A,4X,I4,5D13.2)')'*C',ITR,DIFFA,DNRMG,DNRMK,TOTDIAG,TOTNOND
-        IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
-        IF(DIFFA .LE. LOC%THRLOC) THEN
-          WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
-        ELSE
-          WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
-        ENDIF
-      ELSE
- 200    CONTINUE
-        ITR = ITR + 1
-        CALL GTINFO(DAYTID)
-        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
-          '########## START ITERATION NO.', ITR , ' ##########',DAYTID
-        DINVMO = DINVM
-        CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
-        CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
-        CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
-        IF(LOC%PRJLOC) THEN
-!         PRJLOC = TRUE localization with projection analysis
-          CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-        ELSE
-!         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-        ENDIF
-        DIFF  =     DINVM - DINVMO
-        DIFFA = ABS(DINVM - DINVMO)
-        IF (DIFF .LT. D0) THEN
-          WRITE(LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
-          WRITE(LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-        ENDIF
-        IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 200
-        IF(DIFFA .LE. LOC%THRLOC) THEN
-          WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
-        ELSE
-          WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
-        ENDIF
-      ENDIF
+
+        IF(DIFFA < LOC%THRLOC) EXIT  ! Exit loop after convergence criterion is reached
+
+      ENDDO
+
+      IF(DIFFA < LOC%THRLOC) CONV = 'Convergence in      '
+      WRITE(LUPRI,'(/A,A20,I5,A)') ' >>> ',CONV,ITR,' iterations'
+
       TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
       CALL TIMTXT('>>> Time used in localization is :',TIME,LUPRI)
 
-! Put the localised coefficients in DFCOEF
-
+      ! Put the localised coefficients in DFCOEF
       CALL ORBLO5(SCOEF,NFBAS(0),NISH,NORB)
 
   !------------------------------------------------------------------------------!
