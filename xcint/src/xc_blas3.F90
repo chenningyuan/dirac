@@ -526,7 +526,10 @@ contains
       real(8), intent(inout) :: n(block_length)
       real(8), intent(inout) :: n_g(block_length, 3)
 !     --------------------------------------------------------------------------
-      integer                :: i, ikoff, ixyz, k, jkoff, j, ijoff, is, js
+      integer                :: ikoff, ijoff
+      integer                :: i, j, k
+      integer                :: is, js
+      integer                :: ixyz
       real(8), allocatable   :: dmat_sorted(:)
       real(8), allocatable   :: xmat(:)
 !     --------------------------------------------------------------------------
@@ -612,7 +615,10 @@ contains
       real(8), intent(inout) :: n(block_length)
       real(8), intent(inout) :: n_g(block_length, 3)
 !     --------------------------------------------------------------------------
-      integer                :: i, ikoff, ixyz, k, jkoff, j, ijoff, is, js
+      integer                :: ikoff, ijoff
+      integer                :: i, j, k
+      integer                :: is, js
+      integer                :: ixyz
       real(8), allocatable   :: dmat_sorted(:)
       real(8), allocatable   :: xmat(:)
 !     --------------------------------------------------------------------------
@@ -630,19 +636,19 @@ contains
          end do
       end do
 
-      call dgemm('n',                            & !transa
-                 'n',                            & !transb 
-                 block_length,                   & !m      
-                 nr_above_threshold_r,           & !n      
-                 nr_above_threshold_l,           & !k      
-                 1.0d0,                          & !alpha  
-                 ao_sorted(iksoff_l + 1, 0),     & !a      
-                 block_length,                   & !lda    
-                 dmat_sorted,                    & !b    
-                 nr_above_threshold_l,           & !ldb
-                 0.0d0,                          & !beta   
-                 xmat,                           & !c       
-                 block_length)                     !ldc     
+      call dgemm('n',                        & !transa
+                 'n',                        & !transb 
+                 block_length,               & !m      
+                 nr_above_threshold_r,       & !n      
+                 nr_above_threshold_l,       & !k      
+                 1.0d0,                      & !alpha  
+                 ao_sorted(iksoff_l + 1, 0), & !a      
+                 block_length,               & !lda    
+                 dmat_sorted,                & !b    
+                 nr_above_threshold_l,       & !ldb
+                 0.0d0,                      & !beta   
+                 xmat,                       & !c       
+                 block_length)                 !ldc     
 
       deallocate(dmat_sorted)
 
