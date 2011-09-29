@@ -881,7 +881,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
-	  LOGICAL TABSCQ
+      LOGICAL TABSCQ
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -934,7 +934,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck lvcorr_r1 */
+C/* Deck lvcorr_1 */
       SUBROUTINE LVCORR_1(SCQ,IPRINT)
 C***********************************************************************
 C
@@ -1182,7 +1182,7 @@ C
 C     Calculate the large component charge density on each atom
 C
       DO I = 1, NTBAS(1)
-	 QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
+         QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
       ENDDO
 C
       RETURN
