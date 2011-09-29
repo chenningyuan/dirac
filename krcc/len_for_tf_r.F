@@ -6,6 +6,7 @@
 * Jeppe Olsen, November 2001
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Input
       INTEGER ISPOBEX(4*NGAS,NSPOBEX), LSPOBEX(NSPOBEX)

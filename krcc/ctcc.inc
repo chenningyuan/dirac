@@ -1,51 +1,23 @@
-      COMMON/KRCC_CTCC/KLSOBEX,KLLSOBEX,KLIBSOBEX,KLSPOBEX_FRZ,
-     &             KLOBEX,KLSOX_TO_OX,KLSPOBEX_AC,
-     &             KLIHIND,KSIGNNHX,KLABEXTP,KLOP_REO,KSIOPREO,
-     &             MX_ST_TSOSO_MX,MX_ST_TSOSO_BLK_MX,MX_TBLK_MX,
-     &             MAXLEN_I1,LEN_T_VEC,NOBEX_TP,
-     &             MX_SBSTR,NSPOBEX_TPE,MX_TBLK_AS_MX,MX_KBLK,
-     &             NSPOBEX_TP,NALLINT,N1ELINT,N2ELINT,I2DIATP,
-     &             NDIAINT,N1DIAINT,N2DIAINT,NINACMINT,NDIAMINT,
-     &             KOBEX_TP,KLCOBEX_TP,
-     &             KLAOBEX_TP,KIBSOX_FOR_OX, KNSOX_FOR_OX,KISOX_FOR_OX,
-     &             LEN_T_VEC_MX,
-     &             NHOL_SPC, ILTTWO, NAOBEX_TP,NBOBEX_TP,
-! NOTICE DIFFERENCE BETWEEN NSPOBEX_TP and NSPOBEX_TP_CC and other _CC
-     &             NSPOBEX_TP_CC,KLSOBEX_CC,KLIBSOBEX_CC,LEN_T_VEC_CC,
-     &             KLLSOBEX_CC,KLSPOBEX_AC_CC, i_ctcc_fill1,
-     &             KLSPOBEX_AB, KIBSOX_FOR_OCCLS,KNSOX_FOR_OCCLS,
-     &             KISOX_FOR_OCCLS,NTOCCLS,KSPOBEX_LEV,
-     &             KZC(MXPSTT),KZA(MXPSTT),KCOC(MXPSTT),
-     &             KCREO(MXPSTT),KAREO(MXPSTT),KCAOC(MXPSTT),
-     &             KIBCAAB_FOR_CA(MXPSTT),KICAAB_FOR_CA_OP(MXPSTT),
-     &             KICAAB_FOR_CA_NUM(MXPSTT),KLCAAB_FOR_CA(MXPSTT),
-     &             KNCAAB_FOR_CA(MXPSTT),KLREORDER_CAAB,
-     &             KLAOBEX_CC,KLBOBEX_CC,KUNITCC,
-! Temp but may become permanent. Lasse
-     &             KHTPCO,KCONNH,
-     &             KHT0CO,KHT1CO,KHT2CO,KHT3CO,KHT4CO,
-     &             NCONN_IN,NCONN_IN2,NCONN_IN3,NCONN_IN4,
-     &             i_ctcc_fill2, KFCACM,KH2AC,KINC_HX,
-! New ones for intermediates Lasse
-     &             KLAOBEX_KRCC,KLBOBEX_KRCC,
-     &             LENA_KRCC,LENB_KRCC,
-     &             KINTM10 ,KINTM01 ,KINTM11,
-     &             KINTM02 ,KINTM20 ,KINTM12,
-     &             NINTER10,NINTER01,NINTER11,
-     &             NINTER02,NINTER20,NINTER12,
-     &             KNH22,KNH21,KNH12,KNH20,
-     &             KNH11,KNH02,KNH10,KNH01,KNH00,
+      COMMON/KRCC_CTCC/
+! max something
+     &             MX_ST_TSOSO_MX,MX_ST_TSOSO_BLK_MX,
+     &             LEN_T_VEC,LEN_T_VEC_MX,LEN_T_VEC_CC,MX_SBSTR,NALLINT,
+! Not really used but kept
+! look at IDIM_TCC_KRCC
+     &             N1ELINT,N2ELINT,ILTTWO,NHOL_SPC,
+! Dimensions for H 
+     &             NSPOBEX_TP,
      &             NH22,NH21,NH12,NH20,
      &             NH11,NH02,NH10,NH01,NH00,
-     &             KT_IDXS,KT_IDXF, i_ctcc_fill3,
-     &             KINT01_IDXS,KINT01_IDXF,KINT10_IDXS,KINT10_IDXF,
-     &             KINT11_IDXS,KINT11_IDXF,KINT02_IDXS,KINT02_IDXF,
-     &             KINT20_IDXS,KINT20_IDXF,KINT12_IDXS,KINT12_IDXF,
-     &             KLLSOBEX_M01,KLIBSOBEX_M01,LEN_M01_VEC_CC,KM01,
-     &             KLLSOBEX_M10,KLIBSOBEX_M10,LEN_M10_VEC_CC,KM10,
-     &             KLLSOBEX_M11,KLIBSOBEX_M11,LEN_M11_VEC_CC,KM11,
-     &             KLLSOBEX_M02,KLIBSOBEX_M02,LEN_M02_VEC_CC,KM02,
-     &             KLLSOBEX_M12,KLIBSOBEX_M12,LEN_M12_VEC_CC,KM12
-!
-! I do not understand why, but the i_ctcc_fill* variables were needed
-! to avoid padding by gfortran compiler.  / Feb 2011, hjaaj
+! T
+     &             NOBEX_TP,NSPOBEX_TPE,NSPOBEX_TP_CC,
+! M
+     &             NINTER10,NINTER01,NINTER11,
+     &             NINTER02,NINTER20,NINTER12,
+! For help to M
+     &             LENA_KRCC,LENB_KRCC,
+! Contraction mappings
+     &             LEN_M01_VEC_CC,LEN_M10_VEC_CC,
+     &             LEN_M11_VEC_CC,LEN_M02_VEC_CC,LEN_M12_VEC_CC,
+! Other
+     &             NAOBEX_TP,NBOBEX_TP

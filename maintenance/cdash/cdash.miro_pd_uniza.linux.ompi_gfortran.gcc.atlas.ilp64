@@ -22,21 +22,21 @@ git pull origin master
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
 ./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
 cd $DIRAC/$BUILD
-#make dirac_interfaces
-#make -j 2
 make Experimental
+make info_ext
 
 ###
 ### now run the Nightly test suite
 ###
-#TMP_DIR=/tmp/dirac_build
-#mkdir -p $TMP_DIR
-#svn co http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk $TMP_DIR
-#cd $TMP_DIR
-#./pamadm -a
-#./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999  -D VERBOSE_OUTPUT=ON
-#cd $TMP_DIR/build
-#make Nightly
-#rm -rf $TMP_DIR
+TMP_DIR=/tmp/dirac_build
+mkdir -p $TMP_DIR
+git clone git@repo.ctcc.no:dirac.git $TMP_DIR
+cd $TMP_DIR
+./pamadm -a
+./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999  -D VERBOSE_OUTPUT=ON
+cd $TMP_DIR/build
+make Nightly
+make info_ext
+rm -rf $TMP_DIR
 
 exit 0

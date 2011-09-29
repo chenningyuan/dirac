@@ -6,6 +6,8 @@ maintenance/delete_flags
 DFCOEF
 Makefile.config*
 PAMXVC
+gp/compilation_info.F90
+gp/git_revision_info.F90
 basis_dalton/*\*
 cbuild/Makefile.dep
 cbuild/Makefile.extobj

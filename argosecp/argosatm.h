@@ -1,12 +1,10 @@
-c *** .Mol file ***
-c ( Card 4 & 5 )
-      integer   nontyp, kcharg, symtxt, nont(mxatom)
+! *** .Mol file *** ( Card 4 & 5 )
+      integer   RECP_NONTYP, kcharg, symtxt, RECP_NONT(mxatom)
       real*8    thrs, q(mxatom), qexp1 
       character crt*1, kasym(3,3)*1, id3*1,
      &          namatm(mxatom)*4, namnar(mxatom,mxatom)*4
-c
-c *** argosin file ***
-c
+ 
+! *** argosin file ***
       character mtype(mxatom)*3 
       integer   nf(mxatom), nc(mxatom,mxatom), 
      &          igen, igenp(8), igenq(3), jgen, kgen, kgen1, kgen2,

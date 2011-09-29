@@ -24,11 +24,10 @@
 
 module interface_ao
 
+   use file_units
+
    implicit none
 
-#ifdef PRG_DIRAC
-   public interface_ao_write
-#endif
    public interface_ao_read
    public interface_ao_clear
 
@@ -93,11 +92,8 @@ module interface_ao
 
    private
 
-   character(*), parameter :: file_name = 'interface_ao'
-   integer,      parameter :: file_unit = 137
-   logical                 :: file_exists
-   integer                 :: c2s_index(l_max)
-   real(8), allocatable    :: c2s_mat(:)
+   integer              :: c2s_index(l_max)
+   real(8), allocatable :: c2s_mat(:)
 
 contains
 
@@ -162,223 +158,6 @@ contains
 
    end subroutine
 
-#ifdef PRG_DIRAC
-   subroutine interface_ao_write()
-
-!     --------------------------------------------------------------------------
-      integer                 :: i, j, ic
-      integer                 :: ishell, icount, iprim, irep, icent
-      integer, allocatable    :: nr_primitives(:)
-      character(1), parameter :: ls(2) = (/'L', 'S'/)
-!     --------------------------------------------------------------------------
-
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "shells.h"
-#include "symmet.h"
-#include "aovec.h"
-#include "primit.h"
-#include "sphtrm.h"
-#include "dcbbas.h"
-#include "pincom.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "nuclei.h"
-
-      call interface_ao_clear()
-
-!     always regenerate this file
-      inquire(file = file_name, exist = file_exists)
-      if (file_exists) then
-         open(file_unit,            &
-              file   = file_name,   &
-              status = 'unknown',   &
-              form   = 'formatted', &
-              access = 'sequential')
-         close(file_unit, status = 'delete')
-      end if
-      open(file_unit,            &
-           file   = file_name,   &
-           status = 'new',       &
-           form   = 'formatted', &
-           access = 'sequential')
-      rewind(file_unit)
-
-      nr_boson_ireps    = nbsym
-      nr_fermion_coreps = nfsym
-      nr_shells         = kmax
-
-      allocate(l_quantum_nr(nr_shells))
-      allocate(shell_center(nr_shells))
-      do ishell = 1, nr_shells
-         l_quantum_nr(ishell)           = nhkt(ishell) - 1
-         shell_center(ishell)           = ncent(ishell)
-      end do
-
-      allocate(nr_primitives(nr_shells))
-      do ishell = 1, nr_shells
-         i = jstrt(ishell) + 1
-         j = jstrt(ishell) + nuco(ishell)
-         icount = 0
-         do iprim = i, j
-            if (dabs(priccf(iprim, numcf(ishell))) > tiny(0.0d0)) then
-               icount = icount + 1
-               nr_primitives(ishell) = icount
-            end if
-         end do
-      end do
-
-      allocate(primitive_exp(nr_shells,    sum(nr_primitives)))
-      allocate(contraction_coef(nr_shells, sum(nr_primitives)))
-      do ishell = 1, nr_shells
-         i = jstrt(ishell) + 1
-         j = jstrt(ishell) + nuco(ishell)
-         icount = 0
-         do iprim = i, j
-            if (dabs(priccf(iprim, numcf(ishell))) > tiny(0.0d0)) then
-               icount = icount + 1
-               contraction_coef(ishell, icount) = priccf(iprim, numcf(ishell))
-               primitive_exp(ishell, icount)    = priexp(iprim)
-            end if
-         end do
-      end do
-
-      write(file_unit, '(a)') '*** geometry'
-
-      write(file_unit, '(4x, a)') 'nr_centers'
-      write(file_unit, '(4x, i6)') nucind
-
-      write(file_unit, '(4x, a)') 'charges_and_coordinates'
-      do icent = 1, nucind
-         write(file_unit, '(4f27.16)') charge(icent),  &
-                                       cord(1, icent), &
-                                       cord(2, icent), &
-                                       cord(3, icent)
-      end do
-
-      write(file_unit, '(a)') '*** basis'
-
-      basis_is_spherical = .false.
-      do ishell = 1, kmax
-         if (sphr(ishell)) then
-            basis_is_spherical = .true.
-         end if
-      end do
-      write(file_unit, '(4x, a)') 'is_spherical'
-      write(file_unit, '(4x, l6)') basis_is_spherical
-
-      write(file_unit, '(4x, a)') 'algebra'
-      write(file_unit, '(4x, i6)') nz
-
-      use_only_large = .false.
-      if (mc == 1) then
-         use_only_large = .true.
-      end if
-      write(file_unit, '(4x, a)') 'use_only_large'
-      write(file_unit, '(4x, l6)') use_only_large
-
-      write(file_unit, '(4x, a)') 'nr_primitive_exp'
-      write(file_unit, '(4x, i6)') sum(nr_primitives)
-
-      write(file_unit, '(4x, 4a6, 2a26)') '# cent', &
-                                          'L/S',    &
-                                          'shell',  &
-                                          'l',      &
-                                          'prim',   &
-                                          'coef'
-      do ishell = 1, kmax
-         if (ishell > nlrgsh) then
-            ic = 2
-         else
-            ic = 1
-         end if
-         do i = 1, nr_primitives(ishell)
-            write(file_unit, '(4x, i6, a6, 2i6, 2e26.16)') shell_center(ishell),           &
-                                                           ls(ic),                         &
-                                                           ishell,                         &
-                                                           l_quantum_nr(ishell),           &
-                                                           primitive_exp(ishell, i),       &
-                                                           contraction_coef(ishell, i)
-         end do
-      end do
-      deallocate(nr_primitives)
-
-      if (nr_boson_ireps > 1) then
-         write(file_unit, '(a)') '*** symmetry'
-
-         write(file_unit, '(4x, a)') 'center_degeneracy_and_stabilizing_irep'
-         do icent = 1, nucind
-            write(file_unit, '(4x, 3i6)') icent, nucdeg(icent), istbnu(icent)
-         end do
-
-         write(file_unit, '(4x, a)') 'nr_boson_ireps'
-         write(file_unit, '(4x, i6)') nr_boson_ireps
-
-         write(file_unit, '(4x, a)') 'nr_fermion_coreps'
-         write(file_unit, '(4x, i6)') nr_fermion_coreps
-
-         write(file_unit, '(4x, a)') 'irep_of_axes'
-         write(file_unit, '(4x, i6)') isymax(1, 1)
-         write(file_unit, '(4x, i6)') isymax(2, 1)
-         write(file_unit, '(4x, i6)') isymax(3, 1)
-
-         write(file_unit, '(4x, a)') 'irep_of_rotations'
-         write(file_unit, '(4x, i6)') isymax(1, 2)
-         write(file_unit, '(4x, i6)') isymax(2, 2)
-         write(file_unit, '(4x, i6)') isymax(3, 2)
-
-         write(file_unit, '(4x, a6, 10a8)') '# irep',  &
-                                            'nr-L',    &
-                                            'nr-S',    &
-                                            'D-off-L', &
-                                            'D-off-S', &
-                                            'jqbas-L', &
-                                            'jqbas-S', &
-                                            'jbtof-L', &
-                                            'jbtof-S', &
-                                            'H-off-L', &
-                                            'H-off-S'
-         do irep = 0, nr_boson_ireps - 1
-            write(file_unit, '(4x, i6, 10i8)') irep,            &
-                                               nbbas(irep, 1),  &
-                                               nbbas(irep, 2),  &
-                                               ibbas(irep, 1),  &
-                                               ibbas(irep, 2),  &
-                                               jqbas(irep, 1),  &
-                                               jqbas(irep, 2),  &
-                                               jbtof(irep, 1),  &
-                                               jbtof(irep, 2),  &
-                                               icos(irep+1, 1), &
-                                               icos(irep+1, 2)
-         end do
-
-         pq_to_uq = ipqtoq
-         uq_to_pq = iqtopq
-         write(file_unit, '(4x, a)') 'quaternion_packing'
-         do i = 1, 4
-            write(file_unit, '(8x, 8i2)') pq_to_uq(i, 0:7)
-         end do
-         do i = 1, 4
-            write(file_unit, '(8x, 8i2)') uq_to_pq(i, 0:7)
-         end do
-
-         iq(0) = 1
-         do i = 1, 3
-            iq(i) = jm4pos(4 - i)
-            iq(i) = iqtopq(iq(i), isymax(i, 2))
-         end do
-         write(file_unit, '(4x, a)') 'quaternion_units'
-         write(file_unit, '(8x, 4i2)') iq(0:3)
-      end if
-
-      close(file_unit, status = 'keep')
-
-      call interface_ao_clear()
-
-   end subroutine
-#endif
-
    subroutine interface_ao_read(use_mpi_if_possible)
 
       use sigma_prefactor_setting
@@ -411,6 +190,32 @@ contains
       integer, allocatable :: kstart(:)
       real(8), allocatable :: cs_mat(:, :)
       real(8), parameter   :: bitstring_parity(0:7) = (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)
+      integer :: size1_ao_center
+      integer :: size1_ao_center_xyz
+      integer :: size2_ao_center_xyz
+      integer :: size1_ao_distance
+      integer :: size2_ao_distance
+      integer :: size3_ao_distance
+      integer :: size1_cartesian_deg
+      integer :: size1_cartesian_off
+      integer :: size1_contraction_coef
+      integer :: size2_contraction_coef
+      integer :: size1_f_so_ao
+      integer :: size1_i_so_ao
+      integer :: size2_i_so_ao
+      integer :: size1_l_quantum_nr
+      integer :: size1_nr_nonzero_contraction_coefs
+      integer :: size1_primitive_exp
+      integer :: size2_primitive_exp
+      integer :: size1_shell_center
+      integer :: size1_shell_stabilizing_irep
+      integer :: size1_spherical_deg
+      integer :: size1_spherical_off
+      integer :: size1_center_charge
+      integer :: size1_center_deg
+      integer :: size1_center_stabilizing_irep
+      integer :: size1_center_xyz
+      integer :: size2_center_xyz
 !     --------------------------------------------------------------------------
 
       call interface_ao_clear()
@@ -418,53 +223,53 @@ contains
       if (xc_mpi_is_master()) then
          symmetry_info_found = .false.
 
-         inquire(file = file_name, exist = file_exists)
-         if (.not. file_exists) then
+         inquire(file = interface_file_name_ao, exist = interface_file_exists)
+         if (.not. interface_file_exists) then
             print *, 'interface_ao file not found'
             stop
          end if
-         open(file_unit,            &
-              file   = file_name,   &
+         open(interface_file_unit,            &
+              file   = interface_file_name_ao,   &
               status = 'unknown',   &
               form   = 'formatted', &
               access = 'sequential')
-         rewind(file_unit)
+         rewind(interface_file_unit)
 
          do while (.true.)
 
-            read(file_unit, '(a120)', end=1) line
+            read(interface_file_unit, '(a120)', end=1) line
 
             if (word_contains(line, '*** geometry')) then
-               read(file_unit, *)
-               read(file_unit, *) nr_centers
-               read(file_unit, *)
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) nr_centers
+               read(interface_file_unit, *)
                allocate(center_charge(nr_centers))
                allocate(center_xyz(nr_centers, 3))
                do i = 1, nr_centers
-                  read(file_unit, *) center_charge(i), &
+                  read(interface_file_unit, *) center_charge(i), &
                                      center_xyz(i, 1:3)
                end do
             end if
 
             if (word_contains(line, '*** symmetry')) then
                symmetry_info_found = .true.
-               read(file_unit, *)
+               read(interface_file_unit, *)
                allocate(center_deg(nr_centers))
                allocate(center_stabilizing_irep(nr_centers))
                do i = 1, nr_centers
-                  read(file_unit, *) idummy, center_deg(i), center_stabilizing_irep(i)
+                  read(interface_file_unit, *) idummy, center_deg(i), center_stabilizing_irep(i)
                end do
-               read(file_unit, *)
-               read(file_unit, *) nr_boson_ireps
-               read(file_unit, *)
-               read(file_unit, *) nr_fermion_coreps
-               read(file_unit, *)
-               read(file_unit, *) irep_of_axes(1:3)
-               read(file_unit, *)
-               read(file_unit, *) irep_of_rotations(1:3)
-               read(file_unit, *)
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) nr_boson_ireps
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) nr_fermion_coreps
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) irep_of_axes(1:3)
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) irep_of_rotations(1:3)
+               read(interface_file_unit, *)
                do irep = 0, nr_boson_ireps - 1
-                  read(file_unit, *) idummy,                    &
+                  read(interface_file_unit, *) idummy,                    &
                                      ao_nr(irep, 1),            &
                                      ao_nr(irep, 2),            &
                                      ao_off(irep, 1),           &
@@ -476,27 +281,27 @@ contains
                                      ao_off_hermit(irep+1, 1),  &
                                      ao_off_hermit(irep+1, 2)
                end do
-               read(file_unit, *)
+               read(interface_file_unit, *)
                do i = 1, 4
-                  read(file_unit, *) pq_to_uq(i, 0:7)
+                  read(interface_file_unit, *) pq_to_uq(i, 0:7)
                end do
                do i = 1, 4
-                  read(file_unit, *) uq_to_pq(i, 0:7)
+                  read(interface_file_unit, *) uq_to_pq(i, 0:7)
                end do
-               read(file_unit, *)
-               read(file_unit, *) iq(0:3)
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) iq(0:3)
             end if
 
             if (word_contains(line, '*** basis')) then
-               read(file_unit, *)
-               read(file_unit, *) basis_is_spherical
-               read(file_unit, *)
-               read(file_unit, *) nr_quaternion_blocks
-               read(file_unit, *)
-               read(file_unit, *) use_only_large
-               read(file_unit, *)
-               read(file_unit, *) sum_nr_primitives
-               read(file_unit, *)
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) basis_is_spherical
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) nr_quaternion_blocks
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) use_only_large
+               read(interface_file_unit, *)
+               read(interface_file_unit, *) sum_nr_primitives
+               read(interface_file_unit, *)
 
 !              overkill allocation for convenience
 !              it will "never become a bottleneck" (2011-04-29)
@@ -517,7 +322,7 @@ contains
                nr_shells_large = 0
                nr_shells_small = 0
                do i = 1, sum_nr_primitives
-                  read(file_unit, *) cent,   &
+                  read(interface_file_unit, *) cent,   &
                                      ch,     &
                                      ishell, &
                                      l,      &
@@ -552,7 +357,7 @@ contains
          end do
 1        continue
 
-         close(file_unit, status = 'keep')
+         close(interface_file_unit, status = 'keep')
 
          nr_shells = nr_shells_large + nr_shells_small
 
@@ -957,31 +762,114 @@ contains
 #ifdef VAR_MPI
       if (use_mpi_if_possible .and. (xc_mpi_get_nr_proc() > 1)) then
 
-         call xc_mpi_bcast(nr_ao                     )
-         call xc_mpi_bcast(nr_so_ao                  )
-         call xc_mpi_bcast(nr_centers)
-         call xc_mpi_bcast(sum_nr_primitives         )
+         call xc_mpi_bcast(nr_ao             )
+         call xc_mpi_bcast(nr_so_ao          )
+         call xc_mpi_bcast(nr_centers        )
+         call xc_mpi_bcast(sum_nr_primitives )
+
+         if (xc_mpi_is_master()) then
+            size1_ao_center                    = size(ao_center)
+            size1_ao_center_xyz                = size(ao_center_xyz, 1)
+            size2_ao_center_xyz                = size(ao_center_xyz, 2)
+            size1_ao_distance                  = size(ao_distance, 1)
+            size2_ao_distance                  = size(ao_distance, 2)
+            size3_ao_distance                  = size(ao_distance, 3)
+            size1_cartesian_deg                = size(cartesian_deg)
+            size1_cartesian_off                = size(cartesian_off)
+            size1_contraction_coef             = size(contraction_coef, 1)
+            size2_contraction_coef             = size(contraction_coef, 2)
+            size1_f_so_ao                      = size(f_so_ao)
+            size1_i_so_ao                      = size(i_so_ao, 1)
+            size2_i_so_ao                      = size(i_so_ao, 2)
+            size1_l_quantum_nr                 = size(l_quantum_nr)
+            size1_nr_nonzero_contraction_coefs = size(nr_nonzero_contraction_coefs)
+            size1_primitive_exp                = size(primitive_exp, 1)
+            size2_primitive_exp                = size(primitive_exp, 2)
+            size1_shell_center                 = size(shell_center)
+            size1_shell_stabilizing_irep       = size(shell_stabilizing_irep)
+            size1_spherical_deg                = size(spherical_deg)
+            size1_spherical_off                = size(spherical_off)
+            size1_center_charge                = size(center_charge)
+            size1_center_deg                   = size(center_deg)
+            size1_center_stabilizing_irep      = size(center_stabilizing_irep)
+            size1_center_xyz                   = size(center_xyz, 1)
+            size2_center_xyz                   = size(center_xyz, 2)
+         else
+            size1_ao_center                    = 0
+            size1_ao_center_xyz                = 0
+            size2_ao_center_xyz                = 0
+            size1_ao_distance                  = 0
+            size2_ao_distance                  = 0
+            size3_ao_distance                  = 0
+            size1_cartesian_deg                = 0
+            size1_cartesian_off                = 0
+            size1_contraction_coef             = 0
+            size2_contraction_coef             = 0
+            size1_f_so_ao                      = 0
+            size1_i_so_ao                      = 0
+            size2_i_so_ao                      = 0
+            size1_l_quantum_nr                 = 0
+            size1_nr_nonzero_contraction_coefs = 0
+            size1_primitive_exp                = 0
+            size2_primitive_exp                = 0
+            size1_shell_center                 = 0
+            size1_shell_stabilizing_irep       = 0
+            size1_spherical_deg                = 0
+            size1_spherical_off                = 0
+            size1_center_charge                = 0
+            size1_center_deg                   = 0
+            size1_center_stabilizing_irep      = 0
+            size1_center_xyz                   = 0
+            size2_center_xyz                   = 0
+         end if
+
+         call xc_mpi_bcast(size1_ao_center                    )
+         call xc_mpi_bcast(size1_ao_center_xyz                )
+         call xc_mpi_bcast(size2_ao_center_xyz                )
+         call xc_mpi_bcast(size1_ao_distance                  )
+         call xc_mpi_bcast(size2_ao_distance                  )
+         call xc_mpi_bcast(size3_ao_distance                  )
+         call xc_mpi_bcast(size1_cartesian_deg                )
+         call xc_mpi_bcast(size1_cartesian_off                )
+         call xc_mpi_bcast(size1_contraction_coef             )
+         call xc_mpi_bcast(size2_contraction_coef             )
+         call xc_mpi_bcast(size1_f_so_ao                      )
+         call xc_mpi_bcast(size1_i_so_ao                      )
+         call xc_mpi_bcast(size2_i_so_ao                      )
+         call xc_mpi_bcast(size1_l_quantum_nr                 )
+         call xc_mpi_bcast(size1_nr_nonzero_contraction_coefs )
+         call xc_mpi_bcast(size1_primitive_exp                )
+         call xc_mpi_bcast(size2_primitive_exp                )
+         call xc_mpi_bcast(size1_shell_center                 )
+         call xc_mpi_bcast(size1_shell_stabilizing_irep       )
+         call xc_mpi_bcast(size1_spherical_deg                )
+         call xc_mpi_bcast(size1_spherical_off                )
+         call xc_mpi_bcast(size1_center_charge                )
+         call xc_mpi_bcast(size1_center_deg                   )
+         call xc_mpi_bcast(size1_center_stabilizing_irep      )
+         call xc_mpi_bcast(size1_center_xyz                   )
+         call xc_mpi_bcast(size2_center_xyz                   )
 
          if (.not. xc_mpi_is_master()) then
-            allocate(ao_center(nr_ao))
-            allocate(ao_center_xyz(nr_ao, 3))
-            allocate(ao_distance(nr_ao, nr_ao, 3))
-            allocate(cartesian_deg(sum_nr_primitives))
-            allocate(cartesian_off(sum_nr_primitives))
-            allocate(contraction_coef(sum_nr_primitives, sum_nr_primitives))
-            allocate(f_so_ao(nr_so_ao))
-            allocate(i_so_ao(2, nr_so_ao))
-            allocate(l_quantum_nr(sum_nr_primitives))
-            allocate(nr_nonzero_contraction_coefs(sum_nr_primitives))
-            allocate(primitive_exp(sum_nr_primitives, sum_nr_primitives))
-            allocate(shell_center(sum_nr_primitives))
-            allocate(shell_stabilizing_irep(sum_nr_primitives))
-            allocate(spherical_deg(sum_nr_primitives))
-            allocate(spherical_off(sum_nr_primitives))
-            allocate(center_charge(nr_centers))
-            allocate(center_deg(nr_centers))
-            allocate(center_stabilizing_irep(nr_centers))
-            allocate(center_xyz(nr_centers, 3))
+            allocate(ao_center(size1_ao_center))
+            allocate(ao_center_xyz(size1_ao_center_xyz, size2_ao_center_xyz))
+            allocate(ao_distance(size1_ao_distance, size2_ao_distance, size3_ao_distance))
+            allocate(cartesian_deg(size1_cartesian_deg))
+            allocate(cartesian_off(size1_cartesian_off))
+            allocate(contraction_coef(size1_contraction_coef, size2_contraction_coef))
+            allocate(f_so_ao(size1_f_so_ao))
+            allocate(i_so_ao(size1_i_so_ao, size2_i_so_ao))
+            allocate(l_quantum_nr(size1_l_quantum_nr))
+            allocate(nr_nonzero_contraction_coefs(size1_nr_nonzero_contraction_coefs))
+            allocate(primitive_exp(size1_primitive_exp, size2_primitive_exp))
+            allocate(shell_center(size1_shell_center))
+            allocate(shell_stabilizing_irep(size1_shell_stabilizing_irep))
+            allocate(spherical_deg(size1_spherical_deg))
+            allocate(spherical_off(size1_spherical_off))
+            allocate(center_charge(size1_center_charge))
+            allocate(center_deg(size1_center_deg))
+            allocate(center_stabilizing_irep(size1_center_stabilizing_irep))
+            allocate(center_xyz(size1_center_xyz, size2_center_xyz))
          end if
 
          call xc_mpi_bcast(interface_ao_set              )

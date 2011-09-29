@@ -61,15 +61,13 @@ class pam_enviroment:
 
         self.expert_mode = False # disable various safety checks
 
-     #  installation directory ...
+        #  installation directory ...
         self.dirac_home = install_dir
 
-    # basis set directory - initial value which can be reset later in the flags-reading step
-    # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-        self.basdir = '.:' + os.path.join(install_dir_default,'basis')+':' \
-                            + os.path.join(install_dir_default,'basis_dalton')
+        # set the basis set directories
+        self.set_basdir()
 
-    # by default we assume no xyz-molecule input file
+        # by default we assume no xyz-molecule input file
         self.xyz_molecule_input = False
 
         # no internal pam default for --scratch 
@@ -158,9 +156,9 @@ class pam_enviroment:
             else:
                 self.dirac_exe = None
 
-    # ## put/get files (flag controlled) ###
-        self.put_files = ''
-        self.get_files = ''
+    # put/get files (flag controlled) #
+        self.put_files = None
+        self.get_files = None
 
     # memory allocation
         mw = 64
@@ -256,6 +254,20 @@ class pam_enviroment:
     # list of all pam arguments
         self.pam_args = []
 
+    def set_basdir(self):
+        '''
+        set and controls the basis set directory
+        '''
+    # basis set directory - initial value which can be reset later in the flags-reading step
+    # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
+        self.basdir='.:'
+        basis_dir= os.path.join(install_dir_default,'basis')
+        basis_dalton_dir=os.path.join(install_dir_default,'basis_dalton')
+        if os.path.isdir(basis_dir):
+            self.basdir = self.basdir + basis_dir
+        if os.path.isdir(basis_dalton_dir):
+            self.basdir = self.basdir+':'+basis_dalton_dir
+
     def show_settings(self):
         '''
         Print current settings to stdout
@@ -278,9 +290,9 @@ class pam_enviroment:
         print "  Dirac command       ",  self.dirac_cmd
         print "  Dirac executable    ",  self.dirac_exe
         if self.diracrc_file:
-            print "  sole diracrc file, which was read ",self.diracrc_file
+            print "  sole diracrc file, which was read: ",self.diracrc_file
         if self.diracrc_args:
-            print "  default pam arguments from this file ",self.diracrc_args
+            print "  default pam arguments from this file: ",self.diracrc_args
 
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
@@ -851,10 +863,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if os.path.isfile(str(options.dest_debugger)):
                 self.debugger = options.dest_debugger
             else:
-                print 'Debugger ', options.dest_debugger, \
-                    ' you assigned does not exist ! Provide it with full path !'
+                print 'FYI: Debugger wrongly assigned. No debugging ;|'
                 self.debug = False
-                sys.exit(17)
 
         if options.dest_vg:
             self.vg_debug = True
@@ -1143,7 +1153,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if self.debug:
                 # first check if debugger is set
                 if self.debugger is None:
-                    sys.exit("though debug wanted, debugger not assigned !")
+                    sys.exit("Though debugging wanted, no debugger assigned !")
                 if find_executable(self.debugger) is None:
                     print 'no debugger found in the .diracrc file !'
                     sys.exit()
@@ -1211,15 +1221,16 @@ Options are also read from the ~/.dirac and .diracrc files."""
                            stdin=subprocess.PIPE, stdout=self.f)
 
     def grep_for_warnings(self):
-        file = open(self.output_file_full, 'r')
-        warnings = ''
-        for line in file.readlines():
-            if 'warning' in line.lower():
-                warnings += line
-        file.close()
-        if warnings != '':
-            print 'output lines containing warnings:'
-            print warnings
+        if os.path.isfile(self.output_file_full):
+            file = open(self.output_file_full, 'r')
+            warnings = ''
+            for line in file.readlines():
+                if 'warning' in line.lower():
+                    warnings += line
+            file.close()
+            if warnings != '':
+                print 'output lines containing warnings:'
+                print warnings
 
     def execute_dirac(self):
         ''' 
@@ -1426,6 +1437,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                     backup_file(some_file=file_name_home, upto=None)
         # finally copy
                 self.copy_file(full_file_name, file_name_home)
+                print '  Saved file "',file_name,'" from the scratch directory'
             else:
                 print_std_out_err(file_name+' not found in the scratch directory.')
 
@@ -1552,7 +1564,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
         # add few consistency checks
         if self.dirac_exe == None:
-            print_std_out_err('No Dirac binary assigned, quitting.')
+            print_std_out_err('No Dirac executable assigned, quitting.')
             sys.exit(29)
 
         if self.parallel_run and self.mpirun==None:

@@ -1,5 +1,8 @@
+! FILE: dgroup.h
 !
-!     NZ - number of matrices (1,2,4)
+!     NZ    - number of fermion matrices (1,2,4)
+!     NZC1  - number of fermion matrices in C1 symmetry (1 or 4)
+!     NZ_in_CI = min(2,NZ), if 2 then complex CI vectors, if 1 then real CI vectors
 !     NFSYM - number of fermion irreps
 !     NBSYM - number of boson irreps
 !     JSPINR(IM,IC,IFRP) - boson irrep for a given spinor position
@@ -24,11 +27,12 @@
       INTEGER I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP(4, 2), JBTOF(0:7, 2), &
      &        JMROI(4), JSPINR(4, 2, 2), JQBAS(0:7, 2), JFSYM(4, 2),    &
      &        IPQTOQ(4, 0:7), IQTOPQ(4, 0:7), IQPH(4, 2),               &
-     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT, NZC1 ,    &
-     &        I2_DGROUP
+     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT,           &
+     &        NZC1, NZ_in_CI, I2_DGROUP
       COMMON /DGROUP/ I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,&
      &                JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,       &
-     &                IHQMAT, IRQMAT, IQDEF, ITOT, NZC1, I2_DGROUP
+     &                IHQMAT, IRQMAT, IQDEF, ITOT,                      &
+     &                NZC1, NZ_in_CI, I2_DGROUP
 
 !     Do NOT add any variables after the end tag !
       LOGICAL LINEAR
@@ -61,3 +65,4 @@
       CHARACTER*4 M4COMB
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS
       COMMON /ONECMB/ M4COMB(0:NMATTYP)
+! -- end of dgroup.h --

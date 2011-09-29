@@ -4,6 +4,9 @@
 * Hamiltonian and the Intermediates.
 *
 *
+#include "implicit.inc"
+#include "ipoist8.inc"
+*
       DIMENSION WORK(*)
 *
 * 1. Find individual contractions
@@ -73,16 +76,17 @@
 * Perhaps the longest subroutine in the world. Lasse 2010
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "interm.inc"
-#include "ipoist8.inc"
 *
       DIMENSION WORK(*)
 *
       INTEGER NUMCOM,IFACTOR(4),INUMDUM(4),INUMCON(4,4)
 *
-      NTEST = 100
+      NTEST = 00
 *
       IONE = 1
 * All Hamiltonian contractions
@@ -2788,9 +2792,11 @@
 * List all operators from intermediates which can be connected to T
 * 
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "interm.inc"
 *
       DIMENSION WORK(*)
@@ -2810,6 +2816,7 @@
       CALL OP_COMPARE(WORK(KNH12),NH12,WORK(KINTM12),NINTER12,
      &     WORK(KINT12_IDXS),WORK(KINT12_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
      &     WORK(KM12TOH12),WORK(KLSOBEX))
+      CALL MEMCHK_KRCC(WORK)
 * H11 + M11
       print*,' matching 11 '
       ISIMHT11 = NH11 !MIN(NINTER11,NH11)
@@ -2899,6 +2906,7 @@
 *
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 *
 *
 *

@@ -13,20 +13,17 @@
       parameter (MXROOT = 64  )
 
 !     MXPSTT == max. number of symmetry type-types
+!     decrease/increase when running smaller/larger systems
       PARAMETER (MXPSTT = 8000 )
-#ifdef LARGE_MOLECULES
-      PARAMETER (MXPSTT = 80000)
-#endif
+
 !     MXINT_TP == max. number of SO-integral types 
       INTEGER MXINT_TP
       PARAMETER (MXINT_TP = 10000)
 !     MXINT_DIA == max. number of diagonal integrals  
-!     could be decreased when running smaller systems
+!     decrease/increase when running smaller/larger systems
       INTEGER MXINT_DIA
       PARAMETER (MXINT_DIA = 125 000)
-#ifdef LARGE_MOLECULES
-      PARAMETER (MXINT_DIA = 500 000)
-#endif
+
       PARAMETER (MXPICI = 10  )
 !
 !     max. number of GASpaces

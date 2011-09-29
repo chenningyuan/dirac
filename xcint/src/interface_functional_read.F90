@@ -41,6 +41,7 @@ module interface_functional_read
    public set_hf_exchange_factor
  
    real(8), public :: hf_exchange_factor
+   logical, public :: pure_hf_run
  
    private
 
@@ -158,6 +159,13 @@ contains
            f%w(XC_VWN5C     ) = f%w(XC_VWN5C     ) + 0.19d0*w
            f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
            hfx_out = hfx_out + 0.2d0*w
+        end if
+      
+        w = get_weight(word_array(i), 'bhandh')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_SLATERX   ) = f%w(XC_SLATERX   ) + 0.5d0*w
+           f%w(XC_LYPC      ) = f%w(XC_LYPC      ) +       w
+           hfx_out = hfx_out + 0.5d0*w
         end if
 
         w = get_weight(word_array(i), 'pp86')
@@ -323,20 +331,25 @@ contains
  
       write(*, '(a)')
 
+      if (set_hf_exchange_factor) then
+         hf_exchange_factor = hfx_out
+      end if
+
 !     check that not all weights are zero
-!     this happens when no functional is recognized
-!     in this case quit the program
       h = 0.0d0
       do i = 1, size(f%w)
          h = h + dabs(f%w(i)) 
       end do
+      pure_hf_run = .false.
       if (h < tiny(0.0d0)) then
-         print *, 'XCFun functional not recognized from input'
-         stop
-      end if
-
-      if (set_hf_exchange_factor) then
-         hf_exchange_factor = hfx_out
+         if (hf_exchange_factor == 1.0d0) then
+             pure_hf_run = .true.
+         else
+!            no functional is recognized
+!            in this case quit the program
+             print *, 'XCFun functional not recognized from input'
+             stop
+         end if
       end if
    
    end subroutine

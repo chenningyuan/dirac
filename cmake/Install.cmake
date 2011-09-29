@@ -4,18 +4,12 @@ install(
     dirac
     )
 
-install(
-    DIRECTORY
-    DESTINATION
-    dirac/utils
-    )
-
 foreach(
-    BINARY
-    ${executables}
+    EXECUTABLE
+    ${LIST_OF_EXECUTABLES}
     )
     install(
-        TARGETS ${BINARY}
+        TARGETS ${EXECUTABLE}
         DESTINATION dirac
         PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -33,6 +27,17 @@ install(
     OWNER_READ OWNER_WRITE OWNER_EXECUTE
     GROUP_READ             GROUP_EXECUTE
     WORLD_READ             WORLD_EXECUTE
+    )
+
+install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/utils/wrapper.py
+    DESTINATION
+    dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
     )
 
 install(

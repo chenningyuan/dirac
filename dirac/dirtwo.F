@@ -38,7 +38,9 @@ C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
       use quaternion_algebra
+#ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -168,13 +170,17 @@ C              then proceed as usual (compute full range integrals). If needed
 C              (for the MCSCF-srDFT for example), they have already been calculated. 
 C              The call to FOCKBUILD is then skipped.  
 C
+#ifdef MOD_SRDFT
       if (.not.srdft_cfg_lrcoulomb_int) then
+#endif
          HFXTMP = HFXMU
          HFXMU = D0
          CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                 IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
          HFXMU = HFXTMP
+#ifdef MOD_SRDFT
       end if 
+#endif
 C
 C     ===========================
       IF (ONECAP.AND.SMLV1C) THEN
@@ -3553,7 +3559,6 @@ C           IGTYP 2 will add also the SL (Gaunt) type integrals
          ENDIF
       ENDIF
 C
-CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
       IF(NBSYM.GT.1) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3592,12 +3597,11 @@ C
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
-CTROND
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(A)') 'After DIRAO1'
-            CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
-          ENDIF
+        IF(IPRINT.GE.5) THEN
+          WRITE(LUPRI,'(A)') 'After DIRAO1'
+          CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NTBAS(0),NZC1,IQMULT,LUPRI)
+        ENDIF
 C
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -4073,7 +4077,9 @@ C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
       use quaternion_algebra
+#ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculations
+#endif
 #include "implicit.h"
 #include "priunit.h"    
       PARAMETER (D0 = 0.0D0)
@@ -4139,9 +4145,15 @@ C
 C         Indeed, when building the long-range active Fock operator, 
 C         we need both coulomb and exchange long-range integrals. 
 C
-C         IF (HFXMU.NE.D0) IC = 0
-          IF ((HFXMU.NE.D0).and.
-     &       (.not.srdft_cfg_lrcoulomb_int)) IC = 0
+          if (hfxmu /= 0.0d0) then
+#ifdef MOD_SRDFT
+             if (.not. srdft_cfg_lrcoulomb_int) then
+#endif
+                ic = 0
+#ifdef MOD_SRDFT
+             end if
+#endif
+          end if
           IY   = IC + IE
           IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)

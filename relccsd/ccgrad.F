@@ -920,19 +920,39 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
-      LOGICAL FND,FNDLAB
+      LOGICAL FND,FNDLAB,ADD_2_FOCK
       CHARACTER*8 LABEL
+      CHARACTER*6 FILE_NAME
 C
 C---------------Executable code--------------------------------------
  
+      ADD_2_FOCK = .FALSE.
       SELECT CASE (WF)
          CASE ("MP2 ")
             WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
-            LABEL = 'MP2 DENS'
-            IERR = 0
+            LABEL        = 'MP2 DENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.
+            IERR         = 0
+         CASE ("MC  ")
+            WRITE (LUPRI,*) " Retrieving MCSCF density matrix from file"
+            LABEL        = 'MC  DENS'
+            FILE_NAME    = 'MCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
+            CALL QUIT('MCSCF density read not fully implemented yet!')
+         CASE ("CI  ")
+            WRITE (LUPRI,*) " Retrieving CI density matrix from file"
+            LABEL        = 'CI  DENS'
+            FILE_NAME    = 'MCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
+            CALL QUIT('CI density read not fully implemented yet!')
          CASE ("HF  ")
             WRITE (LUPRI,*) " Generating Hartree-Fock density matrix"
-            IERR = 0
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.
+            IERR         = 0
          CASE DEFAULT
             WRITE (LUPRI,*) " Unknown or unimplemented density: ",WF
             WRITE (LUPRI,*) " Will use Hartree-Fock density matrix"
@@ -945,16 +965,18 @@ C     Read the appropriate correlated density from file
       IF (IERR.NE.0) THEN
         CALL QUIT('Error in DMO allocation !')
       ENDIF
-      CALL OPNFIL(MCCDENS,'CCDENS','OLD','GET_CC')
+      CALL OPNFIL(MCCDENS,FILE_NAME,'OLD','GET_CC')
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
+      
 C     Add the closed shell Hartree-Fock contribution
-
-C     The add_two routine scales by 2, scale back to the orginal afterwards
-      CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
-      CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      IF(ADD_2_FOCK)THEN
+C       The add_two routine scales by 2, scale back to the orginal afterwards
+        CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+        CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      END IF
 
       SELECT CASE (BASIS)
          CASE ("MO")

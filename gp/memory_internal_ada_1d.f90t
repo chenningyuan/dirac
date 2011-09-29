@@ -147,7 +147,7 @@
                      call allocator_errorHandler(allocateFailure,size, &
      &                                           kind(data),var_id=id)
                   else
-                     call initData_<T>(data,start_index,end_index)
+!                    call initData_<T>(data,start_index,end_index)
                      call get_memory_address(data, memAddr)
                      call allocator_track(size,kind(data),memAddr,id)
                   endif

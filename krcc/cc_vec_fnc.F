@@ -1,4 +1,4 @@
-      SUBROUTINE CC_VEC_FNC_KRCC(CC_AMP,CC_VEC,E_CC,
+      SUBROUTINE CC_VEC_FNC_KRCC(CC_AMP,CC_VEC,E_CC,ITER,
      &                          WORK,KFREE,LFREE)
 *
 * Calculate energy and CC vector function for 
@@ -24,16 +24,13 @@
 #include "clunit.inc"
 #include "glbbas.inc"
 #include "crun.inc"
-#include "cprnt.inc"
-#include "cc_exc.inc"
 #include "cands.inc"
 #include "cstate.inc"
-#include "oper.inc"
 #include "ctcc.inc"
+#include "ctccp.inc"
 #include "cgas.inc"
 #include "cecore.inc"
 #include "interm.inc"
-#include "tempint.inc"
       COMMON/CMXCJ/MXCJ
 *. Local scratch 
       INTEGER ISX(2*MXPNGAS*MXPNGAS)
@@ -42,7 +39,6 @@
 *
       LBLK = -1
       NTEST = 10
-      NTEST = MAX(NTEST,IPRCC)
 *
 * Will determine the number of commutators (Of course one one with zero)
       IONE = 1
@@ -85,17 +81,17 @@ C      call set_hop_dbg_cc(4,2)
 * Start with zero commutators! (If first iteration and no restart this
 * should be the only one done!)
 *
-* H00 --00--> T
-*
+* H00 --00--> T SHOULD BE THE ONLY ONE DONE FOR IT=1 AND NO RESTART
+* 
       IHM = 1 !Still the Hamiltonian that is contracted from 
-      II = 1
+      II = 0
       IFHM = 1 !integrals are fetched
       IF(II.GE.1) THEN
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IZERO,IHM,
      &     IFHM,WORK(KT_CC), 
-     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
 ! Examine next 3 lines!!!      
-     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
 ! End examination
      &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
 ! Add info for contractions
@@ -106,15 +102,56 @@ C      call set_hop_dbg_cc(4,2)
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-      END IF
       stop 'just check it'
+! First iteration with no restart only do H00
+      IF(IFORM.EQ.1.AND.ITER.EQ.1) RETURN
+      END IF
+C     stop 'just check it'
+*
+* Adding routine for amplitudes and integrals testing
+*
+      II =0
+      IF(II.GE.1) THEN
+      CALL I_ADD_INTEGRALS_TO_AMPLITUDES(NH01,WORK(KNH01),
+     &                                   NINTER01,WORK(KINTM01),
+     &                                   NSPOBEX_TP,WORK(KLSOBEX),
+     &                                   WORK(KT_CC),WORK(KFI),
+     &                                   WORK(KM01),
+     &                                   MX_ST_TSOSO_BLK_MX,
+     &                                   WORK,KFREE,LFREE)
+      stop ' added integrals and amplitudes'
+      END IF
 *
 * H22 --11--> M11'  (Special case of M11)
 *
 *
 * M11' --11--> T    (O11' now goes to M11)
 *
-
+      print*,'about to contract from intermediate M11'
+      II = 0
+      IF(II.GE.1) THEN
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
+C still needs to consider integrals/intermediates!!!!
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
+     &     IFHM,WORK(KM11), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+! Examine next 3 lines!!!      
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
+     &     NINTER11,WORK(KINTM11),WORK(KLIHIND),IHSM,
+! Add info for contractions
+     &     NINTER11,WORK(KLLSOBEX_M11),
+     &     NM11TOT,WORK(KNM11TOT),WORK(KNM11TT),
+     &     WORK(KCOMBNM11TOT),WORK(KPERMNM11TOT),
+     &     WORK(KFACNM11TOT),WORK(KCOMBFACNM11TOT),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      stop 'after some intermediate'
+      END IF
 *
 * H22 --12--> M10
 *
@@ -125,7 +162,6 @@ C Still ITSM
 C NSPOBEX_TP_CC,WORK(KLSOBEX_CC) still the cluster operator
 C WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC) also cluster operator (should
 C also be made for intermediates)
-C Need to check KIBSOX_FOR_OX KNSOX_FOR_OX KISOX_FOR_OX
 C NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM still hamiltonian in
 C NH22,WORK(KNH22) still H22
 C Careful third argument is set to zero!
@@ -149,8 +185,8 @@ C
      &     WORK(KINTM10),NINTER10,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
+      stop 'just check it'
       END IF
-C     stop 'just check it'
 *
 * H21 --10--> M11
 *
@@ -178,7 +214,31 @@ C     stop 'just check it'
 *
 * M02 --01--> M01
 *
-
+      print*,'about to contract from intermediate M02'
+      II = 1
+      IF(II.GE.1) THEN
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
+C still needs to consider integrals/intermediates!!!!
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
+     &     IFHM,WORK(KM02), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+! Examine next 3 lines!!!      
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
+     &     NINTER02,WORK(KINTM02),WORK(KLIHIND),IHSM,
+! Add info for contractions
+     &     NINTER02,WORK(KLLSOBEX_M02),
+     &     NM02TOM01,WORK(KNM02TOM01),WORK(KNM02T01),
+     &     WORK(KCOMBNM02TOM01),WORK(KPERMNM02TOM01),
+     &     WORK(KFACNM02TOM01),WORK(KCOMBFACNM02TOM01),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
+     &     WORK(KINTM01),NINTER01,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      stop 'after some intermediate'
+      END IF
 *
 * H22 --21--> M01
 *
@@ -197,6 +257,8 @@ C     stop 'just check it'
 *
       IHM = 1
       IFHM = 1 !integrals are fetched
+      II = 0
+      IF(II.GE.1) THEN
 *
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
      &     IFHM,WORK(KT_CC), 
@@ -211,11 +273,11 @@ C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
      &     NH22,WORK(KNH22),
      &     NH22TOT,WORK(KNH22TOT),WORK(KNH22TT),WORK(KCOMBNH22TOT),
      &     WORK(KPERMNH22TOT),WORK(KFACNH22TOT),WORK(KCOMBFACNH22TOT),
-C    &     WORK(KUNITCC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
       stop 'check this out'
+      END IF
 
 *
 * H21 --20--> M01
@@ -236,8 +298,31 @@ C    &     WORK(KUNITCC),NSPOBEX_TPE,
 *
 * M01 --01--> T
 *
-* Deallocate M01
-
+      print*,'about to contract from intermediate M01'
+      II = 0
+      IF(II.GE.1) THEN
+      IHM = 2
+      IFHM = 2 !intermediates are fetched
+C still needs to consider integrals/intermediates!!!!
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
+     &     IFHM,WORK(KM01), 
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+! Examine next 3 lines!!!      
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
+     &     NINTER01,WORK(KINTM01),WORK(KLIHIND),IHSM,
+! Add info for contractions
+     &     NINTER01,WORK(KLLSOBEX_M01),
+     &     NM01TOT,WORK(KNM01TOT),WORK(KNM01TT),
+     &     WORK(KCOMBNM01TOT),WORK(KPERMNM01TOT),
+     &     WORK(KFACNM01TOT),WORK(KCOMBFACNM01TOT),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      stop 'after some intermediate'
+      END IF
 *
 * H22 --12--> M10
 *
@@ -248,7 +333,6 @@ C Still ITSM
 C NSPOBEX_TP_CC,WORK(KLSOBEX_CC) still the cluster operator
 C WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC) also cluster operator (should
 C also be made for intermediates)
-C Need to check KIBSOX_FOR_OX KNSOX_FOR_OX KISOX_FOR_OX
 C NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM still hamiltonian in
 C NH22,WORK(KNH22) still H22
 C 
@@ -266,32 +350,32 @@ C
 * M10 --10--> T
 *
 C     stop 'about to call for intermediate contraction'
-      print*,'about to contract from an intermediate '
-      II = 1
+      print*,'about to contract from intermediate M10'
+      II = 0
       IF(II.GE.1) THEN
       IHM = 2
       IFHM = 2 !intermediates are fetched
 C still needs to consider integrals/intermediates!!!!
       CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
      &     IFHM,WORK(KM10), 
-     &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
 ! Examine next 3 lines!!!      
-     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
-! End examination
-     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination Not sure if one should use hamiltonian or intermediate
+! should perhaps not use KLIHIND since it is for H!!!
+     &     NINTER10,WORK(KINTM10),WORK(KLIHIND),IHSM,
 ! Add info for contractions
-     &     NH10,WORK(KNH10),
-     &     NH10TOT,WORK(KNH10TOT),WORK(KNH10TT),
-     &     WORK(KCOMBNH10TOT),WORK(KPERMNH10TOT),
-     &     WORK(KFACNH10TOT),WORK(KCOMBFACNH10TOT),
-     &     WORK(KSNH10TOT),WORK(KFNH10TOT),
+     &     NINTER10,WORK(KLLSOBEX_M10),
+     &     NM10TOT,WORK(KNM10TOT),WORK(KNM10TT),
+     &     WORK(KCOMBNM10TOT),WORK(KPERMNM10TOT),
+     &     WORK(KFACNM10TOT),WORK(KCOMBFACNM10TOT),
+C    &     WORK(KSNM10TOT),WORK(KFNM10TOT),
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
      &     WORK,KFREE,LFREE)
-C     stop 'after some intermediate'
+      stop 'after some intermediate'
       END IF
 * Deallocate M10
-
 *
 * H22 --22--> T
 *
@@ -300,6 +384,29 @@ C     stop 'after some intermediate'
 * H21 --21--> T
 *
 
+      IHM = 1
+      IFHM = 1 !integrals are fetched
+      II = 0
+      IF(II.GE.1) THEN
+*
+      CALL EMTHET_COM_KRCC(CC_AMP,ITSM,CC_VEC,IONE,IHM,
+     &     IFHM,WORK(KT_CC), 
+C    &     NSPOBEX_TP_CC,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     NSPOBEX_TPE,WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+! Examine next 3 lines!!!      
+C    &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TP_CC,
+     &     WORK(KLIBSOBEX_CC),WORK(KLLSOBEX_CC),NSPOBEX_TPE,
+! End examination
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),IHSM,
+! Add info for contractions
+     &     NH21,WORK(KNH21),
+     &     NH21TOT,WORK(KNH21TOT),WORK(KNH21TT),WORK(KCOMBNH21TOT),
+     &     WORK(KPERMNH21TOT),WORK(KFACNH21TOT),WORK(KCOMBFACNH21TOT),
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK(KLSOBEX_CC),NSPOBEX_TPE,
+     &     WORK,KFREE,LFREE)
+      stop 'check this out'
+      END IF
 *
 * H12 --12--> T
 *
@@ -343,14 +450,16 @@ C     stop 'after some intermediate'
         WRITE(6,*)
         WRITE(6,*) ' DO NOT USE WRT_CC_VEC2 YET '
         STOP ' DO NOT USE WRT_CC_VEC2 YET '
-        CALL WRT_CC_VEC2(CC_VEC,6,CCTYPE)
+        CALL WRT_CC_VEC2(CC_VEC,6,CCTYPE,
+     &                   WORK,KFREE,LFREE)
         WRITE(6,*) ' Initial amplitudes '
-        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE)
+        CALL WRT_CC_VEC2(CC_AMP,6,CCTYPE,
+     &                   WORK,KFREE,LFREE)
       END IF
 C?    WRITE(6,*) ' I12 at END of CC_VEC = ', I12
 *. 
 C     WRITE(6,*) ' Enforced stop after CC_VEC_FNC'
-C      STOP ' Enforced stop after CC_VEC_FNC'
+      STOP ' Enforced stop after CC_VEC_FNC'
       RETURN
       END
 *

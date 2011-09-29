@@ -12,10 +12,11 @@
 * Jeppe Olsen, November 2000
 *
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
-!#include "wrkspc.inc"
+#include "ctccp.inc"
 *
       DIMENSION WORK(*)
 *
@@ -23,14 +24,12 @@
      &                   NSPOBEX_TP_CC,NDIFF)
 *
       NTEST = 00
-!radovan: code below is unreachable and contains unmet dependency to WRT_SPOX_TP_CC_REL
-!         depending on compiler/flags this does not link
-!     IF(NTEST.GE.100) THEN
-!       WRITE(6,*) ' Coupled cluster operator '
-!       CALL WRT_SPOX_TP_CC_REL(IOCC,1)
-!       WRITE(6,*) ' Corresponding type number ', INUM 
-!       WRITE(6,*) ' NDIFF = ', NDIFF
-!     END IF
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Coupled cluster operator '
+        CALL WRT_SPOX_TP_CC_KRCC(IOCC,1)
+        WRITE(6,*) ' Corresponding type number ', INUM 
+        WRITE(6,*) ' NDIFF = ', NDIFF
+      END IF
 *
       RETURN
       END
