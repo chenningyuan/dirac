@@ -37,30 +37,31 @@ module xc_blas3
 
 contains
 
-   subroutine xc_contribution_blas3(                 &
-                          is_gga,          &
-                          do_lr,           &
-                          block_length,    &
-                          block_threshold, &
-                          mat_dim,         &
-                          nz,              &
-                          buffer,          &
-                          ao_block,        &
-                          nr_fmat,         &
-                          fmat,            &
-                          dmat_0,          &
-                          nr_dmat,         &
-                          dmat_p,          &
-                          dmat_pg_sym,     &
-                          dmat_ih_sym,     &
-                          derv_length,     &
-                          derv,            &
-                          max_fun_derv,    &
-                          w,               &
-                          nr_electrons_integrated,    &
-                          xc_energy        &
-                         )
-
+   subroutine xc_contribution_blas3(                         &
+                                    is_gga,                  &
+                                    do_lr,                   &
+                                    block_length,            &
+                                    block_threshold,         &
+                                    mat_dim,                 &
+                                    nz,                      &
+                                    buffer,                  &
+                                    ao_block,                &
+                                    nr_fmat,                 &
+                                    fmat,                    &
+                                    dmat_0,                  &
+                                    dmat_0_saop_outer,       &
+                                    dmat_0_saop_resp,        &
+                                    nr_dmat,                 &
+                                    dmat_p,                  &
+                                    dmat_pg_sym,             &
+                                    dmat_ih_sym,             &
+                                    derv_length,             &
+                                    derv,                    &
+                                    max_fun_derv,            &
+                                    w,                       &
+                                    nr_electrons_integrated, &
+                                    xc_energy                &
+                                   )
 
 !     --------------------------------------------------------------------------
       logical, intent(in)    :: is_gga
@@ -74,6 +75,8 @@ contains
       integer, intent(in)    :: nr_fmat
       real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, nr_fmat)
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)
+      real(8), intent(in)    :: dmat_0_saop_outer(*)
+      real(8), intent(in)    :: dmat_0_saop_resp(*)
       integer, intent(in)    :: nr_dmat
       real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat)
       integer, intent(in)    :: dmat_pg_sym(nr_dmat)
