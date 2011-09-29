@@ -993,12 +993,9 @@ C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
 CSK       WRITE(LUPRI,'(//A/)') 'CMO input '
 CSK       CALL WRTMATMN(CMO,1,NCMOTQ,1,NCMOTQ,LUPRI)
-          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
@@ -1038,7 +1035,7 @@ CSK     IPROPT = 0
 C
 C       WORK(KFCACM) now contains all 1-e integrals
 C
-        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C       read two-electron integrals in luciarel/transform_r.F 
 C       (subroutine itrctl)
@@ -1178,12 +1175,9 @@ C
 C
 C         Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
-          CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+          CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
@@ -1215,7 +1209,7 @@ C
 C
 C       WORK(KFCACM) now contains all 1-e integrals
 C
-        CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+        CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C       read two-electron integrals in luciarel/transform_r.F 
 C       (subroutine itrctl)
@@ -1356,12 +1350,9 @@ C
 C
 C       Calculate FCmo ( CWRTFO_MAT false: do not write to LUKRM3) :
 C
-        CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+        CALL rGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
       END IF
-!
-!       add LVCORR correction (zero if flag is not active)
-        ECORE = ECORE + lvcorr_mc
 
       IF (IPROPT.GE.1) THEN
         WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
@@ -1395,7 +1386,7 @@ C
         END IF
       END IF
 C
-      CALL MEMREL('after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+      CALL MEMREL('after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)
