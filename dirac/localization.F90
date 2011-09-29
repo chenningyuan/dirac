@@ -136,8 +136,8 @@ contains
       INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
       INTEGER*4 :: NFBAS(0:2), IPQTOQ(4,0:7)
 
-      REAL*8    :: TOTERG, DINVMO, DINVM, DNRMK, DNRMG, DIFF, DIFFA
-      REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
+      REAL*8    :: DINVMO, DINVM, DNRMK, DNRMG, DIFF, DIFFA, TOTDIAG, TOTNOND
+      REAL*8    :: TIMEND, TIME, TIMSTR, SECOND, TOTERG
 
       INTEGER*4, ALLOCATABLE, DIMENSION(:)       :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
       REAL*8,    ALLOCATABLE, DIMENSION(:)       :: SCOEF, SCOEFO, SMAT, CMO
@@ -226,36 +226,45 @@ contains
       DNRMG = D0
       DNRMK = D0
       IF(LOC%PRJLOC) THEN
-!       PRJLOC = TRUE localization with projection analysis
+        ! PRJLOC = TRUE localization with projection analysis
         CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
       ELSE
-!       PRJLOC = FALSE localization with Mulliken analysis
+        ! PRJLOC = FALSE localization with Mulliken analysis
         CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
       ENDIF
       TOBE = .FALSE.
       ITR = 0
+      WRITE(LUPRI,'(A,4X,A4,2X, 4X,A,4X, 2X,A,1X, 3X,A,3X, 4X,A,3X, 2X,A)') &
+        '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
       IF (LOC%AUTO) THEN
  100    CONTINUE
+
         ITR = ITR + 1
-        CALL GTINFO(DAYTID)
-        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
-          '########## START ITERATION NO.', ITR , ' ##########',DAYTID
         DINVMO = DINVM
-        CALL GET_HESSIAN(PMAT,HMAT)
+
+        CALL GTINFO(DAYTID)
+        WRITE(LUPRI,'(/5X,A,I4,A,3X)')'########## START ITERATION NO. ',ITR,' ##########'
+        WRITE(LUPRI,'(5X,A,A24,A)')'########## ',DAYTID,' ##########'
+
+        CALL GET_HESSIAN(PMAT,HMAT,TOTDIAG,TOTNOND)
         CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
         CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
         CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
-!         PRJLOC = TRUE localization with projection analysis
+          ! PRJLOC = TRUE localization with projection analysis
           CALL GTOVLX(SMAT,VAR%SSMTRC)
           CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
         ELSE
-!         PRJLOC = FALSE localization with Mulliken analysis
+          ! PRJLOC = FALSE localization with Mulliken analysis
           CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
         ENDIF
-        DIFF  = DINVM - DINVMO
+        ! Convergence criterion
+        DIFF = DINVM - DINVMO
+        IF (DIFF < D0) WRITE(LUPRI,'(A,I4)')' WARNING: DINVM_NEW - DINVM_OLD < 0; ITR =',ITR
         DIFFA = ABS(DINVM - DINVMO)
-        WRITE(LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
+        WRITE(LUPRI,'(/A,4X,A4,2X, 4X,A,4X, 2X,A,1X, 3X,A,3X, 4X,A,3X, 2X,A)') &
+          '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
+        WRITE(LUPRI,'(A,4X,I4,5D13.2)')'*C',ITR,DIFFA,DNRMG,DNRMK,TOTDIAG,TOTNOND
         IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
         IF(DIFFA .LE. LOC%THRLOC) THEN
           WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
@@ -934,7 +943,6 @@ contains
   ! Norm of the kappa vector
   ndim = ni*ni*4
   dnrm = dnrm2(ndim,xkappa,1)
-  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dnrm
 
   call qexit('getk_diag')
 
@@ -1283,7 +1291,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_hessian(pmat,hmat)
+  subroutine get_hessian(pmat,hmat,totdiag,totnond)
   !******************************************************************************!
   !                                                                              !
   !  Construction of full hessian                                                !
@@ -1296,16 +1304,16 @@ contains
   implicit none
 
   ! External variables
-  real*8, dimension(:,:,:)   ::  hmat
-  real*8, dimension(:,:,:,:) ::  pmat
+  real*8                     :: totdiag, totnond
+  real*8, dimension(:,:,:)   :: hmat
+  real*8, dimension(:,:,:,:) :: pmat
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0
+  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0, d4 = 4.0d0
 
   real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pil1, pli1, pkj1
   real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pil2, pli2, pkj2
-  real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond
-  real*8 :: totdiag, totnond
+  real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond, sumtmp
 
   integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
@@ -1426,6 +1434,7 @@ contains
 
   !  d^2 G / dK_ij dK_kl   -->   (36)
   sumnond = d0
+  sumtmp  = d0
   ij = 2*ni12
   do j=1,ni
     do i=j,ni
@@ -1466,7 +1475,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1496,7 +1508,7 @@ contains
         enddo
         hmat(kl+2*ni12,ij-2*ni12,1) = hmat(ij,kl,1)
         hmat(kl+2*ni12,ij-2*ni12,2) = hmat(ij,kl,2)
-        sumnond=sumnond + d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond=sumnond + d4*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1513,7 +1525,7 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
   write(lupri,*) 'Sum of elements of B_uu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumtmp,sumnond
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -1521,6 +1533,7 @@ contains
   !------------------------------------------------------------------------------!
   !  d^2 G / dK*_ij dK_kl   -->   (34)
   sumnond = d0
+  sumtmp  = d0
   ij = ni12
   do j=1,ni
     do i=j,ni
@@ -1561,7 +1574,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1589,7 +1605,7 @@ contains
             hmat(ij,kl,2) = hmat(ij,kl,2) - dhalf * pij2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1612,7 +1628,7 @@ contains
             hmat(kl,ij,2) = hmat(kl,ij,2) - pji2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1629,11 +1645,12 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
   write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumtmp,sumnond
   totnond = totnond + sumnond
 
   !  d^2 G / dK_ij dK_kl   -->   (38)
   sumnond = d0
+  sumtmp  = d0
   ij = 3*ni12
   do j=1,ni
     do i=j,ni
@@ -1674,7 +1691,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1704,7 +1724,7 @@ contains
         enddo
         hmat(kl,ij,1) = hmat(ij,kl,1)
         hmat(kl,ij,2) = hmat(ij,kl,2)
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1727,7 +1747,7 @@ contains
             hmat(kl,ij,2) = hmat(kl,ij,2) + pij2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1744,7 +1764,7 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
   write(lupri,*) 'Sum of elements of B_bu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumtmp,sumnond
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -1830,7 +1850,7 @@ contains
         enddo
         hmat(kl,ij,1) =   hmat(ij,kl,1)
         hmat(kl,ij,2) = - hmat(ij,kl,2)
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1859,6 +1879,7 @@ contains
   !------------------------------------------------------------------------------!
   !  d^2 G / dK_ij dK_kl   -->   (37)
   sumnond = d0
+  sumtmp  = d0
   ij = 2*ni12
   do j=1,ni
     do i=j,ni
@@ -1899,7 +1920,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1922,7 +1946,7 @@ contains
             hmat(ij,kl,2) = hmat(ij,kl,2) + pij2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1950,7 +1974,7 @@ contains
             hmat(kl,ij,2) = hmat(kl,ij,2) + dhalf * pij2 * ( pjj - pii )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1967,9 +1991,8 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
   enddo
   write(lupri,*) 'Sum of elements of B_ub:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumtmp,sumnond
   totnond = totnond + sumnond
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: Total',totdiag,totnond
 
   !------------------------------------------------------------------------------!
   !                     Get the rest of the hessian matrix                       !
@@ -2076,7 +2099,6 @@ contains
     dnrm = dnrm + gradient(i,1)*gradient(i,1) + gradient(i,2)*gradient(i,2)
   enddo
   dnrm = dsqrt(dnrm)
-  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dnrm
 
   call qexit('get_gradient')
 
