@@ -694,7 +694,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_startvec */
-      SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,clvcorr,NDET,ISTATE,
+      SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,NDET,ISTATE,
      &                           THRPCI,CIPROG,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -779,9 +779,7 @@ C
 C     Get CI energy
 C
       ECI = WORK(KEIGVL + ISTATE - 1)
-!
-!     add LVCORR correction (zero if flag is not active)
-      ECORE = ECORE + clvcorr
+C
       WRITE(LUPRI,'(/A,F20.8,2(/,A,F20.8))')
      &     ' (GASCIP_STARTVEC) Core energy    =',ECORE,
      &     '                   Active energy  =',ECI-ECORE,
@@ -854,7 +852,7 @@ C
 C
 C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
 C
-      CALL RGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
+      CALL rGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
 C     Get active-active part of FCmo:
 C
@@ -864,7 +862,7 @@ C     Transform quaternion FCACmo to molfdir type FCAC.
 C
       CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
 C
-      CALL MEMREL('GASCIP_FULLCI after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+      CALL MEMREL('GASCIP_FULLCI after rGETFC',WORK,1,KFCAC,KFREE,LFREE)
 C
 C     Read two-electron integrals:
 C     ----------------------------
@@ -1990,9 +1988,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
       SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
-     &                        ECIXX,CVECS,NDET,IDET,CMO,
-     &                        clvcorr,ISTATE,CIPROG,IPRINT,
-     &                        WORK,LWORK)
+     &                         ECIXX,CVECS,NDET,IDET,CMO,
+     &                         ISTATE,CIPROG,IPRINT,
+     &                         WORK,LWORK)
 C***********************************************************************
 C
 C     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
@@ -2044,7 +2042,7 @@ C     Set general parameters (which later maybe should be set by input?)
 C
 !d      write(lupri,*) 'THRPCI, RTHRCI', THRPCI,RTHRCI
       NDETQ  = NZ_in_CI*NDET
-      MAX_HRED = MAX(100,N_CI_ROOTS*25)
+      MAX_HRED = MAX(100,N_CI_ROOTS*MAX_CI_IT)
       MAX_HRED = MIN(2000, MAX_HRED)
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
@@ -2053,6 +2051,11 @@ C        to include all members of quasidegenerate sets.
          WRITE(LUPRI,*) 'N_ROOTS .lt. 1 .or. N_ROOTS .ge. MAX_ROOTS',
      &      N_ROOTS,MAX_ROOTS
          CALL QUIT('N_ROOTS .lt. 1 .or N_ROOTS .gt. MAX_ROOTS')
+      END IF
+      IF (N_ROOTS .GT. NDET) THEN
+         WRITE(LUPRI,*) 'N_ROOTS > number of determinants',
+     &      N_ROOTS,NDET
+         CALL QUIT('N_ROOTS .gt. number of determinants')
       END IF
 C
 C     ************************************
@@ -2072,12 +2075,7 @@ C
 C
 C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
 C
-      CALL RGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
-!
-!     add LVCORR correction (zero if flag is not active)
-!     WRITE(lupri,*) 'clvcorr', clvcorr
-      ECORE = ECORE + clvcorr
-
+      CALL rGETFC(.FALSE.,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
 C     Get active-active part of FCmo:
 C
@@ -2089,10 +2087,9 @@ C
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
 C
- !    CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
-      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,40)
+      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
 C
-      CALL MEMREL('RCISTD after RGETFC',WORK,1,KFCAC,KFREE,LFREE)
+      CALL MEMREL('RCISTD after rGETFC etc.',WORK,1,KFCAC,KFREE,LFREE)
 C
 C     Read two-electron integrals:
 C     ----------------------------
@@ -2164,7 +2161,7 @@ C      missed if we don't start with some extra diagonal elements.
 C      /hjaaj Oct 2010 )
 C
       N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
-      J_CSIM = N_CSIM + 1
+      J_CSIM = MIN(NDET,N_CSIM + 1)
       ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + 1)
       CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG),NDET,WORK(KFREE),LFREE)
 C
@@ -2344,8 +2341,8 @@ C
 C        Check for inconsistencies:
 C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
-         THRDAS = 1.0D-10
-C        THRDAS = THRSCR*10.0D0
+C        THRDAS = 1.0D-10
+         THRDAS = MAX(1.0D-10,THRSCR*10.0D0)
          DASR = 0.0D0
          DASI = 0.0D0
          DO I = 1, N_CRED
@@ -2625,9 +2622,10 @@ C           write(lupri,*) 'DN after', DNAFT
             DNAFT = 1.0D0 / DNAFT
             CALL DSCAL(NDETQ,DNAFT,WORK(KBCVEC+(J-1)*NDETQ),1)
 
-C            THR_CVEC = 1.0D-3 ! later THR_CVEC should be in input!!!  /hjaaj
-            write(lupri,*) 'THR_CVEC ==>', THR_CVEC
+            IF (IPRINT .GE. 3) write(lupri,'(/A,1P,D10.2)')
+     &      'Threshold for removing element in trial vectors', THR_CVEC
             IF (THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 0) THEN
+C              screen away insignificant elements here ...
 
                I_ZERO = 0
                I_REMOVED = 0
@@ -2643,11 +2641,12 @@ C            THR_CVEC = 1.0D-3 ! later THR_CVEC should be in input!!!  /hjaaj
                   END IF
                END DO
                IF (I_REMOVED .GT. 0) THEN
-                  WRITE (LUPRI,'(/A,I8,A,I4,A,1P,D10.2,I8)')
-     &            'info: Removed',I_REMOVED,
+                  IF (IPRINT .GE. 3)
+     &            WRITE (LUPRI,'(A,I8,A,I4,A,2I10)')
+     &            'Removed',I_REMOVED,
      &            ' elements in new CI trial vector no.',J-N_CRED,
-     &            '; threshold & zeroes',THR_CVEC, I_ZERO
-                  IROUND = IROUND + 1 ! need a 2. round because some elements will be removed
+     &            '; zeroes, left :', I_ZERO,NDETQ-I_REMOVED-I_ZERO
+                  IROUND = IROUND + 1 ! need a 2. round because some elements has been removed
                END IF
 
             ELSE
@@ -2657,9 +2656,8 @@ C            THR_CVEC = 1.0D-3 ! later THR_CVEC should be in input!!!  /hjaaj
                   IROUND = 0
                END IF
             END IF
-            WRITE(lupri,*) 'IROUND for vector', IROUND, J-N_CRED
+            IF (IPRINT .GE. 5) WRITE(lupri,*) 'IROUND for vector', IROUND, J-N_CRED
 C
-C hj 16-jun-2004 TODO: screen on elements here ...
 C
             IF (IROUND .GT. 0) THEN
                   IF (IROUND .EQ. 1) GO TO 400
@@ -2778,8 +2776,10 @@ C     Check norm of CI vectors
 C
       DO I_ROOT = 1, N_ROOTS
 
-         WRITE(LUPRI,'(/A,I3,A,I3)')
-     &   ' (GASCIP_RCISTD) CI solution vector',I_ROOT,' of ',N_ROOTS
+         WRITE(LUPRI,'(//A/A,I3,A,I3/A)')
+     &   ' ============================================',
+     &   ' (GASCIP_RCISTD) CI solution vector',I_ROOT,' of ',N_ROOTS,
+     &   ' ============================================'
 
          CALL RCINORM(CVECS,MAX(10,IPRINT))
 
@@ -3038,8 +3038,8 @@ C***********************************************************************
 C
 #include "dgroup.h"
 
-!NAELEC, NGAS_DC
 #include "dcborb.h"
+!from dcborb.h NAELEC, NGAS_DC
 
 #include "dcbgascip.h"
 C
@@ -3082,9 +3082,11 @@ C
 
          IF ( MAX_A_EL .LT. MIN_A_EL ) THEN
             ! IEL A electrons is not compatible with GAS constraint
+#ifdef GASCIP_DEBUG
             WRITE (LUPRI,'(/A/A,3I10)')
      &       "This is not compatible with GAS constraints!",
      &       "gas space, MAX_A_EL, MIN_A_EL",I,MAX_A_EL,MIN_A_EL
+#endif
             NSTR = 0
             GO TO 9000
          END IF
@@ -3622,12 +3624,12 @@ C        ... do not print all the small numbers
           WALLTID = SECTID(WALL2-WALL1)
           WRITE(LUPRI,'(/5A)') ' CPU (Wall) time in GASCIP_CI kernel: ',
      &      CPUTID,' (',WALLTID,')'
-          IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
+          IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,2(A,I10))')
      &      ' Number of configuration elements skipped:',NDSKIP,
-     &      ' out of',NDET
+     &      ' out of',NDET,'; remaining ',NDET-NDSKIP
           IF (IPRINT .GT. 2) THEN
             CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-            write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+            write(lupri,*)'#calls to cnbits and fnbits:',cncalls,fncalls
           END IF
         END IF
       END IF
