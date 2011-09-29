@@ -109,191 +109,179 @@ contains
     var%vecref(2,i) = vecref(2,i)
   enddo
 
-  !==============================================================================!
   end subroutine initialize_localization
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLOC
-!***********************************************************************
-!
-!     Molecular orbital localization
-!
-!     Written by S. Dubillard - Jan 20 2004
-!     Last revision:
-!
-!***********************************************************************
-      USE MEMORY_ALLOCATOR
-      IMPLICIT NONE
+  subroutine orbloc
+  !==============================================================================!
+  !                                                                              !
+  !     Molecular orbital localization                                           !
+  !                                                                              !
+  !==============================================================================!
+  use memory_allocator
+  implicit none
 
-      ! Internal variables
-      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
+  ! Internal variables
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0
 
-      CHARACTER :: SECTID*12, CPUTID*12, WALLTID*12, DAYTID*24, CONV*20 = 'No convergence after'
-      LOGICAL   :: TOBE
+  character :: sectid*12, cputid*12, walltid*12, daytid*24, conv*20 = 'No convergence after'
+  logical   :: tobe
 
-      INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
-      INTEGER*4 :: NFBAS(0:2), IPQTOQ(4,0:7)
+  integer*4 :: ifrp, nish12, idum, itr, lupri, nish, norb, nucdep, maxref
+  integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
-      REAL*8    :: DINVMO, DINVM, DNRMK, DNRMG, DIFF, DIFFA, TOTDIAG, TOTNOND
-      REAL*8    :: TIMEND, TIME, TIMSTR, SECOND, TOTERG
+  real*8    :: dinvmo, dinvm, dnrmk, dnrmg, diff, diffa, totdiag, totnond
+  real*8    :: timend, time, timstr, second, toterg
 
-      INTEGER*4, ALLOCATABLE, DIMENSION(:)       :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
-      REAL*8,    ALLOCATABLE, DIMENSION(:)       :: SCOEF, SCOEFO, SMAT, CMO
-      REAL*8,    ALLOCATABLE, DIMENSION(:,:)     :: GRADIENT
-      REAL*8,    ALLOCATABLE, DIMENSION(:,:,:)   :: XKAPPA, HMAT
-      REAL*8,    ALLOCATABLE, DIMENSION(:,:,:,:) :: PMAT
+  integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
+  real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo
+  real*8,    allocatable, dimension(:,:)     :: gradient
+  real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat
+  real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLOC')
+  call qenter('orbloc')
 
-      IFRP   = 1
-      LUPRI  = VAR%LUPRI
-      NISH   = VAR%NISH(IFRP)
-      NORB   = VAR%NORB(IFRP)
-      NUCDEP = VAR%NUCDEP
-      MAXREF = VAR%MAXREF
+  ifrp   = 1
+  lupri  = var%lupri
+  nish   = var%nish(ifrp)
+  norb   = var%norb(ifrp)
+  nucdep = var%nucdep
+  maxref = var%maxref
 
-      NFBAS(:)    = VAR%NFBAS(IFRP,:)
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
+  nfbas(:)    = var%nfbas(ifrp,:)
+  ipqtoq(:,:) = var%ipqtoq(:,:)
 
-      CALL TITLER('Molecular orbital localization','*',122)
+  call titler('Molecular orbital localization','*',122)
 
-      ! Check if coefficients are on file
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE)THEN
-        WRITE(LUPRI,'(A)') 'ORBLOC: Coefficient file not found !'
-        CALL QUIT('ORBLOC: Coefficients not found !')
-      ENDIF
+  ! Check if coefficients are on file
+  inquire(file='DFCOEF',exist=tobe)
+  if(.not.tobe)then
+    write(lupri,'(a)') 'orbloc: Coefficient file not found !'
+    call quit('orbloc: Coefficients not found !')
+  endif
 
-      ! Memory allocation
-      NISH12 = 4 * ( NISH*NISH + NISH ) / 2
-      CALL ALLOC(SCOEF   ,NISH*NFBAS(0)*4,   ID='SCOEF    IN ORBLOC')
-      CALL ALLOC(SCOEFO  ,NISH*NFBAS(0)*4,   ID='SCOEFO   IN ORBLOC')
-      CALL ALLOC(SMAT    ,VAR%N2BBASX,       ID='SMAT     IN ORBLOC')
-      CALL ALLOC(CMO     ,VAR%N2BBASXQ,      ID='CMO      IN ORBLOC')
-      CALL ALLOC(HMAT    ,NISH12,NISH12,2,   ID='HMAT     IN ORBLOC')
-      CALL ALLOC(GRADIENT,NISH12,2,          ID='GRADIENT IN ORBLOC')
-      CALL ALLOC(XKAPPA  ,NISH,NISH,4,       ID='XKAPPA   IN ORBLOC')
-      CALL ALLOC(PMAT    ,NISH,NISH,4,NUCDEP,ID='PMAT     IN ORBLOC')
+  ! Memory allocation
+  nish12 = 4 * ( nish*nish + nish ) / 2
+  call alloc(scoef   ,nish*nfbas(0)*4,   id='scoef    in orbloc')
+  call alloc(scoefo  ,nish*nfbas(0)*4,   id='scoefo   in orbloc')
+  call alloc(smat    ,var%n2bbasx,       id='smat     in orbloc')
+  call alloc(cmo     ,var%n2bbasxq,      id='cmo      in orbloc')
+  call alloc(hmat    ,nish12,nish12,2,   id='hmat     in orbloc')
+  call alloc(gradient,nish12,2,          id='gradient in orbloc')
+  call alloc(xkappa  ,nish,nish,4,       id='xkappa   in orbloc')
+  call alloc(pmat    ,nish,nish,4,nucdep,id='pmat     in orbloc')
 
-      CALL ALLOC(NFNUC ,2*NUCDEP,  ID='NFNUC  IN ORBLOC')
-      CALL ALLOC(ISEL  ,NISH,      ID='ISEL   IN ORBLOC')
-      CALL ALLOC(INDAO ,NFBAS(0),  ID='INDAO  IN ORBLOC')
-      CALL ALLOC(INDAOS,NFBAS(0),  ID='INDAOS IN ORBLOC')
-      CALL ALLOC(INDNAO,2*NUCDEP+2,ID='INDNAO IN ORBLOC')
+  call alloc(nfnuc ,2*nucdep,  id='nfnuc  in orbloc')
+  call alloc(isel  ,nish,      id='isel   in orbloc')
+  call alloc(indao ,nfbas(0),  id='indao  in orbloc')
+  call alloc(indaos,nfbas(0),  id='indaos in orbloc')
+  call alloc(indnao,2*nucdep+2,id='indnao in orbloc')
 
-      ! Read coefficients
-      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,IDUM,IDUM,TOTERG,2)
-      CLOSE(VAR%LUCOEF,STATUS='KEEP')
+  ! Read coefficients
+  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
+  close(var%lucoef,status='keep')
 
-      ! Get overlap matrix 
-      CALL GTOVLX(SMAT,VAR%SSMTRC)
-      IF(LOC%IPRLOC.GE.6) THEN
-        WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
-        CALL PRQMAT(CMO,NFBAS(0),NORB,NFBAS(0),NORB,4,IPQTOQ(1,0),LUPRI)
+  ! Get overlap matrix 
+  call gtovlx(smat,var%ssmtrc)
+  if(loc%iprloc.ge.6) then
+    write(lupri,'(/a)') '* orbloc: Molecular coefficients:'
+    call prqmat(cmo,nfbas(0),norb,nfbas(0),norb,4,ipqtoq(1,0),lupri)
 
-        WRITE(LUPRI,'(/A)') '* ORBLOC: Overlap matrix' 
-        CALL PRQMAT(SMAT,NFBAS(0),NFBAS(0), &
-                    NFBAS(0),NFBAS(0),1,IPQTOQ(1,0),LUPRI)
-      ENDIF
+    write(lupri,'(/a)') '* orbloc: Overlap matrix' 
+    call prqmat(smat,nfbas(0),nfbas(0),nfbas(0),nfbas(0),1,ipqtoq(1,0),lupri)
+  endif
 
-      ! Occupied electronic orbital coeffients selection
-      CALL OCCUPY(ISEL,NISH)
-      CALL SELCFS(CMO,IFRP,SCOEF,NISH,ISEL,D0,NISH,NFBAS(0),NORB)
-      IF(LOC%IPRLOC.GE.5) THEN
-        WRITE(LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
-        CALL PRQMAT(SCOEF,NFBAS(0),NISH,NFBAS(0),NISH,4,IPQTOQ(1,0),LUPRI)
-      ENDIF
+  ! Occupied electronic orbital coeffients selection
+  call occupy(isel,nish)
+  call selcfs(cmo,ifrp,scoef,nish,isel,d0,nish,nfbas(0),norb)
+  if(loc%iprloc.ge.5) then
+    write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
+    call prqmat(scoef,nfbas(0),nish,nfbas(0),nish,4,ipqtoq(1,0),lupri)
+  endif
 
-      ! Get the number of functions per center
-      CALL INDAOC(INDAO,INDAOS,INDNAO)
-      CALL ORBLO4(INDNAO,NFNUC,NUCDEP)
+  ! Get the number of functions per center
+  call indaoc(indao,indaos,indnao)
+  call orblo4(indnao,nfnuc,nucdep)
 
-      ! We do orbital rotation until the difference between two succesive
-      ! localisation criteria is less than a threshold
-      TIMSTR = SECOND()
-      DINVM = D0
-      DNRMG = D0
-      DNRMK = D0
-      IF(LOC%PRJLOC) THEN
-        ! PRJLOC = TRUE localization with projection analysis
-        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-      ELSE
-        ! PRJLOC = FALSE localization with Mulliken analysis
-        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-      ENDIF
-      TOBE = .FALSE.
-      ITR = 0
-      WRITE(LUPRI,'(A,4X,A4,2X, 4X,A,4X, 2X,A,1X, 3X,A,3X, 4X,A,3X, 2X,A)') &
-        '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
+  timstr = second()
+  if(loc%prjloc) then
+    ! PRJLOC = TRUE localization with projection analysis
+    call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvm)
+  else
+    ! PRJLOC = FALSE localization with Mulliken analysis
+    call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
+  endif
+  write(lupri,'(a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a)') &
+    '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
 
-      ! SCF cycle
-      DO ITR=1,LOC%ITRLOC
+  ! SCF cycle
+  do itr=1,loc%itrloc
 
-        DINVMO = DINVM
-        CALL GTINFO(DAYTID)
-        WRITE(LUPRI,'(/5X,A,I4,A,3X)')'########## START ITERATION NO. ',ITR,' ##########'
-        WRITE(LUPRI,'(5X,A,A24,A)')'########## ',DAYTID,' ##########'
+    dinvmo = dinvm
+    call gtinfo(daytid)
+    write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
+    write(lupri,'(5x,a,a24,a)')'########## ',daytid,' ##########'
 
-        CALL GET_HESSIAN(PMAT,HMAT,TOTDIAG,TOTNOND)
-        CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
-        CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
-        IF(LOC%PRJLOC) THEN
-          ! PRJLOC = TRUE localization with projection analysis
-          CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-        ELSE
-          ! PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-        ENDIF
+    call get_hessian(pmat,hmat,totdiag,totnond)
+    call get_gradient(pmat,gradient,dnrmg)
+    call getk_diag(pmat,xkappa,hmat,gradient,dnrmk,ipqtoq)
+    call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
+    if(loc%prjloc) then
+      ! PRJLOC = TRUE localization with projection analysis
+      call gtovlx(smat,var%ssmtrc)
+      call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvm)
+    else
+      ! PRJLOC = FALSE localization with Mulliken analysis
+      call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
+    endif
 
-        ! Convergence criterion
-        DIFF = DINVM - DINVMO
-        IF (DIFF < D0) WRITE(LUPRI,'(A,I4)')' WARNING: DINVM_NEW - DINVM_OLD < 0; ITR =',ITR
-        DIFFA = ABS(DINVM - DINVMO)
-        WRITE(LUPRI,'(/A,4X,A4,2X, 4X,A,4X, 2X,A,1X, 3X,A,3X, 4X,A,3X, 2X,A)') &
-          '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
-        WRITE(LUPRI,'(A,4X,I4,5D13.2)')'*C',ITR,DIFFA,DNRMG,DNRMK,TOTDIAG,TOTNOND
+    ! Convergence criterion
+    diff = dinvm - dinvmo
+    if (diff < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+    diffa = dabs(dinvm - dinvmo)
+    write(lupri,'(/a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a)') &
+      '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
+    write(lupri,'(a,4x,i4,5d13.2)')'*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond
 
-        IF(DIFFA < LOC%THRLOC) EXIT  ! Exit loop after convergence criterion is reached
+    if(diffa < loc%thrloc) exit  ! Exit loop after convergence criterion is reached
 
-      ENDDO
+  enddo
 
-      IF(DIFFA < LOC%THRLOC) CONV = 'Convergence in      '
-      WRITE(LUPRI,'(/A,A20,I5,A)') ' >>> ',CONV,ITR,' iterations'
+  if(diffa < loc%thrloc) conv = 'Convergence in      '
+  write(lupri,'(/a,a20,i5,a)') ' >>> ',conv,itr,' iterations'
 
-      TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      CALL TIMTXT('>>> Time used in localization is :',TIME,LUPRI)
+  timend = second()
+  time   = timend - timstr
+  call timtxt('>>> Time used in localization is :',time,lupri)
 
-      ! Put the localised coefficients in DFCOEF
-      CALL ORBLO5(SCOEF,NFBAS(0),NISH,NORB)
+  ! Put the localised coefficients in DFCOEF
+  call orblo5(scoef,nfbas(0),nish,norb)
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      CALL DEALLOC(SCOEF   ,ID='SCOEF    IN ORBLOC')
-      CALL DEALLOC(SCOEFO  ,ID='SCOEFO   IN ORBLOC')
-      CALL DEALLOC(SMAT    ,ID='SMAT     IN ORBLOC')
-      CALL DEALLOC(PMAT    ,ID='PMAT     IN ORBLOC')
-      CALL DEALLOC(XKAPPA  ,ID='XKAPPA   IN ORBLOC')
-      CALL DEALLOC(HMAT    ,ID='HMAT     IN ORBLOC')
-      CALL DEALLOC(GRADIENT,ID='GRADIENT IN ORBLOC')
-      CALL DEALLOC(CMO     ,ID='CMO      IN ORBLOC')
+  call dealloc(scoef   ,id='scoef    in orbloc')
+  call dealloc(scoefo  ,id='scoefo   in orbloc')
+  call dealloc(smat    ,id='smat     in orbloc')
+  call dealloc(pmat    ,id='pmat     in orbloc')
+  call dealloc(xkappa  ,id='xkappa   in orbloc')
+  call dealloc(hmat    ,id='hmat     in orbloc')
+  call dealloc(gradient,id='gradient in orbloc')
+  call dealloc(cmo     ,id='cmo      in orbloc')
 
-      CALL DEALLOC(NFNUC   ,ID='NFNUC    IN ORBLOC')
-      CALL DEALLOC(ISEL    ,ID='ISEL     IN ORBLOC')
-      CALL DEALLOC(INDAO   ,ID='INDAO    IN ORBLOC')
-      CALL DEALLOC(INDAOS  ,ID='INDAOS   IN ORBLOC')
-      CALL DEALLOC(INDNAO  ,ID='INDNAO   IN ORBLOC')
+  call dealloc(nfnuc   ,id='nfnuc    in orbloc')
+  call dealloc(isel    ,id='isel     in orbloc')
+  call dealloc(indao   ,id='indao    in orbloc')
+  call dealloc(indaos  ,id='indaos   in orbloc')
+  call dealloc(indnao  ,id='indnao   in orbloc')
 
-      CALL QEXIT('ORBLOC')
+  call qexit('orbloc')
 
-  END SUBROUTINE ORBLOC
+  end subroutine orbloc
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
