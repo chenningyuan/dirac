@@ -121,7 +121,7 @@ C.....BEGIN NON STANDARD DO LOOP.
          BEGIN= BEGIN + NCOL
       IF (BEGIN.LE.NROW) GO TO 1050
   200 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
 C
  1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
@@ -263,7 +263,7 @@ C
   100 CONTINUE
 C
   800 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
@@ -419,7 +419,7 @@ C
   100 CONTINUE
 C
   800 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
@@ -539,7 +539,7 @@ C
   100   CONTINUE
 C
   800 CONTINUE
-      WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+      WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
@@ -649,7 +649,7 @@ C
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  1000 FORMAT (/10X,8(4X,A6,I4))
       END
@@ -1057,7 +1057,7 @@ C
     5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 WRITE(LUPRI,'(A)') ' ==== End of matrix output ===='
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  1000 FORMAT (/5X,6(3X,A6,I4,7X),(3X,A6,I4))
       END
