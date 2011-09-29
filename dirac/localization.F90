@@ -109,253 +109,180 @@ contains
     var%vecref(2,i) = vecref(2,i)
   enddo
 
-  !==============================================================================!
   end subroutine initialize_localization
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE ORBLOC
-!***********************************************************************
-!
-!     Molecular orbital localization
-!
-!     Written by S. Dubillard - Jan 20 2004
-!     Last revision:
-!
-!***********************************************************************
-      USE MEMORY_ALLOCATOR
-      IMPLICIT NONE
+  subroutine orbloc
+  !==============================================================================!
+  !                                                                              !
+  !     Molecular orbital localization                                           !
+  !                                                                              !
+  !==============================================================================!
+  use memory_allocator
+  implicit none
 
-      ! Internal variables
-      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
+  ! Internal variables
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0
 
-      CHARACTER :: SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
-      LOGICAL   :: TOBE,FLAG
+  character :: sectid*12, cputid*12, walltid*12, daytid*24, conv*20 = 'No convergence after'
+  logical   :: tobe
 
-      INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
-      INTEGER*4 :: NFBAS(0:2), IPQTOQ(4,0:7)
+  integer*4 :: ifrp, nish12, idum, itr, lupri, nish, norb, nucdep, maxref
+  integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
-      REAL*8    :: TOTERG, DINVMO, DINVM, DNRMK, DNRMG, DIFF, DIFFA
-      REAL*8    :: TIMEND, TIME, TIMSTR, SECOND
+  real*8    :: dinvmo, dinvm, dnrmk, dnrmg, diff, diffa, totdiag, totnond
+  real*8    :: timend, time, timstr, second, toterg
 
-      INTEGER*4, ALLOCATABLE, DIMENSION(:)       :: NFNUC, ISEL, INDAO, INDAOS, INDNAO
-      REAL*8,    ALLOCATABLE, DIMENSION(:)       :: SCOEF, SCOEFO, SMAT, CMO
-      REAL*8,    ALLOCATABLE, DIMENSION(:,:)     :: GRADIENT
-      REAL*8,    ALLOCATABLE, DIMENSION(:,:,:)   :: XKAPPA, HMAT
-      REAL*8,    ALLOCATABLE, DIMENSION(:,:,:,:) :: PMAT
+  integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
+  real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo
+  real*8,    allocatable, dimension(:,:)     :: gradient
+  real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat
+  real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
   !------------------------------------------------------------------------------!
-      CALL QENTER('ORBLOC')
+  call qenter('orbloc')
 
-      IFRP   = 1
-      LUPRI  = VAR%LUPRI
-      NISH   = VAR%NISH(IFRP)
-      NORB   = VAR%NORB(IFRP)
-      NUCDEP = VAR%NUCDEP
-      MAXREF = VAR%MAXREF
+  ifrp   = 1
+  lupri  = var%lupri
+  nish   = var%nish(ifrp)
+  norb   = var%norb(ifrp)
+  nucdep = var%nucdep
+  maxref = var%maxref
 
-      NFBAS(:)    = VAR%NFBAS(IFRP,:)
-      IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
+  nfbas(:)    = var%nfbas(ifrp,:)
+  ipqtoq(:,:) = var%ipqtoq(:,:)
 
-      CALL TITLER('Molecular orbital localization','*',122)
+  call titler('Molecular orbital localization','*',122)
 
-! Check if coefficients are on file
+  ! Check if coefficients are on file
+  inquire(file='DFCOEF',exist=tobe)
+  if(.not.tobe)then
+    write(lupri,'(a)') 'orbloc: Coefficient file not found !'
+    call quit('orbloc: Coefficients not found !')
+  endif
 
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE)THEN
-        WRITE(LUPRI,'(A)') 'ORBLOC: Coefficient file not found !'
-        CALL QUIT('ORBLOC: Coefficients not found !')
-      ENDIF
+  ! Memory allocation
+  nish12 = 4 * ( nish*nish + nish ) / 2
+  call alloc(scoef   ,nish*nfbas(0)*4,   id='scoef    in orbloc')
+  call alloc(scoefo  ,nish*nfbas(0)*4,   id='scoefo   in orbloc')
+  call alloc(smat    ,var%n2bbasx,       id='smat     in orbloc')
+  call alloc(cmo     ,var%n2bbasxq,      id='cmo      in orbloc')
+  call alloc(hmat    ,nish12,nish12,2,   id='hmat     in orbloc')
+  call alloc(gradient,nish12,2,          id='gradient in orbloc')
+  call alloc(xkappa  ,nish,nish,4,       id='xkappa   in orbloc')
+  call alloc(pmat    ,nish,nish,4,nucdep,id='pmat     in orbloc')
 
-! Memory allocation
+  call alloc(nfnuc ,2*nucdep,  id='nfnuc  in orbloc')
+  call alloc(isel  ,nish,      id='isel   in orbloc')
+  call alloc(indao ,nfbas(0),  id='indao  in orbloc')
+  call alloc(indaos,nfbas(0),  id='indaos in orbloc')
+  call alloc(indnao,2*nucdep+2,id='indnao in orbloc')
 
-      NISH12 = 4 * ( NISH*NISH + NISH ) / 2
-      CALL ALLOC(SCOEF   ,NISH*NFBAS(0)*4,   ID='SCOEF    IN ORBLOC')
-      CALL ALLOC(SCOEFO  ,NISH*NFBAS(0)*4,   ID='SCOEFO   IN ORBLOC')
-      CALL ALLOC(SMAT    ,VAR%N2BBASX,       ID='SMAT     IN ORBLOC')
-      CALL ALLOC(CMO     ,VAR%N2BBASXQ,      ID='CMO      IN ORBLOC')
-      CALL ALLOC(HMAT    ,NISH12,NISH12,2,   ID='HMAT     IN ORBLOC')
-      CALL ALLOC(GRADIENT,NISH12,2,          ID='GRADIENT IN ORBLOC')
-      CALL ALLOC(XKAPPA  ,NISH,NISH,4,       ID='XKAPPA   IN ORBLOC')
-      CALL ALLOC(PMAT    ,NISH,NISH,4,NUCDEP,ID='PMAT     IN ORBLOC')
+  ! Read coefficients
+  call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
+  call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
+  close(var%lucoef,status='keep')
 
-      CALL ALLOC(NFNUC ,2*NUCDEP,  ID='NFNUC  IN ORBLOC')
-      CALL ALLOC(ISEL  ,NISH,      ID='ISEL   IN ORBLOC')
-      CALL ALLOC(INDAO ,NFBAS(0),  ID='INDAO  IN ORBLOC')
-      CALL ALLOC(INDAOS,NFBAS(0),  ID='INDAOS IN ORBLOC')
-      CALL ALLOC(INDNAO,2*NUCDEP+2,ID='INDNAO IN ORBLOC')
+  ! Get overlap matrix 
+  call gtovlx(smat,var%ssmtrc)
+  if(loc%iprloc.ge.6) then
+    write(lupri,'(/a)') '* orbloc: Molecular coefficients:'
+    call prqmat(cmo,nfbas(0),norb,nfbas(0),norb,4,ipqtoq(1,0),lupri)
 
-! Read coefficients
+    write(lupri,'(/a)') '* orbloc: Overlap matrix' 
+    call prqmat(smat,nfbas(0),nfbas(0),nfbas(0),nfbas(0),1,ipqtoq(1,0),lupri)
+  endif
 
-      CALL OPNFIL(VAR%LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_no_work(VAR%LUCOEF,'DFCOEF',CMO,IDUM,IDUM,TOTERG,2)
-      CLOSE(VAR%LUCOEF,STATUS='KEEP')
+  ! Occupied electronic orbital coeffients selection
+  call occupy(isel,nish)
+  call selcfs(cmo,ifrp,scoef,nish,isel,d0,nish,nfbas(0),norb)
+  if(loc%iprloc.ge.5) then
+    write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
+    call prqmat(scoef,nfbas(0),nish,nfbas(0),nish,4,ipqtoq(1,0),lupri)
+  endif
 
-! Get overlap matrix 
+  ! Get the number of functions per center
+  call indaoc(indao,indaos,indnao)
+  call orblo4(indnao,nfnuc,nucdep)
 
-      CALL GTOVLX(SMAT,VAR%SSMTRC)
-      IF(LOC%IPRLOC.GE.6) THEN
-        WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
-        CALL PRQMAT(CMO,NFBAS(0),NORB,NFBAS(0),NORB,4,IPQTOQ(1,0),LUPRI)
+  timstr = second()
+  if(loc%prjloc) then
+    ! PRJLOC = TRUE localization with projection analysis
+    call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvm)
+  else
+    ! PRJLOC = FALSE localization with Mulliken analysis
+    call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
+  endif
+  write(lupri,'(a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a)') &
+    '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
 
-        WRITE(LUPRI,'(/A)') '* ORBLOC: Overlap matrix' 
-        CALL PRQMAT(SMAT,NFBAS(0),NFBAS(0), &
-                    NFBAS(0),NFBAS(0),1,IPQTOQ(1,0),LUPRI)
-      ENDIF
+  ! SCF cycle
+  do itr=1,loc%itrloc
 
-! Occupied electronic orbital coeffients selection
+    dinvmo = dinvm
+    call gtinfo(daytid)
+    write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
+    write(lupri,'(5x,a,a24,a)')'########## ',daytid,' ##########'
 
-      CALL OCCUPY(ISEL,NISH)
-      CALL SELCFS(CMO,IFRP,SCOEF,NISH,ISEL,D0,NISH,NFBAS(0),NORB)
-      IF(LOC%IPRLOC.GE.5) THEN
-        WRITE(LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
-        CALL PRQMAT(SCOEF,NFBAS(0),NISH,NFBAS(0),NISH,4,IPQTOQ(1,0),LUPRI)
-      ENDIF
+    call get_hessian(pmat,hmat,totdiag,totnond)
+    call get_gradient(pmat,gradient,dnrmg)
+!   call getk_diag(pmat,xkappa,hmat,gradient,dnrmk,ipqtoq)
+    call getk_full(pmat,xkappa,hmat,gradient,dnrmk)
+    call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
+    if(loc%prjloc) then
+      ! PRJLOC = TRUE localization with projection analysis
+      call gtovlx(smat,var%ssmtrc)
+      call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvm)
+    else
+      ! PRJLOC = FALSE localization with Mulliken analysis
+      call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
+    endif
 
-! Get the number of functions per center
+    ! Convergence criterion
+    diff = dinvm - dinvmo
+    if (diff < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+    diffa = dabs(dinvm - dinvmo)
+    write(lupri,'(/a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a)') &
+      '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
+    write(lupri,'(a,4x,i4,5d13.2)')'*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond
 
-      CALL INDAOC(INDAO,INDAOS,INDNAO)
-      CALL ORBLO4(INDNAO,NFNUC,NUCDEP)
+    if(diffa < loc%thrloc) exit  ! Exit loop after convergence criterion is reached
 
-! We do orbital rotation until the difference between two succesive
-! localisation criteria is less than a threshold
+  enddo
 
-      TIMSTR = SECOND()
-      DINVM = D0
-      DNRMG = D0
-      DNRMK = D0
-      IF(LOC%PRJLOC) THEN
-!       PRJLOC = TRUE localization with projection analysis
-        CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-      ELSE
-!       PRJLOC = FALSE localization with Mulliken analysis
-        CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-      ENDIF
-      TOBE = .FALSE.
-      ITR = 0
-      FLAG = .TRUE.
-      IF (LOC%AUTO) THEN
- 100    CONTINUE
-        ITR = ITR + 1
-        CALL GTINFO(DAYTID)
-        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
-          '########## START ITERATION NO.', ITR , ' ##########',DAYTID
-        DINVMO = DINVM
-        CALL GET_HESSIAN(PMAT,HMAT)
-        CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
-        !------------------------------------------------------------------------!
-        !    Solve equation:  H * K = - G*                                       !
-        !------------------------------------------------------------------------!
-!       IF(ITR > 11)THEN
-          CALL GETK_FULL(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK)
-!       ELSE
-!         CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
-!       ENDIF
-        IF (.NOT. FLAG) THEN
-          CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
-        ENDIF
-        CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
-        IF(LOC%PRJLOC) THEN
-!         PRJLOC = TRUE localization with projection analysis
-          CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-        ELSE
-!         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-        ENDIF
-        DIFF  = DINVM - DINVMO
-        DIFFA = ABS(DINVM - DINVMO)
-        IF (DIFF .LT. D0 .AND. .NOT. FLAG) THEN
-          CALL DCOPY(NISH*NFBAS(0)*4,SCOEFO,1,SCOEF,1)
-          DINVM = DINVMO
-          ITR = ITR - 1
-          FLAG = .TRUE.
-          WRITE(LUPRI,'(/5X,A)')'! Localization criterion decreases !'
-          WRITE(LUPRI,'(5X,A)') '! Restart from  previous iteration !'
-          WRITE(LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
-          IF(LOC%PRJLOC) THEN
-            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-          ELSE
-            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-          ENDIF
-          GOTO 100
-        ELSE
-          WRITE(LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
-!         IF(DNRMG .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
-          IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
-          IF(DIFFA .LE. LOC%THRLOC) THEN
-            WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
-          ELSE
-            WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
-          ENDIF
-        ENDIF
-      ELSE
- 200    CONTINUE
-        ITR = ITR + 1
-        CALL GTINFO(DAYTID)
-        WRITE(LUPRI,'(/A,I4,A,3X,A24/)') &
-          '########## START ITERATION NO.', ITR , ' ##########',DAYTID
-        DINVMO = DINVM
-        CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
-        CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
-        CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
-        CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
-        IF(LOC%PRJLOC) THEN
-!         PRJLOC = TRUE localization with projection analysis
-          CALL GTOVLX(SMAT,VAR%SSMTRC)
-          CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-        ELSE
-!         PRJLOC = FALSE localization with Mulliken analysis
-          CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-        ENDIF
-        DIFF  =     DINVM - DINVMO
-        DIFFA = ABS(DINVM - DINVMO)
-        IF (DIFF .LT. D0) THEN
-          WRITE(LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-          WRITE(LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
-          WRITE(LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-        ENDIF
-        IF (.NOT. FLAG .AND. DIFFA .LE. LOC%HESTHR) THEN
-          FLAG = .TRUE.
-          WRITE(LUPRI,'(/5X,A)')  '!!! Hessian activated !!!'
-        ENDIF
-        IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 200
-        IF(DIFFA .LE. LOC%THRLOC) THEN
-          WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
-        ELSE
-          WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
-        ENDIF
-      ENDIF
-      TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      CALL TIMTXT('>>> Time used in localization is :',TIME,LUPRI)
+  if(diffa < loc%thrloc) conv = 'Convergence in      '
+  write(lupri,'(/a,a20,i5,a)') ' >>> ',conv,itr,' iterations'
 
-! Put the localised coefficients in DFCOEF
+  timend = second()
+  time   = timend - timstr
+  call timtxt('>>> Time used in localization is :',time,lupri)
 
-      CALL ORBLO5(SCOEF,NFBAS(0),NISH,NORB)
+  ! Put the localised coefficients in DFCOEF
+  call orblo5(scoef,nfbas(0),nish,norb)
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
-      CALL DEALLOC(SCOEF   ,ID='SCOEF    IN ORBLOC')
-      CALL DEALLOC(SCOEFO  ,ID='SCOEFO   IN ORBLOC')
-      CALL DEALLOC(SMAT    ,ID='SMAT     IN ORBLOC')
-      CALL DEALLOC(PMAT    ,ID='PMAT     IN ORBLOC')
-      CALL DEALLOC(XKAPPA  ,ID='XKAPPA   IN ORBLOC')
-      CALL DEALLOC(HMAT    ,ID='HMAT     IN ORBLOC')
-      CALL DEALLOC(GRADIENT,ID='GRADIENT IN ORBLOC')
-      CALL DEALLOC(CMO     ,ID='CMO      IN ORBLOC')
+  call dealloc(scoef   ,id='scoef    in orbloc')
+  call dealloc(scoefo  ,id='scoefo   in orbloc')
+  call dealloc(smat    ,id='smat     in orbloc')
+  call dealloc(pmat    ,id='pmat     in orbloc')
+  call dealloc(xkappa  ,id='xkappa   in orbloc')
+  call dealloc(hmat    ,id='hmat     in orbloc')
+  call dealloc(gradient,id='gradient in orbloc')
+  call dealloc(cmo     ,id='cmo      in orbloc')
 
-      CALL DEALLOC(NFNUC   ,ID='NFNUC    IN ORBLOC')
-      CALL DEALLOC(ISEL    ,ID='ISEL     IN ORBLOC')
-      CALL DEALLOC(INDAO   ,ID='INDAO    IN ORBLOC')
-      CALL DEALLOC(INDAOS  ,ID='INDAOS   IN ORBLOC')
-      CALL DEALLOC(INDNAO  ,ID='INDNAO   IN ORBLOC')
+  call dealloc(nfnuc   ,id='nfnuc    in orbloc')
+  call dealloc(isel    ,id='isel     in orbloc')
+  call dealloc(indao   ,id='indao    in orbloc')
+  call dealloc(indaos  ,id='indaos   in orbloc')
+  call dealloc(indnao  ,id='indnao   in orbloc')
 
-      CALL QEXIT('ORBLOC')
+  call qexit('orbloc')
 
-  END SUBROUTINE ORBLOC
+  end subroutine orbloc
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -966,7 +893,6 @@ contains
   ! Norm of the kappa vector
   ndim = ni*ni*4
   dnrm = dnrm2(ndim,xkappa,1)
-  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dnrm
 
   call qexit('getk_diag')
 
@@ -1499,7 +1425,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_hessian(pmat,hmat)
+  subroutine get_hessian(pmat,hmat,totdiag,totnond)
   !******************************************************************************!
   !                                                                              !
   !  Construction of full hessian                                                !
@@ -1512,16 +1438,16 @@ contains
   implicit none
 
   ! External variables
-  real*8, dimension(:,:,:)   ::  hmat
-  real*8, dimension(:,:,:,:) ::  pmat
+  real*8                     :: totdiag, totnond
+  real*8, dimension(:,:,:)   :: hmat
+  real*8, dimension(:,:,:,:) :: pmat
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0
+  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0, d4 = 4.0d0
 
   real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pil1, pli1, pkj1
   real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pil2, pli2, pkj2
-  real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond
-  real*8 :: totdiag, totnond
+  real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond, sumtmp
 
   integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
@@ -1642,6 +1568,7 @@ contains
 
   !  d^2 G / dK_ij dK_kl   -->   (36)
   sumnond = d0
+  sumtmp  = d0
   ij = 2*ni12
   do j=1,ni
     do i=j,ni
@@ -1682,7 +1609,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1712,7 +1642,7 @@ contains
         enddo
         hmat(kl+2*ni12,ij-2*ni12,1) = hmat(ij,kl,1)
         hmat(kl+2*ni12,ij-2*ni12,2) = hmat(ij,kl,2)
-        sumnond=sumnond + d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond=sumnond + d4*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1729,7 +1659,7 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
   write(lupri,*) 'Sum of elements of B_uu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumtmp,sumnond
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -1737,6 +1667,7 @@ contains
   !------------------------------------------------------------------------------!
   !  d^2 G / dK*_ij dK_kl   -->   (34)
   sumnond = d0
+  sumtmp  = d0
   ij = ni12
   do j=1,ni
     do i=j,ni
@@ -1777,7 +1708,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1805,7 +1739,7 @@ contains
             hmat(ij,kl,2) = hmat(ij,kl,2) - dhalf * pij2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1828,7 +1762,7 @@ contains
             hmat(kl,ij,2) = hmat(kl,ij,2) - pji2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1845,11 +1779,12 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
   write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumtmp,sumnond
   totnond = totnond + sumnond
 
   !  d^2 G / dK_ij dK_kl   -->   (38)
   sumnond = d0
+  sumtmp  = d0
   ij = 3*ni12
   do j=1,ni
     do i=j,ni
@@ -1890,7 +1825,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -1918,9 +1856,7 @@ contains
             hmat(ij,kl,2) = hmat(ij,kl,2) + dhalf * pij2 * ( pjj - pii )
           endif
         enddo
-        hmat(kl,ij,1) = hmat(ij,kl,1)
-        hmat(kl,ij,2) = hmat(ij,kl,2)
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1943,7 +1879,7 @@ contains
             hmat(kl,ij,2) = hmat(kl,ij,2) + pij2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -1960,7 +1896,7 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
   write(lupri,*) 'Sum of elements of B_bu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumtmp,sumnond
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -2046,7 +1982,7 @@ contains
         enddo
         hmat(kl,ij,1) =   hmat(ij,kl,1)
         hmat(kl,ij,2) = - hmat(ij,kl,2)
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -2075,6 +2011,7 @@ contains
   !------------------------------------------------------------------------------!
   !  d^2 G / dK_ij dK_kl   -->   (37)
   sumnond = d0
+  sumtmp  = d0
   ij = 2*ni12
   do j=1,ni
     do i=j,ni
@@ -2115,7 +2052,10 @@ contains
               hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
             endif
           enddo
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          if(ij==kl)then
+            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+          endif
         enddo
       enddo
     enddo
@@ -2138,7 +2078,7 @@ contains
             hmat(ij,kl,2) = hmat(ij,kl,2) + pij2 * ( pii - pjj )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -2166,7 +2106,7 @@ contains
             hmat(kl,ij,2) = hmat(kl,ij,2) + dhalf * pij2 * ( pjj - pii )
           endif
         enddo
-        sumnond = sumnond + dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
+        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -2183,9 +2123,8 @@ contains
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
   enddo
   write(lupri,*) 'Sum of elements of B_ub:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumnond
+  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumtmp,sumnond
   totnond = totnond + sumnond
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: Total',totdiag,totnond
 
   !------------------------------------------------------------------------------!
   !                     Get the rest of the hessian matrix                       !
@@ -2292,7 +2231,6 @@ contains
     dnrm = dnrm + gradient(i,1)*gradient(i,1) + gradient(i,2)*gradient(i,2)
   enddo
   dnrm = dsqrt(dnrm)
-  write (lupri,'(a,e12.2)') 'Norm of gradient: ',dnrm
 
   call qexit('get_gradient')
 
