@@ -678,7 +678,7 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = D0
+      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C
@@ -786,7 +786,7 @@ C
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
       THRPCI         = DKRMC_THRPCI
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
@@ -905,7 +905,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
@@ -1408,7 +1408,7 @@ C IOPT_INTDEF controls the Hamiltonian
 C     
 C     Set common block DCROPT
 C     
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 
       OPT_CIPROGRAM  = 'KRCC'
