@@ -131,7 +131,7 @@ contains
       REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
       CHARACTER :: SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
-      LOGICAL   :: TOBE,FLAG
+      LOGICAL   :: TOBE
 
       INTEGER*4 :: IFRP, NISH12, IDUM, ITR, LUPRI, NISH, NORB, NUCDEP, MAXREF
       INTEGER*4 :: NFBAS(0:2), IPQTOQ(4,0:7)
@@ -234,7 +234,6 @@ contains
       ENDIF
       TOBE = .FALSE.
       ITR = 0
-      FLAG = .TRUE.
       IF (LOC%AUTO) THEN
  100    CONTINUE
         ITR = ITR + 1
@@ -245,9 +244,6 @@ contains
         CALL GET_HESSIAN(PMAT,HMAT)
         CALL GET_GRADIENT(PMAT,GRADIENT,DNRMG)
         CALL GETK_DIAG(PMAT,XKAPPA,HMAT,GRADIENT,DNRMK,IPQTOQ)
-        IF (.NOT. FLAG) THEN
-          CALL DCOPY(NISH*NFBAS(0)*4,SCOEF,1,SCOEFO,1)
-        ENDIF
         CALL ROTCMO_MOD(SCOEF,NFBAS(0),NISH,4,XKAPPA,NISH,IPQTOQ(IFRP,0))
         IF(LOC%PRJLOC) THEN
 !         PRJLOC = TRUE localization with projection analysis
@@ -259,28 +255,12 @@ contains
         ENDIF
         DIFF  = DINVM - DINVMO
         DIFFA = ABS(DINVM - DINVMO)
-        IF (DIFF .LT. D0 .AND. .NOT. FLAG) THEN
-          CALL DCOPY(NISH*NFBAS(0)*4,SCOEFO,1,SCOEF,1)
-          DINVM = DINVMO
-          ITR = ITR - 1
-          FLAG = .TRUE.
-          WRITE(LUPRI,'(/5X,A)')'! Localization criterion decreases !'
-          WRITE(LUPRI,'(5X,A)') '! Restart from  previous iteration !'
-          WRITE(LUPRI,'(5X,A)') '!  and activation of the Hessian   !'
-          IF(LOC%PRJLOC) THEN
-            CALL ORBLP1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,MAXREF,DINVM)
-          ELSE
-            CALL ORBLO1(SMAT,SCOEF,PMAT,NFBAS(1),NFBAS(2),NISH,NUCDEP,NFNUC,DINVM)
-          ENDIF
-          GOTO 100
+        WRITE(LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
+        IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
+        IF(DIFFA .LE. LOC%THRLOC) THEN
+          WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
         ELSE
-          WRITE(LUPRI,'(A,I4,D12.4)') 'DIFFA =',ITR,DIFFA
-          IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 100
-          IF(DIFFA .LE. LOC%THRLOC) THEN
-            WRITE(LUPRI,'(/A,I5,A)') ' >>> Convergence in ' , ITR , ' iterations'
-          ELSE
-            WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
-          ENDIF
+          WRITE(LUPRI,'(/A,I5,A)') ' >>> No convergence after ', ITR , ' iterations'
         ENDIF
       ELSE
  200    CONTINUE
@@ -307,10 +287,6 @@ contains
           WRITE(LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
           WRITE(LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
           WRITE(LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-        ENDIF
-        IF (.NOT. FLAG .AND. DIFFA .LE. LOC%HESTHR) THEN
-          FLAG = .TRUE.
-          WRITE(LUPRI,'(/5X,A)')  '!!! Hessian activated !!!'
         ENDIF
         IF(DIFFA .GT. LOC%THRLOC .AND. ITR .LT. LOC%ITRLOC) GOTO 200
         IF(DIFFA .LE. LOC%THRLOC) THEN
