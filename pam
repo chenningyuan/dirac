@@ -863,10 +863,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if os.path.isfile(str(options.dest_debugger)):
                 self.debugger = options.dest_debugger
             else:
-                print 'Debugger ', options.dest_debugger, \
-                    ' you assigned does not exist ! Provide it with full path !'
+                print 'FYI: Debugger wrongly assigned. No debugging ;|'
                 self.debug = False
-                sys.exit(17)
 
         if options.dest_vg:
             self.vg_debug = True
@@ -1155,7 +1153,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if self.debug:
                 # first check if debugger is set
                 if self.debugger is None:
-                    sys.exit("though debug wanted, debugger not assigned !")
+                    sys.exit("Though debugging wanted, no debugger assigned !")
                 if find_executable(self.debugger) is None:
                     print 'no debugger found in the .diracrc file !'
                     sys.exit()

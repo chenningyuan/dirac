@@ -5097,7 +5097,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
       NDEEX = NPART + NHOLE + NPARTV + NHOLEV
 *
-      NTEST = 100
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' CAAB operator : '
         CALL WRT_SPOX_TP_CC_KRCC(IHTP,1)

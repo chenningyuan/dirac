@@ -43,7 +43,7 @@
       IDUM = 1
 C     call memmar(KDUM,IDUM,'MARK  ',IDUM,'GET_3B')
 *
-      NTEST = 1000
+      NTEST = 000
 *
       ISPC = ISSPC
       ISM  = ISSM

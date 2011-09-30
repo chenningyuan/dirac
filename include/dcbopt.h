@@ -47,7 +47,7 @@
 !
 !
 !     LVCORR correction (re-)calculated within the KR-MC/CI framework
-!     --> LVCORR_MC 
+!     --> E_LVCORR_MC 
 !
 !     Parameters for MCTYPE:
 !
@@ -88,14 +88,14 @@
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
      &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
-     &       LVCORR_MC,THR_CVEC
+     &       E_LVCORR_MC,THR_CVEC
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
      &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
-     &                LVCORR_MC,THR_CVEC
+     &                E_LVCORR_MC,THR_CVEC
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)
