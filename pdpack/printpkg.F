@@ -124,7 +124,7 @@ C.....BEGIN NON STANDARD DO LOOP.
       WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
 C
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outpkb */
       SUBROUTINE OUTPKB (AMATRX,NDIM,NBLK,NCTL,LUPRI)
@@ -268,7 +268,7 @@ C
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outpks */
       SUBROUTINE OUTPKS (AMATRX,NDIM,NBLK,IREPO,NCTL,LUPRI)
@@ -424,7 +424,7 @@ C
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck outptb */
       SUBROUTINE OUTPTB (AMATRX,NDIM,NBLK,NCTL,LUPRI)
@@ -544,7 +544,7 @@ C
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
  1200 FORMAT (/5X,'*** Block',I3,' ***')
- 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck output */
       SUBROUTINE OUTPUT (AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
@@ -651,7 +651,7 @@ C
     2 LAST = MIN(LAST+KCOL,COLHI)
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
- 1000 FORMAT (/10X,8(4X,A6,I4))
+ 1000 FORMAT (/10X,8(5X,A6,I4))
       END
 C  /* Deck prtab */
       SUBROUTINE PRTAB(NTABLE,TABLE,TEXT,LUPRI)
@@ -1023,11 +1023,11 @@ C
       END IF
       IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
 C        use F output format
-         PFMT = '(A1,I3,2X,4(2F10.6))'
+         PFMT = '(A1,I7,2X,4(F17.8,F13.8))'
          thrpri = 0.5D-6
       ELSE
 C        use 1PD output format
-         PFMT = '(A1,I7,2X,1P,4(2D12.6))'
+         PFMT = '(A1,I7,2X,1P,4(D17.6,D13.6))'
          thrpri = 1.0D-6*AMAX
       END IF
 C
@@ -1059,7 +1059,7 @@ C
     2 LAST = MIN(LAST+KCOL,COLHI)
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
- 1000 FORMAT (/5X,6(3X,A6,I4,7X),(3X,A6,I4))
+ 1000 FORMAT (/10X,4('    real <- ',A6,I4,' <- imag'))
       END
 C === Deck is_nan ===============
       LOGICAL FUNCTION IS_NAN(XA,XB)
