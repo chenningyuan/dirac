@@ -3043,6 +3043,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
          
           IF (IPRINT.GE.IPRLIM) THEN
@@ -3105,6 +3106,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
 
 C
@@ -3125,7 +3127,7 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
-        IF(IPRINT.GE.5) THEN
+        IF(IPRINT.GE.11) THEN
           CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
         ENDIF
@@ -3146,6 +3148,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
 C
 C         First part of transformation: W = F(C+)
@@ -3168,6 +3171,7 @@ C
              WRITE (LUPRI,'(/A,I10/A,I10)')
      &   ' >>> QTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
+             CALL QUIT('ERROR: need more work space')
           ENDIF
 C
 C         First part of transformation: W = CF
@@ -3184,7 +3188,7 @@ C
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
         ENDIF
-       IF(IPRINT.GE.5) THEN
+       IF(IPRINT.GE.11) THEN
           CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
           CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
         ENDIF
