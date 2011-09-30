@@ -22,21 +22,29 @@ module xc_ac
 
 contains
 
-   subroutine dftac(           &
-                    derv,      &
-                    weight,    &
-                    rho,       &
-                    rho_resp,  &
-                    rho_outer, &
-                    z_0        &
+   subroutine dftac(              &
+                    block_length, &
+                    derv,         &
+                    weight,       &
+                    rho,          &
+                    rho_resp,     &
+                    rho_outer,    &
+                    z_0           &
                    )
 
 !     --------------------------------------------------------------------------
-      real(8) :: derv(max_block_length, 0:99)
-      real(8) :: x, shiftbulk
-      real(8) :: vx_bulk(3), vx_outer(3), vx_slater(3), vx_resp(3)
-      real(8) :: rho43, rho, f, weight
-      real(8) :: rho_resp, rho_outer, z_0
+      integer, intent(in)    :: block_length
+      real(8), intent(inout) :: derv(max_block_length, 0:99)
+      real(8), intent(in)    :: weight(*)
+      real(8), intent(in)    :: rho(*)
+      real(8), intent(in)    :: rho_resp(*)
+      real(8), intent(in)    :: rho_outer(*)
+      real(8), intent(in)    :: z_0(*)
+!     --------------------------------------------------------------------------
+      integer                :: k
+      real(8)                :: rho43, f
+      real(8)                :: vx_bulk(3), vx_outer(3), vx_slater(3), vx_resp(3)
+      real(8)                :: x, shiftbulk
 !     --------------------------------------------------------------------------
 
 #ifdef PRG_DIRAC
@@ -46,17 +54,6 @@ contains
       stop
 #endif
 
-!     grac parameters
-      if (dft_cfg_grac) then
-         rho43 = rho**(4.0d0/3.0d0)
-         if (rho43 /= 0.0d0) then
-            x = dsqrt(z_0)/rho43
-         else
-            x = 0.0d0
-            return
-         end if
-      end if
-
 !     shift bulk?
       if (dft_cfg_grac) then
          shiftbulk = dft_cfg_ac_ip + homo_eigenvalue
@@ -64,43 +61,54 @@ contains
          shiftbulk = 0.0d0
       end if
 
-!     bulk potential
-      vx_bulk = 0.0d0
-      if (dft_cfg_saop_with_response_part) then
-         vx_slater = 0.0d0
-         vx_resp = 0.0d0
+      do k = 1, block_length
+
+!        bulk potential
+         vx_bulk = 0.0d0
+         if (dft_cfg_saop_with_response_part) then
+            vx_slater = 0.0d0
+            vx_resp = 0.0d0
 #ifdef PRG_DIRAC
-         call gllbholepot(vx_slater, weight, rho, dsqrt(z_0))
+            call gllbholepot(vx_slater, weight(k), rho(k), dsqrt(z_0(k)))
 #endif
-         vx_resp(1) = 0.42d0*weight*rho_resp/rho
-         vx_bulk(1) = vx_slater(1) + vx_resp(1)
-      else
-         vx_bulk(1) = derv(1, d1000000)
-      end if
-      vx_bulk(2) = derv(1, d0010000)
-
-!     asymptotic potential
-      vx_outer = 0.0d0
+            vx_resp(1) = 0.42d0*weight(k)*rho_resp(k)/rho(k)
+            vx_bulk(1) = vx_slater(1) + vx_resp(1)
+         else
+            vx_bulk(1) = derv(k, d1000000)
+         end if
+         vx_bulk(2) = derv(k, d0010000)
+        
+!        asymptotic potential
+         vx_outer = 0.0d0
 #ifdef PRG_DIRAC
-      if (dft_cfg_asymptote_is_lb94) then
-         call lb94pot(vx_outer, weight, rho, dsqrt(z_0))
-      end if
-      if (dft_cfg_asymptote_is_lbalpha) then
-         call lbalphapot(vx_outer, weight, rho, dsqrt(z_0))
-      end if
+         if (dft_cfg_asymptote_is_lb94) then
+            call lb94pot(vx_outer, weight(k), rho(k), dsqrt(z_0(k)))
+         end if
+         if (dft_cfg_asymptote_is_lbalpha) then
+            call lbalphapot(vx_outer, weight(k), rho(k), dsqrt(z_0(k)))
+         end if
 #endif
 
-!     interpolation
-      if (dft_cfg_saop) then
-        f = rho_outer/rho
-      end if
-      if (dft_cfg_grac) then
-        f = 1.0d0/(1.0d0+exp(-dft_cfg_grac_alpha*(x-dft_cfg_grac_beta)))
-      end if
+!        interpolation
+         if (dft_cfg_saop) then
+            f = rho_outer(k)/rho(k)
+         end if
+         if (dft_cfg_grac) then
+            rho43 = rho(k)**(4.0d0/3.0d0)
+            if (rho43 /= 0.0d0) then
+               x = dsqrt(z_0(k))/rho43
+            else
+               x = 0.0d0
+               return
+            end if
+            f = 1.0d0/(1.0d0 + exp(-dft_cfg_grac_alpha*(x - dft_cfg_grac_beta)))
+         end if
+       
+!        connection
+         derv(k, d0010000) = (1.0d0-f)* vx_bulk(2)
+         derv(k, d1000000) = (1.0d0-f)*(vx_bulk(1) - weight(k)*shiftbulk) + f*vx_outer(1)*(1.0d0 - hf_exchange_factor)
 
-!     connection
-      derv(1, d0010000) = (1.0d0-f)* vx_bulk(2)
-      derv(1, d1000000) = (1.0d0-f)*(vx_bulk(1) - weight*shiftbulk) + f*vx_outer(1)*(1.0d0 - hf_exchange_factor)
+      end do
 
    end subroutine
 

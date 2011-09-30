@@ -678,7 +678,7 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
+      THRPCI = 1.0D-2 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C

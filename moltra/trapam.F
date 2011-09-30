@@ -2137,7 +2137,9 @@ C
 C
 #include "ibtfun.h"
 C
-      IF (IPRINT .GT. 6) CALL HEADER('Subroutine NINSH',-1)
+!     hjaaj: disabled print of header
+!     as no other print in this routine!
+!     IF (IPRINT .GT. 6) CALL HEADER('Function NINSH',-1)
 C
       IF (ISHELA.NE.0) THEN
          ISHELS = ISHELA
@@ -2272,9 +2274,9 @@ C
 C
 #include "ibtfun.h"
 C
-C     hjaaj: increased level for print of header
-C     as no other print in this routine!
-      IF (IPRINT .GT. 5) CALL HEADER('Subroutine NDISTRN',-1)
+!     hjaaj: disabled print of header
+!     as no other print in this routine!
+!     IF (IPRINT .GT. 5) CALL HEADER('Function NDISTRN',-1)
       IF (MKINAB.AND.(.NOT.ABSPOI).AND.(.NOT.MKIJPA))
      &    CALL QUIT ('Conflicting options in NDISTRN')
 C
