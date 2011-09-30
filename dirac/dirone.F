@@ -101,6 +101,11 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
+         IF (NOSMLV) THEN
+C          ... zero SS integrals
+           CALL NOSSNUCATT
+           COMB(4:4) = 'F'
+         END IF
          if (import_vemb) then
             CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
          endif
