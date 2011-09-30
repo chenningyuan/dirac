@@ -1164,7 +1164,7 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-             call dftac(derv, w(1), n_0(1), rho_resp, rho_outer, gnn_0(1))
+             call dftac(1, derv, w, n_0, (/rho_resp/), (/rho_outer/), gnn_0)
           end if
 
 !         energy density

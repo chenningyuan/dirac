@@ -26,6 +26,7 @@ module xc_blas3
    use xc_derv
 !fixme dft_cfg should not be used here, move xc derv business to separate module
    use dft_cfg
+   use xc_ac
    use extra
 
    implicit none
@@ -75,8 +76,8 @@ contains
       integer, intent(in)    :: nr_fmat
       real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, nr_fmat)
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)
-      real(8), intent(in)    :: dmat_0_saop_outer(*)
-      real(8), intent(in)    :: dmat_0_saop_resp(*)
+      real(8), intent(in)    :: dmat_0_saop_outer(mat_dim, mat_dim, nz)
+      real(8), intent(in)    :: dmat_0_saop_resp(mat_dim, mat_dim, nz)
       integer, intent(in)    :: nr_dmat
       real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat)
       integer, intent(in)    :: dmat_pg_sym(nr_dmat)
@@ -105,6 +106,8 @@ contains
       integer                :: nr1, nr2, st1, st2
       integer                :: iblock, jblock
       real(8), allocatable   :: n(:, :)
+      real(8), allocatable   :: n_saop_outer(:)
+      real(8), allocatable   :: n_saop_resp(:)
       real(8), allocatable   :: n_g(:, :, :)
       real(8), allocatable   :: p_n(:, :)
       real(8), allocatable   :: p_n_g(:, :, :)
@@ -116,6 +119,8 @@ contains
       allocate(ao_sort_index_reverse(mat_dim))
       allocate(ao_sorted(max_block_length*mat_dim, 0:4))
       allocate(n(block_length, 0:nr_dmat))
+      allocate(n_saop_outer(block_length))
+      allocate(n_saop_resp(block_length))
       allocate(n_g(block_length, 3, 0:nr_dmat))
       allocate(p_n(block_length, maxval((/nr_dmat, 1/))))
       allocate(p_n_g(block_length, 3, maxval((/nr_dmat, 1/))))
@@ -135,6 +140,16 @@ contains
             end do
          end if
       end do
+      if (dft_cfg_saop_is_active) then
+         do k = 1, block_length
+            n_saop_outer(k) = 0.0d0
+         end do
+         if (dft_cfg_saop_with_response_part) then
+            do k = 1, block_length
+               n_saop_resp(k) = 0.0d0
+            end do
+         end if
+      end if
 
       isoff              = 0
       iksoff             = 0
@@ -226,6 +241,38 @@ contains
                                         n(1, 0),                    &
                                         n_g(1, 1, 0)                &
                                        )
+            if (dft_cfg_saop_is_active) then
+               call evaluate_density_dsymm(                            &
+                                           .false.,                    &
+                                           block_length,               &
+                                           mat_dim,                    &
+                                           nz,                         &
+                                           ao_sort_index,              &
+                                           ao_sorted,                  &
+                                           dmat_0_saop_outer,          &
+                                           nr_above_threshold(iblock), &
+                                           isoff(iblock),              &
+                                           iksoff(iblock),             &
+                                           n_saop_outer,               &
+                                           n_g(1, 1, 0)                & !ugly - not used
+                                          )
+               if (dft_cfg_saop_with_response_part) then
+                  call evaluate_density_dsymm(                            &
+                                              .false.,                    &
+                                              block_length,               &
+                                              mat_dim,                    &
+                                              nz,                         &
+                                              ao_sort_index,              &
+                                              ao_sorted,                  &
+                                              dmat_0_saop_resp,           &
+                                              nr_above_threshold(iblock), &
+                                              isoff(iblock),              &
+                                              iksoff(iblock),             &
+                                              n_saop_resp,                &
+                                              n_g(1, 1, 0)                & !ugly - not used
+                                             )
+               end if
+            end if
             if (nr_dmat > 0) then
                do imat = 1, nr_dmat
                   if (dmat_ih_sym(imat) == -1) cycle
@@ -301,9 +348,13 @@ contains
                                derv_length,  &
                                derv)
 
+      if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
+         call dftac(block_length, derv, w, n, n_saop_resp, n_saop_outer, gnn)
+      end if
+
       do k = 1, block_length
          nr_electrons_integrated = nr_electrons_integrated + w(k)*n(k, 0)
-         xc_energy    = xc_energy    + derv(k, d0000000)
+         xc_energy = xc_energy + derv(k, d0000000)
       end do
 
 !     form prefactors
@@ -369,6 +420,8 @@ contains
       deallocate(p_n)
       deallocate(p_n_g)
       deallocate(n)
+      deallocate(n_saop_outer)
+      deallocate(n_saop_resp)
       deallocate(n_g)
       deallocate(gnn)
       deallocate(jblock_index)
