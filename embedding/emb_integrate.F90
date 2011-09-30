@@ -611,8 +611,10 @@ endif
 
          if (do_potential) then
 
-!         energy density
-           fde_energy = fde_energy + derv(1, d0000000)
+!         energy density will not be calcuated here but instead via
+!         call calc_fde_interaction_energy(energy,gf_active,gf_frozen)
+!         outside of the integration loop  
+!           fde_energy = fde_energy + derv(1, d0000000)
 
            u%n(1) = derv(1, d1000000) 
            if (use_gga) then
@@ -698,6 +700,9 @@ endif
       end if !if (n_0(1) > dft_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
 
+    call calc_fde_
+    call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
+    
     deallocate(ao)
     deallocate(buffer)
     deallocate(derv)

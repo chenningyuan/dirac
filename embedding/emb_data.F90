@@ -64,6 +64,10 @@ module fde_data
    integer, save :: fde_grid_np = 0
    logical, save :: data_is_initialized = .false.
 
+!  todo: replace the frozen, active variables belot by 
+   type(grid_function), save :: gf_frozen
+   type(grid_function), save :: gf_active
+!
    real(kind=8), save, allocatable, target :: fde_frozen_n(:)
    real(kind=8), save, allocatable, target :: fde_frozen_gn(:,:)
    real(kind=8), save, allocatable, target :: fde_frozen_elpot(:)
@@ -249,6 +253,11 @@ module fde_data
             call alloc(fde_frozen_elpot, fde_grid_np, id="fde_frozen_elpot")
             fde_frozen_elpot = 0.0d0
          endif
+
+
+         call new_grid_function(gf_frozen,fde_grid_np)
+
+         
    end subroutine fde_initialize_frozen_data
 
 
@@ -269,6 +278,9 @@ module fde_data
          call alloc(fde_active_elpot, fde_grid_np, id="fde_active_elpot")
          fde_active_elpot = 0.0d0
       endif
+
+
+      call new_grid_function(gf_active,fde_grid_np)
 
    end subroutine fde_initialize_active_data
    
@@ -291,6 +303,7 @@ module fde_data
       call dealloc(fde_frozen_n)
       call dealloc(fde_frozen_gn)
       call dealloc(fde_frozen_elpot)
+      call del_grid_function(gf_frozen)
    end subroutine fde_cleanup_frozen_data
 
    
@@ -300,6 +313,8 @@ module fde_data
       call dealloc(fde_active_n)
       call dealloc(fde_active_gn)
       call dealloc(fde_active_elpot)
+      call del_grid_function(gf_active)
+
    end subroutine fde_cleanup_active_data
 
 
