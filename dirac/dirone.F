@@ -329,13 +329,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
           CLSCMB(I)(4:4) = '0'
           ILBL = IPRPLBL(1,I)
           PDOINT(ILBL)(4:4) = '0'
+        ELSE IF (CLSINT(I).EQ.'FDEVEMB') THEN
+          CLSCMB(I)(4:4) = '0'
+          ILBL = IPRPLBL(1,I)
+          PDOINT(ILBL)(4:4) = '0'
         ENDIF
       ENDDO
 
       IF (MOLFLD_FOUND) THEN
         WRITE(LUPRI,'(2X,A,A4)')
-     &  'No SS-nuclear attraction integrals'// 
-     &  '(MOLFLD), adapted PDOINT=',PDOINT(ILBL)
+     & 'The SS-block of the potential energy matrix and (if present) ',
+     & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
       ELSE
         WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
      &   ' found in operator list!'
