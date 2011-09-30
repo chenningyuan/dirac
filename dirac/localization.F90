@@ -126,13 +126,14 @@ contains
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0
 
-  character :: sectid*12, cputid*12, walltid*12, daytid*24, conv*20 = 'No convergence after'
-  logical   :: tobe
+  character*12 :: sectid, cputid, walltid
+  character    :: daytid*24, hessian*4 = 'DIAG', conv*20 = 'No convergence after'
+  logical      :: tobe, full
 
   integer*4 :: ifrp, nish12, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
-  real*8    :: dinvmo, dinvm, dnrmk, dnrmg, diff, diffa, totdiag, totnond
+  real*8    :: dinvmo, dinvm, dnrmk, dnrmg, diff, diffa, totdiag, totnond, hesthr
   real*8    :: timend, time, timstr, second, toterg
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
@@ -150,6 +151,8 @@ contains
   norb   = var%norb(ifrp)
   nucdep = var%nucdep
   maxref = var%maxref
+  full   = loc%auto
+  hesthr = loc%hesthr
 
   nfbas(:)    = var%nfbas(ifrp,:)
   ipqtoq(:,:) = var%ipqtoq(:,:)
@@ -215,8 +218,8 @@ contains
     ! PRJLOC = FALSE localization with Mulliken analysis
     call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
   endif
-  write(lupri,'(a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a)') &
-    '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
+  write(lupri,'(a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a, 2x,a)') &
+    '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG','HESSIAN'
 
   ! SCF cycle
   do itr=1,loc%itrloc
@@ -228,8 +231,11 @@ contains
 
     call get_hessian(pmat,hmat,totdiag,totnond)
     call get_gradient(pmat,gradient,dnrmg)
-!   call getk_diag(pmat,xkappa,hmat,gradient,dnrmk,ipqtoq)
-    call getk_full(pmat,xkappa,hmat,gradient,dnrmk)
+    if(full)then
+      call getk_full(pmat,xkappa,hmat,gradient,dnrmk)
+    else
+      call getk_diag(pmat,xkappa,hmat,gradient,dnrmk,ipqtoq)
+    endif
     call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
     if(loc%prjloc) then
       ! PRJLOC = TRUE localization with projection analysis
@@ -244,11 +250,14 @@ contains
     diff = dinvm - dinvmo
     if (diff < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
     diffa = dabs(dinvm - dinvmo)
-    write(lupri,'(/a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a)') &
-      '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG'
-    write(lupri,'(a,4x,i4,5d13.2)')'*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond
+    if(full) hessian = 'FULL'
 
-    if(diffa < loc%thrloc) exit  ! Exit loop after convergence criterion is reached
+    write(lupri,'(/a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a, 2x,a)') &
+      '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG','HESSIAN'
+    write(lupri,'(a,4x,i4,5d13.2,4x,a)')'*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian
+
+    if((diffa < loc%thrloc).and.full) exit  ! Exit loop after convergence criterion is reached
+    if( diffa < loc%hesthr ) full = .true.
 
   enddo
 
