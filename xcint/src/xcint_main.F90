@@ -78,6 +78,8 @@ module xcint_main
    logical :: use_gga_qi = .false. !quaternion imaginary
    logical :: use_gga    = .false.
 
+   logical :: use_blas3_scheme = .false.
+
    logical :: parallel_xc
 
 !             number of points in current batch
@@ -645,11 +647,9 @@ contains
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 !        symmetrize matrices
-         if (dft_cfg_blocked .or. (use_gga                          &
+         if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct &
                                    .and. .not. do_london_ks         &
-!radovan: with do_london_lr matrices have to be symmetrized!
-!                                  .and. .not. do_london_lr         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
@@ -867,7 +867,7 @@ contains
 
 
 
-    if (dft_cfg_blocked) then
+    if (use_blas3_scheme) then
        block_threshold = get_block_threshold(dft_cfg_small_density_threshold, mat_dim, dmat_0)
     end if
 
@@ -939,7 +939,7 @@ contains
 
 
 #ifdef MOD_UNRELEASED
-   if (dft_cfg_blocked) then
+   if (use_blas3_scheme) then
       loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
 
@@ -1681,7 +1681,7 @@ contains
     deallocate(buffer)
 
 #ifdef MOD_UNRELEASED
-   end if !if (dft_cfg_blocked) then
+   end if !if (use_blas3_scheme) then
 #endif /* ifdef MOD_UNRELEASED */
 
     deallocate(derv)
@@ -1888,6 +1888,17 @@ contains
             call xc_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc)
          end if
 #endif
+
+         if (dft_cfg_blocked) then
+            use_blas3_scheme = .true.
+         end if
+      
+!testing default blas3 scheme
+!        if (do_potential) then
+!           use_blas3_scheme = .true.
+!        else
+!           use_blas3_scheme = .false.
+!        end if
 
          call integrate()
 
