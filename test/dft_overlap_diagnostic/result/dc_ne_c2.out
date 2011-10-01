@@ -1,6 +1,5 @@
-DIRAC pam run in /home/bast/dirac/git_trunk/test/dft_overlap_diagnostic
-Size of all static allocations: 108.433 MB 
-DIRAC serial starts by allocating 63910761 words (487 MB) of memory
+DIRAC pam run in /home/radovan/dirac/test/dft_overlap_diagnostic
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
 Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
@@ -79,39 +78,36 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *          Direct Iterative Relativistic All-electron Calculations           *
  *         =========================================================          *
  *                                                                            *
- *                      VERSION 10.00  10 October 2010                        *
- *                                                                            *
- ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
- *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
  *                                                                            *
  *    with new contributions since the DIRAC08 release from:                  *
  *                                                                            *
- *    Radovan Bast             University of Tromsø              Norway       *
+ *    Radovan Bast             University of Tromsoe,            Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Ulf Ekstroem             University of Oslo                Norway       *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
  *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
  *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Stefan Knecht            University of Southern Denmark    Denmark      *
  *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linköping University              Sweden       *
+ *    Patrick Norman           Linkoeing University              Sweden       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Kenneth Ruud             University of Tromsoe,            Norway       *
  *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas Thorvaldsen      University of Tromsø              Norway       *
- *    Jørn Thyssen             University of Southern Denmark    Denmark      *
- *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Andreas Thorvaldsen      University of Tromsoe,            Norway       *
+ *    Joern Thyssen            University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linkoeping University             Sweden       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
@@ -130,7 +126,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *    DIRAC, a relativistic ab initio electronic structure program,           *
  *    Release DIRAC10 (2010),                                                 *
  *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
- *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*
  *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
  *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
  *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
@@ -138,55 +134,91 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *    (see http://dirac.chem.vu.nl).                                          *
  *                                                                            *
  ******************************************************************************
- Version           : Dirac 10.0 (patchlevel 0) 
- Hostname          : larry
- Operating system  : Linux 2.6.35-25-generic
- Machine           : i686
- Run               : Sequential
- Last compilation  : 21:47:13 Feb 22 2011 (by foo@foo:foo)
- FORTRAN compiler  : foo 
- C compiler        : foo 
- External libraries: foo 
- Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
- ILP data model    : foo 
- SVN URL           : foo 
- SVN Revision      : foo 
+ 
+ 
+Compilation info
+----------------
+ 
+ System                   | Linux-2.6.38-11-generic
+ Processor                | x86_64
+ Internal math            | OFF
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ XCFun                    | ON
+ Fortran compiler         | /opt/intel/bin/ifort
+ Fortran compiler version | ifort (IFORT) 12.0.4 20110427
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O3 
+                          | -ip
+ C compiler               | /opt/intel/bin/icc
+ C compiler version       | icc (ICC) 12.0.4 20110427
+ C flags                  | -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -
+                          | g -O2
+ BLAS                     | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_core.so;/opt/intel/mkl/lib/intel64/libmkl_intel_
+                          | lp64.so;/opt/intel/mkl/lib/intel64/libmkl_sequenti
+                          | al.so;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/mkl/lib/intel64/libmk
+                          | l_lapack95_lp64.a;-Wl,--end-group
+ Configuration time       | 2011-10-01 15:20:10.895027
+ Last commit rev          | d2c5fdefffe850d3ec98ecb61df96090af46bbab
+ Last commit author       | Radovan Bast 
+ Last commit time         | Sat Oct 1 11:06:53 2011 +0200
+
+
+Execution time and host
+-----------------------
 
  
-     Date and time (Linux)  : Tue Feb 22 22:08:35 2011
-     Host name              :                                         
-
-
- *******************************************************************************
- ************************** Input read from DIRAC.INP **************************
- *******************************************************************************
-
-**DIRAC
-.WAVE FUNCTION
-.PROPERTIES
-**GENERAL
-.CVALUE
- 20.0
-**HAMILTONIAN
-.LVCORR
-.DFT
- LDA
-*DFT
-.OVLDIAG
-.COARSE
-**WAVE FUNCTION
-.DHF
-*DHFCAL
-.EVCCNV
- 1.0D-1 1.0
-**PROPERTIES
-*EXCITATIONS
-.EXCITATIONS
- 1 6
-.ANALYZE
-.THRESH
- 1.0D-1
-*END OF
+     Date and time (Linux)  : Sat Oct  1 20:12:18 2011
+     Host name              : not found                               
+ 
+ 
+Contents of the input file
+--------------------------
+ 
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.PROPERTIES                                                                                         
+**GENERAL                                                                                           
+.CVALUE                                                                                             
+ 20.0                                                                                               
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.CONTRA                                                                                             
+**HAMILTONIAN                                                                                       
+.LVCORR                                                                                             
+.DFT                                                                                                
+ LDA                                                                                                
+*DFT                                                                                                
+.OVLDIAG                                                                                            
+**GRID                                                                                              
+.COARSE                                                                                             
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF                                                                                                
+.EVCCNV                                                                                             
+ 1.0D-1 1.0                                                                                         
+**PROPERTIES                                                                                        
+*EXCITATIONS                                                                                        
+.EXCITATIONS                                                                                        
+ 1 6                                                                                                
+.ANALYZE                                                                                            
+.THRESH                                                                                             
+ 1.0D-1                                                                                             
+*END OF                                                                                             
+ 
+ 
+Contents of the molecule file
+-----------------------------
+ 
+INTGRL                                                                                              
+                                                                                                    
+                                                                                                    
+C   1    1XY                                                                                        
+      10.     1                                                                                     
+Ne     0.0                 0.0                 0.0                                                  
+LARGE BASIS cc-pVDZ                                                                                 
+FINISH                                                                                              
 
 
     *************************************************************************
@@ -207,7 +239,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
    * The speed of light scaled by  1.46D-01 to :  20.0000000000
- * Running in the four-component mode
+ * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -227,6 +259,20 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
 
 
 
@@ -318,6 +364,9 @@ Point group: C2
     A    1  i
     B    k  j
 
+  QM-QM nuclear repulsion energy :      0.000000000000
+
+
 
   Atoms and basis sets
   --------------------
@@ -337,8 +386,6 @@ Point group: C2
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
   CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
@@ -370,6 +417,14 @@ Point group: C2
 
 
 
+  Cartesian coordinates xyz format (angstrom)
+  -------------------------------------------
+
+    1
+ 
+Ne     0.0000000000   0.0000000000   0.0000000000
+
+
   Symmetry Coordinates
   --------------------
 
@@ -392,13 +447,13 @@ Point group: C2
                                 -----------------
 
    * Large components:   10
-     1  L Ne    s        2  L Ne    px       3  L Ne    py       4  L Ne    pz       5  L Ne    dxx      6  L Ne    dxy 
-     7  L Ne    dxz      8  L Ne    dyy      9  L Ne    dyz     10  L Ne    dzz 
+     1  L Ne  1 s        2  L Ne  1 px       3  L Ne  1 py       4  L Ne  1 pz       5  L Ne  1 dxx      6  L Ne  1 dxy 
+     7  L Ne  1 dxz      8  L Ne  1 dyy      9  L Ne  1 dyz     10  L Ne  1 dzz 
    * Small components:   20
-    11  S Ne    s       12  S Ne    px      13  S Ne    py      14  S Ne    pz      15  S Ne    dxx     16  S Ne    dxy 
-    17  S Ne    dxz     18  S Ne    dyy     19  S Ne    dyz     20  S Ne    dzz     21  S Ne    fxxx    22  S Ne    fxxy
-    23  S Ne    fxxz    24  S Ne    fxyy    25  S Ne    fxyz    26  S Ne    fxzz    27  S Ne    fyyy    28  S Ne    fyyz
-    29  S Ne    fyzz    30  S Ne    fzzz
+    11  S Ne  1 s       12  S Ne  1 px      13  S Ne  1 py      14  S Ne  1 pz      15  S Ne  1 dxx     16  S Ne  1 dxy 
+    17  S Ne  1 dxz     18  S Ne  1 dyy     19  S Ne  1 dyz     20  S Ne  1 dzz     21  S Ne  1 fxxx    22  S Ne  1 fxxy
+    23  S Ne  1 fxxz    24  S Ne  1 fxyy    25  S Ne  1 fxyz    26  S Ne  1 fxzz    27  S Ne  1 fyyy    28  S Ne  1 fyyz
+    29  S Ne  1 fyzz    30  S Ne  1 fzzz
 
 
                                 GETLAB: SO-labels
@@ -493,65 +548,15 @@ Point group: C2
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
-
-
-   Kohn-Sham calculation set-up
-   ----------------------------
-
- * Print level:     2
- * Numerical integration grid:
+  ===== Kohn-Sham calculation set-up =====
+ * DFT thresholds:
+   - small density threshold =  0.10000E-13
+ * Spin density contribution in response calculations:
+   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
+  ===== Numerical integration grid =====
    - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
      precision of radial quadrature set to:  0.10000E-10
    - angular quadrature using the Lebedev scheme, exact up to order L = 35
-   - accepted error in integrated number of electrons:  0.10000E-02
- * DFT thresholds:
-   - dfthr0 =  0.10000E-08
-   - dfthri =  0.20000E-11
- * Spin density contribution in response calculations:
-   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
-
-
-    **************************************************************************
-    ************************** Wave function module **************************
-    **************************************************************************
-
- Jobs in this run (in execution order):
- * Density functional calculation (Kohn-Sham method)
-
- * Initial Automatic occupation based on:
-   Total charge of atoms =  10
-   Charge of molecule    =   0
-   i.e. no. of electrons =  10
-===========================================================================
- DHFINP: Set-up for Kohn-Sham calculation:
-===========================================================================
- * Number of fermion irreps: 1
- * Closed shell SCF calculation with   10 electrons in
-       5 orbitals in Fermion irrep 1
- * Bare nucleus screening correction used for start guess
- * General print level   :   0
- ***** TRIAL FUNCTION *****
- * Trial vectors read from file DFCOEF
- ***** CONVERGENCE CRITERIA *****
- * Convergence on norm of error vector (gradient).
-   Desired convergence:1.000D-01
-   Allowed convergence:1.000D+00
-
- ***** CONVERGENCE CONTROL *****
- * Fock matrix constructed using differential density matrix
-    with optimal parameter.
- * DIIS (in MO basis)
- * DIIS will be activated when convergence reaches : 1.00D+20
-   - Maximum size of B-matrix:   10
- * Damping of Fock matrix when DIIS is not activated. 
-   Weight of old matrix    : 0.250
- * Maximum number of SCF iterations  :   50
- * No quadratic convergent Hartree-Fock
- * Contributions from 2-electron integrals to Fock matrix:
-   LL-integrals.
-   SL-integrals from iteration    1
- ***** OUTPUT CONTROL *****
- * Only electron eigenvalues written out.
 
 
    ***************************************************************************
@@ -589,6 +594,49 @@ Point group: C2
  ** No transition moment operators **
 
 
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Density functional calculation (Kohn-Sham method)
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  10
+   Charge of molecule    =   0
+   i.e. no. of electrons =  10
+===========================================================================
+ SCFINP: Set-up for Kohn-Sham calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with   10 electrons in
+       5 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-01
+   Allowed convergence:1.000D+00
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
  ********************************************************************************
  *************************** Input consistency checks ***************************
  ********************************************************************************
@@ -599,6 +647,16 @@ Point group: C2
     ************************ End of input processing ************************
     *************************************************************************
 
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
 
 
                        Generating Lowdin canonical matrix:
@@ -634,17 +692,17 @@ Total no. of orbitals           (NORB):    28
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Feb 22 22:08:35 2011
+########## START ITERATION NO.   1 ##########   Sat Oct  1 20:12:18 2011
 
-It.   1    -71.11318834608      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Tue Feb 22
+It.   1    -71.11318827179      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Sat Oct  1
 
-########## START ITERATION NO.   2 ##########   Tue Feb 22 22:08:35 2011
+########## START ITERATION NO.   2 ##########   Sat Oct  1 20:12:18 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   60.87%   18.15%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   47.43%   24.13%    0.00%    0.00%   0.00999999s
+SOfock:SL  1.00D-12   47.11%   24.28%    0.00%    0.00%   0.01000000s
 
 
  ********************************************************************************
@@ -659,6 +717,7 @@ SOfock:SL  1.00D-12   47.43%   24.13%    0.00%    0.00%   0.00999999s
 
                Column   1
        1       1.00000000
+    ==== End of matrix output ====
 
 DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
  
@@ -669,67 +728,69 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
    Number of grid points in quadrature:     19492 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.02 seconds
+ >>>> Time used in DFTGRD:   0.05 seconds
 
  
    number of grid points                          =     19492
-   number of grid points below density threshold  =      1302
-   DFT exchange-correlation energy:               =       -12.4297892311612799
-   number of electrons from numerical integration =         9.9999999777671533
+   number of grid points below density threshold  =       434
+   DFT exchange-correlation energy:               =       -12.4297891973522550
+   number of electrons from numerical integration =        10.0000000000001616
  
-   time spent in DFT integration                  =   0.72 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
  
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.75000000s
+ cp DFCOEF DFCOEF.BEST
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.55000000s
 
-########## END ITERATION NO.   2 ##########   Tue Feb 22 22:08:35 2011
+########## END ITERATION NO.   2 ##########   Sat Oct  1 20:12:18 2011
 
-It.   2    -134.1434260575      6.30D+01  2.48D+00  1.20D+00               0.75000000s   LL SL          Tue Feb 22
+It.   2    -134.1434260788      6.30D+01  2.48D+00  1.20D+00               0.55000000s   LL SL          Sat Oct  1
 
-########## START ITERATION NO.   3 ##########   Tue Feb 22 22:08:36 2011
+########## START ITERATION NO.   3 ##########   Sat Oct  1 20:12:18 2011
 
     3 *** Differential density matrix. DCOVLP     = 0.6530
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   60.87%   18.15%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   47.43%   24.18%    0.00%    0.00%   0.00999999s
+SOfock:SL  1.00D-12   47.11%   24.33%    0.00%    0.00%   0.00999999s
  
    number of grid points                          =     19492
-   number of grid points below density threshold  =      1302
-   DFT exchange-correlation energy:               =       -11.4577356558991550
-   number of electrons from numerical integration =         9.9999999506686326
+   number of grid points below density threshold  =       434
+   DFT exchange-correlation energy:               =       -11.4577356939094255
+   number of electrons from numerical integration =        10.0000000000004068
  
-   time spent in DFT integration                  =   0.69 seconds
+   time spent in DFT integration                  =   0.46 seconds
    number of processors                           =         1
  
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.71000004s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.48999995s
 
-########## END ITERATION NO.   3 ##########   Tue Feb 22 22:08:36 2011
+########## END ITERATION NO.   3 ##########   Sat Oct  1 20:12:18 2011
 
-It.   3    -134.0880293385     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.71000004s   LL SL          Tue Feb 22
+It.   3    -134.0880293691     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.48999995s   LL SL          Sat Oct  1
 
-########## START ITERATION NO.   4 ##########   Tue Feb 22 22:08:36 2011
+########## START ITERATION NO.   4 ##########   Sat Oct  1 20:12:19 2011
 
     4 *** Differential density matrix. DCOVLP     = 1.1933
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   60.87%   18.15%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   47.43%   24.22%    0.00%    0.00%   0.00999999s
+SOfock:SL  1.00D-12   47.11%   24.37%    0.00%    0.00%   0.00000000s
  
    number of grid points                          =     19492
-   number of grid points below density threshold  =      1302
-   DFT exchange-correlation energy:               =       -12.0042498437038905
-   number of electrons from numerical integration =         9.9999999672189706
+   number of grid points below density threshold  =       434
+   DFT exchange-correlation energy:               =       -12.0042498482839193
+   number of electrons from numerical integration =         9.9999999999997566
  
-   time spent in DFT integration                  =   0.70 seconds
+   time spent in DFT integration                  =   0.52 seconds
    number of processors                           =         1
  
+ cp DFCOEF DFCOEF.BEST
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.70999980s
+>>> Total CPU-time : 0.55000007s
 
-########## END ITERATION NO.   4 ##########   Tue Feb 22 22:08:36 2011
+########## END ITERATION NO.   4 ##########   Sat Oct  1 20:12:19 2011
 
-It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.70999980s   LL SL          Tue Feb 22
+It.   4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.55000007s   LL SL          Sat Oct  1
 
 
                                    SCF - CYCLE
@@ -745,10 +806,10 @@ It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.709
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -71.11318834608      1.00D+20  0.00D+00  0.00D+00               0.00999999s   Scr. nuclei    Tue Feb 22
-It.   2    -134.1434260575      6.30D+01  2.48D+00  1.20D+00               0.75000000s   LL SL          Tue Feb 22
-It.   3    -134.0880293385     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.71000004s   LL SL          Tue Feb 22
-It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.70999980s   LL SL          Tue Feb 22
+It.   1    -71.11318827179      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Sat Oct  1
+It.   2    -134.1434260788      6.30D+01  2.48D+00  1.20D+00               0.55000000s   LL SL          Sat Oct  1
+It.   3    -134.0880293691     -5.54D-02 -1.43D+00  1.29D+00   DIIS   2    0.48999995s   LL SL          Sat Oct  1
+It.   4    -134.2889560531      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.55000007s   LL SL          Sat Oct  1
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    4 iterations.
 * Average elapsed time per iteration: 
@@ -759,14 +820,14 @@ It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.709
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -134.28895605331286
+   Electronic energy                        :    -134.28895605312940
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
    SS Coulombic correction                  :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -134.28895605331286
+   Total energy                             :    -134.28895605312940
 
 
                                    Eigenvalues
@@ -775,9 +836,9 @@ It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.709
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--32.54094363872446  ( 2)    -1.47286415376432  ( 2)    -0.56066843517711  ( 2)    -0.39515841132474  ( 4)
+-32.54094364526975  ( 2)    -1.47286415602395  ( 2)    -0.56066843764694  ( 2)    -0.39515841352400  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.12337340699156  ( 2)     1.29257407966051  ( 4)     1.62504851103146  ( 2)     4.59048077219973  ( 4)     4.64216070884279  ( 6)
+  1.12337340535289  ( 2)     1.29257407777501  ( 4)     1.62504850942154  ( 2)     4.59048077031692  ( 4)     4.64216070698073  ( 6)
 * HOMO - LUMO gap:
 
     E(LUMO) :     1.12337341 au (symmetry E1 )
@@ -830,8 +891,8 @@ It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.709
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    14                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -134.088029338547727
-* Heading :DIRAC: No title specified !!!                     Tue Feb 22 22:08:36 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -134.088029369114395
+* Heading :DIRAC: No title specified !!!                     Sat Oct  1 20:12:19 2011
 
 
 
@@ -840,8 +901,8 @@ It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.709
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast.dc_ne_c2.7082/DFFCK2                          
-* Heading :DIRAC: No title specified !!!                     Tue Feb 22 22:08:36 2011
+* REAFCK: Fock matrix read from file /home/radovan/trash/dirac_scratch/radovan/DIRAC_dc_ne_c2_244
+* Heading :DIRAC: No title specified !!!                     Sat Oct  1 20:12:19 2011
 
 
  ********************************************************************************
@@ -856,6 +917,7 @@ It.   4    -134.2889560533      2.01D-01  8.23D-01  7.50D-02   DIIS   2    0.709
 
                Column   1
        1       1.00000000
+    ==== End of matrix output ====
 
 DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
  
@@ -866,75 +928,49 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
    Number of grid points in quadrature:     19492 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.03 seconds
+ >>>> Time used in DFTGRD:   0.05 seconds
 
  
    number of grid points                          =     19492
-   number of grid points below density threshold  =      1302
-   DFT exchange-correlation energy:               =       -12.0042498437038905
-   number of electrons from numerical integration =         9.9999999672189706
+   number of grid points below density threshold  =       434
+   DFT exchange-correlation energy:               =       -12.0042498482839193
+   number of electrons from numerical integration =         9.9999999999997566
  
-   time spent in DFT integration                  =   0.98 seconds
+   time spent in DFT integration                  =   0.61 seconds
    number of processors                           =         1
  
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast.dc_ne_c2.7082/DFFCK1                          
-* Heading :DIRAC: No title specified !!!                     Tue Feb 22 22:08:35 2011
+* REAFCK: Fock matrix read from file /home/radovan/trash/dirac_scratch/radovan/DIRAC_dc_ne_c2_244
+* Heading :DIRAC: No title specified !!!                     Sat Oct  1 20:12:18 2011
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  1.70D-04
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 5.87D+02
 
-########## START MICROITERATION NO.   1 ##########   Tue Feb 22 22:08:38 2011
+########## START MICROITERATION NO.   1 ##########   Sat Oct  1 20:12:20 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.70D-04   67.43%   16.69%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.70D-04   66.20%   22.50%    2.73%    0.00%   0.00999999s
-
-
- ********************************************************************************
- ********************** Slater-Bragg atomic size estimates **********************
- ********************************************************************************
-
-
-
-                        Slater-Bragg relative atomic sizes
-                        ----------------------------------
-
-
-               Column   1
-       1       1.00000000
-
-DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
- 
-Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
-=============================================================
-Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
-
-   Number of grid points in quadrature:     19492 (100.0%)
-
-
- >>>> Time used in DFTGRD:   0.02 seconds
-
+SOfock:LL  1.70D-04   67.43%   16.69%    0.00%    0.00%   0.00999999s
+SOfock:SL  1.70D-04   66.20%   22.78%    2.59%    0.00%   0.00000000s
  
    number of grid points                          =     19492
-   number of grid points below density threshold  =      1302
-   number of electrons from numerical integration =         9.9999999672189706
+   number of grid points below density threshold  =       434
+   number of electrons from numerical integration =         9.9999999999997566
  
-   time spent in DFT integration                  =   7.48 seconds
+   time spent in DFT integration                  =   5.29 seconds
    number of processors                           =         1
  
 * Trial vectors in this micro iteration:  E+:  8  E-:  8
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E+ part   E- part 
-     1.46409587  1.00E-01  8.80E-02  2.11E-03  8.80E-02
-     1.48705478  1.00E-01  4.37E-02  2.00E-02  3.89E-02
-     1.48706826  1.00E-01  4.37E-02  1.99E-02  3.89E-02
+     1.46543311  1.00E-01  8.76E-02  2.45E-03  8.76E-02
+     1.48705493  1.00E-01  4.37E-02  2.00E-02  3.89E-02
+     1.48706343  1.00E-01  4.37E-02  1.99E-02  3.89E-02
      1.48716580  1.00E-01  4.44E-02  2.14E-02  3.89E-02
-     1.62241562  1.00E-01  5.47E-02  8.69E-03  5.40E-02
-     1.65779377  1.00E-01  4.82E-02  2.22E-02  4.27E-02
+     1.62498507  1.00E-01  5.24E-02  7.92E-03  5.18E-02
+     1.65738225  1.00E-01  4.83E-02  2.19E-02  4.30E-02
 
 
                              Final output from XRSCTL
@@ -945,14 +981,14 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
 
             Freq.(au)   Total norm    E+ norm   E- norm 
 ========================================================
-* It.  1   7.52000022s  (LL SL    )     [  8]     [  8]
+* It.  1   5.29999995s  (LL SL    )     [  8]     [  8]
 --------------------------------------------------------
-            1.464096 :   8.80D-02 |   2.11D-03  8.80D-02
+            1.465433 :   8.76D-02 |   2.45D-03  8.76D-02
             1.487055 :   4.37D-02 |   2.00D-02  3.89D-02
-            1.487068 :   4.37D-02 |   1.99D-02  3.89D-02
+            1.487063 :   4.37D-02 |   1.99D-02  3.89D-02
             1.487166 :   4.44D-02 |   2.14D-02  3.89D-02
-            1.622416 :   5.47D-02 |   8.69D-03  5.40D-02
-            1.657794 :   4.81D-02 |   2.22D-02  4.27D-02
+            1.624985 :   5.24D-02 |   7.92D-03  5.18D-02
+            1.657382 :   4.83D-02 |   2.19D-02  4.30D-02
 ========================================================
 
 
@@ -964,23 +1000,23 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
  *** Excitations of boson symmetry 1 : A  
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     1.46409587 a.u.    8.80D-02 (converged)
-                                             39.8401 eV
+ Excitation no.   1 excitation energy     1.46543311 a.u.    8.76D-02 (converged)
+                                             39.8765 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     1.48705478 a.u.    4.37D-02 (converged)
+ Excitation no.   2 excitation energy     1.48705493 a.u.    4.37D-02 (converged)
                                              40.4648 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     1.48706826 a.u.    4.37D-02 (converged)
-                                             40.4652 eV
+ Excitation no.   3 excitation energy     1.48706343 a.u.    4.37D-02 (converged)
+                                             40.4651 eV
 --------------------------------------------------------------------------------
  Excitation no.   4 excitation energy     1.48716580 a.u.    4.44D-02 (converged)
                                              40.4678 eV
 --------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     1.62241562 a.u.    5.47D-02 (converged)
-                                             44.1482 eV
+ Excitation no.   5 excitation energy     1.62498507 a.u.    5.24D-02 (converged)
+                                             44.2181 eV
 --------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     1.65779377 a.u.    4.82D-02 (converged)
-                                             45.1109 eV
+ Excitation no.   6 excitation energy     1.65738225 a.u.    4.83D-02 (converged)
+                                             45.0997 eV
 ================================================================================
 
 
@@ -992,23 +1028,23 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
  *** Excitations of boson symmetry 1 : A  
 
 --------------------------------------------------------------------------------
- Excitation no.   1 excitation energy     1.46409587 a.u.    8.80D-02 (converged)
-                                             39.8401 eV
+ Excitation no.   1 excitation energy     1.46543311 a.u.    8.76D-02 (converged)
+                                             39.8765 eV
 --------------------------------------------------------------------------------
- Excitation no.   2 excitation energy     1.48705478 a.u.    4.37D-02 (converged)
+ Excitation no.   2 excitation energy     1.48705493 a.u.    4.37D-02 (converged)
                                              40.4648 eV
 --------------------------------------------------------------------------------
- Excitation no.   3 excitation energy     1.48706826 a.u.    4.37D-02 (converged)
-                                             40.4652 eV
+ Excitation no.   3 excitation energy     1.48706343 a.u.    4.37D-02 (converged)
+                                             40.4651 eV
 --------------------------------------------------------------------------------
  Excitation no.   4 excitation energy     1.48716580 a.u.    4.44D-02 (converged)
                                              40.4678 eV
 --------------------------------------------------------------------------------
- Excitation no.   5 excitation energy     1.62241562 a.u.    5.47D-02 (converged)
-                                             44.1482 eV
+ Excitation no.   5 excitation energy     1.62498507 a.u.    5.24D-02 (converged)
+                                             44.2181 eV
 --------------------------------------------------------------------------------
- Excitation no.   6 excitation energy     1.65779377 a.u.    4.82D-02 (converged)
-                                             45.1109 eV
+ Excitation no.   6 excitation energy     1.65738225 a.u.    4.83D-02 (converged)
+                                             45.0997 eV
 ================================================================================
 
 
@@ -1020,105 +1056,92 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
 *** A real part ***; NROW,NCOL,LRQ,LCQ:  28  28  28  28
 
 
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       1.00000000     0.86708081     0.37331899     0.37630516     0.32717614     0.31500406
-       2       0.00000000     1.00000000     0.59267031     0.60221404     0.54461424     0.53768370
-       3       0.00000000     0.00000000     1.00000000     0.77582927     0.79678757     0.83271016
-       4       0.00000000     0.00000000     0.00000000     1.00000000     0.89079504     0.80405885
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.85985704
-       6       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1       1.00000000     0.86708081     0.38638720     0.36580138     0.32787472     0.31429489     0.36057592     0.10072495
+       2       0.00000000     1.00000000     0.60174159     0.60633079     0.54495679     0.53736357     0.45197915     0.26481007
+       3       0.00000000     0.00000000     1.00000000     0.82399780     0.90219640     0.75408383     0.78228323     0.56221874
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.81424235     0.91288586     0.73597954     0.64549358
+       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.86006100     0.67232852     0.47293133
+       6       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.63800501     0.53761687
+       7       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.75214377
+       8       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
-               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
-       1       0.36057592     0.10150968     0.09415491     0.09632298     0.19725545     0.14934694
-       2       0.45197915     0.26361214     0.25571183     0.26151679     0.40323055     0.28229339
-       3       0.75048621     0.60526527     0.63562654     0.55123488     0.78106715     0.39989417
-       4       0.76231103     0.59070249     0.55767163     0.66743714     0.79524906     0.40618667
-       5       0.67085668     0.47991565     0.48764885     0.56786053     0.70474005     0.28455751
-       6       0.63946753     0.52117659     0.51359803     0.47895943     0.69745563     0.27112403
-       7       1.00000000     0.75810477     0.65970816     0.69891891     0.84189540     0.63371303
-       8       0.00000000     1.00000000     0.72568744     0.76071186     0.84207637     0.57164477
-       9       0.00000000     0.00000000     1.00000000     0.74175948     0.81943688     0.49643599
-      10       0.00000000     0.00000000     0.00000000     1.00000000     0.84195219     0.52666279
-      11       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.66180236
-      12       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.09722016     0.09439232     0.19725545     0.14934694     0.09246847     0.09181637     0.92161702     0.31376298
+       2       0.26187285     0.25805653     0.40323055     0.28229339     0.18507272     0.18288018     0.89678687     0.50579001
+       3       0.61312822     0.62887142     0.79199029     0.41634111     0.30426029     0.26279257     0.34918892     0.84188696
+       4       0.61343194     0.58587762     0.80304618     0.39151049     0.26463727     0.29823852     0.35691207     0.85404986
+       5       0.52565729     0.55024486     0.70513141     0.28516806     0.16071444     0.14184687     0.30498457     0.80548461
+       6       0.49829823     0.48704877     0.69711670     0.27052292     0.14229434     0.15067927     0.30201815     0.79672219
+       7       0.69497237     0.67509280     0.84189540     0.63371303     0.44450209     0.43688058     0.27387425     0.86902545
+       8       0.78083479     0.73781445     0.84751334     0.56717177     0.30192377     0.31029265     0.04153241     0.81682364
+       9       1.00000000     0.75634411     0.84011846     0.52354084     0.31135236     0.31405395     0.04216854     0.81178674
+      10       0.00000000     1.00000000     0.83062859     0.50842210     0.32177692     0.28818268     0.04169910     0.80285731
+      11       0.00000000     0.00000000     1.00000000     0.66180236     0.49695033     0.48900526     0.13211063     0.95274979
+      12       0.00000000     0.00000000     0.00000000     1.00000000     0.82404555     0.80938122     0.07052956     0.62945053
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.77595319     0.03150144     0.43024554
+      14       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.03106627     0.42350046
+      15       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.25438161
+      16       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
-               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
-       1       0.08861089     0.09449354     0.92161702     0.31376298     0.35873518     0.24947535
-       2       0.18519312     0.18458657     0.89678687     0.50579001     0.56334034     0.48986023
-       3       0.28034114     0.27897782     0.34713472     0.83108412     0.81942441     0.77109107
-       4       0.27470901     0.28626418     0.35108107     0.84531102     0.83089908     0.73978733
-       5       0.14937941     0.15324804     0.30479270     0.80502439     0.76588377     0.69460980
-       6       0.16119914     0.13909786     0.30219681     0.79712384     0.73301542     0.76677945
-       7       0.42203891     0.45353765     0.27387425     0.86902545     0.90740293     0.66300400
-       8       0.31992942     0.29661371     0.04162772     0.81202382     0.79462522     0.58648238
-       9       0.29658688     0.30860362     0.04154447     0.79235869     0.69298809     0.73450339
-      10       0.31493799     0.30966407     0.04206234     0.81347822     0.73426167     0.66841798
-      11       0.49847075     0.49363879     0.13211063     0.95274979     0.89824411     0.83708906
-      12       0.78159039     0.84082711     0.07052956     0.62945053     0.69270341     0.55360067
-      13       1.00000000     0.79539528     0.03135192     0.43206964     0.43343414     0.53294714
-      14       0.00000000     1.00000000     0.03151772     0.42693085     0.46592383     0.47380978
-      15       0.00000000     0.00000000     1.00000000     0.25438161     0.29085251     0.23093482
-      16       0.00000000     0.00000000     0.00000000     1.00000000     0.93443733     0.85896657
-      17       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.72382526
-      18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
-
-               Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-       1       0.32152797     0.33042549     0.27898394     0.33489813     0.29355376     0.14912393
-       2       0.53282735     0.48140806     0.48055276     0.50600821     0.47568905     0.31728043
-       3       0.74616208     0.55724942     0.60389075     0.57044608     0.61307865     0.84194437
-       4       0.85801862     0.56463626     0.57508538     0.66123325     0.62209949     0.66324510
-       5       0.77118485     0.51329105     0.55181107     0.62382155     0.60610303     0.65044378
-       6       0.69828506     0.49011183     0.62383765     0.54712544     0.60056358     0.64142609
-       7       0.87419351     0.67173152     0.55305867     0.66799584     0.65952954     0.76331632
-       8       0.78463009     0.41983298     0.35483018     0.40838878     0.53216813     0.75633974
-       9       0.65656366     0.36734039     0.40266664     0.36606276     0.51798002     0.82820325
-      10       0.78693449     0.38808237     0.36808593     0.43706913     0.53182334     0.72352280
-      11       0.90457273     0.62743360     0.62017236     0.65067802     0.73410169     0.84756622
-      12       0.73280513     0.88141357     0.65652638     0.79933079     0.85114329     0.44578903
-      13       0.52055666     0.72682018     0.77051472     0.72395708     0.74411468     0.23847332
-      14       0.52519513     0.78133772     0.66424990     0.74660621     0.73591244     0.26522851
-      15       0.25051761     0.26050761     0.25758133     0.27291934     0.23160260     0.09443249
-      16       0.92876253     0.65561872     0.65568901     0.68846270     0.78928939     0.85219849
-      17       0.95731603     0.76265105     0.61489588     0.74769349     0.78568414     0.78643317
-      18       0.73621734     0.58614307     0.82147725     0.63721899     0.75731155     0.72470410
-      19       1.00000000     0.77406130     0.64638534     0.82162610     0.82068763     0.71926819
-      20       0.00000000     1.00000000     0.76865830     0.93623423     0.91032598     0.40312459
-      21       0.00000000     0.00000000     1.00000000     0.79645473     0.86268555     0.41695416
-      22       0.00000000     0.00000000     0.00000000     1.00000000     0.90790420     0.41066406
-      23       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.52664083
-      24       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
+       1       0.35873518     0.30877428     0.27469965     0.33042549     0.27527349     0.33675499     0.29355376     0.15276173
+       2       0.56334034     0.53409028     0.51660962     0.48140806     0.47695587     0.50569665     0.47568905     0.32412131
+       3       0.85099274     0.87230841     0.72241466     0.57805534     0.54592972     0.65397595     0.61986791     0.80817518
+       4       0.80552021     0.78311281     0.87060864     0.54672007     0.64535543     0.59147492     0.62832807     0.74390561
+       5       0.76759548     0.81075356     0.70341323     0.51444469     0.55039357     0.61945583     0.60646617     0.69870288
+       6       0.73131435     0.69987641     0.81049495     0.48895723     0.61933112     0.54678531     0.60024342     0.63004056
+       7       0.90740293     0.83531800     0.73562166     0.67173152     0.54562448     0.67192128     0.65952954     0.79187771
+       8       0.78768518     0.70591230     0.73045101     0.41625861     0.36657891     0.40494447     0.53521767     0.74343902
+       9       0.72982895     0.75342195     0.70059460     0.38641814     0.37803575     0.40679486     0.53095022     0.80465832
+      10       0.70931580     0.77484022     0.69499398     0.37533679     0.38001039     0.40855342     0.52470151     0.81177699
+      11       0.89824411     0.90918991     0.88133206     0.62743360     0.61589160     0.65002008     0.73410169     0.87194656
+      12       0.69270341     0.69985333     0.61509180     0.88141357     0.64715720     0.80409018     0.85114329     0.46283460
+      13       0.45689682     0.57186565     0.49535211     0.76580787     0.67603109     0.79338401     0.74144660     0.25185169
+      14       0.44872937     0.49247393     0.52311252     0.75257539     0.71392408     0.67636903     0.72908963     0.27071045
+      15       0.29085251     0.25204553     0.24208905     0.26050761     0.25590540     0.27257841     0.23160260     0.09640771
+      16       0.93443733     0.93371747     0.90387410     0.65561872     0.65116133     0.68776664     0.78928939     0.87641853
+      17       1.00000000     0.91503726     0.80235497     0.76265105     0.60668417     0.75200745     0.78568414     0.81672916
+      18       0.00000000     1.00000000     0.83552963     0.74013243     0.67777664     0.82088266     0.82456861     0.80435830
+      19       0.00000000     0.00000000     1.00000000     0.64970888     0.82074208     0.67799692     0.79749553     0.72206190
+      20       0.00000000     0.00000000     0.00000000     1.00000000     0.75778507     0.94173461     0.91032598     0.41781557
+      21       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.78125506     0.85638971     0.40830354
+      22       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.90691387     0.44352390
+      23       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.54136126
+      24       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
 
                Column  25     Column  26     Column  27     Column  28
-       1       0.14586775     0.15021422     0.14406452     0.13992753
-       2       0.32614162     0.31757192     0.30778556     0.31545458
-       3       0.67928573     0.76214867     0.63195233     0.66557513
-       4       0.82810181     0.66977734     0.67267086     0.80069175
-       5       0.70787441     0.65486771     0.60742219     0.73835210
-       6       0.70118176     0.66054348     0.66433494     0.64369541
-       7       0.75021130     0.79911821     0.75944181     0.74098536
-       8       0.80189796     0.86688076     0.76828396     0.75585977
-       9       0.73990864     0.78614696     0.80170413     0.72772134
-      10       0.86112163     0.76337921     0.76233063     0.89803517
-      11       0.88315022     0.86795858     0.84117776     0.87054467
-      12       0.43768305     0.46888816     0.44585622     0.43458270
-      13       0.27128964     0.24223293     0.22923015     0.25889299
-      14       0.24787096     0.24594380     0.22275724     0.24475027
-      15       0.09497758     0.09025705     0.08765835     0.09019219
-      16       0.88715422     0.87090311     0.84522356     0.87396005
-      17       0.77116928     0.82219474     0.78263021     0.76289250
-      18       0.77138602     0.66834172     0.74030689     0.72770766
-      19       0.82201229     0.79216063     0.72446863     0.82390025
-      20       0.39540609     0.41994247     0.40004581     0.38969730
-      21       0.44735794     0.39942996     0.42952082     0.41414115
-      22       0.46709508     0.44047256     0.40196507     0.47554767
-      23       0.54590595     0.53719989     0.52107655     0.53747115
-      24       0.76467104     0.88378221     0.73265930     0.76446127
-      25       1.00000000     0.79316996     0.80812673     0.93969497
-      26       0.00000000     1.00000000     0.76873637     0.79153929
-      27       0.00000000     0.00000000     1.00000000     0.75413500
+       1       0.13967210     0.13693831     0.14975315     0.15062829
+       2       0.32000149     0.31091635     0.31499111     0.31466728
+       3       0.69886804     0.68096495     0.70056679     0.71683218
+       4       0.81141585     0.68908824     0.72082020     0.73399141
+       5       0.66594767     0.68621599     0.64241088     0.64266676
+       6       0.73284027     0.66518175     0.65246487     0.65224626
+       7       0.71298821     0.71631396     0.80048431     0.80620716
+       8       0.83345152     0.75755698     0.83228804     0.87281444
+       9       0.77741528     0.83835733     0.81115852     0.73547990
+      10       0.76008469     0.80453259     0.76604428     0.78620506
+      11       0.86604107     0.85662550     0.86092728     0.86000238
+      12       0.41579833     0.42060477     0.46978009     0.47318880
+      13       0.25723649     0.24378977     0.24178015     0.24292890
+      14       0.24012178     0.22100839     0.23716440     0.24616232
+      15       0.09226824     0.08879996     0.08950600     0.08946182
+      16       0.86980257     0.85995942     0.86398238     0.86362902
+      17       0.73116334     0.73716662     0.82409030     0.83073115
+      18       0.77202171     0.79527662     0.76261301     0.77029901
+      19       0.84787008     0.78734468     0.73806017     0.72804024
+      20       0.37543880     0.37722566     0.42066710     0.42394391
+      21       0.46409855     0.44205523     0.39646226     0.38629152
+      22       0.43434132     0.43438036     0.43568374     0.44281344
+      23       0.53455760     0.52910731     0.53303230     0.53269250
+      24       0.77975441     0.76866492     0.80856021     0.86598233
+      25       1.00000000     0.83689045     0.83913471     0.81903306
+      26       0.00000000     1.00000000     0.78500482     0.76257181
+      27       0.00000000     0.00000000     1.00000000     0.76367409
       28       0.00000000     0.00000000     0.00000000     1.00000000
- trace (should be nr of orbitals):   28.0000000000530     
- trace/nr of orbitals (should be very close to 1):   1.00000000000189     
+    ==== End of matrix output ====
+ trace (should be nr of orbitals):   28.0000000000536     
+ trace/nr of orbitals (should be very close to 1):   1.00000000000192     
 
     * Orbital classes:
     Fermion ircop:E1 
@@ -1126,108 +1149,107 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    14                                          
 ** E solution vectors : PP EXCITATIONA   Irrep: A   Trev:   1 Length:         45
- Freq.:   1.464096 Norm:   0.70719790E+00 Residual norm:   0.88E-01
+ Freq.:   1.465433 Norm:   0.70718278E+00 Residual norm:   0.88E-01
    Dominant inactive orbitals:
-     4(E1 ) 54.93%
-     5(E1 ) 45.05%
+     4(E1 ) 76.92%
+     5(E1 ) 23.07%
    Dominant virtual orbitals:
-     6(E1 ) 98.39%
-     7(E1 )  1.61%
+     6(E1 ) 99.04%
    Excitation amplitudes larger than threshold   0.11E+00
 
-        4(i:E1 ) --->      6(v:E1 )  0.52415286E+00
-        5(i:E1 ) --->      6(v:E1 )  0.46608068E+00
+        4(i:E1 ) --->      6(v:E1 )  0.61632836E+00
+        5(i:E1 ) --->      6(v:E1 )  0.33969927E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.66877
+     lambda =  0.71867
  Freq.:   1.487055 Norm:   0.70713665E+00 Residual norm:   0.44E-01
    Dominant inactive orbitals:
-     4(E1 ) 53.96%
-     5(E1 ) 46.04%
+     4(E1 ) 96.58%
+     5(E1 )  3.42%
    Dominant virtual orbitals:
      6(E1 ) 99.94%
    Excitation amplitudes larger than threshold   0.11E+00
 
-        4(i:E1 ) --->      6(v:E1 )  0.51942692E+00
-        5(i:E1 ) --->      6(v:E1 )  0.47951300E+00
+        4(i:E1 ) --->      6(v:E1 )  0.69470676E+00
+        5(i:E1 ) --->      6(v:E1 )  0.13084025E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.67259
- Freq.:   1.487068 Norm:   0.70713684E+00 Residual norm:   0.44E-01
+     lambda =  0.73700
+ Freq.:   1.487063 Norm:   0.70713676E+00 Residual norm:   0.44E-01
    Dominant inactive orbitals:
-     5(E1 ) 55.55%
-     4(E1 ) 44.45%
+     5(E1 ) 76.93%
+     4(E1 ) 23.06%
    Dominant virtual orbitals:
      6(E1 ) 99.95%
    Excitation amplitudes larger than threshold   0.11E+00
 
-        5(i:E1 ) --->      6(v:E1 )  0.52682766E+00
-        4(i:E1 ) --->      6(v:E1 )  0.47144218E+00
+        5(i:E1 ) --->      6(v:E1 )  0.62024731E+00
+        4(i:E1 ) --->      6(v:E1 )  0.33922362E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.69048
+     lambda =  0.67053
  Freq.:   1.487166 Norm:   0.70713645E+00 Residual norm:   0.44E-01
    Dominant inactive orbitals:
-     5(E1 ) 54.02%
-     4(E1 ) 45.98%
+     5(E1 ) 96.49%
+     4(E1 )  3.51%
    Dominant virtual orbitals:
      6(E1 )100.00%
    Excitation amplitudes larger than threshold   0.11E+00
 
-        5(i:E1 ) --->      6(v:E1 )  0.51974497E+00
-        4(i:E1 ) --->      6(v:E1 )  0.47948632E+00
+        5(i:E1 ) --->      6(v:E1 )  0.69461816E+00
+        4(i:E1 ) --->      6(v:E1 )  0.13246724E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.68766
- Freq.:   1.622416 Norm:   0.70718086E+00 Residual norm:   0.55E-01
+     lambda =  0.65288
+ Freq.:   1.624985 Norm:   0.70717004E+00 Residual norm:   0.52E-01
    Dominant inactive orbitals:
-     3(E1 ) 82.72%
-     5(E1 ) 17.11%
+     3(E1 ) 86.80%
+     4(E1 ) 13.18%
    Dominant virtual orbitals:
-     6(E1 ) 83.15%
-     7(E1 ) 16.85%
+     6(E1 ) 87.00%
+     7(E1 ) 13.00%
    Excitation amplitudes larger than threshold   0.11E+00
 
-        3(i:E1 ) --->      6(v:E1 )  0.64318198E+00
-        5(i:E1 ) --->      7(v:E1 )  0.29030617E+00
+        3(i:E1 ) --->      6(v:E1 )  0.65886466E+00
+        4(i:E1 ) --->      7(v:E1 )  0.25499093E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.74279
- Freq.:   1.657794 Norm:   0.70713098E+00 Residual norm:   0.48E-01
+     lambda =  0.75156
+ Freq.:   1.657382 Norm:   0.70713158E+00 Residual norm:   0.48E-01
    Dominant inactive orbitals:
-     5(E1 ) 96.01%
-     3(E1 )  3.96%
+     4(E1 ) 96.47%
+     3(E1 )  3.52%
    Dominant virtual orbitals:
-     7(E1 ) 95.98%
-     6(E1 )  4.02%
+     7(E1 ) 96.40%
+     6(E1 )  3.60%
    Excitation amplitudes larger than threshold   0.11E+00
 
-        5(i:E1 ) --->      7(v:E1 )  0.69276302E+00
-        3(i:E1 ) --->      6(v:E1 )  0.14073325E+00
+        4(i:E1 ) --->      7(v:E1 )  0.69427168E+00
+        3(i:E1 ) --->      6(v:E1 )  0.13272471E+00
    PBHT MO Overlap Diagnostic
      ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
            J. Chem. Phys. 128, 044118 (2008)
-     lambda =  0.65101
+     lambda =  0.68081
 
  
-     Date and time (Linux)  : Tue Feb 22 22:08:46 2011
-     Host name              :                                         
+     Date and time (Linux)  : Sat Oct  1 20:12:26 2011
+     Host name              : not found                               
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         4.58
+  Mean allocation size (Mb) :         7.14
   
   Largest          10  allocations
   
-      487.60 Mb at subroutine                                            for work array at main                        
+      488.28 Mb at subroutine                                            for work array at main                        
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
@@ -1236,9 +1258,9 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
         7.63 Mb at subroutine                                            for unnamed variable                          
-        7.63 Mb at subroutine                                            for unnamed variable                          
+        0.05 Mb at subroutine                                            for buf in butobs                             
   
-  Peak memory usage    (Mb) :       518.00
+  Peak memory usage    (Mb) :       519.00
        reached at subroutine :                                           
               for variable   : unnamed variable                          
   
@@ -1256,7 +1278,7 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
                was allocated at       : 
                                                                                 
                                                       
-               mem.addr. (as integer) :    269255352
+               mem.addr. (as integer) :              171431520
       >>> (de)allocated data details <<<
           var. name                   : 
  unnamed variable                                                               
@@ -1266,13 +1288,13 @@ Ne      1   0.215E-05   0.641E+01   0.133E+00      98   19492
                was allocated at       : 
                                                                                 
                                                       
-               mem.addr. (as integer) :    269244272
+               mem.addr. (as integer) :              171407600
       >>> Done after           2  el.
   
-  There were          127  allocations/           125  deallocations
+  There were           77  allocations/            75  deallocations
       Current memory usage (in Mb) is   0.000000000000000E+000
  MEMGET high-water mark:     7.19 MB
 
 *****************************************************
->>>> Node 0, utime: 10, stime: 0, minflt: 151190, majflt: 0, nvcsw: 0, nivcsw: 2077, maxrss: 538292
->>>> Total WALL time used in DIRAC: 12s
+>>>> Node 0, utime: 7, stime: 0, minflt: 8252, majflt: 0, nvcsw: 2, nivcsw: 796, maxrss: 21560
+>>>> Total WALL time used in DIRAC: 8s
