@@ -638,17 +638,6 @@ contains
         end if
       end if
 
-      if (dft_cfg_blocked) then
-         use_blas3_scheme = .true.
-      end if
-
-!testing default blas3 scheme
-!     if (do_potential) then
-!        use_blas3_scheme = .true.
-!     else
-!        use_blas3_scheme = .false.
-!     end if
-
       if (xc_mpi_is_master()) then
 #ifdef PRG_DIRAC
          call scale_density_matrices(0.5d0)
@@ -1899,6 +1888,17 @@ contains
             call xc_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc)
          end if
 #endif
+
+         if (dft_cfg_blocked) then
+            use_blas3_scheme = .true.
+         end if
+      
+!testing default blas3 scheme
+!        if (do_potential) then
+!           use_blas3_scheme = .true.
+!        else
+!           use_blas3_scheme = .false.
+!        end if
 
          call integrate()
 
