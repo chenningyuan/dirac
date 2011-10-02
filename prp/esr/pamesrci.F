@@ -209,13 +209,13 @@ C
       call memchk('before RCISTD',work,1)
          CALL GASCIP_RCISTD(N_CIROOTS,THR_CI,MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
-     &                     WORK(KZCONF),CMO,lvcorr_mc,
+     &                     WORK(KZCONF),CMO,
      &                     IOPT_ISTATE,OPT_CIPROGAM,
      &                     IPROPT, WORK(KFREE),LFREE)
       call memchk('after RCISTD',work,1)
 C      SUBROUTINE GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                        ECI,CVECS,NDET,IDET,CMO,
-C     &                        clvcorr,ISTATE,CIPROG,IPRINT,
+C     &                        ISTATE,CIPROG,IPRINT,
 C     &                        WORK,LWORK)
 
        

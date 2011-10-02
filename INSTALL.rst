@@ -222,3 +222,24 @@ Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
   $ make
 
 Voila! You can do these steps also after you have compiled the DIRAC binary.
+
+
+How can I change optimization flags?
+------------------------------------
+
+If you want to turn optimization off (debug mode), there are several ways to do that.
+
+Either use setup::
+
+  $ ./setup --debug [other flags]
+  $ cd build
+  $ make
+
+Or use Cmake directly (default is debug mode)::
+
+  $ mkdir build
+  $ cd build
+  $ [FC=ifort CC=icc] cmake ..
+  $ make
+
+If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/CCompilers.cmake.

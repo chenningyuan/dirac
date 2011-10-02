@@ -6467,15 +6467,19 @@ C
         IF (IPRINT .GE. 0) THEN
 
 
-           if (
-     &               (dabs(epot_qm_qm) == 0.0d0)
+           if (      (dabs(epot_pc_pc) == 0.0d0)
+     &         .and. (dabs(epot_qm_pc) == 0.0d0)
+     &        ) then
+              WRITE(LUPRI,'(4(/A,F20.12))')
+     &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM
+           else if ( (dabs(epot_qm_qm) == 0.0d0)
      &         .and. (dabs(epot_qm_pc) == 0.0d0)
      &         .and. (dabs(epot_pc_pc) == 0.0d0)
      &        ) then
 !             don't print anything if there is
 !             only one atom and no point charges
            else
-              WRITE(LUPRI,'(4(/A,F18.12))')
+              WRITE(LUPRI,'(4(/A,F20.12))')
      &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
      &        '  QM-pc interaction energy       :',EPOT_QM_PC,
      &        '  pc-pc interaction energy       :',EPOT_PC_PC,
@@ -6493,7 +6497,7 @@ C
       RETURN
 C
  5000 CONTINUE
-      WRITE (LUPRI,'(//3(A,I3),A,D15.5/,2(/A,4F12.5))')
+      WRITE (LUPRI,'(//3(A,I5),A,D15.5/,2(/A,4F12.5))')
      &     'ERROR: Nucleus',N,' is too close to the',KB,
      &     'th transformation of nucleus no.',M,' DIST=',DIST,
      &     'Charge annd coordinates of first  center:',Q(N),CORD(1:3,N),
@@ -6759,7 +6763,7 @@ C
 C***********************************************************************
 #include "mxcent.h"
       DIMENSION I_SET(MXCENT),I_EQUAL(MXCENT)
-      LOGICAL FIRST(MXCENT),EQUAL
+      LOGICAL FIRST(MXCENT), BASREFS_EQUAL
       CHARACTER*80 BASREF(10,*)
 C
 C     Check for common sets, the first set is always unique
@@ -6768,15 +6772,15 @@ C
       DO I = 2, NONTYP
          FIRST(I) = .TRUE.
          DO J = 1, I - 1
-            EQUAL = .TRUE.
+            BASREFS_EQUAL = .TRUE.
             DO K = 1, 10
                IF (BASREF(K,I).NE.BASREF(K,J)) THEN
-                   EQUAL = .FALSE.
+                   BASREFS_EQUAL = .FALSE.
                    EXIT
                ENDIF
             ENDDO
 !        If equal is still true, then we have a match and can exit the loop over J
-            IF (EQUAL) THEN
+            IF (BASREFS_EQUAL) THEN
                FIRST(I) = .FALSE.
                I_SET(I) = J
                EXIT

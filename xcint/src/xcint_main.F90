@@ -78,6 +78,8 @@ module xcint_main
    logical :: use_gga_qi = .false. !quaternion imaginary
    logical :: use_gga    = .false.
 
+   logical :: use_blas3_scheme = .false.
+
    logical :: parallel_xc
 
 !             number of points in current batch
@@ -645,11 +647,9 @@ contains
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 !        symmetrize matrices
-         if (dft_cfg_blocked .or. (use_gga                          &
+         if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct &
                                    .and. .not. do_london_ks         &
-!radovan: with do_london_lr matrices have to be symmetrized!
-!                                  .and. .not. do_london_lr         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
@@ -867,8 +867,8 @@ contains
 
 
 
-    if (dft_cfg_blocked) then
-       block_threshold = get_block_threshold(dft_cfg_small_density_threshold, mat_dim, dmat_0)
+    if (use_blas3_scheme) then
+       block_threshold = get_block_threshold(dft_cfg_tinydens, mat_dim, dmat_0)
     end if
 
 
@@ -939,7 +939,7 @@ contains
 
 
 #ifdef MOD_UNRELEASED
-   if (dft_cfg_blocked) then
+   if (use_blas3_scheme) then
       loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
 
@@ -953,8 +953,8 @@ contains
                      rx(ipoint:ipoint+block_length-1), &
                      ry(ipoint:ipoint+block_length-1), &
                      rz(ipoint:ipoint+block_length-1), &
-                     ao,                         &
-                     buffer                      &
+                     ao,                               &
+                     buffer                            &
                     )
 
          call xc_contribution_blas3(                          &
@@ -965,10 +965,12 @@ contains
                                     mat_dim,                  &
                                     nz,                       &
                                     buffer,                   &
-                                    ao,                 &
+                                    ao,                       &
                                     nr_fmat,                  &
                                     fmat,                     &
                                     dmat_0,                   &
+                                    dmat_saop_outer,          &
+                                    dmat_saop_resp,           &
                                     nr_dmat,                  &
                                     dmat,                     &
                                     dmat_pg_sym,              &
@@ -977,7 +979,7 @@ contains
                                     derv,                     &
                                     max_fun_derv,             &
                                     rw(ipoint),               &
-                                    nr_electrons_integrated,             &
+                                    nr_electrons_integrated,  &
                                     xc_energy                 &
                                    )
 
@@ -1028,7 +1030,7 @@ contains
       end if
 #endif
 
-      if (n_0(1) > dft_cfg_small_density_threshold) then
+      if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
 
          u%n  = 0.0d0
@@ -1054,7 +1056,7 @@ contains
          end if
 
         if (do_fde_update_vemb .or. do_fde_response) then
-           if ( fde_froz_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
+           if ( fde_froz_n(ipoint) > (dft_cfg_tinydens/10000) ) then
               n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
 
               z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1)
@@ -1162,9 +1164,7 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = n_0(1)**(1.0d0/3.0d0)
-            call dftac(derv, w(1), n_0(1), rho13, &
-     &                 rho_resp, rho_outer, gnn_0(1))
+             call dftac(1, derv, w, n_0, (/rho_resp/), (/rho_outer/), gnn_0)
           end if
 
 !         energy density
@@ -1674,14 +1674,14 @@ contains
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
-      end if !if (n_0(1) > dft_cfg_small_density_threshold) then
+      end if !if (n_0(1) > dft_cfg_tinydens) then
     end do !do ipoint = 1, nr_points_on_this_proc
 
     deallocate(ao)
     deallocate(buffer)
 
 #ifdef MOD_UNRELEASED
-   end if !if (dft_cfg_blocked) then
+   end if !if (use_blas3_scheme) then
 #endif /* ifdef MOD_UNRELEASED */
 
     deallocate(derv)
@@ -1888,6 +1888,17 @@ contains
             call xc_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc)
          end if
 #endif
+
+         if (dft_cfg_blocked) then
+            use_blas3_scheme = .true.
+         end if
+      
+!testing default blas3 scheme
+!        if (do_potential) then
+!           use_blas3_scheme = .true.
+!        else
+!           use_blas3_scheme = .false.
+!        end if
 
          call integrate()
 

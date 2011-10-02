@@ -219,10 +219,10 @@ C
 C
 C        Write out KR-MCSCF energy
 C
-         if(dabs(lvcorr_mc).gt.0.0d0)then
+         if(E_lvcorr_mc.ne.0.0d0)then
            WRITE(LUPRI,9200) IOPT_ISTATE,IOPT_SYMMETRY,
-     &          EMCSCF,POTNUC,lvcorr_mc,
-     &          EMCSCF-POTNUC-lvcorr_mc
+     &          EMCSCF,POTNUC,E_lvcorr_mc,
+     &          EMCSCF-POTNUC-E_lvcorr_mc
          else 
            WRITE(LUPRI,9201) IOPT_ISTATE,IOPT_SYMMETRY,
      &          EMCSCF,POTNUC,EMCSCF-POTNUC
@@ -232,9 +232,9 @@ C
 C
 C        Write out KR-SCF energy
 C
-         if(dabs(lvcorr_mc).gt.0.0d0)then
-           WRITE(LUPRI,9210) EMCSCF,POTNUC,lvcorr_mc,
-     &           EMCSCF-POTNUC-lvcorr_mc
+         if(E_lvcorr_mc.ne.0.0d0)then
+           WRITE(LUPRI,9210) EMCSCF,POTNUC,E_lvcorr_mc,
+     &           EMCSCF-POTNUC-E_lvcorr_mc
          else 
            WRITE(LUPRI,9211) EMCSCF,POTNUC,EMCSCF-POTNUC
          end if
