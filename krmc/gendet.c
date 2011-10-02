@@ -287,7 +287,7 @@ const char *lli_to_b_format ( unsigned long long int x , integer bits)
 
     if ( (bits > 64) || (bits <= 0) ) {
        strcat(b, "\n *** ERROR Illegal number of bits! ***\n");
-       return;
+       return b;
     }
 
     unsigned long long int z, zmax;
