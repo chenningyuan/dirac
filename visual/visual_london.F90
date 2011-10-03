@@ -161,10 +161,16 @@ contains
         call numlst(visual_cfg_orbital_string(ifrp), kvec, nr(ifrp), ir(1,ifrp), ir(2,ifrp), ifrp, nvec)
 
 !       we need absolute indices:
+        write(*, *) '--------------------------------------------------------------'
+        write(*, *) 'visual_london.F90: selected orbitals (in reorthonormalization)'
+        write(*, *) 'in fermion symmetry: ', ifrp
+        write(*, *) 'electronic index, (absolute index)'
         list = 0
         do i = 1, nvec
            list(i, ifrp) = kvec(i) + npsh(ifrp)
+           write(*, *) kvec(i), '(', list(i, ifrp), ')'
         end do
+        write(*, *) '--------------------------------------------------------------'
         call dealloc(kvec)
 
      end do
