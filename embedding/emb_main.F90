@@ -28,6 +28,7 @@ module fde_mod
    use fde_exportPotentials
 !  use fde_import
    use FDE_ImportPotentials
+   use fde_integrate
 
    use fde_inputDirac
    use fde_eval_dirac

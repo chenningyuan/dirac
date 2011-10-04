@@ -1593,6 +1593,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use xcint_main
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1621,6 +1622,7 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
+      real(kind=8) :: fde_energy
 #ifdef SAVE_BEST
       data besterg /1.0D100/
       save besterg
@@ -1711,6 +1713,13 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + get_xc_energy()
       end if
+
+!     if (dirac_cfg_fde) then
+!        call fde_export_write_data_to_memory('DHF') 
+!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
+!        write (*,*) 'FDE energy: ',fde_energy
+!     endif
+
 
       DHFERG = DHFERG + ELERGY
 C

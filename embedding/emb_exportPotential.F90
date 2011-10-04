@@ -32,8 +32,23 @@ module FDE_exportPotentials
    private
    
    public fde_export_write_data_to_file
+   public fde_export_write_data_to_memory
 
    contains
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_export_write_data_to_memory(level)
+!   ----------------------------------------------------------------------------
+         character(len=3) :: level
+         real(kind=8), allocatable :: dmat(:)
+
+         call fde_test_active_density
+         call fde_old_density_matrix_generator(dmat)
+         call fde_test_active_density
+         call fde_calculate_active_elpot(dmat,gf_active%elpot)
+         call dealloc(dmat)
+      end subroutine fde_export_write_data_to_memory
 
 
 !   ----------------------------------------------------------------------------
@@ -46,7 +61,10 @@ module FDE_exportPotentials
          call fde_get_export_info(etmp)
          
          if (etmp%do_grid_out .and. (level.eq.etmp%ex_level)) then
-            call fde_prepare_export(etmp)
+! aspg: the one below has to be reactivated, now with the old
+!       setup for calculating the density matrix its not neded
+!           call fde_prepare_export(etmp)
+            call fde_prepare_export(etmp%ex_level)
          
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') call fde_export_data_as_xml
@@ -55,9 +73,11 @@ module FDE_exportPotentials
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_prepare_export(export_control)
+!     subroutine fde_prepare_export(export_control)
+      subroutine fde_prepare_export(level)
 !   ----------------------------------------------------------------------------
-        type(fde_export) :: export_control
+!       type(fde_export) :: export_control
+        character(len=3) :: level
         real(kind=8), allocatable :: dmat(:)
         integer :: mat_dim
 
@@ -72,7 +92,7 @@ module FDE_exportPotentials
          call fde_old_density_matrix_generator(dmat)
          
          call fde_test_active_density
-         call fde_calculate_active_elpot(dmat)
+         call fde_calculate_active_elpot(dmat,fde_active_elpot)
 
          call dealloc(dmat)
 

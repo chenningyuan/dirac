@@ -40,9 +40,9 @@ module fde_types
    type grid_function 
       integer :: npoints
       integer :: nspin
-      real(kind=8), allocatable, target :: n(:)
-      real(kind=8), allocatable, target :: gn(:,:)
-      real(kind=8), allocatable, target :: elpot(:)
+      real(kind=8), allocatable :: n(:)
+      real(kind=8), allocatable :: gn(:,:)
+      real(kind=8), allocatable :: elpot(:)
    end type
 
    public new_grid_function

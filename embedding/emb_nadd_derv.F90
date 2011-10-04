@@ -1,6 +1,7 @@
 
 module fde_nadd_derv
 
+      use fde_types
       use xcfun
       use interface_functional_read
       use xc_derv
@@ -90,7 +91,7 @@ module fde_nadd_derv
       subroutine calc_xcke_energy_density(gf,  derv)
 !   ----------------------------------------------------------------------------
          type(grid_function), intent(in)  :: gf
-         real(kind=8),        intent(out) :: derv(*)
+         real(kind=8),        intent(out) :: derv(gf%npoints,0:derv_length)
          real(kind=8) :: dervtmp(max_block_length, 0:derv_length)
 
          integer :: i 
@@ -104,18 +105,19 @@ module fde_nadd_derv
          
          do i = 1, gf%npoints
             r_0(1) = gf%n(i)
-            z_0(1) = gf%gn(i:1)*gf%gn(i:1) &
-                   + gf%gn(i:2)*gf%gn(i:2) &
-                   + gf%gn(i:3)*gf%gn(i:3)
+            z_0(1) = gf%gn(i,1)*gf%gn(i,1) &
+                   + gf%gn(i,2)*gf%gn(i,2) &
+                   + gf%gn(i,3)*gf%gn(i,3)
             
-            get_xcke_fun_derv(order,        &
-                              bllen,        &
-                              w,            &
-                              r_0,          &
-                              z_0,          &
-                              dervtmp)
+            call get_xcke_fun_derv(order,        &
+                                   bllen,        &
+                                   w,            &
+                                   r_0,          &
+                                   z_0,          &
+                                   dervtmp)
                               
-            derv(i:) = dervtmp(1,:)
+            derv(i,:) = dervtmp(1,:)
+         enddo
       end subroutine calc_xcke_energy_density
 
 

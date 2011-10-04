@@ -61,6 +61,9 @@ module fde_data
    public fde_vemb
    public fde_grid_np
 
+   public gf_frozen
+   public gf_active
+
    integer, save :: fde_grid_np = 0
    logical, save :: data_is_initialized = .false.
 

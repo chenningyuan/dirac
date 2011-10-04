@@ -56,16 +56,17 @@ module fde_eval_dirac
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_calculate_active_elpot(dmat)
+      subroutine fde_calculate_active_elpot(dmat,vc)
 !   ----------------------------------------------------------------------------
          real(kind=8) :: dmat(:)
          real(kind=8), allocatable :: work(:)
+         real(kind=8) :: vc(:)
          integer      :: work_dim=1000000
          integer      :: iprint = 0
          
          call alloc(work,work_dim, id="scratch space emb_vc")
          write (*,*) 'Generating the Coulomb potential ...'
-         call emb_vc(dmat,fde_grid,fde_active_elpot,iprint,WORK,work_dim) 
+         call emb_vc(dmat,fde_grid,vc,iprint,WORK,work_dim) 
          write (*,*) 'done!'
          call dealloc(work)
                            
@@ -270,6 +271,11 @@ module fde_eval_dirac
          fde_active_gn(i,1) = grad_rho(1,i)
          fde_active_gn(i,2) = grad_rho(2,i)
          fde_active_gn(i,3) = grad_rho(3,i)
+
+         gf_active%n(i)    = rho(1,i)
+         gf_active%gn(i,1) = grad_rho(1,i) 
+         gf_active%gn(i,2) = grad_rho(2,i) 
+         gf_active%gn(i,3) = grad_rho(3,i) 
       END DO
 
       WRITE(LUPRI,*) ' Integrated density adds up to ',test_int_density,&

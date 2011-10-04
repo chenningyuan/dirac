@@ -5,6 +5,7 @@ module fde_integrate
    use fde_io
    use fde_data
    use fde_nadd_derv
+   use fde_exportPotentials
 
    use interface_ao
    use interface_mo
@@ -23,6 +24,7 @@ module fde_integrate
    implicit none
 
    public integrate_fde
+   public calc_fde_interaction_energy
    public fde_get_nr_electrons_integrated
 !   public fde_get_active_density
 
@@ -700,8 +702,8 @@ endif
       end if !if (n_0(1) > dft_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
 
-    call calc_fde_
-    call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
+!   call fde_export_write_data_to_memory('DHF') 
+!   call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
     
     deallocate(ao)
     deallocate(buffer)
@@ -939,5 +941,49 @@ endif
     end do
 
   end subroutine
+
+
+      subroutine calc_fde_interaction_energy(energy,gf_a,gf_b)
+         type(grid_function), intent(in) :: gf_a
+         type(grid_function), intent(in) :: gf_b
+         real(kind=8),       intent(out) :: energy
+
+         type(grid_function) :: gf_tot
+         real(kind=8), allocatable :: derv_a(:,:)
+         real(kind=8), allocatable :: derv_b(:,:)
+         real(kind=8), allocatable :: derv_tot(:,:)
+         real(kind=8) :: vca, vcb, w
+         integer :: i
+
+         energy = 0.0d0
+
+         call new_grid_function(gf_tot,gf_a%npoints)
+
+         gf_tot%n       = gf_a%n  + gf_b%n
+         gf_tot%gn      = gf_a%gn + gf_b%gn
+
+         call fde_new_derv_result_partial(gf_a%npoints,derv_a)
+         call fde_new_derv_result_partial(gf_b%npoints,derv_b)
+         call fde_new_derv_result_partial(gf_tot%npoints,derv_tot)
+
+         call calc_xcke_energy_density(gf_a,  derv_a)
+         call calc_xcke_energy_density(gf_b,  derv_b)
+         call calc_xcke_energy_density(gf_tot,derv_tot)
+
+
+         do i = 1, gf_a%npoints
+            vca = gf_a%elpot(i)
+            vcb = gf_b%elpot(i)
+            w   = fde_grid(4,i)
+            energy = energy                                          &
+                   + w*(vcb + derv_tot(i,0) - derv_a(i,0))*gf_a%n(i) &
+                   + w*(vca + derv_tot(i,0) - derv_b(i,0))*gf_b%n(i)
+         enddo
+
+         call fde_del_derv_result_partial(derv_a)
+         call fde_del_derv_result_partial(derv_b)
+         call fde_del_derv_result_partial(derv_tot)
+
+      end subroutine calc_fde_interaction_energy
 
 end module
