@@ -302,6 +302,20 @@ foreach(
         )
 endforeach()
 
+if(ENABLE_MPI)
+# mi: attempt to impose "-DSLOWDOWN_SLAVES" command through COMPILE_FLAGS, but it's not working with cmake 2.8.0...
+# see http://www.cmake.org/cmake/help/cmake-2-8-docs.html#command:set_target_properties
+# "The COMPILE_FLAGS property sets additional compiler flags used to build sources within the target. 
+# It may also be used to pass additional preprocessor definitions."
+    set_target_properties(dirac.x PROPERTIES COMPILE_FLAGS "-DSLOWDOWN_SLAVES")
+    set_target_properties(dirac.x PROPERTIES CMAKE_Fortran_FLAGS "-DSLOWDOWN_SLAVES")
+    get_target_property(VAR_SLAVES dirac.x COMPILE_FLAGS)
+    message("Target property COMPILE_FLAGS:" ${VAR_SLAVES})
+    get_target_property(VAR_SLAVES1 dirac.x CMAKE_FORTRAN_FLAGS)
+    message("Target property CMAKE_Fortran_FLAGS:" ${VAR_SLAVES1})
+#TODO: wanted target-conditional buildup of dirac.x with slowed-down slaves, 'make slowdown_slaves'
+endif()
+
 include(Install)
 include(Release)
 
