@@ -994,6 +994,7 @@ C
 C
 C
       DIMENSION WORK(MWORK)
+      integer :: sleep_time=15
 C
       CALL QENTER('DIRNOD')
       LWORK = MWORK
@@ -1008,6 +1009,17 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
+
+#if defined (SLOWDOWN_SLAVES)
+!mi+sk: introduce slowdown statement for debug purposes :
+! node 'sleeps' short time and in between the user can attach debugger to the process
+      if(mytid > 0)then
+         write(lupri,'(2x,a,i2,a)')
+     &   'slaves first sleep for ',sleep_time,' seconds. '
+         call sleep(sleep_time)
+      endif 
+#endif
+
 C
 C     Set basis set directory for this slave
 C     (it may be needed for reading the .mol file)
