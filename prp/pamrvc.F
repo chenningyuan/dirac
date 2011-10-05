@@ -3626,8 +3626,8 @@ C
 #endif
 
         end if
-!!!!
-!
+
+#ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde_response .and. itmp%im_frozen) then
 
@@ -3655,10 +3655,7 @@ C
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
         endif
-
-
-!
-!!!!
+#endif
 C
 C     Add solvent contributions
 C     -------------------------

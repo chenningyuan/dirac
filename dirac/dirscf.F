@@ -572,6 +572,7 @@ C
 
         call interface_mo_write()
         
+#ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
            call fde_set_nz(nz)
@@ -579,6 +580,7 @@ C
 
            tdfde =  second() - tdfde
         endif
+#endif
 
         tdxc = second()
 !       xc contribution
@@ -1387,12 +1389,14 @@ C
         tdfde= second()
         call interface_mo_write()
 
+#ifdef MOD_UNRELEASED
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde .and. itmp%im_update_vemb) then
            call fde_set_nz(nz)
            call fde_calculate_embpot(ntbas(0),dmat,fock)
            tdfde = second() - tdfde
         endif
+#endif
         
         TDXC = SECOND()
 !       xc contribution

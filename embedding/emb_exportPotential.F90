@@ -20,8 +20,12 @@
 !dirac_copyright_end
 
 module FDE_exportPotentials
+
    use memory_allocator
    use fde_types
+
+#ifdef MOD_UNRELEASED 
+
    use fde_cfg
    use fde_data
    use fde_io
@@ -214,5 +218,7 @@ module FDE_exportPotentials
 !aspg come back to this later         CALL TIME()
 
       end subroutine fde_export_data_as_xml
+
+#endif /* MOD_UNRELEASED */
 
 end module FDE_exportPotentials

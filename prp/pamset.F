@@ -687,7 +687,7 @@ C          Hermitian operator
      &                           dirac_cfg_overlap_diagnostic)
         end if
 
-
+#ifdef MOD_UNRELEASED
 !!!!!!
         call fde_get_import_info(itmp)
         if (dirac_cfg_fde_response .and. itmp%im_frozen) then
@@ -709,6 +709,7 @@ C          Hermitian operator
 
         endif
 !!!!!
+#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================

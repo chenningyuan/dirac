@@ -32,6 +32,8 @@ module fde_inputDirac
    public fdeini
    public fdeinp
    
+   logical, save :: skip_all_imports = .false.
+
    contains
 
 !   ----------------------------------------------------------------------------
@@ -96,16 +98,17 @@ module fde_inputDirac
                itmp%im_vemb        = .true.
                itmp%im_update_vemb = .false.
                
+            CASE ('.PRINT')
+              read(lucmd,*) pl
+              call fde_set_print_level(pl)
+
+#ifdef MOD_UNRELEASED
             CASE ('.FRDENS')
                read(lucmd,'(A60)') ftmp%frozen%name
                itmp%im_frozen   = .true.
 
             CASE ('.UPDATE')
                itmp%im_update_vemb = .true.
-
-            CASE ('.PRINT')
-              read(lucmd,*) pl 
-              call fde_set_print_level(pl)
 
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
@@ -141,6 +144,14 @@ module fde_inputDirac
 ! doprp is part of dcbgen.h
                doprp = .true.
 
+            CASE ('.EXONLY')
+               read(lucmd,*) ftmp%export%name
+               etmp%do_grid_out = .true.
+! doprp is part of dcbgen.h
+               skip_all_imports = .true.
+
+#endif /* MOD_UNRELEASED */ 
+
             CASE DEFAULT
               WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &
                  '" not recognized in FDEINP.'
@@ -161,6 +172,9 @@ module fde_inputDirac
         END DO
       END IF
       
+#ifdef MOD_UNRELEASED
+      if (.not.skip_all_imports) then
+
       if (itmp%im_vemb) then
          if (itmp%im_update_vemb) then
             write (lunit,*) '.UPDATE and .EMBPOT cannot be used together!'
@@ -185,6 +199,9 @@ module fde_inputDirac
          etmp%ex_gn       = .true.
       endif
 
+      endif ! .not.skip_all_imports
+
+#endif /* MOD_UNRELEASED */
 
 ! saving information on 
       call fde_set_files_info(ftmp)
@@ -196,11 +213,12 @@ module fde_inputDirac
          call fde_import_static      
       endif
 
+#ifdef MOD_UNRELEASED
       if (itmp%im_frozen) then
          call fde_import_frozen
          call fde_initialize_nadd_functionals         
       endif
-      
+#endif
       
 !     options are echoed
          if (Echo_Input) then
@@ -241,7 +259,9 @@ module fde_inputDirac
          write(unit,*)
          write(unit,'(A,I5)')  ' * Print level                  : ',pl
 
+#ifdef MOD_UNRELEASED
          if (itmp%im_frozen) call fde_print_nadd_functionals(unit)
+#endif
 
          if (itmp%im_vemb) then
             string = ftmp%embpot%name
@@ -255,6 +275,10 @@ module fde_inputDirac
             'PCCP 10 (2008) 5353-5362.'
             write(unit,*)
 
+#ifndef MOD_UNRELEASED
+         else
+            call quit('inconsistent FDE input!')
+#else
          else
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
             write(unit,'(A)') ' ' 
@@ -283,6 +307,7 @@ module fde_inputDirac
                   etmp%ex_level = 'DHF'
                   
             end select
+#endif /* MOD_UNRELEASED */
          endif
                   
       end subroutine fde_show_setup

@@ -37,7 +37,9 @@ module fde_data
    public get_fde_grid_weight
    public fde_test_frozen_density
    public fde_test_active_density
+#ifdef MOD_UNRELEASED
    public fde_import_frozen
+#endif
    public fde_import_static
    public fde_initialize_data
 
@@ -173,7 +175,7 @@ module fde_data
       call deallocp(gridp)
    end subroutine fde_import_static
 
-
+#ifdef MOD_UNRELEASED
 !   ----------------------------------------------------------------------------
    subroutine fde_import_frozen
 !   ----------------------------------------------------------------------------
@@ -212,6 +214,7 @@ module fde_data
       call deallocp(fde_frozen_prp)
       call deallocp(gridp)
    end subroutine fde_import_frozen
+#endif /* MOD_UNRELEASED */ 
 
 
 !   ----------------------------------------------------------------------------

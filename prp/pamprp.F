@@ -266,7 +266,9 @@ C JHS 17 apr 2008
 C
       if (dirac_cfg_fde) then
 #ifdef MOD_XML
+#ifdef MOD_UNRELEASED
          call fde_export_write_data_to_file(wf)
+#endif
 #else
          call quit("FDE density export unsupported in this version.")
 #endif
