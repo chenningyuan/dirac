@@ -36,8 +36,10 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
-      use fde_mod
-      use FDE_ImportPotentials
+! checking
+       use fde_types
+       use fde_mod
+!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -46,6 +48,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
+      type(fde_import) :: itmp
 C
 #include "dcbgen.h"
 #include "dcbprl.h"
@@ -106,7 +109,8 @@ C          ... zero SS integrals
            CALL NOSSNUCATT
            COMB(4:4) = 'F'
          END IF
-         if (import_vemb) then
+        call fde_get_import_info(itmp)
+        if (itmp%im_vemb) then
             CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
          endif
 C
@@ -845,6 +849,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
+      use fde_types
       use fde_mod
 
 #include "implicit.h"
@@ -860,6 +865,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
+      type(fde_import) :: itmp
       LOGICAL FIRST(NZ),TOBE
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
@@ -889,14 +895,16 @@ CMI     ... dcbham.h is needed
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
-C
+
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-      IF (dirac_cfg_fde.and.import_vemb) THEN
+
+      call fde_get_import_info(itmp)
+      if (dirac_cfg_fde .and. itmp%im_vemb) then
          IOP = IPVEMB0
          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &          OP1INT,FIRST,IPRHAM)
