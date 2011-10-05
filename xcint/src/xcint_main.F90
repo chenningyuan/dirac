@@ -234,6 +234,7 @@ contains
 !     --------------------------------------------------------------------------
 
       integer, parameter :: max_response_order_mo = 5
+      integer            :: i, j, iz, imat
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -689,6 +690,20 @@ contains
                   file_unit)
       call matrix_to_file('xc_fmat', mat_dim*mat_dim, xc_fmat)
 #endif
+
+!     check for nan in xc matrix
+      do imat = 1, xc_nr_fmat
+         do iz = 1, nz
+            do i = 1, mat_dim
+               do j = 1, mat_dim
+                  if (xc_fmat(j, i, iz, imat) /= xc_fmat(j, i, iz, imat)) then
+                     print *, 'error: found NaN in XC matrix, quitting'
+                     stop
+                  end if
+               end do
+            end do
+         end do
+      end do
 
    end subroutine
 
