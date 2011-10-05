@@ -53,19 +53,20 @@ endif()
 
 include(Definitions)
 
-option(ENABLE_INTERNAL_MATH  "Enable internal math library"       OFF)
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"             OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"         OFF)
-option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard" ON)
-option(ENABLE_OMP            "Enable OpenMP parallelization"      OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"       OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int module"              OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"               ON)
-option(ENABLE_PROFILING      "Enable profiling"                   OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"               OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"    OFF)
-option(ENABLE_UTILITIES      "Enable utitilites"                  OFF)
+option(ENABLE_INTERNAL_MATH  "Enable internal math library"             OFF)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                   OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"               OFF)
+option(ENABLE_SLOWDOWN_SLAVE "Enable initial slowing down of slaves"    OFF)
+option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"        ON)
+option(ENABLE_OMP            "Enable OpenMP parallelization"            OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"             OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int module"                    OFF)
+option(ENABLE_XCFUN          "Enable XCFun library"                      ON)
+option(ENABLE_PROFILING      "Enable profiling"                         OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                      OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"          OFF)
+option(ENABLE_UTILITIES      "Enable utitilites"                        OFF)
 
 # set cdash buildname
 set(BUILDNAME
@@ -302,18 +303,14 @@ foreach(
         )
 endforeach()
 
-if(ENABLE_MPI)
+if ((ENABLE_MPI) AND (ENABLE_SLOWDOWN_SLAVE))
 # mi: attempt to impose "-DSLOWDOWN_SLAVES" command through COMPILE_FLAGS, but it's not working with cmake 2.8.0...
 # see http://www.cmake.org/cmake/help/cmake-2-8-docs.html#command:set_target_properties
 # "The COMPILE_FLAGS property sets additional compiler flags used to build sources within the target. 
 # It may also be used to pass additional preprocessor definitions."
     set_target_properties(dirac.x PROPERTIES COMPILE_FLAGS "-DSLOWDOWN_SLAVES")
-    set_target_properties(dirac.x PROPERTIES CMAKE_Fortran_FLAGS "-DSLOWDOWN_SLAVES")
-    get_target_property(VAR_SLAVES dirac.x COMPILE_FLAGS)
-    message("Target property COMPILE_FLAGS:" ${VAR_SLAVES})
-    get_target_property(VAR_SLAVES1 dirac.x CMAKE_FORTRAN_FLAGS)
-    message("Target property CMAKE_Fortran_FLAGS:" ${VAR_SLAVES1})
-#TODO: wanted target-conditional buildup of dirac.x with slowed-down slaves, 'make slowdown_slaves'
+# I use rather this substitution 
+    add_definitions(-DSLOWDOWN_SLAVES)
 endif()
 
 include(Install)
