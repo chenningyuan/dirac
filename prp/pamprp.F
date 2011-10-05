@@ -125,9 +125,7 @@ C***********************************************************************
 #ifdef MOD_OPENRSP
       use openrsp_main
 #endif
-
-!     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
-      USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
+      use fde_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -143,6 +141,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
+      logical :: export_n,export_gn,export_vc
 C
       CALL QENTER('PAMPR1')
 C
@@ -265,10 +264,9 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-      call get_xml_export_level(wfexport)
-      IF (DO_GRID_OUT.and.(WF.eq.wfexport)) THEN
+      if (dirac_cfg_fde) then
 #ifdef MOD_XML
-         CALL FDE_GRIDOUT(WORK,LFREE)
+         call fde_export_write_data_to_file(wf)
 #else
          call quit("FDE density export unsupported in this version.")
 #endif

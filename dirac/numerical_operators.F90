@@ -194,7 +194,7 @@ module numoper_integrals
 
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
-         use grid_file
+         use fde_io
          use interface_ao_specific
          use ao_eval
 
@@ -285,6 +285,7 @@ module numoper_integrals
          call deallocp(operator)
          call dealloc(ao)
          call dealloc(offt_bu)
+         call dealloc(buffer)
 
       end subroutine NumOper_OneElOp_SetMatrix_PS
 
