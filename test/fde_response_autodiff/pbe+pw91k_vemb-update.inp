@@ -8,8 +8,8 @@ electric properties for frozen density embedding
 .DFTAUTO
 pbex=1.0 pbec=1.0
 .FDE
-.FDERSP
 *FDE
+.RSP
 .NAKEF
 kin_pw91
 .NAXCF
@@ -21,6 +21,7 @@ pbex=1.0 pbec=1.0
  1.0D-2
 **PROPERTIES
 .DIPOLE
+#.POLARIZABILITY
 *LINEAR RESPONSE
 .B FREQ
  2
