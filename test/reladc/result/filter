@@ -1,2 +1,3 @@
-$ERROR 1.E-9
-Nlines 20:First 60 RAW Lanczos
+$ERROR 0.00001
+Nlines 8:First 60 RAW Lanczos EVAL
+
