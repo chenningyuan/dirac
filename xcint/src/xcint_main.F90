@@ -1892,13 +1892,14 @@ contains
          if (dft_cfg_blocked) then
             use_blas3_scheme = .true.
          end if
-      
-!testing default blas3 scheme
-!        if (do_potential) then
-!           use_blas3_scheme = .true.
-!        else
-!           use_blas3_scheme = .false.
-!        end if
+         if (do_potential) then
+            use_blas3_scheme = .true.
+         else
+            use_blas3_scheme = .false.
+         end if
+         if (do_overlap_diagnostic .or. fun_is_tau_mgga()) then
+            use_blas3_scheme = .false.
+         end if
 
          call integrate()
 

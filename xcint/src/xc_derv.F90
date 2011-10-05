@@ -177,7 +177,7 @@ contains
       end if
 
       if (allocated(f%input)) then
-         l = size(f%input)
+         l = size(f%input)/max_block_length
       else
          l = 0
       end if
@@ -186,11 +186,11 @@ contains
          if (allocated(f%input)) then
             deallocate(f%input)
          end if
-         allocate(f%input(l, 1))
+         allocate(f%input(l, max_block_length))
       end if
 
       if (allocated(f%output)) then
-         l = size(f%output)
+         l = size(f%output)/max_block_length
       else
          l = 0
       end if
@@ -199,7 +199,7 @@ contains
          if (allocated(f%output)) then
             deallocate(f%output)
          end if
-         allocate(f%output(l, 1))
+         allocate(f%output(l, max_block_length))
       end if
 
    end subroutine
