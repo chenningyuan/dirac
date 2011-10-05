@@ -1835,9 +1835,6 @@ C
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
-C! Print embedding information for the freeze & thaw scheme (not used currently)
-C     IF (dirac_cfg_fde .or. dirac_cfg_fde_response) CALL report_embedding ()
-
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
       IF (BNCRON) THEN
@@ -4387,7 +4384,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-      USE FDE_MOD, ONLY: FDEINI, FDEINP, FDE_setupFDEgrid, update_vemb
+      USE FDE_MOD, ONLY: FDEINI, FDEINP
       use dft_cfg
       use xc_derv
       use interface_functional_read
@@ -4459,7 +4456,7 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.FDERSP','.HFXATT','.xB    ','.xC    ',
+     &            '.xxxxxx','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
      &            '.ECP   ','.X2Cmmf','.xxxxxx','.xxxxxx'/
       DATA SETFUN/.FALSE./
@@ -5078,12 +5075,6 @@ CMI&& activate 4c-2c MO transformation
           TRMO4C2C=.TRUE.
           GOTO 100
   157     CONTINUE
-#ifdef MOD_UNRELEASED
-C activates fde response
-          dirac_cfg_fde_response =.TRUE.
-#else
-          write (*,*) 'Keyword inactive in this release'
-#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -5133,8 +5124,8 @@ C         as they need to be picture-changed transformed after the 2c-transforma
 
 
 
-      if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
-         call fdeini()
+      if (dirac_cfg_fde) then
+         call fdeini(lupri,'DIRAC.OUT')
       end if 
       
 
@@ -6106,11 +6097,6 @@ CMI  ... reading input routine for AMFI+RELSCF
         GO TO 200
 C
     1 CONTINUE
-
-#ifdef MOD_UNRELEASED
-      if ((dirac_cfg_fde.and.update_vemb).or.dirac_cfg_fde_response)        &
-     &   call FDE_setupFDEgrid()
-#endif
 
 !       work can be easily removed by changing internal memget to alloc
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)

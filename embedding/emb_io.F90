@@ -19,22 +19,49 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-! FILE    : grid_file.F90
-!
+module fde_io
 
-MODULE GRID_FILE
-  use memory_allocator
-  IMPLICIT NONE
-  PRIVATE
-  public read_grid  
+   use memory_allocator
+   use fde_cfg
+      
+   private
 
-  interface read_grid
-     module procedure read_grid_onecol
-     module procedure read_grid_manycol
-  end interface read_grid
+   public fde_open_file
+   public fde_close_file
+   public read_grid
 
-CONTAINS 
+   interface read_grid
+      module procedure read_grid_onecol
+      module procedure read_grid_manycol
+   end interface read_grid
+
+   contains
+
+     subroutine fde_open_file(name,unit)
+        character(len=60), intent(in) :: name
+        logical                       :: file_found 
+        integer, intent(in)           :: unit
+
+        inquire(FILE=name,EXIST=file_found)
   
+        if (file_found) then
+            open(unit,                   &
+                 FORM   = 'FORMATTED',   &
+                 STATUS = 'UNKNOWN',     &
+                 ACCESS = 'SEQUENTIAL',  &
+                 FILE   =  name)
+         else
+            call quit("File not found!")
+         endif
+     end subroutine fde_open_file
+
+     subroutine fde_close_file(unit)
+        integer, intent(in) :: unit
+        close(unit)
+     end subroutine fde_close_file
+
+
+
 ! description : this subroutine will read some operator (i.e. an embedding
 !               potential) from file.
 !
@@ -50,7 +77,6 @@ CONTAINS
 !
 
   SUBROUTINE READ_GRID_onecol(file,points,vc)
-#include "priunit.h"
     REAL(kind=8),POINTER :: points(:,:)
     REAL(kind=8),pointer,optional :: vc(:)
     INTEGER                 :: file
@@ -62,7 +88,6 @@ CONTAINS
     call allocp(points,4,npoints,id="grid_points")
     
     if (present(vc)) then
-       nullify(vc)
        call allocp(vc,npoints,id="potential")
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
@@ -88,7 +113,6 @@ CONTAINS
 !                                 have in file
 !
   SUBROUTINE READ_GRID_manycol(file,points,properties)
-#include "priunit.h"
     REAL(kind=8),POINTER :: points(:,:)
     REAL(kind=8),pointer :: properties(:,:)
     INTEGER              :: file
@@ -107,6 +131,5 @@ CONTAINS
 
   END SUBROUTINE READ_GRID_manycol
   
-END MODULE GRID_FILE
 
-
+end module fde_io
