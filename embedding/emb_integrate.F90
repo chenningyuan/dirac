@@ -1,6 +1,9 @@
 module fde_integrate
 
    use fde_types
+
+#ifdef MOD_UNRELEASED
+
    use fde_cfg
    use fde_io
    use fde_data
@@ -977,5 +980,7 @@ endif
          call fde_del_derv_result_partial(derv_tot)
 
       end subroutine calc_fde_interaction_energy
+
+#endif /* MOD_UNRELEASED */
 
 end module

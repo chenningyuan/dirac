@@ -42,6 +42,7 @@ module fde_mod
    end interface
 
 
+#ifdef MOD_UNRELEASED
 !  interface fde_cleanup_density_matrix
 !     module procedure fde_free_dmat_dirac
 !  end interface
@@ -57,5 +58,7 @@ module fde_mod
 !  interface fde_calculate_embqrp
 !     module procedure fde_calculate_qr_dirac
 !  end interface
+
+#endif
 
 end module fde_mod

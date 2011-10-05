@@ -16,6 +16,9 @@ module fde_eval_dirac
 
    implicit none
 
+   public dirac_data_interface
+
+#ifdef MOD_UNRELEASED
    public fde_set_nz
    public fde_get_nz
 
@@ -23,8 +26,8 @@ module fde_eval_dirac
    public fde_calculate_active_elpot
    public fde_get_active_density
    public fde_get_density_matrix
-   public dirac_data_interface
    public fde_old_density_matrix_generator
+#endif
    
    private 
 
@@ -36,7 +39,7 @@ module fde_eval_dirac
 
    contains
 
-
+#ifdef MOD_UNRELEASED
 !   ----------------------------------------------------------------------------
       subroutine fde_set_nz(value)
 !   ----------------------------------------------------------------------------
@@ -89,6 +92,7 @@ module fde_eval_dirac
                             fde_do_potential = .true.)
 
       end subroutine fde_calculate_vemb_dirac
+#endif
       
       
 !   ----------------------------------------------------------------------------
@@ -113,7 +117,7 @@ module fde_eval_dirac
 
       end subroutine dirac_data_interface 
 
-
+#ifdef MOD_UNRELEASED
 !   ----------------------------------------------------------------------------
    subroutine fde_get_active_density(dmat, mat_dim, get_gradient)
 !   ----------------------------------------------------------------------------
@@ -293,5 +297,7 @@ module fde_eval_dirac
       call dealloc (vc)
       call deallocp (points)     
       end  subroutine fde_old_density_matrix_generator
+
+#endif /* MOD_UNRELEASED */
 
 end module fde_eval_dirac

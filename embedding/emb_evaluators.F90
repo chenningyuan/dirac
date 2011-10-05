@@ -5,6 +5,8 @@ module fde_evaluators
    use fde_types
    use fde_data
    use fde_eval_dirac
+
+#ifdef MOD_UNRELEASED
    use fde_nadd_derv 
 
    public fde_get_density_matrix
@@ -12,6 +14,10 @@ module fde_evaluators
    public fde_calculate_active_elpot
    public fde_cleanup_density_matrix
    public fde_calculate_embpot 
+
+   interface fde_calculate_embpot
+      module procedure fde_calculate_vemb_dirac
+   end interface
 
 !   interface fde_get_density_matrix
 !      module procedure fde_get_dmat_dirac
@@ -29,10 +35,6 @@ module fde_evaluators
 !      module procedure fde_free_dmat_dirac
 !   end interface
 
-   interface fde_calculate_embpot
-      module procedure fde_calculate_vemb_dirac
-   end interface
-
 !  interface fde_calculate_embrsp
 !     module procedure fde_calculate_lr_dirac
 !  end interface
@@ -41,54 +43,12 @@ module fde_evaluators
 !     module procedure fde_calculate_qr_dirac
 !  end interface
 
-
-   contains
-   
-      subroutine calc_fde_interaction_energy(energy,gf_a,gf_b)
-         type(grid_function), intent(in) :: gf_a
-         type(grid_function), intent(in) :: gf_b
-         real(kind=8),       intent(out) :: energy
-
-         type(grid_function) :: gf_tot
-         real(kind=8), allocatable :: derv_a(:,:)
-         real(kind=8), allocatable :: derv_b(:,:)
-         real(kind=8), allocatable :: derv_tot(:,:)
-         real(kind=8) :: vca, vcb, w
-         
-         energy = 0.0d0
-
-         call new_grid_function(gf_tot,gf_a%npoints)
-
-         gf_tot%n       = gf_a%n  + gf_b%n
-         gf_tot%gn      = gf_a%gn + gf_b%gn
-         
-         call fde_new_derv_result_partial(gf_a%npoints,derv_a)
-         call fde_new_derv_result_partial(gf_b%npoints,derv_b)
-         call fde_new_derv_result_partial(gf_tot%npoints,derv_tot)
-                  
-         call calc_xcke_energy_density(gf_a,  derv_a)
-         call calc_xcke_energy_density(gf_b,  derv_b)
-         call calc_xcke_energy_density(gf_tot,derv_tot)
-         
-         
-         do i = 1, gf_a%npoints
-            vca = gf_a%elpot(i)
-            vcb = gf_b%elpot(i)
-            w   = fde_grid(4,i)
-            energy = energy                                          &
-                   + w*(vcb + derv_tot(i,0) - derv_a(i,0))*gf_a%n(i) &
-                   + w*(vca + derv_tot(i,0) - derv_b(i,0))*gf_b%n(i)
-         enddo
-         
-         call fde_del_derv_result_partial(derv_a)
-         call fde_del_derv_result_partial(derv_b)
-         call fde_del_derv_result_partial(derv_tot)
-         
-      end subroutine calc_fde_interaction_energy
+#endif /* MOD_UNRELEASED */
 
 end module fde_evaluators
 
 
+#ifdef MOD_UNRELEASED
 #ifdef FOOBAR
 
 module fde_dens_eval
@@ -264,3 +224,5 @@ module fde_dens_eval
 end module fde_dens_eval  
 
 #endif
+
+#endif /* MOD_UNRELEASED */

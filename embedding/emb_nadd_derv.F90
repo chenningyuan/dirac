@@ -2,6 +2,9 @@
 module fde_nadd_derv
 
       use fde_types
+
+#ifdef MOD_UNRELEASED
+
       use xcfun
       use interface_functional_read
       use xc_derv
@@ -495,6 +498,7 @@ module fde_nadd_derv
          
      end subroutine get_xcke_fun_derv
 
+#endif /* MOD_UNRELEASED */
 
 end module fde_nadd_derv
 
