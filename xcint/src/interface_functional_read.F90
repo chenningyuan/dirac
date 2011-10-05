@@ -425,7 +425,7 @@ contains
 !   thresholds
 
     write(*, '(a)')          ' * DFT thresholds:'
-    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_small_density_threshold
+    write(*, '(a, e12.5)')   '   - small density threshold = ', dft_cfg_tinydens
 
 !   asymptotic correction
 

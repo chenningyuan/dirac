@@ -7441,7 +7441,7 @@ C
       INTEGER NUM_BLK
 C
       THR_CVEC = 1.0d-03
-      THR_CVEC = -1.0d-03
+!     THR_CVEC = -1.0d-03
 !     write(luwrt,*) 'THR_CVEC ==>', THR_CVEC
 
       IROUND = 0
@@ -7714,10 +7714,10 @@ CSK     &                 LUWRT)
 C
          IDEBUGPRNT = 0
 C
-         CALL WTVEC_BATCH_DRV4SP(LUOUT,VEC2,LBATCH(ISBATCH),
-     &                           IBATCH(1,I1BATCH(ISBATCH)),
-     &                           IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
-     &                           LUOUTLIST,NUM_ACTIVE_BATCH,IDEBUGPRNT)
+         CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                         IBATCH(1,I1BATCH(ISBATCH)),
+     &                         IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                         LUOUTLIST,NUM_ACTIVE_BATCH)
 C
 C
 C       keep track of correct offset
@@ -7734,10 +7734,12 @@ C
          CALL REDVEC_REL(I_ZERO,I_ZERO_total,1,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
          IF(I_REMOVED_total .GT. 0) THEN
-            WRITE (luwrt,'(/A,I8,A,I4,A,1P,D10.2,I8)')
+#ifdef LUCI_DEBUG
+            WRITE (luwrt,'(/A,I12,A,I4,A,1P,D10.2,I14)')
      &       'info: Removed',I_REMOVED_total,
      &       ' elements in new CI trial vector no.',IADD,
      &       '; threshold & zeroes',THR_CVEC, I_ZERO_total
+#endif
             GO TO 10
          END IF
       END IF
@@ -7904,10 +7906,10 @@ CSK     &                 LUWRT)
 C
         IDEBUGPRNT = 0
 C
-        CALL WTVEC_BATCH_DRV4SP(LUOUT,VEC2,LBATCH(ISBATCH),
-     &                          IBATCH(1,I1BATCH(ISBATCH)),
-     &                          IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
-     &                          LUOUTLIST,NUM_ACTIVE_BATCH,IDEBUGPRNT)
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
 C
 C       keep track of correct offset
         IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
@@ -8039,10 +8041,10 @@ CSK     &                 LUWRT)
 C
         IDEBUGPRNT = 0
 C
-        CALL WTVEC_BATCH_DRV4SP(LUOUT,VEC2,LBATCH(ISBATCH),
-     &                          IBATCH(1,I1BATCH(ISBATCH)),
-     &                          IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
-     &                          LUOUTLIST,NUM_ACTIVE_BATCH,IDEBUGPRNT)
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
 C
 C       keep track of correct offset
         IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)

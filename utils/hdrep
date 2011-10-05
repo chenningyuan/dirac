@@ -301,5 +301,5 @@ print "<HR>";
 
 
 eor
-perl -s $SCRIPT $@
+perl -X -s $SCRIPT $@
 rm $SCRIPT
