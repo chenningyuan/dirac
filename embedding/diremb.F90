@@ -32,7 +32,6 @@
 !               different parts of the code.
 !
       MODULE FDE_MOD
-      USE GRID_FILE
 #ifdef MOD_XML
       USE FILE, ONLY: OPEN_FILE
 #endif

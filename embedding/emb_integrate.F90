@@ -5,7 +5,6 @@ module fde_integrate
    use fde_io
    use fde_data
    use fde_nadd_derv
-   use fde_exportPotentials
 
    use interface_ao
    use interface_mo
@@ -26,9 +25,6 @@ module fde_integrate
    public integrate_fde
    public calc_fde_interaction_energy
    public fde_get_nr_electrons_integrated
-!   public fde_get_active_density
-
-   real(8) :: fde_get_nr_electrons_integrated
 
    private
 
@@ -557,7 +553,7 @@ endif
 
             time_density = time_density + second() - time_density_start
 
-            if (n_0(1) > dft_cfg_small_density_threshold) then
+            if (n_0(1) > dft_cfg_tinydens) then
                nr_points_used = nr_points_used + 1
 
                u%n  = 0.0d0
@@ -570,7 +566,7 @@ endif
                fde_active_gn(ipoint,2) = gn_0_pointwise(2)
                fde_active_gn(ipoint,3) = gn_0_pointwise(3)
 
-               if ( fde_frozen_n(ipoint) > (dft_cfg_small_density_threshold/10000) ) then
+               if ( fde_frozen_n(ipoint) > (dft_cfg_tinydens/10000D0) ) then
                   n_0_t(1) = fde_active_n(ipoint)    + fde_frozen_n(ipoint)
                   z0tt(1)  = fde_active_gn(ipoint,1) + fde_frozen_gn(ipoint,1)
                   z0tt(2)  = fde_active_gn(ipoint,2) + fde_frozen_gn(ipoint,2)
@@ -702,9 +698,6 @@ endif
       end if !if (n_0(1) > dft_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
 
-!   call fde_export_write_data_to_memory('DHF') 
-!   call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
-    
     deallocate(ao)
     deallocate(buffer)
     deallocate(derv)
@@ -765,9 +758,8 @@ endif
 
 
 !   ----------------------------------------------------------------------------
-   function fde_get_nr_electrons_integrated()
+   real(8) function fde_get_nr_electrons_integrated()
 !   ----------------------------------------------------------------------------
-      real(8) :: get_nr_electrons_integrated
       fde_get_nr_electrons_integrated = nr_electrons_integrated
    end function fde_get_nr_electrons_integrated
 
