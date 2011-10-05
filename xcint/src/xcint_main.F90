@@ -1708,9 +1708,6 @@ contains
       write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
             nr_points_total
-      write(file_unit, '(3x, a, i9)')                            &
-            'number of grid points below density threshold  = ', &
-            nr_points_total - nr_points_used
 
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
