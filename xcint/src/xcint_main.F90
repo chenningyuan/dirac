@@ -963,6 +963,12 @@ contains
                                     xc_energy                 &
                                    )
 
+#ifdef MOD_UNRELEASED
+         if (do_overlap_diagnostic) then
+            call integrate_o_matrix(block_length, rw(ipoint), ao)
+         end if
+#endif
+
          deallocate(ao)
          deallocate(buffer)
 
@@ -1003,12 +1009,6 @@ contains
 !        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
       end if
       time_density = time_density + second() - time_density_start
-
-#ifdef MOD_UNRELEASED
-      if (do_overlap_diagnostic) then
-         call integrate_o_matrix(rw(ipoint), ao)
-      end if
-#endif
 
       if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
@@ -1768,16 +1768,13 @@ contains
          end if
 #endif
 
-         if (dft_cfg_blocked) then
-            use_blas3_scheme = .true.
-         end if
          if (do_potential) then
             use_blas3_scheme = .true.
          else
             use_blas3_scheme = .false.
          end if
-         if (do_overlap_diagnostic .or. fun_is_tau_mgga(xc_fun)) then
-            use_blas3_scheme = .false.
+         if (dft_cfg_blocked) then
+            use_blas3_scheme = .true.
          end if
 
          call integrate()
