@@ -234,7 +234,7 @@ contains
     logical, optional, intent(in) :: alda_real
     logical, optional, intent(in) :: alda_imag
     logical, optional, intent(in) :: xalda
-    real(8), optional, intent(in) :: tau
+    real(8), optional, intent(in) :: tau(*)
 !   ----------------------------------------------------------------------------
     real(8)                       :: t1(max_dim, max_block_length)
     real(8)                       :: t2(max_dim, max_block_length)
@@ -282,7 +282,7 @@ contains
             f%input(3, k) = z_0(k)
          end do
          do k = 1, block_length
-            f%input(6, k) = tau
+            f%input(6, k) = tau(k)
          end do
       end if
 

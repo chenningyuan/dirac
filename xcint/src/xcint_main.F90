@@ -939,6 +939,7 @@ contains
 
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
+                                    fun_is_tau_mgga(xc_fun),  &
                                     (response_order_mo == 1), &
                                     block_length,             &
                                     block_threshold,          &
@@ -1060,7 +1061,7 @@ contains
                                    alda_real=dft_cfg_alda_hs, &
                                    alda_imag=dft_cfg_alda_ha, &
                                    xalda=dft_cfg_xalda,       &
-                                   tau=tau)
+                                   tau=(/tau/))
 
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP

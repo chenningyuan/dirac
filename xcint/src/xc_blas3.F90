@@ -40,6 +40,7 @@ contains
 
    subroutine xc_contribution_blas3(                         &
                                     is_gga,                  &
+                                    is_tau_mgga,             &
                                     do_lr,                   &
                                     block_length,            &
                                     block_threshold,         &
@@ -66,6 +67,7 @@ contains
 
 !     --------------------------------------------------------------------------
       logical, intent(in)    :: is_gga
+      logical, intent(in)    :: is_tau_mgga
       logical, intent(in)    :: do_lr
       integer, intent(in)    :: block_length
       real(8), intent(in)    :: block_threshold
@@ -106,6 +108,7 @@ contains
       integer                :: nr1, nr2, st1, st2
       integer                :: iblock, jblock
       real(8), allocatable   :: n(:, :)
+      real(8), allocatable   :: tau(:, :)
       real(8), allocatable   :: n_saop_outer(:)
       real(8), allocatable   :: n_saop_resp(:)
       real(8), allocatable   :: n_g(:, :, :)
@@ -119,6 +122,7 @@ contains
       allocate(ao_sort_index_reverse(mat_dim))
       allocate(ao_sorted(max_block_length*mat_dim, 0:4))
       allocate(n(block_length, 0:nr_dmat))
+      allocate(tau(block_length, 0:nr_dmat))
       allocate(n_saop_outer(block_length))
       allocate(n_saop_resp(block_length))
       allocate(n_g(block_length, 3, 0:nr_dmat))
@@ -139,6 +143,11 @@ contains
                end do
             end do
          end if
+!        if (is_tau_mgga) then
+            do k = 1, block_length
+               tau(k, imat) = 0.0d0
+            end do
+!        end if
       end do
       if (dft_cfg_saop_is_active) then
          do k = 1, block_length
@@ -229,6 +238,7 @@ contains
          if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
             call evaluate_density_dsymm(                            &
                                         is_gga,                     &
+                                        is_tau_mgga,                &
                                         block_length,               &
                                         mat_dim,                    &
                                         nz,                         &
@@ -238,11 +248,13 @@ contains
                                         nr_above_threshold(iblock), &
                                         isoff(iblock),              &
                                         iksoff(iblock),             &
+                                        tau(1, 0),                  &
                                         n(1, 0),                    &
                                         n_g(1, 1, 0)                &
                                        )
             if (dft_cfg_saop_is_active) then
                call evaluate_density_dsymm(                            &
+                                           .false.,                    &
                                            .false.,                    &
                                            block_length,               &
                                            mat_dim,                    &
@@ -253,11 +265,13 @@ contains
                                            nr_above_threshold(iblock), &
                                            isoff(iblock),              &
                                            iksoff(iblock),             &
+                                           tau(1, 0),                  &
                                            n_saop_outer,               &
                                            n_g(1, 1, 0)                & !ugly - not used
                                           )
                if (dft_cfg_saop_with_response_part) then
                   call evaluate_density_dsymm(                            &
+                                              .false.,                    &
                                               .false.,                    &
                                               block_length,               &
                                               mat_dim,                    &
@@ -268,6 +282,7 @@ contains
                                               nr_above_threshold(iblock), &
                                               isoff(iblock),              &
                                               iksoff(iblock),             &
+                                              tau(1, 0),                  &
                                               n_saop_resp,                &
                                               n_g(1, 1, 0)                & !ugly - not used
                                              )
@@ -279,6 +294,7 @@ contains
                   if (iksoff(iblock) == iksoff(jblock)) then
                      call evaluate_density_dsymm(                            &
                                                  is_gga,                     &
+                                                 is_tau_mgga,                &
                                                  block_length,               &
                                                  mat_dim,                    &
                                                  nz,                         &
@@ -288,12 +304,14 @@ contains
                                                  nr_above_threshold(iblock), &
                                                  isoff(iblock),              &
                                                  iksoff(iblock),             &
+                                                 tau(1, 0),                  &
                                                  n(1, imat),                 &
                                                  n_g(1, 1, imat)             &
                                                 )
                   else
                      call evaluate_density_dgemm(                            &
                                                  is_gga,                     &
+                                                 is_tau_mgga,                &
                                                  block_length,               &
                                                  mat_dim,                    &
                                                  nz,                         &
@@ -306,6 +324,7 @@ contains
                                                  isoff(jblock),              &
                                                  iksoff(iblock),             &
                                                  iksoff(jblock),             &
+                                                 tau(1, 0),                  &
                                                  n(1, imat),                 &
                                                  n_g(1, 1, imat)             &
                                                 )
@@ -346,7 +365,8 @@ contains
                                n(1, 0),      &
                                gnn(1, 0, 0), &
                                derv_length,  &
-                               derv)
+                               derv,         &
+                               tau=tau(1, 0))
 
       if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
          call dftac(block_length, derv, w, n, n_saop_resp, n_saop_outer, gnn)
@@ -420,6 +440,7 @@ contains
       deallocate(p_n)
       deallocate(p_n_g)
       deallocate(n)
+      deallocate(tau)
       deallocate(n_saop_outer)
       deallocate(n_saop_resp)
       deallocate(n_g)
@@ -552,6 +573,7 @@ contains
 
    subroutine evaluate_density_dsymm(                    &
                                      is_gga,             &
+                                     is_tau_mgga,        &
                                      block_length,       &
                                      mat_dim,            &
                                      nz,                 &
@@ -561,12 +583,14 @@ contains
                                      nr_above_threshold, &
                                      isoff,              &
                                      iksoff,             &
+                                     tau,                &
                                      n,                  &
                                      n_g                 &
                                     )
 
 !     --------------------------------------------------------------------------
       logical, intent(in)    :: is_gga
+      logical, intent(in)    :: is_tau_mgga
       integer, intent(in)    :: block_length
       integer, intent(in)    :: mat_dim
       integer, intent(in)    :: nz
@@ -576,6 +600,7 @@ contains
       integer, intent(in)    :: nr_above_threshold
       integer, intent(in)    :: isoff
       integer, intent(in)    :: iksoff
+      real(8), intent(inout) :: tau(block_length)
       real(8), intent(inout) :: n(block_length)
       real(8), intent(inout) :: n_g(block_length, 3)
 !     --------------------------------------------------------------------------
@@ -613,8 +638,6 @@ contains
                  xmat,                     & !c      
                  block_length)               !ldc     
 
-      deallocate(dmat_sorted)
-
       do i = 1, nr_above_threshold
          ikoff = (i - 1)*block_length
          do k = 1, block_length
@@ -629,12 +652,37 @@ contains
          end if
       end do
 
+      if (is_tau_mgga) then
+         do ixyz = 1, 3
+            call dsymm('r',                         & !side   
+                       'u',                         & !uplo   
+                       block_length,                & !m      
+                       nr_above_threshold,          & !n      
+                       1.0d0,                       & !alpha  
+                       dmat_sorted,                 & !a      
+                       nr_above_threshold,          & !lda    
+                       ao_sorted(iksoff + 1, ixyz), & !b      
+                       block_length,                & !ldb    
+                       0.0d0,                       & !beta   
+                       xmat,                        & !c      
+                       block_length)                  !ldc     
+         end do
+         do i = 1, nr_above_threshold
+            ikoff = (i - 1)*block_length
+            do k = 1, block_length
+               tau(k) = tau(k) + 0.5d0*xmat(ikoff + k)*ao_sorted(iksoff + ikoff + k, ixyz)
+            end do
+         end do
+      end if
+
+      deallocate(dmat_sorted)
       deallocate(xmat)
 
    end subroutine
 
    subroutine evaluate_density_dgemm(                      &
                                      is_gga,               &
+                                     is_tau_mgga,          &
                                      block_length,         &
                                      mat_dim,              &
                                      nz,                   &
@@ -647,12 +695,14 @@ contains
                                      isoff_r,              &
                                      iksoff_l,             &
                                      iksoff_r,             &
+                                     tau,                  &
                                      n,                    &
                                      n_g                   &
                                     )
 
 !     --------------------------------------------------------------------------
       logical, intent(in)    :: is_gga
+      logical, intent(in)    :: is_tau_mgga
       integer, intent(in)    :: block_length
       integer, intent(in)    :: mat_dim
       integer, intent(in)    :: nz
@@ -665,6 +715,7 @@ contains
       integer, intent(in)    :: isoff_r
       integer, intent(in)    :: iksoff_l
       integer, intent(in)    :: iksoff_r
+      real(8), intent(inout) :: tau(block_length)
       real(8), intent(inout) :: n(block_length)
       real(8), intent(inout) :: n_g(block_length, 3)
 !     --------------------------------------------------------------------------
