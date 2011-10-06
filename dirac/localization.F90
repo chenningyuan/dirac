@@ -1059,12 +1059,12 @@ contains
   real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
   complex*16, parameter :: c2 = (2.0d0,0.0d0)
 
-  integer*4 :: i, j, i1, j1, k, ij, kl, iz, nucdep, ni, ndimk, ndimh, ni12, lupri, ier
+  integer*4 :: i, j, i1, j1, k, ij, kl, iz, nucdep, ni, ndimh, ni12, lupri, ier
   real*8    :: pii, pjj, pn2, dnrm2, dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
   integer*4,  allocatable, dimension(:)   :: ipiv
-  real*8, allocatable, dimension(:)   :: grad_c
-  real*8, allocatable, dimension(:,:) :: hmat_c
+  real*8,     allocatable, dimension(:)   :: grad_r
+  real*8,     allocatable, dimension(:,:) :: hmat_r
 
   !------------------------------------------------------------------------------!
   call qenter('getk_full')
@@ -1107,19 +1107,19 @@ contains
   write(6,*) 'A and A*',dtmp5
   write(6,*) 'B and B*',dtmp6
 
-  call alloc(ipiv  ,ndimh-ni,id='ipiv   in getk_full')
-  allocate( grad_c(ndimh)       ,stat=ier); call errall(ier,'getk_full','grad_c')
-  allocate( hmat_c(ndimh,ndimh) ,stat=ier); call errall(ier,'getk_full','hmat_c')
+  call alloc(ipiv  ,ndimh-ni   ,id='ipiv   in getk_full')
+  call alloc(grad_r,ndimh      ,id='grad_r in getk_full')
+  call alloc(hmat_r,ndimh,ndimh,id='hmat_r in getk_full')
 
-  ! prepare hmat_c
+  ! prepare hmat_r
   do i=1,2*ni12
     do j=1,2*ni12
       i1 = i + 2*ni12
       j1 = j + 2*ni12
-      hmat_c(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
-      hmat_c(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
-      hmat_c(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
-      hmat_c(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
+      hmat_r(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
+      hmat_r(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
+      hmat_r(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
+      hmat_r(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
     enddo
   enddo
 
@@ -1127,7 +1127,7 @@ contains
     kl = 1
     do k=1,ni
       do j=kl+1,ndimh-k+1
-        hmat_c(ij,j-1) = hmat_c(ij,j)
+        hmat_r(ij,j-1) = hmat_r(ij,j)
       enddo
       kl = kl + ni - (k-1) - 1 ! diagonal
     enddo
@@ -1137,36 +1137,36 @@ contains
     kl = 1
     do k=1,ni
       do j=kl+1,ndimh-k+1
-        hmat_c(j-1,ij) = hmat_c(j,ij)
+        hmat_r(j-1,ij) = hmat_r(j,ij)
       enddo
       kl = kl + ni - (k-1) - 1 ! diagonal
     enddo
   enddo
 
-  ! prepare grad_c
+  ! prepare grad_r
   do i=1,2*ni12
     i1 = i + 2*ni12
-    grad_c(i ) = - gradient(i,1)
-    grad_c(i1) =   gradient(i,2)
+    grad_r(i ) = - gradient(i,1)
+    grad_r(i1) =   gradient(i,2)
   enddo
 
   kl = 1
   do k=1,ni
     do j=kl+1,ndimh-k+1
-      grad_c(j-1) = grad_c(j)
+      grad_r(j-1) = grad_r(j)
     enddo
     kl = kl + ni - (k-1) - 1 ! diagonal
   enddo
 
   ! Solve linear set of equations
-  call dgetrf(ndimh-ni,ndimh-ni,hmat_c,ndimh,ipiv,ier)
+  call dgetrf(ndimh-ni,ndimh-ni,hmat_r,ndimh,ipiv,ier)
   if(ier /= 0)then
     write(lupri,*) ' ERROR: The dgetrf LAPACK subroutine in getk_full finished unsuccessfully'
     write(lupri,*) ' info =',ier
     stop
   endif
 
-  call dgetrs('N',ndimh-ni,1,hmat_c,ndimh,ipiv,grad_c,ndimh,ier)
+  call dgetrs('N',ndimh-ni,1,hmat_r,ndimh,ipiv,grad_r,ndimh,ier)
   if(ier /= 0)then
     write(lupri,*) ' ERROR: The dgetrs LAPACK subroutine in getk_full finished unsuccessfully'
     write(lupri,*) ' info =',ier
@@ -1179,7 +1179,7 @@ contains
     do i = j,ni
       if(i==j)cycle
       ij = ij + 1
-      xkappa(j,i,1) =   grad_c(ij)
+      xkappa(j,i,1) =   grad_r(ij)
       xkappa(i,j,1) = - xkappa(j,i,1)
     enddo
   enddo
@@ -1188,13 +1188,13 @@ contains
   do j = 1,ni
     do i = j,ni
       ij = ij + 1
-      xkappa(j,i,2) =   grad_c(ni12+ij)
+      xkappa(j,i,2) =   grad_r(ni12+ij)
       xkappa(i,j,2) =   xkappa(j,i,2)
 
-      xkappa(j,i,3) = - grad_c(ij)
+      xkappa(j,i,3) = - grad_r(ij)
       xkappa(i,j,3) =   xkappa(j,i,3)
 
-      xkappa(j,i,4) =   grad_c(2*ni12+ij)
+      xkappa(j,i,4) =   grad_r(2*ni12+ij)
       xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
@@ -1208,13 +1208,12 @@ contains
   enddo
 
   ! Norm of the kappa
-  ndimk = ni*ni*4
-  dnrm  = dnrm2(ndimk,xkappa,1)
+  dnrm  = dnrm2(ni*ni*4,xkappa,1)
   write (lupri,'(a,e12.2)') 'Norm of kappa: ',dnrm
 
   call dealloc(ipiv  ,id='ipiv   in getk_full')
-  deallocate(grad_c)
-  deallocate(hmat_c)
+  call dealloc(grad_r,id='grad_r in getk_full')
+  call dealloc(hmat_r,id='hmat_r in getk_full')
 
   call qexit('getk_full')
 
@@ -2401,24 +2400,6 @@ contains
   call qexit('get_gradient')
 
   end subroutine get_gradient
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine errall(ier,chsub,charr)
-  implicit none
-
-  integer*4    :: ier
-  character(*) :: chsub, charr
-
-  if(ier /= 0)then
-    write(6,*)
-    write(6,'(a,a,a,a)')' Error in allocation of ',charr,' in subroutine ',chsub
-    write(6,'(a,i4)'   )' iostat =',ier
-    stop 'ERROR in allocation (see output form more information)'
-  endif
-
-  end subroutine errall
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
