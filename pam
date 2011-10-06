@@ -72,7 +72,8 @@ class pam_enviroment:
 
         # no internal pam default for --scratch 
         # read either from .diracrc or as flag (Ulf's intention)
-        self.scratch_dir = None
+        self.scratch_dir     = None
+        self.scratch_dir_full = None
 
         # globally accessible scratch disk in parallel runs
         # this variable will decide whether files are distributed over local disks
@@ -295,15 +296,30 @@ class pam_enviroment:
             print "  default pam arguments from this file: ",self.diracrc_args
 
     def create_scratch_dir(self):
-        if not os.path.isdir(self.scratch_dir):
+        ''' create the scratch directory  '''
+        if not os.path.isdir(self.scratch_dir) :
+            print '  Creating the scratch directory.'
             os.makedirs(self.scratch_dir)
         else:
-            print '  The scratch directory already exists.'
+            if glob.glob(os.path.join(self.scratch_dir, "*")):
+                print '  The scratch directory already exists and is not empty :'
+                os.chdir(self.scratch_dir)
+                self.list_scratch_dir()
+                os.chdir(self.input_directory)
+                #print os.listdir(self.scratch_dir)
+            else:
+                print '  The scratch directory already exists and is empty'
 
-    def copy_file(self, src, dest):
+    def copy_file(self, src, dest, message=False):
         """copy file from directory "scr" to "dest"
      for the printout use 'purified' file names"""
         try:
+            src_pure=os.path.split(src)[1]; dest_pure=os.path.split(dest)[1]
+            if message:
+                if src_pure==dest_pure:
+                    print '  Copying file "',src_pure,'" to scratch dir. '
+                else:
+                    print '  Copying file "',src_pure,'" to scratch dir as "',dest_pure,'".'
             shutil.copy(src, dest)
         except:
             if os.path.isfile(src):
@@ -330,18 +346,15 @@ class pam_enviroment:
         '''
         scratch_id=self.user_name+"@"+self.master_full+":"+self.scratch_dir
         sum_filesize_mb=0
-        print
+        #print
         print '  content of the (master) scratch directory ', scratch_id
         print '  ------------------------------------------------------------------------------'
-        print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
+        print '%25s %12s %s' % ('name', 'size (MB)', '   last accessed')
         print '  ------------------------------------------------------------------------------'
         for filename in os.listdir(self.scratch_dir):
             filesize_mb = float(os.path.getsize(os.path.join(self.scratch_dir,filename)))/1024000
-
             sum_filesize_mb=sum_filesize_mb+filesize_mb
-
       # create a dictionary to hold file info
-
             file_name = filename
             file_stats = os.stat(file_name)
             file_info = {
@@ -354,13 +367,11 @@ class pam_enviroment:
                 'f_ct': time.strftime('%m/%d/%Y %I:%M:%S %p',
                         time.localtime(file_stats[stat.ST_CTIME])),
                 }
-            print '%25s %10.3f %s' % (filename, filesize_mb,
+            print '%25s %10.3f   %s' % (filename, filesize_mb,
                     file_info['f_la'])
             sys.stdout.flush()
-
         print '  ------------------------------------------------------------------------------'
         print '      Total size of all files :  %10.3f  MB ' % sum_filesize_mb
-
         disk = disk_space(self.scratch_dir)
         print '      Disk info:  used    available   capacity [GB]'
         print '             %10.3f %10.3f   %10.3f ' % (disk.used,disk.available,disk.capacity)
@@ -371,6 +382,7 @@ class pam_enviroment:
         ''' remove the scratch directory (if it exists) '''
         if os.path.isdir(self.scratch_dir):
             if not self.silent:
+                print
                 self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
@@ -668,6 +680,15 @@ Options are also read from the ~/.dirac and .diracrc files."""
             action='store',
             dest='dest_scratch',
             help='scratch directory [default read from  ~/.diracrc]',
+            metavar='PATH',
+            )
+
+        group.add_option(
+            '--scratchfull',
+            type='string',
+            action='store',
+            dest='dest_scratchfull',
+            help='scratch directory with full path [default: script defined full path upon ~/.diracrc]',
             metavar='FULL_PATH',
             )
         group.add_option(
@@ -902,7 +923,12 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # otherwise users could wipe out their home directory
             self.scratch_dir = os.path.join(self.scratch_dir,self.user_name,'DIRAC_' + self.output_name + '_' + str(self.current_pid))
         else:
-            sys.exit('error: --scratch not specified. you can set --scratch as pam flag or in ~/.diracrc or ./diracrc')
+            if not options.dest_scratchfull:
+                sys.exit('error: neither --scratch nor --scratchfull specified. you can set them as pam flag or in ~/.diracrc or ./diracrc')
+
+        if options.dest_scratchfull:
+            self.scratch_dir=options.dest_scratchfull
+            self.scratch_dir_full=options.dest_scratchfull
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and
@@ -973,7 +999,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             full_file_name = os.path.join(self.input_directory,file_name_local)
             if os.path.isfile(full_file_name):
                 file_name_scratch = os.path.join(self.scratch_dir, file_name_scr)
-                self.copy_file(full_file_name, file_name_scratch)
+                self.copy_file(full_file_name, file_name_scratch,message=True)
             else:
                 if self.expert_mode:
                     for stream in [sys.stdout,sys.stderr]:
@@ -990,7 +1016,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
-        self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
+        self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file),message=True)
 
     # restarting stuff
         if self.full_restart:
@@ -1006,14 +1032,14 @@ Options are also read from the ~/.dirac and .diracrc files."""
     # the existence of self.input_file molecule,self.input_file_dirac is verified
         if self.input_file_molecule:
             if self.xyz_molecule_input == True:
-                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.XYZ')) 
+                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.XYZ'),message=True) 
             else:
-                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.MOL'))
+                self.copy_file(self.input_file_molecule,os.path.join(self.scratch_dir,'MOLECULE.MOL'),message=True)
         else:
             print '  No molecule input file provided, assuming it is obtained from the restart file.'
 
         if self.input_file_dirac:
-            self.copy_file(self.input_file_dirac, os.path.join(self.scratch_dir,'DIRAC.INP'))
+            self.copy_file(self.input_file_dirac, os.path.join(self.scratch_dir,'DIRAC.INP'),message=True)
         else:
             print '  No input file provided, assuming it is obtained from the restart file.'
 
@@ -1446,7 +1472,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
                     backup_file(some_file=file_name_home, upto=None)
         # finally copy
                 self.copy_file(full_file_name, file_name_home)
-                print '  Saved file "',file_name,'" from the scratch directory'
+                print '  Saved file "',file_name,'" from the scratch directory.'
             else:
                 print_std_out_err(file_name+' not found in the scratch directory.')
 
