@@ -1766,6 +1766,8 @@ CMI      ... print out matrixes ...
       ENDIF
 c     Check if this is the lowest energy so far, in that case
 c     save the DFCOEF file as DFCOEF.BEST
+CTROND
+      WRITE(6,*) 'TEST :',dhferg, besterg
       if (dhferg.lt.besterg) then
          write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
          call system('cp DFCOEF DFCOEF.BEST')
