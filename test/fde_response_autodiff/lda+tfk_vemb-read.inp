@@ -8,10 +8,10 @@ electric properties for frozen density embedding
 .DFTAUTO
 lda
 .FDE
-.FDERSP
 *FDE
 .EMBPOT
 EMBPOT
+.RSP
 **WAVE FUNCTIONS
 .SCF
 *SCF
@@ -19,6 +19,7 @@ EMBPOT
  1.0D-2
 **PROPERTIES
 .DIPOLE
+#.POLARIZABILITY
 *LINEAR RESPONSE
 .B FREQ
  2

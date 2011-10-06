@@ -49,9 +49,10 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
+!dcbgen.h needed for DOLVC for LVCORR
 #include "dcbham.h"
-!needed for LVCORR
 #include "frame.h"
+!frame.h needed for CORRLV for LVCORR
 C
       LOGICAL EX
       INTEGER RENAME
@@ -173,7 +174,9 @@ C
         call lvcorr(work(klvc),work(kfree),lfree,ipropt)
         call memrel('lvcorr',work,1,kfree_save,kfree,lfree)
 !       set lvcorr value (otherwise it was initialized to 0.0d0)
-        lvcorr_mc = corrlv
+        E_lvcorr_mc = corrlv
+      else
+        E_lvcorr_mc = 0.0D0
       end if
 C
 C     ***************************************************
@@ -563,10 +566,10 @@ C
          CALL RGRDINF(GCI,GOEE,GOEP)
 C
 C
-         EMCSCF = POTNUC + EMY + EACTIV + LVCORR_MC
+         EMCSCF = POTNUC + EMY + EACTIV + E_LVCORR_MC
 C
-         if(dabs(lvcorr_mc).gt.0.0d0)then
-           WRITE(LUPRI,9005) POTNUC,LVCORR_MC,EMY,EACTIV,EMCSCF
+         if(dabs(E_lvcorr_mc).gt.0.0d0)then
+           WRITE(LUPRI,9005) POTNUC,E_LVCORR_MC,EMY,EACTIV,EMCSCF
  9005      FORMAT(/' Nuclear repulsion            : ',F25.15,/,
      &             ' LVCORR correction            : ',F25.15,/,
      &             ' Inactive energy              : ',F25.15,/,
@@ -594,7 +597,7 @@ C
               CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                    .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
             END IF
@@ -752,6 +755,18 @@ C
 C     ***************************************************
 C     *** We have converged *****************************
 C     ***************************************************
+C
+C     calculate 1-particle density to be exported on file - default
+      if(.not.no1pdens_save)then
+        WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
+     &  ' matrix calculated for the converged MCSCF wave function'//
+     &  ' to file.'
+        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+     &             .false.,.false.,.true.,IPRNO,WORK,KFREE,LFREE)
+        CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
+      end if
 C
 C
  3000 CONTINUE
@@ -1607,7 +1622,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetfc */
-      SUBROUTINE RGETFC(TOFILE,CMO,FC,ECORE,WORK,LWORK)
+      SUBROUTINE rGETFC(TOFILE,CMO,FC,ECORE,WORK,LWORK)
 C***********************************************************************
 C
 C     Construct inactive Fock matrices
@@ -1646,7 +1661,7 @@ C
 C
 #include "memint.h"
 C
-      CALL QENTER('RGETFC')
+      CALL QENTER('rGETFC')
 C
 C
 C     ***************************************************
@@ -1695,7 +1710,8 @@ C
 C        Calculate 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
-         EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
+         EMCMY2E =            DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
+!same as EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
          IF (IPROPT .GE. 4)
      &        WRITE(LUPRI,9000) 2,EMCMY2E
          ECORE = ECORE + EMCMY2E
@@ -1710,12 +1726,14 @@ C
          ECORE = D0
       END IF
 C
-      ECORE = ECORE + POTNUC
-      ECORE_LR = 0.0D0
+C     add the LVCORR energy correction to the ECORE energy
+C     (will be zero if DOLVC .false.) /Sep 2011 hjaaj
+      ECORE    = ECORE + POTNUC + E_LVCORR_MC
       ECORE_LR = ECORE
       IF (IPROPT .GE. 4) THEN
           WRITE(LUPRI,9001) POTNUC
-          WRITE(LUPRI,9002) ECORE
+          IF (E_LVCORR_MC .ne. 0.0D0) WRITE(LUPRI,9002) E_LVCORR_MC
+          WRITE(LUPRI,9004) ECORE
       END IF
 C
       IF ( IPROPT .GE. 10 ) THEN
@@ -1725,7 +1743,8 @@ C
       END IF
  9000 FORMAT(/' (rGETFC)',I2,'-electron core energy: ',F25.15)
  9001 FORMAT(/' (rGETFC) Nuclear repulsion     : ',F25.15)
- 9002 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
+ 9002 FORMAT(/' (rGETFC) LVCORR correction     : ',F25.15)
+ 9004 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
  9006 FORMAT(/'  rGETFC: ',A,' fock matrix')
 C
 C     ***************************************************
@@ -1756,11 +1775,11 @@ C     Write to file KRMC FOCK
 C
       IF (TOFILE) CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
 C
-      CALL MEMREL('RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('rGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('RGETFC')
+      CALL QEXIT('rGETFC')
       RETURN
- 9011 FORMAT(/' RGETFC: ',A,' fock matrix, irrep ',I1)
+ 9011 FORMAT(/' rGETFC: ',A,' fock matrix, irrep ',I1)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirh1 */
@@ -3510,7 +3529,7 @@ C
             RTHRCI = OPT_THRGRD
             CALL GASCIP_RCISTD(NCIROOT,RTHRCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         lvcorr_mc,IOPT_ISTATE,
+     &                         IOPT_ISTATE,
      &                         OPT_CIPROGRAM,
      &                         IPROPT,WORK(KFREE),LFREE)
 C
@@ -3520,7 +3539,7 @@ C
 C           Full CI.
 C
             CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
-            CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,lvcorr_mc,
+            CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &                           NZCONF,IOPT_ISTATE,THRPCI,
      &                           OPT_CIPROGRAM,IPROPT,
      &                           WORK,KFREE,LFREE)
@@ -3607,7 +3626,7 @@ C                        natural CI/MCSCF orbitals. They can be useful
 C                        for further analysis, e.g., visualization.
 C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &                TRA_NATO,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
          END DO
 C
@@ -3619,7 +3638,7 @@ C
       ELSE IF( OPT_CIPROGRAM .EQ. 'GASCIP' )THEN
 C
          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
-     &               .FALSE.,MOISNO,IPRNO,WORK,KFREE,LFREE)
+     &               .FALSE.,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
       END IF
 C
 1000  CONTINUE

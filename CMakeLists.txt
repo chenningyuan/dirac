@@ -53,19 +53,20 @@ endif()
 
 include(Definitions)
 
-option(ENABLE_INTERNAL_MATH  "Enable internal math library"       OFF)
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"             OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"         OFF)
-option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard" ON)
-option(ENABLE_OMP            "Enable OpenMP parallelization"      OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"       OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int module"              OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"               ON)
-option(ENABLE_PROFILING      "Enable profiling"                   OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"               OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"    OFF)
-option(ENABLE_UTILITIES      "Enable utitilites"                  OFF)
+option(ENABLE_INTERNAL_MATH  "Enable internal math library"             OFF)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                   OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"               OFF)
+option(ENABLE_SLOWDOWN_SLAVE "Enable initial slowing down of slaves"    OFF)
+option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"        ON)
+option(ENABLE_OMP            "Enable OpenMP parallelization"            OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"             OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int module"                    OFF)
+option(ENABLE_XCFUN          "Enable XCFun library"                      ON)
+option(ENABLE_PROFILING      "Enable profiling"                         OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                      OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"          OFF)
+option(ENABLE_UTILITIES      "Enable utitilites"                        OFF)
 
 # set cdash buildname
 set(BUILDNAME
@@ -245,6 +246,26 @@ add_library(
     ${GENERATED_FILES} 
     )
 
+# get size of static allocations in dirac.x
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
+
+# get size of static allocations in dirac.x and print sorted list of object 
+add_custom_target(
+    info_ext
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
+)
+
+if(VERBOSE_OUTPUT)
+add_custom_command(
+    TARGET dirac.x Experimental Nightly
+    POST_BUILD COMMAND 
+    COMMAND make info_ext
+    COMMENT "print out list of objects sorted according to their sizes"
+)
+endif()
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
@@ -282,6 +303,28 @@ foreach(
         )
 endforeach()
 
+
+
+if (ENABLE_MPI) 
+if (ENABLE_SLOWDOWN_SLAVE)
+# mi: attempt to impose "-DSLOWDOWN_SLAVES" command through COMPILE_FLAGS, but it's not working with cmake 2.8.0...
+# see http://www.cmake.org/cmake/help/cmake-2-8-docs.html#command:set_target_properties
+# "The COMPILE_FLAGS property sets additional compiler flags used to build sources within the target. 
+# It may also be used to pass additional preprocessor definitions."
+    set_target_properties(dirac.x PROPERTIES COMPILE_FLAGS "-DSLOWDOWN_SLAVES")
+# I use rather this substitution 
+    add_definitions(-DSLOWDOWN_SLAVES)
+endif()
+# touch this file in both Linux & Windows in connection with "-DSLOWDOWN_SLAVES" directive
+execute_process( 
+    #COMMAND python -c "import os; os.utime('${CMAKE_SOURCE_DIR}/main/dirac.F', None)"
+    COMMAND python -c "import os; os.utime('main/dirac.F', None)"
+    TIMEOUT 1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_QUIET
+)
+endif()
+
 include(Install)
 include(Release)
 
@@ -290,17 +333,3 @@ if(VERBOSE_OUTPUT)
 endif()
 
 include(Documentation)
-
-# get size of static allocations
-add_custom_target(
-    info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
-    )
-
-# custom commands on created dirac.x executable
-add_custom_command(
-    TARGET Nightly Experimental dirac.x 
-    if(VERBOSE_OUTPUT)
-        POST_BUILD COMMAND ../utils/diagn.py
-    endif()
-)

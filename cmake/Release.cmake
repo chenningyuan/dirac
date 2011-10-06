@@ -1,5 +1,7 @@
 include(InstallRequiredSystemLibraries)
 
+set(CPACK_SOURCE_GENERATOR "TGZ")
+
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DIRAC")
 set(CPACK_PACKAGE_VENDOR "T. Saue, L. Visscher, H. J. Aa. Jensen, and contributors")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
@@ -43,7 +45,6 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in   ${EXPORT_DIR}/doc
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}

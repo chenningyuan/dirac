@@ -145,6 +145,7 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
+      use fde_mod
       use dirac_cfg
       use visual
 
@@ -203,6 +204,15 @@ C***** V I S U A L I Z A T I O N ***************************************
 C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
+
+C
+C***********************************************************************
+C ***** cleaning up data stored in fde calculations ********************
+C***********************************************************************
+C
+      if (dirac_cfg_fde) 
+     &   call fde_cleanup_data()
+
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -678,7 +688,7 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = D0
+      THRPCI = 1.0D-2 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C
@@ -688,6 +698,7 @@ C
       OPT_UCIBOS     = .FALSE.
       OPT_CHCKJZ     = .FALSE.
       IF( LINEAR ) OPT_CHCKJZ = .TRUE.
+      no1pdens_save  = .true.
 C
 C     Set common block DCCOPT
 C
@@ -785,7 +796,7 @@ C
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
       THRPCI         = DKRMC_THRPCI
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
@@ -795,6 +806,7 @@ C
       OPT_NOCI       = KRMC_NOCI
       OPT_UCIBOS     = KRMC_UCIBOS
       OPT_CHCKJZ     = KRMC_CHCKJZ
+      no1pdens_save  = KRMC_NO1pdens
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -903,7 +915,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 C
 C     Set common block DCLOPT
@@ -918,6 +930,7 @@ C
 !     required for KR-CI in linear symmetry set-up
       if(linear) opt_chckjz = .true.
 !     opt_chckjz = .true.
+      no1pdens_save  = .true.
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.
@@ -991,6 +1004,7 @@ C
 C
 C
       DIMENSION WORK(MWORK)
+      integer :: sleep_time=15
 C
       CALL QENTER('DIRNOD')
       LWORK = MWORK
@@ -1005,6 +1019,17 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
+
+#if defined (SLOWDOWN_SLAVES)
+!mi+sk: introduce slowdown statement for debug purposes :
+! node 'sleeps' short time and in between the user can attach debugger to the process
+      if(mytid > 0)then
+         write(lupri,'(2x,a,i2,a)')
+     &   'slaves first sleep for ',sleep_time,' seconds. '
+         call sleep(sleep_time)
+      endif 
+#endif
+
 C
 C     Set basis set directory for this slave
 C     (it may be needed for reading the .mol file)
@@ -1405,7 +1430,7 @@ C IOPT_INTDEF controls the Hamiltonian
 C     
 C     Set common block DCROPT
 C     
-      LVCORR_MC      = 0.0d0
+      E_LVCORR_MC    = 0.0d0
       THR_CVEC       = 1.0D-3
 
       OPT_CIPROGRAM  = 'KRCC'
@@ -1450,6 +1475,7 @@ C at the moment no fock type orbitlas
       COMPFAC     = 0.01D00
       CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
       CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI
+      no1pdens_save  = .true.
 C
       CALL QEXIT('TKRCCORB')
       END
