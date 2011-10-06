@@ -3514,6 +3514,7 @@ C***********************************************************************
         use dft_cfg
         use xcint_main
         use fde_mod
+        use fde_integrate
         use num_grid_gen
 
 #include "implicit.h"
@@ -3537,7 +3538,7 @@ C
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
-
+      type(fde_import) :: itmp
 C
 C
       CALL QENTER('GMOLITX1')
@@ -3616,10 +3617,6 @@ C
      &                       xc_fmat_pg_sym        = isymop,
      &                       xc_dmat_pg_sym        = isymop,
      &                       xc_dmat_ih_sym        = ihrmop,
-     &                       xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
-     &                       xc_do_fde_response    = 
-     &                                           dirac_cfg_fde_response,
      &                       xc_response_order_mo = 1)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
@@ -3630,6 +3627,35 @@ C
 
         end if
 
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
+
+           if (.not.dirac_cfg_dft_calculation) then
+!         generate standard density matrix
+              call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
+              call genden(work(kbuf), cmo, 1, iprxrs)
+           endif
+
+!          call fde_set_nz(nz)
+!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
+
+          call integrate_fde(fde_mat_dim            = ntbas(0),
+     &                       fde_nz                 = nz,
+     &                       fde_dmat_0             = work(kbuf),
+     &                       fde_nr_dmat            = ndmat,
+     &                       fde_nr_fmat            = ndmat,
+     &                       fde_dmat               = fmo,
+     &                       fde_fmat               = fao,
+     &                       fde_fmat_pg_sym        = isymop,
+     &                       fde_dmat_pg_sym        = isymop,
+     &                       fde_dmat_ih_sym        = ihrmop,
+     &                       fde_response_order_mo = 1)
+
+          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
+
+        endif
+#endif
 C
 C     Add solvent contributions
 C     -------------------------
