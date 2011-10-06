@@ -1,5 +1,6 @@
 message("Report of configuration settings:")
 message("CMAKE_SYSTEM_NAME          ${CMAKE_SYSTEM_NAME}          ")
+message("CMAKE_GENERATOR            ${CMAKE_GENERATOR}            ")
 message("ENABLE_INTERNAL_MATH       ${ENABLE_INTERNAL_MATH}       ")
 message("ENABLE_64BIT_INTEGERS      ${ENABLE_64BIT_INTEGERS}      ")
 message("ENABLE_MPI                 ${ENABLE_MPI}                 ")
