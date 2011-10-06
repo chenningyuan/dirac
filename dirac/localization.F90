@@ -128,13 +128,13 @@ contains
 
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', conv*20 = 'No convergence after'
-  logical      :: tobe, full
+  logical      :: tobe, full, diagonly
 
   integer*4 :: ifrp, nish12, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
-  real*8    :: dinvmo, dinvm, dnrmk, dnrmg, diff, diffa, totdiag, totnond, hesthr
-  real*8    :: timend, time, timstr, second, toterg
+  real*8    :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
+  real*8    :: timend, time, timstr, second, toterg, totdiag, totnond
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
   real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo
@@ -152,7 +152,18 @@ contains
   nucdep = var%nucdep
   maxref = var%maxref
   full   = loc%auto
-  hesthr = loc%hesthr
+  diagonly = .false.
+  if(loc%hesthr < loc%thrloc) diagonly = .true.
+
+  ! TMP print
+  write(6,*) 'lupri =',lupri
+  write(6,*) 'nish  =',nish
+  write(6,*) 'norb  =',norb
+  write(6,*) 'nucdep=',nucdep
+  write(6,*) 'maxref=',maxref
+  write(6,*) 'full  =',full
+  write(6,*) 'hesthr=',loc%hesthr
+  write(6,*) 'thrloc=',loc%thrloc
 
   nfbas(:)    = var%nfbas(ifrp,:)
   ipqtoq(:,:) = var%ipqtoq(:,:)
@@ -213,18 +224,19 @@ contains
   timstr = second()
   if(loc%prjloc) then
     ! PRJLOC = TRUE localization with projection analysis
-    call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvm)
+    call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
   else
     ! PRJLOC = FALSE localization with Mulliken analysis
-    call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
+    call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
   endif
-  write(lupri,'(a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a, 2x,a)') &
-    '*C','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG','HESSIAN'
+  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
+    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
 
   ! SCF cycle
+  dinvmq = 0.0d0
   do itr=1,loc%itrloc
 
-    dinvmo = dinvm
+    dinvmo = dinvmg
     call gtinfo(daytid)
     write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
     write(lupri,'(5x,a,a24,a)')'########## ',daytid,' ##########'
@@ -233,6 +245,7 @@ contains
     call get_gradient(pmat,gradient,dnrmg)
     if(full)then
       call getk_full(pmat,xkappa,hmat,gradient,dnrmk)
+      call exp_func(xkappa,hmat,gradient,full,dinvmq)
     else
       call getk_diag(pmat,xkappa,hmat,gradient,dnrmk,ipqtoq)
     endif
@@ -240,23 +253,26 @@ contains
     if(loc%prjloc) then
       ! PRJLOC = TRUE localization with projection analysis
       call gtovlx(smat,var%ssmtrc)
-      call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvm)
+      call orblp1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,maxref,dinvmg)
     else
       ! PRJLOC = FALSE localization with Mulliken analysis
-      call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvm)
+      call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
     endif
 
     ! Convergence criterion
-    diff = dinvm - dinvmo
-    if (diff < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
-    diffa = dabs(dinvm - dinvmo)
+    diffg = dinvmg - dinvmo
+    diffq = dinvmq
+    if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+    diffa = dabs(dinvmg - dinvmo)
     if(full) hessian = 'FULL'
 
-    write(lupri,'(/a,4x,a4,2x, 4x,a,4x, 2x,a,1x, 3x,a,3x, 4x,a,3x, 2x,a, 2x,a)') &
-      '  ','ITR','DIFFA','|GRADIENT|','|KAPPA|','H_DIAG','H_NON-DIAG','HESSIAN'
-    write(lupri,'(a,4x,i4,5d13.2,4x,a)')'*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian
+    write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
+      '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
+    write(lupri,'(a,2x,i4,5d11.2,4x,a,2d11.2)') &
+      '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq
 
-    if((diffa < loc%thrloc).and.full) exit  ! Exit loop after convergence criterion is reached
+    ! Exit loop after convergence criterion is reached
+    if((diffa < loc%thrloc).and.(full.or.diagonly)) exit
     if( diffa < loc%hesthr ) full = .true.
 
   enddo
@@ -537,7 +553,7 @@ contains
         WRITE(LUPRI,'(A,I3,A,2F7.4)') &
         '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
-      DINVM = DINV/NI
+      DINVM = DINV/DFLOAT(NI)
       WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
@@ -2262,5 +2278,135 @@ contains
   endif
 
   end subroutine errall
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine exp_func(xkappa,hmat,gradient,full,dinvmq)
+  use memory_allocator
+  implicit none
+
+  ! External variables
+  logical :: full
+  real*8  :: dinvmq
+
+  real*8,    allocatable, dimension(:,:)     :: gradient
+  real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat
+
+  ! Internal variables
+  integer*4  :: i, j, i1, j1, ij, id, ni, ni12, ndimh, ii, jj
+  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
+
+  real*8, allocatable, dimension(:)   :: newkappa, grad_r
+  real*8, allocatable, dimension(:,:) :: hmat_r
+  complex*16 :: ch, cki, ckj
+
+  !------------------------------------------------------------------------------!
+  call qenter('exp_func')
+
+  ! Get some dimensions
+  ni     = size(xkappa,1)
+  ndimh  = size(hmat,1)
+  ni12   = ndimh / 4
+
+  call alloc(newkappa,ndimh,id='newkappa in exp_func')
+  call alloc(hmat_r,ndimh,ndimh,id='hmat_r in exp_func')
+  call alloc(grad_r,ndimh,      id='grad_r in exp_func')
+
+  newkappa(:) = d0
+  ij = 0
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      newkappa(ij+0*ni12) =   xkappa(j,i,1)
+      newkappa(ij+1*ni12) = - xkappa(j,i,3)
+      newkappa(ij+2*ni12) =   xkappa(j,i,2)
+      newkappa(ij+3*ni12) =   xkappa(j,i,4)
+    enddo
+  enddo
+
+  ! prepare hmat_r
+  hmat_r(:,:) = d0
+  do i=1,2*ni12
+    do j=1,2*ni12
+      if((.not.full).and.(i/=j))cycle
+      i1 = i + 2*ni12
+      j1 = j + 2*ni12
+      hmat_r(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
+      hmat_r(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
+      hmat_r(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
+      hmat_r(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
+    enddo
+  enddo
+
+  ! contribution from hessian
+  dinvmq = d0
+  do i=1, ndimh
+    do j=1, ndimh
+      dinvmq = dinvmq + newkappa(i) * hmat_r(i,j) * newkappa(j)
+    enddo
+  enddo
+
+  ! prepare grad_r
+  do i=1,2*ni12
+    i1 = i + 2*ni12
+    grad_r(i ) =   gradient(i,1)
+    grad_r(i1) = - gradient(i,2)
+  enddo
+
+  ! contribution from gradient
+  do i=1,ndimh
+    dinvmq = dinvmq + d2*newkappa(i) * grad_r(i)
+  enddo
+  dinvmq = dinvmq / dfloat(ni)
+
+  ! complex multiplication, better use real one !!
+! dinvmq = d0
+! do i=1,2*ni12
+!   ch = dcmplx(gradient(i,1),gradient(i,2))
+!   cki= dcmplx(newkappa(i),newkappa(i+2*ni12))
+!   dinvmq = dinvmq + dreal(ch * cki)
+!
+!   i1 = i + 2*ni12
+!   ch = dcmplx(gradient(i1,1),gradient(i1,2))
+!   cki= dcmplx(newkappa(i),-newkappa(i+2*ni12))
+!   dinvmq = dinvmq + dreal(ch * cki)
+! enddo
+! write(6,*) 'dinvmq g =',dinvmq
+
+  ! complex multiplication, better use real one !!
+! dsum = 0.0d0
+! ii = 0
+! do i=1, ndimh
+!   ii = ii + 1
+!   jj = 0
+!   do j=1, ndimh
+!     jj = jj + 1
+!     ch  = dcmplx(hmat(i,j,1),hmat(i,j,2))
+!     if(i<=ni12)                    cki = dcmplx(newkappa(ii+0*ni12),  newkappa(ii+2*ni12))
+!     if((i>1*ni12).and.(i<=2*ni12)) cki = dcmplx(newkappa(ii+1*ni12),  newkappa(ii+3*ni12))
+!     if((i>2*ni12).and.(i<=3*ni12)) cki = dcmplx(newkappa(ii+0*ni12),- newkappa(ii+2*ni12))
+!     if((i>3*ni12).and.(i<=4*ni12)) cki = dcmplx(newkappa(ii+1*ni12),- newkappa(ii+3*ni12))
+!     if(j<=ni12)                    ckj = dcmplx(newkappa(jj+0*ni12),  newkappa(jj+2*ni12))
+!     if((j>1*ni12).and.(j<=2*ni12)) ckj = dcmplx(newkappa(jj+1*ni12),  newkappa(jj+3*ni12))
+!     if((j>2*ni12).and.(j<=3*ni12)) ckj = dcmplx(newkappa(jj+0*ni12),- newkappa(jj+2*ni12))
+!     if((j>3*ni12).and.(j<=4*ni12)) ckj = dcmplx(newkappa(jj+1*ni12),- newkappa(jj+3*ni12))
+!     dsum = dsum + dreal(dconjg(cki) * ch * ckj)
+!     if(jj == ni12)jj = 0
+!   enddo
+!   if(ii == ni12)ii = 0
+! enddo
+! write(6,*) 'dsum',dsum
+
+  !------------------------------------------------------------------------------!
+  call dealloc(newkappa,id='newkappa in exp_func')
+  call dealloc(hmat_r  ,id='hmat_r   in exp_func')
+  call dealloc(grad_r  ,id='grad_r   in exp_func')
+
+  call qexit('exp_func')
+
+  !------------------------------------------------------------------------------!
+
+  end subroutine exp_func
 
 end module localization
