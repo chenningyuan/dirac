@@ -4,7 +4,7 @@ implicit none
 public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
-private :: getk_diag, getk_full, get_hessian, get_gradient
+private :: getk_cdiag, getk_rdiag, getk_full, get_hessian, get_gradient
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
@@ -247,7 +247,8 @@ contains
       call getk_full(pmat,xkappa,hmat,gradient,dnrmk)
       call exp_func(xkappa,hmat,gradient,full,dinvmq)
     else
-      call getk_diag(pmat,xkappa,hmat,gradient,dnrmk,ipqtoq)
+      call getk_cdiag(pmat,xkappa,gradient,dnrmk,ipqtoq)
+!     call getk_rdiag(pmat,xkappa,gradient,dnrmk,ipqtoq)
     endif
     call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
     if(loc%prjloc) then
@@ -805,10 +806,11 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_diag(pmat,xkappa,hmat,gradient,dnrm,ipqtoq)
+  subroutine getk_cdiag(pmat,xkappa,gradient,dnrm,ipqtoq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
+  !                             (complex algebra)                                !
   !                                                                              !
   ! Notes: 1. Deffinition of kappa matrix in rotcmo_mod is different as in       !
   !           calculation of gradient and hessian in get_gradient and get_hessian!
@@ -817,9 +819,10 @@ contains
   !               It follows from definition of bared unitary matrix:            !
   !               tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                    !
   !        2. Be also careful about complex cojnugation of gradient in           !
-  !                                H * K = - G*                                  !
+  !                                H * K = - g*                                  !
   !                                                                              !
   !******************************************************************************!
+  use memory_allocator
   implicit none
 
   ! External variables
@@ -828,17 +831,19 @@ contains
   real*8 :: dnrm
 
   real*8, dimension(:,:)     :: gradient
-  real*8, dimension(:,:,:)   :: xkappa, hmat
+  real*8, dimension(:,:,:)   :: xkappa
   real*8, dimension(:,:,:,:) :: pmat
 
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
-  integer*4 :: i, j, k, ij, iz, nucdep, ni, ndim, ni12, lupri
+  integer*4 :: i, j, k, ij, ij1, iz, nucdep, ni, ni12, lupri
   real*8    :: pii, pjj, pn2, dnrm2
 
+  real*8, allocatable, dimension(:) :: hmat_d
+
   !------------------------------------------------------------------------------!
-  call qenter('getk_diag')
+  call qenter('getk_cdiag')
 
   ! Get some dimensions
   lupri  = var%lupri
@@ -846,57 +851,42 @@ contains
   ni     = size(pmat,1)
   ni12   = size(gradient,1) / 4
 
-  ! Construct unbared diagonal Hessian matrix
-  hmat(:,:,:) = d0
+  call alloc(hmat_d,2*ni12,id='hmat_d in getk_cdiag')
+
+  ! Construct diagonal Hessian matrix
+  hmat_d(:) = d0
+  ij = 0
   do j = 1,ni
-    do i = 1,ni
+    do i = j,ni
+      ij = ij + 1
       if(i==j)cycle
       do k = 1,nucdep
-        pii = pmat(i,i,1,k)
-        pjj = pmat(j,j,1,k)
+        pii = pmat(i,i,1,k); pjj = pmat(j,j,1,k)
+
         pn2 = pmat(i,j,1,k)*pmat(i,j,1,k) + pmat(i,j,2,k)*pmat(i,j,2,k)
-        hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
+        hmat_d(ij) = hmat_d(ij) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
+
+        pn2 = pmat(i,j,3,k)*pmat(i,j,3,k) + pmat(i,j,4,k)*pmat(i,j,4,k)
+        hmat_d(ij+ni12) = hmat_d(ij+ni12) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
       enddo
     enddo
   enddo
 
-  ! Construction and print of the unbared kappa matrix
+  ! Construction and print of the kappa matrix
   xkappa(:,:,:) = d0
   ij = 0
   do j = 1,ni
     do i = j,ni
       ij = ij + 1
+      ij1= ij + ni12
       if(i==j) cycle
-      xkappa(j,i,1) = - gradient(ij,1) / hmat(i,j,1)
+      xkappa(j,i,1) = - gradient(ij ,1) / hmat_d(ij )
+      xkappa(j,i,2) =   gradient(ij ,2) / hmat_d(ij )   !!! gradient is complex conjugate
+      xkappa(j,i,3) =   gradient(ij1,1) / hmat_d(ij1)   !!! j component is with minus sign
+      xkappa(j,i,4) =   gradient(ij1,2) / hmat_d(ij1)   !!! gradient is complex conjugate
       xkappa(i,j,1) = - xkappa(j,i,1)
-      xkappa(j,i,2) =   gradient(ij,2) / hmat(i,j,1)  !!! gradient is complex conjugate
       xkappa(i,j,2) =   xkappa(j,i,2)
-    enddo
-  enddo
-
-  ! Construct bared diagonal Hessian matrix
-  hmat(:,:,:) = d0
-  do j = 1,ni
-    do i = 1,ni
-      if(i==j)cycle
-      do k = 1,nucdep
-        pii = pmat(i,i,1,k)
-        pjj = pmat(j,j,1,k)
-        pn2 = pmat(i,j,3,k)*pmat(i,j,3,k) + pmat(i,j,4,k)*pmat(i,j,4,k)
-        hmat(i,j,1) = hmat(i,j,1) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
-      enddo
-    enddo
-  enddo
-
-  ! Construction and print of the bared kappa matrix
-  ij = ni12
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      xkappa(j,i,3) =   gradient(ij,1) / hmat(i,j,1)   !!! j component is with minus sign
       xkappa(i,j,3) =   xkappa(j,i,3)
-      xkappa(j,i,4) =   gradient(ij,2) / hmat(i,j,1)   !!! gradient is complex conjugate
       xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
@@ -916,12 +906,135 @@ contains
   endif
 
   ! Norm of the kappa vector
-  ndim = ni*ni*4
-  dnrm = dnrm2(ndim,xkappa,1)
+  dnrm = dnrm2(ni*ni*4,xkappa,1)
 
-  call qexit('getk_diag')
+  call dealloc(hmat_d,id='hmat_d in getk_cdiag')
 
-  end subroutine getk_diag
+  call qexit('getk_cdiag')
+
+  end subroutine getk_cdiag
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine getk_rdiag(pmat,xkappa,gradient,dnrm,ipqtoq)
+  !******************************************************************************!
+  !                                                                              !
+  !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
+  !                              (real algebra)                                  !
+  !                                                                              !
+  ! Notes: 1. Deffinition of kappa matrix in rotcmo_mod is different as in       !
+  !           calculation of gradient and hessian in get_gradient and get_hessian!
+  !           --> Indexes are exchanged and j quaterion is with minus sign       !
+  !               Qkappa_lk = kappa_kl - bar{kappa}_kl^* j                       !
+  !               It follows from definition of bared unitary matrix:            !
+  !               tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                    !
+  !        2. Be also careful about minus in imaginary part of gradient in       !
+  !                                H * K = - g                                   !
+  !                                 H                     K            g         !
+  !  / A   B  \   -->   / A^R + B^I   B^I - A^I \      / K^R \      / g^R \      !
+  !  \ B*  A* /   -->   \ B^I + A^I   A^R - B^I /      \ K^I /      \-g^I /      !
+  !******************************************************************************!
+  use memory_allocator
+  implicit none
+
+  ! External variables
+  integer*4, dimension(:,:) :: ipqtoq
+
+  real*8 :: dnrm
+
+  real*8, dimension(:,:)     :: gradient
+  real*8, dimension(:,:,:)   :: xkappa
+  real*8, dimension(:,:,:,:) :: pmat
+
+  ! Internal variables
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
+
+  integer*4 :: i, j, k, ij, ij1, ij2, ij3, iz, nucdep, ni, ni12, lupri
+  real*8    :: pii, pjj, pn2, dnrm2
+
+  real*8, allocatable, dimension(:) :: hmat_d
+
+  !------------------------------------------------------------------------------!
+  call qenter('getk_rdiag')
+
+  ! Get some dimensions
+  lupri  = var%lupri
+  nucdep = size(pmat,4)
+  ni     = size(pmat,1)
+  ni12   = size(gradient,1) / 4
+
+  call alloc(hmat_d,4*ni12,id='hmat_d in getk_rdiag')
+
+  ! Construct diagonal Hessian matrix
+  hmat_d(:) = d0
+  ij = 0
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      ij1= ij + 1*ni12
+      ij2= ij + 2*ni12
+      ij3= ij + 3*ni12
+      if(i==j)cycle
+      do k = 1,nucdep
+        pii = pmat(i,i,1,k); pjj = pmat(j,j,1,k)
+
+        pn2 = d2*pmat(i,j,1,k)*pmat(i,j,1,k)
+        hmat_d(ij ) = hmat_d(ij ) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! uu: A^R + B^R
+
+        pn2 = d2*pmat(i,j,2,k)*pmat(i,j,2,k)
+        hmat_d(ij2) = hmat_d(ij2) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! uu: A^R - B^R
+
+        pn2 = pmat(i,j,3,k)*pmat(i,j,3,k) + pmat(i,j,4,k)*pmat(i,j,4,k)
+        hmat_d(ij1) = hmat_d(ij1) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! bb: A^R + B^R
+        hmat_d(ij3) = hmat_d(ij3) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! bb: A^R - B^R
+      enddo
+    enddo
+  enddo
+
+  ! Construction and print of the kappa matrix
+  xkappa(:,:,:) = d0
+  ij = 0
+  do j = 1,ni
+    do i = j,ni
+      ij = ij + 1
+      ij1= ij + 1*ni12
+      ij2= ij + 2*ni12
+      ij3= ij + 3*ni12
+      if(i==j) cycle
+      xkappa(j,i,1) = - gradient(ij ,1) / hmat_d(ij )
+      xkappa(j,i,2) =   gradient(ij ,2) / hmat_d(ij2)   !!! g^I is with minus
+      xkappa(j,i,3) =   gradient(ij1,1) / hmat_d(ij1)   !!! j component is with minus sign
+      xkappa(j,i,4) =   gradient(ij1,2) / hmat_d(ij3)   !!! g^I is with minus
+      xkappa(i,j,1) = - xkappa(j,i,1)
+      xkappa(i,j,2) =   xkappa(j,i,2)
+      xkappa(i,j,3) =   xkappa(j,i,3)
+      xkappa(i,j,4) =   xkappa(j,i,4)
+    enddo
+  enddo
+
+  do iz=1,4
+    write(lupri,*)
+    write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
+    do j=1,ni
+      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
+    enddo
+  enddo
+
+  ! Print some kappa matrix
+  if(loc%iprloc .ge. 5) then
+     write (lupri,'(/a)') '* KAPPA matrix :'
+     call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
+  endif
+
+  ! Norm of the kappa vector
+  dnrm = dnrm2(ni*ni*4,xkappa,1)
+
+  call dealloc(hmat_d,id='hmat_d in getk_rdiag')
+
+  call qexit('getk_rdiag')
+
+  end subroutine getk_rdiag
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1460,6 +1573,7 @@ contains
   !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
   !                                                                              ! 
   !******************************************************************************!
+  use memory_allocator
   implicit none
 
   ! External variables
@@ -1474,7 +1588,9 @@ contains
   real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pil2, pli2, pkj2
   real*8 :: pii, pjj, pkk, pll, dtmp1, dtmp2, sumdiag, sumnond, sumtmp
 
-  integer*4 :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
+  integer*4 :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
+
+  real*8, allocatable, dimension(:,:) :: hmat_r
 
   !------------------------------------------------------------------------------!
   call qenter('get_hessian')
@@ -2177,6 +2293,31 @@ contains
       hmat(j,i,2) = - hmat(i,j,2)
     enddo
   enddo
+
+  ! Calculate real representation of hessian and get the diagonal dominance info
+  call alloc(hmat_r,ndimh,ndimh,id='hmat_r in get_hessian')
+
+  sumdiag = d0
+  sumnond = d0
+  do i=1,2*ni12
+    do j=1,2*ni12
+      i1 = i + 2*ni12
+      j1 = j + 2*ni12
+      hmat_r(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
+      hmat_r(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
+      hmat_r(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
+      hmat_r(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
+      sumnond = sumnond + dabs(hmat_r(i,j1)) + dabs(hmat_r(i1,j))
+      if(i==j)then
+        sumdiag = sumdiag + dabs(hmat_r(i,j)) + dabs(hmat_r(i1,j1))
+      else
+        sumnond = sumnond + dabs(hmat_r(i,j)) + dabs(hmat_r(i1,j1))
+      endif
+    enddo
+  enddo
+  write(6,'(a,5d11.2)')' Real hessian diag vs. non-diag: ',sumdiag,sumnond
+
+  call dealloc(hmat_r,id='hmat_r in get_hessian')
 
   call qexit('get_hessian')
 
