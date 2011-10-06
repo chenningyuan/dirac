@@ -1776,7 +1776,7 @@ contains
          else
             use_blas3_scheme = .false.
          end if
-         if (do_overlap_diagnostic .or. fun_is_tau_mgga()) then
+         if (do_overlap_diagnostic .or. fun_is_tau_mgga(xc_fun)) then
             use_blas3_scheme = .false.
          end if
 
