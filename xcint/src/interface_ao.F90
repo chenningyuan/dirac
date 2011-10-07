@@ -46,9 +46,11 @@ module interface_ao
    integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
    integer, public :: llss_nr_density_blocks(0:3, 0:7)
    integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
+   integer, public :: llss_block_partner(16, 0:3, 0:7)
    integer, public :: lssl_nr_ao(2, 16, 0:3, 0:7)
    integer, public :: lssl_nr_density_blocks(0:3, 0:7)
    integer, public :: lssl_st_ao(2, 16, 0:3, 0:7)
+!  integer, public :: lssl_block_partner(16, 0:3, 0:7)
    integer, public :: nr_ao
    integer, public :: nr_ao_cartesian
    integer, public :: nr_ao_gerade
@@ -112,6 +114,7 @@ contains
       llss_nr_ao                 = 0
       llss_nr_density_blocks     = 0
       llss_st_ao                 = 0
+      llss_block_partner         = 0
       lssl_nr_ao                 = 0
       lssl_nr_density_blocks     = 0
       lssl_st_ao                 = 0
@@ -181,6 +184,7 @@ contains
       integer              :: ishell, nshell
       integer              :: nround
       integer              :: ixyz
+      integer              :: iblock, jblock
       integer              :: nl, nt, nc, ns, kc, ks, oc, os
       integer              :: lssl_ic(2) = (/2, 1/)
       real(8)              :: f, px, py, pz
@@ -462,6 +466,18 @@ contains
                   end do
                end do
                llss_nr_density_blocks(jxyz, irep) = i
+            end do
+         end do
+
+         do irep = 0, nr_boson_ireps - 1
+            do jxyz = 0, 3
+               do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                  do jblock = 1, llss_nr_density_blocks(jxyz, irep)
+                    if (llss_st_ao(1, iblock, 0, irep) == llss_st_ao(2, jblock, 0, irep)) then
+                       llss_block_partner(iblock, jxyz, irep) = jblock
+                    end if
+                  end do
+               end do
             end do
          end do
 
@@ -885,6 +901,7 @@ contains
          call xc_mpi_bcast(llss_nr_ao                    )
          call xc_mpi_bcast(llss_nr_density_blocks        )
          call xc_mpi_bcast(llss_st_ao                    )
+         call xc_mpi_bcast(llss_block_partner            )
          call xc_mpi_bcast(lssl_nr_ao                    )
          call xc_mpi_bcast(lssl_nr_density_blocks        )
          call xc_mpi_bcast(lssl_st_ao                    )
