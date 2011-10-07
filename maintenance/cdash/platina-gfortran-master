@@ -10,7 +10,7 @@ git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 
 cd $TMP_DIR
 ./pamadm -a
-./setup --fc=gfortran --cc=gcc -D BUILDNAME="ubuntu10.04-i686-gfortran4.4-int32"
+./setup --fc=gfortran --cc=gcc -D BUILDNAME="ubuntu10.04-i686-gfortran4.4-int32-master"
 
 cd $TMP_DIR/build
 make Nightly
