@@ -1768,9 +1768,13 @@ contains
          end if
 #endif
 
-         if (do_potential .and. .not. fun_is_tau_mgga(xc_fun)) then
+!        if (do_potential .or. (response_order_mo == 1)) then
+         if (do_potential) then
             use_blas3_scheme = .true.
          else
+            use_blas3_scheme = .false.
+         end if
+         if (fun_is_tau_mgga(xc_fun)) then
             use_blas3_scheme = .false.
          end if
          if (dft_cfg_blocked) then

@@ -95,7 +95,7 @@ contains
       real(8), allocatable   :: ao_sorted(:, :)
       integer                :: irep, imat
       integer                :: i, j, k
-      integer                :: ixyz
+      integer                :: ixyz, jxyz
       integer                :: ikoff, jkoff, ijoff
       integer, parameter     :: max_nr_blocks = 16
       integer                :: isoff(max_nr_blocks)
@@ -106,6 +106,7 @@ contains
       integer                :: is, js
       integer                :: nr1, nr2, st1, st2
       integer                :: iblock, jblock
+      integer                :: jxyz_start
       real(8), allocatable   :: n(:, :)
       real(8), allocatable   :: n_saop_outer(:)
       real(8), allocatable   :: n_saop_resp(:)
@@ -127,18 +128,16 @@ contains
       allocate(gnn(block_length, 0:1, 0:nr_dmat))
 
 !     zero out density and gradient
-      do imat = 0, nr_dmat
-         do k = 1, block_length
-            n(k, imat) = 0.0d0
-         end do
-         if (is_gga) then
-            do ixyz = 1, 3
-               do k = 1, block_length
-                  n_g(k, ixyz, imat) = 0.0d0
-               end do
-            end do
-         end if
+      do k = 1, block_length
+         n(k, 0) = 0.0d0
       end do
+      if (is_gga) then
+         do ixyz = 1, 3
+            do k = 1, block_length
+               n_g(k, ixyz, 0) = 0.0d0
+            end do
+         end do
+      end if
       if (dft_cfg_saop_is_active) then
          do k = 1, block_length
             n_saop_outer(k) = 0.0d0
@@ -344,74 +343,93 @@ contains
          end do
       end if
 
+      jxyz_start = 1
+      if (dft_cfg_sdft_collinear) jxyz_start = 3 !collinear approximation
+
 !     response
       if (nr_dmat > 0) then
          do imat = 1, nr_dmat
-            if (dmat_ih_sym(imat) == 1) then
-!              get perturbed densities
-               do iblock = 1, llss_nr_density_blocks(0, irep)
-                  jblock = llss_block_partner(iblock, 0, irep)
-                  if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
-                     call evaluate_density(                            &
-                                           is_gga,                     &
-                                           block_length,               &
-                                           mat_dim,                    &
-                                           nz,                         &
-                                           ao_sorted,                  &
-                                           dmat_p(1, 1, 1, imat),      &
-                                           nr_above_threshold(iblock), &
-                                           nr_above_threshold(jblock), &
-                                           isoff(iblock),              &
-                                           isoff(jblock),              &
-                                           iksoff(iblock),             &
-                                           iksoff(jblock),             &
-                                           n(1, imat),                 &
-                                           n_g(1, 1, imat)             &
-                                          )
-                  end if
-               end do
-               do k = 1, block_length
-                  gnn(k, 0, imat) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, imat) &
-                                  + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, imat) &
-                                  + 2.0d0*n_g(k, 3, 0)*n_g(k, 3, imat)
-               end do
-!              form prefactors
-               do k = 1, block_length
-                  s(k, imat) = derv(k, d2000000)*n(k, imat)
-               end do
-               if (is_gga) then
+            do k = 1, block_length
+               n(k, imat) = 0.0d0
+            end do
+            if (is_gga) then
+               do ixyz = 1, 3
                   do k = 1, block_length
-                     s(k, imat) = s(k, imat) + derv(k, d1010000)*gnn(k, 0, imat)
+                     n_g(k, ixyz, imat) = 0.0d0
                   end do
-                  do ixyz = 1, 3
+               end do
+            end if
+            if (dmat_ih_sym(imat) == 1) then
+               do jxyz = 0, 0
+!                 get perturbed densities
+                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                     jblock = llss_block_partner(iblock, jxyz, irep)
+                     if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+                        call evaluate_density(                              &
+                                              is_gga,                       &
+                                              block_length,                 &
+                                              mat_dim,                      &
+                                              nz,                           &
+                                              ao_sorted,                    &
+                                              dmat_p(1, 1, iq(jxyz), imat), &
+                                              nr_above_threshold(iblock),   &
+                                              nr_above_threshold(jblock),   &
+                                              isoff(iblock),                &
+                                              isoff(jblock),                &
+                                              iksoff(iblock),               &
+                                              iksoff(jblock),               &
+                                              n(1, imat),                   &
+                                              n_g(1, 1, imat)               &
+                                             )
+                     end if
+                  end do
+                  do k = 1, block_length
+                     gnn(k, 0, imat) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, imat) &
+                                     + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, imat) &
+                                     + 2.0d0*n_g(k, 3, 0)*n_g(k, 3, imat)
+                  end do
+!                 form prefactors
+                  do k = 1, block_length
+                     s(k, imat) = derv(k, d2000000)*n(k, imat)
+                  end do
+                  if (is_gga) then
                      do k = 1, block_length
-                        v(k, ixyz, imat) = 2.0d0*n_g(k, ixyz, 0)*n(k, imat)*derv(k, d1010000)      &
-                                         + 2.0d0*n_g(k, ixyz, 0)*gnn(k, 0, imat)*derv(k, d0020000) &
-                                         + 2.0d0*n_g(k, ixyz, imat)*derv(k, d0010000)
+                        s(k, imat) = s(k, imat) + derv(k, d1010000)*gnn(k, 0, imat)
                      end do
-                  end do
-               end if
-!              distribute
-               do iblock = 1, llss_nr_density_blocks(0, irep)
-                  jblock = llss_block_partner(iblock, 0, irep)
-                  if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
-                     call distribute_prefactors(                            &
-                                                is_gga,                     &
-                                                block_length,               &
-                                                mat_dim,                    &
-                                                nz,                         &
-                                                fmat(1, 1, 1, imat),        &
-                                                ao_sorted,                  &
-                                                nr_above_threshold(iblock), &
-                                                isoff(iblock),              &
-                                                iksoff(iblock),             &
-                                                nr_above_threshold(jblock), &
-                                                isoff(jblock),              &
-                                                iksoff(jblock),             &
-                                                s(1, imat),                 &
-                                                v(1, 1, imat)               &
-                                               )
+                     do ixyz = 1, 3
+                        do k = 1, block_length
+                           v(k, ixyz, imat) = 2.0d0*n_g(k, ixyz, 0)*n(k, imat)*derv(k, d1010000)      &
+                                            + 2.0d0*n_g(k, ixyz, 0)*gnn(k, 0, imat)*derv(k, d0020000) &
+                                            + 2.0d0*n_g(k, ixyz, imat)*derv(k, d0010000)
+                        end do
+                     end do
                   end if
+!                 distribute
+                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                     jblock = llss_block_partner(iblock, jxyz, irep)
+                     if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+                        call distribute_prefactors(                            &
+                                                   is_gga,                     &
+                                                   block_length,               &
+                                                   mat_dim,                    &
+                                                   nz,                         &
+                                                   fmat(1, 1, iq(jxyz), imat), &
+                                                   ao_sorted,                  &
+                                                   nr_above_threshold(iblock), &
+                                                   isoff(iblock),              &
+                                                   iksoff(iblock),             &
+                                                   nr_above_threshold(jblock), &
+                                                   isoff(jblock),              &
+                                                   iksoff(jblock),             &
+                                                   s(1, imat),                 &
+                                                   v(1, 1, imat)               &
+                                                  )
+                     end if
+                  end do
+               end do
+            end if
+            if (dmat_ih_sym(imat) == -1) then
+               do jxyz = jxyz_start, 3
                end do
             end if
          end do
