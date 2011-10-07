@@ -939,7 +939,6 @@ contains
 
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
-                                    fun_is_tau_mgga(xc_fun),  &
                                     (response_order_mo == 1), &
                                     block_length,             &
                                     block_threshold,          &
@@ -1769,7 +1768,7 @@ contains
          end if
 #endif
 
-         if (do_potential) then
+         if (do_potential .and. .not. fun_is_tau_mgga(xc_fun)) then
             use_blas3_scheme = .true.
          else
             use_blas3_scheme = .false.
