@@ -67,6 +67,7 @@ module london_reorth_hb
   integer            ::     nr_xyz_comp
 
   integer, parameter :: tbmo_unit = 71
+  logical            :: debug_me
 
 contains
 
@@ -144,12 +145,11 @@ contains
     real(8), allocatable   :: buf(:)
     real(8), allocatable   :: tb(:)
 
-    integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
+    integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j, isymh
     logical :: ah
-    logical :: debug_me
 !-----------------------------------------------------------------------
   
     call alloc(fmo, n2bbasxq)
@@ -186,6 +186,7 @@ contains
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
       isym(icomp)  = iprpsym(indxpr)
+      irep(icomp)  = isym(icomp) - 1
       iopsy(icomp) = jbtof(isym(icomp)-1, 1)
 
       call dzero(tb, n2orbxq)
@@ -250,6 +251,20 @@ contains
                 buf,             &
                 iprprp)
 
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'buf in get_ftb after ttra, icomp = ', icomp
+        call prqmat(buf, &
+                    norb, norb, norb, norb, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+  
+        write(*, *) 'fmat in get_ftb after ttra, icomp = ', icomp
+        call prqmat(fmat(1, icomp), &
+                    norb, norb, norb, norb, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
+
+
 !     add result to fmat
       call daxpy(n2orbxq,      &
                  1.0d0,          &
@@ -262,6 +277,13 @@ contains
       call wrtdac(lufckl, n2orbxq,   &
                   fmat(1, icomp), icomp)
 
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'fmat final in london_reorth, icomp = ', icomp
+        call prqmat(fmat(1, icomp), &
+                    norb, norb, norb, norb, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
 
     end do
 
@@ -297,8 +319,6 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, ioff
-
-    logical :: debug_me
 !-----------------------------------------------------------------------
 #include "dcbgen.h"
 
@@ -334,6 +354,17 @@ contains
                 lwork)
 
     call di_deselect_wrk(work, lwork)
+
+    debug_me = .false.
+    if (debug_me) then
+      do icomp = 1, nr_xyz_comp
+        write(*, *) 'fao in get_gtb, icomp = ', icomp
+        ioff = (icomp - 1)*nz*ntbas(0)*ntbas(0) + 1
+        call prqmat(fao(ioff), &
+                        ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                        nz, ipqtoq(1, irep(icomp)), lupri)
+      end do
+    end if
 
     if (allocated(npos_array)) then
       call dealloc(npos_array)
@@ -393,8 +424,6 @@ contains
         end do
       end if
 
-
-
     end if
 
   end subroutine get_gtb
@@ -442,6 +471,14 @@ contains
       iopsy(icomp)  = jbtof(isym(icomp) - 1, 1)
       irep(icomp)   = isym(icomp) - 1
 
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'fao in do_ao_to_mo before qtrans, icomp = ', icomp
+        call prqmat(fao(1, icomp), &
+                    ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
+
       do i = 1, nfsym 
         j = mod(i + iopsy(icomp), 2) + 1
 
@@ -482,6 +519,19 @@ contains
         call di_deselect_wrk(work, lwork)
 
       end do
+
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'fao in do_ao_to_mo after qtrans, icomp = ', icomp
+        call prqmat(fao(1, icomp), &
+                    ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+        write(*, *) 'fmo in do_ao_to_mo after qtrans, icomp = ', icomp
+        call prqmat(fmo(1, icomp), &
+                    norb, norb, norb, norb, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
+
     end do
 
   end subroutine
@@ -498,7 +548,7 @@ contains
 
     real(8), allocatable   :: tb(:)
     integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
-    integer                :: indxpr, icomp 
+    integer                :: indxpr, icomp, irep 
 !-----------------------------------------------------------------------
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
@@ -508,6 +558,7 @@ contains
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
       isym(icomp)  = iprpsym(indxpr)
+      irep = isym(icomp) - 1
       iopsy(icomp) = jbtof(isym(icomp)-1, 1)
 
       call dzero(tb, n2orbxq)
