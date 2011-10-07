@@ -383,16 +383,16 @@ contains
                                              )
                      end if
                   end do
-                  do k = 1, block_length
-                     gnn(k, 0, imat) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, imat) &
-                                     + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, imat) &
-                                     + 2.0d0*n_g(k, 3, 0)*n_g(k, 3, imat)
-                  end do
 !                 form prefactors
                   do k = 1, block_length
                      s(k, imat) = derv(k, d2000000)*n(k, imat)
                   end do
                   if (is_gga) then
+                     do k = 1, block_length
+                        gnn(k, 0, imat) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, imat) &
+                                        + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, imat) &
+                                        + 2.0d0*n_g(k, 3, 0)*n_g(k, 3, imat)
+                     end do
                      do k = 1, block_length
                         s(k, imat) = s(k, imat) + derv(k, d1010000)*gnn(k, 0, imat)
                      end do
@@ -430,6 +430,71 @@ contains
             end if
             if (dmat_ih_sym(imat) == -1) then
                do jxyz = jxyz_start, 3
+!                 get perturbed densities
+                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                     jblock = llss_block_partner(iblock, jxyz, irep)
+                     if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+                        call evaluate_density(                              &
+                                              is_gga,                       &
+                                              block_length,                 &
+                                              mat_dim,                      &
+                                              nz,                           &
+                                              ao_sorted,                    &
+                                              dmat_p(1, 1, iq(jxyz), imat), &
+                                              nr_above_threshold(iblock),   &
+                                              nr_above_threshold(jblock),   &
+                                              isoff(iblock),                &
+                                              isoff(jblock),                &
+                                              iksoff(iblock),               &
+                                              iksoff(jblock),               &
+                                              n(1, imat),                   &
+                                              n_g(1, 1, imat)               &
+                                             )
+                     end if
+                  end do
+!                 form prefactors
+                  do k = 1, block_length
+                     s(k, imat) = derv(k, d0200000)*n(k, imat)
+                  end do
+                  if (is_gga) then
+                     do k = 1, block_length
+                        gnn(k, 0, imat) = n_g(k, 1, 0)*n_g(k, 1, imat) &
+                                        + n_g(k, 2, 0)*n_g(k, 2, imat) &
+                                        + n_g(k, 3, 0)*n_g(k, 3, imat)
+                     end do
+                     do k = 1, block_length
+                        s(k, imat) = s(k, imat) + derv(k, d0101000)*gnn(k, 0, imat)
+                     end do
+                     do ixyz = 1, 3
+                        do k = 1, block_length
+                           v(k, ixyz, imat) =       n_g(k, ixyz, 0)*n(k, imat)*derv(k, d0101000)      &
+                                            +       n_g(k, ixyz, 0)*gnn(k, 0, imat)*derv(k, d0002000) &
+                                            + 2.0d0*n_g(k, ixyz, imat)*derv(k, d0000100)
+                        end do
+                     end do
+                  end if
+!                 distribute
+                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                     jblock = llss_block_partner(iblock, jxyz, irep)
+                     if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+                        call distribute_prefactors(                            &
+                                                   is_gga,                     &
+                                                   block_length,               &
+                                                   mat_dim,                    &
+                                                   nz,                         &
+                                                   fmat(1, 1, iq(jxyz), imat), &
+                                                   ao_sorted,                  &
+                                                   nr_above_threshold(iblock), &
+                                                   isoff(iblock),              &
+                                                   iksoff(iblock),             &
+                                                   nr_above_threshold(jblock), &
+                                                   isoff(jblock),              &
+                                                   iksoff(jblock),             &
+                                                   s(1, imat),                 &
+                                                   v(1, 1, imat)               &
+                                                  )
+                     end if
+                  end do
                end do
             end if
          end do

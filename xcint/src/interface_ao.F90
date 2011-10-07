@@ -473,7 +473,7 @@ contains
             do jxyz = 0, 3
                do iblock = 1, llss_nr_density_blocks(jxyz, irep)
                   do jblock = 1, llss_nr_density_blocks(jxyz, irep)
-                    if (llss_st_ao(1, iblock, 0, irep) == llss_st_ao(2, jblock, 0, irep)) then
+                    if (llss_st_ao(1, iblock, jxyz, irep) == llss_st_ao(2, jblock, jxyz, irep)) then
                        llss_block_partner(iblock, jxyz, irep) = jblock
                     end if
                   end do

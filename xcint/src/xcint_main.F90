@@ -1768,8 +1768,7 @@ contains
          end if
 #endif
 
-!        if (do_potential .or. (response_order_mo == 1)) then
-         if (do_potential) then
+         if (do_potential .or. (response_order_mo == 1)) then
             use_blas3_scheme = .true.
          else
             use_blas3_scheme = .false.
