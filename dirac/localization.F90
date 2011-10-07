@@ -4,7 +4,7 @@ implicit none
 public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
-private :: getk_cdiag, getk_rdiag, getk_full, get_hessian, get_gradient
+private :: getk_cdiag, getk_rdiag, getk_full, get_hessian, get_gradient, exp_func, hdiag
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
@@ -245,6 +245,7 @@ contains
 
     call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
     call get_gradient(pmat,grad_c,grad_r,dnrmg)
+    call hdiag(hmat_r,nish)
     if(full)then
       call getk_full(pmat,xkappa,hmat_r,grad_r,dnrmk)
       call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
@@ -2375,13 +2376,13 @@ contains
   write(6,*)
   write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
   write(lupri,'(9d12.4)') (grad_c(j,1),j=1,ni12)
-  write(6,*)
+  write(lupri,*)
   write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
   write(lupri,'(9d12.4)') (grad_c(j,2),j=1,ni12)
-  write(6,*)
+  write(lupri,*)
   write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
   write(lupri,'(9d12.4)') (grad_c(j,1),j=1+ni12,2*ni12)
-  write(6,*)
+  write(lupri,*)
   write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
   write(lupri,'(9d12.4)') (grad_c(j,2),j=1+ni12,2*ni12)
 
@@ -2505,5 +2506,77 @@ contains
   !------------------------------------------------------------------------------!
 
   end subroutine exp_func
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine hdiag(hmat,ni)
+  !******************************************************************************!
+  !                                                                              !
+  !                Diagonalize real representation of hessian                    !
+  !                                                                              !
+  !******************************************************************************!
+  use memory_allocator
+  implicit none
+
+  ! External variables
+  integer*4  :: ni
+  real*8, allocatable, dimension(:,:) :: hmat
+
+  ! Internal variables
+  integer*4    :: i, j, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
+
+  real*8, allocatable, dimension(:)   :: eval, work
+  real*8, allocatable, dimension(:,:) :: htmp
+
+  !------------------------------------------------------------------------------!
+  call qenter('hdiag')
+
+  lupri = var%lupri
+
+  ! Get some dimensions
+  nhtmp = size(hmat,1) - ni
+  nb = ilaenv(1,'dsytrd','u',nhtmp,-1,-1,-1)
+  lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
+
+  call alloc(htmp,nhtmp,nhtmp,id='htmp in hdiag')
+  call alloc(eval,nhtmp,      id='eval in hdiag')
+  call alloc(work,lwork,      id='work in hdiag')
+
+  ! prepare htmp
+  do i=1,nhtmp
+    do j=1,nhtmp
+      htmp(i,j) = hmat(i,j)
+    enddo
+  enddo
+
+! call dsyev('V','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
+  call dsyev('N','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
+  if(ier /= 0)then
+    write(lupri,*) ' ERROR: The dsyev LAPACK subroutine in hdiag finished unsuccessfully'
+    write(lupri,*) ' info =',ier
+    stop
+  endif
+
+  np=0; nm=0; nb=0
+  do i=1,nhtmp
+    if(eval(i) < 0.0d0)nm = nm + 1
+    if(eval(i) > 0.0d0)np = np + 1
+    if(dabs(eval(i)) < 1.0d-10)nb = nb + 1
+  enddo
+
+  write(lupri,'(a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
+  write(lupri,'(8d12.4)') (eval(i),i=1,nhtmp)
+
+  !------------------------------------------------------------------------------!
+  call dealloc(htmp,id='htmp in hdiag')
+  call dealloc(eval,id='eval in hdiag')
+  call dealloc(work,id='work in hdiag')
+
+  call qexit('hdiag')
+
+  !------------------------------------------------------------------------------!
+
+  end subroutine hdiag
 
 end module localization
