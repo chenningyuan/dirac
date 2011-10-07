@@ -1185,6 +1185,9 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # master the final command launcher (as std debugger); TODO: adapt for Windows
                 self.dirac_cmd =  self.dirac_cmd + \
                ' valgrind --log-file=' + self.output_file_full + ' ' + this_dirac_exe + ' | tee ' + self.output_file_full
+            else:
+               # no valgrind debugging, standard parallel run
+               self.dirac_cmd =  self.dirac_cmd + this_dirac_exe
         else:
             # serial run (also in debugger)
             if self.debug:
