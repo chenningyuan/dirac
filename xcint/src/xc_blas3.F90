@@ -159,9 +159,9 @@ contains
          irep = 0
       end if
 
-      do iblock = 1, llss_nr_density_blocks(0, irep)
-         st1 = llss_st_ao(1, iblock, 0, irep)
-         nr1 = llss_nr_ao(1, iblock, 0, irep)
+      do iblock = 1, llss_nr_density_blocks(0, 0)
+         st1 = llss_st_ao(1, iblock, 0, 0)
+         nr1 = llss_nr_ao(1, iblock, 0, 0)
 
 !        get buffer for sorting
 !        and get number of functions above block_threshold
@@ -216,9 +216,8 @@ contains
       end do
 
 !     get unperturbed densities
-      do iblock = 1, llss_nr_density_blocks(0, irep)
-         jblock = llss_block_partner(iblock, 0, irep)
-         if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+      do iblock = 1, llss_nr_density_blocks(0, 0)
+         if (nr_above_threshold(iblock) > 0) then
             call evaluate_density(                            &
                                   is_gga,                     &
                                   block_length,               &
@@ -428,7 +427,7 @@ contains
                   end do
                end do
             end if
-            if (dmat_ih_sym(imat) == -1) then
+            if (dmat_ih_sym(imat) == -1 .and. .not. dft_cfg_no_sdft) then
                do jxyz = jxyz_start, 3
 !                 get perturbed densities
                   do iblock = 1, llss_nr_density_blocks(jxyz, irep)
@@ -774,6 +773,8 @@ contains
       end do iblock_loop
 !radovan: my own empirical estimate, no physics behind this
       get_block_threshold = dsqrt(10.0d0*dfthr0/(mat_dim*mat_dim*x))
+!conservative for the moment
+      get_block_threshold = tiny(0.0d0)
 
    end function
 
