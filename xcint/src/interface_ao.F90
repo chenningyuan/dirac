@@ -452,7 +452,7 @@ contains
                      nr1 = ao_nr(irep1, ic)
                      nr2 = ao_nr(irep2, ic)
 
-                     if ((nr1 > 0) .and. (nr2 > 0)) then
+                    !if ((nr1 > 0) .and. (nr2 > 0)) then
                         i = i + 1
                         llss_nr_ao(1, i, jxyz, irep) = nr1
                         llss_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
@@ -462,9 +462,10 @@ contains
                         if (ic == 2) then
                            llss_prefactor(i, jxyz, irep) = sigma_prefactor
                         end if
-                     end if
+                    !end if
                   end do
                end do
+               ! this is stupid - nr of blocks is now always nr of ireps times mc
                llss_nr_density_blocks(jxyz, irep) = i
             end do
          end do

@@ -318,9 +318,9 @@ contains
                end do
             end if
 !           distribute
-            do iblock = 1, llss_nr_density_blocks(0, irep)
-               jblock = llss_block_partner(iblock, 0, irep)
-               if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+            do iblock = 1, llss_nr_density_blocks(0, 0)
+               jblock = llss_block_partner(iblock, 0, 0)
+               if (nr_above_threshold(iblock) > 0) then
                   call distribute_prefactors(                            &
                                              is_gga,                     &
                                              block_length,               &
@@ -331,9 +331,9 @@ contains
                                              nr_above_threshold(iblock), &
                                              isoff(iblock),              &
                                              iksoff(iblock),             &
-                                             nr_above_threshold(jblock), &
-                                             isoff(jblock),              &
-                                             iksoff(jblock),             &
+                                             nr_above_threshold(iblock), &
+                                             isoff(iblock),              &
+                                             iksoff(iblock),             &
                                              s(1, imat),                 &
                                              v(1, 1, imat)               &
                                             )
@@ -348,6 +348,7 @@ contains
 !     response
       if (nr_dmat > 0) then
          do imat = 1, nr_dmat
+            irep = dmat_pg_sym(imat) - 1
             do k = 1, block_length
                n(k, imat) = 0.0d0
             end do
@@ -361,7 +362,7 @@ contains
             if (dmat_ih_sym(imat) == 1) then
                do jxyz = 0, 0
 !                 get perturbed densities
-                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
@@ -404,7 +405,7 @@ contains
                      end do
                   end if
 !                 distribute
-                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
@@ -430,7 +431,7 @@ contains
             if (dmat_ih_sym(imat) == -1 .and. .not. dft_cfg_no_sdft) then
                do jxyz = jxyz_start, 3
 !                 get perturbed densities
-                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
@@ -473,7 +474,7 @@ contains
                      end do
                   end if
 !                 distribute
-                  do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
