@@ -43,14 +43,12 @@ module interface_ao
    integer, public :: iq(0:3)
    integer, public :: irep_of_axes(3)
    integer, public :: irep_of_rotations(3)
-   integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
-   integer, public :: llss_nr_density_blocks(0:3, 0:7)
-   integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
+   integer, public :: ao_block_start(16)
+   integer, public :: ao_block_nr(16)
+   integer, public :: nr_ao_blocks
    integer, public :: llss_block_partner(16, 0:3, 0:7)
-   integer, public :: lssl_nr_ao(2, 16, 0:3, 0:7)
-   integer, public :: lssl_nr_density_blocks(0:3, 0:7)
-   integer, public :: lssl_st_ao(2, 16, 0:3, 0:7)
-!  integer, public :: lssl_block_partner(16, 0:3, 0:7)
+   integer, public :: lssl_block_partner(16, 0:3, 0:7)
+   real(8), public :: llss_prefactor(16)
    integer, public :: nr_ao
    integer, public :: nr_ao_cartesian
    integer, public :: nr_ao_gerade
@@ -70,7 +68,6 @@ module interface_ao
    integer, public :: uq_to_pq(4, 0:7)
    logical, public :: basis_is_spherical
    logical, public :: use_only_large
-   real(8), public :: llss_prefactor(16, 0:3, 0:7)
 
    integer, allocatable, public :: cartesian_deg(:)
    integer, allocatable, public :: cartesian_off(:)
@@ -111,13 +108,12 @@ contains
       iq                         = 0
       irep_of_axes               = 0
       irep_of_rotations          = 0
-      llss_nr_ao                 = 0
-      llss_nr_density_blocks     = 0
-      llss_st_ao                 = 0
+      ao_block_start             = 0
+      ao_block_nr                = 0
+      nr_ao_blocks               = 0
       llss_block_partner         = 0
-      lssl_nr_ao                 = 0
-      lssl_nr_density_blocks     = 0
-      lssl_st_ao                 = 0
+      lssl_block_partner         = 0
+      llss_prefactor             = 0.0d0
       nr_ao                      = 0
       nr_ao_cartesian            = 0
       nr_ao_gerade               = 0
@@ -137,7 +133,6 @@ contains
       uq_to_pq                   = 0
       basis_is_spherical         = .false.
       use_only_large             = .false.
-      llss_prefactor             = 0.0d0
 
       if (allocated(cartesian_deg                 )) deallocate(cartesian_deg                 )
       if (allocated(cartesian_off                 )) deallocate(cartesian_off                 )
@@ -434,82 +429,70 @@ contains
             mc = 2
          end if
 
-!        transform as rotation
-         llss_nr_density_blocks = 0
+         nr_ao_blocks = nr_boson_ireps*mc
 
+         i = 0
+         llss_prefactor = 1.0d0
+         do irep = 0, nr_boson_ireps - 1
+            do ic = 1, mc
+               i = i + 1
+               ao_block_start(i) = ao_off(irep, ic) + 1
+               ao_block_nr(i)    = ao_nr(irep, ic)
+               if (ic == 2) then
+                  llss_prefactor(i) = sigma_prefactor
+               end if
+            end do
+         end do
+
+!        transform as rotation
          inter_irep(0) = 0
          do jxyz = 1, 3
             inter_irep(jxyz) = irep_of_rotations(jxyz)
          end do
-
          do irep = 0, nr_boson_ireps - 1
             do jxyz = 0, 3
-               i = 0
                do ic = 1, mc
                   do irep1 = 0, nr_boson_ireps - 1
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-
-                     nr1 = ao_nr(irep1, ic)
-                     nr2 = ao_nr(irep2, ic)
-
-                    !if ((nr1 > 0) .and. (nr2 > 0)) then
-                        i = i + 1
-                        llss_nr_ao(1, i, jxyz, irep) = nr1
-                        llss_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
-                        llss_nr_ao(2, i, jxyz, irep) = nr2
-                        llss_st_ao(2, i, jxyz, irep) = ao_off(irep2, ic) + 1
-                        llss_prefactor(i, jxyz, irep) = 1.0d0
-                        if (ic == 2) then
-                           llss_prefactor(i, jxyz, irep) = sigma_prefactor
+                     do i = 1, nr_ao_blocks
+                        if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
+                           iblock = i
                         end if
-                    !end if
-                  end do
-               end do
-               ! this is stupid - nr of blocks is now always nr of ireps times mc
-               llss_nr_density_blocks(jxyz, irep) = i
-            end do
-         end do
-
-         do irep = 0, nr_boson_ireps - 1
-            do jxyz = 0, 3
-               do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-                  do jblock = 1, llss_nr_density_blocks(jxyz, irep)
-                    if (llss_st_ao(1, iblock, jxyz, irep) == llss_st_ao(2, jblock, jxyz, irep)) then
-                       llss_block_partner(iblock, jxyz, irep) = jblock
-                    end if
+                     end do
+                     do i = 1, nr_ao_blocks
+                        if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
+                           jblock = i
+                        end if
+                     end do
+                     llss_block_partner(iblock, jxyz, irep) = jblock
                   end do
                end do
             end do
          end do
 
 !        transform as translation
-         lssl_nr_density_blocks = 0
-
          inter_irep(0) = 0
          do jxyz = 1, 3
             inter_irep(jxyz) = irep_of_axes(jxyz)
          end do
-
          do irep = 0, nr_boson_ireps - 1
             do jxyz = 0, 3
-               i = 0
                do ic = 1, mc
                   do irep1 = 0, nr_boson_ireps - 1
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-
-                     nr1 = ao_nr(irep1, ic)
-                     nr2 = ao_nr(irep2, lssl_ic(ic))
-
-                     if ((nr1 > 0) .and. (nr2 > 0)) then
-                        i = i + 1
-                        lssl_nr_ao(1, i, jxyz, irep) = nr1
-                        lssl_st_ao(1, i, jxyz, irep) = ao_off(irep1, ic) + 1
-                        lssl_nr_ao(2, i, jxyz, irep) = nr2
-                        lssl_st_ao(2, i, jxyz, irep) = ao_off(irep2, lssl_ic(ic)) + 1
-                     end if
+                     do i = 1, nr_ao_blocks
+                        if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
+                           iblock = i
+                        end if
+                     end do
+                     do i = 1, nr_ao_blocks
+                        if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
+                           jblock = i
+                        end if
+                     end do
+                     lssl_block_partner(iblock, jxyz, irep) = jblock
                   end do
                end do
-               lssl_nr_density_blocks(jxyz, irep) = i
             end do
          end do
 
@@ -899,13 +882,12 @@ contains
          call xc_mpi_bcast(iq                            )
          call xc_mpi_bcast(irep_of_axes                  )
          call xc_mpi_bcast(irep_of_rotations             )
-         call xc_mpi_bcast(llss_nr_ao                    )
-         call xc_mpi_bcast(llss_nr_density_blocks        )
-         call xc_mpi_bcast(llss_st_ao                    )
+         call xc_mpi_bcast(ao_block_start                )
+         call xc_mpi_bcast(ao_block_nr                   )
+         call xc_mpi_bcast(nr_ao_blocks                  )
          call xc_mpi_bcast(llss_block_partner            )
-         call xc_mpi_bcast(lssl_nr_ao                    )
-         call xc_mpi_bcast(lssl_nr_density_blocks        )
-         call xc_mpi_bcast(lssl_st_ao                    )
+         call xc_mpi_bcast(lssl_block_partner            )
+         call xc_mpi_bcast(llss_prefactor                )
          call xc_mpi_bcast(nr_ao_cartesian               )
          call xc_mpi_bcast(nr_ao_gerade                  )
          call xc_mpi_bcast(nr_ao_large                   )
@@ -922,7 +904,6 @@ contains
          call xc_mpi_bcast(uq_to_pq                      )
          call xc_mpi_bcast(basis_is_spherical            )
          call xc_mpi_bcast(use_only_large                )
-         call xc_mpi_bcast(llss_prefactor                )
 
          call xc_mpi_bcast(cartesian_deg                 )
          call xc_mpi_bcast(cartesian_off                 )

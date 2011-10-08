@@ -159,9 +159,9 @@ contains
          irep = 0
       end if
 
-      do iblock = 1, llss_nr_density_blocks(0, 0)
-         st1 = llss_st_ao(1, iblock, 0, 0)
-         nr1 = llss_nr_ao(1, iblock, 0, 0)
+      do iblock = 1, nr_ao_blocks
+         st1 = ao_block_start(iblock)
+         nr1 = ao_block_nr(iblock)
 
 !        get buffer for sorting
 !        and get number of functions above block_threshold
@@ -216,7 +216,7 @@ contains
       end do
 
 !     get unperturbed densities
-      do iblock = 1, llss_nr_density_blocks(0, 0)
+      do iblock = 1, nr_ao_blocks
          if (nr_above_threshold(iblock) > 0) then
             call evaluate_density(                            &
                                   is_gga,                     &
@@ -318,8 +318,7 @@ contains
                end do
             end if
 !           distribute
-            do iblock = 1, llss_nr_density_blocks(0, 0)
-               jblock = llss_block_partner(iblock, 0, 0)
+            do iblock = 1, nr_ao_blocks
                if (nr_above_threshold(iblock) > 0) then
                   call distribute_prefactors(                            &
                                              is_gga,                     &
@@ -362,7 +361,7 @@ contains
             if (dmat_ih_sym(imat) == 1) then
                do jxyz = 0, 0
 !                 get perturbed densities
-                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
+                  do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
@@ -405,7 +404,7 @@ contains
                      end do
                   end if
 !                 distribute
-                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
+                  do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
@@ -431,7 +430,7 @@ contains
             if (dmat_ih_sym(imat) == -1 .and. .not. dft_cfg_no_sdft) then
                do jxyz = jxyz_start, 3
 !                 get perturbed densities
-                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
+                  do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
@@ -474,7 +473,7 @@ contains
                      end do
                   end if
 !                 distribute
-                  do iblock = 1, llss_nr_density_blocks(jxyz, 0)
+                  do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
@@ -759,9 +758,9 @@ contains
 !     --------------------------------------------------------------------------
 
       x = 0.0d0
-      iblock_loop: do iblock = 1, llss_nr_density_blocks(0, 0)
-         st = llss_st_ao(1, iblock, 0, 0)
-         nr = llss_nr_ao(1, iblock, 0, 0)
+      iblock_loop: do iblock = 1, nr_ao_blocks
+         st = ao_block_start(iblock)
+         nr = ao_block_nr(iblock)
          do i = st, st + nr - 1
             do j = st, i
 !              dmat_0 is positive definite but just to be sure
