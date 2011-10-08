@@ -55,7 +55,7 @@ cd $DIRAC
 export MATH_ROOT=/people/disk2/magnus/intel/mkl/
 
 ./setup --fc=$OMPI_VG/mpif90 --cc=$OMPI_VG/mpicc --cpp=$OMPI_VG/mpiCC --mpi -D BUILDNAME="linux.fe6_Odense.ompi_ifort_icc_mkl_ilp64_valgrind" -D RUNTEST_NR_PROC=8 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD_VG
-cd $DIRAC/$BUILD
+cd $DIRAC/$BUILD_VG
 make dirac.x
 make info_ext
 #make Experimental 
