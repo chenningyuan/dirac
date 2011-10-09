@@ -939,6 +939,8 @@ contains
 
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
+                                    use_gga_qr,               &
+                                    use_gga_qi,               &
                                     (response_order_mo == 1), &
                                     block_length,             &
                                     block_threshold,          &

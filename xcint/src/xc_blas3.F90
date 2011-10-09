@@ -43,6 +43,8 @@ contains
 
    subroutine xc_contribution_blas3(                         &
                                     is_gga,                  &
+                                    is_gga_qr,               &
+                                    is_gga_qi,               &
                                     do_lr,                   &
                                     block_length,            &
                                     block_threshold,         &
@@ -69,6 +71,8 @@ contains
 
 !     --------------------------------------------------------------------------
       logical, intent(in)    :: is_gga
+      logical, intent(in)    :: is_gga_qr
+      logical, intent(in)    :: is_gga_qi
       logical, intent(in)    :: do_lr
       integer, intent(in)    :: block_length
       real(8), intent(in)    :: block_threshold
@@ -286,16 +290,21 @@ contains
          end do
       end if
 
-      call get_functional_derv(xc_fun,       &
-                               xc_fun_alda,  &
-                               xc_fun_xalda, &
-                               max_fun_derv, &
-                               block_length, &
-                               w,            &
-                               n(1, 0),      &
-                               gnn(1, 0, 0), &
-                               derv_length,  &
-                               derv)
+      call get_functional_derv(                           &
+                               xc_fun,                    &
+                               xc_fun_alda,               &
+                               xc_fun_xalda,              &
+                               max_fun_derv,              &
+                               block_length,              &
+                               w,                         &
+                               n(1, 0),                   &
+                               gnn(1, 0, 0),              &
+                               derv_length,               &
+                               derv,                      &
+                               alda_real=dft_cfg_alda_hs, &
+                               alda_imag=dft_cfg_alda_ha, &
+                               xalda=dft_cfg_xalda        &
+                              )
 
       if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
          call dftac(block_length, derv, w, n, n_saop_resp, n_saop_outer, gnn)
@@ -358,7 +367,7 @@ contains
                   do k = 1, block_length
                      n(k, imat) = 0.0d0
                   end do
-                  if (is_gga) then
+                  if (is_gga_qr) then
                      do ixyz = 1, 3
                         do k = 1, block_length
                            n_g(k, ixyz, imat) = 0.0d0
@@ -371,7 +380,7 @@ contains
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
                                               1.0d0,                        &
-                                              is_gga,                       &
+                                              is_gga_qr,                    &
                                               block_length,                 &
                                               mat_dim,                      &
                                               nz,                           &
@@ -392,7 +401,7 @@ contains
                   do k = 1, block_length
                      s(k, imat) = derv(k, d2000000)*n(k, imat)
                   end do
-                  if (is_gga) then
+                  if (is_gga_qr) then
                      do k = 1, block_length
                         gnn(k, 0, imat) = 2.0d0*n_g(k, 1, 0)*n_g(k, 1, imat) &
                                         + 2.0d0*n_g(k, 2, 0)*n_g(k, 2, imat) &
@@ -416,7 +425,7 @@ contains
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
                                                    1.0d0,                      &
-                                                   is_gga,                     &
+                                                   is_gga_qr,                  &
                                                    block_length,               &
                                                    mat_dim,                    &
                                                    nz,                         &
@@ -441,7 +450,7 @@ contains
                   do k = 1, block_length
                      n(k, imat) = 0.0d0
                   end do
-                  if (is_gga) then
+                  if (is_gga_qi) then
                      do ixyz = 1, 3
                         do k = 1, block_length
                            n_g(k, ixyz, imat) = 0.0d0
@@ -454,7 +463,7 @@ contains
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
                                               llss_prefactor(iblock),       &
-                                              is_gga,                       &
+                                              is_gga_qi,                    &
                                               block_length,                 &
                                               mat_dim,                      &
                                               nz,                           &
@@ -475,7 +484,7 @@ contains
                   do k = 1, block_length
                      s(k, imat) = derv(k, d0200000)*n(k, imat)
                   end do
-                  if (is_gga) then
+                  if (is_gga_qi) then
                      do k = 1, block_length
                         gnn(k, 0, imat) = n_g(k, 1, 0)*n_g(k, 1, imat) &
                                         + n_g(k, 2, 0)*n_g(k, 2, imat) &
@@ -499,7 +508,7 @@ contains
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
                                                    llss_prefactor(iblock),     &
-                                                   is_gga,                     &
+                                                   is_gga_qi,                  &
                                                    block_length,               &
                                                    mat_dim,                    &
                                                    nz,                         &
