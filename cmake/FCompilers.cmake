@@ -63,6 +63,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             )
     endif()
 
+    # individual compilation due to problems with parallel calcul. of twoel.London integrals
+    if((ENABLE_MPI) AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+        message("-- abacus/her2drv.F: lowered Intel Fortran optimization level for parallel, OpenMPI compilation")
+        set_source_files_properties(
+            abacus/her2drv.F
+            PROPERTIES COMPILE_FLAGS "-O0 -no-ip" 
+    )
+    endif()
+
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
