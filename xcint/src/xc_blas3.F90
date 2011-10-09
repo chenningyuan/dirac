@@ -363,6 +363,7 @@ contains
 !                 get perturbed densities
                   do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
+                     if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
                                               is_gga,                       &
@@ -406,6 +407,7 @@ contains
 !                 distribute
                   do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
+                     if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
                                                    is_gga,                     &
@@ -432,6 +434,7 @@ contains
 !                 get perturbed densities
                   do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
+                     if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
                                               is_gga,                       &
@@ -475,6 +478,7 @@ contains
 !                 distribute
                   do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
+                     if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
                                                    is_gga,                     &
