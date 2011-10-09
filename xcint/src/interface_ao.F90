@@ -483,14 +483,14 @@ contains
                do irep = 0, nr_boson_ireps - 1
                   do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-                     if ((ao_nr(irep1, ic) > 0) .and. (ao_nr(irep2, ic) > 0)) then
+                     if ((ao_nr(irep1, ic) > 0) .and. (ao_nr(irep2, lssl_ic(ic)) > 0)) then
                         do i = 1, nr_ao_blocks
                            if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
                               iblock = i
                            end if
                         end do
                         do i = 1, nr_ao_blocks
-                           if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
+                           if (ao_block_start(i) == (ao_off(irep2, lssl_ic(ic)) + 1)) then
                               jblock = i
                            end if
                         end do
