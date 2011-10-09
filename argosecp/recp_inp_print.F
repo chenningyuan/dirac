@@ -1,6 +1,5 @@
       subroutine wthead( nsym,   ns,     nbft,
-     &   ityp,   nbpsy,  mtype,  ms,     mnl,
-     &   nlist,  map )
+     &   ityp,   nbpsy,  mtype,  ms,     mnl,  nlist )
 !  write the header info to the output file.
 !  input:
 !   nsym = number of symmetry blocks.
@@ -16,17 +15,13 @@
 !   nlist = listing file output unit.
 !   map(1:2,1:nbft) = temporary scratch array for writing the output
 !                     map(*) vectors.
-!  01-dec-90 SIFS version written by ron shepard.
-
+      USE RECP_IPT
       implicit logical(a-z)
-
-#include "argos_print.h"
-
+#include "inc_print.h"
+#include "argos_error.h"
       integer    nbfmx,     nmap,   nenrgy,   nrtype
-      parameter( nbfmx=500, nmap=2, nenrgy=1, nrtype=-1 )
-!     parameter( nbfmx=255, nmap=2, nenrgy=1, nrtype=-1 )
-
-c     # dummy:
+      parameter( nbfmx=1000, nmap=2, nenrgy=1, nrtype=-1 )
+!     parameter( nbfmx=500, nmap=2, nenrgy=1, nrtype=-1 )
       integer nsym, ns, nbft, nlist
 !     real*8        repnuc
       character*3   ityp(1:nsym)
@@ -34,15 +29,9 @@ c     # dummy:
       character*3   mtype(1:ns)
       integer       ms(1:nbft)
       integer       mnl(1:nbft)
-      integer       map(nbft,nmap)
-c
-c     # local:
-c
-#include "argos_error.h"
-
+!     # local:
       integer    bmin,   bmax
       parameter( bmin=0, bmax=17 )
-c
       integer      clip, i, j
       character*8  bfnlab(nbfmx)
       character*4  slabel(8)
@@ -50,13 +39,10 @@ c
       integer      ietype(nenrgy)
       integer      imtype(nmap)
       character*2  btype(bmin:bmax)
-c
       real*8   sifsce
       external sifsce
-c
 c     # map vector types.
       data imtype/ 3, 4 /
-c
 c     # basis function types.
       data btype/ '??', '_s', '_p', '3s', '_d', '4p', '_f', '5s', '5d',
      &      '_g', '6p', '6f', '_h', '7s', '7d', '7g', '_i', '??' /
@@ -64,6 +50,8 @@ c
 c     # this routine is a bit of a hack.  the sifs data should
 c     # be more intimately incorporated into argos. -rls
 c
+      ALLOCATE(IPT_WTHEAD_MAP(nbft,2))
+
       if ( nbft .gt. nbfmx ) then
         WRITE (NLIST,1000) nbfmx,(nbft-nbfmx)
  1000   FORMAT(/
@@ -76,8 +64,8 @@ c
 c     # set map(*,*) and create bfnlab(*) from the input arrays.
 c
       do 20 i = 1, nbft
-        map(i,1) = ms(i)
-        map(i,2) = mnl(i)
+        IPT_WTHEAD_MAP(i,1) = ms(i)
+        IPT_WTHEAD_MAP(i,2) = mnl(i)
         clip = min( max( bmin, mnl(i) ), bmax )
         write( bfnlab(i), fmt='(i3,a3,a2)' )
      &   i, mtype(ms(i)), btype(clip)
@@ -121,11 +109,13 @@ c
 
 !    # basis function to atomic center map
       write(nlist,'(/,a)') ' basis function to center (i:map(i))'
-      write(nlist,'(5(i4,a1,i4,4x))') (i,':',map(i,1),i=1,nbft)
+      write(nlist,'(5(i4,a1,i4,4x))') 
+     &            (i,':',IPT_WTHEAD_MAP(i,1),i=1,nbft)
 
 !    # basis function to orbital type map
       write(nlist,'(/,a)') ' basis function to orbital type (i:map(i))'
-      write(nlist,'(5(i4,a1,i4,4x))') (i,':',map(i,2),i=1,nbft)
+      write(nlist,'(5(i4,a1,i4,4x))') 
+     &            (i,':',IPT_WTHEAD_MAP(i,2),i=1,nbft)
 
       ENDIF
 
@@ -136,36 +126,38 @@ c
 6053  format( 1x,'basis function   = ',8i5)
 6100  format(/1x,a,(1x,10i10))
 c
+      DEALLOCATE(IPT_WTHEAD_MAP)
       return
       end
 
 
       SUBROUTINE ARGOS_INPUT_INFO2(
      &           LMNP1, ICONS, IRCRU, ICONU, ZET, ETA, ICSU, IGCS,
-     &           ISFR, IRU, LA, ND, LB, ITYP, C, ICU, ITL, ITU,
+     &           ISFR, IRU, LA, ND, LB, ITYP, ICU, ITL, ITU,
      &           LMNV, IAORDS)
+      USE RECP_IPT
       IMPLICIT NONE
 
       integer
-     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
       common /parmi/
-     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
 
       integer
-     & kaords, mconsu, mgcsu, mru,  mcsu, mctu, mcru, msfu, mgu,
-     & msfru,  mnru,   ngcs,  nu,   mcxu2,
+     & mconsu, mru,   mcru, msfu, 
+     & msfru,  mnru,   ngcs,  nu,   
      & lxyzir,         inam,        nnam, mdum
       common /ntgr/
-     & kaords, mconsu, mgcsu, mru,  mcsu, mctu, mcru, msfu, mgu,
-     & msfru,  mnru,   ngcs,  nu,   mcxu2,
+     & mconsu, mru,   mcru, msfu,
+     & msfru,  mnru,   ngcs,  nu,   
      & lxyzir(3),      inam(5),     nnam, mdum(32)
 
       INTEGER     NLIST
 
       INTEGER     LMNP1(*), I
-      REAL*8      ZET(MCONU,*), ETA(MRCRU,MCONU,*), C(MCTU,MCSU,*)
+      REAL*8      ZET(MCONU,*), ETA(MRCRU,MCONU,*)
       INTEGER     ICONS, ICONU, ICON
       INTEGER     IRCRU, IRCRH, IRCR, IRCRL
       INTEGER     JSFR, ISFR, IR, IRU
@@ -244,7 +236,7 @@ c
             do 748 it = itl,itu
               ict = ict+1
               write (nlist,744) ic, (lmnv(i,it), i=1,3),
-     &          (c(ict,icsr+icol,igcs), icol=1,ncol)
+     &          (IPT_AO2SO(ict,icsr+icol,igcs), icol=1,ncol)
   744         format(i3,', ',3i1,16f7.3)
   748       continue
   752     continue

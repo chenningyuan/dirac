@@ -5,11 +5,9 @@ MODULE RECP_INPUT_READ
 CONTAINS
 
 SUBROUTINE RECP_INPUT_READ_GENERAL(ECP_INPUT,ngen,ns,naords,ncons,ngcs,ncrs)
-! Read general information
-! Y. C. Park
+! Read general information, Y. C. Park
 
   IMPLICIT NONE
-
 ! variables : global
   INTEGER :: ECP_INPUT
   INTEGER :: ngen   !
@@ -23,7 +21,7 @@ SUBROUTINE RECP_INPUT_READ_GENERAL(ECP_INPUT,ngen,ns,naords,ncons,ngcs,ncrs)
 
 ! if ( ns .gt. msu ) then
 !   call bummer('change msup (two places) to ',ns,faterr)
-! elseif ( naords .gt. kaords ) then
+! elseif ( naords .gt. kaordp ) then
 !   call bummer('change kaordp (one place) to ',naords,faterr)
 ! elseif ( ncons .gt. mconsu ) then
 !   call bummer('change mconsp (two places) to ',ncons,faterr)

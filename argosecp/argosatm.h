@@ -2,7 +2,7 @@
       integer   RECP_NONTYP, kcharg, symtxt, RECP_NONT(mxatom)
       real*8    thrs, q(mxatom), qexp1 
       character crt*1, kasym(3,3)*1, id3*1,
-     &          namatm(mxatom)*4, namnar(mxatom,mxatom)*4
+     &          namatm(mxatom)*3, namnar(mxatom,mxatom)*4
  
 ! *** argosin file ***
       character mtype(mxatom)*3 
