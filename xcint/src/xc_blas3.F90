@@ -348,19 +348,19 @@ contains
       if (nr_dmat > 0) then
          do imat = 1, nr_dmat
             irep = dmat_pg_sym(imat) - 1
-            do k = 1, block_length
-               n(k, imat) = 0.0d0
-            end do
-            if (is_gga) then
-               do ixyz = 1, 3
-                  do k = 1, block_length
-                     n_g(k, ixyz, imat) = 0.0d0
-                  end do
-               end do
-            end if
             if (dmat_ih_sym(imat) == 1) then
                do jxyz = 0, 0
 !                 get perturbed densities
+                  do k = 1, block_length
+                     n(k, imat) = 0.0d0
+                  end do
+                  if (is_gga) then
+                     do ixyz = 1, 3
+                        do k = 1, block_length
+                           n_g(k, ixyz, imat) = 0.0d0
+                        end do
+                     end do
+                  end if
                   do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if (jblock == 0) cycle
@@ -432,6 +432,16 @@ contains
             if (dmat_ih_sym(imat) == -1 .and. .not. dft_cfg_no_sdft) then
                do jxyz = jxyz_start, 3
 !                 get perturbed densities
+                  do k = 1, block_length
+                     n(k, imat) = 0.0d0
+                  end do
+                  if (is_gga) then
+                     do ixyz = 1, 3
+                        do k = 1, block_length
+                           n_g(k, ixyz, imat) = 0.0d0
+                        end do
+                     end do
+                  end if
                   do iblock = 1, nr_ao_blocks
                      jblock = llss_block_partner(iblock, jxyz, irep)
                      if (jblock == 0) cycle
