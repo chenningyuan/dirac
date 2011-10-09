@@ -792,24 +792,23 @@ contains
       real(8)             :: f, x
 !     --------------------------------------------------------------------------
 
-      x = 0.0d0
-      iblock_loop: do iblock = 1, nr_ao_blocks
-         st = ao_block_start(iblock)
-         nr = ao_block_nr(iblock)
-         do i = st, st + nr - 1
-            do j = st, i
+!     x = 0.0d0
+!     iblock_loop: do iblock = 1, nr_ao_blocks
+!        st = ao_block_start(iblock)
+!        nr = ao_block_nr(iblock)
+!        do i = st, st + nr - 1
+!           do j = st, i
 !              dmat_0 is positive definite but just to be sure
-               f = dabs(dmat_0(j, i))
-               if (f > x) then
-                  x = f
-               end if
-            end do
-         end do
-      end do iblock_loop
+!              f = dabs(dmat_0(j, i))
+!              if (f > x) then
+!                 x = f
+!              end if
+!           end do
+!        end do
+!     end do iblock_loop
 !radovan: my own empirical estimate, no physics behind this
-      get_block_threshold = dsqrt(10.0d0*dfthr0/(mat_dim*mat_dim*x))
-!conservative for the moment
-      get_block_threshold = tiny(0.0d0)
+!     get_block_threshold = dsqrt(10.0d0*dfthr0/(mat_dim*mat_dim*x))
+      get_block_threshold = dft_cfg_screening
 
    end function
 
