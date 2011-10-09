@@ -74,8 +74,7 @@ SUBROUTINE RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
   nblpr(1) = 0
   do i = 2,nst
      nsopr(i) = nsopr(i-1) + nso(i-1)
-!    print *,'i=',i,'nst=',nst,'nso=',nso(i-1),'RECP_FNIPQ=',RECP_FNIPQ(nso(i-1)+1)
-     nblpr(i) = nblpr(i-1) + RECP_FNIPQ( nso(i-1) + 1 )
+     nblpr(i) = nblpr(i-1) + ( (nso(i-1)+1)*((nso(i-1)+1)-1)/2 )
   enddo
 END SUBROUTINE RECP_INP_ORBITAL_OFFSET
 

@@ -1,24 +1,25 @@
-      SUBROUTINE RECP_INPUT( a,      c,          ccr,    chg,    eta,
-     &   ica,    idp,    ipt,    ityp,       la,     lb,     lcr,
-     &   lls,    lmnp1,  lmnv,   lmn1u,      lproju, maords, mcons,
-     &   mcrs,   mgcs,   mnl,    ms,         mtype,  nblpr,  nc,
-     &   ncon,   ncr,    ncru,   nct,        nd,     nf,     nir,
-     &   nkcrl,  nkcru,  nklsl,  nklsu,      nrcr,   nso,    nsopr,
-     &   nt,     ntl,    ntu,    x,          y,      z,      zcr,
-     &   zet,    lcore,  N1MAX,  L1REC )
+      SUBROUTINE RECP_INP_MAIN(  a,     ccr,    chg,    eta,
+     &   ica,    idp,    ipt,    ityp,  la,     lb,     lcr,
+     &   lls,    lmnp1,   lmn1u, lproju, maords, mcons,
+     &   mcrs,   mgcs,   mnl,    ms,    mtype,  nblpr,  nc,
+     &   ncon,   ncr,    ncru,   nct,   nd,     nf,     nir,
+     &   nkcrl,  nkcru,  nklsl,  nklsu, nrcr,   nso,    nsopr,
+     &   nt,     ntl,    ntu,    x,     y,      z,      zcr,
+     &   zet,    lcore,  N1MAX,  L1REC,CX_TEMP )
  
 !  read and verify the user input: symmetry info, basis sets,
 !  geometry, etc.
-
       USE RECP_INPUT_READ
       USE RECP_INP_ORBITAL 
-
+      USE RECP_IPT
+      USE RECP_OUTPUT
+      
       implicit logical(a-z)
 
 #include "argos_mxvalue.h"
 #include "argos_files.h" 
 #include "argos_error.h" 
-#include "argos_print.h" 
+#include "inc_print.h" 
 
 !     # /bufout/ holds some output integral file parameters.
       integer
@@ -27,35 +28,28 @@
       common /bufout/
      & ifmt1,   ifmt2,   itypea,  itypeb,
      & ibuf,     numout,  nrec,    ntape
- 
       real*8         tol
       common /parmr/ tol
- 
       integer
-     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
       common /parmi/
-     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
- 
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
       integer
-     & kaords, mconsu, mgcsu, mru,  mcsu, mctu, mcru, msfu, mgu,
-     & msfru,  mnru,   ngcs,  nu,   mcxu2,
+     & mconsu, mru,   mcru, msfu, 
+     & msfru,  mnru,   ngcs,  nu,   
      & lxyzir,         inam,        nnam, mdum
       common /ntgr/
-     & kaords, mconsu, mgcsu, mru,  mcsu, mctu, mcru, msfu, mgu,
-     & msfru,  mnru,   ngcs,  nu,   mcxu2,
+     & mconsu, mru,   mcru, msfu, 
+     & msfru,  mnru,   ngcs,  nu,   
      & lxyzir(3),      inam(5),     nnam, mdum(32)
- 
-      integer        ipq
-      common /dim21/ ipq(1000) !256->1000
- 
 !     # dummy:
       integer lcore
       integer
      & ica(mcu,msu,*), idp(mstu,mstu,*), ipt(*),     la(mru,*),
      & lb(*),          lcr(*),           lls(*),     lmnp1(*),
-     & lmnv(3,*),      lmn1u,            lproju,     maords(*),
+     &   lmn1u,            lproju,     maords(*),
      & mcons(*),       mcrs(*),          mgcs(*),    mnl(*),
      & ms(*),          nblpr(*),         nc(*),      ncon(*),
      & ncr(*),         ncru,             nct(*),     nd(*),
@@ -63,21 +57,21 @@
      & nklsl(4,*),     nklsu(4,*),       nrcr(*),    nso(*),
      & nsopr(*),       nt(*),            ntl(*),     ntu(*)
       real*8
-     & a(*),               c(mctu,mcsu,*), ccr(*),   chg(*),
+     & a(*),               ccr(*),   chg(*),
      & eta(mrcru,mconu,*), x(mcu,*),       y(mcu,*), z(mcu,*),
      & zcr(*),             zet(mconu,*)
       character*3 ityp(*), mtype(*)
-c
-c     # local:
-      integer i, itol, inrm, ncrs, l1rec,
+ 
+!     # local:
+      integer I,J,K, itol, inrm, ncrs, l1rec,
      & ngen, ncons, naords, ist, 
      & iaords, iru, ir, igcs, icsu, ictu, ics, ict, ic, icons, iconu,
      & ircru, icon, ircr, 
      & l, ngenp1, isf, isfr, is, icu, ig, if, ilmnp1, lai,
      & itl, itu, jcts, it, jct, jt, ixyz, i2, i3,
      & js, ngp1, iso, n1max, n2max, iau, ia, leig, lmn, 
-     & N_LMNV !lmnvmx
-      integer ixyzir(3), lblso(16)
+     & lmnvmx 
+      integer ixyzir(3), lblso(16),CX_TEMP
       real*8 c_sum, t, eval
 
       character*1 ibl, ipc, isk, lblsh(21)
@@ -93,10 +87,7 @@ c     # for workspace allocation.
       data ibl, isk /' ','0'/, lblsh /'s','p','d','f','g','h','i','k',
      &  'l','m','n','o','q','r','t','u','v','w','x','y','z'/
 
-
-!     # Start RECP_INPUT
-      IF (PRINT_LEVEL.GE.5) 
-     &   PRINT *,'* ECPINT : entering... ARGOS_INPUT'
+      CALL OUTPUT_LOC('RECP_INP_MAIN','E')
 
 !     assign the default unit numbers and filenames.
       ECP_INPUT = 5  ! RECP_INPUT :argos input file
@@ -114,16 +105,12 @@ c     # for workspace allocation.
       CALL RECP_INPUT_READ_GENERAL
      &    (ECP_INPUT,ngen,ns,naords,ncons,ngcs,ncrs)
 
- 
 !     # Number of distinct products of irrep 
-      call izero_argos( nst, nso, 1 )
-      call izero_argos( mstu*mstu*nst, idp, 1 )
-      CALL ECPINT_INPUT_READ_IRREP (ECP_INPUT,idp,nst,nd,ityp)
- 
+      CALL RECP_INP_READ_IRREP(ECP_INPUT,idp,nd,ityp)
+
 !     # Read AO to SO transformation matrices 
-      CALL ECPINT_INPUT_READ_AO2SO
-     &    (naords, ngcs, maords, la, nir, ECP_INPUT, c)
- 
+      CALL RECP_INP_READ_AO2SO
+     &    (naords,ngcs,maords,la,nir,ECP_INPUT,CX_TEMP)
 
 !     # read in exponents and contraction coefficients.
       CALL ECPINT_INPUT_READ_BASISSET
@@ -139,24 +126,34 @@ c     # for workspace allocation.
  
 !     # read in atomic labels, charges, coordinates, basis sets,
 !       and core and spin-orbit potentials
-      call izero_argos(ns,mcrs,1)
+!     call izero_argos(ns,mcrs,1)
+      DO I = 1, ns
+         mcrs(I) = 0
+      ENDDO
+
       CALL ECPINT_INPUT_READ_GEO
      &           (mcu, msu, ng, nbft, ECP_INPUT, ns, nf,
      &            nc, ica, mcons, mgcs, maords, lmnp1, lmn1u,
      &            nrcr, nir, nso, nt, ntl, ntu, la, lb, mcrs,
      &            chg, x, y, z, mtype, mru, ncrs,nst)
 
-      N_LMNV = (lmn1u*(lmn1u + 1)*(lmn1u + 2))/6
-      ipt(2) = ipt(1) + forbyt( 3*N_LMNV )
-
-!     # ipt(*)-->1:lmnv(1:3,1:N_LMNV)
-      call mklmnv(lmn1u,lmnv)
+      lmnvmx = (lmn1u*(lmn1u + 1)*(lmn1u + 2))/6
+      ipt(2) = ipt(1) + forbyt( 3*lmnvmx )
+! FIXME
+!     ALLOCATE(IPT_LMNV(3,lmnvmx))
+      ALLOCATE(IPT_LMNV(3,lmnvmx*3))
+      DO I = 1, 3
+         DO J = 1, lmnvmx*3
+            IPT_LMNV(I,J) = 0
+         ENDDO
+      ENDDO
+!     # ipt(*)-->1:lmnv(1:3,1:lmnvmx)
+      call mklmnv(lmn1u)
 
 !     # end of reading input file.
       CLOSE(UNIT=ECP_INPUT)
 
 !     ---------------------------
-
  
 !     # determine the number of types of one-electron integrals.
  
@@ -191,12 +188,14 @@ c
 !     # normalization of symmetry orbitals. (deleted)
 !     if ( inrm .ne. 0 ) CALL RECP_INP_ORB_SONORM
  
-      call izero_argos(3,ixyzir,1)
+!     call izero_argos(3,ixyzir,1)
+      DO I = 1, 3
+         ixyzir(I) = 0
+      ENDDO
  
 !     contracted orbital and lower-triangle-packed matrix symmetry
 !     offsets.
       CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
-!     CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,ipq,nst)
  
 c     # nnbft = total number of unique so function pairs.
 c     # mpru = the number of elements in a diagonal,
@@ -208,8 +207,10 @@ c     #        associated with an operator that transforms as an
 c     #        irreducible representation.
  
       nnbft = (nbft * (nbft + 1)) / 2
-      mpru  = nblpr(nst) + ipq( nso(nst) + 1 )
- 
+      mpru  = nblpr(nst) + (nso(nst)+1)*((nso(nst)+1)-1)/2
+!     print *,'bbnft',nnbft 
+!     print *,'mpru ',mpru  
+
 !     # normalize the contraction coefficients.
       CALL RECP_INP_ORBITAL_CCNORM
      &   ( mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
@@ -221,7 +222,7 @@ c     #        irreducible representation.
       call gcentr( ica, nc )
 c
       ngp1 = ng+1
-      if ( ngp1 .gt. mgu ) then
+      if ( ngp1 .gt. mgup ) then
         call bummer('change mgup (two places) to ',ngp1,faterr)
       endif
 
@@ -280,8 +281,8 @@ c
           IF (PRINT_LEVEL .GE. 2) THEN        
               CALL ARGOS_INPUT_INFO2(
      &             LMNP1, ICONS, IRCRU, ICONU, ZET, ETA, ICSU, IGCS,
-     &             ISFR, IRU, LA, ND, LB, ITYP, C, ICU, ITL, ITU, 
-     &             LMNV, IAORDS)
+     &             ISFR, IRU, LA, ND, LB, ITYP, ICU, ITL, ITU, 
+     &             IPT_LMNV, IAORDS)
           ENDIF
 
           do 792 ircr = 1,ircru
@@ -300,9 +301,11 @@ c
  
               lmn = lmnp1(icons) - 1
 !             numxyz = ((lmn + 1) * (lmn + 2)) / 2
-!             # ipt(*)-->1:lmnv(1:3,1:N_LMNV), 2:scr(1:xyzdim)
-              call l2opxv( lmn, c(1,ics+1,igcs), itl, itu, lmnv,
-     &         ipt(55)-ipt(2), a(ipt(2)), eval, leig )
+!             # ipt(*)-->1:lmnv(1:3,1:lmnvmx), 2:scr(1:xyzdim)
+ 
+!             call l2opxv(lmn,IPT_AO2SO(1,ics+1,igcs), itl, itu, 
+              call l2opxv(lmn, itl, itu, 
+     &                  IPT_LMNV,  eval,leig,ics,igcs )
 
               if ( leig .lt. 0 ) then
                 IF (PRINT_LEVEL .GE. 2) THEN 
@@ -315,6 +318,7 @@ c
 !               # assign the maximum value.
                 leig = lmn
               endif
+
               mnl(iso) = ( lmnp1(icons)**2 + 2 * leig + 5 ) / 4
               iau = nd(lai)
               do 784 ia = 1,iau
@@ -331,10 +335,10 @@ c
                     do ic = 1, icu
                       do it = itl,itu
                         ict = ict + 1
-                        if( mod(lmnv(ixyz,it),2) .eq. 1 .and.
-     &                      mod(lmnv(i2,  it),2) .eq. 0 .and.
-     &                      mod(lmnv(i3,  it),2) .eq. 0 ) then
-                          c_sum = c_sum + c(ict,ics,igcs)
+                        if( mod(IPT_LMNV(ixyz,it),2) .eq. 1 .and.
+     &                      mod(IPT_LMNV(i2,it)  ,2) .eq. 0 .and.
+     &                      mod(IPT_LMNV(i3,it)  ,2) .eq. 0 ) then
+                          c_sum = c_sum + IPT_AO2SO(ict,ics,igcs)
                         endif
                       enddo   
                     enddo   
@@ -343,7 +347,7 @@ c
      &               .or. (lai .eq. ixyzir(ixyz)) ) go to 780
                     if ( ixyzir(ixyz) .ne. 0 ) then
                       write (nlist,*) 'axis choice is unsuitable for'
-     &                 //' spin-orbit integrals'
+     &                              //' spin-orbit integrals'
                       call bummer('syminp: ixyzir(ixyz)=',
      &                 ixyzir(ixyz),faterr)
                     endif
@@ -366,7 +370,7 @@ c
   840 continue
 
 !     -------------------------------
-      WRITE(NLIST,1000)
+!     WRITE(NLIST,1000)
 
       if ( inam(nu) .eq. 5 ) then
         do 860 ixyz = 1, 3
@@ -399,12 +403,11 @@ c     # set up the 1-e record parameters.
       endif
  
 !     # write out the header information
-!     # ipt(*)-->1:lmnv(1:3,1:N_LMNV), 2:map(1:2,1:nbft)
+!     # ipt(*)-->1:lmnv(1:3,1:lmnvmx), 2:map(1:2,1:nbft)
 !     # push map(*) allocation onto the stack.
  
       call wthead( nst,    ns,     isfr,   ityp,
-     &   nso,      mtype,  ms,     mnl,    nlist,
-     &   a(ipt(2)) )
+     &   nso,      mtype,  ms,     mnl,    nlist)
  
 !     # multiply normalization constants into contraction coefficients.
       do icons = 1,ncons
@@ -425,13 +428,11 @@ c     # set up the 1-e record parameters.
   880    format(//i9,' symmetry orbitals,',3x,4(3x,a3,':',i4),
      &                                   (/31x,4(3x,a3,':',i4)))
       ENDIF
- 
-      IF (PRINT_LEVEL.GE.5) 
-     &   PRINT *,' * ECPINT : exiting...  ARGOS_INPUT'
 
-      return
  1000 FORMAT(/,10X,
      & '-----------------------------------------------------------')
+
+      CALL OUTPUT_LOC('RECP_INP_MAIN','X')
       end
 
 

@@ -3,7 +3,7 @@
 !     read DIRAC input files and convert to ARGOS input file
 !
 
-      USE RECP_INTERFACE
+      USE RECP_NTR
 
 #include "mxcent.h"          
 #include "nuclei.h"          
@@ -22,8 +22,6 @@
       integer blkcnt
       LOGICAL FILE_EXIST
       INTEGER ECPLINE, MAX_ECPLINE
-!     CHARACTER*90 ECPLINE(2000)
-
       MAX_ECPLINE = 1000
  
 ! files 
@@ -81,6 +79,9 @@
      &              crt, RECP_NONTYP, kcharg, symtxt, 
      &              ((kasym(i,j),j=1,3),i=1,3), id3, thrs
       nmline = nmline + 1
+
+      nmcrs = 0  ! index for the core and spin-orbit expansion set
+      soindex = 0
 !
 ! Section 5. charge, atoms, exponent   
 !
@@ -108,76 +109,35 @@ c
               if (bscode.eq.5)           ! basis library
      &           call readlibbas(basfil, i, iqm, jco, q,
      &                           nucij, nrcij, expn, cont, bfree)
-      enddo
-!
-! Section 9. Start of ECP block
-!
-
-      nmcrs = 0  ! index for the core and spin-orbit expansion set
-!     # Check ARGOS_INPUT2 file
-      INQUIRE(FILE='RECP_INPUT2',EXIST=FILE_EXIST)
-      IF (FILE_EXIST) GOTO 2310
-
-!     # Check RECP parameter
-      if ((mline(nmline)(1:6).eq.'FINISH').or.
-     &    (mline(nmline)(1:6).eq.'finish')) then
-         ecpchk = .false.
-         goto 3000
-      else if ((mline(nmline)(1:5).ne.'START').and.
-     &    (mline(nmline)(1:5).ne.'start')) then
-         goto 2991
-      endif
-
-!     # Make RECP_INPUT2 file
-      nmline = nmline + 1
-      OPEN (64,FILE='RECP_INPUT2',FORM='FORMATTED')
-      DO ECPLINE = 1, MAX_ECPLINE
-         IF (MLINE(NMLINE)(1:6).EQ.'FINISH') GOTO 2290
-         WRITE(64,'(a90)') MLINE(NMLINE) 
-         NMLINE = NMLINE + 1
-      ENDDO
- 2290 CONTINUE
-      WRITE(64,'(a)') 'FINISH'
-!     MAX_ECPLINE = ECPLINE
-      CLOSE(64)
-
- 2310 continue
-      ecpchk = .true.
-      soindex = 1
-      do i = 1, RECP_NONTYP
+!        --------
+!        Read ECP    
+!        --------
          mcrs(i) = 0
-      enddo
- 
-!     # READ RECP_INPUT2
-      OPEN (64,FILE='RECP_INPUT2',FORM='FORMATTED',STATUS='OLD')
-      REWIND(64)
-      DO ECPLINE = 1, MAX_ECPLINE
-         READ(64,FMT='(a90)',END=2311) MLINE(ECPLINE) 
-      ENDDO
- 2311 CONTINUE
-      CLOSE(64)
-
-      NMLINE = 1     
-      do i = 1, RECP_NONTYP + 1
-         IF ( mline(nmline)(1:6).EQ.'FINISH' ) GOTO 3000
-         if ((mline(nmline)(1:3).ne.'ECP').and.
-     &       (mline(nmline)(1:3).ne.'ecp')) goto 2991
-         if ((mline(nmline)(4:6).ne.'LIB').and.
-     &       (mline(nmline)(4:6).ne.'lib')) then
-c           (3-2. explicit ECP)
-            call readecpexp(mline, nmline, i, namatm, namnar,
-     &                      lcru, llsu, nbfcr, nbfls, soindex,
+         IF (MLINE(NMLINE)(1:3).EQ.'ECP') THEN
+            ecpchk = .true.
+            if ((mline(nmline)(4:6).ne.'LIB')) THEN
+!              (3-2. explicit ECP)
+               call readecpexp(mline, nmline, i, namatm, namnar,
+     &                      lcru, llsu, nbfcr, nbfls,
      &                      ncr, zcr, ccr, nls, zls, cls,
-     &                      mcrs, nmcrs, RECP_NONTYP)
-         else
-c           (3-3. ECP library)
-            call readecplib(mline, nmline, i, namatm, namnar,
+     &                      mcrs, nmcrs, RECP_NONTYP, q)
+            else
+!              (3-3. ECP library)
+               call readecplib(mline, nmline, i, namatm, namnar,
      &                      lcru, llsu, nbfcr, nbfls, soindex,
      &                      ncr, zcr, ccr, nls, zls, cls,
      &                      mcrs, nmcrs, RECP_NONTYP )
-         endif
-         soindex = soindex + 1
+            endif
+            soindex = soindex + 1
+            mcrs(i) = soindex
+            nmcrs   = nmcrs + 1
+         ENDIF
+!
       enddo
+
+      CALL RECP_NTRD_READCP
+
+
       goto 3000
 c error
  2991 continue
@@ -278,8 +238,9 @@ c----------------------------------------------
 c----------------------------------------------
 c Card 8 : ecp
 c----------------------------------------------
-      if (ecpchk .eqv. .false.) goto 2900
-      do i = 1, soindex-1                   ! (nmcrs)
+      if (ecpchk.EQV..false.) goto 2900
+!     do i = 1, soindex-1                   ! (nmcrs)
+      do i = 1, soindex                     ! (nmcrs)
          write(lufile3,'(2i5)') lcru(i),llsu(i)
          do j = 1, lcru(i) + 1                 ! ARPP
             write (lufile3,'(i5)') nbfcr(i,j)
@@ -414,3 +375,6 @@ c
          get_cord = cord(k, i)
          return
       end function
+
+
+

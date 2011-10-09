@@ -77,6 +77,7 @@ c     else
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readbskey...'
       write(*,*) 'Cannot read basis keyword'
+      print *,mline(nmline)
       stop
  2799 continue
       nmline = nmline + 1
@@ -347,52 +348,63 @@ c
 *deck readecpexp  
 c     *******************************************************
       subroutine readecpexp(mline, nmline, i, namatm, namnar,
-     &                      lcru, llsu, nbfcr, nbfls, soindex,
+     &                      lcru, llsu, nbfcr, nbfls,
      &                      ncr, zcr, ccr, nls, zls, cls,
-     &                      mcrs, nmcrs, RECP_NONTYP)
+     &                      mcrs, nmcrs, RECP_NONTYP, q)
 c     *******************************************************
+      USE RECP_NTR
 #include "mxcent.h"
 #include "nuclei.h"
 #include "argosparm.h"
 #include "argosecp.h"
 #include "argosatm.h"
+
+      CHARACTER*3 RECP_NUC(120)
+      DATA RECP_NUC /
+     &     'H  ','He ','Li ','Be ','H  ','H  ','H  ','H  ','H  ','H  ',! - 10
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 20
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 30
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 40
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 50
+     &     'H  ','Te ','I  ','Xe ','H  ','H  ','H  ','H  ','H  ','H  ',! - 60
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 70
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 80
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! - 90
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! -100
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ',! -110
+     &     'H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  ','H  '/! -120
 c
 c     for SO-index
 c
-      csoindex = 0
-      read(mline(nmline)(5:8),'(a4)') namatm(i) ! name of atom
+!     csoindex = 0
+!     read(mline(nmline)(5:8),'(a3)') namatm(i) ! name of atom
+      namatm(i) = RECP_NUC(RECP_CENT(i))
+      lcru(i)   = AREP_ANG(i)
+      llsu(i)   = SOREP_ANG(i)
       nmline = nmline + 1
-      do j = 1, RECP_NONTYP
-         if (namatm(i)(1:3).eq.namnar(j,1)(1:3)) then
-            if (mcrs(j).ne.0) goto 3227
-            mcrs(j) = soindex
-            nmcrs = nmcrs + 1
-            csoindex = 1
-            goto 3221
-         endif
-      enddo
-      if (csoindex.ne.1) goto 3226
 c
-c     read ARPP / SOPP
+c     read AREP / SOREP
 c
- 3221 continue
-      read(mline(nmline),*,err=3231) lcru(i), llsu(i) ! read number of ARPP/SOPP
-      nmline = nmline + 1
-      do j = 1, lcru(i) + 1                           ! read ARPPs
-         read (mline(nmline),*,err=3232) nbfcr(i,j)
+      do j = 1, lcru(i) + 1
+!        in each block
+         nbfcr(i,j) = AREP_BLK(I,J)
          nmline = nmline + 1
          do k = 1, nbfcr(i,j)
-            read (mline(nmline),*,err=3233) 
-     &           ncr(i,j,k),zcr(i,j,k),ccr(i,j,k)
+            ncr(i,j,k) = AREP_R(I,J,K)
+            zcr(i,j,k) = AREP_E(I,J,K)
+            ccr(i,j,k) = AREP_C(I,J,K)
             nmline = nmline + 1
          enddo
       enddo
-      do j = 1, llsu(i)                      ! read SOPPs
-         read (mline(nmline),*,err=3234) nbfls(i,j)
+
+      do j = 1, llsu(i)
+!        in each block
+         nbfls(i,j) = SOREP_BLK(I,J)
          nmline = nmline + 1
          do k = 1, nbfls(i,j)
-            read (mline(nmline),*,err=3235) 
-     &           nls(i,j,k),zls(i,j,k),cls(i,j,k)
+            nls(i,j,k) = SOREP_R(I,J,K)
+            zls(i,j,k) = SOREP_E(I,J,K)
+            cls(i,j,k) = SOREP_C(I,J,K)
             nmline = nmline + 1
          enddo
       enddo
@@ -403,45 +415,45 @@ c
  3226 continue ! namatm
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
-      write(*,'(a9,a4,a15)') 'ECP Name ',namatm(i),' dose not match'
+      write(*,'(a9,a3,a15)') 'ECP Name ',namatm(i),' dose not match'
       write(*,*) 'It is case sensitive'
       stop
  3227 continue ! namatm
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
-      write(*,'(a8,a4,a20)') 'ECP for ',namatm(i),' is already declared'
+      write(*,'(a8,a3,a20)') 'ECP for ',namatm(i),' is already declared'
       stop
  3231 continue ! lcru, llsu
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
       write(*,*) 'Cannot read number of ARPP or SOPP'
-      write(*,'(a14,a4)') 'Check ECP for ',namatm(i)
+      write(*,'(a14,a3)') 'Check ECP for ',namatm(i)
       stop
  3232 continue ! nbfcr
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
       write(*,*) 'Cannot read number of function'
       write(*,*) 'in potential expansion'
-      write(*,'(a14,a4)') 'Check ECP for ',namatm(i)
+      write(*,'(a14,a3)') 'Check ECP for ',namatm(i)
       stop
  3233 continue ! ncr, zcr, ccr
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
       write(*,*) 'Cannot read exponent and coefficient'
-      write(*,'(a14,a4)') 'Check ECP for ',namatm(i)
+      write(*,'(a14,a3)') 'Check ECP for ',namatm(i)
       stop
  3234 continue ! bnfls
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
       write(*,*) 'Cannot read number of function'
       write(*,*) 'in Spin-Orbit potential expansion'
-      write(*,'(a14,a4)') 'Check ECP for ',namatm(i)
+      write(*,'(a14,a3)') 'Check ECP for ',namatm(i)
       stop
  3235 continue ! nls, zls, cls
       write(*,*) '*** ERROR ***'
       write(*,*) 'in subroutine readecpexp...'
       write(*,*) 'Cannot read exponent and coefficient'
-      write(*,'(a14,a4)') 'Check ECP for ',namatm(i)
+      write(*,'(a14,a3)') 'Check ECP for ',namatm(i)
       stop
  3999 continue
       end
@@ -871,7 +883,7 @@ c                 # check closest atom
       do jgen=1,ngenl              !ngenl=symtxt
          igen=igenq(jgen)
          do is=1,nsag              !nsag=ns
-            print *,'RECP_NONT',is,RECP_NONT(is) 
+!           print *,'RECP_NONT',is,RECP_NONT(is) 
             do j=1,RECP_NONT(is)
                do iatm=1,mj2(is,j)-1          !mj2(i,j)-1 = nc(is)
                   if (isend(iatm,j,igen,is).ne.iatm) goto 550

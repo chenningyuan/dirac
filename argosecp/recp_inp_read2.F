@@ -91,11 +91,11 @@
 
 !     Global variables ------------------------------------
       integer
-     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
       common /parmi/
-     & mblu,  mccu, mconu, mcu,  mcxu, mpru, nbft, nnbft,
-     & mrcru, mstu, msu,   nblu, ng,   ns,   nst
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
 
       INTEGER ic, nc(*), chg(*)  !ic->I_CENT
       INTEGER NLIST, PRINT_LEVEL 
@@ -259,20 +259,24 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
       END
 
 !--------------------------------------------------------------------
-      SUBROUTINE ECPINT_INPUT_READ_IRREP (ECP_INPUT,idp,nst,nd,ityp)
+      SUBROUTINE RECP_INP_READ_IRREP(ECP_INPUT,idp,nd,ityp)
 !     # read the number of product triples.
 
 #include "argos_mxvalue.h"
 #include "argos_error.h"
 
+      integer
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
+      common /parmi/
+     & mccu, mconu, mcu,   mpru, nbft, nnbft,
+     & mrcru, mstu, msu,   ng,   ns,   nst
 !     global viariables
-      INTEGER ECP_INPUT
-      INTEGER idp(mstup,mstup,*)
-      INTEGER nst, nd(*)
+      INTEGER ECP_INPUT,idp(mstu,mstu,*),nd(*)
       character*3 ityp(*) 
 
 !     local viariables
-      INTEGER I_DPT, N_DPT, I,J,K, iprd 
+      INTEGER I_DPT, N_DPT, I,J,K, I2,J2,K2, iprd 
       INTEGER ndptsm(0:9), iprdsm(3,7)
 
 !     the number of product triples for each nst.
@@ -280,14 +284,22 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
      &    / -1, -1, 0, -1, 1, -1, -1, -1, 7, -1 /
 !     nst=4 and nst=8 product triples.
       data iprdsm / 2,3,4, 2,5,6, 2,7,8, 3,5,7, 3,6,8, 4,5,8, 4,6,7 /
-
-
+      do I2 = 1, mstu
+         do J2 = 1, mstu
+            do K2 = 1, mstu
+!           do K2 = 1, nst
+               idp(I2,J2,K2) = 0
+            enddo
+         enddo
+      enddo
+    
 !     # read number of irreps, degeneracy, and character labels.
       read (ECP_INPUT,'(i3,12(i3,a3))') nst,(nd(I),ityp(I),I=1,nst)
       if ( nst .gt. mstup ) then
         call bummer('change mstup (two places) to ',nst,faterr)
       endif
 
+!     print *,'mstu',mstu,'nst',nst
 !     assign the totally symmetric irrep binary products.
       do I = 1,nst
         idp(I,I,1) = 1
@@ -332,14 +344,14 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
         endif
       endif
 
-      RETURN
       END
 
 !--------------------------------------------------------------------
-      SUBROUTINE ECPINT_INPUT_READ_AO2SO 
-     &          (naords, ngcs, maords, L_IRREP, nir, ECP_INPUT, SO_COEF)
+      SUBROUTINE RECP_INP_READ_AO2SO 
+     &          (naords,ngcs,maords,L_IRREP,nir,ECP_INPUT,CX_TEMP)
 !     # Read AO to SO transformation matrices 
 
+      USE RECP_IPT
 #include "argos_mxvalue.h"
 #include "argos_error.h"
 
@@ -347,45 +359,58 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
       INTEGER naords, ngcs, maords(*)
       INTEGER L_IRREP(mrup,*)  ! la -> L_IRREP 
       INTEGER nir(*),ECP_INPUT
-      REAL*8  SO_COEF(mctup,mcsup,*) ! c -> SO_COEF
 !     local viariables
-      INTEGER I_AORDS  ! Ith AO reduction set
-      INTEGER N_IRREP, I_IRREP
-      INTEGER I_SO, N_SO, I_AO, N_AO
-      REAL*8  SO_COEF_TEMP1, SO_COEF_TEMP2
+      INTEGER AORDS1  ! Ith AO reduction set
+      INTEGER N_IRREP, I_IRREP, IRREP_MAX
+      INTEGER SO1, N_SO, AO1, N_AO, CX_TEMP
+      REAL*8  AO2SO_TEMP1, AO2SO_TEMP2
 
 !     # Read number(N_IRREP) and list(L_IRREP) of irrep 
 !       in Ith AO reduction set
-      DO I_AORDS = 1, naords
+      IRREP_MAX = 0
+      DO AORDS1 = 1, naords
         read (ECP_INPUT,*) N_IRREP, 
-     &                 (L_IRREP(I_IRREP,I_AORDS), I_IRREP=1,N_IRREP)
+     &                 (L_IRREP(I_IRREP,AORDS1), I_IRREP=1,N_IRREP)
         if ( N_IRREP .gt. mrup ) then
           call bummer('change mrup (one place) to ',N_IRREP,faterr)
         endif
-        nir(I_AORDS) = N_IRREP
+
+        IF ( N_IRREP.GE.IRREP_MAX) IRREP_MAX = N_IRREP
+        nir(AORDS1) = N_IRREP
       ENDDO
 
+!     Allocate 
+!     print *,'allocate IPT_AO2SO(',IRREP_MAX,IRREP_MAX,naords,')'
+      ALLOCATE( IPT_AO2SO(IRREP_MAX,IRREP_MAX,naords) )
+
+      CX_TEMP = IRREP_MAX*IRREP_MAX*naords 
+      CX_TEMP = CX_TEMP*CX_TEMP
+!     print *,'allocate IPT_CX_TEMP(',CX_TEMP,')'
+      ALLOCATE( IPT_CX_TEMP(CX_TEMP) )
+      
 ! NGCS  Number of transformation matrices relating AOs to
 !       SOs to be read in.  Usually this will be the same
 !       as the number of AO reduction sets.
 
-      do I_AORDS = 1,ngcs
-        read (ECP_INPUT,*) N_SO, N_AO, maords(I_AORDS)
-        if ( N_SO .gt. mcsup ) then
-          call bummer('change mcsup (one place) to ',N_SO,faterr)
-        elseif ( N_AO .gt. mctup ) then
-          call bummer('change mctup (one place) to ',N_AO,faterr)
-        endif
+      do AORDS1 = 1,ngcs
+        read (ECP_INPUT,*) N_SO, N_AO, maords(AORDS1)
+!       if ( N_SO .gt. mcsup ) then
+!         call bummer('change mcsup (one place) to ',N_SO,faterr)
+!       elseif ( N_AO .gt. mctup ) then
+!         call bummer('change mctup (one place) to ',N_AO,faterr)
+!       endif
  
-        do I_SO = 1,N_SO
-          read (ECP_INPUT,*) (SO_COEF(I_AO,I_SO,I_AORDS), I_AO=1,N_AO)
+        do SO1 = 1,N_SO
+          read (ECP_INPUT,*) (IPT_AO2SO(AO1,SO1,AORDS1), AO1=1,N_AO)
 
-          DO I_AO = 1,N_AO
-            SO_COEF_TEMP1 = SO_COEF(I_AO,I_SO,I_AORDS)
-            SO_COEF_TEMP2 = ABS(SO_COEF_TEMP1)
-            IF (SO_COEF_TEMP2.NE.0.0d0 .AND. SO_COEF_TEMP2.NE.1.0d0 )
-     &         SO_COEF(I_AO,I_SO,I_AORDS) 
-     &              = SIGN(SQRT(SO_COEF_TEMP2),SO_COEF_TEMP1)
+          DO AO1 = 1,N_AO
+            AO2SO_TEMP1 = IPT_AO2SO(AO1,SO1,AORDS1)
+            AO2SO_TEMP2 = ABS(IPT_AO2SO_TEMP1)
+            IF (AO2SO_TEMP2.NE.0.0d0 .AND. AO2SO_TEMP2.NE.1.0d0 )
+     &         IPT_AO2SO(AO1,SO1,AORDS1) 
+     &              = SIGN(SQRT(AO2SO_TEMP2),AO2SO_TEMP1)
+!           PRINT *,'IPT_AO2SO(',AO1,SO1,AORDS1,')',
+!    &              IPT_AO2SO(AO1,SO1,AORDS1)
           ENDDO
         enddo
       enddo
@@ -479,7 +504,7 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
           lmn1u     = max(lmn1u,lmnp1(BASIS_BLOCK))
 
 !         nt : 
-          nt(I2)    = RECP_FNIPQ(lmnp1(BASIS_BLOCK)+1)
+          nt(I2)=(lmnp1(BASIS_BLOCK)+1)*((lmnp1(BASIS_BLOCK)+1)-1)/2
           ntu(I2)   = (nt(I2)*(lmnp1(BASIS_BLOCK)+2))/3
           ntl(I2)   = ntu(I2)-nt(I2)+1
 !         nct(I2)   = NUC_OTHER_N(NUC_I)*nt(I2)
@@ -490,8 +515,8 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
               nso(la(K,maords(L_QUANT))) 
      &           = nso(la(K,maords(L_QUANT)))+1
               lb(nbft) = nso(la(K,maords(L_QUANT)))
-              print *,'la:',la(K,maords(L_QUANT)),
-     &                'nso:',nso(la(K,maords(L_QUANT)))
+!             print *,'la:',la(K,maords(L_QUANT)),
+!    &                'nso:',nso(la(K,maords(L_QUANT)))
             ENDDO
           ENDDO
         ENDDO
@@ -511,14 +536,15 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
 
 !------------------------------------------------
 
-      subroutine mklmnv(lmn1u,lmnv)
+      subroutine mklmnv(lmn1u)
 !     # generate cartesian gaussian exponent array.
-!     # lmnv(*,*) = exponents of the cartesian gaussian basis functions.
+!     # IPT_LMNV(*,*) = exponents of the cartesian gaussian basis functions.
 !     #             s  p  d   f   g   h   i
 !     #       lmn = 0  1  2   3   4   5   6
 !     #    numxyz = 1, 3, 6, 10, 15  21  28      =((lmn+1)*(lmn+2))/2
+      USE RECP_IPT
       implicit logical (a-z)
-      integer i, j, k, lmn, lmn1u, lmnv(3,*), ndx
+      integer i, j, k, lmn, lmn1u, ndx
 
       ndx = 0
       do 40 lmn = 0,lmn1u-1
@@ -527,170 +553,171 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
             k = lmn - i -j
             if( i.eq.j .and. j.eq.k ) then
               ndx = ndx + 1
-              lmnv(1,ndx) = i
-              lmnv(2,ndx) = i
-              lmnv(3,ndx) = i
+              IPT_LMNV(1,ndx) = i
+              IPT_LMNV(2,ndx) = i
+              IPT_LMNV(3,ndx) = i
             elseif( i.eq.j .and.j.gt.k ) then
               ndx = ndx + 1
-              lmnv(1,ndx) = i
-              lmnv(2,ndx) = i
-              lmnv(3,ndx) = k
+              IPT_LMNV(1,ndx) = i
+              IPT_LMNV(2,ndx) = i
+              IPT_LMNV(3,ndx) = k
               ndx = ndx + 1
-              lmnv(1,ndx) = i
-              lmnv(2,ndx) = k
-              lmnv(3,ndx) = i
+              IPT_LMNV(1,ndx) = i
+              IPT_LMNV(2,ndx) = k
+              IPT_LMNV(3,ndx) = i
               ndx = ndx + 1
-              lmnv(1,ndx) = k
-              lmnv(2,ndx) = i
-              lmnv(3,ndx) = i
+              IPT_LMNV(1,ndx) = k
+              IPT_LMNV(2,ndx) = i
+              IPT_LMNV(3,ndx) = i
             elseif( i.gt.j .and. j.eq.k ) then
               ndx = ndx + 1
-              lmnv(1,ndx) = i
-              lmnv(2,ndx) = j
-              lmnv(3,ndx) = j
+              IPT_LMNV(1,ndx) = i
+              IPT_LMNV(2,ndx) = j
+              IPT_LMNV(3,ndx) = j
               ndx = ndx + 1
-              lmnv(1,ndx) = j
-              lmnv(2,ndx) = i
-              lmnv(3,ndx) = j
+              IPT_LMNV(1,ndx) = j
+              IPT_LMNV(2,ndx) = i
+              IPT_LMNV(3,ndx) = j
               ndx = ndx + 1
-              lmnv(1,ndx) = j
-              lmnv(2,ndx) = j
-              lmnv(3,ndx) = i
+              IPT_LMNV(1,ndx) = j
+              IPT_LMNV(2,ndx) = j
+              IPT_LMNV(3,ndx) = i
             elseif( i.gt.j .and. j.gt.k ) then
               ndx = ndx + 1
-              lmnv(1,ndx) = i
-              lmnv(2,ndx) = j
-              lmnv(3,ndx) = k
+              IPT_LMNV(1,ndx) = i
+              IPT_LMNV(2,ndx) = j
+              IPT_LMNV(3,ndx) = k
               ndx = ndx + 1
-              lmnv(1,ndx) = i
-              lmnv(2,ndx) = k
-              lmnv(3,ndx) = j
+              IPT_LMNV(1,ndx) = i
+              IPT_LMNV(2,ndx) = k
+              IPT_LMNV(3,ndx) = j
               ndx = ndx + 1
-              lmnv(1,ndx) = j
-              lmnv(2,ndx) = i
-              lmnv(3,ndx) = k
+              IPT_LMNV(1,ndx) = j
+              IPT_LMNV(2,ndx) = i
+              IPT_LMNV(3,ndx) = k
               ndx = ndx + 1
-              lmnv(1,ndx) = k
-              lmnv(2,ndx) = i
-              lmnv(3,ndx) = j
+              IPT_LMNV(1,ndx) = k
+              IPT_LMNV(2,ndx) = i
+              IPT_LMNV(3,ndx) = j
               ndx = ndx + 1
-              lmnv(1,ndx) = j
-              lmnv(2,ndx) = k
-              lmnv(3,ndx) = i
+              IPT_LMNV(1,ndx) = j
+              IPT_LMNV(2,ndx) = k
+              IPT_LMNV(3,ndx) = i
               ndx = ndx + 1
-              lmnv(1,ndx) = k
-              lmnv(2,ndx) = j
-              lmnv(3,ndx) = i
+              IPT_LMNV(1,ndx) = k
+              IPT_LMNV(2,ndx) = j
+              IPT_LMNV(3,ndx) = i
             endif
    20     continue
    30   continue
    40 continue
+!     print *,'mklmnv : ndx',ndx
 civan-s
 c  *********************
 c     new ordering of 
 c      d exponents
 c  *********************
-      lmnv(1,5) = 2
-      lmnv(2,5) = 0
-      lmnv(3,5) = 0
-      lmnv(1,6) = 1
-      lmnv(2,6) = 1
-      lmnv(3,6) = 0
-      lmnv(1,7) = 1
-      lmnv(2,7) = 0
-      lmnv(3,7) = 1
-      lmnv(1,8) = 0
-      lmnv(2,8) = 2
-      lmnv(3,8) = 0
-      lmnv(1,9) = 0
-      lmnv(2,9) = 1
-      lmnv(3,9) = 1
-      lmnv(1,10) = 0
-      lmnv(2,10) = 0
-      lmnv(3,10) = 2
+      IPT_LMNV(1,5) = 2
+      IPT_LMNV(2,5) = 0
+      IPT_LMNV(3,5) = 0
+      IPT_LMNV(1,6) = 1
+      IPT_LMNV(2,6) = 1
+      IPT_LMNV(3,6) = 0
+      IPT_LMNV(1,7) = 1
+      IPT_LMNV(2,7) = 0
+      IPT_LMNV(3,7) = 1
+      IPT_LMNV(1,8) = 0
+      IPT_LMNV(2,8) = 2
+      IPT_LMNV(3,8) = 0
+      IPT_LMNV(1,9) = 0
+      IPT_LMNV(2,9) = 1
+      IPT_LMNV(3,9) = 1
+      IPT_LMNV(1,10) = 0
+      IPT_LMNV(2,10) = 0
+      IPT_LMNV(3,10) = 2
 c  *********************
 c     new ordering of
 c      f exponents  
 c  *********************
-      lmnv(1,11) = 3
-      lmnv(2,11) = 0
-      lmnv(3,11) = 0
-      lmnv(1,12) = 2
-      lmnv(2,12) = 1
-      lmnv(3,12) = 0
-      lmnv(1,13) = 2
-      lmnv(2,13) = 0
-      lmnv(3,13) = 1
-      lmnv(1,14) = 1
-      lmnv(2,14) = 2
-      lmnv(3,14) = 0
-      lmnv(1,15) = 1
-      lmnv(2,15) = 1
-      lmnv(3,15) = 1
-      lmnv(1,16) = 1
-      lmnv(2,16) = 0
-      lmnv(3,16) = 2
-      lmnv(1,17) = 0
-      lmnv(2,17) = 3
-      lmnv(3,17) = 0
-      lmnv(1,18) = 0
-      lmnv(2,18) = 2
-      lmnv(3,18) = 1
-      lmnv(1,19) = 0
-      lmnv(2,19) = 1
-      lmnv(3,19) = 2
-      lmnv(1,20) = 0
-      lmnv(2,20) = 0
-      lmnv(3,20) = 3
+      IPT_LMNV(1,11) = 3
+      IPT_LMNV(2,11) = 0
+      IPT_LMNV(3,11) = 0
+      IPT_LMNV(1,12) = 2
+      IPT_LMNV(2,12) = 1
+      IPT_LMNV(3,12) = 0
+      IPT_LMNV(1,13) = 2
+      IPT_LMNV(2,13) = 0
+      IPT_LMNV(3,13) = 1
+      IPT_LMNV(1,14) = 1
+      IPT_LMNV(2,14) = 2
+      IPT_LMNV(3,14) = 0
+      IPT_LMNV(1,15) = 1
+      IPT_LMNV(2,15) = 1
+      IPT_LMNV(3,15) = 1
+      IPT_LMNV(1,16) = 1
+      IPT_LMNV(2,16) = 0
+      IPT_LMNV(3,16) = 2
+      IPT_LMNV(1,17) = 0
+      IPT_LMNV(2,17) = 3
+      IPT_LMNV(3,17) = 0
+      IPT_LMNV(1,18) = 0
+      IPT_LMNV(2,18) = 2
+      IPT_LMNV(3,18) = 1
+      IPT_LMNV(1,19) = 0
+      IPT_LMNV(2,19) = 1
+      IPT_LMNV(3,19) = 2
+      IPT_LMNV(1,20) = 0
+      IPT_LMNV(2,20) = 0
+      IPT_LMNV(3,20) = 3
 c  *********************
 c     new ordering of
 c      g exponents  
 c  *********************
-      lmnv(1,21) = 4
-      lmnv(2,21) = 0
-      lmnv(3,21) = 0
-      lmnv(1,22) = 3
-      lmnv(2,22) = 1
-      lmnv(3,22) = 0
-      lmnv(1,23) = 3
-      lmnv(2,23) = 0
-      lmnv(3,23) = 1
-      lmnv(1,24) = 2
-      lmnv(2,24) = 2
-      lmnv(3,24) = 0
-      lmnv(1,25) = 2
-      lmnv(2,25) = 1
-      lmnv(3,25) = 1
-      lmnv(1,26) = 2
-      lmnv(2,26) = 0
-      lmnv(3,26) = 2
-      lmnv(1,27) = 1
-      lmnv(2,27) = 3
-      lmnv(3,27) = 0
-      lmnv(1,28) = 1
-      lmnv(2,28) = 2
-      lmnv(3,28) = 1
-      lmnv(1,29) = 1
-      lmnv(2,29) = 1
-      lmnv(3,29) = 2
-      lmnv(1,30) = 1
-      lmnv(2,30) = 0
-      lmnv(3,30) = 3
-      lmnv(1,31) = 0
-      lmnv(2,31) = 4
-      lmnv(3,31) = 0
-      lmnv(1,32) = 0
-      lmnv(2,32) = 3
-      lmnv(3,32) = 1
-      lmnv(1,33) = 0
-      lmnv(2,33) = 2
-      lmnv(3,33) = 2
-      lmnv(1,34) = 0
-      lmnv(2,34) = 1
-      lmnv(3,34) = 3
-      lmnv(1,35) = 0
-      lmnv(2,35) = 0
-      lmnv(3,35) = 4
+      IPT_LMNV(1,21) = 4
+      IPT_LMNV(2,21) = 0
+      IPT_LMNV(3,21) = 0
+      IPT_LMNV(1,22) = 3
+      IPT_LMNV(2,22) = 1
+      IPT_LMNV(3,22) = 0
+      IPT_LMNV(1,23) = 3
+      IPT_LMNV(2,23) = 0
+      IPT_LMNV(3,23) = 1
+      IPT_LMNV(1,24) = 2
+      IPT_LMNV(2,24) = 2
+      IPT_LMNV(3,24) = 0
+      IPT_LMNV(1,25) = 2
+      IPT_LMNV(2,25) = 1
+      IPT_LMNV(3,25) = 1
+      IPT_LMNV(1,26) = 2
+      IPT_LMNV(2,26) = 0
+      IPT_LMNV(3,26) = 2
+      IPT_LMNV(1,27) = 1
+      IPT_LMNV(2,27) = 3
+      IPT_LMNV(3,27) = 0
+      IPT_LMNV(1,28) = 1
+      IPT_LMNV(2,28) = 2
+      IPT_LMNV(3,28) = 1
+      IPT_LMNV(1,29) = 1
+      IPT_LMNV(2,29) = 1
+      IPT_LMNV(3,29) = 2
+      IPT_LMNV(1,30) = 1
+      IPT_LMNV(2,30) = 0
+      IPT_LMNV(3,30) = 3
+      IPT_LMNV(1,31) = 0
+      IPT_LMNV(2,31) = 4
+      IPT_LMNV(3,31) = 0
+      IPT_LMNV(1,32) = 0
+      IPT_LMNV(2,32) = 3
+      IPT_LMNV(3,32) = 1
+      IPT_LMNV(1,33) = 0
+      IPT_LMNV(2,33) = 2
+      IPT_LMNV(3,33) = 2
+      IPT_LMNV(1,34) = 0
+      IPT_LMNV(2,34) = 1
+      IPT_LMNV(3,34) = 3
+      IPT_LMNV(1,35) = 0
+      IPT_LMNV(2,35) = 0
+      IPT_LMNV(3,35) = 4
 civan-e
       return
       end
