@@ -208,7 +208,7 @@ contains
             if (is_gga) then
                do ixyz = 1, 3
                   do k = 1, block_length
-                     ao_sorted(iksoff(iblock) + ikoff + k, ixyz) = ao_block(k, is + mat_dim*ixyz)
+                     ao_sorted(iksoff(iblock) + ikoff + k, ixyz) = ao_block(k, is + nr_ao_cartesian*ixyz)
                   end do
                end do
             end if
