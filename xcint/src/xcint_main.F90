@@ -1779,6 +1779,9 @@ contains
          if (dft_cfg_blocked) then
             use_blas3_scheme = .true.
          end if
+         if (dft_cfg_pointwise) then
+            use_blas3_scheme = .false.
+         end if
 
          call integrate()
 

@@ -153,7 +153,7 @@ contains
       end if
 
       if (kw_matches(word, '.POINTW')) then
-         dft_cfg_blocked = .false.
+         dft_cfg_pointwise = .true.
       end if
 
 !radovan: not documented on wiki, code not perfectly tested

@@ -40,6 +40,7 @@ module dft_cfg
    logical, public :: dft_cfg_asymptote_is_lb94       = .false.
    logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
    logical, public :: dft_cfg_blocked                 = .false.
+   logical, public :: dft_cfg_pointwise               = .false.
 
    real(8), public :: dft_cfg_tinydens = 1.0d-14
    real(8), public :: dft_cfg_ac_ip                   = 0.0d0
@@ -67,6 +68,7 @@ contains
       call xc_mpi_bcast(dft_cfg_asymptote_is_lb94       )
       call xc_mpi_bcast(dft_cfg_asymptote_is_lbalpha    )
       call xc_mpi_bcast(dft_cfg_blocked                 )
+      call xc_mpi_bcast(dft_cfg_pointwise               )
       call xc_mpi_bcast(dft_cfg_tinydens )
       call xc_mpi_bcast(dft_cfg_ac_ip                   )
       call xc_mpi_bcast(dft_cfg_ac_threshold            )
