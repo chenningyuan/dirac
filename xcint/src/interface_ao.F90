@@ -456,17 +456,19 @@ contains
                do irep = 0, nr_boson_ireps - 1
                   do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-                     do i = 1, nr_ao_blocks
-                        if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
-                           iblock = i
-                        end if
-                     end do
-                     do i = 1, nr_ao_blocks
-                        if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
-                           jblock = i
-                        end if
-                     end do
-                     llss_block_partner(iblock, jxyz, irep) = jblock
+                     if ((ao_nr(irep1, ic) > 0) .and. (ao_nr(irep2, ic) > 0)) then
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
+                              iblock = i
+                           end if
+                        end do
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
+                              jblock = i
+                           end if
+                        end do
+                        llss_block_partner(iblock, jxyz, irep) = jblock
+                     end if
                   end do
                end do
             end do
@@ -482,17 +484,19 @@ contains
                do irep = 0, nr_boson_ireps - 1
                   do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-                     do i = 1, nr_ao_blocks
-                        if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
-                           iblock = i
-                        end if
-                     end do
-                     do i = 1, nr_ao_blocks
-                        if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
-                           jblock = i
-                        end if
-                     end do
-                     lssl_block_partner(iblock, jxyz, irep) = jblock
+                     if ((ao_nr(irep1, ic) > 0) .and. (ao_nr(irep2, ic) > 0)) then
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
+                              iblock = i
+                           end if
+                        end do
+                        do i = 1, nr_ao_blocks
+                           if (ao_block_start(i) == (ao_off(irep2, ic) + 1)) then
+                              jblock = i
+                           end if
+                        end do
+                        lssl_block_partner(iblock, jxyz, irep) = jblock
+                     end if
                   end do
                end do
             end do
