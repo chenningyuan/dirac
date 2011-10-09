@@ -436,8 +436,10 @@ contains
          do irep = 0, nr_boson_ireps - 1
             do ic = 1, mc
                i = i + 1
-               ao_block_start(i) = ao_off(irep, ic) + 1
-               ao_block_nr(i)    = ao_nr(irep, ic)
+               ao_block_nr(i) = ao_nr(irep, ic)
+               if (ao_block_nr(i) > 0) then
+                  ao_block_start(i) = ao_off(irep, ic) + 1
+               end if
                if (ic == 2) then
                   llss_prefactor(i) = sigma_prefactor
                end if
@@ -449,10 +451,10 @@ contains
          do jxyz = 1, 3
             inter_irep(jxyz) = irep_of_rotations(jxyz)
          end do
-         do irep = 0, nr_boson_ireps - 1
-            do jxyz = 0, 3
-               do ic = 1, mc
-                  do irep1 = 0, nr_boson_ireps - 1
+         do irep1 = 0, nr_boson_ireps - 1
+            do ic = 1, mc
+               do irep = 0, nr_boson_ireps - 1
+                  do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
                      do i = 1, nr_ao_blocks
                         if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
@@ -475,10 +477,10 @@ contains
          do jxyz = 1, 3
             inter_irep(jxyz) = irep_of_axes(jxyz)
          end do
-         do irep = 0, nr_boson_ireps - 1
-            do jxyz = 0, 3
-               do ic = 1, mc
-                  do irep1 = 0, nr_boson_ireps - 1
+         do irep1 = 0, nr_boson_ireps - 1
+            do ic = 1, mc
+               do irep = 0, nr_boson_ireps - 1
+                  do jxyz = 0, 3
                      irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
                      do i = 1, nr_ao_blocks
                         if (ao_block_start(i) == (ao_off(irep1, ic) + 1)) then
