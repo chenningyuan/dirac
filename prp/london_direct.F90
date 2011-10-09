@@ -483,11 +483,9 @@ contains
     integer, intent(in)    :: ibeig(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
 
-    real(8), pointer       :: work(:)
-    integer                :: lwork
-
     real(8), allocatable :: gmat(:)
     integer :: icomp, ii, jj, irep, iopsy
+    logical :: debug_me
 !   --------------------------------------------------------------------
 
     call alloc(gmat, n2orbxq)
@@ -497,9 +495,6 @@ contains
          access = 'direct', recl = 8*n2orbxq, action = 'write', &
          status = 'unknown')
 
-    lwork = len_f77_work
-    call di_select_wrk(work, lwork)
-
     do icomp = 1, max_nr_xyz_comp
       irep = isymax(icomp, 2)
 
@@ -507,31 +502,33 @@ contains
      
       do ii = 1, nfsym
         iopsy = jbtof(irep, 1)
-        jj = mod(ii + iopsy, 2) + 1
 
 ! todo add qbtrans for spin-free case
 ! qtrans is not parallelized, so collect data from nodes before calling this
 
-        call qtrans('AOMO',                            &
-                    'S',                               &
-                    0.0d0,                             &
-                    nfbas(ii, 0), nfbas(jj, 0),        &
-                    norb(ii),norb(jj),                 &
-                    fmat(i2basx(ii, jj) + 1, 1, icomp), &
-                    ntbas(0), ntbas(0), nz,          &
-                    ipqtoq(1, irep_2el_lao(icomp)),  &
-                    gmat(i2orbx(ii, jj) + 1),        &
-                    norbt, norbt, nz,                &
-                    ipqtoq(1, irep_2el_lao(icomp)),  &
-                    cmo(icmoq(ii) + 1),              &
-                    nfbas(ii,0), norb(ii), nz,       &
-                    ipqtoq(1, 0),                    &
-                    cmo(icmoq(jj) + 1),              &
-                    nfbas(jj, 0), norb(jj), nz,      &
-                    ipqtoq(1, 0),                    &
-                    work,                            &
-                    lwork,                           &
-                    iprprp)
+        call qtrans90('AOMO',                             &
+                      'S',                                &
+                      0.0d0,                              &
+                      nfbas(ii, 0), nfbas(ii, 0),         &
+                      norb(ii),norb(ii),                  &
+!                     -------------------------------------
+                      fmat(i2basx(ii, ii) + 1, 1, icomp), &
+                      ntbas(0), ntbas(0), nz,             &
+                      ipqtoq(1, irep_2el_lao(icomp)),     &
+!                     -------------------------------------
+                      gmat(i2orbx(ii, ii) + 1),           &
+                      norbt,    norbt,    nz,             &
+                      ipqtoq(1, irep_2el_lao(icomp)),     &
+!                     -------------------------------------
+                      cmo(icmoq(ii) + 1),                 &
+                      nfbas(ii,0), norb(ii), nz,          &
+                      ipqtoq(1, 0),                       &
+!                     -------------------------------------
+                      cmo(icmoq(ii) + 1),                 &
+                      nfbas(ii, 0), norb(ii), nz,         &
+                      ipqtoq(1, 0),                       &
+!                     -------------------------------------
+                      iprprp)
 
       end do
 
@@ -539,9 +536,20 @@ contains
 !     --------------------------------------------------
       call wrtdac(lutwol, n2orbxq, gmat(1), icomp)
 
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'fmat in AO, icomp = ', icomp
+        call prqmat(fmat(1, 1, icomp), &
+                    ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                    nz, ipqtoq(1, irep), lupri)
+        write(*, *) 'gmat in MO, icomp = ', icomp
+        call prqmat(gmat(1), &
+                    norb, norb, norb, norb, &
+                    nz, ipqtoq(1, irep), lupri)
+      end if
+
     end do
 
-    call di_deselect_wrk(work, lwork)
     close(lutwol, status = 'keep')
     call dealloc(gmat)
 

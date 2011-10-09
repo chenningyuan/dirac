@@ -455,9 +455,6 @@ contains
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
-    real(8), pointer       :: work(:)
-    integer                :: lwork
-
     integer :: itim(nr_xyz_comp), isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
@@ -480,43 +477,55 @@ contains
       end if
 
       do i = 1, nfsym 
-        j = mod(i + iopsy(icomp), 2) + 1
+        !write(*, *) '--------------------------------------'
+        !write(*, *) 'dupa i, j = ', i, j 
+        !write(*, *) 'dupa nfbas(i, 0) = ', nfbas(i, 0)
+        !write(*, *) 'dupa nfbas(j, 0) = ', nfbas(j, 0)
+        !write(*, *) 'dupa norb(i, 0) = ', norb(i)
+        !write(*, *) 'dupa norb(j, 0) = ', norb(j)
+        !write(*, *) 'dupa norbt = ', norbt
+        !write(*, *) 'dupa ntbas(0) = ', ntbas(0)
+        !write(*, *) 'dupa i2basx(i, j) = ', i2basx(i, j)
+        !write(*, *) 'dupa i2orbx(i, j) = ', i2orbx(i, j)
+        !write(*, *) 'dupa icmoq(i) = ', icmoq(i)
+        !write(*, *) 'dupa icmoq(j) = ', icmoq(j)
+        !write(*, *) 'dupa ncmotq = ', ncmotq
+        !write(*, *) '--------------------------------------'
 
-        lwork = len_f77_work
-        call di_select_wrk(work, lwork)
+        call qtrans90('AOMO',                        &
+                      'S',                           &
+                      0.0d0,                         &
+                      nfbas(i, 0),                   &
+                      nfbas(i, 0),                   &
+                      norb(i),                       &
+                      norb(i),                       &
+!                     --------------------------------
+                      fao(1 + i2basx(i, i), icomp),  &
+                      ntbas(0),                      &
+                      ntbas(0),                      &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      fmo(1 + i2orbx(i, i),icomp),   &
+                      norbt,                         &
+                      norbt,                         &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      cmo(1 + icmoq(i)),             &
+                      nfbas(i, 0),                   &
+                      norb(i),                       &
+                      nz,                            &
+                      ipqtoq(1, 0),                  &
+!                     --------------------------------
+                      cmo(1 + icmoq(i)),             &
+                      nfbas(i, 0),                   & 
+                      norb(i),                       &
+                      nz,                            &
+                      ipqtoq(1, 0),                  &
+!                     --------------------------------
+                      iprprp)
 
-        call qtrans('AOMO',                          &
-                    'S',                             &
-                    0.0d0,                           &
-                    nfbas(i, 0),                   &
-                    nfbas(j, 0),                   &
-                    norb(i),                       &
-                    norb(j),                       &
-                    fao(1 + i2basx(i, j), icomp),  &
-                    ntbas(0),                     &
-                    ntbas(0),                     &
-                    nz,                           &
-                    ipqtoq(1, irep(icomp)),        &
-                    fmo(1 + i2orbx(i, j),icomp),   &
-                    norbt,                         &
-                    norbt,                         &
-                    nz,                           &
-                    ipqtoq(1, irep(icomp)),        &
-                    cmo(1 + icmoq(i)),             &
-                    nfbas(i, 0),                   &
-                    norb(i),                       &
-                    nz,                           &
-                    ipqtoq(1, 0),                  &
-                    cmo(1 + icmoq(j)),             &
-                    nfbas(j, 0),                   & 
-                    norb(j),                       &
-                    nz,                           &
-                    ipqtoq(1, 0),                  &
-                    work,                            &
-                    lwork,                           &
-                    iprprp)
-
-        call di_deselect_wrk(work, lwork)
 
       end do
 
