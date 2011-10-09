@@ -219,6 +219,7 @@ contains
       do iblock = 1, nr_ao_blocks
          if (nr_above_threshold(iblock) > 0) then
             call evaluate_density(                            &
+                                  1.0d0,                      &
                                   is_gga,                     &
                                   block_length,               &
                                   mat_dim,                    &
@@ -236,6 +237,7 @@ contains
                                  )
             if (dft_cfg_saop_is_active) then
                call evaluate_density(                            &
+                                     1.0d0,                      &
                                      .false.,                    &
                                      block_length,               &
                                      mat_dim,                    &
@@ -252,6 +254,7 @@ contains
                                     )
                if (dft_cfg_saop_with_response_part) then
                   call evaluate_density(                            &
+                                        1.0d0,                      &
                                         .false.,                    &
                                         block_length,               &
                                         mat_dim,                    &
@@ -321,6 +324,7 @@ contains
             do iblock = 1, nr_ao_blocks
                if (nr_above_threshold(iblock) > 0) then
                   call distribute_prefactors(                            &
+                                             1.0d0,                      &
                                              is_gga,                     &
                                              block_length,               &
                                              mat_dim,                    &
@@ -366,6 +370,7 @@ contains
                      if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
+                                              1.0d0,                        &
                                               is_gga,                       &
                                               block_length,                 &
                                               mat_dim,                      &
@@ -410,6 +415,7 @@ contains
                      if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
+                                                   1.0d0,                      &
                                                    is_gga,                     &
                                                    block_length,               &
                                                    mat_dim,                    &
@@ -447,6 +453,7 @@ contains
                      if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call evaluate_density(                              &
+                                              llss_prefactor(iblock),       &
                                               is_gga,                       &
                                               block_length,                 &
                                               mat_dim,                      &
@@ -491,6 +498,7 @@ contains
                      if (jblock == 0) cycle
                      if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
                         call distribute_prefactors(                            &
+                                                   llss_prefactor(iblock),     &
                                                    is_gga,                     &
                                                    block_length,               &
                                                    mat_dim,                    &
@@ -527,6 +535,7 @@ contains
    end subroutine
 
    subroutine distribute_prefactors(                      &
+                                    f,                    &
                                     is_gga,               &
                                     block_length,         &
                                     mat_dim,              &
@@ -544,6 +553,7 @@ contains
                                    )
 
 !     --------------------------------------------------------------------------
+      real(8), intent(in)    :: f
       logical                :: is_gga
       integer                :: block_length
       integer                :: mat_dim
@@ -571,12 +581,12 @@ contains
       do i = 1, nr_above_threshold_l
          ikoff = (i - 1)*block_length
          do k = 1, block_length
-            tmat(ikoff + k) = ao_sorted(iksoff_l + ikoff + k, 0)*s(k)
+            tmat(ikoff + k) = f*ao_sorted(iksoff_l + ikoff + k, 0)*s(k)
          end do
          if (is_gga) then
             do ixyz = 1, 3
                do k = 1, block_length
-                  tmat(ikoff + k) = tmat(ikoff + k) + 2.0d0*ao_sorted(iksoff_l + ikoff + k, ixyz)*v(k, ixyz)
+                  tmat(ikoff + k) = tmat(ikoff + k) + f*2.0d0*ao_sorted(iksoff_l + ikoff + k, ixyz)*v(k, ixyz)
                end do
             end do
          end if
@@ -641,6 +651,7 @@ contains
    end subroutine
 
    subroutine evaluate_density(                      &
+                               f,                    &
                                is_gga,               &
                                block_length,         &
                                mat_dim,              &
@@ -658,6 +669,7 @@ contains
                               )
 
 !     --------------------------------------------------------------------------
+      real(8), intent(in)              :: f
       logical, intent(in)              :: is_gga
       integer, intent(in)              :: block_length
       integer, intent(in)              :: mat_dim
@@ -726,7 +738,7 @@ contains
       end if
 
       call multiply_xmat_with_ao(                      &
-                                 1.0d0,                &
+                                 f,                    &
                                  block_length,         &
                                  nr_above_threshold_r, &
                                  iksoff_r,             &
@@ -737,7 +749,7 @@ contains
       if (is_gga) then
          do ixyz = 1, 3
             call multiply_xmat_with_ao(                      &
-                                       2.0d0,                &
+                                       2.0d0*f,              &
                                        block_length,         &
                                        nr_above_threshold_r, &
                                        iksoff_r,             &
