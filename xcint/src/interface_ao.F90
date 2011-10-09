@@ -429,22 +429,21 @@ contains
             mc = 2
          end if
 
-         nr_ao_blocks = nr_boson_ireps*mc
-
          i = 0
          llss_prefactor = 1.0d0
          do irep = 0, nr_boson_ireps - 1
             do ic = 1, mc
-               i = i + 1
-               ao_block_nr(i) = ao_nr(irep, ic)
-               if (ao_block_nr(i) > 0) then
+               if (ao_nr(irep, ic) > 0) then
+                  i = i + 1
+                  ao_block_nr(i)    = ao_nr(irep, ic)
                   ao_block_start(i) = ao_off(irep, ic) + 1
-               end if
-               if (ic == 2) then
-                  llss_prefactor(i) = sigma_prefactor
+                  if (ic == 2) then
+                     llss_prefactor(i) = sigma_prefactor
+                  end if
                end if
             end do
          end do
+         nr_ao_blocks = i
 
 !        transform as rotation
          inter_irep(0) = 0
