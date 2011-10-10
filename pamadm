@@ -111,7 +111,6 @@ def make_old_file(path):
 # these are always packaged
 
 vital_directories = []
-vital_files = []
 
 vital_directories.append('dirac')
 vital_directories.append('prp')
@@ -141,25 +140,6 @@ vital_directories.append('krmc')
 vital_directories.append('luciarel')
 vital_directories.append('embedding')
 vital_directories.append('x2c')
-
-vital_files.append('pam')
-vital_files.append('pam.in')
-vital_files.append('configure')
-vital_files.append('Makefile')
-vital_files.append('config.guess')
-vital_files.append('config.status')
-vital_files.append('config.sub')
-vital_files.append('runtest')
-vital_files.append('README')
-vital_files.append('test/README')
-vital_files.append('test/list_of_tests')
-
-# cmake related
-vital_files.append('CMakeLists.txt')
-vital_files.append('COPYING')
-vital_files.append('CTestConfig.cmake')
-vital_files.append('INSTALL')
-vital_files.append('setup')
 vital_directories.append('cmake')
 
 # these tests are always packaged
