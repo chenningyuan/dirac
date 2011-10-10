@@ -67,6 +67,11 @@ option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                      OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"          OFF)
 option(ENABLE_UTILITIES      "Enable utitilites"                        OFF)
+option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules" OFF)
+
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
 
 # set cdash buildname
 set(BUILDNAME

@@ -307,12 +307,6 @@ dirac_modules[this_module].add_test('integrals_densfit')
 dirac_modules[this_module].add_test('integrals_jengine')
 dirac_modules[this_module].take_out_of_release()
 
-this_module = 'largemolecules'
-dirac_modules[this_module] = dirac_module('largemolecules', 'Increases common blocks to handle more atoms and basis sets')
-dirac_modules[this_module].add_cppflag('LARGE_MOLECULES')
-dirac_modules[this_module].take_out_of_adm()
-dirac_modules[this_module].take_out_of_release()
-
 this_module = 'fmm'
 dirac_modules[this_module] = dirac_module('fmm', 'fast multipole method - not compilable ! fix it !')
 dirac_modules[this_module].add_cppflag('MOD_FMM')
@@ -745,9 +739,6 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
        for cppflag in dirac_modules[module].cppflags:
            delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
-if delete_flags != '':
-#  remove -ULARGE_MOLECULES from delete_flags
-   delete_flags = string.replace(delete_flags, '-ULARGE_MOLECULES', '')
 f = open('maintenance/delete_flags', 'w')
 f.write(delete_flags)
 f.close()
