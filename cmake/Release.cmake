@@ -1,5 +1,7 @@
 include(InstallRequiredSystemLibraries)
 
+set(CPACK_SOURCE_GENERATOR "TGZ")
+
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DIRAC")
 set(CPACK_PACKAGE_VENDOR "T. Saue, L. Visscher, H. J. Aa. Jensen, and contributors")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
@@ -42,14 +44,20 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/test              ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild            ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in   ${EXPORT_DIR}/doc
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL.rst       ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.guess      ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.status     ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.sub        ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM

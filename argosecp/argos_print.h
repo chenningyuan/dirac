@@ -1,3 +1,0 @@
-      INTEGER PRINT_LEVEL 
-      COMMON  /ARGOS_PRINT/
-     &        PRINT_LEVEL 

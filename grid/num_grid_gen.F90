@@ -61,7 +61,6 @@ contains
    subroutine generate_num_grid(dmat)
 
       use dirac_cfg
-      use fde_mod
 !     --------------------------------------------------------------------------
       real(8), intent(in) :: dmat(*)
 !     --------------------------------------------------------------------------
@@ -71,17 +70,10 @@ contains
          grid_is_done = .true.
       end if
 
-      if (dirac_cfg_fde_response .or. (dirac_cfg_fde .and. update_vemb)) then
-         write(*, *) ' '
-         write(*, *) '   FDE info: requested FDE response. Grid generation will'
-         write(*, *) '             be skipped, and impoted grid will be used.'
-         write(*, *) ' '
-      else
-         if (.not. grid_is_done) then
-!          calculate grid
-           call dftgrd(dmat, 1)
-           grid_is_done = .true.
-         end if
+      if (.not. grid_is_done) then
+!       calculate grid
+        call dftgrd(dmat, 1)
+        grid_is_done = .true.
       end if
 
    end subroutine
