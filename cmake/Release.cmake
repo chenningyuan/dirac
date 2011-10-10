@@ -44,8 +44,6 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/test              ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cbuild            ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/modules           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
@@ -53,11 +51,6 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL.rst       ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.guess      ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.status     ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/config.sub        ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/configure         ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/Makefile          ${EXPORT_DIR}
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
