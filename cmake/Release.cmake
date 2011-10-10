@@ -44,6 +44,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/test              ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/doc               ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
         COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
