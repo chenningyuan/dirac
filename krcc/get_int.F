@@ -21,11 +21,10 @@ C KSEA = C2
 C LSEA = A2
 C
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Local scratch
-      INTEGER I_INDX_TO_GAS(4), IMARKONEORBGAS(NGAS), ISUBLENGHT(NGAS+1)
+      INTEGER I_INDX_TO_GAS(4), ISUBLENGHT(NGAS+1)
       INTEGER IORB(NGAS+1), ITYPE2ALPHA(3), IPOS2ALPHA(3)
       DIMENSION XINT(*)
 *
@@ -70,8 +69,6 @@ C     print*,'ISEA,JSEA,KSEA,LSEA',ISEA,JSEA,KSEA,LSEA
             LEND = 1
           END IF
         END IF
-        IF(NGSOBT(IGAS).EQ.1) IMARKONEORBGAS(IGAS) = 1
-        IMARKONEORBGAS(IGAS) = 0
         ILENGHT = ILENGHT + IGAS
         ISUBLENGHT(IGAS+1) =  ILENGHT
         IORB(IGAS+1) = IORBCOUNT
@@ -265,9 +262,11 @@ C      print*,'ipos',ipos
 C      print*,'i am here'
       IF(NALPHA.EQ.4.OR.NALPHA.EQ.0) THEN
         XOUT = SIGN2*XINT(IPOS)
+C       print*,'IPOS = ',IPOS
       ELSE
 C       IF(IPOS2ALPHA(3).EQ.0) THEN
           XOUT = XINT(IPOS2ALPHA(1)) !-
+C         print*,'IPOS2ALPHA(1) = ',IPOS2ALPHA(1)
 C    &           XINT(IPOS2ALPHA(2))
 C       ELSE
 C         XOUT = XINT(IPOS2ALPHA(1)) - 
@@ -304,6 +303,7 @@ C       END IF
         END IF
         WRITE(6,*) 'XOUT = ',XOUT
       END IF
+      WRITE(6,*) 'ISEA,JSEA,KSEA,LSEA = ',ISEA,JSEA,KSEA,LSEA
 *
       RETURN
       END

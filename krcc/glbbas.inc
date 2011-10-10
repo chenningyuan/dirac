@@ -1,32 +1,6 @@
-      COMMON/KRCC_GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
-     &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,
-     &              KSBIA,KSBIB,KVEC3,KPNIJ,KIJKK,KFI,KINH1,
-     &              KMOAOIN,KMOAOUT,KRHO2,KLOCCLS,
-     &              KSPSAOIN,KSPSAOUT,KISPSAOIN,KISPSAOUT,
-     &              KINT1D(2,10),KINT2D(2,10),KPINT1D(10),
-     &              KPINT2D(10),KRHO1_DBG(2,2,2,MXROOT),
-     &              KPICI1,KPICAOT,KPICLX,KPICLY,KPICLZ,
-     &              KPICLX_F,KPICLY_F,KPICLZ_F,
-     &              KDIONEE,KDITWOE,KKR,KIOFF12,KINDK,KINDL,
-     &              KINVREO,KNUMINT,KT_CC,KBOSYM,KISREO,
-     &              KINDEX,
-     &              IMOFFSET, i_glbbas_fill1, KLOOK,
-     &              KFI_AL,KFI_BE,KFI_AL_IM,KFI_BE_IM,
+      COMMON/KRCC_GLBBAS/KRHO1,KVEC3,KFI,KLOOK,
+     &              KRHO2,KLOCCLS,KKR,
+     &              KINVREO,KT_CC,KBOSYM,KISREO,
      &              KFDIA_AL,KFDIA_BE,KFDIA_AL_IM,KFDIA_BE_IM,
-     &              KCC1,KCC2,KCC3,KCC4,KCC5,KDIA,KVEC1P,KVEC2P,
-     &              KSBSPJA,
-* Added
-     &              KPGINT1(MXPOBS),KINT1O,KFIO,KPGINT1A(MXPOBS),
-     &              KMOMO,KSRHO1,KFIZ, KBMAT, KSCDIIS,KCC6,KCC7,
-     &              KINT1_SIMTRH,KINT2_SIMTRH,
-     &              KPINT1_SIMTRH,KPINT2_SIMTRH,KINH1_NOCCSYM,
-     &              KICONF_OCC(8),KICONF_REO(8), KZCONF,
-     &              KIB_OCCLS(8),
-     &              KSDREO_I(8),KSDREO_S(8), KZ_PTDT(MXPORB+1),
-     &              KREO_PTDT(MXPORB+1), KZ_TYPES(MXPORB+1),
-     &              KINT1_SIMTRH_A,KINT1_SIMTRH_B,
-     &              KINT2_SIMTRH_AA,KINT2_SIMTRH_BB,KINT2_SIMTRH_AB,
-     &              KPINT2_SIMTRH_AB
-!
-! I do not understand why, but the i_glbbas_fill1 variable was needed
-! to avoid padding by gfortran compiler.  / Feb 2011, hjaaj
+     &              KCC1,KCC2,KCC3,KCC4,KCC5,KDIA,
+     &              KSBSPJA, KSRHO1, KBMAT, KSCDIIS

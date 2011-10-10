@@ -47,7 +47,7 @@
 !
 !
 !     LVCORR correction (re-)calculated within the KR-MC/CI framework
-!     --> LVCORR_MC 
+!     --> E_LVCORR_MC 
 !
 !     Parameters for MCTYPE:
 !
@@ -62,8 +62,9 @@
      &        NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO, MOPT_MXMACRO,     &
      &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
-     &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
-     &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
+     &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MCTYPE,             &
+     &        MK2DEL, MK2REF, MINMK2, MAXMK2,                           &
+     &        JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,                    &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
      &        NMAX_SYM, nopen_mc
@@ -75,7 +76,8 @@
      &                MOPT_MXMACRO, MOPT_MAXBCK, NCIROOT, MXCIV, IANACI,&
      &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
-     &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
+     &                ITMACN, MAXCIT, IOPTST, MCTYPE,                   &
+     &                MK2DEL, MK2REF, MINMK2, MAXMK2,                   &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
@@ -86,14 +88,14 @@
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
      &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
-     &       LVCORR_MC
+     &       E_LVCORR_MC,THR_CVEC
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
      &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
-     &                LVCORR_MC
+     &                E_LVCORR_MC,THR_CVEC
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)
@@ -104,7 +106,7 @@
       LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT, NATOLCR
       LOGICAL CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD, CINT_SPLIT
       LOGICAL GENFOCK, CHCKPT_WRT, CPBLCK_FILE, TRA_NATO, CINT_LOWSRT
-      LOGICAL spinfr_krmc, cana_mcscf
+      LOGICAL spinfr_krmc, cana_mcscf, no1pdens_save
 !     cana_mcscf means: analysis of mcscf reference vector in a separate 
 !                       ci run (after mcscf convergence)
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
@@ -113,7 +115,7 @@
      &                CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD,       &
      &                CINT_SPLIT, GENFOCK, CHCKPT_WRT, CPBLCK_FILE,     &
      &                TRA_NATO, OPT_CHCKJZ, CINT_LOWSRT, spinfr_krmc,   &
-     &                cana_mcscf
+     &                cana_mcscf, no1pdens_save
 
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP

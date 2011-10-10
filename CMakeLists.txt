@@ -237,8 +237,6 @@ set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
-    gp/compilation_info.F90
-    gp/git_revision_info.F90
     )
 
 add_library(
@@ -247,6 +245,26 @@ add_library(
     ${GENERATED_FILES} 
     )
 
+# get size of static allocations in dirac.x
+add_custom_target(
+    info
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
+    )
+
+# get size of static allocations in dirac.x and print sorted list of object 
+add_custom_target(
+    info_ext
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
+)
+
+if(VERBOSE_OUTPUT)
+add_custom_command(
+    TARGET dirac.x Experimental Nightly
+    POST_BUILD COMMAND 
+    COMMAND make info_ext
+    COMMENT "print out list of objects sorted according to their sizes"
+)
+endif()
 
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
@@ -292,17 +310,3 @@ if(VERBOSE_OUTPUT)
 endif()
 
 include(Documentation)
-
-# get size of static allocations
-add_custom_target(
-    info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dirac.x
-    )
-
-# custom commands on created dirac.x executable
-add_custom_command(
-    TARGET Nightly Experimental dirac.x 
-    if(VERBOSE_OUTPUT)
-        POST_BUILD COMMAND ../utils/diagn.py
-    endif()
-)

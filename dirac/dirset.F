@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
+C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamset */
@@ -503,7 +504,7 @@ C
         N2ISHT      = N2ISHT + N2ISH(IFRP)
 C
         N2ASH(IFRP) = NASH(IFRP)*NASH(IFRP)
-        NASHT       = NASHT  + NASH(IFRP) 
+        NASHT       = NASHT  + NASH(IFRP)
         I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
 C
@@ -516,10 +517,10 @@ C
         N2SSH(IFRP) = NSSH(IFRP)*NSSH(IFRP)
         NSSHT       = NSSHT  + NSSH(IFRP)
         N2SSHT      = N2SSHT + N2SSH(IFRP)
-        N2ESH(IFRP) = NESH(IFRP)*N2ESH(IFRP)
+        N2ESH(IFRP) = NESH(IFRP)*NESH(IFRP)
         NESHT       = NESHT  + NESH(IFRP)
         N2ESHT      = N2ESHT + N2ESH(IFRP)
-        N2PSH(IFRP) = NPSH(IFRP)*N2PSH(IFRP)
+        N2PSH(IFRP) = NPSH(IFRP)*NPSH(IFRP)
         NPSHT       = NPSHT  + NPSH(IFRP)
         N2PSHT      = N2PSHT + N2PSH(IFRP)
         ICMO(IFRP)  = NCMOT
@@ -562,7 +563,7 @@ C
       N2ISHX  = NISHT*NISHT
       N2ASHX  = NASHT*NASHT
       N2ASHXQ = N2ASHX * NZ
-      NNASHX = NASHT * (NASHT+1) / 2
+      NNASHX  = NASHT * (NASHT+1) / 2
       N2OCCX  = NOCCT*NOCCT
       N2SSHX  = NSSHT*NSSHT
       N2ESHX  = NESHT*NESHT
@@ -880,7 +881,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
-	  LOGICAL TABSCQ
+      LOGICAL TABSCQ
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -933,7 +934,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck lvcorr_r1 */
+C/* Deck lvcorr_1 */
       SUBROUTINE LVCORR_1(SCQ,IPRINT)
 C***********************************************************************
 C
@@ -954,11 +955,12 @@ C
 #include "dcbham.h"
       DIMENSION SCQ(*)
 C
+      IPRINT_local = IPRINT - 3
       IF (ONECAP .AND. INTV1C .EQ. 2) THEN
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ,IPRINT) - POTNUC
+         CORRLV = GETPOT(SCQ,IPRINT_local) - POTNUC
          IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
      &     ' * ONECAP model 1 classical repulsion from small component',
      &     CORRLV
@@ -966,7 +968,7 @@ C
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ,IPRINT)
+         CORRLV = GETPOT(SCQ,IPRINT_local)
 C
 C        Print section
 C
@@ -1180,7 +1182,7 @@ C
 C     Calculate the large component charge density on each atom
 C
       DO I = 1, NTBAS(1)
-	 QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
+         QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
       ENDDO
 C
       RETURN

@@ -2,7 +2,7 @@ program main
 
    use interface_ao
    use interface_file_io
-   use xc_driver
+   use xcint_main
    use xc_derv
    use fake_input
 
@@ -33,7 +33,7 @@ program main
         access = 'sequential')
    rewind(unit_grid)
 
-   call xc_integrator(                                        &
+   call integrate_xc(                                        &
                       xc_mat_dim      = nr_ao,                &
                       xc_nz           = nr_quaternion_blocks, &
                       xc_dmat_0       = dmat,                 &

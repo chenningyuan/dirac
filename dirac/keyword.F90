@@ -63,7 +63,7 @@ contains
     character(*),         intent(out) :: c
 !   ----------------------------------------------------------------------------
 
-    read(unit_in, *, err=1) c
+    read(unit_in, '(a)', err=1) c
     return
 
  1  call kw_read_error(kw_input)

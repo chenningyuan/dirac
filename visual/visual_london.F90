@@ -1,4 +1,3 @@
-
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -19,371 +18,331 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-
 module visual_london
 
 #ifdef MOD_UNRELEASED
   use memory_allocator
-  use interface_ao
   use visual_cfg
-  use ao_eval
-  use density_eval
   use matrix_defop
-  use dirac_interface
 
   implicit none
 
-  public setup_fo_conmat_ao
- 
-   save
+  public get_d_con_mo
+  public get_mdm_con
 
   private
-
 #include "priunit.h"
-#include "dcbbas.h"
-#include "dcbham.h"
+#include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
+#include "dcbbas.h"
 
-
-! information about property integrals read from AOPROPER file:
-
-  character(16) ::   property_name
-  integer       ::   property_type
-  integer       ::   number_of_components
-
-  real(8)       ::   property_factor(3)
-  integer       ::   property_label(3)
-  character(4)  ::   property_do_int(3)
-  integer       ::   property_lrep(3)
-  integer       ::   property_ltyp(3)
-  integer       ::   property_jm4(3)
-  integer       ::   property_jm4pos(3)
-  integer       ::   property_iqmult(3)
-  integer       ::   property_iqtopq(3)
-
-  integer       ::   property_ihqmat(4)
-  integer       ::   number_nz
-
+  integer :: nr_xyz_comp
+  integer :: which_icomp
+  logical :: sum_ep_rn
 
 contains
 
-  subroutine setup_fo_conmat_ao(D_con_ao, ivector)
-!   --------------------------------------------------------------------
-    type(matrix)         :: D_con_ao
-    integer, intent(in)  :: ivector
+  subroutine get_d_con_mo(D_con_mo, D_con_mo_ai)
+!   ----------------------------------------------------------------------------
+    type(matrix)            :: D_con_mo
+    type(matrix), optional  :: D_con_mo_ai
 
-    integer    :: icomp, file_unit, idimens, print_level, idoint(4)
-    integer    :: im4, iz, ibrp, p_typ
-    character  :: p_name*8, p_int*4, rtnlbl(2)*8
-    logical    :: debug_me, file_exists, ldoint(4)
-    real(8)    :: pfac, factor
-    real(8), allocatable  :: buffer(:)
+    real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
+    integer                 :: file_unit, icomp
+    logical                 :: debug_me
 
-    integer :: p_index
-    logical :: doint(4), first(4)
-    integer :: i
-    integer :: iq, iqp, ioff, ioff2
+!   gosia, note for me:
+!   if natural connection - T^B matrix was built from 'd|S>/dB' integrals
+!   if symmetric connection - T^B matrix was built from 'dS/dB' integrals
+!   ----------------------------------------------------------------------------
 
-!   -------------------------------------------------------------------
+!   read T^B matrix in MO basis to D_con_mo
+!   ---------------------------------------
+
+    file_unit = 71
+
+    open(file_unit,                 &
+         file   = 'TBMO',           &
+         status = 'old',            &
+         form   = 'unformatted',    &
+         access = 'sequential',     &
+         position = 'rewind',       &
+         action = 'read')
+
+1   continue
+
+    read(file_unit) nr_xyz_comp
+    read(file_unit) which_icomp
+    read(file_unit) D_con_mo%irep
+    read(file_unit) sum_ep_rn
+    read(file_unit) D_con_mo%elms
+
+    if (nr_xyz_comp > 1) then
+!      for example after calculating full shielding tensor in preceding response 
+!      there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
+!      read here the requested one:
+       if (visual_cfg_london_component == 'Y') then
+          if (which_icomp == 2) then
+             go to 2
+          else
+             go to 1
+          end if
+       else if (visual_cfg_london_component == 'Z') then
+          if (which_icomp == 3) then
+             go to 2
+          else
+             go to 1
+          end if
+       end if
+    end if
+
+2   continue 
+
+    close(file_unit, status = 'keep')
+
+    write(lupri, *) 'visual: connection matrix (T^B in MO basis) read from TBMO file'
+    write(lupri, *) 'nr_xyz_comp = ', nr_xyz_comp
+    write(lupri, *) 'component = ', which_icomp
+    write(lupri, *) 'irep = ', D_con_mo%irep
+    write(lupri, *) 'sum over e+p shells = ', sum_ep_rn
 
     debug_me = .false.
-    print_level = 0
-
-!   connection matrices info
-!   ========================
-
-    if (visual_cfg_london_symmetric) then
-
-      write(lupri, *) 'symmetric connection is used in visual_london'
-      p_name  = 'dS/dB'//visual_cfg_london_component
-      pfac    = -0.5d0
-      p_int   = '+00+'
-      idimens = nnbbasx
-
-    else if (visual_cfg_london_natural) then
-
-      write(lupri, *) 'natural connection is used in visual_london'
-      p_name  = 'd|S>/dB'//visual_cfg_london_component
-      pfac    = -1.0d0
-      p_int   = '+00+'
-      idimens = n2bbasx
-
-    else if (visual_cfg_london_none) then
-!     gosia: if <none> connection then anyway read 'dS/dB' integrals
-
-      write(lupri, *) '<none> connection is used in visual_london, dS/dB integrals read'
-      p_name  = 'dS/dB'//visual_cfg_london_component
-      pfac    = -0.5d0
-      p_int   = '+00+'
-      idimens = nnbbasx
-
-    end if
-
-    if(levyle .or. (zora .and. .not. zora4)) then
-      p_int(4:4) = '0'
-    end if
-
-    do i = 1, 4
-      if (p_int(i:i) == '0') then
-        doint(i) = .false.
-      else
-        doint(i) = .true.
-      end if
-    end do
-
-!   get info about symmetries from file (for selected p_name)
-!   =========================================================
-    call D_con_symmetry_info(ivector, p_name(1:len_trim(p_name)))
-
-
-!   read property integrals into buffer
-!   ===================================
-    file_unit = lu1int
-
-    open(file_unit,            &
-         file = 'AOPROPER',    &
-         status = 'OLD',       &
-         form = 'UNFORMATTED', &
-         access = 'SEQUENTIAL')
-
-    call alloc(buffer, idimens)
-
-!!   i do this to avoid 1 dcopy:
-!    if (visual_cfg_connection(ivector) == 1) then
-!      call prprea(file_unit,   &
-!                  p_name(1:len_trim(p_name)), &
-!                  rtnlbl,      &
-!                  p_int,       &
-!                  D_con_ao%elms,      &
-!                  idimens,     &
-!                  print_level)
-!    else
-      call prprea(file_unit,   &
-                  p_name(1:len_trim(p_name)), &
-                  rtnlbl,      &
-                  p_int,       &
-                  buffer,      &
-                  idimens,     &
-                  print_level)
-!    end if
-
-    close(file_unit, status='keep')
-
     if (debug_me) then
-!     debug after reading integrals (to compare with PRPMAO for example)
-      write(lupri, *) 'setup_fo_conmat_ao: buffer after calling prprea'
-      write(lupri, *) 'p_name, pfac, p_int, idimens = ', &
-                       p_name, pfac, p_int, idimens
-      if (visual_cfg_london_natural .or.       &
-          visual_cfg_london_none) then
-!       natural connection - square matrix:
-        call output(buffer, 1, ntbas(0), 1, ntbas(0), &
-                    ntbas(0), ntbas(0), 1, lupri)
-      else
-!       symmetric connection - lower triangle:
-        call outpak(buffer, ntbas(0), 1, lupri)
-      end if
+       call print_mat(D_con_mo, label = 'D_con_mo read from TBMO')
     end if
 
-
-!   scale integrals by pfac
-!   =======================
-    factor = pfac
-    call dscal(idimens, factor, buffer, 1)
-
-
-!   insert phases
-!   =============
-    if (nz .lt. 4) then
-      if (visual_cfg_london_natural) then
-        call qmphase('S', property_jm4pos, property_lrep, buffer, doint)
-      else
-        call qmphase('L', property_jm4pos, property_lrep, buffer, doint)
-      end if
+    if (visual_cfg_use_orbital_string) then
+       call select_orbitals_reortho(D_con_mo%elms)
     end if
 
+    if (visual_cfg_london_none) then
 
-    if (debug_me) then
-      write(lupri, *) 'phase-transformed integrals'
-      if (visual_cfg_london_natural) then
-        call output(buffer, 1, ntbas(0), 1, ntbas(0), ntbas(0), ntbas(0), 1,lupri)
-      else
-        call outpak(buffer, ntbas(0), 1, lupri)
-      end if
+!      here discern occ-occ and occ-virt blocks of T^B
+!      write occ-occ  to D_con_mo
+!      and   occ-virt to D_con_mo_ai
+       call alloc(D_ji, norbt, norbt, nz)
+       call partition_connection_matrix(D_con_mo%elms, D_con_mo_ai%elms, D_ji, sum_ep_rn)
+       D_con_mo%elms = 0.0d0
+       call dcopy(norbt*norbt*nz, D_ji, 1, D_con_mo%elms, 1)
+       call dealloc(D_ji)
+
     end if
 
+  end subroutine
 
-!   gosia i'll fix it later
-    do i = 1, 4 
-      first(i) = .false.
-    end do
+  subroutine select_orbitals_reortho(A)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout)  :: A(norbt, norbt, nz)
+     real(8), allocatable    :: B(:, :, :)
 
-    do i = 1, nz
-      first(i) = .true.
-    end do
-
-
-    if (visual_cfg_london_symmetric .or. &
-        visual_cfg_london_none) then
-
-      ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
-      if (first(property_iqtopq(1))) then
-        call dcopy(idimens, buffer, 1, D_con_ao%elms(ioff), 1)
-        first(property_iqtopq(1)) = .false.
-      end if
+     integer, allocatable :: kvec(:)
+     integer :: list(norbt, 2), ifrp, i, k, iz, nr(2), ir(2, 2), nvec
+!    ---------------------------------------------------------------------------
 
 
-      do i = 1, nz
-        ioff2 = ntbas(0)*ntbas(0)*(i - 1) + 1
-        if (.not. first(i)) then
-          call dzero(buffer, idimens)
-          call dcopy(idimens, D_con_ao%elms(i), 1, buffer, 1)
-          if (property_ihqmat(i) == 2) then
-            call daptge(ntbas(0), buffer, D_con_ao%elms(ioff2))
-          else if (property_ihqmat(i) == 1) then
-            call dsptsi(ntbas(0), buffer, D_con_ao%elms(ioff2))
+!    read numbers from the string
+!    into integer list kvec(nvec):
+     do ifrp = 1, nfsym
+
+!fixme skipep
+        !if(xlr_skipep) then
+        !   nr(ifrp)   = nesh(ifrp)
+        !   ir(1,ifrp) = 1
+        !   ir(2,ifrp) = nesh(ifrp)
+        !else
+           nr(ifrp)   =  norb(ifrp)
+           ir(1,ifrp) = -npsh(ifrp)
+           ir(2,ifrp) =  nesh(ifrp)
+        !endif
+
+        call alloc(kvec, norb(ifrp))
+        kvec = 0
+        nvec = 1
+        call numlst(visual_cfg_orbital_string(ifrp), kvec, nr(ifrp), ir(1,ifrp), ir(2,ifrp), ifrp, nvec)
+
+!       we need absolute indices:
+        list = 0
+        do i = 1, nvec
+           list(i, ifrp) = kvec(i) + npsh(ifrp)
+        end do
+        call dealloc(kvec)
+
+     end do
+
+!    save those elements of A which are on the list and zero-out the rest
+     call alloc(B, norbt, norbt, nz)
+     call dzero(B, norbt*norbt*nz)
+
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+           do k = 1, nvec
+              do i = 1, norbt
+                 B(i, list(k, ifrp), iz) = A(i, list(k, ifrp), iz)
+                 if (i .ne. list(k, ifrp)) then
+                    B(list(k, ifrp), i, iz) = A(list(k, ifrp), i, iz)
+                 end if
+              end do
+           end do
+        end do
+     end do
+
+     call dzero(A, norbt*norbt*nz)
+     call dcopy(norbt*norbt*nz, B, 1, A, 1)
+
+     call dealloc(B)
+
+  end subroutine
+
+
+
+  subroutine partition_connection_matrix(T, T_ai, T_ji, sum_ep_rn)
+!    ---------------------------------------------------------------------------
+     real(8), intent(inout) :: T(norbt, norbt, nz)
+     real(8), intent(inout) :: T_ai(norbt, norbt, nz)
+     real(8), intent(inout) :: T_ji(norbt, norbt, nz)
+     logical, intent(in)    :: sum_ep_rn
+
+     integer :: ip(2), ap(2), ie(2), ae(2)
+     integer :: ifrp, iz, i, j
+!    ---------------------------------------------------------------------------
+
+     call dcopy(norbt*norbt*nz, T, 1, T_ji, 1)
+     call dcopy(norbt*norbt*nz, T, 1, T_ai, 1)
+
+     do ifrp = 1, nfsym
+        ip(ifrp) = iorb(ifrp) + 1
+        ap(ifrp) = ip(ifrp) + nish(ifrp)
+        ie(ifrp) = ip(ifrp) + npsh(ifrp)
+        ae(ifrp) = ie(ifrp) + nish(ifrp)
+
+        write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
+        write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
+        write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
+        write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
+        write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
+        write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
+        write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
+     end do
+
+! todo:
+!    if .not. sum_ep_rn - reorthonormalization only over electronic shells
+!    (so i can zero-out blocks corresponding to positronic shells)
+
+!    'ai' blocks (zero-out 'ij' blocks)
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+
+!          zero-out 'ij' blocks
+           do j = ie(ifrp), ae(ifrp) - 1
+              do i = ie(ifrp), ae(ifrp) - 1
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+           end do
+
+!          zero-out 'aa' blocks
+           do j = ip(ifrp), ie(ifrp) - 1
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+           end do
+           do j = ae(ifrp), norb(ifrp)
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ai(i, j, iz) = 0.0d0
+              end do
+           end do
+     
+        end do
+     end do
+
+!    'ij' blocks
+     do iz = 1, nz
+        do ifrp = 1, nfsym
+
+           do j = ip(ifrp), norb(ifrp)
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+           end do
+           do j = ie(ifrp), ae(ifrp) - 1
+              do i = ip(ifrp), ie(ifrp) - 1
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+              do i = ae(ifrp), norb(ifrp)
+                 T_ji(i, j, iz) = 0.0d0
+              end do
+           end do
+     
+        end do
+     end do
+
+  end subroutine
+
+
+  subroutine get_mdm_con(D_con,       &
+                         D_con_mo,    &
+                         C,           &
+                         Cig, Csg,    &
+                         Ciu, Csu)
+
+!   ----------------------------------------------------------------------------
+    type(matrix)            :: D_con, D_con_mo
+    type(matrix)            :: C, Cig, Csg
+    type(matrix), optional  :: Ciu, Csu
+
+!   ----------------------------------------------------------------------------
+
+    if (visual_cfg_london_none) then
+
+!      here build density matrix modified by first-order overlap
+!      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
+
+       D_con = D_con_mo - dag(D_con_mo)
+!      check that it gives the same regardless of connection used
+!      due to: T^B + (T^B)^+ = -S^B
+!      call print_mat(D_con, label = '-S^B')
+
+       if (nfsym == 2) then
+          if (jbtof(D_con_mo%irep, 1) == 2) then
+!            ungerade perturbation
+             D_con = Cig*(D_con*dag(Ciu)) &
+                   + Ciu*(D_con*dag(Cig))
+          else
+!            gerade perturbation
+             D_con = Cig*(D_con*dag(Cig)) &
+                   + Ciu*(D_con*dag(Ciu))
           end if
-          call butobs_no_work(D_con_ao%elms(ioff2), 1)
-        else
-          call dzero(D_con_ao%elms(ioff2), n2bbasx)
-        end if
-      end do 
+       else
+          D_con = Cig*(D_con*dag(Cig))
+       end if
 
     else
+!      symmetric or natural connection used in preceding response run
+!      "-" is because dag() does only transposition and T^B is antihermitian 
 
-      ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
-      call dcopy(idimens, buffer, 1, D_con_ao%elms(ioff), 1)
-      call butobs_no_work(D_con_ao%elms, nz)
+       if (nfsym == 2) then
+          D_con = C*(D_con_mo*dag(Cig)) &
+                + C*(D_con_mo*dag(Ciu))
+          D_con = D_con - dag(D_con)
+       else
+
+          D_con = C*(D_con_mo*dag(Cig))
+          D_con = D_con - dag(D_con)
+
+       end if
+
 
     end if
 
-
-
-    call dealloc(buffer)
-
-
-!   assign symmetries 
-!   =================
-    D_con_ao%tr_sym = visual_cfg_itim_conmat
-    D_con_ao%irep   = visual_cfg_irep_conmat
-
-
-    if (debug_me) then
-!     should be the same as connection matrix in SA-AO basis
-!     which can be printed from e.g. PRPMAO when running response
-      call print_mat(D_con_ao, label = 'setup_fo_conmat_ao: debug D_con_ao in SA-AO basis')
-    end if
-
-
-  end subroutine setup_fo_conmat_ao
-
-
-  subroutine D_con_symmetry_info(ivector, p_name)
-!   --------------------------------------------------------------------
-    integer, intent(in)       :: ivector
-    character(*), intent(in)  :: p_name
-
-    integer       :: isym, itim, indxpr, i
-    character(8)  :: line
-    logical :: in_file
-    logical :: debug_me
-!   --------------------------------------------------------------------
-
-    debug_me = .true.
-
-    if (debug_me) then
-      write(lupri, *) 'read symmetry info for connection matrices'
-      write(lupri, *) 'entering ivector, p_name, len_trim(p_name) = ', &
-                                ivector, p_name, len_trim(p_name)
-    end if
-
-
-    open(11, file='property_info',form='formatted',access='sequential')
-    rewind(11)
-    in_file = .true.
-
-    do while (in_file)
-
-      read(11, *, end = 99) line
-!      write(*, *) 'line(1:len_trim(p_name)', line(1:len_trim(p_name))
-
-      !if (p_name == line(1:len_trim(p_name))) then
-      if (line(1:2) == p_name(1:2)) then
-
-        property_name = p_name(1:len_trim(p_name))
-        read(11, *, end = 99) property_type
-        read(11, *, end = 99) isym
-        read(11, *, end = 99) itim
-
-!
-        read(11, *, end = 99) number_nz
-        do i = 1, number_nz
-          read(11, *, end = 99) property_ihqmat(i)
-        end do
-!
-        read(11, *, end = 99) number_of_components
-        do i = 1, number_of_components
-          read(11, *, end = 99) property_factor(i)
-          read(11, *, end = 99) property_label(i)
-          read(11, *, end = 99) property_do_int(i)
-          read(11, *, end = 99) property_lrep(i)
-          read(11, *, end = 99) property_ltyp(i)
-          read(11, *, end = 99) property_jm4(i)
-          read(11, *, end = 99) property_jm4pos(i)
-          read(11, *, end = 99) property_iqmult(i)
-          read(11, *, end = 99) property_iqtopq(i)
-        end do
-
-        visual_cfg_irep_conmat = isym - 1
-        visual_cfg_itim_conmat = itim    
-
-      end if
-
-    end do
-
- 99 in_file = .false.
-
-    close(11)
-
-    debug_me = .false.
-    if (debug_me) then
-
-      write(lupri, *) 'gosia output from read_property_info'
-
-      write(lupri, *) 'property_name        = ', property_name
-      write(lupri, *) 'property_type        = ', property_type
-      write(lupri, *) 'visual_cfg_irep_conmat(ivector) = ', visual_cfg_irep_conmat
-      write(lupri, *) 'isym                 = ', isym
-      write(lupri, *) 'visual_cfg_itim_conmat(ivector) = ', visual_cfg_itim_conmat
-      write(lupri, *) 'itim                 = ', itim
-
-      write(lupri, *) 'number_nz            =', number_nz
-      do i = 1, number_nz
-        write(lupri, *) 'i, property_ihqmat(i) = ', i, property_ihqmat(i)
-      end do
-!
-
-      write(lupri, *) 'number_of_components = ', number_of_components
-
-      do i = 1, number_of_components
-       write(lupri, *) '                i   = ', i 
-       write(lupri, *) 'property_factor(i)  = ', property_factor(i)
-       write(lupri, *) 'property_label(i)   = ', property_label(i)
-       write(lupri, *) 'property_do_int(i)  = ', property_do_int(i)
-       write(lupri, *) 'property_lrep(i)    = ', property_lrep(i)
-       write(lupri, *) 'property_ltyp(i)    = ', property_ltyp(i)
-       write(lupri, *) 'property_jm4(i)     = ', property_jm4(i)
-       write(lupri, *) 'property_jm4pos(i)  = ', property_jm4pos(i)
-       write(lupri, *) 'property_iqmult(i)  = ', property_iqmult(i)
-       write(lupri, *) 'property_iqtopq(i)  = ', property_iqtopq(i)
-      end do
-
-    end if
-
-
-  end subroutine D_con_symmetry_info
-
+  end subroutine
 
 #endif /* #ifdef MOD_UNRELEASED */
 end module

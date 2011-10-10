@@ -290,9 +290,9 @@ class pam_enviroment:
         print "  Dirac command       ",  self.dirac_cmd
         print "  Dirac executable    ",  self.dirac_exe
         if self.diracrc_file:
-            print "  sole diracrc file, which was read ",self.diracrc_file
+            print "  sole diracrc file, which was read: ",self.diracrc_file
         if self.diracrc_args:
-            print "  default pam arguments from this file ",self.diracrc_args
+            print "  default pam arguments from this file: ",self.diracrc_args
 
     def create_scratch_dir(self):
         if not os.path.isdir(self.scratch_dir):
@@ -863,10 +863,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if os.path.isfile(str(options.dest_debugger)):
                 self.debugger = options.dest_debugger
             else:
-                print 'Debugger ', options.dest_debugger, \
-                    ' you assigned does not exist ! Provide it with full path !'
+                print 'FYI: Debugger wrongly assigned. No debugging ;|'
                 self.debug = False
-                sys.exit(17)
 
         if options.dest_vg:
             self.vg_debug = True
@@ -1155,7 +1153,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             if self.debug:
                 # first check if debugger is set
                 if self.debugger is None:
-                    sys.exit("though debug wanted, debugger not assigned !")
+                    sys.exit("Though debugging wanted, no debugger assigned !")
                 if find_executable(self.debugger) is None:
                     print 'no debugger found in the .diracrc file !'
                     sys.exit()
@@ -1566,7 +1564,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
 
         # add few consistency checks
         if self.dirac_exe == None:
-            print_std_out_err('No Dirac binary assigned, quitting.')
+            print_std_out_err('No Dirac executable assigned, quitting.')
             sys.exit(29)
 
         if self.parallel_run and self.mpirun==None:

@@ -38,24 +38,28 @@ int main(int argc, char *argv[])
   {
     printf("#define FORTRAN_INT8_CONVERSION  \"%%i\" \n");
     printf("#define FORTRAN_STR_TO_INT8(a) atoi(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT8(a) (short int)strtol(a,NULL,16) \n");
     printf("typedef short int");
   }
   if (sizeof(int) == 8)
   {
     printf("#define FORTRAN_INT8_CONVERSION  \"%%i\" \n");
     printf("#define FORTRAN_STR_TO_INT8(a) atoi(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT8(a) (int)strtol(a,NULL,16) \n");
     printf("typedef int");
   }
   else if (sizeof(long int) == 8)
   {
     printf("#define FORTRAN_INT8_CONVERSION  \"%%li\" \n");
     printf("#define FORTRAN_STR_TO_INT8(a) atol(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT8(a) strtol(a,NULL,16) \n");
     printf("typedef long int");
   }
   else if (sizeof(long long int) == 8)
   {
     printf("#define FORTRAN_INT8_CONVERSION  \"%%lli\" \n");
     printf("#define FORTRAN_STR_TO_INT8(a) atoll(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT8(a) strtoll(a,NULL,16) \n");
     printf("typedef long long int");
   }
   else
@@ -66,24 +70,28 @@ int main(int argc, char *argv[])
   {
     printf("#define FORTRAN_INT4_CONVERSION  \"%%i\" \n");
     printf("#define FORTRAN_STR_TO_INT4(a) atoi(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT4(a) (short int)strtol(a,NULL,16) \n");
     printf("typedef short int");
   }
   if (sizeof(int) == 4)
   {
     printf("#define FORTRAN_INT4_CONVERSION  \"%%i\" \n");
     printf("#define FORTRAN_STR_TO_INT4(a) atoi(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT4(a) (int)strtol(a,NULL,16) \n");
     printf("typedef int");
   }
   else if (sizeof(long int) == 4)
   {
     printf("#define FORTRAN_INT4_CONVERSION  \"%%li\" \n");
     printf("#define FORTRAN_STR_TO_INT4(a) atol(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT4(a) strtol(a,NULL,16) \n");
     printf("typedef long int");
   }
   else if (sizeof(long long int) == 4)
   {
     printf("#define FORTRAN_INT4_CONVERSION  \"%%lli\" \n");
     printf("#define FORTRAN_STR_TO_INT4(a) atoll(a) \n");
+    printf("#define FORTRAN_STRx_TO_INT4(a) strtoll(a,NULL,16) \n");
     printf("typedef long long int");
   }
   else

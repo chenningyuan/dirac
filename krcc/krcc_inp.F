@@ -8,11 +8,11 @@ C Written by Lasse Soerensen 2010
 C
 C***********************************************************************
 #include "implicit.inc"
+#include "ipoist8.inc"
 #include "priunit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
-#include "cprnt.inc"
 #include "lucinp.inc"
 * other blocks
 #include "dgroup.h"

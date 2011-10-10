@@ -269,8 +269,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
-        USE READFILE
-        USE FILE
+        USE READ_XYZFILE
 
 #include "implicit.h"
 #include "priunit.h"
@@ -391,27 +390,9 @@ C               These are the only two extensions at the moment.
 
 
       CASE ('XYZ')
-C       JHS050707 Information of the basisset and charges are stored in the 
-C                 .INP file, which has to be opened and read.
-        inpfile=OPEN_FILE('DIRAC.INP',LUCMD,'FORMATTED',LUPRI)
-        
-        IF (.NOT.(inpfile>0)) THEN
-          WRITE(LUPRI, '(a)') 'ERROR, could not open DIRAC.INP'
-          CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
-        END IF
 
-
-C     JHS050707 Read the actual files.
-        CALL READ_XYZ(LUINFO, inpfile, LUPRI)
-
-C     JHS050707 Write the coordinates to the commonblocks
-        CALL WRITE_ATOMS(LUPRI)
-C     JHS050707 Write the basisset data to the commonblocks
-        CALL WRITE_BASIS(inpfile, LUPRI,WORK,LWORK,
-     &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
-C     JHS050707 Free the reserved memory.
-        CALL CLEAR_XYZ(LUPRI)
-        CLOSE(inpfile)
+        CALL READ_XYZ(LUINFO, LUCMD, LUPRI, WORK, LWORK,
+     &                KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
       CASE DEFAULT
         WRITE(LUPRI, '(//A)') ' *** ERROR *** extension of MOLECULE'
@@ -2491,35 +2472,38 @@ C
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
          END DO
 C
+         NUCLEI_IN_TYPE = 0
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
             NCHARG = NINT(CHARGE(ICENT))
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
-            IF (IPREAD .GT. 0) THEN
-               IF(DIRAC) THEN
-                  WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
-     &                   NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),
-     &                   'L  - ',TSTRING(1)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
-                  IF (DOFIT) THEN
-                     IF (NPRIM(3).GT.0)
-     &                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                     NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
-                     IF (NPRIM(4).GT.0)
-     &                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                     NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
-                  ENDIF
-               ELSE
-                  WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
-     &                 NUCDEG(ICENT),NCHARG,NPRIM(1),NBAS(1),TSTRING(1)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(3),NBAS(2),'Aux - ',TSTRING(2)
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
-               ENDIF
-            END IF
+            NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
    20    CONTINUE
+         
+         IF (IPREAD .GT. 0) THEN
+            IF(DIRAC) THEN
+               WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
+     &                NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NBAS(1),
+     &                'L  - ',TSTRING(1)
+               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(2),NBAS(2),'S  - ',TSTRING(2)
+               IF (DOFIT) THEN
+                  IF (NPRIM(3).GT.0)
+     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(3),NBAS(3),'FL - ',TSTRING(3)
+                  IF (NPRIM(4).GT.0)
+     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &                  NPRIM(4),NBAS(4),'FS - ',TSTRING(4)
+               ENDIF
+            ELSE
+               WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
+     &              NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NBAS(1),TSTRING(1)
+               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(3),NBAS(2),'Aux - ',TSTRING(2)
+               WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(3),NBAS(3),'Fit - ',TSTRING(3)
+            ENDIF
+         END IF
   100 CONTINUE
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
@@ -6483,15 +6467,19 @@ C
         IF (IPRINT .GE. 0) THEN
 
 
-           if (
-     &               (dabs(epot_qm_qm) == 0.0d0)
+           if (      (dabs(epot_pc_pc) == 0.0d0)
+     &         .and. (dabs(epot_qm_pc) == 0.0d0)
+     &        ) then
+              WRITE(LUPRI,'(4(/A,F20.12))')
+     &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM
+           else if ( (dabs(epot_qm_qm) == 0.0d0)
      &         .and. (dabs(epot_qm_pc) == 0.0d0)
      &         .and. (dabs(epot_pc_pc) == 0.0d0)
      &        ) then
 !             don't print anything if there is
 !             only one atom and no point charges
            else
-              WRITE(LUPRI,'(4(/A,F18.12))')
+              WRITE(LUPRI,'(4(/A,F20.12))')
      &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
      &        '  QM-pc interaction energy       :',EPOT_QM_PC,
      &        '  pc-pc interaction energy       :',EPOT_PC_PC,
@@ -6509,7 +6497,7 @@ C
       RETURN
 C
  5000 CONTINUE
-      WRITE (LUPRI,'(//3(A,I3),A,D15.5/,2(/A,4F12.5))')
+      WRITE (LUPRI,'(//3(A,I5),A,D15.5/,2(/A,4F12.5))')
      &     'ERROR: Nucleus',N,' is too close to the',KB,
      &     'th transformation of nucleus no.',M,' DIST=',DIST,
      &     'Charge annd coordinates of first  center:',Q(N),CORD(1:3,N),
@@ -6775,7 +6763,7 @@ C
 C***********************************************************************
 #include "mxcent.h"
       DIMENSION I_SET(MXCENT),I_EQUAL(MXCENT)
-      LOGICAL FIRST(MXCENT)
+      LOGICAL FIRST(MXCENT), BASREFS_EQUAL
       CHARACTER*80 BASREF(10,*)
 C
 C     Check for common sets, the first set is always unique
@@ -6784,13 +6772,20 @@ C
       DO I = 2, NONTYP
          FIRST(I) = .TRUE.
          DO J = 1, I - 1
-            IF (BASREF(1,I).EQ.BASREF(1,J)) THEN
+            BASREFS_EQUAL = .TRUE.
+            DO K = 1, 10
+               IF (BASREF(K,I).NE.BASREF(K,J)) THEN
+                   BASREFS_EQUAL = .FALSE.
+                   EXIT
+               ENDIF
+            ENDDO
+!        If equal is still true, then we have a match and can exit the loop over J
+            IF (BASREFS_EQUAL) THEN
                FIRST(I) = .FALSE.
                I_SET(I) = J
-               GOTO 1
+               EXIT
             ENDIF
          ENDDO
-   1     CONTINUE
       ENDDO
 C
       WRITE (LUPRI,1000)
@@ -6944,11 +6939,6 @@ C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
 C
       WRITE (LUTMP2,'(A)') 'END'
       CALL GPCLOSE(LUTMP2,'KEEP')
-
-      if(ipread .gt. 0)then
-        WRITE(LUPRI,'(/A)')
-     &  '  MNF.INP input file (for the AMFI stuff) is ready.'
-      end if
 
       CALL FLSHFO(LUPRI)
 

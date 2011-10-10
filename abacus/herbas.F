@@ -98,6 +98,7 @@ C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
       LOGICAL SPLIT,TEST
+      integer :: icount = 0
 #endif /* PRG_DIRAC */
 C
       CALL QENTER('BASLIB')
@@ -414,6 +415,13 @@ C           Reorder primitive orbitals
 C
             CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
      &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
+
+!#define PRINT_GAUSSIAN_INP
+#ifdef PRINT_GAUSSIAN_INP
+            CALL print_gaussian_inp(icount, iqm, ALPHA(1,NBLOCK),
+     &                  CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
+     &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
+#endif
 C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
@@ -1444,31 +1452,6 @@ C No documentation when end of file is found
 C
  200  CONTINUE
  1000 CONTINUE
-!radovan: this error printout below is quite annoying
-!         when you use own libraries to organize basis sets
-!         then you may get lots (nr of processors)
-!         of these messages
-CMI: well, rather use warning message
-CMI   WRITE (LUPRI,'(//A,I5/2A/)')
-CMI  &     'Error in reading basis set file, your basis '//
-CMI  &     'has no documentation. IOSTAT code:',IOERR,
-CMI  &     'Basis set: ',BASNAM
-#ifdef VAR_MPI
-!     print only from one process
-      if (mytid == 1) then
-#endif
-      WRITE (LUPRI,'(A,/,A,A)')
-     &     'Info(warning) about the basis set file: your basis '//
-     &     'has no documentation.',
-     &     'Basis set: ',BASNAM
-#ifdef VAR_MPI
-      end if
-#endif
-
-Chj   CALL QUIT('Incomplete basis set file in HERBAS')
-
-Chj   CALL QUIT('Incomplete basis set file in HERBAS')
-      RETURN
       END
 C             
 C
@@ -1564,4 +1547,114 @@ C
      &     'is not complete. IOSTAT code:',IOERR
       CALL QUIT('Incomplete basis set file in HERBAS')
       END
-C  -- end of herbas.F --
+
+      SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
+     &                              NRCI,SEG,KPRIM,DSM)
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+      LOGICAL SEG
+      DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
+      character(1) :: ch
+      if (iqm == 1) then
+         icount = icount + 1
+         if (icount > 1) then
+            write(*, '(a)') '****'
+         end if
+         write(*, '(a2, i2)') namn(icount), 0
+      end if
+C
+C     *****************************
+C     *** Segmented contraction ***
+C     *****************************
+C
+      IDONE = 0
+      IF (SEG) THEN
+         DO 100 ICONTR = 1, NRCI
+            ISTART = IDONE + 1
+            NLEFT  = NPRI - IDONE
+C
+C           Find first primitive
+C           ====================
+C
+            IMXA = ISTART + IDAMAX(NLEFT,ALPHA(ISTART),1) - 1
+            CALL DSWAP(1,ALPHA(ISTART),1,ALPHA(IMXA),1)
+            CALL DSWAP(NRCI,CPRIMU(ISTART,1),KPRIM,CPRIMU(IMXA,1),
+     &                 KPRIM)
+C
+C           Find corresponding contracted function
+C           ======================================
+C
+            IMXC = IDAMAX(NRCI,CPRIMU(ISTART,1),KPRIM)
+            CALL DSWAP(NPRI,CPRIMU(1,ICONTR),1,CPRIMU(1,IMXC),1)
+C
+C           Collect other primitives contributing to same contracted
+C           ========================================================
+C
+            IPRI = 1
+            DO 200 I = ISTART + 1, NPRI
+               IF (ABS(CPRIMU(I,ICONTR)) .GT. DSM) THEN
+                  CALL DSWAP(1,ALPHA(I),1,ALPHA(ISTART+IPRI),1)
+                  CALL DSWAP(NRCI,CPRIMU(I,1),KPRIM,
+     &                            CPRIMU(ISTART+IPRI,1),KPRIM)
+                  IPRI = IPRI + 1
+               END IF
+  200       CONTINUE
+C
+C           Sort primitives
+C           ===============
+C
+            IF (IPRI .GT. 2) THEN
+               DO 300 I = ISTART + 1, ISTART + IPRI - 2
+                  DO 400 J = I + 1, ISTART + IPRI - 1
+                     IF (ALPHA(J) .GT. ALPHA(I)) THEN
+                        CALL DSWAP(1,ALPHA(I),1,ALPHA(J),1)
+                        CALL DSWAP(NRCI,CPRIMU(I,1),KPRIM,
+     &                                  CPRIMU(J,1),KPRIM)
+                     END IF
+  400             CONTINUE
+  300          CONTINUE
+            END IF
+C
+            IDONE = IDONE + IPRI
+  100    CONTINUE
+C
+C     ***************************
+C     *** General contraction ***
+C     ***************************
+C
+      ELSE
+         DO 500 I = 1, NPRI - 1
+            DO 600 J = I + 1, NPRI
+            IF(ALPHA(J) .GT. ALPHA(I)) THEN
+               CALL DSWAP(1,ALPHA(I),1,ALPHA(J),1)
+               CALL DSWAP(NRCI,CPRIMU(I,1),KPRIM,CPRIMU(J,1),KPRIM)
+           END IF
+  600      CONTINUE
+  500   CONTINUE
+      END IF
+
+      select case (iqm)
+         case (1)
+            ch = 'S'
+         case (2)
+            ch = 'P'
+         case (3)
+            ch = 'D'
+         case (4)
+            ch = 'F'
+         case (5)
+            ch = 'G'
+         case (6)
+            ch = 'H'
+         case default
+            call quit('too high iqm')
+      end select
+
+      do i = 1, npri
+         write(*, '(a2, a)') ch, '   1 1.00       0.000000000000'
+         write(*, '(e22.10, e18.10)') alpha(i), 1.0d0
+      end do
+
+      END
