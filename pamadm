@@ -451,6 +451,7 @@ dirac_modules[this_module].add_test('visual_lao_current')
 dirac_modules[this_module].add_test('visual_lao_shielding')
 dirac_modules[this_module].add_test('dft_london_mag_prop')
 dirac_modules[this_module].add_test('operator_trs_flip')
+dirac_modules[this_module].add_test('blockd_twocomp')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'log'
