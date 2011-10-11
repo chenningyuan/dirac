@@ -62,10 +62,10 @@ MODULE RECP_IPT
 CONTAINS
 
 
-SUBROUTINE RECP_IPTA_CORTAB(ipt,ndfac,lmn1u,lproju,ncru,lmax)
+SUBROUTINE RECP_IPTA_CORTAB(ndfac,lmn1u,lproju,ncru,lmax)
 ! Allocate variables
   IMPLICIT NONE
-  INTEGER  ipt(*),ndfac,lmn1u,lproju,ncru,lmax
+  INTEGER  ndfac,lmn1u,lproju,ncru,lmax
 ! local variable
   INTEGER  l1max2,lmnpwr,l2m1,sum_lmn1u
 
@@ -121,40 +121,66 @@ END SUBROUTINE RECP_IPTD_ONEINT
 
 
 
-SUBROUTINE RECP_IPTA_STVCZ(ipt,ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu)
+SUBROUTINE RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu)
 ! Allocate variables
+  USE RECP_OUTPUT
   IMPLICIT NONE  
-  INTEGER  ipt(*),ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu  
+  INTEGER  ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu,IOS 
   ltot1   = lit+ljt-1
   mproju  = 2*lproju+1
   lamau   = lit+lproju
   lambu   = ljt+lproju
 
-  ALLOCATE (IPT_CZ_G2(ic1))                  ! stvcz,26:g2(1:ic1)
-  ALLOCATE (IPT_CZ_G1(ic0))                  ! c/lsints,27:g1(1:ic0)
-  ALLOCATE (IPT_CZ_GOUT(ij))                 ! c/lsints,28:gout(1:ij)
-  ALLOCATE (IPT_CZ_CRDA(lit,3))              ! c/lsints,29:crda(1:lit,1:3)
-  ALLOCATE (IPT_CZ_CRDB(ljt,3))              ! c/lsints,30:crdb(1:ljt,1:3)
-  ALLOCATE (IPT_P1_ANG(ltot1,ltot1))         ! pseud1,31:ang(1:ltot1,1:ltot1)
-! ALLOCATE (IPT_P1_Q(ltot1,ltot1))           ! pseud1,32:q(1:ltot1,1:ltot1)
-  ALLOCATE (IPT_P1_QSUM(ltot1,ltot1))        ! pseud1,33:qsum(1:ltot1,1:ltot1)
-  ALLOCATE (IPT_P1_XAB(ltot1))               ! pseud1,34:xab(1:ltot1)
-  ALLOCATE (IPT_P1_YAB(ltot1))               ! pseud1,35:yab(1:ltot1)
-  ALLOCATE (IPT_P1_ZAB(ltot1))               ! pseud1,36:zab(1:ltot1)
-  ALLOCATE (IPT_P23_ANGA(lit,mproju,lamau))  ! pseud2/3,37:anga(1:lit,1:mproju,1:lamau)
-  ALLOCATE (IPT_P23_ANGB(ljt,mproju,lambu))  ! pseud2/3,38:angb(1:ljt,1:mproju,1:lambu)
-  ALLOCATE (IPT_P23_QSUM(ltot1,lambu,lamau)) ! pseud2/3,39:qsum(1:ltot1,1:lambu,1:lamau)
-  ALLOCATE (IPT_P23_APWR(ljt))               ! qbess,40:apwr(1:ljt)
-  ALLOCATE (IPT_P23_ATERM1(ljt))             ! qbess,41:aterm1(1:ljt) 
-  ALLOCATE (IPT_P23_ATERM2(ljt))             ! qbess,42:aterm2(1:ljt) 
-  ALLOCATE (IPT_P23_BPREF(ljt))              ! qbess,43:bpref(1:ljt)
-  ALLOCATE (IPT_P23_BPWR(lit))               ! qbess,44:bpwr(1:lit) 
-  ALLOCATE (IPT_P23_BTERM1(lit))             ! qbess,45:bterm1(1:lit) 
-  ALLOCATE (IPT_P23_SSI(ltot1+lproju))       ! qbess,46:ssi(ltot1+lproju)
-  ALLOCATE (IPT_P23_ABESS(lamau))            ! ptwt, 47:abess(1:lamau)
-  ALLOCATE (IPT_P23_BBESS(lambu))            ! ptwt, 48:bbess(1:lambu)
-  ALLOCATE (IPT_P23_PTPOW(ltot1))            ! ptwt, 49:ptpow(1:ltot1)
-  ALLOCATE (IPT_P23_Q2(lambu,lamau))         ! ptwt, 50:q2(1:lambu,1:lamau) 
+  ALLOCATE (IPT_CZ_G2(ic1),STAT=IOS)                  ! stvcz,26:g2(1:ic1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_CZ_G1(ic0),STAT=IOS)                  ! c/lsints,27:g1(1:ic0)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G1')
+  ALLOCATE (IPT_CZ_GOUT(ij),STAT=IOS)                 ! c/lsints,28:gout(1:ij)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_GOUT')
+  ALLOCATE (IPT_CZ_CRDA(lit,3),STAT=IOS)              ! c/lsints,29:crda(1:lit,1:3)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_CRDA')
+  ALLOCATE (IPT_CZ_CRDB(ljt,3),STAT=IOS)              ! c/lsints,30:crdb(1:ljt,1:3)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_CRDB')
+  ALLOCATE (IPT_P1_ANG(ltot1,ltot1),STAT=IOS)         ! pseud1,31:ang(1:ltot1,1:ltot1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P1_ANG')
+! ALLOCATE (IPT_P1_Q(ltot1,ltot1),STAT=IOS)           ! pseud1,32:q(1:ltot1,1:ltot1)
+! IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P1_Q')
+  ALLOCATE (IPT_P1_QSUM(ltot1,ltot1),STAT=IOS)        ! pseud1,33:qsum(1:ltot1,1:ltot1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P1_QSUM')
+  ALLOCATE (IPT_P1_XAB(ltot1),STAT=IOS)               ! pseud1,34:xab(1:ltot1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P1_XAB')
+  ALLOCATE (IPT_P1_YAB(ltot1),STAT=IOS)               ! pseud1,35:yab(1:ltot1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P1_YAB')
+  ALLOCATE (IPT_P1_ZAB(ltot1),STAT=IOS)               ! pseud1,36:zab(1:ltot1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P1_ZAB')
+  ALLOCATE (IPT_P23_ANGA(lit,mproju,lamau),STAT=IOS)  ! pseud2/3,37:anga(1:lit,1:mproju,1:lamau)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_ANGA')
+  ALLOCATE (IPT_P23_ANGB(ljt,mproju,lambu),STAT=IOS)  ! pseud2/3,38:angb(1:ljt,1:mproju,1:lambu)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_ANGB')
+  ALLOCATE (IPT_P23_QSUM(ltot1,lambu,lamau),STAT=IOS) ! pseud2/3,39:qsum(1:ltot1,1:lambu,1:lamau)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_QSUM')
+  ALLOCATE (IPT_P23_APWR(ljt),STAT=IOS)               ! qbess,40:apwr(1:ljt)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_APWR')
+  ALLOCATE (IPT_P23_ATERM1(ljt),STAT=IOS)             ! qbess,41:aterm1(1:ljt) 
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_ATERM1')
+  ALLOCATE (IPT_P23_ATERM2(ljt),STAT=IOS)             ! qbess,42:aterm2(1:ljt) 
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_ATERM2')
+  ALLOCATE (IPT_P23_BPREF(ljt),STAT=IOS)              ! qbess,43:bpref(1:ljt)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_BPWR(lit),STAT=IOS)               ! qbess,44:bpwr(1:lit) 
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_BTERM1(lit),STAT=IOS)             ! qbess,45:bterm1(1:lit) 
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_SSI(ltot1+lproju),STAT=IOS)       ! qbess,46:ssi(ltot1+lproju)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_ABESS(lamau),STAT=IOS)            ! ptwt, 47:abess(1:lamau)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_BBESS(lambu),STAT=IOS)            ! ptwt, 48:bbess(1:lambu)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_PTPOW(ltot1),STAT=IOS)            ! ptwt, 49:ptpow(1:ltot1)
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  ALLOCATE (IPT_P23_Q2(lambu,lamau),STAT=IOS)         ! ptwt, 50:q2(1:lambu,1:lamau) 
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
 
 END SUBROUTINE RECP_IPTA_STVCZ
 

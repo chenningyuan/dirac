@@ -23,6 +23,9 @@
          NMLINE = NMLINE - 1
          GOTO 9000
       ENDIF
+
+!     Allocate variables for RECP parameters
+      CALL RECP_NTRA_READCP(MXCENT)
 !
 !     Explicit RECP parameter
 !     =======================
