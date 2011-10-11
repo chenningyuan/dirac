@@ -1,8 +1,5 @@
-      subroutine rad2( a,          ccr,        ipt,        kcrl,
-     &                 kcru,       l,          lambu,      lmahi,
-     &                 lmalo,      lmbhi,      lmblo,      ltot1,
-     &                 ncr,        rka,        rkb,
-     &                 zcr )
+      subroutine rad2( a,ccr,kcrl,kcru,l,lambu,lmahi,
+     &                 lmalo,lmbhi,lmblo,ltot1,ncr,rka,rkb,zcr )
 !  compute type 2 radial integrals.
 
       USE RECP_IPT
@@ -17,9 +14,8 @@
      3  jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
       common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa,
      1  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
-      dimension a(*), ccr(*), ipt(*), ncr(*),  zcr(*)
+      dimension a(*), ccr(*),ncr(*),  zcr(*)
 
-c     call wzero(ltot1*lambu*lmahi,qsum,1)
       do i = 1, ltot1
          do j = 1, lambu
             do k = 1, lmahi

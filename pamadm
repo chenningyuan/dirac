@@ -429,7 +429,6 @@ this_module = 'ecp'
 dirac_modules[this_module] = dirac_module('ecp', 'ARGOS ECP module')
 dirac_modules[this_module].add_cppflag('MOD_ECP')
 dirac_modules[this_module].add_directory('argosecp')
-dirac_modules[this_module].take_out_of_release()
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'srdft'

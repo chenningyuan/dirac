@@ -20,7 +20,7 @@ SUBROUTINE RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,nopir,ilxyz,iapt, &
   INTEGER :: ist,iop,INDEX1,NPAIR,IPAIR,I,J,INT_TYPE 
 
   INDEX1 = 0
-
+   
   do I = 1, ircru
     if(esf) jrcru = I
     do J = 1, jrcru
@@ -36,7 +36,7 @@ SUBROUTINE RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,nopir,ilxyz,iapt, &
           do iop = 1, nopir(ist)
 !           INT_TYPE : integral type: S,T,V = 1 / SO(x,y,z) = 1,2,3
             INT_TYPE = ilxyz(iop,ist)
-
+!           print *,'ISA-DOLOOP',INDEX1,I,J,ist,iop,NPAIR
             do IPAIR = 1, NPAIR
               INDEX1 = INDEX1 + 1
               iapt(INT_TYPE) = iapt(INT_TYPE) + 1
@@ -118,8 +118,8 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
      REWIND(78)
      REWIND(79)
   ELSE
-     OPEN (UNIT=74,FILE='RECP_ISA1')
-     OPEN (UNIT=77,FILE='RECP_ISB1') 
+     OPEN (UNIT=74,FILE='RECP_ISA0')
+     OPEN (UNIT=77,FILE='RECP_ISB0') 
      REWIND(74)
      REWIND(77)
   ENDIF
@@ -134,9 +134,6 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
 ! value_index = 1
   do lblop = 1, nop
 
-!    check that array(*) was correctly allocated.
-!    if (iapt(lblop).gt.mpru)   call bummer('oneint: array(*) overflow, iapt=',iapt(lblop), faterr )
-
 !    # check integral type
      itypea = itypan(nnam + lblop - 1)
      itypeb = itypbn(nnam + lblop - 1)
@@ -144,12 +141,18 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
      call RECP_WRITE_TYPE(itypea, itypeb, int_type, lblop,PRINT_LEVEL)
 
     DO I = 1, N_INTEGRAL(lblop) 
-       IF (lblop.EQ.1) READ(74,'(x,f20.16)') values_stvc(I)
-       IF (lblop.EQ.2) READ(75,'(x,f20.16)') values_stvc(I)
-       IF (lblop.EQ.3) READ(76,'(x,f20.16)') values_stvc(I)
-       IF (lblop.EQ.1) READ(77,'(x,i10)') value_temp 
-       IF (lblop.EQ.2) READ(78,'(x,i10)') value_temp 
-       IF (lblop.EQ.3) READ(79,'(x,i10)') value_temp
+!      IF (lblop.EQ.1) READ(74,'(x,f20.16)') values_stvc(I)
+!      IF (lblop.EQ.2) READ(75,'(x,f20.16)') values_stvc(I)
+!      IF (lblop.EQ.3) READ(76,'(x,f20.16)') values_stvc(I)
+!      IF (lblop.EQ.1) READ(77,'(x,i10)') value_temp 
+!      IF (lblop.EQ.2) READ(78,'(x,i10)') value_temp 
+!      IF (lblop.EQ.3) READ(79,'(x,i10)') value_temp
+       IF (lblop.EQ.1) READ(74,*) values_stvc(I)
+       IF (lblop.EQ.2) READ(75,*) values_stvc(I)
+       IF (lblop.EQ.3) READ(76,*) values_stvc(I)
+       IF (lblop.EQ.1) READ(77,*) value_temp 
+       IF (lblop.EQ.2) READ(78,*) value_temp 
+       IF (lblop.EQ.3) READ(79,*) value_temp
 !       print *,'values_stvc(',I,')', values_stvc(I), value_temp
        labels_stvc(1,I) =     IPT_IL(value_temp)/ilfact
        labels_stvc(2,I) = mod(IPT_IL(value_temp),ilfact)
@@ -217,7 +220,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array
   integer :: i_lab, j_lab
   integer :: SYM1, SYM2, SYM_12   ! isym, jsym, ijsym
 
-  integer :: nbfmx=50000     ! FIXME 
+  integer :: nbfmx=100000     ! FIXME 
   integer, ALLOCATABLE :: sym_bfn(:) ! symb(1:nbft) symmetry index of each basis function 'n_bfn_sym' is needed
 
   integer :: nndxf
@@ -265,7 +268,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array
           ij  =  n_n_skp(SYM1) + nndxf(i_lab - n_skp(SYM1)) + j_lab - n_skp(SYM1)
 !       | ij  :  skip for       +                             +       -              |
 !       |        each symmetry                                                       | 
-!         print *,'ij',ij,i_lab,j_lab,labels_stvc(1,i), labels_stvc(2,i)
+!         print *,'ij',ij,i_lab,j_lab,SYM1,SYM2
           array_stvc(ij) = values_stvc(i)
        endif
      enddo
@@ -346,7 +349,9 @@ SUBROUTINE RECP_WRITE_FILE(int_type,N_INTEGRAL,nbft,array_stvc,array_so, &
   IF(INT_TYPE.GE.5)  WRITE(FILE_NUM(INT_TYPE)), ((ARRAY_SO(J,I),J=1,NBFT),I=1,NBFT)
   CLOSE(UNIT=FILE_NUM(INT_TYPE))
 
-! # Write SOREP as 0 when AREP calculation
+! --------------------------------------
+! Write SOREP as 0 when AREP calculation
+! --------------------------------------
   IF(INT_TYPE.EQ.4 .AND. INT_AREP.eq.1) THEN 
      ARRAY_SO = 0
      DO INT_TYPE = 5, 7  !INT_TYPE = 5~7
@@ -364,7 +369,9 @@ SUBROUTINE RECP_WRITE_FILE(int_type,N_INTEGRAL,nbft,array_stvc,array_so, &
      INT_TYPE = 4
   ENDIF
 
-! # Write RECP integrals to file (for debug)
+! ----------------------------------------
+! Write RECP integrals to file (for debug)
+! ----------------------------------------
   IF (RECP_DBG.GE.5) THEN
      OPEN (UNIT=FILE_NUM(INT_TYPE),FILE=FILE_DBG(INT_TYPE), FORM='FORMATTED')
      IF (INT_TYPE.EQ.4) THEN

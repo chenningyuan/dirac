@@ -151,8 +151,6 @@
       integer mblu,mcxu,mcxu2,CX_TEMP
       real*8 chg(msup), zcr(mcrup), ccr(mcrup), eps
       character*3 ityp(mstup), mtype(msup)
-      integer  atebyt, forbyt
-      external atebyt, forbyt
 
       mconsu = mconsp
       mgcsu  = mgcsup
@@ -193,7 +191,7 @@
      &   npair,  nprir,  nrcr, nsopr, nt,     ntl,
      &   ntu, CX_TEMP )
 !     Allocate variables
-      CALL RECP_IPTA_CORTAB(ipt,ndfac,lmn1u,lproju,ncru,lmax)
+      CALL RECP_IPTA_CORTAB(ndfac,lmn1u,lproju,ncru,lmax)
       eps = 1.0d-12
       CALL CORTAB(eps,lmax,lmn1u,lproju,ndfac)
 
@@ -206,7 +204,7 @@
         CALL RECP_ONE_MAIN(
      &        a,         ccr,        chg,       eta,        ica,
      &        icb,       icxast,     icxst,     ilxyz,
-     &        iprst,     ipt,        lcr,       lls,        lmnp1,
+     &        iprst,     lcr,       lls,        lmnp1,
      &        lproju,    mcons,      mcrs,      nc,         ncon,
      &        ncr,       nf,         nfct,      ngw,        nkcrl,
      &        nkcru,     nklsl,      nklsu,     nopir,      npair,
