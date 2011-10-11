@@ -1,4 +1,4 @@
-      subroutine cints(a,ccr,etai,etaj,g2,ipt,lcr,lambu, 
+      subroutine cints(a,ccr,etai,etaj,g2,lcr,lambu, 
      &           ltot1,mcrs,mproju,nc,ncr,nkcrl,nkcru,x,y,z,zcr,zet )
 !  lcru is the max l value + 1 for the potential.
 !  ncr contains the value of n for each term.
@@ -27,7 +27,7 @@ c
       common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa,
      1  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
       dimension a(*),ccr(*),etai(mrcru,*),
-     1  etaj(mrcru,*),g2(*),ipt(*),lcr(*),
+     1  etaj(mrcru,*),g2(*),lcr(*),
      2  mcrs(*),nc(*),ncr(*),nkcrl(6,*),nkcru(6,*),x(mcu,*),
      3  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
       integer i 
@@ -47,7 +47,6 @@ c  i primitive
 c
       do 490 ig=1,igu
       if(.not.igueq1) then
-!       call wzero(nc1,g1,1)
         do i = 1, nc1
            IPT_CZ_G1(i) = 0.0d0
         enddo
@@ -60,7 +59,6 @@ c
       if(esfc) jgu=ig
       do 390 jg=1,jgu
       if(.not.jgueq1) then
-!       call wzero(ij,gout,1)
         do i = 1, ij
            IPT_CZ_GOUT(i) = 0.0d0
         enddo
@@ -127,7 +125,7 @@ c
             xk=xp-xc
             yk=yp-yc
             zk=zp-zc
-            call pseud1(a,ccr,IPT_CZ_CRDA,IPT_CZ_CRDB,IPT_CZ_GOUT,ipt,
+            call pseud1(a,ccr,IPT_CZ_CRDA,IPT_CZ_CRDB,IPT_CZ_GOUT,
      &           IPT_LMNV,ltot1,ncr,nkcrl,nkcru,zcr)
           endif
 
@@ -135,7 +133,7 @@ c
           aarr2=apr*(ca-cb)**2
           if(aarr2.le.tol.and.lcru.ne.0) then
             call pseud2( a, ccr, IPT_CZ_CRDA, IPT_CZ_CRDB,
-     &        IPT_CZ_GOUT,ipt,lambu,ltot1,mproju,ncr,nkcrl,nkcru, zcr )
+     &        IPT_CZ_GOUT,lambu,ltot1,mproju,ncr,nkcrl,nkcru, zcr )
           endif
   330   continue
   340   continue
@@ -191,7 +189,7 @@ c
       end
 
 
-      subroutine lsints( a,ccr,etai,etaj,g2,ipt,lls,lambu,ltot1,mcrs,
+      subroutine lsints( a,ccr,etai,etaj,g2,lls,lambu,ltot1,mcrs,
      &                   mproju,nc,ncr,nklsl,nklsu,x,y,z,zcr,zet )
 c
 c  lcru is the max l value + 1 for the potential.
@@ -222,7 +220,7 @@ c
       common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa,
      1  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
       dimension a(*),ccr(*),etai(mrcru,*),
-     1  etaj(mrcru,*),g2(*),ipt(*),lls(*),
+     1  etaj(mrcru,*),g2(*),lls(*),
      2  mcrs(*),nc(*),ncr(*),nklsl(4,*),nklsu(4,*),x(mcu,*),
      3  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
       integer i
@@ -242,7 +240,6 @@ c  i primitive
 c
       do 490 ig=1,igu
       if(.not.igueq1) then
-!       call wzero(nc1,g1,1)
         do i = 1, nc1
            IPT_CZ_G1(i) = 0.0d0
         enddo
@@ -255,7 +252,6 @@ c
       if(esfc) jgu=ig
       do 390 jg=1,jgu
       if(.not.jgueq1) then
-!       call wzero(ij,gout,1)
         do i = 1, ij
            IPT_CZ_GOUT(i) = 0.0d0 
         enddo
@@ -314,7 +310,7 @@ c
       aarr2=apr*(ca-cb)**2
       if(aarr2.le.tol) then
         call pseud3( a, ccr, IPT_CZ_CRDA, IPT_CZ_CRDB,
-     &    IPT_CZ_GOUT,ipt,lambu,ltot1,
+     &    IPT_CZ_GOUT,lambu,ltot1,
      &    mproju, ncr, nklsl, nklsu, zcr )
       endif
   330 continue

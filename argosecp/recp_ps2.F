@@ -1,4 +1,4 @@
-      subroutine pseud2( a, ccr, crda, crdb, gout, ipt,
+      subroutine pseud2( a, ccr, crda, crdb, gout, 
      &  lambu, ltot1, mproju, ncr, nkcrl, nkcru, zcr )
 !  compute type 2 core potential integrals
 
@@ -22,7 +22,7 @@
      3  jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
       common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa,
      1  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
-      dimension a(*),ccr(*),crda(lit,3),crdb(ljt,3),gout(*),ipt(*),
+      dimension a(*),ccr(*),crda(lit,3),crdb(ljt,3),gout(*),
      &  ncr(*),nkcrl(6,*),nkcru(6,*),zcr(*)
       CALL OUTPUT_LOC('RECP_PSEUD2','E')
       if(ca.eq.a0) then
@@ -76,11 +76,8 @@ c  compute radial integrals
 c
       kcrl=nkcrl(l+1,kcrs)
       kcru=nkcru(l+1,kcrs)
-            call rad2( a,    ccr,        ipt,        kcrl,
-     &                 kcru, l,          lambu,      lmahi,
-     &                 lmalo,lmbhi,      lmblo,      ltot1,
-     &                 ncr,  rka,        rkb,
-     &                 zcr )
+            call rad2( a,ccr,kcrl,kcru,l,lambu,lmahi,
+     &                 lmalo,lmbhi,lmblo,ltot1,ncr,rka,rkb,zcr )
 c
 c  compute angular integrals and combine with radial integrals
 c

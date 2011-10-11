@@ -11,11 +11,11 @@
 
 !     # mrcru  = max number of members in a contraction set.
       integer    mrcrup
-      parameter (mrcrup=100) !v3 20->50->100
+      parameter (mrcrup=50) !v3 20->50
 
 !     # mconu  = max number of primitives in a contraction.
       integer    mconup
-      parameter (mconup=100) !v3 24->50->100
+      parameter (mconup=50) !v3 24->50
 
 !     # mcu    = max number of symmetry equivalent atoms.
       integer    mcup
@@ -23,11 +23,11 @@
 
 !     # mconsu = max number of contraction sets.
       integer    mconsp
-      parameter (mconsp=100) !v2 65->100
+      parameter (mconsp=200) !v2 65->100
 
 !     # msfu   = max number of function sets.
       integer    msfup
-      parameter (msfup=1000)  ! 52->v1(70),v2(100),1000
+      parameter (msfup=200)  ! 52->v1(70),v2(100),1000
 
       integer    mnsfup
       parameter (mnsfup=(msfup*(msfup+1))/2)

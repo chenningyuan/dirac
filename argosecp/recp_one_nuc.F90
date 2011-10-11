@@ -1,16 +1,14 @@
 MODULE ARGOS_ONEINT_NUC
-
 CONTAINS
 
-SUBROUTINE ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,ica,icb,nfct,ngw,PRINT_LEVEL)
-! center combinations for is=js
-! Y. C. Park
-!
+SUBROUTINE ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,ica,icb,nfct,ngw)
+! center combinations for is=js, Y.C.Park
 ! ica(NUC_I/J, JS/IS, SYM/SYMUNQ)
 ! icb(NUC_I/J, JS/IS, SYM/SYMUNQ)
 !        ^       ^       ^
+  USE RECP_OUTPUT
   IMPLICIT NONE
-
+#include "inc_print.h"
 ! vaiables : global
   INTEGER :: is             ! DO is->ns
   INTEGER :: js             ! DO js->is
@@ -22,8 +20,6 @@ SUBROUTINE ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,ica,icb,nfct,ngw,PRINT_LEVE
   INTEGER :: icb(4,24,*)
   INTEGER :: nfct(*)
   INTEGER :: ngw(*)
-  INTEGER :: PRINT_LEVEL
-
 ! vaiables : local
   INTEGER :: NUC_J          ! NUC_CENTER_J (jc)
   INTEGER :: SYM_I          ! SYM_I : symmetry_ith (ig)
@@ -32,8 +28,7 @@ SUBROUTINE ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,ica,icb,nfct,ngw,PRINT_LEVE
   INTEGER :: NUC_SYMUNQ_I   ! NUC_CENTER_SYM_UNIQUE_I (icc)
   INTEGER :: TEMP
 
-      IF (PRINT_LEVEL.GE.5) PRINT *,' * ECPINT : entering...ONEINT_CENTER_ISEQJS'
-
+      CALL OUTPUT_LOC('ONEINT_CENTER_ISEQJS','E')
       do 140 NUC_J = 1, ic
       igwu=0
       do 132 SYM_I = 1, ng
@@ -67,21 +62,20 @@ SUBROUTINE ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,ica,icb,nfct,ngw,PRINT_LEVE
         nfct(NUC_SYMUNQ_I) = nfct(NUC_SYMUNQ_I)/2
       enddo
 
-      IF (PRINT_LEVEL.GE.5) PRINT *,' * ECPINT : exiting... ONEINT_CENTER_ISEQJS'
-
+      CALL OUTPUT_LOC('ONEINT_CENTER_ISEQJS','X')
 END SUBROUTINE ONEINT_NUC_ISEQJS
 
 
-SUBROUTINE ONEINT_NUC_ISGTJS(is,js,nc,ng,ic,mcu,msu,ica,icb,ncc,nfct,PRINT_LEVEL)
+SUBROUTINE ONEINT_NUC_ISGTJS(is,js,nc,ng,ic,mcu,msu,ica,icb,ncc,nfct)
 ! Center combinations for is>js
 ! Y. C. Park
 !
 ! ica(CENTER_I/J, JS/IS, SYM/SYMUNQ)
 ! icb(CENTER_I/J, JS/IS, SYM/SYMUNQ)
 !        ^          ^       ^
-
+  USE RECP_OUTPUT
   IMPLICIT NONE
-
+#include "inc_print.h"
 ! vaiables : global
   INTEGER :: is
   INTEGER :: js
@@ -93,14 +87,12 @@ SUBROUTINE ONEINT_NUC_ISGTJS(is,js,nc,ng,ic,mcu,msu,ica,icb,ncc,nfct,PRINT_LEVEL
   INTEGER :: icb(4,24,*)
   INTEGER :: ncc            ! number of symmetry unique center?
   INTEGER :: nfct(*)
-  INTEGER :: PRINT_LEVEL
-
 ! vaiables : local
   INTEGER :: NUC_J         ! CENTER_J (jc)
   INTEGER :: SYM_I          ! SYM_I : symmetry_ith (ig)
   INTEGER :: NUC_SYMUNQ_I  ! CENT_SYM_UNIQUE_I (icc)
 
-      IF (PRINT_LEVEL.GE.5) PRINT *,' * ECPINT : entering...ONEINT_CENTER_ISGTJS'
+      CALL OUTPUT_LOC('ONEINT_CENTER_ISGTJS','E')
 
       do 240 NUC_J = 1, nc(js)
       do 232 SYM_I = 1, ng
@@ -118,7 +110,7 @@ SUBROUTINE ONEINT_NUC_ISGTJS(is,js,nc,ng,ic,mcu,msu,ica,icb,ncc,nfct,PRINT_LEVEL
   236 nfct(NUC_SYMUNQ_I) = nfct(NUC_SYMUNQ_I) + ic
   240 continue
 
-      IF (PRINT_LEVEL.GE.5) PRINT *,' * ECPINT : exiting... ONEINT_CENTER_ISGTJS'
+      CALL OUTPUT_LOC('ONEINT_CENTER_ISGTJS','X')
 
 END SUBROUTINE ONEINT_NUC_ISGTJS
 
