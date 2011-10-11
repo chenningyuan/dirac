@@ -66,7 +66,6 @@ c     # check to make sure scr(*) is large enough.
       ALLOCATE(IPT_L2OPXV_SCR(xyzdim))
 
 c     # initialize the scratch vector.
-!     call wzero(xyzdim,scr,1)
       do i = 1, xyzdim
          IPT_L2OPXV_SCR(i) = 0.0d0
       enddo 

@@ -15,6 +15,7 @@
       integer    ilfact
       parameter( ilfact=1024 )
 
+#include "argos_mxvalue.h"
 #include "argos_files.h"
 #include "argos_error.h"
 #include "inc_print.h"
@@ -33,8 +34,7 @@
      & mconsu, mru,   mcru, msfu, 
      & msfru,  mnru,   ngcs,  nu,   
      & lxyzir(3),      inam(5),     nnam, mdum(32)
-      integer mcxu,mcxu2,mblu,mgcsu,CX_TEMP
-      integer IPQ_TEMP
+      integer mcxu,mcxu2,mblu,mgcsu,CX_TEMP, IPQ_TEMP
 
       integer
      & icxast(*),        icxst(2,*),   icxsv1(*),    icxsv2(mgcsu,*),
@@ -52,11 +52,18 @@ c     # local:
      & jtl, jsfrjf, jtu, jru, ist, jrcru, ircr, isfrib, jrcr,
      & jsfrjb, iesfb, npr, ipr, ics, ir, lai, jcs, jr, laj,
      & isv1, icxu, icxa, isv2, ict, ic, ictic, jct, jc, jctjc, it,
-     & jt, ia, npru, I
+     & jt, ia, npru, I,J,K
       logical ea, easfb, es, esf, esfb, esfbc, msfbct
 
       CALL OUTPUT_LOC('ARGOS_SOCFPD','E')
 
+      DO I = 1, 2
+         DO J = 1, mstup 
+            DO K = 1, mnsfup
+               nprir(I,J,K) = 0
+            ENDDO
+         ENDDO
+      ENDDO
 !     # check the il(*) packing factor.
       if ( nbft .ge. ilfact ) then
         call bummer('socfpd: larger ilfact required, nbft=',

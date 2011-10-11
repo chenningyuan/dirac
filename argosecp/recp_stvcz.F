@@ -1,5 +1,5 @@
       subroutine recp_stvcz(a,ccr,chg,eta,
-     &           ilxyz,ipt,lcr,lls,lmnv,lproju,mcrs,nc,ncr,
+     &           ilxyz,lcr,lls,lmnv,lproju,mcrs,nc,ncr,
      &           nkcrl,nkcru,nklsl,nklsu,nopir,nprir,nt,x,y,z,zcr,zet)
  
       USE RECP_IPT
@@ -39,7 +39,7 @@
      3  jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
       common /stv/ xint,yint,zint,t,x0,y0,z0,xi,yi,zi,xj,yj,zj,ni,nj
       dimension a(*),ccr(*),chg(*),eta(mrcru,mconu,*),
-     1  ilxyz(3,*),ipt(*),lcr(*),
+     1  ilxyz(3,*),lcr(*),
      2  lls(*),lmnv(3,*),mcrs(*),nc(*),ncr(*),nkcrl(6,*),nkcru(6,*),
      3  nklsl(4,*),nklsu(4,*),nopir(*),nprir(2,mstu,*),nt(*),x(mcu,*),
      4  y(mcu,*),z(mcu,*),zcr(*),zet(mconu,*)
@@ -49,9 +49,6 @@
 !  bummer error types.
       integer    wrnerr,  nfterr,  faterr
       parameter (wrnerr=0,nfterr=1,faterr=2)
- 
-      integer  atebyt, forbyt
-      external atebyt, forbyt
 
       CALL OUTPUT_LOC('ARGOS_STVCZ','E')
 
@@ -123,7 +120,7 @@
       endif
 
 !     Allocate variables
-      CALL RECP_IPTA_STVCZ(ipt,ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,
+      CALL RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,
      &     lamau,lambu)
       do i = 1, nc2
          IPT_CZ_G2(i) = 0.0d0
@@ -140,11 +137,11 @@
 !       PRINT *, ' *skip Coulomb(V) integral'
       elseif (nnam.eq.4) then
             call cints( a,ccr,eta(1,1,icons),eta(1,1,jcons),IPT_CZ_G2,
-     &                  ipt,lcr,lambu,ltot1,mcrs,mproju,nc,ncr,nkcrl,
+     &                  lcr,lambu,ltot1,mcrs,mproju,nc,ncr,nkcrl,
      &                  nkcru,x,y,z,zcr,zet )
       elseif (nnam.eq.5) then
             call lsints( a,ccr,eta(1,1,icons),eta(1,1,jcons),IPT_CZ_G2, 
-     &                   ipt,lls,lambu,ltot1,mcrs,mproju,nc,ncr,nklsl,
+     &                   lls,lambu,ltot1,mcrs,mproju,nc,ncr,nklsl,
      &                   nklsu,x,y,z,zcr,zet )
       endif
 

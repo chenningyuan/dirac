@@ -73,14 +73,8 @@
      & lmnvmx 
       integer ixyzir(3), lblso(16),CX_TEMP
       real*8 c_sum, t, eval
-
       character*1 ibl, ipc, isk, lblsh(21)
-
       INTEGER  ECP_INPUT
-c     # for workspace allocation.
-      integer  atebyt, forbyt
-      external atebyt, forbyt
-
       integer  iodfac
       external iodfac
 
@@ -126,7 +120,6 @@ c     # for workspace allocation.
  
 !     # read in atomic labels, charges, coordinates, basis sets,
 !       and core and spin-orbit potentials
-!     call izero_argos(ns,mcrs,1)
       DO I = 1, ns
          mcrs(I) = 0
       ENDDO
@@ -138,7 +131,7 @@ c     # for workspace allocation.
      &            chg, x, y, z, mtype, mru, ncrs,nst)
 
       lmnvmx = (lmn1u*(lmn1u + 1)*(lmn1u + 2))/6
-      ipt(2) = ipt(1) + forbyt( 3*lmnvmx )
+      ipt(2) = ipt(1) 
 ! FIXME
 !     ALLOCATE(IPT_LMNV(3,lmnvmx))
       ALLOCATE(IPT_LMNV(3,lmnvmx*3))
@@ -188,7 +181,6 @@ c
 !     # normalization of symmetry orbitals. (deleted)
 !     if ( inrm .ne. 0 ) CALL RECP_INP_ORB_SONORM
  
-!     call izero_argos(3,ixyzir,1)
       DO I = 1, 3
          ixyzir(I) = 0
       ENDDO

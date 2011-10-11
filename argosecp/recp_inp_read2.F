@@ -455,8 +455,7 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
 !     local
       INTEGER     I, J, K, I2
       INTEGER     NUC_I          ! NUC_I(is)
-      INTEGER     L_QUANT        ! Angular quantum number
-      INTEGER     BASIS_BLOCK
+      INTEGER     AO2SO_BLOCK,BASIS_BLOCK 
 
       I2 = 0
       lmn1u = 0
@@ -494,11 +493,12 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
 !       Match basis-set block to l-quantum number
         DO I = 1,BASIS_BLOCK_N(NUC_I)
           I2 = I2+1
-!         Read each 'basis block number' and corresponding 'ang. quant. number'
-          read (ECP_INPUT,*) BASIS_BLOCK, L_QUANT
+!         Read each 'basis block number' and corresponding 'AO2SO block'
+!                            
+          read (ECP_INPUT,*) BASIS_BLOCK, AO2SO_BLOCK
 
           mcons(I2) = BASIS_BLOCK      ! save 
-          mgcs(I2)  = L_QUANT
+          mgcs(I2)  = AO2SO_BLOCK
 
 !         lmn1u : maximum value of lmnp1
           lmn1u     = max(lmn1u,lmnp1(BASIS_BLOCK))
@@ -510,20 +510,18 @@ c           # don't include nc(I_SYM)=nc(J_SYM) self-repulsions.
 !         nct(I2)   = NUC_OTHER_N(NUC_I)*nt(I2)
 
           DO J = 1,nrcr(BASIS_BLOCK)
-            DO K = 1,nir(maords(L_QUANT))
+            DO K = 1,nir(maords(AO2SO_BLOCK))
               nbft = nbft+1
-              nso(la(K,maords(L_QUANT))) 
-     &           = nso(la(K,maords(L_QUANT)))+1
-              lb(nbft) = nso(la(K,maords(L_QUANT)))
-!             print *,'la:',la(K,maords(L_QUANT)),
-!    &                'nso:',nso(la(K,maords(L_QUANT)))
+              nso(la(K,maords(AO2SO_BLOCK))) 
+     &           = nso(la(K,maords(AO2SO_BLOCK)))+1
+              lb(nbft) = nso(la(K,maords(AO2SO_BLOCK)))
+!             print *,'la:',la(K,maords(AO2SO_BLOCK)),
+!    &                'nso:',nso(la(K,maords(AO2SO_BLOCK)))
             ENDDO
           ENDDO
         ENDDO
 
-        if ( ncrs .gt. 0 ) then
-          read(ECP_INPUT,*) mcrs(NUC_I)
-        endif
+        IF (ncrs.gt.0) READ(ECP_INPUT,*) mcrs(NUC_I)
       ENDDO
 
 !     check error

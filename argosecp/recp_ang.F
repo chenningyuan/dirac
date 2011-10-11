@@ -8,8 +8,8 @@
       integer i,j
 
       CALL OUTPUT_LOC('ANG1','E')
-!     call wzero(ltot1*lamu,ang,1)
       do i = 1,ltot1 
+!        do j = 1,lamu
          do j = 1,ltot1 
             IPT_P1_ANG(i,j) = 0.0d0
          enddo
@@ -84,8 +84,16 @@
       implicit real*8 (a-h,o-z)
       parameter (a0=0.0d0, a1=1.0d0, a2=2.0d0, a3=3.0d0)
       dimension ang(lit,mproju,*),crda(lit,3),lmnv(3,*)
+      integer i,j,k
  
-      call wzero(lit*mproju*lmhi,ang,1)
+      do i = 1, lit
+         do j = 1, mproju
+            do k = 1, lmhi
+               ang(i,j,k) = 0.0d0 
+            enddo
+         enddo
+      enddo
+
       na1=lmnv(1,it)+1
       la1=lmnv(2,it)+1
       ma1=lmnv(3,it)+1

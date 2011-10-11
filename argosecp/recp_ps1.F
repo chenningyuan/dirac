@@ -1,4 +1,4 @@
-      subroutine pseud1(a,ccr,crda,crdb,gout,ipt,lmnv,ltot1,ncr,
+      subroutine pseud1(a,ccr,crda,crdb,gout,lmnv,ltot1,ncr,
      &  nkcrl,nkcru,zcr)
 !  compute type 1 core potential integrals
 
@@ -18,7 +18,7 @@
       common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa,
      1  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
       dimension a(*),ccr(*),crda(lit,3),crdb(ljt,3),
-     &  gout(*),ipt(*),lmnv(3,*),ncr(*),nkcrl(6,*),nkcru(6,*),zcr(*)
+     &  gout(*),lmnv(3,*),ncr(*),nkcrl(6,*),nkcru(6,*),zcr(*)
       integer i,j
 c     # should include kcr loop in recur1 and use recurrence relations
 c     # on qsum
@@ -44,7 +44,6 @@ c     # on qsum
 !
 !  compute radial integrals and sum over potential terms
 !
-!     call wzero((ltot1*lamu),qsum,1)
       do i = 1, ltot1
 !        do j = 1, lamu
          do j = 1, ltot1
