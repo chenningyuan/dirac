@@ -14,7 +14,7 @@ elif test "${SCRIPT_DIR:0:1}" != "/" ; then
 fi
 
 if [ "$1" = "" ]; then
-    echo "usage: remove_unreleased /some/path"
+    echo "usage: remove_unreleased_code /some/path"
     exit 1
 fi
 
