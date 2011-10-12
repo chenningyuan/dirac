@@ -1,13 +1,12 @@
-      subroutine argosin
-!
+      SUBROUTINE RECP_GENINP
 !     read DIRAC input files and convert to ARGOS input file
-!
 
       USE RECP_NTR
-
+      USE RECP_OUTPUT
 #include "mxcent.h"          
 #include "nuclei.h"          
 
+#include "inc_print.h"
 #include "argosparm.h" 
 #include "argosbas.h"  
 #include "argosecp.h"    
@@ -22,14 +21,12 @@
       integer blkcnt
       LOGICAL FILE_EXIST
       INTEGER ECPLINE, MAX_ECPLINE
+
       MAX_ECPLINE = 1000
- 
-! files 
       lufile2 = 9  !molecule.inp
       lufile3 = 51 !argosin
 
-      IF (PRINT_LEVEL.GE.5)
-     &   PRINT *,'* ECPINT : entering... ARGOS_GENINPUT'
+      CALL OUTPUT_LOC('RECP_GENINP','E')
 
 !     # Delete RECP_INPUT file if exist
       INQUIRE(FILE='RECP_INPUT',EXIST=FILE_EXIST)
@@ -39,12 +36,9 @@
       ENDIF
 
  
-!****************************************
-!**                                    **
-!**      read 'molecule.mol' file      **
-!**                                    **
-!****************************************
- 
+!     ------------------------
+!     read 'molecule.mol' file 
+!     ------------------------
  2000 continue
       OPEN (lufile2,file='MOLECULE.MOL',status='old',err=5200)
       rewind (lufile2)
@@ -62,56 +56,65 @@
       endif
       nmline = nmline + 1 
       goto 2010
+
  
-!****************************************
-!**                                    **
-!**                                    **
-!**      processing data .....1/2      **
-!**                                    **
-!**                                    **
-!****************************************
  2200 continue
 !
-! Section 4. Point group generator
+!     processing data .....1/2 
+!     ========================
 !
+ 
+      nmcrs = 0  ! index for the core and spin-orbit expansion set
+      soindex = 0
+
+!     ---------------------
+!     Point group generator
+!     ---------------------
       nmline = 4
       read (mline(nmline)(1:80),'(bn,a1, i4, i3, i2, 9a1, a1, d10.2)')
      &              crt, RECP_NONTYP, kcharg, symtxt, 
      &              ((kasym(i,j),j=1,3),i=1,3), id3, thrs
       nmline = nmline + 1
 
-      nmcrs = 0  ! index for the core and spin-orbit expansion set
-      soindex = 0
-!
-! Section 5. charge, atoms, exponent   
-!
       do i = 1, RECP_NONTYP
+
+!        ----------------------------
+!        Read charge, atoms, exponent   
+!        ----------------------------
          read (mline(nmline)(1:80),'(1x,f9.0,i5,f20.5)') 
      &        q(i),RECP_NONT(i),qexp1
          nmline = nmline + 1
-!
-! Section 6. Atom type, coordinates
-!
+
+!        --------------------------- 
+!        Read atom type, coordinates
+!        --------------------------- 
 !        Coordinate will be taken directly from DIRAC
 !        Only atom name will be taken here
          call readcoor(i, RECP_NONT, mline, nmline, namnar)
-c
-c Section 7. Type of Basis, # of AO blocks
-c
+
+!        -----------------------------------------
+!        Read 1. type of Basis, # of AO blocks
+!             2. exponents and coeeficients blocks
+!        -----------------------------------------
          call readbskey(mline,nmline,bset,bskeyword,i,iqm,jco,
      &                  basfil,bscode)
-c
-c Section 8. Exponents and coeeficients blocks
-c
-              if (bscode.eq.0)           ! explicit basis (18-1)
+
+!             -------------------
+!             Read explicit basis
+!             -------------------
+              if (bscode.eq.0)     
      &           call readexbas(i, mline, nmline, iqm, jco,
      &                          nucij, nrcij, expn, cont, bfree)
-              if (bscode.eq.5)           ! basis library
+!             ----------------------
+!             Read basis-set library
+!             ----------------------
+              if (bscode.eq.5)  
      &           call readlibbas(basfil, i, iqm, jco, q,
      &                           nucij, nrcij, expn, cont, bfree)
-!        --------
-!        Read ECP    
-!        --------
+
+!        -------------------
+!        Read ECP parameters   
+!        -------------------
          mcrs(i) = 0
          IF (MLINE(NMLINE)(1:3).EQ.'ECP') THEN
             ecpchk = .true.
@@ -137,34 +140,26 @@ c
 
       CALL RECP_NTRD_READCP
 
-
-      goto 3000
-c error
- 2991 continue
-      write(*,*) '*** ERROR ***'
-      write(*,*) 'In subroutine argosin...'
-      write(*,'(a6,a10,a1)') 'line (',mline(nmline)(1:10),')'
-      write(*,*) 'Please check your input'
-      write(*,*) '"START ECP", "FINISH" or "ECP" keyword is needed'
-      stop
+!
+!     processing data .....2/2 
+!     ========================
+!
  
- 3000 continue
       call chkopt (ns, naords, ncons, ngcs,
      &             icut, inrm, ncrs, 
      &             symtxt, RECP_NONTYP, RECP_NONT, iqm, jco, nmcrs)
-c
-c     coordinate copy
-c     check symmetry operation
-c     (for card 2 & 9) 
+
+!     -------------------------------------------- 
+!     coordinate copy and check symmetry operation
+!     -------------------------------------------- 
       call permatm (isend,RECP_NONTYP,RECP_NONT,ngenl,
      &              xyz3,mj2,symtxt,kasym)
       call permgen (isend,ngenl,ngenp,RECP_NONT,nsag,mj2)
  
-!****************************************
-!     Generate RECP_INPUT
-!****************************************
- 
- 4000 continue
+
+!     ------------------------ 
+!     Generate RECP_INPUT file
+!     ------------------------ 
       open (lufile3,file='RECP_INPUT',status='new',err=5300)
  
 !     Card 2: Options 
@@ -196,7 +191,9 @@ c     (for card 2 & 9)
          write(lufile3,'(a)'),'  4  6  7'
       endif
 
-!     Card 6: AO to SO transformation matrices
+!     --------------------------------
+!     AO to SO transformation matrices
+!     --------------------------------
       do icent = 1, nsag
 !        do k = 1, RECP_NONT(icent) 
             do lang = 1, maxang(icent)
@@ -218,11 +215,11 @@ c     (for card 2 & 9)
   53        continue
   52     continue
   51  continue
-      deallocate(ctranarg)
+      IF (ALLOCATED(CTRANARG)) DEALLOCATE (CTRANARG)
 
-c----------------------------------------------
-c Card 7 : exp, contracted coeff
-c----------------------------------------------
+!     --------------------
+!     Write basis-set data
+!     --------------------
       do i = 1, nsag                  !atom
          do j = 1, iqm(i)             !s,p,d...orbital
             lmnp1(i) = j
@@ -235,9 +232,10 @@ c----------------------------------------------
             enddo
          enddo
       enddo
-c----------------------------------------------
-c Card 8 : ecp
-c----------------------------------------------
+
+!     --------------------
+!     Write RECP parameter
+!     --------------------
       if (ecpchk.EQV..false.) goto 2900
 !     do i = 1, soindex-1                   ! (nmcrs)
       do i = 1, soindex                     ! (nmcrs)
@@ -257,6 +255,7 @@ c----------------------------------------------
             enddo
          enddo
       enddo
+
 c----------------------------------------------
 c Card 9 : geo
 c----------------------------------------------
@@ -346,8 +345,7 @@ c end program
 c
  6000 continue
 
-      IF (PRINT_LEVEL.GE.5)
-     &   PRINT *,' * ECPINT : exiting...  ARGOS_GENINPUT'
+      CALL OUTPUT_LOC('RECP_GENINP','X')
       return
       end
 
