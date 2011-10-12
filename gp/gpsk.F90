@@ -70,7 +70,7 @@ contains
        d1         =  1.0D0
        ierr_qdiag =  0
  
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_text('% entering lowgen90')
       call matexport_double2('S',smat,ldm,ndim_s,ndim_s)
 #endif
@@ -95,7 +95,7 @@ contains
       end do
  10   continue
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_double2('V',vmat,ldm,ns,nv)
       call matexport_text('% leaving lowgen90')
 #endif
