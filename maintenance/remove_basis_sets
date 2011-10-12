@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# remove basis sets that are deprecated or rarely used
+# (and can be fetched from web) or nonstandard
+
+if [ "$1" = "" ]; then
+    echo "usage: remove_unreleased /some/path"
+    exit 1
+fi
+
+for x in 2av3z             \
+         MOLFDIR           \
+         Vaara-NMRbas      \
+         aug-XeRn.dcv3z    \
+         aug-XeRn.dcv4z    \
+         deprecated        \
+         dirac08           \
+         pnc_re            \
+         reference_edited  \
+         reference_unedited; do
+    rm -rf $1/basis/$x
+done
+
+exit 0

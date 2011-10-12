@@ -41,6 +41,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_code  ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis                         ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton                  ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_basis_sets       ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/test                          ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_tests ${EXPORT_DIR}
         COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils                         ${EXPORT_DIR}
