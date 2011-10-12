@@ -382,12 +382,6 @@ dirac_modules[this_module].add_test('operator_trs_flip')
 dirac_modules[this_module].add_test('blockd_twocomp')
 dirac_modules[this_module].take_out_of_release()
 
-this_module = 'log'
-dirac_modules[this_module] = dirac_module('log', 'Will log interesting matrices in matlab format (very verbose!)')
-dirac_modules[this_module].add_cppflag('MOD_LOG')
-dirac_modules[this_module].take_out_of_adm()
-dirac_modules[this_module].take_out_of_release()
-
 # define input options
 
 parser = OptionParser()
