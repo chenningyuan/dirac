@@ -918,7 +918,6 @@ contains
         gnn_0 = 0.0d0
 
 
-#ifdef MOD_UNRELEASED
    if (use_blas3_scheme) then
       loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
@@ -976,7 +975,6 @@ contains
 
       end do loop_over_points_block
    else
-#endif /* ifdef MOD_UNRELEASED */
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -1612,9 +1610,7 @@ contains
     deallocate(ao)
     deallocate(buffer)
 
-#ifdef MOD_UNRELEASED
    end if !if (use_blas3_scheme) then
-#endif /* ifdef MOD_UNRELEASED */
 
     deallocate(derv)
     deallocate(derv_nadd)
