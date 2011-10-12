@@ -37,21 +37,23 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
         COMMAND rm     ${EXPORT_DIR}/sources.tar
         COMMAND rm -rf ${EXPORT_DIR}/build
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake              ${EXPORT_DIR}
-        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis             ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton      ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/test              ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils             ${EXPORT_DIR}
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun       ${EXPORT_DIR}/xcint
-        COMMAND cp -r ${CMAKE_SOURCE_DIR}/doc               ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/pam               ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest           ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}
-        COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL.rst       ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/cmake                         ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_code  ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis                         ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis_dalton                  ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_basis_sets       ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/test                          ${EXPORT_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_unreleased_tests ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/utils                         ${EXPORT_DIR}
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/xcint/xcfun                   ${EXPORT_DIR}/xcint
+        COMMAND cp -r ${CMAKE_SOURCE_DIR}/doc                           ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/pam                           ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/runtest                       ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/setup                         ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/CMakeLists.txt                ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/COPYING                       ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/CTestConfig.cmake             ${EXPORT_DIR}
+        COMMAND cp    ${CMAKE_SOURCE_DIR}/INSTALL.rst                   ${EXPORT_DIR}
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM
