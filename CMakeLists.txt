@@ -74,7 +74,7 @@ if(ENABLE_LARGE_MOLECULES)
     add_definitions(-DLARGE_MOLECULES)
 endif()
 if(ENABLE_MATLAB_LOG)
-    add_definitions(-DMOD_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
 endif()
 
 # set cdash buildname
