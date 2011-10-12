@@ -24,10 +24,10 @@
       RECP_OUT    = 6 ! DIRAC output
 
 !     RECP_INPUT generation
-      CALL ARGOSIN
+      CALL RECP_GENINP
 
 !     Main part
-      CALL ARGOS_DRIVER
+      CALL RECP_DRIVER
  
 !     Exit ECPINT
       CALL TITLER('RECP integral end','*',126)
@@ -36,7 +36,7 @@
 
 ! ------------------------------------------------
 
-      SUBROUTINE ARGOS_DRIVER
+      SUBROUTINE RECP_DRIVER
       USE RECP_IPT
       implicit logical(a-z)
 
@@ -97,6 +97,7 @@
 !  read the user input and compute the 1-e integrals.
  
       USE RECP_IPT
+      USE RECP_NTR
       USE RECP_OUTPUT
       implicit logical(a-z)
 
@@ -218,4 +219,5 @@
       CALL RECP_IPTD_CORTAB
       DEALLOCATE(IPT_IL)
       DEALLOCATE(IPT_LMNV)
+      IF (ALLOCATED(RECP_SET)) DEALLOCATE(RECP_SET)
       end

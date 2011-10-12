@@ -13,17 +13,12 @@
       USE RECP_IPT
       USE RECP_OUTPUT
       USE RECP_WRITE
-
       implicit logical(a-z)
- 
 #include "argos_mxvalue.h"
 #include "argos_files.h"
 #include "argos_error.h"
 #include "inc_print.h"
-
-      integer    INT_AREP
-      integer    N1MAX,  L1REC
- 
+      INTEGER    INT_AREP,N1MAX,L1REC
       real*8         tol
       common /parmr/ tol
  
