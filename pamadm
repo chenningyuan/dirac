@@ -411,7 +411,7 @@ parser.add_option('--release',
                   action='store_true',
                   dest='release',
                   default=False,
-                  help="Include selected modules for the DIRAC2010 release")
+                  help="Include selected modules for the release")
 
 # complain if user still uses ./pamadm ... make
 if sys.argv[-1] == 'make':
