@@ -4157,7 +4157,7 @@ CMI .. mover before diagonalization which can destroy SMAT
         CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_text('% Entering LOWGEN')
       call matexport_double2('S',SMAT,LDM,NS,NS)
 #endif
@@ -4232,7 +4232,7 @@ C
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_double2('V',VMAT,LDM,NS,NV)
       call matexport_text('% Leaving LOWGEN')
 #endif
