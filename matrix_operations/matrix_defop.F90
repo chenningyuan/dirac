@@ -543,6 +543,8 @@ contains
 !radovan: fix for g95
       C%nrow = -1
       C%ncol = -1
+      C%mz   = A%mz
+      if(B%mz > A%mz) C%mz = B%mz
 #endif
 
       TA => find_tmp(A, 'matrix A * B : A undefined')
