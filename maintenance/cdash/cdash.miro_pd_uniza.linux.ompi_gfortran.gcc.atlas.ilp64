@@ -16,7 +16,8 @@ BUILD=build_openmpi_gfortran_gcc_atlas_dirlapack_opt_ilp64
 
 # go to the local DIRAC directory
 cd $DIRAC
-git pull origin master
+#git pull origin master
+git pull 
 ./pamadm -a 
 /bin/rm -rf $BUILD
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
