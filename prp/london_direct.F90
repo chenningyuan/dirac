@@ -502,21 +502,21 @@ contains
      
       do ii = 1, nfsym
         iopsy = jbtof(irep, 1)
+        jj = mod(ii + iopsy, 2) + 1 
 
 ! todo add qbtrans for spin-free case
-! qtrans is not parallelized, so collect data from nodes before calling this
 
         call qtrans90('AOMO',                             &
                       'S',                                &
                       0.0d0,                              &
-                      nfbas(ii, 0), nfbas(ii, 0),         &
-                      norb(ii),norb(ii),                  &
+                      nfbas(ii, 0), nfbas(jj, 0),         &
+                      norb(ii), norb(jj),                 &
 !                     -------------------------------------
-                      fmat(i2basx(ii, ii) + 1, 1, icomp), &
+                      fmat(i2basx(ii, jj) + 1, 1, icomp), &
                       ntbas(0), ntbas(0), nz,             &
                       ipqtoq(1, irep_2el_lao(icomp)),     &
 !                     -------------------------------------
-                      gmat(i2orbx(ii, ii) + 1),           &
+                      gmat(i2orbx(ii, jj) + 1),           &
                       norbt,    norbt,    nz,             &
                       ipqtoq(1, irep_2el_lao(icomp)),     &
 !                     -------------------------------------
@@ -524,8 +524,8 @@ contains
                       nfbas(ii,0), norb(ii), nz,          &
                       ipqtoq(1, 0),                       &
 !                     -------------------------------------
-                      cmo(icmoq(ii) + 1),                 &
-                      nfbas(ii, 0), norb(ii), nz,         &
+                      cmo(icmoq(jj) + 1),                 &
+                      nfbas(ii, 0), norb(jj), nz,         &
                       ipqtoq(1, 0),                       &
 !                     -------------------------------------
                       iprprp)
