@@ -14,9 +14,9 @@ module xcint_main
    use density_eval
    use xc_blas3
    use xc_max_block_length
+   use xc_geometric
 #ifdef MOD_UNRELEASED
    use overlap_diagnostic
-   use xc_geometric
    use xc_london_c1
 #endif
 #ifdef MOD_OPENRSP
@@ -1289,7 +1289,6 @@ contains
 #endif
 #endif
 
-#ifdef MOD_UNRELEASED
           if (do_geo_0) then
              if (use_gga) then
                 call xc_geo_0_gga_c1(property_gradient,               &
@@ -1308,6 +1307,7 @@ contains
              end if
           end if
 
+#ifdef MOD_UNRELEASED
           if (do_geo_1) then
              call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call xc_geo_1_lda_c1(property_gradient, &
