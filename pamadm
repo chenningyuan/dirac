@@ -294,8 +294,6 @@ dirac_modules[this_module].add_directory('xcint/xcfun')
 dirac_modules[this_module].add_test('dft_alda_xcfun')
 dirac_modules[this_module].add_test('dft_erf_xcfun')
 dirac_modules[this_module].add_test('dft_response_xcfun')
-dirac_modules[this_module].add_test('fde_export_density')
-dirac_modules[this_module].add_test('fde_response_autodiff')
 dirac_modules[this_module].add_test('fde_static-vemb_dipole')
 
 this_module = 'oof'
@@ -380,6 +378,8 @@ dirac_modules[this_module].add_test('operator_trs_flip')
 dirac_modules[this_module].add_test('blockd_twocomp')
 dirac_modules[this_module].add_test('dft_overlap_diagnostic')
 dirac_modules[this_module].add_test('dft_minnesota')
+dirac_modules[this_module].add_test('fde_response_autodiff')
+dirac_modules[this_module].add_test('fde_export_density')
 dirac_modules[this_module].take_out_of_release()
 
 # define input options
