@@ -525,7 +525,7 @@ contains
                       ipqtoq(1, 0),                       &
 !                     -------------------------------------
                       cmo(icmoq(jj) + 1),                 &
-                      nfbas(ii, 0), norb(jj), nz,         &
+                      nfbas(jj, 0), norb(jj), nz,         &
                       ipqtoq(1, 0),                       &
 !                     -------------------------------------
                       iprprp)
