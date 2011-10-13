@@ -31,6 +31,7 @@ module overlap_diagnostic
    use interface_ao
    use interface_mo
    use xc_mpi
+   use xc_max_block_length
 
    implicit none
 
@@ -52,7 +53,7 @@ module overlap_diagnostic
    integer                 :: u_ao_end(8)
 
    real(8), allocatable    :: o_matrix(:, :)
-   real(8), allocatable    :: buffer(:, :)
+   real(8), allocatable    :: buffer(:, :, :)
 
    character(*), parameter :: file_name = 'o_matrix'
    integer,      parameter :: file_unit = 137
@@ -154,7 +155,7 @@ contains
 #endif
 
       call alloc(o_matrix, nr_mo, nr_mo)
-      call alloc(buffer, nr_mo, nr_quaternion_blocks)
+      call alloc(buffer, max_block_length, nr_mo, nr_quaternion_blocks)
 
       o_matrix = 0.0d0
 
@@ -267,14 +268,15 @@ contains
 
    end subroutine
 
-   subroutine integrate_o_matrix(w, ao)
+   subroutine integrate_o_matrix(block_length, w, ao)
 
 !     --------------------------------------------------------------------------
-      real(8), intent(in)    :: w
-      real(8), intent(in)    :: ao(*)
+      integer, intent(in)    :: block_length
+      real(8), intent(in)    :: w(*)
+      real(8), intent(in)    :: ao(block_length, *)
 !     --------------------------------------------------------------------------
       integer                :: s, t
-      integer                :: i, k, n
+      integer                :: i, l, n, k
       integer                :: iz
       real(8)                :: q1, q2, q3, q4, q_norm
 !     --------------------------------------------------------------------------
@@ -315,11 +317,15 @@ contains
       do iz = 1, nr_quaternion_blocks
 !        gerade
          do s = 1, nr_mo_gerade
-            buffer(s, iz) = 0.0d0
+            do k = 1, block_length
+               buffer(k, s, iz) = 0.0d0
+            end do
             do n = 1, nr_g_ao_blocks
-               do k = g_ao_start(n), g_ao_end(n)
+               do l = g_ao_start(n), g_ao_end(n)
                   i = i + 1
-                  buffer(s, iz) = buffer(s, iz) + ao(k)*mo_coef(i)
+                  do k = 1, block_length
+                     buffer(k, s, iz) = buffer(k, s, iz) + ao(k, l)*mo_coef(i)
+                  end do
                end do
             end do
          end do
@@ -328,11 +334,15 @@ contains
          do iz = 1, nr_quaternion_blocks
 !           ungerade
             do s = nr_mo_gerade + 1, nr_mo
-               buffer(s, iz) = 0.0d0
+               do k = 1, block_length
+                  buffer(k, s, iz) = 0.0d0
+               end do
                do n = 1, nr_u_ao_blocks
-                  do k = u_ao_start(n), u_ao_end(n)
+                  do l = u_ao_start(n), u_ao_end(n)
                      i = i + 1
-                     buffer(s, iz) = buffer(s, iz) + ao(k)*mo_coef(i)
+                     do k = 1, block_length
+                        buffer(k, s, iz) = buffer(k, s, iz) + ao(k, l)*mo_coef(i)
+                     end do
                   end do
                end do
             end do
@@ -341,36 +351,43 @@ contains
 
       do s = 1, nr_mo
          do t = s, nr_mo
+            q_norm = 0.0d0
             select case (nr_quaternion_blocks)
                case (1)
-                  q1 = buffer(s, 1)*buffer(t, 1)
-                  q_norm = dsqrt(q1*q1)
+                  do k = 1, block_length
+                     q1 = buffer(k, s, 1)*buffer(k, t, 1)
+                     q_norm = q_norm + w(k)*dsqrt(q1*q1)
+                  end do
                case (2)
-                  q1 = buffer(s, 1)*buffer(t, 1) &
-                     - buffer(s, 2)*buffer(t, 2)
-                  q2 = buffer(s, 1)*buffer(t, 2) &
-                     + buffer(s, 2)*buffer(t, 1)
-                  q_norm = dsqrt(q1*q1 + q2*q2)
+                  do k = 1, block_length
+                     q1 = buffer(k, s, 1)*buffer(k, t, 1) &
+                        - buffer(k, s, 2)*buffer(k, t, 2)
+                     q2 = buffer(k, s, 1)*buffer(k, t, 2) &
+                        + buffer(k, s, 2)*buffer(k, t, 1)
+                     q_norm = q_norm + w(k)*dsqrt(q1*q1 + q2*q2)
+                  end do
                case (4)
-                  q1 = buffer(s, 1)*buffer(t, 1) &
-                     - buffer(s, 2)*buffer(t, 2) &
-                     - buffer(s, 3)*buffer(t, 3) &
-                     - buffer(s, 4)*buffer(t, 4)
-                  q2 = buffer(s, 1)*buffer(t, 2) &
-                     + buffer(s, 2)*buffer(t, 1) &
-                     + buffer(s, 3)*buffer(t, 4) &
-                     - buffer(s, 4)*buffer(t, 3)
-                  q3 = buffer(s, 1)*buffer(t, 3) &
-                     + buffer(s, 3)*buffer(t, 1) &
-                     - buffer(s, 2)*buffer(t, 4) &
-                     + buffer(s, 4)*buffer(t, 2)
-                  q4 = buffer(s, 1)*buffer(t, 4) &
-                     + buffer(s, 4)*buffer(t, 1) &
-                     + buffer(s, 2)*buffer(t, 3) &
-                     - buffer(s, 3)*buffer(t, 2)
-                  q_norm = dsqrt(q1*q1 + q2*q2 + q3*q3 + q4*q4)
+                  do k = 1, block_length
+                     q1 = buffer(k, s, 1)*buffer(k, t, 1) &
+                        - buffer(k, s, 2)*buffer(k, t, 2) &
+                        - buffer(k, s, 3)*buffer(k, t, 3) &
+                        - buffer(k, s, 4)*buffer(k, t, 4)
+                     q2 = buffer(k, s, 1)*buffer(k, t, 2) &
+                        + buffer(k, s, 2)*buffer(k, t, 1) &
+                        + buffer(k, s, 3)*buffer(k, t, 4) &
+                        - buffer(k, s, 4)*buffer(k, t, 3)
+                     q3 = buffer(k, s, 1)*buffer(k, t, 3) &
+                        + buffer(k, s, 3)*buffer(k, t, 1) &
+                        - buffer(k, s, 2)*buffer(k, t, 4) &
+                        + buffer(k, s, 4)*buffer(k, t, 2)
+                     q4 = buffer(k, s, 1)*buffer(k, t, 4) &
+                        + buffer(k, s, 4)*buffer(k, t, 1) &
+                        + buffer(k, s, 2)*buffer(k, t, 3) &
+                        - buffer(k, s, 3)*buffer(k, t, 2)
+                     q_norm = q_norm + w(k)*dsqrt(q1*q1 + q2*q2 + q3*q3 + q4*q4)
+                  end do
             end select
-            o_matrix(s, t) = o_matrix(s, t) + w*q_norm
+            o_matrix(s, t) = o_matrix(s, t) + q_norm
          end do
       end do
 

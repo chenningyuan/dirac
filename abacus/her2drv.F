@@ -1626,8 +1626,9 @@ C
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
-         !miro: crashing on paralell opteron ompi/ifort/gcc/ILP64/opt/LibMKL
-         CALL MEMCHK('TWOOD1 skssjxxjd',WORK,1) ! mi check
+         !miro: crashing with paralell OpenMPI+ifort, 
+         ! if this MEMCHK deactivated, crash occurs in next MEMREL
+         CALL MEMCHK('TWOOD1 point AB',WORK,1) ! mi check
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
@@ -2315,6 +2316,8 @@ C        C) London orbitals
 C        ==================
 C
          ELSE IF (LONDON) THEN
+
+            CALL MEMCHK('SYMLOP london ',WORK,1) ! mi check
             IF (TKTIME) TIMSTR = SECOND()
             CALL MG2OUT(SOINT,FIRST,LAST,THRESH,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IPRINT)
@@ -2346,7 +2349,7 @@ C
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
       END IF
 
-      !CALL MEMCHK('SYMLOP asuxxndby',WORK,1) ! mi check
+      !CALL MEMCHK('SYMLOP point axdsf',WORK,1) ! mi check
 
       CALL QEXIT('SYMLOP')
       RETURN
