@@ -669,13 +669,19 @@ C    & 'IREPT,IREPH,IREPTH:',IREPT,IREPH,IREPTH
          IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
 
 C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NORB(I2),NORB(I3),NORB(I1),DSGN,
-     &    'H','N',IPQTOQ(1,IREPT),
-     &    TMAT(IORB(I2)+1,IORB(I1)+1,1),NORBT,NORBT,NZ,
-     &    'N','N',IPQTOQ(1,IREPH),
-     &    HMAT(IORB(I1)+1,IORB(I3)+1,1),NORBT,NORBT,NZ, 
-     &    D0,IPQTOQ(1,IREPTH),
-     &    THMAT(IORB(I2)+1,IORB(I3)+1,1),NORBT,NORBT,NZ)
+          CALL QGEMM(NORB(I2), NORB(I3), NORB(I1), DSGN,
+!                    -----------------------------------
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
+     &               NORBT,NORBT,NZ,
+!                    -----------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ, 
+!                    -----------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
 
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
@@ -686,13 +692,19 @@ C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
           ENDIF
 
 C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
-          CALL QGEMM(NORB(I3),NORB(I2),NORB(I1),D1,
-     &   'N','N',IPQTOQ(1,IREPH),
-     &   HMAT(IORB(I3)+1,IORB(I1)+1,1),NORBT,NORBT,NZ,
-     &   'N','N',IPQTOQ(1,IREPT),
-     &   TMAT(IORB(I1)+1,IORB(I2)+1,1),NORBT,NORBT,NZ, 
-     &   D1,IPQTOQ(1,IREPTH),
-     &   THMAT(IORB(I3)+1,IORB(I2)+1,1),NORBT,NORBT,NZ)
+          CALL QGEMM(NORB(I3), NORB(I2), NORB(I1), D1,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I3)+1, IORB(I1)+1, 1),
+     &               NORBT, NORBT, NZ,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I1)+1, IORB(I2)+1, 1), 
+     &               NORBT, NORBT, NZ, 
+!                    ---------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I3)+1, IORB(I2)+1, 1),
+     &               NORBT,NORBT,NZ)
 
          IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -705,15 +717,19 @@ C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
          ELSE  ! Transformation in the e-e space only
 
 C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NESH(I2),NESH(I3),NESH(I1),DSGN,
-     &    'H','N',IPQTOQ(1,IREPT),
-     &    TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &    NORBT,NORBT,NZ,
-     &    'N','N',IPQTOQ(1,IREPH),
-     &    HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &    NORBT,NORBT,NZ,D0,IPQTOQ(1,IREPTH),
-     &    THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &    NORBT,NORBT,NZ)
+          CALL QGEMM(NESH(I2), NESH(I3), NESH(I1), DSGN,
+!                    ---------------------------------------------- --
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
 
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
@@ -725,14 +741,18 @@ C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
 
 C        ...  do TH(I3,I2) = TH(I3,I2) + H(I3,I1)*T(I1,I2)
           CALL QGEMM(NESH(I3),NESH(I2),NESH(I1),D1,
-     &   'N','N',IPQTOQ(1,IREPH),
-     &   HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
-     &   NORBT,NORBT,NZ,
-     &   'N','N',IPQTOQ(1,IREPT),
-     &   TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &   NORBT,NORBT,NZ,D1,IPQTOQ(1,IREPTH),
-     &   THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
-     &   NORBT,NORBT,NZ)
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT,NORBT,NZ)
 
          IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -800,6 +820,7 @@ C     and the full relativistic (fermion symm.) mode
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
+
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -937,11 +958,12 @@ C
 C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
 C
         IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
+
           IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
-         CALL QTRANS(
-     &    'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+            CALL QTRANS(
+     &      'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &                  NORB(I1),NOCC(I2),
-     &     DMAT(I2BASX(I1,I2)+1,1),
+     &       DMAT(I2BASX(I1,I2)+1,1),
      &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
 !          T(o,i)
      &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
@@ -953,57 +975,65 @@ C
      &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
      &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &     WORK(KFREE),LFREE,IPRINT)
-         ENDIF
+          ENDIF
+
         ELSE ! Run o only over electronic states
+
         IF (NOCC(I2).GT.0.AND.NESH(I1).GT.0) THEN
-      IF (IPRINT.GE.10) THEN
-        CALL HEADER(
-     &'GETMDM: Before QTRANS whole modified density matrix',-1)
-        IF (EPMIX) THEN
-         WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
-        ELSE
-         WRITE(LUPRI,'(2X,A)') "summation over e shells..."
-        ENDIF
-        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-        CALL HEADER(
-     &'GETMDM: Before QTRANS BLOCK modified density matrix',-1)
-        Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
-        CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
-     &              NFBAS(I2,0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
+          IF (IPRINT.GE.10) THEN
+            CALL HEADER(
+     &      'GETMDM: Before QTRANS whole modified density matrix',-1)
+            IF (EPMIX) THEN
+              WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
+            ELSE
+              WRITE(LUPRI,'(2X,A)') "summation over e shells..."
+            ENDIF
+            CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+            CALL HEADER(
+     &      'GETMDM: Before QTRANS BLOCK modified density matrix',-1)
+            Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
+            CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
+     &                       NFBAS(I2,0),NTBAS(0),
+     &                       NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
           ENDIF
-         CALL QTRANS(
-     &    'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
-     &       NESH(I1),NOCC(I2),
-     &    DMAT(I2BASX(I1,I2)+1,1),
-     &       NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
-     &    TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &    CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
-     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &    CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
-     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &    WORK(KFREE),LFREE,IPRINT)
-      IF (IPRINT.GE.10) THEN
-        CALL HEADER(
-     &'GETMDM: Actual WHOLE modified density matrix',-1)
-        IF (EPMIX) THEN
-         WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
-        ELSE
-         WRITE(LUPRI,'(2X,A)') "summation over e shells..."
-        ENDIF
-        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-         CALL HEADER(
-     &'GETMDM: After QTRANS BLOCK modified density matrix',-1)
-         Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
-         CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
-     &              NFBAS(I2,0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
+          CALL QTRANS(
+     &            'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+     &             NESH(I1),NOCC(I2),
+     &             DMAT(I2BASX(I1,I2)+1,1),
+     &             NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+     &             TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &             NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &             CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
+     &             NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &             CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+     &             NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &             WORK(KFREE),LFREE,IPRINT)
+
+          IF (IPRINT.GE.10) THEN
+            CALL HEADER(
+     &      'GETMDM: Actual WHOLE modified density matrix',-1)
+
+            IF (EPMIX) THEN
+              WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
+            ELSE
+              WRITE(LUPRI,'(2X,A)') "summation over e shells..."
+            ENDIF
+
+            CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+            CALL HEADER(
+     &        'GETMDM: After QTRANS BLOCK modified density matrix',-1)
+              Write(LUPRI,'(2X,A,2I2)') "Ferm.symmetries I1,I2:",I1,I2
+            CALL PRQMAT(DMAT(I2BASX(I1,I2)+1,1),NFBAS(I1,0),
+     &                  NFBAS(I2,0),NTBAS(0),
+     &                  NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
           ENDIF
-          ENDIF
+
         ENDIF
+      ENDIF
       ENDDO
       IF (IPRINT.GE.6) THEN
         CALL HEADER(

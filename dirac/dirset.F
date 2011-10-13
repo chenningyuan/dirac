@@ -85,7 +85,7 @@ C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
 !     youngc:  RECP integral     
 #ifdef MOD_ECP
-      IF (ECPCALC) CALL ECPINT(WORK,LWORK)
+      IF (ECPCALC) CALL RECP
 #endif
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!

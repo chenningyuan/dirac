@@ -11,11 +11,11 @@
 
 !     # mrcru  = max number of members in a contraction set.
       integer    mrcrup
-      parameter (mrcrup=50) !v2 20->50
+      parameter (mrcrup=50) !v3 20->50
 
 !     # mconu  = max number of primitives in a contraction.
       integer    mconup
-      parameter (mconup=50) !v2 24->50
+      parameter (mconup=50) !v3 24->50
 
 !     # mcu    = max number of symmetry equivalent atoms.
       integer    mcup
@@ -23,11 +23,11 @@
 
 !     # mconsu = max number of contraction sets.
       integer    mconsp
-      parameter (mconsp=100) !v2 65->100
+      parameter (mconsp=200) !v2 65->100
 
 !     # msfu   = max number of function sets.
       integer    msfup
-      parameter (msfup=100)  ! 52->v1(70),v2(100)
+      parameter (msfup=200)  ! 52->v1(70),v2(100),1000
 
       integer    mnsfup
       parameter (mnsfup=(msfup*(msfup+1))/2)
@@ -42,9 +42,6 @@
       integer    mccup
       parameter (mccup=182)
  
-!     # mblu   = workspace array length.
-!     #          (allocated in the main program)
-
 ! ### from (subroutine seg1mn) ###
 
 !     # kaords = max number of ao reduction sets.
@@ -59,21 +56,13 @@
       integer    mrup
       parameter (mrup=100) !v2 24->50
 
-!     # mcsu   = max number of so's in a transformation matrix.
-      integer    mcsup
-      parameter (mcsup=100) !v2 24->50
-
-!     # mctu   = max number of ao's in a transformation matrix.
-      integer    mctup
-      parameter (mctup=100) !v2 30->100
-
 !     # mcru   = max number of core potential expansion functions.
       integer    mcrup
       parameter (mcrup=140)
 
 !     # msfru  = max number of so sets.
       integer    msfrup
-      parameter (msfrup=500) !312
+      parameter (msfrup=1000) !312,500
 
 !     # mnru   = max number of charge dists. from a function set pair.
       integer    mnrup

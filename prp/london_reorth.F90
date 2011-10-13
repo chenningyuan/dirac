@@ -30,6 +30,7 @@ module london_reorth_hb
   implicit none
 
   public london_reort_hb
+  public check_symmetry 
   save
 
   private
@@ -67,6 +68,7 @@ module london_reorth_hb
   integer            ::     nr_xyz_comp
 
   integer, parameter :: tbmo_unit = 71
+  logical            :: debug_me
 
 contains
 
@@ -144,24 +146,23 @@ contains
     real(8), allocatable   :: buf(:)
     real(8), allocatable   :: tb(:)
 
-    integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
+    integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
-    integer :: icomp, i, j, isymh
+    integer :: icomp, i, j, t, isymh, iz
     logical :: ah
-    logical :: debug_me
+    real(8) :: a
 !-----------------------------------------------------------------------
-  
+
     call alloc(fmo, n2bbasxq)
     fmo = 0.0d0
 
+!   get unperturbed Fock matrix in MO basis:
     lwork = len_f77_work
     kfree = 1
     call di_select_wrk(work, lwork)
-
-!   get unperturbed Fock matrix in MO basis:
     call getfck(fmo,         &
-                iprprp,  &
+                iprprp,      &
                 work,        &
                 kfree,       &
                 lwork)
@@ -186,7 +187,17 @@ contains
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
       isym(icomp)  = iprpsym(indxpr)
-      iopsy(icomp) = jbtof(isym(icomp)-1, 1)
+      irep(icomp)  = isym(icomp) - 1
+      iopsy(icomp) = jbtof(irep(icomp), 1)
+
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'get_ftb, entering fmat, icomp = ', icomp
+        call prqmat(fmat(1, icomp), &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+        call check_symmetry(fmat(1, icomp), norbt)
+      end if
 
       call dzero(tb, n2orbxq)
 
@@ -200,8 +211,8 @@ contains
                   tb,            &
                   cmo,           &
                   ibeig,         &
-                  icmoq,       &
-                  norb,        &
+                  icmoq,         &
+                  norb,          &
                   work,          &
                   kfree,         &
                   lwork,         &
@@ -230,19 +241,22 @@ contains
          write(lupri, *) 'isym,iopsy = ', isym(icomp),iopsy(icomp)
          call prqmat(tb, &
                      norb, norb, norb, norb, &
-                     nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
 ! get final result to buf
 
-      ah = .true.
-      isymh = 1
-
       call dzero(buf, n2orbxq)
 
+!     it is = 1, because unperturbed Fock matrix is symmetric (its real part)
+!     it is set in getfck
+      isymh = 1
+!     ah = .true. because T is antihermitian
+      ah = .true.
+
 !     do 1-index transformation
-      call ttra(doeprn,       &
-                ah,          &
+      call ttra(doeprn,          &
+                ah,              &
                 isym(icomp),     &
                 isymh,           &
                 tb,              &
@@ -250,8 +264,17 @@ contains
                 buf,             &
                 iprprp)
 
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'buf in get_ftb after ttra, icomp = ', icomp
+        call prqmat(buf, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
+
+
 !     add result to fmat
-      call daxpy(n2orbxq,      &
+      call daxpy(n2orbxq,        &
                  1.0d0,          &
                  buf,            &
                  1,              & 
@@ -259,9 +282,19 @@ contains
                  1)
 
 !     write to FCKLON file:
-      call wrtdac(lufckl, n2orbxq,   &
+      call wrtdac(lufckl, norbt*norbt*nz,   &
                   fmat(1, icomp), icomp)
 
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'fmat final in london_reorth, icomp = ', icomp
+        call prqmat(fmat(1, icomp), &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+
+        call check_symmetry(fmat, norbt)
+
+      end if
 
     end do
 
@@ -297,8 +330,6 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, ioff
-
-    logical :: debug_me
 !-----------------------------------------------------------------------
 #include "dcbgen.h"
 
@@ -310,7 +341,7 @@ contains
       irep(icomp)   = isym(icomp) - 1
       isymop(icomp) = isym(icomp)
       ihrmop(icomp) = -1
-      ifckop(icomp) = jbtof(isym(icomp) - 1, 1)
+      ifckop(icomp) = jbtof(irep(icomp), 1)
     end do
 
 !gosia fixme parallel run
@@ -328,12 +359,23 @@ contains
                 tb_dmat,     &
                 nr_xyz_comp, &
                 npos_array,  &
-                intnmr,     &
-                iprprp,  &
+                intnmr,      &
+                iprprp,      &
                 work,        &
                 lwork)
 
     call di_deselect_wrk(work, lwork)
+
+    debug_me = .false.
+    if (debug_me) then
+      do icomp = 1, nr_xyz_comp
+        write(*, *) 'fao in get_gtb, icomp = ', icomp
+        ioff = (icomp - 1)*nz*ntbas(0)*ntbas(0) + 1
+        call prqmat(fao(ioff), &
+                        ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                        nz, ipqtoq(1, irep(icomp)), lupri)
+      end do
+    end if
 
     if (allocated(npos_array)) then
       call dealloc(npos_array)
@@ -341,8 +383,7 @@ contains
 
 !       construct kohn-sham contribution
 !       ================================
-! gosia: it won't work with visual now
-
+!   in dft Bx/By/Bz contributions are added on top of each other!
     if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
     !if (dirac_cfg_dft_calculation) then
 
@@ -393,8 +434,6 @@ contains
         end do
       end if
 
-
-
     end if
 
   end subroutine get_gtb
@@ -426,9 +465,6 @@ contains
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
-    real(8), pointer       :: work(:)
-    integer                :: lwork
-
     integer :: itim(nr_xyz_comp), isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
@@ -439,47 +475,59 @@ contains
 
       indxpr        = ipcon(icomp)
       isym(icomp)   = iprpsym(indxpr)
-      iopsy(icomp)  = jbtof(isym(icomp) - 1, 1)
       irep(icomp)   = isym(icomp) - 1
+      iopsy(icomp)  = jbtof(irep(icomp), 1)
 
       do i = 1, nfsym 
-        j = mod(i + iopsy(icomp), 2) + 1
+        j = mod(i + iopsy(icomp), 2) + 1 
 
-        lwork = len_f77_work
-        call di_select_wrk(work, lwork)
+        call qtrans90('AOMO',                        &
+                      'S',                           &
+                      0.0d0,                         &
+                      nfbas(i, 0),                   &
+                      nfbas(j, 0),                   &
+                      norb(i),                       &
+                      norb(j),                       &
+!                     --------------------------------
+                      fao(1 + i2basx(i, j), icomp),  &
+                      ntbas(0),                      &
+                      ntbas(0),                      &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      fmo(1 + i2orbx(i, j),icomp),   &
+                      norbt,                         &
+                      norbt,                         &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      cmo(1 + icmoq(i)),             &
+                      nfbas(i, 0),                   &
+                      norb(i),                       &
+                      nz,                            &
+                      ipqtoq(1, 0),                  &
+!                     --------------------------------
+                      cmo(1 + icmoq(j)),             &
+                      nfbas(j, 0),                   & 
+                      norb(j),                       &
+                      nz,                            &
+                      ipqtoq(1, 0),                  &
+!                     --------------------------------
+                      iprprp)
 
-        call qtrans('AOMO',                          &
-                    'S',                             &
-                    0.0d0,                           &
-                    nfbas(i, 0),                   &
-                    nfbas(j, 0),                   &
-                    norb(i),                       &
-                    norb(j),                       &
-                    fao(1 + i2basx(i, j), icomp),  &
-                    ntbas(0),                     &
-                    ntbas(0),                     &
-                    nz,                           &
-                    ipqtoq(1, irep(icomp)),        &
-                    fmo(1 + i2orbx(i, j),icomp),   &
-                    norbt,                         &
-                    norbt,                         &
-                    nz,                           &
-                    ipqtoq(1, irep(icomp)),        &
-                    cmo(1 + icmoq(i)),             &
-                    nfbas(i, 0),                   &
-                    norb(i),                       &
-                    nz,                           &
-                    ipqtoq(1, 0),                  &
-                    cmo(1 + icmoq(j)),             &
-                    nfbas(j, 0),                   & 
-                    norb(j),                       &
-                    nz,                           &
-                    ipqtoq(1, 0),                  &
-                    work,                            &
-                    lwork,                           &
-                    iprprp)
 
-        call di_deselect_wrk(work, lwork)
+      debug_me = .false.
+      if (debug_me) then
+        write(*, *) 'fao in do_ao_to_mo after qtrans, icomp, i = ', icomp, i
+        call prqmat(fao(1, icomp), &
+                    ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+        write(*, *) 'fmo in do_ao_to_mo after qtrans, icomp, i = ', icomp, i
+        call prqmat(fmo(1, icomp), &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, irep(icomp)), lupri)
+      end if
+
 
       end do
     end do
@@ -498,17 +546,20 @@ contains
 
     real(8), allocatable   :: tb(:)
     integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
-    integer                :: indxpr, icomp 
+    integer                :: irep(nr_xyz_comp)
+    integer                :: indxpr, icomp
 !-----------------------------------------------------------------------
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
+
     call alloc(tb, n2orbxq)
     tb = 0.0d0
 
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
       isym(icomp)  = iprpsym(indxpr)
-      iopsy(icomp) = jbtof(isym(icomp)-1, 1)
+      irep(icomp)  = isym(icomp) - 1
+      iopsy(icomp) = jbtof(irep(icomp), 1)
 
       call dzero(tb, n2orbxq)
 
@@ -522,8 +573,8 @@ contains
                   tb,               &
                   cmo,              &
                   ibeig,            &
-                  icmoq,          &
-                  norb,           &
+                  icmoq,            &
+                  norb,             &
                   work,             &
                   kfree,            &
                   lwork,            &
@@ -535,7 +586,7 @@ contains
       kfree = 1
       call di_select_wrk(work, lwork)
 
-      call getmdm(doeprn,         &
+      call getmdm(doeprn,            &
                   isym(icomp),       &
                   tb_dmat(1, icomp), &
                   cmo,               &
@@ -553,7 +604,27 @@ contains
     close(lu1int)
     call dealloc(tb)
 
-  end subroutine get_tb_dmat
+  end subroutine
+
+  subroutine check_symmetry(mat, ndim)
+    integer, intent(in) :: ndim
+    real(8), intent(in) :: mat(ndim, ndim, *)
+    real(8) :: a
+    integer :: i, j, iz
+
+    a = 0.0d0
+    do iz = 1, nz
+      do i = 1, ndim - 1
+        do j = i + 1, ndim
+          a = a + (dabs(mat(i, j, iz)) - dabs(mat(j, i, iz)))
+        end do
+      end do
+    end do
+    a = a/dfloat(((ndim*ndim - ndim)/2)*nz)
+    write(*, *) 'symmetry mat: ', a
+
+  end subroutine
+
 
 
       SUBROUTINE GET_NPOS(NPOS)

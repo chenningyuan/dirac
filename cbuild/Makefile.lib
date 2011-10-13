@@ -1,6 +1,0 @@
-
-#Tell Dirac how to build external libraries. These libraries
-#have to be added as dependencies somewhere else, here is just
-#how to compile them
-dft/xcfun/lib/libxcfun.so:
-	make -C xcfun

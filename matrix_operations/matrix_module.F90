@@ -73,6 +73,8 @@ MODULE Matrix_module
       integer :: tr_sym = 1
       !> irep
       integer :: irep   = 0
+      !> number of fermion matrices (1,2,4)
+      integer :: mz = 4
 #endif
 
    END TYPE Matrix

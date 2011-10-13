@@ -216,6 +216,7 @@ contains
 !     --------------------------------------------------------------------------
 
       integer, parameter :: max_response_order_mo = 5
+      integer            :: i, j, iz, imat
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
@@ -659,6 +660,20 @@ contains
       call matrix_to_file('xc_fmat', mat_dim*mat_dim, xc_fmat)
 #endif
 
+!     check for nan in xc matrix
+      do imat = 1, xc_nr_fmat
+         do iz = 1, nz
+            do i = 1, mat_dim
+               do j = 1, mat_dim
+                  if (xc_fmat(j, i, iz, imat) /= xc_fmat(j, i, iz, imat)) then
+                     print *, 'error: found NaN in XC matrix, quitting'
+                     stop
+                  end if
+               end do
+            end do
+         end do
+      end do
+
    end subroutine
 
    subroutine nullify_and_release()
@@ -903,7 +918,6 @@ contains
         gnn_0 = 0.0d0
 
 
-#ifdef MOD_UNRELEASED
    if (use_blas3_scheme) then
       loop_over_points_block: do ipoint = 1, nr_points_on_this_proc, max_block_length
          block_length = min(max_block_length, nr_points_on_this_proc - ipoint + 1)
@@ -924,6 +938,8 @@ contains
 
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
+                                    use_gga_qr,               &
+                                    use_gga_qi,               &
                                     (response_order_mo == 1), &
                                     block_length,             &
                                     block_threshold,          &
@@ -948,12 +964,17 @@ contains
                                     xc_energy                 &
                                    )
 
+#ifdef MOD_UNRELEASED
+         if (do_overlap_diagnostic) then
+            call integrate_o_matrix(block_length, rw(ipoint), ao)
+         end if
+#endif
+
          deallocate(ao)
          deallocate(buffer)
 
       end do loop_over_points_block
    else
-#endif /* ifdef MOD_UNRELEASED */
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -988,12 +1009,6 @@ contains
 !        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
       end if
       time_density = time_density + second() - time_density_start
-
-#ifdef MOD_UNRELEASED
-      if (do_overlap_diagnostic) then
-         call integrate_o_matrix(rw(ipoint), ao)
-      end if
-#endif
 
       if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
@@ -1045,7 +1060,7 @@ contains
                                    alda_real=dft_cfg_alda_hs, &
                                    alda_imag=dft_cfg_alda_ha, &
                                    xalda=dft_cfg_xalda,       &
-                                   tau=tau)
+                                   tau=(/tau/))
 
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
@@ -1595,9 +1610,7 @@ contains
     deallocate(ao)
     deallocate(buffer)
 
-#ifdef MOD_UNRELEASED
    end if !if (use_blas3_scheme) then
-#endif /* ifdef MOD_UNRELEASED */
 
     deallocate(derv)
     deallocate(derv_nadd)
@@ -1625,9 +1638,6 @@ contains
       write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
             nr_points_total
-      write(file_unit, '(3x, a, i9)')                            &
-            'number of grid points below density threshold  = ', &
-            nr_points_total - nr_points_used
 
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
@@ -1756,16 +1766,20 @@ contains
          end if
 #endif
 
+         if (do_potential .or. (response_order_mo == 1)) then
+            use_blas3_scheme = .true.
+         else
+            use_blas3_scheme = .false.
+         end if
+         if (fun_is_tau_mgga(xc_fun)) then
+            use_blas3_scheme = .false.
+         end if
          if (dft_cfg_blocked) then
             use_blas3_scheme = .true.
          end if
-      
-!testing default blas3 scheme
-!        if (do_potential) then
-!           use_blas3_scheme = .true.
-!        else
-!           use_blas3_scheme = .false.
-!        end if
+         if (dft_cfg_pointwise) then
+            use_blas3_scheme = .false.
+         end if
 
          call integrate()
 

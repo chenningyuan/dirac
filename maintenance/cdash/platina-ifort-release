@@ -10,8 +10,9 @@ mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 
 cd $TMP_DIR
-./pamadm -a
-./setup --fc=ifort --cc=icc -D BUILDNAME="ubuntu10.04-i686-ifort12.0-int32"
+git checkout -b prepare-release-11 origin/prepare-release-11
+./pamadm --release
+./setup --fc=ifort --cc=icc -D BUILDNAME="ubuntu10.04-i686-ifort12.0-int32-release"
 
 cd $TMP_DIR/build
 make Nightly
