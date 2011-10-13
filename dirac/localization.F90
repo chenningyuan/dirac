@@ -2517,17 +2517,24 @@ contains
   !                                                                              !
   !******************************************************************************!
   use memory_allocator
-  implicit none
+  use matrix_defop
+! implicit none
+
+#include "implicit.h"
+#include "dgroup.h"
 
   ! External variables
   integer*4  :: ni
   real*8, allocatable, dimension(:,:) :: hmat
 
   ! Internal variables
-  integer*4    :: i, j, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
+  integer*4    :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
+  real*8       :: dtmp, dmax, atmp, ctmp
 
   real*8, allocatable, dimension(:)   :: eval, work
-  real*8, allocatable, dimension(:,:) :: htmp
+  real*8, allocatable, dimension(:,:) :: htmp, wtmp
+
+  type(matrix) :: A, B, C
 
   !------------------------------------------------------------------------------!
   call qenter('hdiag')
@@ -2540,6 +2547,7 @@ contains
   lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
 
   call alloc(htmp,nhtmp,nhtmp,id='htmp in hdiag')
+  call alloc(wtmp,nhtmp,nhtmp,id='wtmp in hdiag')
   call alloc(eval,nhtmp,      id='eval in hdiag')
   call alloc(work,lwork,      id='work in hdiag')
 
@@ -2550,13 +2558,61 @@ contains
     enddo
   enddo
 
-! call dsyev('V','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
-  call dsyev('N','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
+  call dsyev('V','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
+! call dsyev('N','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
   if(ier /= 0)then
     write(lupri,*) ' ERROR: The dsyev LAPACK subroutine in hdiag finished unsuccessfully'
     write(lupri,*) ' info =',ier
     stop
   endif
+
+  call init_mat(A,nhtmp,nhtmp,mz=1)
+  write(6,*) 'A',nhtmp,size(A%elms),A%mz
+
+  ij = 0
+  do j=1,nhtmp
+    do i=1,nhtmp
+      ij = ij + 1
+      A%elms(ij) = htmp(i,j)
+    enddo
+  enddo
+
+  B = tiny(0.0d0) * A
+! call init_mat(B,nhtmp,nhtmp,mz=1)
+  write(6,*) 'B',nhtmp,size(B%elms),B%mz
+
+  ij = 0
+  do j=1,nhtmp
+    do i=1,nhtmp
+      ij = ij + 1
+      B%elms(ij) = hmat(i,j)
+    enddo
+  enddo
+
+! call init_mat(C,B,mz=1)
+! write(6,*) 'C',nhtmp,size(C%elms),C%mz
+
+  C = B * A
+  B = dag(A) * C
+! C = dag(A) * B * A
+! B = C
+
+  write(6,*) 'C',nhtmp,size(C%elms),C%mz
+
+  ij = 0
+  dtmp = 0.0d0
+  do j=1,nhtmp
+    do i=1,nhtmp
+      ij = ij + 1
+      if(i==j)then
+        write(6,*) eval(i),B%elms(ij)
+        dtmp = dtmp + dabs(eval(i) - B%elms(ij))
+      endif
+    enddo
+  enddo
+  write(6,*) 'dtmp',dtmp
+
+  stop
 
   np=0; nm=0; nb=0
   do i=1,nhtmp
@@ -2570,6 +2626,7 @@ contains
 
   !------------------------------------------------------------------------------!
   call dealloc(htmp,id='htmp in hdiag')
+  call dealloc(htmp,id='wtmp in hdiag')
   call dealloc(eval,id='eval in hdiag')
   call dealloc(work,id='work in hdiag')
 
