@@ -56,6 +56,6 @@ cd $DIRAC/$BUILD
 #make Experimental
 make Nightly
 
-/bin/rm -r $DIRAC
+/bin/rm -rf $DIRAC
 
 exit 0
