@@ -67,6 +67,15 @@ option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                      OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"          OFF)
 option(ENABLE_UTILITIES      "Enable utitilites"                        OFF)
+option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules" OFF)
+option(ENABLE_MATLAB_LOG "Will log interesting matrices in matlab format (very verbose!)" OFF)
+
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
 
 # set cdash buildname
 set(BUILDNAME

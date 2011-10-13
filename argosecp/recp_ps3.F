@@ -1,5 +1,5 @@
       subroutine pseud3( a,ccr,crda,crdb,gout,
-     &  ipt,lambu,ltot1,mproju,ncr,nklsl,nklsu,zcr )
+     &  lambu,ltot1,mproju,ncr,nklsl,nklsu,zcr )
 !  computes spin-orbit potential integrals
 
       USE RECP_IPT
@@ -23,7 +23,7 @@ c
       common /callin/ xka,yka,zka,ca,xkb,ykb,zkb,cb,tai,taj,aa,taa,
      1  aarr1,aarr2,xk,yk,zk,fctr2,kcrs,lcru
       dimension a(*),ccr(*),
-     &  crda(lit,3),crdb(ljt,3),gout(*),ipt(*),
+     &  crda(lit,3),crdb(ljt,3),gout(*),
      &  ncr(*),nklsl(4,*),nklsu(4,*),zcr(*)
       CALL OUTPUT_LOC('RECP_PSEUD3','E')
       if(ca.eq.a0) then
@@ -77,7 +77,7 @@ c  compute radial integrals
 c
       kcrl=nklsl(l-1,kcrs)
       kcru=nklsu(l-1,kcrs)
-            call rad2( a,    ccr,        ipt,        kcrl,
+            call rad2( a,    ccr,        kcrl,
      &                 kcru, l,          lambu,      lmahi,
      &                 lmalo,lmbhi,      lmblo,      ltot1,
      &                 ncr,  rka,        rkb,

@@ -23,6 +23,11 @@
          NMLINE = NMLINE - 1
          GOTO 9000
       ENDIF
+
+      IF (.NOT.ALLOCATED(RECP_SET)) ALLOCATE(RECP_SET(1))
+      RECP_SET(1) = .TRUE.
+!     Allocate variables for RECP parameters
+      CALL RECP_NTRA_READCP(MXCENT)
 !
 !     Explicit RECP parameter
 !     =======================
@@ -113,14 +118,11 @@
 #include "argoscom.h"
 #include "argoscomch.h"
       INTEGER soef, blk, I1,I2,I3,I4
-!  REAL(8), ALLOCATABLE :: RECP_CTRAN(:, :, :, :)
-
 !
 !     Run over Nuclear Centres
 !
-
-!fixme: check whether user wants .ECP
-!       if not, do not allocate and do the rest below
+      IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
+      IF (RECP_SET(1).EQV. .FALSE.) GOTO 9000
 
       ALLOCATE(ctranarg(NUCIND,mxqn,NUCIND*mxqn,NUCIND*mxqn))
       DO I1 = 1, NUCIND
@@ -197,5 +199,7 @@
 !YCP        ENDIF
   411    CONTINUE
   401 CONTINUE
+
+ 9000 CONTINUE
       END
 

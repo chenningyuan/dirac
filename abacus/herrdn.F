@@ -681,12 +681,6 @@ C     ************************************************
 C     ***** Read orbital and geometry input data *****
 C     ************************************************
 C
-#ifdef MOD_ECP
-C     Allocate variables for ECP
-C FIXME
-C     IF (ECPCALC) CALL RECP_NTRA_READCP(MXCENT)
-      CALL RECP_NTRA_READCP(MXCENT)
-#endif
 C
       CALL BASINP(LUINFO,WORK,LWORK,
      &            IQM,NBLCK,JCO,BASREF,

@@ -1,7 +1,7 @@
       subroutine RECP_ONE_MAIN( 
      &       a,          ccr,        chg,        eta,        ica,
      &       icb,        icxast,     icxst,      ilxyz,
-     &       iprst,      ipt,        lcr,        lls,        lmnp1,
+     &       iprst,      lcr,        lls,        lmnp1,
      &       lproju,     mcons,      mcrs,       nc,         ncon,
      &       ncr,        nf,         nfct,       ngw,        nkcrl,
      &       nkcru,      nklsl,      nklsu,      nopir,      npair,
@@ -13,17 +13,12 @@
       USE RECP_IPT
       USE RECP_OUTPUT
       USE RECP_WRITE
-
       implicit logical(a-z)
- 
 #include "argos_mxvalue.h"
 #include "argos_files.h"
 #include "argos_error.h"
 #include "inc_print.h"
-
-      integer    INT_AREP
-      integer    N1MAX,  L1REC
- 
+      INTEGER    INT_AREP,N1MAX,L1REC
       real*8         tol
       common /parmr/ tol
  
@@ -74,7 +69,7 @@ c
 !     # dummy:
       integer           ica(mcu,msu,*), icb(4,24,*), icxast(*),
      & icxst(2,*),      ilxyz(3,*),  iprst(*),
-     & ipt(*),          lcr(*),         lls(*),      lmnp1(*),
+     & lcr(*),         lls(*),      lmnp1(*),
      & lproju,          mcons(*),       mcrs(*),     nc(*),
      & ncon(*),         ncr(*),         nf(*),       nfct(*),
      & ngw(*),          nkcrl(6,*),     nkcru(6,*),  nklsl(4,*),
@@ -88,27 +83,27 @@ c
 !     # local:
       integer ixyz, ist, ifu, icu, isfis, jsfjs, ncc, igwu,
      & SYM_I, ICA_MIN, icc, igw, jfu, if, jf, iop,
-     & ipr, itst, iprm, inx, jnx, nwt, 
-     & ipr1, ipr2, iju
+     & ipr, itst, iprm, inx, jnx, nwt, ipr1, ipr2, iju
       logical  es
- 
-      integer  atebyt, forbyt
-      external atebyt, forbyt
       real*8     zero
       parameter( zero=0d0 )
-      integer i,last,iapt(3),nblu,NUC_J
+      integer i,j,last,iapt(3),nblu,NUC_J
       integer n_bfn_sym(mstup)  ! (nbpsy or nso)
-      integer N_INTEGRAL(3)     ! number of integral element of each type
-      integer MN_INTEGRAL       ! maximum of N_INTEGRAL(i,i=1-3)
+      integer N_INTEGRAL(3), MN_INTEGRAL
 
       CALL OUTPUT_LOC('RECP_ONE_MAIN','E') 
- 
 !     --------------------------------------
 !     # operator symmetry
 !     --------------------------------------
- 
-      call izero_argos( nst,   nopir, 1 )
-      call izero_argos( 3*nst, ilxyz, 1 )
+      do i = 1, nst
+         nopir(i) = 0
+      enddo
+
+      do i = 1, 3
+         do j = 1, nst
+            ilxyz(i,j) = 0
+         enddo
+      enddo
 
       N_INTEGRAL(1)  = 0
       N_INTEGRAL(2)  = 0
@@ -138,8 +133,8 @@ c       # computed together.
         ilxyz(1,1) = 1
         nop        = 1
         iapt(1)    = 0
-        OPEN (UNIT=64,FILE='RECP_ISA1')
-        OPEN (UNIT=67,FILE='RECP_ISB1')
+        OPEN (UNIT=64,FILE='RECP_ISA0')
+        OPEN (UNIT=67,FILE='RECP_ISB0')
       endif
  
       ijsf = 0
@@ -164,12 +159,13 @@ c       # computed together.
       IF(es) THEN 
 !        center combinations for is=js
          CALL ONEINT_NUC_ISEQJS(is,js,ic,ng,ncc,mcu,msu,
-     &                          ica,icb,nfct,ngw,PRINT_LEVEL)
+     &                          ica,icb,nfct,ngw)
       ELSE
 !        center combinations for is>js
+         jfu = nf(js) !YCP FIX
          if(nf(js).eq.0) goto 708
          CALL ONEINT_NUC_ISGTJS(is,js,nc,ng,ic,mcu,msu,
-     &                          ica,icb,ncc,nfct,PRINT_LEVEL)
+     &                          ica,icb,ncc,nfct)
       ENDIF
 
       if(ncc.gt.mccu) then
@@ -209,10 +205,11 @@ c       # computed together.
       iju=nt(isf)*nt(jsf)
       ntij2=iju*npair(2,ijsf)
       icxi2=icxst(2,ijsf)
+!     print *,'isf/jsf',is,js,if,jf
       if(esf) then
         nblt1=npair(1,ijsf)
         ntij1=iju*nblt1
-        nblu=ircru*ibl1+( ircru*(ircru-1)/2 )*ibl2
+        nblu =ircru*ibl1 + ( ircru*(ircru-1)/2 )*ibl2
         if(nnam.eq.5) then
           icxi1=icxast(ijsf)
         else
@@ -226,7 +223,6 @@ c       # computed together.
 
 !     # allocate space.
       CALL RECP_IPTA_ONEINT(nblu)
-!     call wzero(nblu,h2,1)
       do i = 1, nblu
          IPT_ONE_H2(i) = 0.0d0
       enddo
@@ -244,7 +240,7 @@ c       # computed together.
            jc = icb(2,1,icc)
            fnfct = nfct(icc)
            call RECP_STVCZ( a,ccr,chg,eta,
-     &     ilxyz,ipt,lcr,lls,IPT_LMNV,lproju,mcrs,nc,ncr,
+     &     ilxyz,lcr,lls,IPT_LMNV,lproju,mcrs,nc,ncr,
      &     nkcrl,nkcru,nklsl,nklsu,nopir,nprir,nt,x,y,z,zcr,zet )
         enddo
       else
@@ -268,7 +264,7 @@ c       # computed together.
               nwt = nwt + 1
             enddo
             fnfct = (nwt * nfct(icc))
-            call RECP_STVCZ( a,ccr,chg,eta,ilxyz,ipt,lcr,lls,IPT_LMNV,
+            call RECP_STVCZ( a,ccr,chg,eta,ilxyz,lcr,lls,IPT_LMNV,
      &           lproju,mcrs,nc,ncr,nkcrl,nkcru,nklsl,nklsu,nopir,nprir,
      &           nt,x,y,z,zcr,zet )
             itst = jc
@@ -287,7 +283,6 @@ c       # computed together.
 704   continue
 708   continue
 712   continue
-
       IF (nnam.EQ.5) THEN
          CLOSE (UNIT=64)
          CLOSE (UNIT=65)
@@ -301,7 +296,6 @@ c       # computed together.
       ENDIF
 !     # write 1-e integral arrays.
       MN_INTEGRAL = N_INTEGRAL(1) + N_INTEGRAL(2) + N_INTEGRAL(3)
-
       CALL RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2, N1MAX,  L1REC,
      &        n_bfn_sym,N_INTEGRAL,MN_INTEGRAL,INT_AREP,nnam,
      &        mpru,nbft,nnbft,nst)
