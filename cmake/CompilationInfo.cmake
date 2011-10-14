@@ -22,6 +22,7 @@ execute_process(
 )
 
 # get revision info for cmake output
+# radovan: that's code doubling!!!!!! i don't understand why
 execute_process(
     COMMAND python ${CMAKE_SOURCE_DIR}/cmake/git_revision_info_cmake.py
     TIMEOUT 1
