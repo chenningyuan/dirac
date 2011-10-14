@@ -1188,7 +1188,7 @@ C     total length of sigma block
 #endif
       print *,'LEN_S is',LEN_S
       if(LEN_S.eq.0)then
-        print *,'oops, zero sigma vector???'
+        print *,"oops, zero sigma vector???"
         goto 9999
       end if
       IF(ISD.EQ.2)THEN ! check S norm (only density runs)

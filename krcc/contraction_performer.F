@@ -3812,7 +3812,7 @@ C         print*,'ISM_AB,NEL_AB',ISM_AB,NEL_AB
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           IF(NTEST.GE.100) THEN
            WRITE(6,*) ' The number of strings '
-           WRITE(6,*),'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+           WRITE(6,*) 'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
      &                 NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
            CALL MEMCHK_KRCC(WORK)
           END IF
