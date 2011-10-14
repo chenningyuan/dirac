@@ -67,21 +67,28 @@ s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
 s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
-print 'subroutine print_compilation_info()'
+output = ''
+output += 'subroutine print_compilation_info()\n'
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
 def print_line(l, r):
-    print "    write(6, '(a)') ' %s | %s'" % (l.ljust(24), r)
+    return "    write(6, '(a)') ' %s | %s'\n" % (l.ljust(24), r)
 
 for line in s:
     chunk_l = chunkify(line[1], 50)
     for i in range(len(chunk_l)):
         if i == 0:
-            print_line(line[0], chunk_l[i])
+            output += print_line(line[0], chunk_l[i])
         else:
-            print_line(' ', chunk_l[i])
-print_line('Configuration time', datetime.datetime.now())
+            output += print_line(' ', chunk_l[i])
+output += print_line('Configuration time', datetime.datetime.now())
 
-print 'end subroutine'
+output += 'end subroutine'
+
+f = open('@COMPILATION_INFO_FILE@', 'w')
+f.write(output)
+f.close()
+
+print 'raboof' # return to cmake

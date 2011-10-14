@@ -1,3 +1,4 @@
+set(COMPILATION_INFO_FILE ${CMAKE_SOURCE_DIR}/gp/compilation_info.F90)
 configure_file(
     ${CMAKE_SOURCE_DIR}/cmake/compilation_info.py.in
     ${CMAKE_BINARY_DIR}/compilation_info.py
@@ -5,10 +6,12 @@ configure_file(
 execute_process(
     COMMAND python ${CMAKE_BINARY_DIR}/compilation_info.py
     TIMEOUT 1
-    OUTPUT_FILE ${CMAKE_SOURCE_DIR}/gp/compilation_info.F90
+    OUTPUT_VARIABLE RABOOF
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+#message("testing return: ${RABOOF}")
+
 configure_file(
     ${CMAKE_SOURCE_DIR}/cmake/git_revision_info.py.in
     ${CMAKE_BINARY_DIR}/git_revision_info.py
