@@ -37,9 +37,31 @@ def return_compiler_version(compiler):
                 # use only first line, not the copyright stuff
                 version = out.split('\n')[0]
     return version
+
+def return_compiler_versions_string(fortran_compiler_version,c_compiler_version):
+    '''return one string with equal lenght substrings of Fortran & C compiler versions;
+       this adaptation is for cmake2.6 which does not have FIND substring command 
+       therefore I (miro) have to cut the string into two equal susbstring '''
+    import string
+    l1 = len(fortran_compiler_version)
+    l2 = len(c_compiler_version)
+    add=""
+    if (l1>l2 or l1<l2):
+        d = int(abs(l1-l2))
+        for i in range(0,d):
+            add=add+"x" # characters to fill space...
+        if l1>l2:
+            c_compiler_version=c_compiler_version+add
+        if l1<l2:
+            fortran_compiler_version=fortran_compiler_version+add
+    return_string=fortran_compiler_version+c_compiler_version
+    return return_string 
     
 fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
 c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
+
+compiler_versions=return_compiler_versions_string(fortran_compiler_version,c_compiler_version)
+print compiler_versions # return one variable containing both Fortran & C versions equal-length substrings to cmake
 
 s = []
 s.append(['System'                  , r'@CMAKE_SYSTEM@'               ])
@@ -67,21 +89,27 @@ s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
 s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
-print 'subroutine print_compilation_info()'
+output = ''
+output += 'subroutine print_compilation_info()\n'
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
 def print_line(l, r):
-    print "    write(6, '(a)') ' %s | %s'" % (l.ljust(24), r)
+    return "    write(6, '(a)') ' %s | %s'\n" % (l.ljust(24), r)
 
 for line in s:
     chunk_l = chunkify(line[1], 50)
     for i in range(len(chunk_l)):
         if i == 0:
-            print_line(line[0], chunk_l[i])
+            output += print_line(line[0], chunk_l[i])
         else:
-            print_line(' ', chunk_l[i])
-print_line('Configuration time', datetime.datetime.now())
+            output += print_line(' ', chunk_l[i])
+output += print_line('Configuration time', datetime.datetime.now())
 
-print 'end subroutine'
+output += 'end subroutine'
+
+f = open('@COMPILATION_INFO_FILE@', 'w')
+f.write(output)
+f.close()
+

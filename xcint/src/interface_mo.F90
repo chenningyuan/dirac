@@ -144,6 +144,7 @@ contains
 
          end do
 1        continue
+         close(interface_file_unit, status = 'keep')
 
          inquire(file = interface_file_name_mo_coef, exist = interface_file_exists)
          if (interface_file_exists) then
