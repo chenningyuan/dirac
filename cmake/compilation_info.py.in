@@ -37,9 +37,31 @@ def return_compiler_version(compiler):
                 # use only first line, not the copyright stuff
                 version = out.split('\n')[0]
     return version
+
+def return_compiler_versions_string(fortran_compiler_version,c_compiler_version):
+    '''return one string with equal lenght substrings of Fortran & C compiler versions;
+       this adaptation is for cmake2.6 which does not have FIND substring command 
+       therefore I (miro) have to cut the string into two equal susbstring '''
+    import string
+    l1 = len(fortran_compiler_version)
+    l2 = len(c_compiler_version)
+    add=""
+    if (l1>l2 or l1<l2):
+        d = int(abs(l1-l2))
+        for i in range(0,d):
+            add=add+"x" # characters to fill space...
+        if l1>l2:
+            c_compiler_version=c_compiler_version+add
+        if l1<l2:
+            fortran_compiler_version=fortran_compiler_version+add
+    return_string=fortran_compiler_version+c_compiler_version
+    return return_string 
     
 fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
 c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
+
+compiler_versions=return_compiler_versions_string(fortran_compiler_version,c_compiler_version)
+print compiler_versions # return one variable containing both Fortran & C versions equal-length substrings to cmake
 
 s = []
 s.append(['System'                  , r'@CMAKE_SYSTEM@'               ])
@@ -91,4 +113,3 @@ f = open('@COMPILATION_INFO_FILE@', 'w')
 f.write(output)
 f.close()
 
-print 'raboof' # return to cmake
