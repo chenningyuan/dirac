@@ -16,25 +16,34 @@ contains
                                mat_dim,   &
                                mat,       &
                                center,    &
-                               take_derv, &
-                               center_d,  &
-                               ixyz_d     &
+                               component  &
                               )
 
 !     --------------------------------------------------------------------------
-      integer, intent(in)  :: mat_dim
-      real(8)              :: mat(*)
-      logical, intent(in)  :: take_derv
-      integer, intent(in)  :: center
-      integer, intent(in)  :: center_d
-      integer, intent(in)  :: ixyz_d
+      integer, intent(in)           :: mat_dim
+      real(8)                       :: mat(*)
+      integer, intent(in)           :: center
+      integer, intent(in), optional :: component
 !     --------------------------------------------------------------------------
+      logical              :: take_derv
+      integer              :: center_d
+      integer              :: ixyz_d
       real(8), allocatable :: ao(:, :)
       real(8), allocatable :: buffer(:, :)
       integer              :: i, j, iblock
       integer              :: nr1, nr2, st1, st2
       real(8)              :: d
 !     --------------------------------------------------------------------------
+
+      if (present(component)) then
+         center_d = (component + 2)/3
+         if (mod(component, 3) == 1) ixyz_d = 1
+         if (mod(component, 3) == 2) ixyz_d = 2
+         if (mod(component, 3) == 0) ixyz_d = 3
+         take_derv = .true.
+      else
+         take_derv = .false.
+      end if
 
       call interface_ao_read(.false.)
       call interface_mo_read()
