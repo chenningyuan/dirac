@@ -104,7 +104,7 @@ contains
 !      afull(i) = alpha*a%elms(i)
 !    enddo
 
-     i = a%nrow*a%ncol*a%mz
+     i = a%nrow*a%ncol*nz
      call dcopy (i,a%elms,1,afull,1)
      if (alpha.ne.1.0d0) call dscal(i,alpha,afull,1)
 
@@ -121,17 +121,16 @@ contains
 !      a%elms(i) = b%elms(i)
 !    enddo
 
-     i = a%nrow*a%ncol*a%mz
+     i = a%nrow*a%ncol*nz
      call dcopy (i,b%elms,1,a%elms,1)
 
   end subroutine
 
-  subroutine mat_init(A, nrow, ncol, mz)
+  subroutine mat_init(A, nrow, ncol)
 
 !   ----------------------------------------------------------------------------
     type(matrix)        :: A
-    integer,           intent(in) :: nrow, ncol
-    integer, optional, intent(in) :: mz
+    integer, intent(in) :: nrow, ncol
 !   ----------------------------------------------------------------------------
 
     nullify(A%elms)
@@ -140,13 +139,8 @@ contains
 
     A%nrow = nrow
     A%ncol = ncol
-    if(present(mz))then
-      A%mz = mz
-    else
-      A%mz = nz  ! take nz from dgroup.h
-    endif
 
-    allocate(A%elms(A%nrow*A%ncol*A%mz*merge(2, 1, A%complex)))
+    allocate(A%elms(A%nrow*A%ncol*nz*merge(2, 1, A%complex)))
     call add_allocation()
 
   end subroutine
@@ -191,15 +185,17 @@ contains
     real(8),      intent(in)    :: alpha, beta
     type(matrix), intent(inout) :: C
 !   ----------------------------------------------------------------------------
-    integer                     :: m, n, k, l
+    integer                     :: m, n, k, l, nza, nzb, nzc
     character                   :: ta, tb
     integer                     :: iq(4) = (/1, 2, 3, 4/)
 !   ----------------------------------------------------------------------------
 
+    nza = nz
+    nzb = nz
     if (nbsym > 1) then
-      call iqpack(ipqtoq(1, A%irep), A%mz, &
-                  ipqtoq(1, B%irep), B%mz, &
-                  iq               , C%mz)
+      call iqpack(ipqtoq(1, A%irep), nza, &
+                  ipqtoq(1, B%irep), nzb, &
+                  iq               , nzc)
     end if
 
     select case (transa)
@@ -232,11 +228,11 @@ contains
       call quit('dimensions do not match in mat_mul')
     end if
 
-    call qgemm(m, n, k,                                                  &
-               alpha,                                                    &
-               ta, 'N', ipqtoq(1, A%irep), A%elms, A%nrow, A%ncol, A%mz, &
-               tb, 'N', ipqtoq(1, B%irep), B%elms, B%nrow, B%ncol, B%mz, &
-               beta,    iq               , C%elms, C%nrow, C%ncol, C%mz)
+    call qgemm(m, n, k,                                                &
+               alpha,                                                  &
+               ta, 'N', ipqtoq(1, A%irep), A%elms, A%nrow, A%ncol, nz, &
+               tb, 'N', ipqtoq(1, B%irep), B%elms, B%nrow, B%ncol, nz, &
+               beta,    iq               , C%elms, C%nrow, C%ncol, nz)
 
   end subroutine
 
@@ -247,7 +243,7 @@ contains
     type(matrix), intent(inout) :: A
 !   ----------------------------------------------------------------------------
 
-    call dscal(A%nrow*A%ncol*A%mz, alpha, A%elms, 1)
+    call dscal(A%nrow*A%ncol*nz, alpha, A%elms, 1)
 
   end subroutine
 
@@ -269,7 +265,7 @@ contains
     j_dim = A%ncol
 
     iz = 1
-    do iz = 1, A%mz
+    do iz = 1, nz
 
       q = 1.0d0
       if (ipqtoq(iz, A%irep) > 1) q = -1.0d0
@@ -300,7 +296,7 @@ contains
     r = 0.0d0
 
     if (ieor(A%irep, B%irep) == 0) then
-      r = ddot(A%nrow*A%ncol*A%mz, A%elms, 1, B%elms, 1)
+      r = ddot(A%nrow*A%ncol*nz, A%elms, 1, B%elms, 1)
     end if
 
   end function
@@ -326,7 +322,7 @@ contains
     j_dim = A%ncol
 
     if (ieor(A%irep, B%irep) == 0) then
-       do iz = 1, B%mz
+       do iz = 1, nz
 
          q = 1.0d0
          if (ipqtoq(iz, B%irep) > 1) q = -1.0d0
@@ -353,7 +349,7 @@ contains
       call quit('wrong dimensions in mat_daxpy')
     endif
 
-    call daxpy(X%nrow*X%ncol*X%mz, alpha, X%elms, 1, Y%elms,1)
+    call daxpy(X%nrow*X%ncol*nz, alpha, X%elms, 1, Y%elms,1)
 
   end subroutine
 

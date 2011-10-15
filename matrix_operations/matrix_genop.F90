@@ -91,13 +91,12 @@ contains
    end subroutine
 
 
-   subroutine mat_init_from(C, A, ta, B, tb, complex, reset, zero, alias, mz)
+   subroutine mat_init_from(C, A, ta, B, tb, complex, reset, zero, alias)
       type(matrix),           intent(inout) :: C
       type(matrix), optional, intent(in)    :: A, B
       character*1,  optional, intent(in)    :: ta, tb
       logical,      optional, intent(in)    :: complex, zero, reset
       character*2,  optional, intent(in)    :: alias
-      integer,      optional, intent(in)    :: mz
       logical :: taa, tbb, zer, res, cplx
       integer :: nrow, ncol
       if (present(ta) .and. .not.present(A)) &
@@ -142,13 +141,6 @@ contains
       if (present(B)) ncol = merge(B%nrow, B%ncol, tbb)
       C%nrow = nrow
       C%ncol = ncol
-      if(present(mz))then
-        C%mz = mz
-      elseif(present(A))then
-        C%mz = A%mz
-      else
-        C%mz = nz  ! take nz from dgroup.h
-      endif
       if (zer .or. res) then
          nullify(C%elms)
 #ifdef VAR_LINSCA
@@ -161,7 +153,6 @@ contains
          C%ih_sym = 0
          C%tr_sym = 0
          C%irep   = 0
-         C%mz     = 4
          if (present(A) .and. .not. present(B)) then
            call copy_matrix_sym(C, A)
          end if
@@ -172,8 +163,6 @@ contains
            C%ih_sym = A%ih_sym*B%ih_sym
            C%tr_sym = A%tr_sym*B%tr_sym
            C%irep   = ieor(A%irep, B%irep)
-           C%mz     = A%mz
-           if(B%mz > A%mz) C%mz = B%mz
          end if
 #endif /* ifdef PRG_DIRAC */
       else if (present(alias)) then
@@ -193,7 +182,7 @@ contains
          end if
       else
          !print *,'mat_init',loc(C)
-         call mat_init_full(C, nrow, ncol, mz=C%mz)
+         call mat_init_full(C, nrow, ncol)
       end if
    end subroutine
 
@@ -625,7 +614,6 @@ contains
       write(*, *) 'ih_sym = ', A%ih_sym
       write(*, *) 'tr_sym = ', A%tr_sym
       write(*, *) 'irep   = ', A%irep
-      write(*, *) 'nz     = ', A%mz
 
       if (associated(A%elms)) then
         call prqmat(A%elms,            &
@@ -633,7 +621,7 @@ contains
                     A%ncol,            &
                     A%nrow,            &
                     A%ncol,            &
-                    A%mz,              &
+                    nz,                &
                     ipqtoq(1, A%irep), &
                     lupri)
       else
@@ -710,7 +698,6 @@ contains
      A%ih_sym = B%ih_sym
      A%tr_sym = B%tr_sym
      A%irep   = B%irep
-     A%mz     = B%mz
    
    end subroutine
 #endif
