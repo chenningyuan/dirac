@@ -146,6 +146,8 @@ contains
         C%mz = mz
       elseif(present(A))then
         C%mz = A%mz
+      elseif(present(B))then
+        C%mz = B%mz
       else
         C%mz = nz  ! take nz from dgroup.h
       endif
