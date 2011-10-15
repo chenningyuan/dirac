@@ -5,6 +5,8 @@ module vib_prop
    use matrix_defop
    use rsp_equations
    use prop_contribs
+   use openrsp_cfg
+   use dirac_interface
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -1122,8 +1124,16 @@ contains
       Fp   = 0
       DFDp = 0
 
-      print *, 'E_pnc', epnc
-      print *, 'd/dR E_pnc', epnc_gradient
+      print *, 'center', openrsp_cfg_pnc_center
+      print *, 'E_pnc', real(epnc)
+
+      call header('E_pnc gradient', -1)
+
+      do i = 1, nr_atoms
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(i), real(epnc_gradient(i, 1)), real(epnc_gradient(i, 2)), real(epnc_gradient(i, 3))
+      end do
+
+      call prsymb(unit_output, '-', 46, 0)
 
       deallocate(epnc)
       deallocate(epnc_gradient)
