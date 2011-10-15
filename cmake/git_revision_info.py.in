@@ -20,7 +20,6 @@ if sys.version >= '2.4':
             # this is not a git repo but @CMAKE_SOURCE_DIR@/gp/git_revision_info.F90
             # exists - then this is a release or an exported source code
             # in this case do not regenerate the file but exit
-            # miro: leave message
             sys.exit()
         else: # file does not exist, or is of zero size - generate it with 'unknown' parameters
             last_commit_rev = 'unknown'
