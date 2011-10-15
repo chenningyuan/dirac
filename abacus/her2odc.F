@@ -141,6 +141,9 @@ C
          CALL QUIT('Illegal value of NSET in ODCGEN.')
       END IF
 C
+!radovan: setting to zero, otherwise it is uninitialized
+      srfmax = 0.0d0
+
       IF (ITYPE .EQ. 12) THEN
          IELCTR = 1
          SRFMAX = D0
@@ -245,7 +248,6 @@ C
                   NUCT12(ISYM) = NUCT12(ISYM) + 1
                   NREDP1(IPRM1,ISYM) = 1
                   NREDP2(IPRM2,ISYM) = 1
-!radovan: srfmax can be uninitialized the first time
                   SRFMAX = MAX(SRFMAX,ABSFAC)
                   EXP1PI = EXP1*EXPPI
                   EXP2PI = EXP2*EXPPI

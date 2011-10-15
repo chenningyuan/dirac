@@ -127,7 +127,7 @@ C
       END DO
       ERGOLD(1) = DHFERG
       EVCOLD(1) = EVCVAL
-      IF (IPRINT .GE. 2) THEN
+      IF (iprscf .GE. 2) THEN
          WRITE(LUPRI,'(/A)') 'DHFCNV: anti-oscillation test data dump'
          WRITE(LUPRI,'(A,1P,10D10.2)')
      &      '- ERGDIF, ERGOLD(:) ',ERGDIF, ERGOLD(1:N_OLD)

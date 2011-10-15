@@ -57,6 +57,18 @@
       nmline = nmline + 1 
       goto 2010
 
+!radovan: gfortran complains with:
+!/home/radovan/dirac/argosecp/recp_geninp1.F:53.5:
+!
+! 2011    continue                                                       
+!     1
+!/home/radovan/dirac/argosecp/recp_geninp1.F:47.72:
+!
+!      read(lufile2,fmt='(a90)',end=2011) mline(nmline)                  
+!                                                                        2
+!Warning: Label at (1) is not in the same block as the GOTO statement at (2)
+
+
  
  2200 continue
 !

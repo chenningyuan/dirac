@@ -27,7 +27,7 @@ It is your machine and you have Ubuntu or Debian::
 
 If this is another system, ask Google.
 
-If it is a cluster, please ask the admin to install/upgrade CMake.
+If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
@@ -162,7 +162,7 @@ You can run the test suite with::
   $ make test
 
 It is HIGHLY recommended to run the test set after you have compiled
-DIRAC.
+DIRAC to make sure that your binary correctly reproduces reference results.
 
 
 Compiling in verbose mode
@@ -235,7 +235,7 @@ Either use setup::
   $ cd build
   $ make
 
-Or use Cmake directly (default is debug mode)::
+Or use Cmake directly (default here is debug mode)::
 
   $ mkdir build
   $ cd build

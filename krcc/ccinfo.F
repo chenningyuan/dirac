@@ -4350,7 +4350,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       INTEGER ITSOSO_TP(4*NGAS,NTSOSO_TP)
       DO J=1,4*NGAS
       DO I = 1,NTSOSO_TP
-        WRITE(6,*),'ITSOSO_TP',ITSOSO_TP(J,I)
+        WRITE(6,*) 'ITSOSO_TP',ITSOSO_TP(J,I)
       END DO
       END DO
       END
@@ -6324,7 +6324,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
      &          ICONS
       END DO
       IF(ICONS.NE.0) RETURN
-      IF(NTEST.EQ.100) WRITE(6,*),' we have conservation '
+      IF(NTEST.EQ.100) WRITE(6,*) " we have conservation "
 *
 * Particle rank cannot excede max excitation level
       IPART = 0
@@ -6336,7 +6336,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
      &          IPART
       END DO
       IF(IPART.GT.2*MX_EXC_LEVEL) RETURN
-      IF(NTEST.EQ.100) WRITE(6,*),'not too highly excited',IPART
+      IF(NTEST.EQ.100) WRITE(6,*) "not too highly excited",IPART
 *
 * Must contain the correct number of holes and particles
       NHOLE = 0
@@ -6373,7 +6373,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
         END DO
       END DO
       IF(IH.NE.NHOLE.AND.IP.NE.NPART) RETURN
-      IF(NTEST.EQ.100) WRITE(6,*),' right number of holes ',NHOLE,NPART
+      IF(NTEST.EQ.100) WRITE(6,*) " right number of holes ",NHOLE,NPART
       
 *
 * Is this an allowed operator in the GAS.
@@ -6394,7 +6394,7 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           IF(IOP(IGAS+3*NGAS).GT.ICOMP) RETURN
         END IF
       END DO
-      IF(NTEST.EQ.100) WRITE(6,*),' operator allowed for GAS'
+      IF(NTEST.EQ.100) WRITE(6,*) " operator allowed for GAS"
 *
 * Kramers flipping of operator
       IKRFLIP = 0
@@ -6406,19 +6406,19 @@ C           CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
      &            IKRFLIP
       END DO
       IF(ABS(IKRFLIP).GT.IKRFLIPMAX) RETURN
-      IF(NTEST.EQ.100) WRITE(6,*),' I flip ok ',IKRFLIP/2
+      IF(NTEST.EQ.100) WRITE(6,*) ' I flip ok ',IKRFLIP/2
 *
 * Even or Odd Kramers flip
       IF(NZ.LT.4) THEN
         IKRFLIP = IKRFLIP/2
         CALL EVENODD(ITEST,ABS(IKRFLIP))
         IF(ITEST.EQ.1) RETURN
-        IF(NTEST.EQ.100) WRITE(6,*),' even KRAMERS FLIP'
+        IF(NTEST.EQ.100) WRITE(6,*) ' even KRAMERS FLIP'
       END IF
 *
 * An operator has been found
       IANSWER = 1
-      IF(NTEST.EQ.100) WRITE(6,*),' An operator has been found '
+      IF(NTEST.EQ.100) WRITE(6,*) ' An operator has been found '
 *
       RETURN
       END
