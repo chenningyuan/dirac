@@ -157,8 +157,7 @@ contains
 
         if (openrsp_cfg_pnc) then
            call get_natoms(number_atoms)
-           num_coord = 3*number_atoms
-           call pnc_gradient(mol, S, D, F, num_coord)
+           call pnc_gradient(mol, S, D, F, number_atoms)
         end if
 
         ! calculates vibrational hyperpolarizability

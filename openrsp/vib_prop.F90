@@ -1086,7 +1086,7 @@ contains
       Eff=-Eff; Efff=-Efff; Egf=-Egf; Egff=-Egff
    end subroutine
 
-   subroutine pnc_gradient(mol, S, D, F, ng)
+   subroutine pnc_gradient(mol, S, D, F, nr_atoms)
       !> reference to molecule, solver- and integral settings
       type(prop_molcfg), intent(in)  :: mol
       !> overlap matrix
@@ -1096,19 +1096,23 @@ contains
       !> Fock matrix
       type(matrix),      intent(in)  :: F
       !> number of geometrical coordinates
-      integer,           intent(in)  :: ng
+      integer,           intent(in)  :: nr_atoms
+      integer                        :: ng
       !> external laser frequency
       !> dipole moment returned in dip, polarizability in in Eff
       !> hyperpolarizability in Efff, dipole gradient in Egf,
       !> polarizability gradient in Egff.
       !> ajt FIXME: Sign-name confusion Ef should be -dipmom
       integer, parameter             :: nc = 1
-      complex(8)                     :: dip(nc)
+
+      complex(8), allocatable        :: dip(:)
       complex(8), allocatable        :: Egf(:,:)
       type(matrix) :: Df(nc), DFDf(nc), &
                       Ff(nc)
       integer      :: i, j, k, m, n, nj, nk, mj, mk
       logical      :: exists
+      ng = nr_atoms*3
+      allocate(dip(nc))
       allocate(Egf(ng,nc))
       ! verify that frequencies sum to zero
       ! dipole moment
@@ -1131,6 +1135,7 @@ contains
       call print_tensor((/ng,nc/), -Egf(:,:), 'd/dg dipmom = -Egf')
       Df=0; Ff=0
       deallocate(Egf)
+      deallocate(dip)
    end subroutine
 
 
