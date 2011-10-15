@@ -1139,11 +1139,11 @@ contains
       qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
 
       print *, 'center', openrsp_cfg_pnc_center
-      print *, 'E_pnc (bare in hartree)', real(epnc)
+      print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
       print *, 'E_pnc (in hartree)', real(epnc)*qw*dfac
       print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*hartree2hz
 
-      call header('E_pnc gradient (bare in hartree)', -1)
+      call header('E_pnc gradient (bare integrals in a.u.)', -1)
       do iatom = 1, nr_atoms
          ix = 3*(iatom - 1) + 1
          iy = 3*(iatom - 1) + 2
