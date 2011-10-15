@@ -1103,7 +1103,7 @@ contains
 
       complex(8), allocatable        :: epnc(:)
       complex(8), allocatable        :: epnc_gradient(:,:)
-      integer                        :: i
+      integer                        :: i, iatom, ix, iy, iz
 
       allocate(epnc(nc))
       allocate(epnc_gradient(nr_atoms*3, nc))
@@ -1129,8 +1129,11 @@ contains
 
       call header('E_pnc gradient', -1)
 
-      do i = 1, nr_atoms
-         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(i), real(epnc_gradient(i, 1)), real(epnc_gradient(i, 2)), real(epnc_gradient(i, 3))
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
       end do
 
       call prsymb(unit_output, '-', 46, 0)
