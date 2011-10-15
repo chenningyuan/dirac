@@ -74,7 +74,7 @@ MODULE Matrix_module
       !> irep
       integer :: irep   = 0
       !> algebra (1, 2, or 4)
-      integer :: mz = 4
+      integer :: nz = 4
 #endif
 
    END TYPE Matrix
