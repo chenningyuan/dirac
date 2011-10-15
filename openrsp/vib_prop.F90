@@ -5,6 +5,8 @@ module vib_prop
    use matrix_defop
    use rsp_equations
    use prop_contribs
+   use openrsp_cfg
+   use dirac_interface
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -19,6 +21,7 @@ module vib_prop
    public cars_pol_shyp_polgra
    public vib_ana_polari
    public print_shypol
+   public pnc_gradient
    public vibhyp_hyp_dipgra_polgra
    public vibshyp_shyp_dipg_polg_hypg
 
@@ -1085,6 +1088,93 @@ contains
       Eff=-Eff; Efff=-Efff; Egf=-Egf; Egff=-Egff
    end subroutine
 
+   subroutine pnc_gradient(mol, S, D, F, nr_atoms)
+
+      type(prop_molcfg), intent(in)  :: mol
+      type(matrix),      intent(in)  :: S
+      type(matrix),      intent(in)  :: D
+      type(matrix),      intent(in)  :: F
+      integer,           intent(in)  :: nr_atoms
+
+      integer, parameter             :: nc = 1
+      type(matrix)                   :: Dp(nc), DFDp(nc), Fp(nc)
+
+      complex(8), allocatable        :: epnc(:)
+      complex(8), allocatable        :: epnc_gradient(:,:)
+      integer                        :: i, iatom, ix, iy, iz
+      integer                        :: icharge, imass, nproton, nneutron
+      real(8), external              :: disotp
+      real(8)                        :: qw
+
+      real(8), parameter             :: sthetaw2 = 0.2319d0
+      real(8), parameter             :: dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
+      real(8), parameter             :: hartree2hz = 6.579683920721d15
+
+#include "mxcent.h"
+#include "nuclei.h"
+
+      allocate(epnc(nc))
+      allocate(epnc_gradient(nr_atoms*3, nc))
+
+      epnc          = 0
+      epnc_gradient = 0
+
+      call prop_oneave(mol, S, (/'PNC'/), (/D/), (/nc/), epnc)
+      call pert_dens(mol, S, (/'PNC'/), (/nc/), (/D/), (/F/), Dp(:), Fp(:))
+      call prop_oneave(mol, S, (/'GEO','PNC '/), (/D/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
+      call prop_twoave(mol, (/'GEO'/), (/D, Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
+      do i = 1, nc
+         DFDp(i) = Dp(i)*F*D + D*Fp(i)*D + D*F*Dp(i)
+      end do
+      call prop_oneave(mol, S, (/'GEO'/), (/Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :), DFD = (/DFDp/))
+
+      Dp   = 0
+      Fp   = 0
+      DFDp = 0
+
+      icharge  = nint(charge(openrsp_cfg_pnc_center))
+      imass    = nint(disotp(icharge, 1, 'MASS'))
+      nproton  = icharge
+      nneutron = imass - icharge
+      qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
+
+      print *, 'center', openrsp_cfg_pnc_center
+      print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
+      print *, 'E_pnc (in hartree)', real(epnc)*qw*dfac
+      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*hartree2hz
+
+      call header('E_pnc gradient (bare integrals in a.u.)', -1)
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
+      end do
+
+      epnc_gradient = epnc_gradient*qw*dfac
+      call header('E_pnc gradient (in hartree)', -1)
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
+      end do
+
+      epnc_gradient = epnc_gradient*hartree2hz
+      call header('E_pnc gradient (in Hz)', -1)
+      do iatom = 1, nr_atoms
+         ix = 3*(iatom - 1) + 1
+         iy = 3*(iatom - 1) + 2
+         iz = 3*(iatom - 1) + 3
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
+      end do
+
+      call prsymb(unit_output, '-', 46, 0)
+
+      deallocate(epnc)
+      deallocate(epnc_gradient)
+
+   end subroutine
 
 
    subroutine vibshyp_shyp_dipg_polg_hypg(mol, S, D, F, ng, freq, &
