@@ -652,6 +652,7 @@ contains
 
       if (kw_matches(word, '.PNC   ')) then
          openrsp_cfg_pnc = .true.
+         need_1el_g = .true.
       end if
 
       if (kw_matches(word, '.PVBETA')) then
