@@ -77,7 +77,7 @@ if (XCFUN_ENABLE_TESTS)
 	add_subdirectory(test)
 endif()
 
-find_package(Doxygen)
+find_package(Doxygen QUIET)
 if (DOXYGEN_FOUND)
 	add_custom_target(docs
 		COMMAND ${DOXYGEN_EXECUTABLE}
