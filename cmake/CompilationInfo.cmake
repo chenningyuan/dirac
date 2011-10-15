@@ -26,18 +26,18 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+execute_process(
+    COMMAND python ${CMAKE_SOURCE_DIR}/cmake/get_last_rev.py ${CMAKE_SOURCE_DIR}
+    TIMEOUT 1
+    OUTPUT_VARIABLE LAST_GIT_REVISION
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
-
-
-
-
-
-# find out git revision info, both for Fortran subroutine and CMake-build output
 configure_file(
     ${CMAKE_SOURCE_DIR}/cmake/git_revision_info.py.in
     ${CMAKE_BINARY_DIR}/git_revision_info.py
     )
-# one can get stdout either into file or into variable, can not have both
 execute_process(
     COMMAND python ${CMAKE_BINARY_DIR}/git_revision_info.py
     TIMEOUT 1
