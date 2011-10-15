@@ -19,6 +19,7 @@ module vib_prop
    public cars_pol_shyp_polgra
    public vib_ana_polari
    public print_shypol
+   public pnc_gradient
    public vibhyp_hyp_dipgra_polgra
    public vibshyp_shyp_dipg_polg_hypg
 
@@ -1085,6 +1086,52 @@ contains
       Eff=-Eff; Efff=-Efff; Egf=-Egf; Egff=-Egff
    end subroutine
 
+   subroutine pnc_gradient(mol, S, D, F, ng)
+      !> reference to molecule, solver- and integral settings
+      type(prop_molcfg), intent(in)  :: mol
+      !> overlap matrix
+      type(matrix),      intent(in)  :: S
+      !> density matrix
+      type(matrix),      intent(in)  :: D
+      !> Fock matrix
+      type(matrix),      intent(in)  :: F
+      !> number of geometrical coordinates
+      integer,           intent(in)  :: ng
+      !> external laser frequency
+      !> dipole moment returned in dip, polarizability in in Eff
+      !> hyperpolarizability in Efff, dipole gradient in Egf,
+      !> polarizability gradient in Egff.
+      !> ajt FIXME: Sign-name confusion Ef should be -dipmom
+      integer, parameter             :: nc = 1
+      complex(8)                     :: dip(nc)
+      complex(8), allocatable        :: Egf(:,:)
+      type(matrix) :: Df(nc), DFDf(nc), &
+                      Ff(nc)
+      integer      :: i, j, k, m, n, nj, nk, mj, mk
+      logical      :: exists
+      allocate(Egf(ng,nc))
+      ! verify that frequencies sum to zero
+      ! dipole moment
+      dip = 0
+      call prop_oneave(mol, S, (/'PNC'/), (/D/), (/nc/), dip)
+      dip = -dip
+      call pert_dens(mol, S, (/'PNC'/), (/nc/), (/D/), (/F/), &
+                     Df(:), Ff(:))
+      Egf(:,:) = 0
+      call prop_oneave(mol, S, (/'GEO','PNC '/), (/D/), (/ng,nc/), Egf(:,:))
+      call prop_twoave(mol, (/'GEO'/), (/D,Df(:)/), (/ng,nc/), Egf(:,:))
+      do i = 1, nc
+         DFDf(i) = Df(i)*F*D + D*Ff(i)*D &
+                       + D*F*Df(i)
+      end do
+      call prop_oneave(mol, S, (/'GEO'/), (/Df(:)/), (/ng,nc/), Egf(:,:), &
+                       DFD=(/DFDf/))
+      DFDf = 0
+      call print_tensor((/nc/), dip, 'dipmom = -Ef')
+      call print_tensor((/ng,nc/), -Egf(:,:), 'd/dg dipmom = -Egf')
+      Df=0; Ff=0
+      deallocate(Egf)
+   end subroutine
 
 
    subroutine vibshyp_shyp_dipg_polg_hypg(mol, S, D, F, ng, freq, &
