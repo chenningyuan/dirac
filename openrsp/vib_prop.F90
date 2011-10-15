@@ -1132,8 +1132,8 @@ contains
       Fp   = 0
       DFDp = 0
 
-      icharge  = int(charge(openrsp_cfg_pnc_center))
-      imass    = int(disotp(icharge, 1, 'MASS'))
+      icharge  = nint(charge(openrsp_cfg_pnc_center))
+      imass    = nint(disotp(icharge, 1, 'MASS'))
       nproton  = icharge
       nneutron = imass - icharge
       qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
