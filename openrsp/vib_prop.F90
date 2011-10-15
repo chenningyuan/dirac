@@ -1087,55 +1087,47 @@ contains
    end subroutine
 
    subroutine pnc_gradient(mol, S, D, F, nr_atoms)
-      !> reference to molecule, solver- and integral settings
-      type(prop_molcfg), intent(in)  :: mol
-      !> overlap matrix
-      type(matrix),      intent(in)  :: S
-      !> density matrix
-      type(matrix),      intent(in)  :: D
-      !> Fock matrix
-      type(matrix),      intent(in)  :: F
-      !> number of geometrical coordinates
-      integer,           intent(in)  :: nr_atoms
-      integer                        :: ng
-      !> external laser frequency
-      !> dipole moment returned in dip, polarizability in in Eff
-      !> hyperpolarizability in Efff, dipole gradient in Egf,
-      !> polarizability gradient in Egff.
-      !> ajt FIXME: Sign-name confusion Ef should be -dipmom
-      integer, parameter             :: nc = 1
 
-      complex(8), allocatable        :: dip(:)
-      complex(8), allocatable        :: Egf(:,:)
-      type(matrix) :: Df(nc), DFDf(nc), &
-                      Ff(nc)
-      integer      :: i, j, k, m, n, nj, nk, mj, mk
-      logical      :: exists
-      ng = nr_atoms*3
-      allocate(dip(nc))
-      allocate(Egf(ng,nc))
-      ! verify that frequencies sum to zero
-      ! dipole moment
-      dip = 0
-      call prop_oneave(mol, S, (/'PNC'/), (/D/), (/nc/), dip)
-      dip = -dip
-      call pert_dens(mol, S, (/'PNC'/), (/nc/), (/D/), (/F/), &
-                     Df(:), Ff(:))
-      Egf(:,:) = 0
-      call prop_oneave(mol, S, (/'GEO','PNC '/), (/D/), (/ng,nc/), Egf(:,:))
-      call prop_twoave(mol, (/'GEO'/), (/D,Df(:)/), (/ng,nc/), Egf(:,:))
+      type(prop_molcfg), intent(in)  :: mol
+      type(matrix),      intent(in)  :: S
+      type(matrix),      intent(in)  :: D
+      type(matrix),      intent(in)  :: F
+      integer,           intent(in)  :: nr_atoms
+
+
+
+      integer, parameter             :: nc = 1
+      type(matrix)                   :: Dp(nc), DFDp(nc), Fp(nc)
+
+      complex(8), allocatable        :: epnc(:)
+      complex(8), allocatable        :: epnc_gradient(:,:)
+      integer                        :: i
+
+      allocate(epnc(nc))
+      allocate(epnc_gradient(nr_atoms*3, nc))
+
+      epnc          = 0
+      epnc_gradient = 0
+
+      call prop_oneave(mol, S, (/'PNC'/), (/D/), (/nc/), epnc)
+      call pert_dens(mol, S, (/'PNC'/), (/nc/), (/D/), (/F/), Dp(:), Fp(:))
+      call prop_oneave(mol, S, (/'GEO','PNC '/), (/D/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
+      call prop_twoave(mol, (/'GEO'/), (/D, Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
       do i = 1, nc
-         DFDf(i) = Df(i)*F*D + D*Ff(i)*D &
-                       + D*F*Df(i)
+         DFDp(i) = Dp(i)*F*D + D*Fp(i)*D + D*F*Dp(i)
       end do
-      call prop_oneave(mol, S, (/'GEO'/), (/Df(:)/), (/ng,nc/), Egf(:,:), &
-                       DFD=(/DFDf/))
-      DFDf = 0
-      call print_tensor((/nc/), dip, 'dipmom = -Ef')
-      call print_tensor((/ng,nc/), -Egf(:,:), 'd/dg dipmom = -Egf')
-      Df=0; Ff=0
-      deallocate(Egf)
-      deallocate(dip)
+      call prop_oneave(mol, S, (/'GEO'/), (/Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :), DFD = (/DFDp/))
+
+      Dp   = 0
+      Fp   = 0
+      DFDp = 0
+
+      print *, 'E_pnc', epnc
+      print *, 'd/dR E_pnc', epnc_gradient
+
+      deallocate(epnc)
+      deallocate(epnc_gradient)
+
    end subroutine
 
 
