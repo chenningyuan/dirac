@@ -1,5 +1,10 @@
 module fc
 
+!  radovan: routine to calculate FC "integrals"
+!           and derivatives with respect to nuclear centers
+!           factor dfac is missing since these are directly used
+!           for E_PNC calculations and not for FC
+
    use interface_ao
    use interface_mo
    use ao_eval
@@ -25,16 +30,18 @@ contains
       integer, intent(in)           :: center
       integer, intent(in), optional :: component
 !     --------------------------------------------------------------------------
-      logical              :: take_derv
-      integer              :: center_d
-      integer              :: ixyz_d
-      real(8), allocatable :: ao(:, :)
-      real(8), allocatable :: buffer(:, :)
-      integer              :: i, j, iblock
-      integer              :: nr1, nr2, st1, st2
-      real(8)              :: d
+      logical                       :: take_derv
+      integer                       :: center_d
+      integer                       :: ixyz_d
+      real(8), allocatable          :: ao(:, :)
+      real(8), allocatable          :: buffer(:, :)
+      integer                       :: i, j, iblock
+      integer                       :: nr1, nr2, st1, st2
+      real(8)                       :: d
 !     --------------------------------------------------------------------------
 
+!     if you have 4 atoms, then there are 12 components
+!     code below figures out the center and direction based on component
       if (present(component)) then
          center_d = (component + 2)/3
          if (mod(component, 3) == 1) ixyz_d = 1
