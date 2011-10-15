@@ -723,17 +723,13 @@ contains
             deallocate(RR)
          end if
       else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
-         !contract perturbed densities with -dipole gradient integrals
-         do j = 0, dp(2)-1 !EL indices
             do i = 0, dp(1)-1 !GEO indices
                A(1) = tiny(0.0d0)*D(1)
                call get_fc_integrals(A(1)%nrow, A(1)%elms, openrsp_cfg_pnc_center, .true., 1, 1)
                do k = 0, max(0,nd-1) !density indices
-                 !E(1+i+dp(1)*(j+dp(2)*k)) = -tr(A(1), D(k+1)) !minus sign
-                  E(1+i+dp(1)*(j+dp(2)*k)) =  tr(A(1), D(k+1))
+                  E(1+i+dp(1)*(dp(2)*k)) = tr(A(1), D(k+1))
                end do
             end do
-         end do
       ! GEO MAGO has no nd==0 because MAGO anti-symmetric
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/)) .and. nd/=0) then
          do j = 0, dp(2)-1
@@ -1723,13 +1719,11 @@ contains
             end do
          end do
       else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
-         do j = 0, dp(2)-1 !EL indices
             do i = 0, dp(1)-1 !GEO indices
-               F(1+i+dp(1)*j) = tiny(0.0d0)*S0
-               call get_fc_integrals(F(1+i+dp(1)*j)%nrow, F(1+i+dp(1)*j)%elms, openrsp_cfg_pnc_center, .true., 1, 1)
-               F(1+i+dp(1)*j) = -F(1+i+dp(1)*j) !minus sign
+               F(1+i) = tiny(0.0d0)*S0
+               call get_fc_integrals(F(1+i)%nrow, F(1+i)%elms, openrsp_cfg_pnc_center, .true., 1, 1)
+               F(1+i) = -F(1+i) !minus sign
             end do
-         end do
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/))) then
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1
