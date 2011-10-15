@@ -21,12 +21,11 @@ if sys.version >= '2.4':
             # exists - then this is a release or an exported source code
             # in this case do not regenerate the file but exit
             # miro: leave message
-            sys.exit("--  not regenerating existing file git_revision_info.F90, please check its content")
+            sys.exit()
         else: # file does not exist, or is of zero size - generate it with 'unknown' parameters
             last_commit_rev = 'unknown'
             last_commit_author = 'unknown'
             last_commit_time = 'unknown'
-            print >> sys.stderr,'-- file git_revision_info.F90 generated with unknown git-repo parameters'
     else:
         last_commit_rev    = string.replace(stdout.splitlines()[0], 'commit ', '')
         last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[1]), 'Author: ', '')
