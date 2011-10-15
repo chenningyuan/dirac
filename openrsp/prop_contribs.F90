@@ -15,6 +15,7 @@ module prop_contribs
 
 #ifdef PRG_DIRAC
    use dirac_interface
+   use openrsp_cfg
    use openrsp_interface_1el
    use openrsp_interface_2el
    use character_processing
@@ -430,7 +431,7 @@ contains
          end do
       else if (np==1 .and. p(1)=='PNC') then
          A(1) = tiny(0.0d0)*D(1)
-         call get_fc_integrals(A(1)%nrow, A(1)%elms, 4, .false., 0, 0)
+         call get_fc_integrals(A(1)%nrow, A(1)%elms, openrsp_cfg_pnc_center, .false., 0, 0)
          E(1) = tr(A(1),D(1))
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='EL') then
@@ -726,7 +727,7 @@ contains
          do j = 0, dp(2)-1 !EL indices
             do i = 0, dp(1)-1 !GEO indices
                A(1) = tiny(0.0d0)*D(1)
-               call get_fc_integrals(A(1)%nrow, A(1)%elms, 4, .true., 1, 1)
+               call get_fc_integrals(A(1)%nrow, A(1)%elms, openrsp_cfg_pnc_center, .true., 1, 1)
                do k = 0, max(0,nd-1) !density indices
                  !E(1+i+dp(1)*(j+dp(2)*k)) = -tr(A(1), D(k+1)) !minus sign
                   E(1+i+dp(1)*(j+dp(2)*k)) =  tr(A(1), D(k+1))
@@ -1552,7 +1553,7 @@ contains
 #endif
       else if (np==1 .and. p(1)=='PNC') then
          F(i+1) = tiny(0.0d0)*S0
-         call get_fc_integrals(F(i+1)%nrow, F(i+1)%elms, 4, .false., 0, 0)
+         call get_fc_integrals(F(i+1)%nrow, F(i+1)%elms, openrsp_cfg_pnc_center, .false., 0, 0)
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='VEL') then
          do i = 0, dp(1)-1
@@ -1725,7 +1726,7 @@ contains
          do j = 0, dp(2)-1 !EL indices
             do i = 0, dp(1)-1 !GEO indices
                F(1+i+dp(1)*j) = tiny(0.0d0)*S0
-               call get_fc_integrals(F(1+i+dp(1)*j)%nrow, F(1+i+dp(1)*j)%elms, 4, .true., 1, 1)
+               call get_fc_integrals(F(1+i+dp(1)*j)%nrow, F(1+i+dp(1)*j)%elms, openrsp_cfg_pnc_center, .true., 1, 1)
                F(1+i+dp(1)*j) = -F(1+i+dp(1)*j) !minus sign
             end do
          end do
