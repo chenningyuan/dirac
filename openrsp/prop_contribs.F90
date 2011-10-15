@@ -11,6 +11,7 @@
 module prop_contribs
 
    use matrix_defop
+   use fc
 
 #ifdef PRG_DIRAC
    use dirac_interface
@@ -152,10 +153,11 @@ module prop_contribs
    !> ajt may10: FREQ is also a ZERO (no) perturbation, and is introduced to
    !>            allow the same code to contract response functions and
    !>            frequency-differentiated response functions.
-   type(prop_field_info) :: field_list(13) = &                         !nc an ba ln qu
+   type(prop_field_info) :: field_list(14) = &                         !nc an ba ln qu
       (/prop_field_info('EXCI', 'Generalized "excitation" field'      , 1, F, F, T, T), &
         prop_field_info('FREQ', 'Generalized "freqency" field'        , 1, F, F, T, T), &
         prop_field_info('AUX*', 'Auxiliary integrals on file'         , 1, F, F, T, F), &
+        prop_field_info('PNC' , 'PNC'                                 , 1, F, F, T, F), &
         prop_field_info('EL'  , 'Electric field'                      , 3, F, F, T, F), &
         prop_field_info('VEL' , 'Velocity'                            , 3, T, F, T, F), &
         prop_field_info('MAGO', 'Magnetic field w/o. London orbitals' , 3, T, F, F, T), &
@@ -426,6 +428,10 @@ contains
          do j=0, max(0,nd-1)
             E(1+j) = tr(A(1),D(1+j))
          end do
+      else if (np==1 .and. p(1)=='PNC') then
+         A(1) = tiny(0.0d0)*D(1)
+         call get_fc_integrals(A(1)%nrow, A(1)%elms, 4, .false., 0, 0)
+         E(1) = tr(A(1),D(1))
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='EL') then
          ! contract -dipole integrals '?DIPLEN ' with densities
@@ -715,6 +721,18 @@ contains
             end do
             deallocate(RR)
          end if
+      else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
+         !contract perturbed densities with -dipole gradient integrals
+         do j = 0, dp(2)-1 !EL indices
+            do i = 0, dp(1)-1 !GEO indices
+               A(1) = tiny(0.0d0)*D(1)
+               call get_fc_integrals(A(1)%nrow, A(1)%elms, 4, .true., 1, 1)
+               do k = 0, max(0,nd-1) !density indices
+                 !E(1+i+dp(1)*(j+dp(2)*k)) = -tr(A(1), D(k+1)) !minus sign
+                  E(1+i+dp(1)*(j+dp(2)*k)) =  tr(A(1), D(k+1))
+               end do
+            end do
+         end do
       ! GEO MAGO has no nd==0 because MAGO anti-symmetric
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/)) .and. nd/=0) then
          do j = 0, dp(2)-1
@@ -1532,6 +1550,9 @@ contains
 !> \todo #endif
          end do
 #endif
+      else if (np==1 .and. p(1)=='PNC') then
+         F(i+1) = tiny(0.0d0)*S0
+         call get_fc_integrals(F(i+1)%nrow, F(i+1)%elms, 4, .false., 0, 0)
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='VEL') then
          do i = 0, dp(1)-1
@@ -1697,6 +1718,14 @@ contains
                call load_oneint(prefix_zeros(c(1)+i,3) // 'DPG ' &
                                 // xyz(c(2)+j), F(1+i+dp(1)*j), S0)
 #endif
+               F(1+i+dp(1)*j) = -F(1+i+dp(1)*j) !minus sign
+            end do
+         end do
+      else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
+         do j = 0, dp(2)-1 !EL indices
+            do i = 0, dp(1)-1 !GEO indices
+               F(1+i+dp(1)*j) = tiny(0.0d0)*S0
+               call get_fc_integrals(F(1+i+dp(1)*j)%nrow, F(1+i+dp(1)*j)%elms, 4, .true., 1, 1)
                F(1+i+dp(1)*j) = -F(1+i+dp(1)*j) !minus sign
             end do
          end do
