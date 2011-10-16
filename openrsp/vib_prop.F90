@@ -1148,7 +1148,10 @@ contains
          ix = 3*(iatom - 1) + 1
          iy = 3*(iatom - 1) + 2
          iz = 3*(iatom - 1) + 3
-         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom),    &
+                                   real(epnc_gradient(ix, 1)), &
+                                   real(epnc_gradient(iy, 1)), &
+                                   real(epnc_gradient(iz, 1))
       end do
 
       epnc_gradient = epnc_gradient*qw*dfac
@@ -1157,7 +1160,10 @@ contains
          ix = 3*(iatom - 1) + 1
          iy = 3*(iatom - 1) + 2
          iz = 3*(iatom - 1) + 3
-         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom),    &
+                                   real(epnc_gradient(ix, 1)), &
+                                   real(epnc_gradient(iy, 1)), &
+                                   real(epnc_gradient(iz, 1))
       end do
 
       epnc_gradient = epnc_gradient*hartree2hz
@@ -1166,7 +1172,10 @@ contains
          ix = 3*(iatom - 1) + 1
          iy = 3*(iatom - 1) + 2
          iz = 3*(iatom - 1) + 3
-         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(epnc_gradient(ix, 1)), real(epnc_gradient(iy, 1)), real(epnc_gradient(iz, 1))
+         write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom),    &
+                                   real(epnc_gradient(ix, 1)), &
+                                   real(epnc_gradient(iy, 1)), &
+                                   real(epnc_gradient(iz, 1))
       end do
 
       call prsymb(unit_output, '-', 46, 0)

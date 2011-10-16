@@ -6,8 +6,8 @@ module fc
 !           for E_PNC calculations and not for FC
 
    use interface_ao
-   use interface_mo
    use ao_eval
+   use matrix_defop
 
    implicit none
 
@@ -18,15 +18,13 @@ module fc
 contains
 
    subroutine get_fc_integrals(           &
-                               mat_dim,   &
-                               mat,       &
+                               M,         &
                                center,    &
                                component  &
                               )
 
 !     --------------------------------------------------------------------------
-      integer, intent(in)           :: mat_dim
-      real(8)                       :: mat(*)
+      type(matrix)                  :: M
       integer, intent(in)           :: center
       integer, intent(in), optional :: component
 !     --------------------------------------------------------------------------
@@ -39,6 +37,10 @@ contains
       integer                       :: nr1, nr2, st1, st2
       real(8)                       :: d
 !     --------------------------------------------------------------------------
+#include "dcbbas.h"
+
+      call init_mat(M, ntbas(0), ntbas(0))
+      M%elms = 0.0d0
 
 !     if you have 4 atoms, then there are 12 components
 !     code below figures out the center and direction based on component
@@ -53,8 +55,7 @@ contains
       end if
 
       call interface_ao_read(.false.)
-      call interface_mo_read()
-      call ao_eval_init(1, 0, .true.)
+      call ao_eval_init(1, 0, .false.)
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -73,15 +74,27 @@ contains
                if (take_derv) then
                   d = 0.0d0
                   if (ao_center(i) == center_d) then
-                     d = d - ao(1, ao_off_g1_m0(ixyz_d, 0) + i)*ao(1, j)
+                     if (ao_center(i) /= center) then
+                        d = d - ao(1, ao_off_g1_m0(ixyz_d, 0) + i)*ao(1, j)
+                     else
+                        if (ao_center(i) /= ao_center(j)) then
+                           d = d + ao(1, ao_off_g1_m0(ixyz_d, 0) + j)*ao(1, i)
+                        end if
+                     end if
                   end if
                   if (ao_center(j) == center_d) then
-                     d = d - ao(1, ao_off_g1_m0(ixyz_d, 0) + j)*ao(1, i)
+                     if (ao_center(j) /= center) then
+                        d = d - ao(1, ao_off_g1_m0(ixyz_d, 0) + j)*ao(1, i)
+                     else
+                        if (ao_center(i) /= ao_center(j)) then
+                           d = d + ao(1, ao_off_g1_m0(ixyz_d, 0) + i)*ao(1, j)
+                        end if
+                     end if
                   end if
                else
                   d = ao(1, i)*ao(1, j)
                end if
-               mat((i-1)*mat_dim + j) = d
+               M%elms((i-1)*M%nrow + j) = d
             end do
          end do
       end do
