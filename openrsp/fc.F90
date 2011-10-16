@@ -6,7 +6,6 @@ module fc
 !           for E_PNC calculations and not for FC
 
    use interface_ao
-   use interface_mo
    use ao_eval
    use matrix_defop
 
@@ -56,8 +55,7 @@ contains
       end if
 
       call interface_ao_read(.false.)
-      call interface_mo_read()
-      call ao_eval_init(1, 0, .true.)
+      call ao_eval_init(1, 0, .false.)
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
