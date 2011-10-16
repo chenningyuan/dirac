@@ -42,7 +42,7 @@ foreach( d ${DirDefs} )
     message( STATUS "Found Define: " ${d} )
 endforeach()
 
-message("GIT_REVISION               ${GIT_REVISION}               ")
+message("GIT_REVISION               ${LAST_GIT_REVISION}               ")
 
 ## check integer setting of OpenMPI Fortran compiler, mpif90
 ## TODO: do the real check, not only print warning message !
