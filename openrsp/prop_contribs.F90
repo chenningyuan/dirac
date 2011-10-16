@@ -1720,7 +1720,6 @@ contains
       else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
             do i = 0, dp(1)-1 !GEO indices
                call get_fc_integrals(F(1+i), openrsp_cfg_pnc_center, component=i+1)
-               F(1+i) = -F(1+i) !minus sign
             end do
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/))) then
          do j = 0, dp(2)-1
