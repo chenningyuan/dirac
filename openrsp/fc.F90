@@ -8,6 +8,7 @@ module fc
    use interface_ao
    use interface_mo
    use ao_eval
+   use matrix_defop
 
    implicit none
 
@@ -18,15 +19,13 @@ module fc
 contains
 
    subroutine get_fc_integrals(           &
-                               mat_dim,   &
-                               mat,       &
+                               M,         &
                                center,    &
                                component  &
                               )
 
 !     --------------------------------------------------------------------------
-      integer, intent(in)           :: mat_dim
-      real(8)                       :: mat(*)
+      type(matrix)                  :: M
       integer, intent(in)           :: center
       integer, intent(in), optional :: component
 !     --------------------------------------------------------------------------
@@ -39,6 +38,10 @@ contains
       integer                       :: nr1, nr2, st1, st2
       real(8)                       :: d
 !     --------------------------------------------------------------------------
+#include "dcbbas.h"
+
+      call init_mat(M, ntbas(0), ntbas(0))
+      M%elms = 0.0d0
 
 !     if you have 4 atoms, then there are 12 components
 !     code below figures out the center and direction based on component
@@ -81,7 +84,7 @@ contains
                else
                   d = ao(1, i)*ao(1, j)
                end if
-               mat((i-1)*mat_dim + j) = d
+               M%elms((i-1)*M%nrow + j) = d
             end do
          end do
       end do

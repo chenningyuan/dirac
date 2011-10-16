@@ -430,8 +430,7 @@ contains
             E(1+j) = tr(A(1),D(1+j))
          end do
       else if (np==1 .and. p(1)=='PNC') then
-         A(1) = tiny(0.0d0)*D(1)
-         call get_fc_integrals(A(1)%nrow, A(1)%elms, openrsp_cfg_pnc_center)
+         call get_fc_integrals(A(1), openrsp_cfg_pnc_center)
          E(1) = tr(A(1),D(1))
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='EL') then
@@ -724,8 +723,7 @@ contains
          end if
       else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
             do i = 0, dp(1)-1 !GEO indices
-               A(1) = tiny(0.0d0)*D(1)
-               call get_fc_integrals(A(1)%nrow, A(1)%elms, openrsp_cfg_pnc_center, component=i+1)
+               call get_fc_integrals(A(1), openrsp_cfg_pnc_center, component=i+1)
                do k = 0, max(0,nd-1) !density indices
                   E(1+i+dp(1)*(dp(2)*k)) = tr(A(1), D(k+1))
                end do
@@ -1548,8 +1546,9 @@ contains
          end do
 #endif
       else if (np==1 .and. p(1)=='PNC') then
-         F(i+1) = tiny(0.0d0)*S0
-         call get_fc_integrals(F(i+1)%nrow, F(i+1)%elms, openrsp_cfg_pnc_center)
+         do i = 0, dp(1)-1
+            call get_fc_integrals(F(i+1), openrsp_cfg_pnc_center)
+         end do
 #ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='VEL') then
          do i = 0, dp(1)-1
@@ -1720,8 +1719,7 @@ contains
          end do
       else if (np==2 .and. all(p==(/'GEO','PNC'/))) then
             do i = 0, dp(1)-1 !GEO indices
-               F(1+i) = tiny(0.0d0)*S0
-               call get_fc_integrals(F(1+i)%nrow, F(1+i)%elms, openrsp_cfg_pnc_center, component=i+1)
+               call get_fc_integrals(F(1+i), openrsp_cfg_pnc_center, component=i+1)
                F(1+i) = -F(1+i) !minus sign
             end do
       else if (np==2 .and. all(p==(/'GEO ','MAGO'/))) then
