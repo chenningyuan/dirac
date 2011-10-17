@@ -1,4 +1,6 @@
 module localization
+
+use memory_allocator
 implicit none
 
 public :: ORBLOC, initialize_localization
@@ -120,7 +122,6 @@ contains
   !     Molecular orbital localization                                           !
   !                                                                              !
   !==============================================================================!
-  use memory_allocator
   implicit none
 
   ! Internal variables
@@ -130,7 +131,7 @@ contains
   character    :: daytid*24, hessian*4 = 'DIAG', conv*20 = 'No convergence after'
   logical      :: tobe, full, diagonly
 
-  integer*4 :: ifrp, ndimh, idum, itr, lupri, nish, norb, nucdep, maxref
+  integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
   real*8    :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
@@ -179,14 +180,15 @@ contains
 
   ! Memory allocation
   ndimh = 4 * ( nish*nish + nish ) / 2
+  ndimhr= ndimh - nish
   call alloc(scoef ,nish*nfbas(0)*4,   id='scoef  in orbloc')
   call alloc(scoefo,nish*nfbas(0)*4,   id='scoefo in orbloc')
   call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
   call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
   call alloc(hmat_c,ndimh,ndimh,2,     id='hmat_c in orbloc')
-  call alloc(hmat_r,ndimh,ndimh,       id='hmat_r in orbloc')
+  call alloc(hmat_r,ndimhr,ndimhr,     id='hmat_r in orbloc')
   call alloc(grad_c,ndimh,2,           id='grad_c in orbloc')
-  call alloc(grad_r,ndimh,             id='grad_r in orbloc')
+  call alloc(grad_r,ndimhr,            id='grad_r in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
   call alloc(pmat  ,nish,nish,4,nucdep,id='pmat   in orbloc')
 
@@ -245,7 +247,7 @@ contains
 
     call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
     call get_gradient(pmat,grad_c,grad_r,dnrmg)
-    call hdiag(hmat_r,nish)
+    call hdiag(hmat_r)
     if(full)then
       call getk_full(pmat,xkappa,hmat_r,grad_r,dnrmk)
       call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
@@ -827,7 +829,6 @@ contains
   !                                H * K = - g*                                  !
   !                                                                              !
   !******************************************************************************!
-  use memory_allocator
   implicit none
 
   ! External variables
@@ -940,7 +941,6 @@ contains
   !  / A   B  \   -->   / A^R + B^I   B^I - A^I \      / K^R \      / g^R \      !
   !  \ B*  A* /   -->   \ B^I + A^I   A^R - B^I /      \ K^I /      \-g^I /      !
   !******************************************************************************!
-  use memory_allocator
   implicit none
 
   ! External variables
@@ -1050,7 +1050,6 @@ contains
   !  Construction of the XKAPPA matrix using full hessian                        !
   !                                                                              !
   !******************************************************************************!
-  use memory_allocator
   implicit none
 
   ! External variables
@@ -1080,24 +1079,18 @@ contains
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
-  ni12   = size(hmat,1) / 4
-  nhtmp  = size(hmat,1) - ni
+  ni12   = (size(hmat,1)+ni) / 4
+  nhtmp  = size(hmat,1)
 
   call alloc(ipiv,nhtmp      ,id='ipiv in getk_full')
   call alloc(gtmp,nhtmp      ,id='gtmp in getk_full')
   call alloc(htmp,nhtmp,nhtmp,id='htmp in getk_full')
 
   ! prepare hessian for dgetrf
-  do i=1,nhtmp
-    do j=1,nhtmp
-      htmp(i,j) = hmat(i,j)
-    enddo
-  enddo
+  htmp(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
 
   ! prepare gradient for dgetrf
-  do i=1,nhtmp
-    gtmp(i) = - gradient(i)
-  enddo
+  gtmp(1:nhtmp) = - gradient(1:nhtmp)
 
   ! Solve linear set of equations
   call dgetrf(nhtmp,nhtmp,htmp,nhtmp,ipiv,ier)
@@ -1513,7 +1506,6 @@ contains
   !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
   !                                                                              ! 
   !******************************************************************************!
-  use memory_allocator
   implicit none
 
   ! External variables
@@ -1530,7 +1522,9 @@ contains
   real*8 :: pii, pjj, pkk, pll, sumdiag, sumnond, sumtmp
   real*8 :: dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
-  integer*4 :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
+  integer*4 :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimhr, ndimhc, ni12, lupri
+
+  real*8, allocatable, dimension(:,:) :: htmp
 
   !------------------------------------------------------------------------------!
   call qenter('get_hessian')
@@ -1543,8 +1537,9 @@ contains
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
-  ndimh  = size(hmat,1)
-  ni12   = ndimh / 4
+  ndimhc = size(hmat,1)
+  ndimhr = size(hmat_r,1)
+  ni12   = ndimhc / 4
 
   !------------------------------------------------------------------------------!
   !                 Unbared-unbared contribution to the hessian                  !
@@ -2237,21 +2232,23 @@ contains
   !------------------------------------------------------------------------------!
   ! Calculate real representation of hessian and get the diagonal dominance info !
   !------------------------------------------------------------------------------!
+  call alloc(htmp,ndimhc,ndimhc,id='htmp in get_hessian')
+
   sumdiag = d0
   sumnond = d0
   do i=1,2*ni12
     do j=1,2*ni12
       i1 = i + 2*ni12
       j1 = j + 2*ni12
-      hmat_r(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
-      hmat_r(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
-      hmat_r(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
-      hmat_r(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
-      sumnond = sumnond + dabs(hmat_r(i,j1)) + dabs(hmat_r(i1,j))
+      htmp(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
+      htmp(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
+      htmp(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
+      htmp(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
+      sumnond = sumnond + dabs(htmp(i,j1)) + dabs(htmp(i1,j))
       if(i==j)then
-        sumdiag = sumdiag + dabs(hmat_r(i,j)) + dabs(hmat_r(i1,j1))
+        sumdiag = sumdiag + dabs(htmp(i,j)) + dabs(htmp(i1,j1))
       else
-        sumnond = sumnond + dabs(hmat_r(i,j)) + dabs(hmat_r(i1,j1))
+        sumnond = sumnond + dabs(htmp(i,j)) + dabs(htmp(i1,j1))
       endif
     enddo
   enddo
@@ -2291,25 +2288,30 @@ contains
   endif
 
   ! remove redundant parameters (remove diagonal real parameters of unbared kappa)
-  do ij=1,ndimh
+  do ij=1,ndimhc
     kl = 1
     do k=1,ni
-      do j=kl+1,ndimh-k+1
-        hmat_r(ij,j-1) = hmat_r(ij,j)
+      do j=kl+1,ndimhc-k+1
+        htmp(ij,j-1) = htmp(ij,j)
       enddo
       kl = kl + ni - (k-1) - 1 ! diagonal
     enddo
   enddo
 
-  do ij=1,ndimh
+  do ij=1,ndimhc
     kl = 1
     do k=1,ni
-      do j=kl+1,ndimh-k+1
-        hmat_r(j-1,ij) = hmat_r(j,ij)
+      do j=kl+1,ndimhc-k+1
+        htmp(j-1,ij) = htmp(j,ij)
       enddo
       kl = kl + ni - (k-1) - 1 ! diagonal
     enddo
   enddo
+
+  ! copy result to hmat_r
+  hmat_r(1:ndimhr,1:ndimhr) = htmp(1:ndimhr,1:ndimhr)
+
+  call dealloc(htmp,id='htmp in get_hessian')
 
   call qexit('get_hessian')
 
@@ -2333,11 +2335,13 @@ contains
   real*8, dimension(:,:,:,:) ::  pmat
 
   ! Internal variables
+  integer*4 :: i, j, k, ij, i1, nucdep, ni, ndimg, ndimgr, ni12, lupri
+
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
 
   real*8 :: pij1, pij2, dtmp
 
-  integer*4 :: i, j, k, ij, i1, nucdep, ni, ndimg, ni12, lupri
+  real*8, allocatable, dimension(:) :: gtmp
 
   !------------------------------------------------------------------------------!
   call qenter('get_gradient')
@@ -2349,6 +2353,7 @@ contains
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
   ndimg  = size(grad_c,1)
+  ndimgr = size(grad_r,1)
   ni12   = ndimg / 4
 
   !------------------------------------------------------------------------------!
@@ -2395,20 +2400,26 @@ contains
   !------------------------------------------------------------------------------!
   !               Calculate real representation of the gradient                  !
   !------------------------------------------------------------------------------!
+  call alloc(gtmp,ndimg,id='gtmp in get_gradient')
   do i=1,2*ni12
     i1 = i + 2*ni12
-    grad_r(i ) =   grad_c(i,1)
-    grad_r(i1) = - grad_c(i,2)
+    gtmp(i ) =   grad_c(i,1)
+    gtmp(i1) = - grad_c(i,2)
   enddo
 
   ! remove redundant parameters (remove diagonal real parameters of unbared kappa)
   ij = 1
   do k=1,ni
     do j=ij+1,ndimg-k+1
-      grad_r(j-1) = grad_r(j)
+      gtmp(j-1) = gtmp(j)
     enddo
     ij = ij + ni - (k-1) - 1 ! diagonal
   enddo
+
+  ! copy result to grad_r
+  grad_r(1:ndimgr) = gtmp(1:ndimgr)
+
+  call dealloc(gtmp,id='gtmp in get_gradient')
 
   call qexit('get_gradient')
 
@@ -2424,7 +2435,6 @@ contains
   !                       (quadratic approximation)                              !
   !                                                                              !
   !******************************************************************************!
-  use memory_allocator
   implicit none
 
   ! External variables
@@ -2448,8 +2458,8 @@ contains
 
   ! Get some dimensions
   ni     = size(xkappa,1)
-  nhtmp  = size(hmat,1) - ni
-  ni12   = size(hmat,1) / 4
+  nhtmp  = size(hmat,1)
+  ni12   = (size(hmat,1)+ni) / 4
 
   call alloc(ktmp,nhtmp,      id='ktmp in exp_func')
   call alloc(htmp,nhtmp,nhtmp,id='htmp in exp_func')
@@ -2510,13 +2520,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,ni)
+  subroutine hdiag(hmat)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
   !                                                                              !
   !******************************************************************************!
-  use memory_allocator
   use matrix_defop
 ! implicit none
 
@@ -2524,7 +2533,6 @@ contains
 #include "dgroup.h"
 
   ! External variables
-  integer*4  :: ni
   real*8, allocatable, dimension(:,:) :: hmat
 
   ! Internal variables
@@ -2532,7 +2540,7 @@ contains
   real*8       :: dtmp, dmax, atmp, ctmp
 
   real*8, allocatable, dimension(:)   :: eval, work
-  real*8, allocatable, dimension(:,:) :: htmp, wtmp
+  real*8, allocatable, dimension(:,:) :: htmp
 
   type(matrix) :: A, B, C
 
@@ -2542,21 +2550,16 @@ contains
   lupri = var%lupri
 
   ! Get some dimensions
-  nhtmp = size(hmat,1) - ni
+  nhtmp = size(hmat,1)
   nb = ilaenv(1,'dsytrd','u',nhtmp,-1,-1,-1)
   lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
 
   call alloc(htmp,nhtmp,nhtmp,id='htmp in hdiag')
-  call alloc(wtmp,nhtmp,nhtmp,id='wtmp in hdiag')
   call alloc(eval,nhtmp,      id='eval in hdiag')
   call alloc(work,lwork,      id='work in hdiag')
 
   ! prepare htmp
-  do i=1,nhtmp
-    do j=1,nhtmp
-      htmp(i,j) = hmat(i,j)
-    enddo
-  enddo
+  htmp(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
 
   call dsyev('V','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
 ! call dsyev('N','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
@@ -2566,59 +2569,62 @@ contains
     stop
   endif
 
-  call init_mat(A,nhtmp,nhtmp,mz=1)
-  write(6,*) 'A',nhtmp,size(A%elms),A%mz
-
-  ij = 0
-  do j=1,nhtmp
-    do i=1,nhtmp
-      ij = ij + 1
-      A%elms(ij) = htmp(i,j)
-    enddo
-  enddo
-
-  B = tiny(0.0d0) * A
-! call init_mat(B,nhtmp,nhtmp,mz=1)
-  write(6,*) 'B',nhtmp,size(B%elms),B%mz
-
-  ij = 0
-  do j=1,nhtmp
-    do i=1,nhtmp
-      ij = ij + 1
-      B%elms(ij) = hmat(i,j)
-    enddo
-  enddo
-
-! call init_mat(C,B,mz=1)
-! write(6,*) 'C',nhtmp,size(C%elms),C%mz
-
-  C = B * A
-  B = dag(A) * C
-! C = dag(A) * B * A
-! B = C
-
-  write(6,*) 'C',nhtmp,size(C%elms),C%mz
-
-  ij = 0
-  dtmp = 0.0d0
-  do j=1,nhtmp
-    do i=1,nhtmp
-      ij = ij + 1
-      if(i==j)then
-        write(6,*) eval(i),B%elms(ij)
-        dtmp = dtmp + dabs(eval(i) - B%elms(ij))
-      endif
-    enddo
-  enddo
-  write(6,*) 'dtmp',dtmp
-
-  stop
+!  call init_mat(A,nhtmp,nhtmp,mz=1)
+!  write(6,*) 'A',nhtmp,size(A%elms),A%mz
+!
+!  ij = 0
+!  do j=1,nhtmp
+!    do i=1,nhtmp
+!      ij = ij + 1
+!      A%elms(ij) = htmp(i,j)
+!    enddo
+!  enddo
+!
+!  B = tiny(0.0d0) * A
+!! call init_mat(B,nhtmp,nhtmp,mz=1)
+!  write(6,*) 'B',nhtmp,size(B%elms),B%mz
+!
+!  ij = 0
+!  do j=1,nhtmp
+!    do i=1,nhtmp
+!      ij = ij + 1
+!      B%elms(ij) = hmat(i,j)
+!    enddo
+!  enddo
+!
+!! call init_mat(C,B,mz=1)
+!! write(6,*) 'C',nhtmp,size(C%elms),C%mz
+!
+!  C = B * A
+!  B = dag(A) * C
+!! C = dag(A) * B * A
+!! B = C
+!
+!  write(6,*) 'C',nhtmp,size(C%elms),C%mz
+!
+!  ij = 0
+!  dtmp = 0.0d0
+!  do j=1,nhtmp
+!    do i=1,nhtmp
+!      ij = ij + 1
+!      if(i==j)then
+!        write(6,*) eval(i),B%elms(ij)
+!        dtmp = dtmp + dabs(eval(i) - B%elms(ij))
+!      endif
+!    enddo
+!  enddo
+!  write(6,*) 'dtmp',dtmp
+!
+!  stop
 
   np=0; nm=0; nb=0
   do i=1,nhtmp
-    if(eval(i) < 0.0d0)nm = nm + 1
-    if(eval(i) > 0.0d0)np = np + 1
-    if(dabs(eval(i)) < 1.0d-10)nb = nb + 1
+    if(dabs(eval(i)) < 1.0d-10)then
+      nb = nb + 1
+    else
+      if(eval(i) < 0.0d0)nm = nm + 1
+      if(eval(i) > 0.0d0)np = np + 1
+    endif
   enddo
 
   write(lupri,'(a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
@@ -2626,7 +2632,6 @@ contains
 
   !------------------------------------------------------------------------------!
   call dealloc(htmp,id='htmp in hdiag')
-  call dealloc(htmp,id='wtmp in hdiag')
   call dealloc(eval,id='eval in hdiag')
   call dealloc(work,id='work in hdiag')
 
