@@ -138,7 +138,7 @@ contains
   real*8    :: timend, time, timstr, second, toterg, totdiag, totnond
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
-  real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo, grad_r
+  real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo, grad_r, eval, grad_t
   real*8,    allocatable, dimension(:,:)     :: grad_c, hmat_r
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
@@ -189,6 +189,8 @@ contains
   call alloc(hmat_r,ndimhr,ndimhr,     id='hmat_r in orbloc')
   call alloc(grad_c,ndimh,2,           id='grad_c in orbloc')
   call alloc(grad_r,ndimhr,            id='grad_r in orbloc')
+  call alloc(eval  ,ndimhr,            id='eval   in orbloc')
+  call alloc(grad_t,ndimhr,            id='grad_t in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
   call alloc(pmat  ,nish,nish,4,nucdep,id='pmat   in orbloc')
 
@@ -247,7 +249,7 @@ contains
 
     call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
     call get_gradient(pmat,grad_c,grad_r,dnrmg)
-    call hdiag(hmat_r)
+    call hdiag(hmat_r,grad_r,eval,grad_t)
     if(full)then
       call getk_full(pmat,xkappa,hmat_r,grad_r,dnrmk)
       call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
@@ -305,6 +307,8 @@ contains
   call dealloc(hmat_r,id='hmat_r in orbloc')
   call dealloc(grad_c,id='grad_c in orbloc')
   call dealloc(grad_r,id='grad_r in orbloc')
+  call dealloc(eval  ,id='eval   in orbloc')
+  call dealloc(grad_t,id='grad_t in orbloc')
   call dealloc(cmo   ,id='cmo    in orbloc')
 
   call dealloc(nfnuc ,id='nfnuc  in orbloc')
@@ -2520,29 +2524,24 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat)
+  subroutine hdiag(hmat,gradient,eval,grad_t)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
   !                                                                              !
   !******************************************************************************!
-  use matrix_defop
-! implicit none
-
-#include "implicit.h"
-#include "dgroup.h"
+  implicit none
 
   ! External variables
+  real*8, allocatable, dimension(:)   :: gradient, eval, grad_t
   real*8, allocatable, dimension(:,:) :: hmat
 
   ! Internal variables
   integer*4    :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
   real*8       :: dtmp, dmax, atmp, ctmp
 
-  real*8, allocatable, dimension(:)   :: eval, work
+  real*8, allocatable, dimension(:)   :: work
   real*8, allocatable, dimension(:,:) :: htmp
-
-  type(matrix) :: A, B, C
 
   !------------------------------------------------------------------------------!
   call qenter('hdiag')
@@ -2555,7 +2554,6 @@ contains
   lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
 
   call alloc(htmp,nhtmp,nhtmp,id='htmp in hdiag')
-  call alloc(eval,nhtmp,      id='eval in hdiag')
   call alloc(work,lwork,      id='work in hdiag')
 
   ! prepare htmp
@@ -2569,53 +2567,13 @@ contains
     stop
   endif
 
-!  call init_mat(A,nhtmp,nhtmp,mz=1)
-!  write(6,*) 'A',nhtmp,size(A%elms),A%mz
-!
-!  ij = 0
-!  do j=1,nhtmp
-!    do i=1,nhtmp
-!      ij = ij + 1
-!      A%elms(ij) = htmp(i,j)
-!    enddo
-!  enddo
-!
-!  B = tiny(0.0d0) * A
-!! call init_mat(B,nhtmp,nhtmp,mz=1)
-!  write(6,*) 'B',nhtmp,size(B%elms),B%mz
-!
-!  ij = 0
-!  do j=1,nhtmp
-!    do i=1,nhtmp
-!      ij = ij + 1
-!      B%elms(ij) = hmat(i,j)
-!    enddo
-!  enddo
-!
-!! call init_mat(C,B,mz=1)
-!! write(6,*) 'C',nhtmp,size(C%elms),C%mz
-!
-!  C = B * A
-!  B = dag(A) * C
-!! C = dag(A) * B * A
-!! B = C
-!
-!  write(6,*) 'C',nhtmp,size(C%elms),C%mz
-!
-!  ij = 0
-!  dtmp = 0.0d0
-!  do j=1,nhtmp
-!    do i=1,nhtmp
-!      ij = ij + 1
-!      if(i==j)then
-!        write(6,*) eval(i),B%elms(ij)
-!        dtmp = dtmp + dabs(eval(i) - B%elms(ij))
-!      endif
-!    enddo
-!  enddo
-!  write(6,*) 'dtmp',dtmp
-!
-!  stop
+  ! calculate transformed gradient: tilde{g} = U^T * g
+  grad_t(:) = 0.0d0
+  do i=1,nhtmp
+    do j=1,nhtmp
+      grad_t(i) = grad_t(i) + htmp(j,i) * gradient(j)
+    enddo
+  enddo
 
   np=0; nm=0; nb=0
   do i=1,nhtmp
@@ -2632,7 +2590,6 @@ contains
 
   !------------------------------------------------------------------------------!
   call dealloc(htmp,id='htmp in hdiag')
-  call dealloc(eval,id='eval in hdiag')
   call dealloc(work,id='work in hdiag')
 
   call qexit('hdiag')
