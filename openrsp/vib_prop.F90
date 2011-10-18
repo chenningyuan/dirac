@@ -1121,7 +1121,7 @@ contains
 
       call prop_oneave(mol, S, (/'PNC'/), (/D/), (/nc/), epnc)
       call pert_dens(mol, S, (/'PNC'/), (/nc/), (/D/), (/F/), Dp(:), Fp(:))
-      call prop_oneave(mol, S, (/'GEO','PNC '/), (/D/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
+      call prop_oneave(mol, S, (/'GEO', 'PNC'/), (/D/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
       call prop_twoave(mol, (/'GEO'/), (/D, Dp(:)/), (/nr_atoms*3, nc/), epnc_gradient(:, :))
       do i = 1, nc
          DFDp(i) = Dp(i)*F*D + D*Fp(i)*D + D*F*Dp(i)
