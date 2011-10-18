@@ -15,6 +15,8 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
+
+
 # set build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE
@@ -304,6 +306,9 @@ foreach(
     )
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
         SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
+    endif()
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
     target_link_libraries(
         ${EXECUTABLE}
