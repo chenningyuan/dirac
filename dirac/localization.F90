@@ -7,6 +7,7 @@ public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
 private :: getk_cdiag, getk_rdiag, getk_full, get_hessian, get_gradient, exp_func, hdiag
+private :: get_mu
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
@@ -135,7 +136,7 @@ contains
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
   real*8    :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
-  real*8    :: timend, time, timstr, second, toterg, totdiag, totnond
+  real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tregion
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
   real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo, grad_r, eval, grad_t
@@ -146,6 +147,7 @@ contains
   !------------------------------------------------------------------------------!
   call qenter('orbloc')
 
+  ! Set some parameters
   ifrp   = 1
   lupri  = var%lupri
   nish   = var%nish(ifrp)
@@ -153,21 +155,24 @@ contains
   nucdep = var%nucdep
   maxref = var%maxref
   full   = loc%auto
-  diagonly = .false.
-  if(loc%hesthr < loc%thrloc) diagonly = .true.
-
-  ! TMP print
-  write(6,*) 'lupri =',lupri
-  write(6,*) 'nish  =',nish
-  write(6,*) 'norb  =',norb
-  write(6,*) 'nucdep=',nucdep
-  write(6,*) 'maxref=',maxref
-  write(6,*) 'full  =',full
-  write(6,*) 'hesthr=',loc%hesthr
-  write(6,*) 'thrloc=',loc%thrloc
 
   nfbas(:)    = var%nfbas(ifrp,:)
   ipqtoq(:,:) = var%ipqtoq(:,:)
+
+  diagonly = .false.
+  if(loc%hesthr < loc%thrloc) diagonly = .true.
+
+  tregion = d1
+
+  ! TMP print
+  write(lupri,*) 'lupri =',lupri
+  write(lupri,*) 'nish  =',nish
+  write(lupri,*) 'norb  =',norb
+  write(lupri,*) 'nucdep=',nucdep
+  write(lupri,*) 'maxref=',maxref
+  write(lupri,*) 'full  =',full
+  write(lupri,*) 'hesthr=',loc%hesthr
+  write(lupri,*) 'thrloc=',loc%thrloc
 
   call titler('Molecular orbital localization','*',122)
 
@@ -250,6 +255,7 @@ contains
     call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
     call get_gradient(pmat,grad_c,grad_r,dnrmg)
     call hdiag(hmat_r,grad_r,eval,grad_t)
+    shift = get_mu(eval,grad_t,tregion)
     if(full)then
       call getk_full(pmat,xkappa,hmat_r,grad_r,dnrmk)
       call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
@@ -2256,7 +2262,7 @@ contains
       endif
     enddo
   enddo
-  write(6,'(a,5d11.2)')' Real hessian diag vs. non-diag: ',sumdiag,sumnond
+  write(lupri,'(a,5d11.2)')' Real hessian diag vs. non-diag: ',sumdiag,sumnond
 
   ! TMP: check properties of hessian
   dtmp1 = d0; dtmp2 = d0; dtmp3 = d0; dtmp4 = d0; dtmp5 = d0; dtmp6 = d0
@@ -2283,12 +2289,12 @@ contains
                   + dabs(hmat(i,i+2*ni12,2) + hmat(i+2*ni12,i,2))
   enddo
   if((dtmp1/=d0).or.(dtmp2/=d0).or.(dtmp3/=d0).or.(dtmp4/=d0).or.(dtmp5/=d0).or.(dtmp6/=d0))then
-    write(6,*) 'symetry A_R',dtmp1
-    write(6,*) 'anti-symetry A_I',dtmp2
-    write(6,*) 'symetry B_R',dtmp3
-    write(6,*) 'symetry B_I',dtmp4
-    write(6,*) 'A and A*',dtmp5
-    write(6,*) 'B and B*',dtmp6
+    write(lupri,*) 'symetry A_R',dtmp1
+    write(lupri,*) 'anti-symetry A_I',dtmp2
+    write(lupri,*) 'symetry B_R',dtmp3
+    write(lupri,*) 'symetry B_I',dtmp4
+    write(lupri,*) 'A and A*',dtmp5
+    write(lupri,*) 'B and B*',dtmp6
   endif
 
   ! remove redundant parameters (remove diagonal real parameters of unbared kappa)
@@ -2382,7 +2388,7 @@ contains
     enddo
   enddo
 
-  write(6,*)
+  write(lupri,*)
   write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
   write(lupri,'(9d12.4)') (grad_c(j,1),j=1,ni12)
   write(lupri,*)
@@ -2575,6 +2581,7 @@ contains
     enddo
   enddo
 
+  ! count number of positive, negative and zero eigenvalues
   np=0; nm=0; nb=0
   do i=1,nhtmp
     if(dabs(eval(i)) < 1.0d-10)then
@@ -2597,5 +2604,108 @@ contains
   !------------------------------------------------------------------------------!
 
   end subroutine hdiag
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  function get_mu(eval,grad_t,tregion)
+  !******************************************************************************!
+  !                                                                              !
+  !                   Calculate level-shift parameter mu                         !
+  !                                                                              !
+  !          tregion = sqrt{ sum{ (grad_t)^2_i / (eval_i-shift)^2  }  }          !
+  !                                                                              !
+  !******************************************************************************!
+  implicit none
+
+  ! External variables
+  real*8 :: tregion, get_mu
+  real*8, allocatable, dimension(:) :: eval, grad_t
+
+  ! Internal variables
+  integer*4    :: i, j, k, ndim, lupri, imax
+  real*8       :: tcurr, xcurr, tresh, xmax, xmin
+  real*8, parameter :: d2 = 2.0d0
+
+  !------------------------------------------------------------------------------!
+  call qenter('get_mu')
+
+  lupri = var%lupri
+
+  ! Get some dimensions
+  ndim = size(eval,1)
+
+  ! initialization
+  imax  = 10000
+  tresh = 1.0d-7 * tregion
+  xmax  = eval(ndim) + 0.1d0
+  xmin  = eval(ndim)
+  tcurr = f(xmax)
+
+  ! find upper boundary if necessary
+  i = 0
+  if(tcurr > tregion)then
+    do
+      i = i + 1
+      if(i > imax)then
+        write(lupri,'(a)')' WARNING: Maximum number of iteration reached in get_mu(1)!!!'
+        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmax) =',tcurr,' tregion =',tregion
+        exit
+      endif
+      xmin = xmax
+      xmax = d2*xmax - xmin
+      tcurr = f(xmax)
+      if(tcurr < tregion)exit
+    enddo
+  endif 
+
+  i = 0
+  do
+  i = i + 1
+  if(i > imax)then
+    write(lupri,'(a)')' WARNING: Maximum number of iteration reached in get_mu(2)!!!'
+    write(lupri,'(10x,a,d12.4,a,d12.4)')&
+      'h(desired) =',tregion,' |h(desired)-h(current)| =',dabs(tregion - tcurr)
+    exit
+  endif
+
+  if(dabs(tcurr-tregion) < tresh) exit
+
+  xcurr = (xmax+xmin)/d2
+  tcurr = f(xcurr)
+
+  if(tcurr > tregion) xmin = xcurr
+  if(tcurr < tregion) xmax = xcurr
+
+  enddo
+
+  get_mu = xcurr
+
+  !------------------------------------------------------------------------------!
+
+  call qexit('get_mu')
+
+  !------------------------------------------------------------------------------!
+
+  contains
+
+    function f(x)
+    implicit none
+    integer*4 :: ii
+    real*8    :: x, f
+
+    f = 0.0d0
+    do ii=1,ndim
+      if(dabs(eval(ii) - x) < 1.0d-12)then
+        write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
+        write(lupri,'(10x,a,i4,a,d12.4,a,d12.4)')'i=',ii,' mu =',x,' e_i =',eval(ii)
+      endif
+      f = f + grad_t(ii) * grad_t(ii) / ((eval(ii) - x) * (eval(ii) - x))
+    enddo
+    f = dsqrt(f)
+
+    end function f
+
+  end function get_mu
 
 end module localization
