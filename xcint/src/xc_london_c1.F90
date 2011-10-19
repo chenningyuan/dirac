@@ -21,6 +21,7 @@
 
 module xc_london_c1
 
+#ifdef MOD_UNRELEASED
 
 ! radovan: this is the "equation on paper approach" to LAO XC
 !
@@ -346,4 +347,5 @@ contains
 
    end subroutine
 
+#endif /* #ifdef MOD_UNRELEASED */
 end module
