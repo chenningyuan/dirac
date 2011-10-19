@@ -23,6 +23,7 @@ sh ln -f -s cf.O DFO1AT
 H2O.inp H2O.mol --outcmo
 
 H2Olocprj.inp H2O.mol --incmo --copy="DFO1AT DFH1AT DFH2AT"
+H2Olocprj_full.inp H2O.mol --incmo --copy="DFO1AT DFH1AT DFH2AT"
 
 # Clean after yourself
 sh rm -f cf.C cf.H cf.O DFCOEF DFC1AT DFO1AT DFH1AT DFH2AT DFH3AT DFH4AT 
