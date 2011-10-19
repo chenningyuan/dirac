@@ -825,8 +825,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if options.dest_mpi_workdir_argument:
             self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
 
-        # set parallel run if both --mpi=xxx and --mpirun=xxx arguments are set
-        if options.dest_mpi and options.dest_mpirun:
+        if options.dest_mpi:
             self.nr_proc      = int(options.dest_mpi)
             self.parallel_run = True
 
