@@ -1118,6 +1118,7 @@ contains
 
 
 
+#ifdef MOD_UNRELEASED
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
@@ -1189,6 +1190,7 @@ contains
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
         end if
+#endif /* #ifdef MOD_UNRELEASED */
 
 
 !       linear response
