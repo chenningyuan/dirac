@@ -347,7 +347,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (MOLFLD_FOUND) THEN
         WRITE(LUPRI,'(2X,A,A4)')
-     & 'The SS-block of the potential energy matrix and (if present) ',
+     & 'The SS-block of the potential energy matrix and (if present)'//
      & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
       ELSE
         WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
