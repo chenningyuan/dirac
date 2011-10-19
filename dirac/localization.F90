@@ -28,8 +28,8 @@ type :: external_variales
   integer*4 :: maxref
   real*8    :: prothr
   logical   :: ownbas
-  character*6  :: reffil(15)    ! reffil(maxref)    \
-  character*72 :: vecref(2,15)  ! vecref(2,maxref)  /  see dcbprj.h
+  character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
+  character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
 end type external_variales
 
 type( localization_flags ), private :: loc
@@ -842,7 +842,7 @@ contains
   implicit none
 
   ! External variables
-  integer*4, dimension(:,:) :: ipqtoq
+  integer*4, dimension(4,0:7) :: ipqtoq
 
   real*8 :: dnrm
 
@@ -954,7 +954,7 @@ contains
   implicit none
 
   ! External variables
-  integer*4, dimension(:,:) :: ipqtoq
+  integer*4, dimension(4,0:7) :: ipqtoq
 
   real*8 :: dnrm
 
