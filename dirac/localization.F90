@@ -130,7 +130,7 @@ contains
 
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', conv*20 = 'No convergence after'
-  logical      :: tobe, full, diagonly, reject, tmp = .true.
+  logical      :: tobe, full, diagonly, rejected
 
   integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
@@ -139,7 +139,7 @@ contains
   real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
-  real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo, grad_r, eval, grad_t
+  real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad_r, eval, grad_t
   real*8,    allocatable, dimension(:,:)     :: grad_c, hmat_r
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
@@ -160,6 +160,7 @@ contains
   ipqtoq(:,:) = var%ipqtoq(:,:)
 
   diagonly = .false.
+  rejected = .false.
   if(loc%hesthr < loc%thrloc) diagonly = .true.
 
   tradius = 10.0d0
@@ -187,7 +188,7 @@ contains
   ndimh = 4 * ( nish*nish + nish ) / 2
   ndimhr= ndimh - nish
   call alloc(scoef ,nish*nfbas(0)*4,   id='scoef  in orbloc')
-  call alloc(scoefo,nish*nfbas(0)*4,   id='scoefo in orbloc')
+  call alloc(storec,nish*nfbas(0)*4,   id='storec in orbloc')
   call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
   call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
   call alloc(hmat_c,ndimh,ndimh,2,     id='hmat_c in orbloc')
@@ -248,36 +249,34 @@ contains
   itr    = 0
   do
 
-    itr = itr + 1
-    reject = .false.
-    shift  = d0  ! by default the shift is not used
-    dinvmo = dinvmg
-    call gtinfo(daytid)
-    write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
-    write(lupri,'(5x,a,a24,a)')'########## ',daytid,' ##########'
-
-    call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
-    call get_gradient(pmat,grad_c,grad_r,dnrmg)
-    call hdiag(hmat_r,grad_r,eval,grad_t)
-    if(full)then
-      call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
-      call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
-      if(tmp)then
-      if( (dinvmq<d0) .or. (dnrmk>tradius) )then
-        call get_mu(eval,grad_t,tradius,shift,tpred)
-        call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
-        if(dabs(tpred-dnrmk) > d2*tradius)then
-          write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
-          write(lupri,'(a,i4,a,d12.4,a,d12.4,a,d12.4)')&
-            ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
-        endif
-        call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
-      endif
-      endif
+    ! get new kappa
+    if(.not.rejected)then
+      call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
+      call get_gradient(pmat,grad_c,grad_r,dnrmg)
+      call hdiag(hmat_r,grad_r,eval,grad_t)
+      shift  = d0
+      rejected = .false.
     else
-      call getk_cdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
-!     call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
+      call get_mu(eval,grad_t,tradius,shift,tpred)
+      if(dabs(tpred-dnrmk) > d2*tradius)then
+        write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
+        write(lupri,'(a,i4,a,d12.4,a,d12.4,a,d12.4)')&
+          ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
+      endif
     endif
+    call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
+    call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
+
+!   if(full)then
+!     call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
+!     call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
+!   else
+!     call getk_cdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
+!     call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
+!   endif
+
+    if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
+    if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
     call rotcmo_mod(scoef,nfbas(0),nish,4,xkappa,nish,ipqtoq(ifrp,0))
     if(loc%prjloc) then
       ! PRJLOC = TRUE localization with projection analysis
@@ -291,12 +290,18 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(diffg,diffq,tradius,reject)
+    call updateT(dnrmk,diffg,diffq,tradius,rejected)
 
-    if(.not.reject)then
+    if(.not.rejected)then
+      itr = itr + 1
+      call gtinfo(daytid)
+      write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
+      write(lupri,'(5x,a,a24,a)')'########## ',daytid,' ##########'
+
       if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
       if(full) hessian = 'FULL'
+      dinvmo = dinvmg
 
       write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
         '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
@@ -307,8 +312,6 @@ contains
       if((diffa < loc%thrloc).and.(full.or.diagonly)) exit
       if( diffa < loc%hesthr ) full = .true.
       if(itr > loc%itrloc)exit
-    else
-      itr = itr - 1
     endif
 
   enddo
@@ -327,7 +330,7 @@ contains
   !                             Deallocate arrays                                !
   !------------------------------------------------------------------------------!
   call dealloc(scoef ,id='scoef  in orbloc')
-  call dealloc(scoefo,id='scoefo in orbloc')
+  call dealloc(storec,id='storec in orbloc')
   call dealloc(smat  ,id='smat   in orbloc')
   call dealloc(pmat  ,id='pmat   in orbloc')
   call dealloc(xkappa,id='xkappa in orbloc')
@@ -2738,7 +2741,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(diffg,diffq,tradius,reject)
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2747,24 +2750,48 @@ contains
   implicit none
 
   ! External variables
-  logical :: reject
-  real*8 :: diffg, diffq, tradius
+  logical :: rejected
+  real*8  :: dnrmk, diffg, diffq, tradius
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0
+  integer*4 :: lupri
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 1.0d0
+  real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
   real*8 :: R
 
   !------------------------------------------------------------------------------!
   call qenter('updateT')
 
+  lupri  = var%lupri
   R = diffg / diffq
 
-  if(R<d0)then
-    tradius = tradius / 4.0d0
-    reject  = .true.
-  endif 
-
-  if(R>d1) tradius = tradius * 2.0d0
+  if(rejected)then
+    if(diffq < d0)then
+      write(lupri,'(a)')' STOP: The value of the quadratic approximation of the functional '
+      write(lupri,'(a)')'       decreased although the level-shifted Newton step was used '
+      stop
+    endif
+    rejected = .false.
+    if(R < d0 ) rejected = .true.
+    if(R < d1q) tradius  = d1q* tradius
+    if(R > d3q) tradius  = d2 * tradius
+  else
+    if(dnrmk > tradius)then
+!     if(diffg < d0) rejected = .true.
+      rejected = .true.
+    else
+      if(diffq > d0)then
+        if(R < d0 ) rejected = .true.
+        if(R < d1q) tradius  = d1q * dnrmk
+        if(R > d5q) tradius  = max(d2*dnrmk,tradius)
+      else 
+        if(R > d0 ) rejected = .true.
+        tradius = dnrmk
+        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
+        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradius)
+      endif
+    endif
+  endif
 
   call qexit('updateT')
 
