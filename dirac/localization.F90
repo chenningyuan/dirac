@@ -7,7 +7,7 @@ public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
 private :: getk_cdiag, getk_rdiag, getk_full, get_hessian, get_gradient, exp_func, hdiag
-private :: get_mu
+private :: get_mu, updateT
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
@@ -126,17 +126,17 @@ contains
   implicit none
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0
 
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', conv*20 = 'No convergence after'
-  logical      :: tobe, full, diagonly
+  logical      :: tobe, full, diagonly, reject, tmp = .true.
 
   integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
 
   real*8    :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
-  real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tregion
+  real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
   real*8,    allocatable, dimension(:)       :: scoef, scoefo, smat, cmo, grad_r, eval, grad_t
@@ -162,7 +162,7 @@ contains
   diagonly = .false.
   if(loc%hesthr < loc%thrloc) diagonly = .true.
 
-  tregion = d1
+  tradius = 10.0d0
 
   ! TMP print
   write(lupri,*) 'lupri =',lupri
@@ -244,9 +244,13 @@ contains
     '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
 
   ! SCF cycle
-  dinvmq = 0.0d0
-  do itr=1,loc%itrloc
+  dinvmq = d0
+  itr    = 0
+  do
 
+    itr = itr + 1
+    reject = .false.
+    shift  = d0  ! by default the shift is not used
     dinvmo = dinvmg
     call gtinfo(daytid)
     write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
@@ -255,10 +259,21 @@ contains
     call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
     call get_gradient(pmat,grad_c,grad_r,dnrmg)
     call hdiag(hmat_r,grad_r,eval,grad_t)
-    shift = get_mu(eval,grad_t,tregion)
     if(full)then
-      call getk_full(pmat,xkappa,hmat_r,grad_r,dnrmk)
+      call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
       call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
+      if(tmp)then
+      if( (dinvmq<d0) .or. (dnrmk>tradius) )then
+        call get_mu(eval,grad_t,tradius,shift,tpred)
+        call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
+        if(dabs(tpred-dnrmk) > d2*tradius)then
+          write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
+          write(lupri,'(a,i4,a,d12.4,a,d12.4,a,d12.4)')&
+            ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
+        endif
+        call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
+      endif
+      endif
     else
       call getk_cdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
 !     call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
@@ -273,21 +288,28 @@ contains
       call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
     endif
 
-    ! Convergence criterion
+    ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
-    diffa = dabs(dinvmg - dinvmo)
-    if(full) hessian = 'FULL'
+    call updateT(diffg,diffq,tradius,reject)
 
-    write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
-      '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
-    write(lupri,'(a,2x,i4,5d11.2,4x,a,2d11.2)') &
-      '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq
+    if(.not.reject)then
+      if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+      diffa = dabs(dinvmg - dinvmo)
+      if(full) hessian = 'FULL'
 
-    ! Exit loop after convergence criterion is reached
-    if((diffa < loc%thrloc).and.(full.or.diagonly)) exit
-    if( diffa < loc%hesthr ) full = .true.
+      write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
+        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
+      write(lupri,'(a,2x,i4,5d11.2,4x,a,4d11.2)') &
+        '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq,shift,tradius
+
+      ! Exit conditions
+      if((diffa < loc%thrloc).and.(full.or.diagonly)) exit
+      if( diffa < loc%hesthr ) full = .true.
+      if(itr > loc%itrloc)exit
+    else
+      itr = itr - 1
+    endif
 
   enddo
 
@@ -1054,16 +1076,17 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_full(pmat,xkappa,hmat,gradient,dnrm)
+  subroutine getk_full(pmat,xkappa,hmat,gradient,shift,dnrm)
   !******************************************************************************!
   !                                                                              !
-  !  Construction of the XKAPPA matrix using full hessian                        !
+  !           Construction of the XKAPPA matrix using full hessian               !
   !                                                                              !
   !******************************************************************************!
   implicit none
 
   ! External variables
-  real*8 :: dnrm
+  real*8, intent(in)  :: shift
+  real*8, intent(out) :: dnrm
 
   real*8, dimension(:)       :: gradient
   real*8, dimension(:,:)     :: hmat
@@ -1098,6 +1121,9 @@ contains
 
   ! prepare hessian for dgetrf
   htmp(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
+  do i=1,nhtmp
+    htmp(i,i) = htmp(i,i) - shift
+  enddo
 
   ! prepare gradient for dgetrf
   gtmp(1:nhtmp) = - gradient(1:nhtmp)
@@ -2608,18 +2634,18 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  function get_mu(eval,grad_t,tregion)
+  subroutine get_mu(eval,grad_t,tradius,shift,tpred)
   !******************************************************************************!
   !                                                                              !
   !                   Calculate level-shift parameter mu                         !
   !                                                                              !
-  !          tregion = sqrt{ sum{ (grad_t)^2_i / (eval_i-shift)^2  }  }          !
+  !          tradius = sqrt{ sum{ (grad_t)^2_i / (eval_i-shift)^2  }  }          !
   !                                                                              !
   !******************************************************************************!
   implicit none
 
   ! External variables
-  real*8 :: tregion, get_mu
+  real*8 :: tradius, shift, tpred
   real*8, allocatable, dimension(:) :: eval, grad_t
 
   ! Internal variables
@@ -2637,25 +2663,25 @@ contains
 
   ! initialization
   imax  = 10000
-  tresh = 1.0d-7 * tregion
+  tresh = 1.0d-2 * tradius
   xmax  = eval(ndim) + 0.1d0
   xmin  = eval(ndim)
   tcurr = f(xmax)
 
   ! find upper boundary if necessary
   i = 0
-  if(tcurr > tregion)then
+  if(tcurr > tradius)then
     do
       i = i + 1
       if(i > imax)then
         write(lupri,'(a)')' WARNING: Maximum number of iteration reached in get_mu(1)!!!'
-        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmax) =',tcurr,' tregion =',tregion
+        write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmax) =',tcurr,' tradius =',tradius
         exit
       endif
       xmin = xmax
       xmax = d2*xmax - xmin
       tcurr = f(xmax)
-      if(tcurr < tregion)exit
+      if(tcurr < tradius)exit
     enddo
   endif 
 
@@ -2665,21 +2691,22 @@ contains
   if(i > imax)then
     write(lupri,'(a)')' WARNING: Maximum number of iteration reached in get_mu(2)!!!'
     write(lupri,'(10x,a,d12.4,a,d12.4)')&
-      'h(desired) =',tregion,' |h(desired)-h(current)| =',dabs(tregion - tcurr)
+      'h(desired) =',tradius,' |h(desired)-h(current)| =',dabs(tradius - tcurr)
     exit
   endif
 
-  if(dabs(tcurr-tregion) < tresh) exit
+  if(dabs(tcurr-tradius) < tresh) exit
 
   xcurr = (xmax+xmin)/d2
   tcurr = f(xcurr)
 
-  if(tcurr > tregion) xmin = xcurr
-  if(tcurr < tregion) xmax = xcurr
+  if(tcurr > tradius) xmin = xcurr
+  if(tcurr < tradius) xmax = xcurr
 
   enddo
 
-  get_mu = xcurr
+  shift = xcurr
+  tpred = f(xcurr)
 
   !------------------------------------------------------------------------------!
 
@@ -2696,7 +2723,7 @@ contains
 
     f = 0.0d0
     do ii=1,ndim
-      if(dabs(eval(ii) - x) < 1.0d-12)then
+      if(dabs(eval(ii) - x) < 1.0d-16)then
         write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
         write(lupri,'(10x,a,i4,a,d12.4,a,d12.4)')'i=',ii,' mu =',x,' e_i =',eval(ii)
       endif
@@ -2706,6 +2733,43 @@ contains
 
     end function f
 
-  end function get_mu
+  end subroutine get_mu
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine updateT(diffg,diffq,tradius,reject)
+  !******************************************************************************!
+  !                                                                              !
+  !                           Update trust radius                                !
+  !                                                                              !
+  !******************************************************************************!
+  implicit none
+
+  ! External variables
+  logical :: reject
+  real*8 :: diffg, diffq, tradius
+
+  ! Internal variables
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0
+  real*8 :: R
+
+  !------------------------------------------------------------------------------!
+  call qenter('updateT')
+
+  R = diffg / diffq
+
+  if(R<d0)then
+    tradius = tradius / 4.0d0
+    reject  = .true.
+  endif 
+
+  if(R>d1) tradius = tradius * 2.0d0
+
+  call qexit('updateT')
+
+  !------------------------------------------------------------------------------!
+
+  end subroutine updateT
 
 end module localization
