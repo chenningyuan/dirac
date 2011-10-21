@@ -254,7 +254,7 @@ contains
       call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
       call get_gradient(pmat,grad_c,grad_r,dnrmg)
       call hdiag(hmat_r,grad_r,eval,grad_t)
-      shift  = d0
+      shift    = d0
       rejected = .false.
     else
       call get_mu(eval,grad_t,tradius,shift,tpred)
@@ -264,16 +264,9 @@ contains
           ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
       endif
     endif
-    call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
+    if(     full) call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
+    if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
     call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
-
-!   if(full)then
-!     call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
-!     call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
-!   else
-!     call getk_cdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
-!     call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
-!   endif
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
@@ -291,6 +284,7 @@ contains
     diffg = dinvmg - dinvmo
     diffq = dinvmq
     call updateT(dnrmk,diffg,diffq,tradius,rejected)
+    if(.not.full) rejected = .false.
 
     if(.not.rejected)then
       itr = itr + 1
@@ -306,7 +300,7 @@ contains
       write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
         '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
       write(lupri,'(a,2x,i4,5d11.2,4x,a,4d11.2)') &
-        '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq,shift,tradius
+        '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq
 
       ! Exit conditions
       if((diffa < loc%thrloc).and.(full.or.diagonly)) exit
