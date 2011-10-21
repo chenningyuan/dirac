@@ -367,9 +367,12 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NBL, NBS, NI, NUCDEP, MAXREF
-      REAL*8    :: DINVM
-      REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
+      INTEGER*4, INTENT(IN ) :: NBL, NBS, NI, NUCDEP, MAXREF
+      REAL*8,    INTENT(OUT) :: DINVM
+
+      REAL*8,    INTENT(IN   ) :: SCOEF(*)
+      REAL*8,    INTENT(INOUT) :: SMAT(*)
+      REAL*8,    INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
@@ -633,9 +636,14 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NB, NMOL, NREF, MAXREF
-      INTEGER*4 :: JMOL(*), JREF(3,*), NSTR(2,0:2,0:MAXREF), IPIVOT(*)
-      REAL*8    :: SMAT(*), SCOEF(*), RCOEF(*), AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4), GVEC(*)
+      INTEGER*4, INTENT(IN   ) :: NB, NMOL, NREF, MAXREF
+      INTEGER*4, INTENT(IN   ) :: NSTR(2,0:2,0:MAXREF)
+      INTEGER*4, INTENT(  OUT) :: IPIVOT(*)
+      INTEGER*4 :: JMOL(*), JREF(3,*)
+      REAL*8,    INTENT(IN   ) :: SCOEF(*), RCOEF(*)
+      REAL*8,    INTENT(INOUT) :: SMAT(*)
+      REAL*8,    INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
+      REAL*8 :: GVEC(*)
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
@@ -732,10 +740,11 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NBL, NBS, NI, NUCDEP
-      REAL*8    :: DINVM
-      INTEGER*4 :: NFNUC(*)
-      REAL*8    :: SMAT(*), SCOEF(*), PMAT(NI,NI,4,NUCDEP)
+      INTEGER*4, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
+      REAL*8,    INTENT(OUT) :: DINVM
+      INTEGER*4, INTENT(IN ) :: NFNUC(*)
+      REAL*8,    INTENT(IN ) :: SMAT(*), SCOEF(*)
+      REAL*8,    INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
       INTEGER*4 :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
@@ -867,13 +876,13 @@ contains
   implicit none
 
   ! External variables
-  integer*4, dimension(4,0:7) :: ipqtoq
+  integer*4, intent(in), dimension(4,0:7) :: ipqtoq
 
-  real*8 :: dnrm
+  real*8, intent(out) :: dnrm
 
-  real*8, dimension(:,:)     :: gradient
-  real*8, dimension(:,:,:)   :: xkappa
-  real*8, dimension(:,:,:,:) :: pmat
+  real*8, intent(in ), dimension(:,:)     :: gradient
+  real*8, intent(in ), dimension(:,:,:,:) :: pmat
+  real*8, intent(out), dimension(:,:,:)   :: xkappa
 
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
@@ -979,13 +988,13 @@ contains
   implicit none
 
   ! External variables
-  integer*4, dimension(4,0:7) :: ipqtoq
+  integer*4, intent(in), dimension(4,0:7) :: ipqtoq
 
-  real*8 :: dnrm
+  real*8, intent(out) :: dnrm
 
-  real*8, dimension(:,:)     :: gradient
-  real*8, dimension(:,:,:)   :: xkappa
-  real*8, dimension(:,:,:,:) :: pmat
+  real*8, intent(in ), dimension(:,:)     :: gradient
+  real*8, intent(in ), dimension(:,:,:,:) :: pmat
+  real*8, intent(out), dimension(:,:,:)   :: xkappa
 
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
@@ -1088,13 +1097,13 @@ contains
   implicit none
 
   ! External variables
-  real*8, intent(in)  :: shift
+  real*8, intent(in ) :: shift
   real*8, intent(out) :: dnrm
 
-  real*8, dimension(:)       :: gradient
-  real*8, dimension(:,:)     :: hmat
-  real*8, dimension(:,:,:)   :: xkappa
-  real*8, dimension(:,:,:,:) :: pmat
+  real*8, intent(in ), dimension(:)       :: gradient
+  real*8, intent(in ), dimension(:,:)     :: hmat
+  real*8, intent(in ), dimension(:,:,:,:) :: pmat
+  real*8, intent(out), dimension(:,:,:)   :: xkappa
 
   ! Internal variables
   real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
@@ -1209,8 +1218,9 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NUCDEP
-      INTEGER*4 :: INDNAO(2,*), NFNUC(2*NUCDEP)
+      INTEGER*4, INTENT(IN ) :: NUCDEP
+      INTEGER*4, INTENT(IN ) :: INDNAO(2,*)
+      INTEGER*4, INTENT(OUT) :: NFNUC(2*NUCDEP)
 
       ! Internal variables
       INTEGER*4 :: IFRP, I
@@ -1324,8 +1334,9 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NBASI, NORBI, NZ, NORBT, IP(4)
-      REAL*8    :: CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ)
+      INTEGER*4, INTENT(IN   ) :: NBASI, NORBI, NZ, NORBT, IP(4)
+      REAL*8,    INTENT(IN   ) :: XKAPPA(NORBT,NORBT,NZ)
+      REAL*8,    INTENT(INOUT) :: CMO(NBASI,NORBI,NZ)
 
       ! Internal variables
       REAL*8, PARAMETER :: D1 = 1.00D00, D0 = 0.00D00, DM1 = -D1
@@ -1548,10 +1559,11 @@ contains
   implicit none
 
   ! External variables
-  real*8                     :: totdiag, totnond
-  real*8, dimension(:,:)     :: hmat_r
-  real*8, dimension(:,:,:)   :: hmat
-  real*8, dimension(:,:,:,:) :: pmat
+  real*8, intent(out) :: totdiag, totnond
+
+  real*8, intent(in ), dimension(:,:,:,:) :: pmat
+  real*8, intent(out), dimension(:,:)     :: hmat_r
+  real*8, intent(out), dimension(:,:,:)   :: hmat
 
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0, d4 = 4.0d0
@@ -2359,7 +2371,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_gradient(pmat,grad_c,grad_r,dnrm)
+  subroutine get_gradient(pmat,grad_c,grad_r,dnrmg)
   !******************************************************************************!
   !                                                                              !
   !  Construction of gradient                                                    !
@@ -2368,10 +2380,11 @@ contains
   implicit none
 
   ! External variables
-  real*8 :: dnrm
-  real*8, dimension(:)       ::  grad_r
-  real*8, dimension(:,:)     ::  grad_c
-  real*8, dimension(:,:,:,:) ::  pmat
+  real*8, intent(out) :: dnrmg
+
+  real*8, intent(in ), dimension(:,:,:,:) ::  pmat
+  real*8, intent(out), dimension(:)       ::  grad_r
+  real*8, intent(out), dimension(:,:)     ::  grad_c
 
   ! Internal variables
   integer*4 :: i, j, k, ij, i1, nucdep, ni, ndimg, ndimgr, ni12, lupri
@@ -2430,11 +2443,11 @@ contains
   write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
   write(lupri,'(9d12.4)') (grad_c(j,2),j=1+ni12,2*ni12)
 
-  dnrm = d0
+  dnrmg = d0
   do i=1,2*ni12
-    dnrm = dnrm + grad_c(i,1)*grad_c(i,1) + grad_c(i,2)*grad_c(i,2)
+    dnrmg = dnrmg + grad_c(i,1)*grad_c(i,1) + grad_c(i,2)*grad_c(i,2)
   enddo
-  dnrm = dsqrt(dnrm)
+  dnrmg = dsqrt(dnrmg)
 
   !------------------------------------------------------------------------------!
   !               Calculate real representation of the gradient                  !
@@ -2477,12 +2490,12 @@ contains
   implicit none
 
   ! External variables
-  logical :: full
-  real*8  :: dinvmq
+  logical, intent(in ) :: full
+  real*8,  intent(out) :: dinvmq
 
-  real*8,    allocatable, dimension(:)       :: gradient
-  real*8,    allocatable, dimension(:,:)     :: hmat
-  real*8,    allocatable, dimension(:,:,:)   :: xkappa
+  real*8, intent(in), dimension(:)     :: gradient
+  real*8, intent(in), dimension(:,:)   :: hmat
+  real*8, intent(in), dimension(:,:,:) :: xkappa
 
   ! Internal variables
   integer*4  :: i, j, i1, j1, ij, id, ni, ni12, nhtmp, ii, jj
@@ -2568,12 +2581,13 @@ contains
   implicit none
 
   ! External variables
-  real*8, allocatable, dimension(:)   :: gradient, eval, grad_t
-  real*8, allocatable, dimension(:,:) :: hmat
+  real*8, intent(in ), dimension(:)   :: gradient
+  real*8, intent(in ), dimension(:,:) :: hmat
+  real*8, intent(out), dimension(:)   :: eval, grad_t
 
   ! Internal variables
-  integer*4    :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
-  real*8       :: dtmp, dmax, atmp, ctmp
+  integer*4 :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
+  real*8    :: dtmp, dmax, atmp, ctmp
 
   real*8, allocatable, dimension(:)   :: work
   real*8, allocatable, dimension(:,:) :: htmp
@@ -2648,12 +2662,14 @@ contains
   implicit none
 
   ! External variables
-  real*8 :: tradius, shift, tpred
-  real*8, allocatable, dimension(:) :: eval, grad_t
+  real*8, intent(in ) :: tradius
+  real*8, intent(out) :: shift, tpred
+
+  real*8, intent(in), dimension(:) :: eval, grad_t
 
   ! Internal variables
-  integer*4    :: i, j, k, ndim, lupri, imax
-  real*8       :: tcurr, xcurr, tresh, xmax, xmin
+  integer*4 :: i, j, k, ndim, lupri, imax
+  real*8    :: tcurr, xcurr, tresh, xmax, xmin
   real*8, parameter :: d2 = 2.0d0
 
   !------------------------------------------------------------------------------!
@@ -2721,8 +2737,9 @@ contains
 
     function f(x)
     implicit none
+    real*8, intent(in ) :: x
+    real*8    :: f
     integer*4 :: ii
-    real*8    :: x, f
 
     f = 0.0d0
     do ii=1,ndim
@@ -2750,8 +2767,9 @@ contains
   implicit none
 
   ! External variables
-  logical :: rejected
-  real*8  :: dnrmk, diffg, diffq, tradius
+  real*8,  intent(in   ) :: dnrmk, diffg, diffq
+  logical, intent(inout) :: rejected
+  real*8,  intent(inout) :: tradius
 
   ! Internal variables
   integer*4 :: lupri
