@@ -2667,7 +2667,7 @@ contains
 
   ! Internal variables
   integer*4 :: i, j, k, ndim, lupri, imax
-  real*8    :: tcurr, xcurr, tresh, xmax, xmin
+  real*8    :: tcurr, xcurr, tresh, xmax, xmin, step
   real*8, parameter :: d2 = 2.0d0
 
   !------------------------------------------------------------------------------!
@@ -2681,7 +2681,8 @@ contains
   ! initialization
   imax  = 10000
   tresh = 1.0d-2 * tradius
-  xmax  = eval(ndim) + 0.1d0
+  step  = 0.1d0
+  xmax  = eval(ndim) + step
   xmin  = eval(ndim)
   tcurr = f(xmax)
 
@@ -2695,8 +2696,9 @@ contains
         write(lupri,'(10x,a,d12.4,a,d12.4)')'f(xmax) =',tcurr,' tradius =',tradius
         exit
       endif
+      step = xmax - xmin
       xmin = xmax
-      xmax = d2*xmax - xmin
+      xmax = xmax + d2*step
       tcurr = f(xmax)
       if(tcurr < tradius)exit
     enddo
