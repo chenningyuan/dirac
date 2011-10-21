@@ -507,9 +507,7 @@ contains
         CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,KVEC(IFRP,I)%P)
         IVEC = IVEC + NSTR(IFRP,0,I)
       ENDDO
-      CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,   &
-           NVECS(IFRP,1),BV,GVEC,KVEC(IFRP,1)%P, &
-           JREF,NSTR,IPIV,MAXREF)
+      CALL ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NI,NVECS(IFRP,1),BV,NSTR,IPIV,MAXREF)
 
 ! Memory allocation for the matrix W = Ac
 
@@ -624,8 +622,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
- SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,GVEC, &
-                   JMOL,JREF,NSTR,IPIVOT,MAXREF)
+ SUBROUTINE ORBLP2(SMAT,SCOEF,RCOEF,AMAT,NB,NMOL,NREF,BVEC,NSTR,IPIVOT,MAXREF)
 !***********************************************************************
 !
 !     Projection analysis for fermion ircop IFRP
@@ -636,14 +633,13 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4, INTENT(IN   ) :: NB, NMOL, NREF, MAXREF
-      INTEGER*4, INTENT(IN   ) :: NSTR(2,0:2,0:MAXREF)
-      INTEGER*4, INTENT(  OUT) :: IPIVOT(*)
-      INTEGER*4 :: JMOL(*), JREF(3,*)
+      INTEGER*4, INTENT(IN ) :: NB, NMOL, NREF, MAXREF
+      INTEGER*4, INTENT(IN ) :: NSTR(2,0:2,0:MAXREF)
+      INTEGER*4, INTENT(OUT) :: IPIVOT(*)
+
       REAL*8,    INTENT(IN   ) :: SCOEF(*), RCOEF(*)
       REAL*8,    INTENT(INOUT) :: SMAT(*)
       REAL*8,    INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
-      REAL*8 :: GVEC(*)
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
@@ -742,6 +738,7 @@ contains
       ! External variables
       INTEGER*4, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
       REAL*8,    INTENT(OUT) :: DINVM
+
       INTEGER*4, INTENT(IN ) :: NFNUC(*)
       REAL*8,    INTENT(IN ) :: SMAT(*), SCOEF(*)
       REAL*8,    INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
@@ -1219,6 +1216,7 @@ contains
 
       ! External variables
       INTEGER*4, INTENT(IN ) :: NUCDEP
+
       INTEGER*4, INTENT(IN ) :: INDNAO(2,*)
       INTEGER*4, INTENT(OUT) :: NFNUC(2*NUCDEP)
 
