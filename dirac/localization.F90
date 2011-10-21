@@ -243,6 +243,8 @@ contains
   endif
   write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
     '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
+  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
+    '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
 
   ! SCF cycle
   dinvmq = d0
@@ -283,7 +285,7 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected)
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,itr)
     if(.not.full) rejected = .false.
 
     if(.not.rejected)then
@@ -2752,7 +2754,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected)
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,itr)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2761,21 +2763,47 @@ contains
   implicit none
 
   ! External variables
-  real*8,  intent(in   ) :: dnrmk, diffg, diffq
-  logical, intent(inout) :: rejected
-  real*8,  intent(inout) :: tradius
+  integer*4, intent(in   ) :: itr
+  real*8,    intent(in   ) :: dnrmk, diffg, diffq
+  real*8,    intent(inout) :: tradius
+  logical,   intent(inout) :: rejected
 
   ! Internal variables
+  character*6 :: cond
   integer*4 :: lupri
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 1.0d0
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
-  real*8 :: R
+  real*8 :: R, tradius_old
 
   !------------------------------------------------------------------------------!
   call qenter('updateT')
 
   lupri  = var%lupri
   R = diffg / diffq
+  tradius_old = tradius
+
+  if(rejected)then
+    cond = 'r     '
+    if(R < d0 ) cond = 'r  R<0'
+    if(R < d1q) cond = 'r  R<1'
+    if(R > d3q) cond = 'r  R>3'
+  else
+    if(dnrmk > tradius)then
+      cond = '   k>T'
+    else
+      if(diffq > d0)then
+        cond = 'qP q>0 '
+        if(R < d0 ) cond = 'qP R<0'
+        if(R < d1q) cond = 'qP R<1'
+        if(R > d5q) cond = 'qP R>5'
+      else 
+        cond = 'qN    '
+        if(R > d0 ) cond = 'qN R>0'
+        if((R < d1q).or.(R > d1+d3q)) cond = 'qN R>7'
+        if((R > d3q).and.(R < d5q))   cond = 'qN R<5'
+      endif
+    endif
+  endif
 
   if(rejected)then
     if(diffq < d0)then
@@ -2804,6 +2832,11 @@ contains
       endif
     endif
   endif
+
+  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
+    '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
+  write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
+    '*T',itr,tradius_old,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
 
   call qexit('updateT')
 
