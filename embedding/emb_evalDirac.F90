@@ -244,10 +244,10 @@ module fde_eval_dirac
       WRITE(LUPRI,*) 'Grid read from file.'
       write(lupri,*) 'Number of gridpoints:', size(points,2)
 
-      call alloc(rho,     1,SIZE(points,2))
-      call alloc(grad_rho,3,SIZE(points,2))
-      call alloc(hes_rho, 6,SIZE(points,2))
-      call alloc(vc,        SIZE(points,2))
+      call alloc(rho,     1,int(SIZE(points,2)))
+      call alloc(grad_rho,3,int(SIZE(points,2)))
+      call alloc(hes_rho, 6,int(SIZE(points,2)))
+      call alloc(vc,        int(SIZE(points,2)))
 
       rho      = 0.0d0
       grad_rho = 0.0d0
