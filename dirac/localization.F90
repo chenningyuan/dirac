@@ -257,17 +257,16 @@ contains
       call get_gradient(pmat,grad_c,grad_r,dnrmg)
       call hdiag(hmat_r,grad_r,eval,grad_t)
       shift    = d0
-      rejected = .false.
     else
       call get_mu(eval,grad_t,tradius,shift,tpred)
-      if(dabs(tpred-dnrmk) > d2*tradius)then
-        write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
-        write(lupri,'(a,i4,a,d12.4,a,d12.4,a,d12.4)')&
-          ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
-      endif
     endif
     if(     full) call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
     if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
+    if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > 1.0d-2*tradius) )then
+      write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
+      write(lupri,'(a,i4,a,d12.4,a,d12.4,a,d12.4)')&
+        ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
+    endif
     call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
@@ -285,8 +284,7 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,itr)
-    if(.not.full) rejected = .false.
+    if(full) call updateT(dnrmk,diffg,diffq,tradius,rejected,itr)
 
     if(.not.rejected)then
       itr = itr + 1
@@ -2771,7 +2769,7 @@ contains
   ! Internal variables
   character*6 :: cond
   integer*4 :: lupri
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 1.0d0
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
   real*8 :: R, tradius_old
 
@@ -2781,6 +2779,7 @@ contains
   lupri  = var%lupri
   R = diffg / diffq
   tradius_old = tradius
+  cond = '??????'
 
   if(rejected)then
     cond = 'r     '
