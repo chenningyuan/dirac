@@ -954,7 +954,7 @@ C
       MXCIV       = MXCIV_KRCI
       IRESTRK     = IRESTRK_KRCI
       IDOPARIO    = IDOPARIO_KRCI
-      IOPTST      = 1531
+      IOPTST      = 1563
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
@@ -1454,7 +1454,7 @@ C at the moment this is not the way to restart
       IRESTRK     = 0 !IRESTRK_KRCI
 C parallel stuff
       IDOPARIO    = 0 !IDOPARIO_KRCI
-      IOPTST      = 1531
+      IOPTST      = 1563
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
