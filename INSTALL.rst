@@ -243,3 +243,28 @@ Or use Cmake directly (default here is debug mode)::
   $ make
 
 If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/CCompilers.cmake.
+
+
+Where should $PATH point to? Source directory or build directory?
+-----------------------------------------------------------------
+
+We recommend to let $PATH point to the install directory::
+
+  $ ./setup [--flags] --install=/install/path
+  $ cd build
+  $ make
+  $ make install
+
+This way everything (binary, scripts, basis sets) will be at the right place
+under /install/path and $PATH should contain /install/path.
+
+
+How can I compile DIRAC for large molecules?
+--------------------------------------------
+
+Set ENABLE_LARGE_MOLECULES to ON via ccmake::
+
+  $ cd build
+  $ ccmake ..
+
+Then rebuild the binary.
