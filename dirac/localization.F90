@@ -255,7 +255,7 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
       call get_gradient(pmat,grad_c,grad_r,dnrmg)
-      call hdiag(hmat_r,grad_r,eval,grad_t)
+      call hdiag(hmat_r,grad_r,eval,grad_t,itr)
       shift    = d0
     else
       call get_mu(eval,grad_t,tradius,shift,tpred)
@@ -264,7 +264,7 @@ contains
     if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
     if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > 1.0d-2*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
-      write(lupri,'(a,i4,a,d12.4,a,d12.4,a,d12.4)')&
+      write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
     call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
@@ -592,7 +592,7 @@ contains
         '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/A,2F17.13)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/A,F20.16)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -832,8 +832,8 @@ contains
          WRITE(LUPRI,'(A,I3,A,F7.4)') &
          '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
       ENDDO
-      DINVM = DINV/NI
-      WRITE(LUPRI,'(/A,F15.13)') '* Inverse mean delocalization = ',DINVM
+      DINVM = DINV/DFLOAT(NI)
+      WRITE(LUPRI,'(/A,F20.16)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -937,7 +937,8 @@ contains
 
   ! Norm of the kappa vector
   dnrmk = dsqrt(dnrmk)
-  write (lupri,'(a,e12.2)') 'Norm of the kappa: ',dnrmk
+  write(6,*)
+  write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   do iz=1,4
     write(lupri,*)
@@ -1062,7 +1063,8 @@ contains
 
   ! Norm of the kappa vector
   dnrmk = dsqrt(dnrmk)
-  write (lupri,'(a,e12.2)') 'Norm of the kappa: ',dnrmk
+  write(6,*)
+  write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   do iz=1,4
     write(lupri,*)
@@ -1156,7 +1158,8 @@ contains
 
   ! Norm of the kappa
   dnrmk  = dnrm2(nhtmp,gtmp,1)
-  write (lupri,'(a,e12.2)') 'Norm of the kappa: ',dnrmk
+  write(6,*)
+  write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   xkappa(:,:,:) = d0
   ij = 0
@@ -2572,25 +2575,29 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,eval,grad_t)
+  subroutine hdiag(hmat,gradient,eval,grad_t,itr)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
   !                                                                              !
   !******************************************************************************!
+  use matrix_defop
   implicit none
 
   ! External variables
+  integer*4, intent(in) :: itr
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
   real*8, intent(out), dimension(:)   :: eval, grad_t
 
   ! Internal variables
-  integer*4 :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm
-  real*8    :: dtmp, dmax, atmp, ctmp
+  integer*4 :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm, imax, imin
+  real*8    :: dtmp, dmax, atmp, ctmp, emin, dmin
 
   real*8, allocatable, dimension(:)   :: work
   real*8, allocatable, dimension(:,:) :: htmp
+
+  type(matrix) :: C, H, A
 
   !------------------------------------------------------------------------------!
   call qenter('hdiag')
@@ -2635,6 +2642,63 @@ contains
     endif
   enddo
 
+  ! test the precision of diagonalization
+  call init_mat(C,nhtmp,nhtmp,mz=1)
+  write(6,*) 'Test C',nhtmp,size(C%elms),C%mz
+
+  ij = 0
+  do j=1,nhtmp
+    do i=1,nhtmp
+      ij = ij + 1
+      C%elms(ij) = htmp(i,j)
+    enddo
+  enddo
+
+  call init_mat(H,nhtmp,nhtmp,mz=1)
+  write(6,*) 'Test H',nhtmp,size(H%elms),H%mz
+
+  ij = 0
+  do j=1,nhtmp
+    do i=1,nhtmp
+      ij = ij + 1
+      H%elms(ij) = hmat(i,j)
+    enddo
+  enddo
+
+  A = dag(C) * H * C
+
+  write(6,*) 'Test A',nhtmp,size(A%elms),A%mz
+
+  ij = 0
+  dtmp = 0.0d0
+  dmax = 0.0d0
+  emin = eval(1)
+  do j=1,nhtmp
+    do i=1,nhtmp
+      ij = ij + 1
+      if(i==j)then
+        dtmp = dtmp + (eval(i) - A%elms(ij))*(eval(i) - A%elms(ij))
+        if(dabs(eval(i) - A%elms(ij)) > dmax)then
+          dmax = dabs(eval(i) - A%elms(ij))
+          imax = i
+        endif
+        if(dabs(eval(i)) < dabs(emin))then
+          emin = eval(i)
+          dmin = dabs(eval(i) - A%elms(ij))
+          imin = i
+        endif
+      endif
+    enddo
+  enddo
+  dtmp = dsqrt(dtmp) / nhtmp
+  write(6,'(a,i3,a,d10.2,a,i3,2d10.2,a,2d10.2)') ' Test: itr =',itr,' sum =',dtmp,' i,e,abs =',imax,eval(imax),dmax,' emin,abs =',emin,dmin
+
+  write(6,*)
+  write(6,*) ' Eigenvector for the smallest eigenvalue: '
+  write(6,'(10es9.1)') (htmp(i,imin),i=1,nhtmp)
+  ! end of test
+
+  write(6,*)
   write(lupri,'(a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
   write(lupri,'(8d12.4)') (eval(i),i=1,nhtmp)
 
@@ -2747,7 +2811,7 @@ contains
     do ii=1,ndim
       if(dabs(eval(ii) - x) < 1.0d-16)then
         write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
-        write(lupri,'(10x,a,i4,a,d12.4,a,d12.4)')'i=',ii,' mu =',x,' e_i =',eval(ii)
+        write(lupri,'(a,i4,a,d12.4)')' WARNING: i=',ii,' mu-e_i =',x-eval(ii)
       endif
       f = f + grad_t(ii) * grad_t(ii) / ((eval(ii) - x) * (eval(ii) - x))
     enddo
