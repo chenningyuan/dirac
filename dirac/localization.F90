@@ -144,6 +144,8 @@ contains
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
+  real*8, pointer :: tgradp(:), evalp(:), evecp(:,:)
+
   !------------------------------------------------------------------------------!
   call qenter('orbloc')
 
@@ -206,6 +208,11 @@ contains
   call alloc(indaos,nfbas(0),  id='indaos in orbloc')
   call alloc(indnao,2*nucdep+2,id='indnao in orbloc')
 
+  ! nullify pointers for later allocation using memory_allocator module
+  nullify(tgradp)
+  nullify(evalp )
+  nullify(evecp )
+
   ! Read coefficients
   call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
   call reacmo_no_work(var%lucoef,'DFCOEF',cmo,idum,idum,toterg,2)
@@ -255,8 +262,11 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
       call get_gradient(pmat,grad_c,grad,dnrmg)
-      call hdiag(hmat,grad,eval,tgrad,itr)
-      shift    = d0
+      call hdiag(hmat,grad,eval,tgrad,tgradp,evalp,evecp,itr)
+      shift = d0
+      call deallocp(tgradp,id='tgradp in orbloc')
+      call deallocp(evalp ,id='evalp  in orbloc')
+      call deallocp(evecp ,id='evecp  in orbloc')
     else
       call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
@@ -2575,7 +2585,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,eval,tgrad,itr)
+  subroutine hdiag(hmat,gradient,eval,tgrad,tgradp,evalp,evecp,itr)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2589,10 +2599,11 @@ contains
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
   real*8, intent(out), dimension(:)   :: eval, tgrad
+  real*8, intent(out), pointer :: tgradp(:), evalp(:), evecp(:,:)
 
   ! Internal variables
-  integer*4 :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm, imax, imin
-  real*8    :: dtmp, dmax, atmp, ctmp, emin, dmin
+  integer*4 :: i, j, k, l, ij, nhtmp, ndimp, ier, lupri, lwork, ilaenv, nb, np, nm, imax, imin
+  real*8    :: dtmp, dmax, atmp, ctmp, emin, dmin, tresh
 
   real*8, allocatable, dimension(:)   :: work
   real*8, allocatable, dimension(:,:) :: htmp
@@ -2629,6 +2640,27 @@ contains
     do j=1,nhtmp
       tgrad(i) = tgrad(i) + htmp(j,i) * gradient(j)
     enddo
+  enddo
+
+  ! project out redundant parameters (eigenvalues close to zero)
+  ndimp = 0
+  tresh = 1.0d-13
+  do i=1,nhtmp
+    if(dabs(eval(i)) > tresh) ndimp = ndimp + 1
+  enddo
+  call allocp(tgradp,      ndimp,id='tgradp in hdiag')
+  call allocp(evalp ,      ndimp,id='evalp  in hdiag')
+  call allocp(evecp ,nhtmp,ndimp,id='evecp  in hdiag')
+  k = 0
+  do i=1,nhtmp
+    if(dabs(eval(i)) > tresh)then
+      k = k + 1
+      tgradp(k)= tgrad(i)
+      evalp(k) = eval(i)
+      do j=1,nhtmp
+        evecp(j,k) = htmp(j,i)
+      enddo
+    endif
   enddo
 
   ! count number of positive, negative and zero eigenvalues
