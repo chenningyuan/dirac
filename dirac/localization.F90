@@ -139,8 +139,8 @@ contains
   real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
-  real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad_r, eval, grad_t
-  real*8,    allocatable, dimension(:,:)     :: grad_c, hmat_r
+  real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, eval, tgrad
+  real*8,    allocatable, dimension(:,:)     :: grad_c, hmat
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
@@ -192,11 +192,11 @@ contains
   call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
   call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
   call alloc(hmat_c,ndimh,ndimh,2,     id='hmat_c in orbloc')
-  call alloc(hmat_r,ndimhr,ndimhr,     id='hmat_r in orbloc')
+  call alloc(hmat  ,ndimhr,ndimhr,     id='hmat   in orbloc')
   call alloc(grad_c,ndimh,2,           id='grad_c in orbloc')
-  call alloc(grad_r,ndimhr,            id='grad_r in orbloc')
+  call alloc(grad  ,ndimhr,            id='grad   in orbloc')
   call alloc(eval  ,ndimhr,            id='eval   in orbloc')
-  call alloc(grad_t,ndimhr,            id='grad_t in orbloc')
+  call alloc(tgrad ,ndimhr,            id='tgrad  in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
   call alloc(pmat  ,nish,nish,4,nucdep,id='pmat   in orbloc')
 
@@ -253,21 +253,21 @@ contains
 
     ! get new kappa
     if(.not.rejected)then
-      call get_hessian(pmat,hmat_c,hmat_r,totdiag,totnond)
-      call get_gradient(pmat,grad_c,grad_r,dnrmg)
-      call hdiag(hmat_r,grad_r,eval,grad_t,itr)
+      call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
+      call get_gradient(pmat,grad_c,grad,dnrmg)
+      call hdiag(hmat,grad,eval,tgrad,itr)
       shift    = d0
     else
-      call get_mu(eval,grad_t,tradius,shift,tpred)
+      call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
-    if(     full) call getk_full(pmat,xkappa,hmat_r,grad_r,shift,dnrmk)
+    if(     full) call getk_full(pmat,xkappa,hmat,grad,shift,dnrmk)
     if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
     if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > 1.0d-2*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
-    call exp_func(xkappa,hmat_r,grad_r,full,dinvmq)
+    call exp_func(xkappa,hmat,grad,full,dinvmq)
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
@@ -329,11 +329,11 @@ contains
   call dealloc(pmat  ,id='pmat   in orbloc')
   call dealloc(xkappa,id='xkappa in orbloc')
   call dealloc(hmat_c,id='hmat_c in orbloc')
-  call dealloc(hmat_r,id='hmat_r in orbloc')
+  call dealloc(hmat  ,id='hmat   in orbloc')
   call dealloc(grad_c,id='grad_c in orbloc')
-  call dealloc(grad_r,id='grad_r in orbloc')
+  call dealloc(grad  ,id='grad   in orbloc')
   call dealloc(eval  ,id='eval   in orbloc')
-  call dealloc(grad_t,id='grad_t in orbloc')
+  call dealloc(tgrad ,id='tgrad  in orbloc')
   call dealloc(cmo   ,id='cmo    in orbloc')
 
   call dealloc(nfnuc ,id='nfnuc  in orbloc')
@@ -2575,7 +2575,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,eval,grad_t,itr)
+  subroutine hdiag(hmat,gradient,eval,tgrad,itr)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2588,7 +2588,7 @@ contains
   integer*4, intent(in) :: itr
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
-  real*8, intent(out), dimension(:)   :: eval, grad_t
+  real*8, intent(out), dimension(:)   :: eval, tgrad
 
   ! Internal variables
   integer*4 :: i, j, k, l, ij, nhtmp, ier, lupri, lwork, ilaenv, nb, np, nm, imax, imin
@@ -2624,10 +2624,10 @@ contains
   endif
 
   ! calculate transformed gradient: tilde{g} = U^T * g
-  grad_t(:) = 0.0d0
+  tgrad(:) = 0.0d0
   do i=1,nhtmp
     do j=1,nhtmp
-      grad_t(i) = grad_t(i) + htmp(j,i) * gradient(j)
+      tgrad(i) = tgrad(i) + htmp(j,i) * gradient(j)
     enddo
   enddo
 
@@ -2715,12 +2715,12 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_mu(eval,grad_t,tradius,shift,tpred)
+  subroutine get_mu(eval,tgrad,tradius,shift,tpred)
   !******************************************************************************!
   !                                                                              !
   !                   Calculate level-shift parameter mu                         !
   !                                                                              !
-  !          tradius = sqrt{ sum{ (grad_t)^2_i / (eval_i-shift)^2  }  }          !
+  !          tradius = sqrt{ sum{ (tgrad)^2_i / (eval_i-shift)^2  }  }           !
   !                                                                              !
   !******************************************************************************!
   implicit none
@@ -2729,7 +2729,7 @@ contains
   real*8, intent(in ) :: tradius
   real*8, intent(out) :: shift, tpred
 
-  real*8, intent(in), dimension(:) :: eval, grad_t
+  real*8, intent(in), dimension(:) :: eval, tgrad
 
   ! Internal variables
   integer*4 :: i, j, k, ndim, lupri, imax
@@ -2813,7 +2813,7 @@ contains
         write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
         write(lupri,'(a,i4,a,d12.4)')' WARNING: i=',ii,' mu-e_i =',x-eval(ii)
       endif
-      f = f + grad_t(ii) * grad_t(ii) / ((eval(ii) - x) * (eval(ii) - x))
+      f = f + tgrad(ii) * tgrad(ii) / ((eval(ii) - x) * (eval(ii) - x))
     enddo
     f = dsqrt(f)
 
