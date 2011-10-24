@@ -122,7 +122,7 @@ c
 6041  format(/1x,'number of symmetry operator = ',2x,i2)
 6042  format( 1x,'number of basis functions   = ',i4)
 6051  format(/1x,'symmetry number  = ',8i5)
-6052  format( 1x,'symmetry label   = ',x,8(1x,a4))
+6052  format( 1x,'symmetry label   = ',1x,8(1x,a4))
 6053  format( 1x,'basis function   = ',8i5)
 6100  format(/1x,a,(1x,10i10))
 c
