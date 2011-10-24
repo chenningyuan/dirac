@@ -848,7 +848,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_cdiag(pmat,xkappa,gradient,dnrm,ipqtoq)
+  subroutine getk_cdiag(pmat,xkappa,gradient,dnrmk,ipqtoq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
@@ -869,7 +869,7 @@ contains
   ! External variables
   integer*4, intent(in), dimension(4,0:7) :: ipqtoq
 
-  real*8, intent(out) :: dnrm
+  real*8, intent(out) :: dnrmk
 
   real*8, intent(in ), dimension(:,:)     :: gradient
   real*8, intent(in ), dimension(:,:,:,:) :: pmat
@@ -879,7 +879,7 @@ contains
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
   integer*4 :: i, j, k, ij, ij1, iz, nucdep, ni, ni12, lupri
-  real*8    :: pii, pjj, pn2, dnrm2
+  real*8    :: pii, pjj, pn2
 
   real*8, allocatable, dimension(:) :: hmat_d
 
@@ -915,6 +915,7 @@ contains
 
   ! Construction and print of the kappa matrix
   xkappa(:,:,:) = d0
+  dnrmk = d0
   ij = 0
   do j = 1,ni
     do i = j,ni
@@ -929,8 +930,14 @@ contains
       xkappa(i,j,2) =   xkappa(j,i,2)
       xkappa(i,j,3) =   xkappa(j,i,3)
       xkappa(i,j,4) =   xkappa(j,i,4)
+      dnrmk = dnrmk + xkappa(j,i,1)*xkappa(j,i,1) + xkappa(j,i,2)*xkappa(j,i,2) &
+                    + xkappa(j,i,3)*xkappa(j,i,3) + xkappa(j,i,4)*xkappa(j,i,4)
     enddo
   enddo
+
+  ! Norm of the kappa vector
+  dnrmk = dsqrt(dnrmk)
+  write (lupri,'(a,e12.2)') 'Norm of the kappa: ',dnrmk
 
   do iz=1,4
     write(lupri,*)
@@ -946,9 +953,6 @@ contains
      call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
   endif
 
-  ! Norm of the kappa vector
-  dnrm = dnrm2(ni*ni*4,xkappa,1)
-
   call dealloc(hmat_d,id='hmat_d in getk_cdiag')
 
   call qexit('getk_cdiag')
@@ -958,7 +962,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_rdiag(pmat,xkappa,gradient,dnrm,ipqtoq)
+  subroutine getk_rdiag(pmat,xkappa,gradient,dnrmk,ipqtoq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
@@ -981,7 +985,7 @@ contains
   ! External variables
   integer*4, intent(in), dimension(4,0:7) :: ipqtoq
 
-  real*8, intent(out) :: dnrm
+  real*8, intent(out) :: dnrmk
 
   real*8, intent(in ), dimension(:,:)     :: gradient
   real*8, intent(in ), dimension(:,:,:,:) :: pmat
@@ -991,7 +995,7 @@ contains
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
   integer*4 :: i, j, k, ij, ij1, ij2, ij3, iz, nucdep, ni, ni12, lupri
-  real*8    :: pii, pjj, pn2, dnrm2
+  real*8    :: pii, pjj, pn2
 
   real*8, allocatable, dimension(:) :: hmat_d
 
@@ -1034,6 +1038,7 @@ contains
 
   ! Construction and print of the kappa matrix
   xkappa(:,:,:) = d0
+  dnrmk = d0
   ij = 0
   do j = 1,ni
     do i = j,ni
@@ -1050,8 +1055,14 @@ contains
       xkappa(i,j,2) =   xkappa(j,i,2)
       xkappa(i,j,3) =   xkappa(j,i,3)
       xkappa(i,j,4) =   xkappa(j,i,4)
+      dnrmk = dnrmk + xkappa(j,i,1)*xkappa(j,i,1) + xkappa(j,i,2)*xkappa(j,i,2) &
+                    + xkappa(j,i,3)*xkappa(j,i,3) + xkappa(j,i,4)*xkappa(j,i,4)
     enddo
   enddo
+
+  ! Norm of the kappa vector
+  dnrmk = dsqrt(dnrmk)
+  write (lupri,'(a,e12.2)') 'Norm of the kappa: ',dnrmk
 
   do iz=1,4
     write(lupri,*)
@@ -1067,9 +1078,6 @@ contains
      call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
   endif
 
-  ! Norm of the kappa vector
-  dnrm = dnrm2(ni*ni*4,xkappa,1)
-
   call dealloc(hmat_d,id='hmat_d in getk_rdiag')
 
   call qexit('getk_rdiag')
@@ -1079,7 +1087,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_full(pmat,xkappa,hmat,gradient,shift,dnrm)
+  subroutine getk_full(pmat,xkappa,hmat,gradient,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
   !           Construction of the XKAPPA matrix using full hessian               !
@@ -1089,7 +1097,7 @@ contains
 
   ! External variables
   real*8, intent(in ) :: shift
-  real*8, intent(out) :: dnrm
+  real*8, intent(out) :: dnrmk
 
   real*8, intent(in ), dimension(:)       :: gradient
   real*8, intent(in ), dimension(:,:)     :: hmat
@@ -1146,6 +1154,10 @@ contains
     stop
   endif
 
+  ! Norm of the kappa
+  dnrmk  = dnrm2(nhtmp,gtmp,1)
+  write (lupri,'(a,e12.2)') 'Norm of the kappa: ',dnrmk
+
   xkappa(:,:,:) = d0
   ij = 0
   do j = 1,ni
@@ -1179,10 +1191,6 @@ contains
       write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
     enddo
   enddo
-
-  ! Norm of the kappa
-  dnrm  = dnrm2(ni*ni*4,xkappa,1)
-  write (lupri,'(a,e12.2)') 'Norm of kappa: ',dnrm
 
   call dealloc(ipiv,id='ipiv in getk_full')
   call dealloc(gtmp,id='gtmp in getk_full')
