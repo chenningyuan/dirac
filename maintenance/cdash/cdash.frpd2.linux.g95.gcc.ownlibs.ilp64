@@ -18,10 +18,10 @@ cd $DIRAC
 /bin/rm -rf $BUILD
 #git pull 
 git pull origin master
-#./pamadm -a --minus --openrsp
-./pamadm -a 
+./pamadm -a --minus --openrsp
+#./pamadm -a 
 # configure step
-./setup  --fc=g95  --cc=gcc  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
+./setup  --fc=g95  --cc=gcc  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs-no_openrsp" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
 #./setup --int64  --internal-math  -D BUILDNAME="linux.gfortran.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
 cd $DIRAC/$BUILD
 make dirac.x
