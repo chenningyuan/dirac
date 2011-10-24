@@ -1,10 +1,9 @@
 #!/bin/bash
 
-source /opt/intel/bin/compilervars.sh ia32
 export PATH=$PATH':/opt/intel/mkl'
 
-TMP_DIR=/tmp/dirac
-SCRATCH_DIR=/home/bast/trash/dirac_scratch
+TMP_DIR=/scratch/scratch-nightly-compile
+SCRATCH_DIR=/scratch/scratch-nightly-run
 mkdir -p $TMP_DIR
 
 git clone git@repo.ctcc.no:dirac.git $TMP_DIR
@@ -12,7 +11,7 @@ git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 cd $TMP_DIR
 git checkout -b prepare-release-11 origin/prepare-release-11
 ./pamadm --release
-./setup --fc=ifort --cc=icc -D BUILDNAME="ubuntu10.04-i686-ifort12.0-int32-release"
+./setup --fc=gfortran --cc=gcc --int64 -D BUILDNAME="smokey-debian_6.0-x86_64-gfortran_4.4.5-i8-mkl-release"
 
 cd $TMP_DIR/build
 make Nightly
