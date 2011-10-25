@@ -1,0 +1,7 @@
+# m  h  dom mon dow command
+  05 00 *   *   *   /home/bast/cdash/smokey-debian_6.0-x86_64-g95_0.93-i8-mkl-release
+  00 03 *   *   *   killall -9 dirac.x
+  05 03 *   *   *   /home/bast/cdash/smokey-debian_6.0-x86_64-gfortran_4.4.5-i8-mkl-release
+  00 06 *   *   *   killall -9 dirac.x
+  05 06 *   *   *   /home/bast/cdash/smokey-debian_6.0-x86_64-intel_12.1.0-i8-mkl-release
+  00 09 *   *   *   killall -9 dirac.x
