@@ -87,18 +87,12 @@ set(BUILDNAME
     )
 
 # set ctest's own timeout
-#miro: this is not properly working as no stdout/err is displayed on CDashboard!
 set(DART_TESTING_TIMEOUT
-    "1200"
+    "600"
     CACHE STRING
     "Set default timeout in seconds for every single test"
     )
 
-#
-# set additional runtest flags - number of CPU and runtest timeout
-#
-# Miro: for CTest you can not have more than one $-variable in the add_test $-parameter !
-#
 if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
     set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
     message("-- runtest extra flag active, RUNTEST_FLAG_NR_PROC=\"${RUNTEST_FLAG_NR_PROC}\" ")
