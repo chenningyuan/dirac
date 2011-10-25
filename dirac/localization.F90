@@ -1181,10 +1181,6 @@ contains
     stop
   endif
 
-  ! Norm of the kappa
-  dnrmk  = dnrm2(nhtmp,gtmp,1)
-  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
-
   ! solve linear set of equations using diagonalization of hessian
   nred = size(eval,1)
   if(associated(pkappa)) call deallocp(pkappa,id='pkappa in getk_full')
@@ -1198,6 +1194,10 @@ contains
       xtmp(i) = xtmp(i) + evec(i,j)*pkappa(j)
     enddo
   enddo
+
+  ! Norm of the kappa
+  dnrmk  = dnrm2(nhtmp,xtmp,1)
+  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   xkappa(:,:,:) = d0
   ij = 0
