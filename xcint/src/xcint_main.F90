@@ -628,10 +628,8 @@ contains
             end if
          end if
 
-! gosia: later i will join it with what is done above (now it is not working if i just
-! add another if)
          if (do_london_rhs_direct) then
-           call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
          call insert_half_phases()
