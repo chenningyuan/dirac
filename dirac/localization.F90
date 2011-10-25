@@ -35,6 +35,8 @@ end type external_variales
 type( localization_flags ), private :: loc
 type( external_variales  ), private :: var
 
+real*8, parameter :: tresh = 1.0d-13, trsh_mu = 1.0d-4
+
 contains
 
   subroutine initialize_localization
@@ -129,8 +131,8 @@ contains
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0
 
   character*12 :: sectid, cputid, walltid
-  character    :: daytid*24, hessian*4 = 'DIAG', conv*20 = 'No convergence after'
-  logical      :: tobe, full, diagonly, rejected
+  character    :: daytid*24, hessian*4 = 'DIAG'
+  logical      :: tobe, full, diagonly, rejected, Iminmax
 
   integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
@@ -144,7 +146,7 @@ contains
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
-  real*8, pointer :: tgradp(:), evalp(:), evecp(:,:)
+  real*8, pointer :: xkappap(:), tgradp(:), evalp(:), evecp(:,:)
 
   !------------------------------------------------------------------------------!
   call qenter('orbloc')
@@ -163,6 +165,7 @@ contains
 
   diagonly = .false.
   rejected = .false.
+  Iminmax  = .false.
   if(loc%hesthr < loc%thrloc) diagonly = .true.
 
   tradius = 10.0d0
@@ -209,9 +212,10 @@ contains
   call alloc(indnao,2*nucdep+2,id='indnao in orbloc')
 
   ! nullify pointers for later allocation using memory_allocator module
-  nullify(tgradp)
-  nullify(evalp )
-  nullify(evecp )
+  nullify(tgradp )
+  nullify(evalp  )
+  nullify(evecp  )
+  nullify(xkappap)
 
   ! Read coefficients
   call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
@@ -262,22 +266,20 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
       call get_gradient(pmat,grad_c,grad,dnrmg)
-      call hdiag(hmat,grad,eval,tgrad,tgradp,evalp,evecp,itr)
+      call hdiag(hmat,grad,eval,tgrad,tgradp,evalp,evecp,itr,Iminmax)
+      if(Iminmax) exit
       shift = d0
-      call deallocp(tgradp,id='tgradp in orbloc')
-      call deallocp(evalp ,id='evalp  in orbloc')
-      call deallocp(evecp ,id='evecp  in orbloc')
     else
-      call get_mu(eval,tgrad,tradius,shift,tpred)
+      call get_mu(evalp,tgradp,tradius,shift,tpred)
     endif
-    if(     full) call getk_full(pmat,xkappa,hmat,grad,shift,dnrmk)
+    if(     full) call getk_full(pmat,xkappa,hmat,grad,xkappap,tgradp,evalp,evecp,shift,dnrmk)
     if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
-    if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > 1.0d-2*tradius) )then
+    if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
-    call exp_func(xkappa,hmat,grad,full,dinvmq)
+    call exp_func(xkappa,hmat,grad,xkappap,tgradp,evalp,full,dinvmq)
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
@@ -320,8 +322,16 @@ contains
 
   enddo
 
-  if(diffa < loc%thrloc) conv = 'Convergence in      '
-  write(lupri,'(/a,a20,i5,a)') ' >>> ',conv,itr,' iterations'
+  write(lupri,'(/5x,a)')         '***********************************************************'
+  if(Iminmax)then
+    write(lupri,'(5x,a,i5,a)')   '****       MAXIMUM reached after',itr,'  iterations      ****'
+  elseif(diffa < loc%thrloc)then
+    write(lupri,'(5x,a,i5,a)')   '****          Convergence in',itr,'  iterations          ****'
+  else
+    write(lupri,'(5x,a,i5,a)')   '****       No convergence after',itr,'  iterations       ****'
+  endif
+  write(lupri,'(5x,a,f20.13,a)') '**** Inverse mean delocalization =',dinvmo,' ****'
+  write(lupri,'(5x,a/)')         '***********************************************************'
 
   timend = second()
   time   = timend - timstr
@@ -351,6 +361,11 @@ contains
   call dealloc(indao ,id='indao  in orbloc')
   call dealloc(indaos,id='indaos in orbloc')
   call dealloc(indnao,id='indnao in orbloc')
+
+  call deallocp(xkappap,id='xkappap in orbloc')
+  call deallocp(tgradp ,id='tgradp  in orbloc')
+  call deallocp(evalp  ,id='evalp   in orbloc')
+  call deallocp(evecp  ,id='evecp   in orbloc')
 
   call qexit('orbloc')
 
@@ -1099,7 +1114,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_full(pmat,xkappa,hmat,gradient,shift,dnrmk)
+  subroutine getk_full(pmat,xkappa,hmat,gradient,xkappap,tgradp,evalp,evecp,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
   !           Construction of the XKAPPA matrix using full hessian               !
@@ -1116,15 +1131,18 @@ contains
   real*8, intent(in ), dimension(:,:,:,:) :: pmat
   real*8, intent(out), dimension(:,:,:)   :: xkappa
 
+  real*8, intent(in ), pointer :: tgradp(:), evalp(:), evecp(:,:)
+  real*8, intent(out), pointer :: xkappap(:)
+
   ! Internal variables
   real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
   complex*16, parameter :: c2 = (2.0d0,0.0d0)
 
-  integer*4 :: i, j, k, i1, j1, ij, iz, nucdep, ni, nhtmp, ni12, lupri, ier
+  integer*4 :: i, j, k, i1, j1, ij, iz, nucdep, ni, nhtmp, ni12, lupri, ier, ndimp
   real*8    :: pii, pjj, pn2, dnrm2, dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
   integer*4,  allocatable, dimension(:)   :: ipiv
-  real*8,     allocatable, dimension(:)   :: gtmp
+  real*8,     allocatable, dimension(:)   :: gtmp, xtmp
   real*8,     allocatable, dimension(:,:) :: htmp
 
   !------------------------------------------------------------------------------!
@@ -1140,6 +1158,7 @@ contains
 
   call alloc(ipiv,nhtmp      ,id='ipiv in getk_full')
   call alloc(gtmp,nhtmp      ,id='gtmp in getk_full')
+  call alloc(xtmp,nhtmp      ,id='xtmp in getk_full')
   call alloc(htmp,nhtmp,nhtmp,id='htmp in getk_full')
 
   ! prepare hessian for dgetrf
@@ -1171,13 +1190,27 @@ contains
   write(6,*)
   write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
 
+  ! solve linear set of equations using diagonalization of hessian
+  ndimp = size(evalp,1)
+  if(associated(xkappap)) call deallocp(xkappap,id='xkappap in getk_full')
+  call allocp(xkappap,ndimp,id='xkappap in getk_full')
+  do i=1,ndimp
+    xkappap(i) = - tgradp(i) / (evalp(i) - shift)
+  enddo
+  xtmp(:) = d0
+  do j=1,ndimp
+    do i=1,nhtmp
+      xtmp(i) = xtmp(i) + evecp(i,j)*xkappap(j)
+    enddo
+  enddo
+
   xkappa(:,:,:) = d0
   ij = 0
   do j = 1,ni
     do i = j,ni
       if(i==j)cycle
       ij = ij + 1
-      xkappa(j,i,1) =   gtmp(ij)
+      xkappa(j,i,1) =   xtmp(ij)
       xkappa(i,j,1) = - xkappa(j,i,1)
     enddo
   enddo
@@ -1186,13 +1219,13 @@ contains
   do j = 1,ni
     do i = j,ni
       ij = ij + 1
-      xkappa(j,i,2) =   gtmp(ni12+ij)
+      xkappa(j,i,2) =   xtmp(ni12+ij)
       xkappa(i,j,2) =   xkappa(j,i,2)
 
-      xkappa(j,i,3) = - gtmp(ij)
+      xkappa(j,i,3) = - xtmp(ij)
       xkappa(i,j,3) =   xkappa(j,i,3)
 
-      xkappa(j,i,4) =   gtmp(2*ni12+ij)
+      xkappa(j,i,4) =   xtmp(2*ni12+ij)
       xkappa(i,j,4) =   xkappa(j,i,4)
     enddo
   enddo
@@ -1207,6 +1240,7 @@ contains
 
   call dealloc(ipiv,id='ipiv in getk_full')
   call dealloc(gtmp,id='gtmp in getk_full')
+  call dealloc(xtmp,id='xtmp in getk_full')
   call dealloc(htmp,id='htmp in getk_full')
 
   call qexit('getk_full')
@@ -2493,7 +2527,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine exp_func(xkappa,hmat,gradient,full,dinvmq)
+  subroutine exp_func(xkappa,hmat,gradient,xkappap,tgradp,evalp,full,dinvmq)
   !******************************************************************************!
   !                                                                              !
   !                  Calculate predicted functional value                        !
@@ -2509,6 +2543,8 @@ contains
   real*8, intent(in), dimension(:)     :: gradient
   real*8, intent(in), dimension(:,:)   :: hmat
   real*8, intent(in), dimension(:,:,:) :: xkappa
+
+  real*8, intent(in), pointer :: xkappap(:), tgradp(:), evalp(:)
 
   ! Internal variables
   integer*4  :: i, j, i1, j1, ij, id, ni, ni12, nhtmp, ii, jj
@@ -2572,6 +2608,12 @@ contains
   enddo
   dinvmq = dinvmq / dfloat(ni)
 
+  dinvmq = d0
+  do i=1,size(evalp,1)
+    dinvmq = dinvmq + xkappap(i) * (d2*tgradp(i)+evalp(i)*xkappap(i))
+  enddo
+  dinvmq = dinvmq / dfloat(ni)
+
   !------------------------------------------------------------------------------!
   call dealloc(ktmp,id='ktmp in exp_func')
   call dealloc(htmp,id='htmp in exp_func')
@@ -2585,7 +2627,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,eval,tgrad,tgradp,evalp,evecp,itr)
+  subroutine hdiag(hmat,gradient,eval,tgrad,tgradp,evalp,evecp,itr,Iminmax)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2595,7 +2637,8 @@ contains
   implicit none
 
   ! External variables
-  integer*4, intent(in) :: itr
+  logical,   intent(out) :: Iminmax
+  integer*4, intent(in ) :: itr
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
   real*8, intent(out), dimension(:)   :: eval, tgrad
@@ -2603,7 +2646,7 @@ contains
 
   ! Internal variables
   integer*4 :: i, j, k, l, ij, nhtmp, ndimp, ier, lupri, lwork, ilaenv, nb, np, nm, imax, imin
-  real*8    :: dtmp, dmax, atmp, ctmp, emin, dmin, tresh
+  real*8    :: dtmp, dmax, atmp, ctmp, emin, dmin
 
   real*8, allocatable, dimension(:)   :: work
   real*8, allocatable, dimension(:,:) :: htmp
@@ -2644,10 +2687,14 @@ contains
 
   ! project out redundant parameters (eigenvalues close to zero)
   ndimp = 0
-  tresh = 1.0d-13
   do i=1,nhtmp
     if(dabs(eval(i)) > tresh) ndimp = ndimp + 1
   enddo
+  if(associated(evalp))then
+    call deallocp(tgradp,id='tgradp in hdiag')
+    call deallocp(evalp ,id='evalp  in hdiag')
+    call deallocp(evecp ,id='evecp  in hdiag')
+  endif
   call allocp(tgradp,      ndimp,id='tgradp in hdiag')
   call allocp(evalp ,      ndimp,id='evalp  in hdiag')
   call allocp(evecp ,nhtmp,ndimp,id='evecp  in hdiag')
@@ -2666,13 +2713,14 @@ contains
   ! count number of positive, negative and zero eigenvalues
   np=0; nm=0; nb=0
   do i=1,nhtmp
-    if(dabs(eval(i)) < 1.0d-10)then
-      nb = nb + 1
-    else
+    if(dabs(eval(i)) > tresh)then
       if(eval(i) < 0.0d0)nm = nm + 1
       if(eval(i) > 0.0d0)np = np + 1
+    else
+      nb = nb + 1
     endif
   enddo
+  if(np == 0)Iminmax = .true.  ! we reached the maximum of the function
 
   ! test the precision of diagonalization
   call init_mat(C,nhtmp,nhtmp,mz=1)
@@ -2765,7 +2813,7 @@ contains
 
   ! Internal variables
   integer*4 :: i, j, k, ndim, lupri, imax
-  real*8    :: tcurr, xcurr, tresh, xmax, xmin, step
+  real*8    :: tcurr, xcurr, cutoff, xmax, xmin, step
   real*8, parameter :: d2 = 2.0d0
 
   !------------------------------------------------------------------------------!
@@ -2778,7 +2826,7 @@ contains
 
   ! initialization
   imax  = 10000
-  tresh = 1.0d-2 * tradius
+  cutoff= trsh_mu * tradius
   step  = 0.1d0
   xmax  = eval(ndim) + step
   xmin  = eval(ndim)
@@ -2812,7 +2860,7 @@ contains
     exit
   endif
 
-  if(dabs(tcurr-tradius) < tresh) exit
+  if(dabs(tcurr-tradius) < cutoff) exit
 
   xcurr = (xmax+xmin)/d2
   tcurr = f(xcurr)
@@ -2841,7 +2889,7 @@ contains
 
     f = 0.0d0
     do ii=1,ndim
-      if(dabs(eval(ii) - x) < 1.0d-16)then
+      if(dabs(eval(ii) - x) < 1.0d-14)then
         write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
         write(lupri,'(a,i4,a,d12.4)')' WARNING: i=',ii,' mu-e_i =',x-eval(ii)
       endif
