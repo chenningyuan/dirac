@@ -141,12 +141,12 @@ contains
   real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
-  real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, eval, tgrad
-  real*8,    allocatable, dimension(:,:)     :: grad_c, hmat
+  real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, etmp
+  real*8,    allocatable, dimension(:,:)     :: grad_c, hmat, evec
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
-  real*8, pointer :: xkappap(:), tgradp(:), evalp(:), evecp(:,:)
+  real*8, pointer :: pkappa(:), tgrad(:), eval(:)
 
   !------------------------------------------------------------------------------!
   call qenter('orbloc')
@@ -200,8 +200,8 @@ contains
   call alloc(hmat  ,ndimhr,ndimhr,     id='hmat   in orbloc')
   call alloc(grad_c,ndimh,2,           id='grad_c in orbloc')
   call alloc(grad  ,ndimhr,            id='grad   in orbloc')
-  call alloc(eval  ,ndimhr,            id='eval   in orbloc')
-  call alloc(tgrad ,ndimhr,            id='tgrad  in orbloc')
+  call alloc(etmp  ,ndimhr,            id='etmp   in orbloc')
+  call alloc(evec  ,ndimhr,ndimhr,     id='evec   in orbloc')
   call alloc(xkappa,nish,nish,4,       id='xkappa in orbloc')
   call alloc(pmat  ,nish,nish,4,nucdep,id='pmat   in orbloc')
 
@@ -212,10 +212,9 @@ contains
   call alloc(indnao,2*nucdep+2,id='indnao in orbloc')
 
   ! nullify pointers for later allocation using memory_allocator module
-  nullify(tgradp )
-  nullify(evalp  )
-  nullify(evecp  )
-  nullify(xkappap)
+  nullify(tgrad )
+  nullify(eval  )
+  nullify(pkappa)
 
   ! Read coefficients
   call opnfil(var%lucoef,'DFCOEF','OLD','PAMANA')
@@ -266,20 +265,20 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
       call get_gradient(pmat,grad_c,grad,dnrmg)
-      call hdiag(hmat,grad,eval,tgrad,tgradp,evalp,evecp,itr,Iminmax)
+      call hdiag(hmat,grad,etmp,tgrad,eval,evec,Iminmax)
       if(Iminmax) exit
       shift = d0
     else
-      call get_mu(evalp,tgradp,tradius,shift,tpred)
+      call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
-    if(     full) call getk_full(pmat,xkappa,hmat,grad,xkappap,tgradp,evalp,evecp,shift,dnrmk)
+    if(     full) call getk_full(pmat,xkappa,hmat,grad,pkappa,tgrad,eval,evec,shift,dnrmk)
     if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
     if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
-    call exp_func(xkappa,hmat,grad,xkappap,tgradp,evalp,full,dinvmq)
+    call exp_func(xkappa,hmat,grad,pkappa,tgrad,eval,full,dinvmq)
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
@@ -352,8 +351,8 @@ contains
   call dealloc(hmat  ,id='hmat   in orbloc')
   call dealloc(grad_c,id='grad_c in orbloc')
   call dealloc(grad  ,id='grad   in orbloc')
-  call dealloc(eval  ,id='eval   in orbloc')
-  call dealloc(tgrad ,id='tgrad  in orbloc')
+  call dealloc(etmp  ,id='etmp   in orbloc')
+  call dealloc(evec  ,id='evec   in orbloc')
   call dealloc(cmo   ,id='cmo    in orbloc')
 
   call dealloc(nfnuc ,id='nfnuc  in orbloc')
@@ -362,10 +361,9 @@ contains
   call dealloc(indaos,id='indaos in orbloc')
   call dealloc(indnao,id='indnao in orbloc')
 
-  call deallocp(xkappap,id='xkappap in orbloc')
-  call deallocp(tgradp ,id='tgradp  in orbloc')
-  call deallocp(evalp  ,id='evalp   in orbloc')
-  call deallocp(evecp  ,id='evecp   in orbloc')
+  call deallocp(pkappa,id='pkappa in orbloc')
+  call deallocp(tgrad ,id='tgrad  in orbloc')
+  call deallocp(eval  ,id='eval   in orbloc')
 
   call qexit('orbloc')
 
@@ -962,8 +960,7 @@ contains
 
   ! Norm of the kappa vector
   dnrmk = dsqrt(dnrmk)
-  write(6,*)
-  write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
+  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   do iz=1,4
     write(lupri,*)
@@ -1088,8 +1085,7 @@ contains
 
   ! Norm of the kappa vector
   dnrmk = dsqrt(dnrmk)
-  write(6,*)
-  write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
+  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   do iz=1,4
     write(lupri,*)
@@ -1114,7 +1110,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_full(pmat,xkappa,hmat,gradient,xkappap,tgradp,evalp,evecp,shift,dnrmk)
+  subroutine getk_full(pmat,xkappa,hmat,gradient,pkappa,tgrad,eval,evec,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
   !           Construction of the XKAPPA matrix using full hessian               !
@@ -1127,18 +1123,18 @@ contains
   real*8, intent(out) :: dnrmk
 
   real*8, intent(in ), dimension(:)       :: gradient
-  real*8, intent(in ), dimension(:,:)     :: hmat
+  real*8, intent(in ), dimension(:,:)     :: hmat, evec
   real*8, intent(in ), dimension(:,:,:,:) :: pmat
   real*8, intent(out), dimension(:,:,:)   :: xkappa
 
-  real*8, intent(in ), pointer :: tgradp(:), evalp(:), evecp(:,:)
-  real*8, intent(out), pointer :: xkappap(:)
+  real*8, intent(in ), pointer :: tgrad(:), eval(:)
+  real*8, intent(out), pointer :: pkappa(:)
 
   ! Internal variables
   real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
   complex*16, parameter :: c2 = (2.0d0,0.0d0)
 
-  integer*4 :: i, j, k, i1, j1, ij, iz, nucdep, ni, nhtmp, ni12, lupri, ier, ndimp
+  integer*4 :: i, j, k, i1, j1, ij, iz, nucdep, ni, nhtmp, ni12, lupri, ier, nred
   real*8    :: pii, pjj, pn2, dnrm2, dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
   integer*4,  allocatable, dimension(:)   :: ipiv
@@ -1187,20 +1183,19 @@ contains
 
   ! Norm of the kappa
   dnrmk  = dnrm2(nhtmp,gtmp,1)
-  write(6,*)
-  write (lupri,'(a,e12.2)') ' Norm of the kappa: ',dnrmk
+  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   ! solve linear set of equations using diagonalization of hessian
-  ndimp = size(evalp,1)
-  if(associated(xkappap)) call deallocp(xkappap,id='xkappap in getk_full')
-  call allocp(xkappap,ndimp,id='xkappap in getk_full')
-  do i=1,ndimp
-    xkappap(i) = - tgradp(i) / (evalp(i) - shift)
+  nred = size(eval,1)
+  if(associated(pkappa)) call deallocp(pkappa,id='pkappa in getk_full')
+  call allocp(pkappa,nred,id='pkappa in getk_full')
+  do i=1,nred
+    pkappa(i) = - tgrad(i) / (eval(i) - shift)
   enddo
   xtmp(:) = d0
-  do j=1,ndimp
+  do j=1,nred
     do i=1,nhtmp
-      xtmp(i) = xtmp(i) + evecp(i,j)*xkappap(j)
+      xtmp(i) = xtmp(i) + evec(i,j)*pkappa(j)
     enddo
   enddo
 
@@ -1725,13 +1720,11 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
   do j=1,ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
   do j=1,ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
@@ -1822,13 +1815,11 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
   do j=2*ni12+1, 3*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
   do j=2*ni12+1, 3*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
@@ -1942,13 +1933,11 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bu'
   do j=ni12+1,2*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bu'
   do j=ni12+1,2*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
@@ -2059,13 +2048,11 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  B_bu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_bu'
   do j=3*ni12+1, 4*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
   enddo
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  B_bu'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_bu'
   do j=3*ni12+1, 4*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
   enddo
@@ -2162,13 +2149,11 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bb'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bb'
   do j=ni12+1,2*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
   enddo
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bb'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bb'
   do j=ni12+1,2*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
   enddo
@@ -2286,13 +2271,11 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,1)  -->  B_ub'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_ub'
   do j=2*ni12+1, 3*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
   enddo
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print hmat(:,:,2)  -->  B_ub'
+  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_ub'
   do j=2*ni12+1, 3*ni12
     write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
   enddo
@@ -2477,17 +2460,13 @@ contains
     enddo
   enddo
 
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
   write(lupri,'(9d12.4)') (grad_c(j,1),j=1,ni12)
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
   write(lupri,'(9d12.4)') (grad_c(j,2),j=1,ni12)
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
   write(lupri,'(9d12.4)') (grad_c(j,1),j=1+ni12,2*ni12)
-  write(lupri,*)
-  write(lupri,'(a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
   write(lupri,'(9d12.4)') (grad_c(j,2),j=1+ni12,2*ni12)
 
   dnrmg = d0
@@ -2527,7 +2506,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine exp_func(xkappa,hmat,gradient,xkappap,tgradp,evalp,full,dinvmq)
+  subroutine exp_func(xkappa,hmat,gradient,pkappa,tgrad,eval,full,dinvmq)
   !******************************************************************************!
   !                                                                              !
   !                  Calculate predicted functional value                        !
@@ -2544,7 +2523,7 @@ contains
   real*8, intent(in), dimension(:,:)   :: hmat
   real*8, intent(in), dimension(:,:,:) :: xkappa
 
-  real*8, intent(in), pointer :: xkappap(:), tgradp(:), evalp(:)
+  real*8, intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
 
   ! Internal variables
   integer*4  :: i, j, i1, j1, ij, id, ni, ni12, nhtmp, ii, jj
@@ -2609,8 +2588,8 @@ contains
   dinvmq = dinvmq / dfloat(ni)
 
   dinvmq = d0
-  do i=1,size(evalp,1)
-    dinvmq = dinvmq + xkappap(i) * (d2*tgradp(i)+evalp(i)*xkappap(i))
+  do i=1,size(eval,1)
+    dinvmq = dinvmq + pkappa(i) * (d2*tgrad(i)+eval(i)*pkappa(i))
   enddo
   dinvmq = dinvmq / dfloat(ni)
 
@@ -2627,31 +2606,26 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,eval,tgrad,tgradp,evalp,evecp,itr,Iminmax)
+  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,evec,Iminmax)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
   !                                                                              !
   !******************************************************************************!
-  use matrix_defop
   implicit none
 
   ! External variables
   logical,   intent(out) :: Iminmax
-  integer*4, intent(in ) :: itr
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
-  real*8, intent(out), dimension(:)   :: eval, tgrad
-  real*8, intent(out), pointer :: tgradp(:), evalp(:), evecp(:,:)
+  real*8, intent(out), dimension(:)   :: etmp
+  real*8, intent(out), dimension(:,:) :: evec
+  real*8, intent(out), pointer :: tgrad(:), eval(:)
 
   ! Internal variables
-  integer*4 :: i, j, k, l, ij, nhtmp, ndimp, ier, lupri, lwork, ilaenv, nb, np, nm, imax, imin
-  real*8    :: dtmp, dmax, atmp, ctmp, emin, dmin
+  integer*4 :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, np, nm
 
   real*8, allocatable, dimension(:)   :: work
-  real*8, allocatable, dimension(:,:) :: htmp
-
-  type(matrix) :: C, H, A
 
   !------------------------------------------------------------------------------!
   call qenter('hdiag')
@@ -2663,127 +2637,64 @@ contains
   nb = ilaenv(1,'dsytrd','u',nhtmp,-1,-1,-1)
   lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
 
-  call alloc(htmp,nhtmp,nhtmp,id='htmp in hdiag')
   call alloc(work,lwork,      id='work in hdiag')
 
-  ! prepare htmp
-  htmp(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
+  ! prepare evec
+  evec(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
 
-  call dsyev('V','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
-! call dsyev('N','U',nhtmp,htmp,nhtmp,eval,work,lwork,ier)
+  call dsyev('V','U',nhtmp,evec,nhtmp,etmp,work,lwork,ier)
   if(ier /= 0)then
     write(lupri,*) ' ERROR: The dsyev LAPACK subroutine in hdiag finished unsuccessfully'
     write(lupri,*) ' info =',ier
     stop
   endif
 
-  ! calculate transformed gradient: tilde{g} = U^T * g
-  tgrad(:) = 0.0d0
-  do i=1,nhtmp
-    do j=1,nhtmp
-      tgrad(i) = tgrad(i) + htmp(j,i) * gradient(j)
-    enddo
-  enddo
-
   ! project out redundant parameters (eigenvalues close to zero)
-  ndimp = 0
+  nred = 0
   do i=1,nhtmp
-    if(dabs(eval(i)) > tresh) ndimp = ndimp + 1
+    if(dabs(etmp(i)) > tresh) nred = nred + 1
   enddo
-  if(associated(evalp))then
-    call deallocp(tgradp,id='tgradp in hdiag')
-    call deallocp(evalp ,id='evalp  in hdiag')
-    call deallocp(evecp ,id='evecp  in hdiag')
+  if(associated(eval))then
+    call deallocp(tgrad,id='tgrad in hdiag')
+    call deallocp(eval ,id='eval in hdiag')
   endif
-  call allocp(tgradp,      ndimp,id='tgradp in hdiag')
-  call allocp(evalp ,      ndimp,id='evalp  in hdiag')
-  call allocp(evecp ,nhtmp,ndimp,id='evecp  in hdiag')
+  call allocp(tgrad,nred,id='tgrad in hdiag')
+  call allocp(eval ,nred,id='eval in hdiag')
   k = 0
   do i=1,nhtmp
-    if(dabs(eval(i)) > tresh)then
+    if(dabs(etmp(i)) > tresh)then
       k = k + 1
-      tgradp(k)= tgrad(i)
-      evalp(k) = eval(i)
+      eval(k) = etmp(i)
       do j=1,nhtmp
-        evecp(j,k) = htmp(j,i)
+        evec(j,k) = evec(j,i)
       enddo
     endif
+  enddo
+
+  ! calculate transformed gradient: tilde{g} = U^T * g
+  tgrad(:) = 0.0d0
+  do i=1,nred
+    do j=1,nhtmp
+      tgrad(i) = tgrad(i) + evec(j,i) * gradient(j)
+    enddo
   enddo
 
   ! count number of positive, negative and zero eigenvalues
   np=0; nm=0; nb=0
   do i=1,nhtmp
-    if(dabs(eval(i)) > tresh)then
-      if(eval(i) < 0.0d0)nm = nm + 1
-      if(eval(i) > 0.0d0)np = np + 1
+    if(dabs(etmp(i)) > tresh)then
+      if(etmp(i) < 0.0d0)nm = nm + 1
+      if(etmp(i) > 0.0d0)np = np + 1
     else
       nb = nb + 1
     endif
   enddo
   if(np == 0)Iminmax = .true.  ! we reached the maximum of the function
 
-  ! test the precision of diagonalization
-  call init_mat(C,nhtmp,nhtmp,mz=1)
-  write(6,*) 'Test C',nhtmp,size(C%elms),C%mz
-
-  ij = 0
-  do j=1,nhtmp
-    do i=1,nhtmp
-      ij = ij + 1
-      C%elms(ij) = htmp(i,j)
-    enddo
-  enddo
-
-  call init_mat(H,nhtmp,nhtmp,mz=1)
-  write(6,*) 'Test H',nhtmp,size(H%elms),H%mz
-
-  ij = 0
-  do j=1,nhtmp
-    do i=1,nhtmp
-      ij = ij + 1
-      H%elms(ij) = hmat(i,j)
-    enddo
-  enddo
-
-  A = dag(C) * H * C
-
-  write(6,*) 'Test A',nhtmp,size(A%elms),A%mz
-
-  ij = 0
-  dtmp = 0.0d0
-  dmax = 0.0d0
-  emin = eval(1)
-  do j=1,nhtmp
-    do i=1,nhtmp
-      ij = ij + 1
-      if(i==j)then
-        dtmp = dtmp + (eval(i) - A%elms(ij))*(eval(i) - A%elms(ij))
-        if(dabs(eval(i) - A%elms(ij)) > dmax)then
-          dmax = dabs(eval(i) - A%elms(ij))
-          imax = i
-        endif
-        if(dabs(eval(i)) < dabs(emin))then
-          emin = eval(i)
-          dmin = dabs(eval(i) - A%elms(ij))
-          imin = i
-        endif
-      endif
-    enddo
-  enddo
-  dtmp = dsqrt(dtmp) / nhtmp
-  write(6,'(a,i3,a,d10.2,a,i3,2d10.2,a,2d10.2)') ' Test: itr =',itr,' sum =',dtmp,' i,e,abs =',imax,eval(imax),dmax,' emin,abs =',emin,dmin
-
-  write(6,*)
-  write(6,*) ' Eigenvector for the smallest eigenvalue: '
-  write(6,'(10es9.1)') (htmp(i,imin),i=1,nhtmp)
-  ! end of test
-
-  write(6,*)
-  write(lupri,'(a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
-  write(lupri,'(8d12.4)') (eval(i),i=1,nhtmp)
+  write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
+  write(lupri,'(8d12.4)') (etmp(i),i=1,nhtmp)
 
   !------------------------------------------------------------------------------!
-  call dealloc(htmp,id='htmp in hdiag')
   call dealloc(work,id='work in hdiag')
 
   call qexit('hdiag')
@@ -2809,7 +2720,7 @@ contains
   real*8, intent(in ) :: tradius
   real*8, intent(out) :: shift, tpred
 
-  real*8, intent(in), dimension(:) :: eval, tgrad
+  real*8, intent(in), pointer :: eval(:), tgrad(:)
 
   ! Internal variables
   integer*4 :: i, j, k, ndim, lupri, imax
