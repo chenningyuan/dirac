@@ -972,7 +972,9 @@ contains
          deallocate(buffer)
 
       end do loop_over_points_block
-   else
+   end if !if (use_blas3_scheme) then
+
+   if (.not. use_blas3_scheme) then
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -1610,7 +1612,7 @@ contains
     deallocate(ao)
     deallocate(buffer)
 
-   end if !if (use_blas3_scheme) then
+   end if !if (.not. use_blas3_scheme) then
 
     deallocate(derv)
     deallocate(derv_nadd)
