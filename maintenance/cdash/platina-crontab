@@ -1,6 +1,0 @@
-# m  h  dom mon dow command
-  05 00 *   *   *   /home/bast/dirac/dirac-git-repo/maintenance/cdash/platina-ifort-release
-  00 02 *   *   *   killall -9 dirac.x
-  05 02 *   *   *   /home/bast/dirac/dirac-git-repo/maintenance/cdash/platina-gfortran-release
-  00 05 *   *   *   killall -9 dirac.x
-  00 22 */2 *   *   /home/bast/dirac/backup-dirac
