@@ -1,8 +1,10 @@
 message("Report of configuration settings:")
 message("CMAKE_SYSTEM_NAME          ${CMAKE_SYSTEM_NAME}          ")
-message("ENABLE_INTERNAL_MATH      ${ENABLE_INTERNAL_MATH}      ")
+message("CMAKE_GENERATOR            ${CMAKE_GENERATOR}            ")
+message("ENABLE_INTERNAL_MATH       ${ENABLE_INTERNAL_MATH}       ")
 message("ENABLE_64BIT_INTEGERS      ${ENABLE_64BIT_INTEGERS}      ")
 message("ENABLE_MPI                 ${ENABLE_MPI}                 ")
+message("ENABLE_SLOWDOWN_SLAVE      ${ENABLE_SLOWDOWN_SLAVE}      ")
 message("ENABLE_XCFUN               ${ENABLE_XCFUN}               ")
 message("ENABLE_STATIC_LINKING      ${ENABLE_STATIC_LINKING}      ")
 message("CMAKE_BUILD_TYPE           ${CMAKE_BUILD_TYPE}           ")
@@ -40,7 +42,7 @@ foreach( d ${DirDefs} )
     message( STATUS "Found Define: " ${d} )
 endforeach()
 
-message("GIT_REVISION               ${GIT_REVISION}               ")
+message("GIT_REVISION               ${LAST_GIT_REVISION}               ")
 
 ## check integer setting of OpenMPI Fortran compiler, mpif90
 ## TODO: do the real check, not only print warning message !

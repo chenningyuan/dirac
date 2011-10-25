@@ -375,6 +375,7 @@ C*****************************************************************************
       use xcint_main
       use interface_mo_specific
       use dft_cfg
+      use fde_types
       use fde_mod
       use num_grid_gen
       use xmlout
@@ -398,6 +399,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
+      type(fde_import) :: itmp
       LOGICAL TOBE,DOSEL,DOLEV,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -565,32 +567,39 @@ C       ==============================================
 C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDXC = SECOND()
-        TDF2 = TDXC - TDF2
+        TDfde = SECOND()
+        TDF2 = TDfde - TDF2
 
+        call interface_mo_write()
+        
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+
+           tdfde =  second() - tdfde
+        endif
+#endif
+
+        tdxc = second()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
- 
-!          write mo info to file
-!          read by the dft module
-           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
            call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.,
-     &                        xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
-     &                        xc_do_fde_response    =
-     &                                           dirac_cfg_fde_response)
+     &                       xc_nz           = nz,
+     &                       xc_dmat_0       = dmat,
+     &                       xc_nr_dmat      = 0,
+     &                       xc_nr_fmat      = 1,
+     &                       xc_fmat         = fock,
+     &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
+
+       
 C
 C       Solvent contribution
 C
@@ -760,6 +769,11 @@ C
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
           ENDIF
+          if (dirac_cfg_fde) then
+             cputid = sectid(tdfde)
+             write(lupri,'(3X,A,A12)')
+     &      '* FDE Fock matrix           (CPU):',CPUTID
+          endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
@@ -1191,6 +1205,7 @@ C*****************************************************************************
       use dirac_cfg
       use dft_cfg
       use xcint_main
+      use fde_types
       use fde_mod
       use num_grid_gen
       use interface_mo_specific
@@ -1214,6 +1229,7 @@ C
 #include "dcbreo.h"
 #include "densfit.h"
       LOGICAL   LBIT
+      type(fde_import) :: itmp
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
@@ -1273,7 +1289,7 @@ C
 C        Get density matrices (normed to one)
 C
          CALL DENMAT(DMAT,CMO,IPRSCF)
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
          call matexport_text('% In SCFCYC1')
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
@@ -1369,33 +1385,35 @@ C
         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
 !       mi - variable initialization (otherwise runtime-check failure)
-        TDXC = SECOND()
+        
+        tdfde= second()
+        call interface_mo_write()
 
+#ifdef MOD_UNRELEASED
+        call fde_get_import_info(itmp)
+        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
+           call fde_set_nz(nz)
+           call fde_calculate_embpot(ntbas(0),dmat,fock)
+           tdfde = second() - tdfde
+        endif
+#endif
+        
+        TDXC = SECOND()
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
- 
-!          write mo info to file
-!          read by the dft module
-           call interface_mo_write() 
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
            if (parcal) call dirac_parctl(4)
 #endif
            call integrate_xc(xc_mat_dim      = ntbas(0),
-     &                        xc_nz           = nz,
-     &                        xc_dmat_0       = dmat,
-     &                        xc_nr_dmat      = 0,
-     &                        xc_nr_fmat      = 1,
-     &                        xc_fmat         = fock,
-     &                        xc_do_potential = .true.,
-     &                        xc_do_fde_update_vemb =
-     &                                (dirac_cfg_fde .and. update_vemb),
-     &                        xc_do_fde_response    =
-     &                                           dirac_cfg_fde_response)
-           
+     &                       xc_nz           = nz,
+     &                       xc_dmat_0       = dmat,
+     &                       xc_nr_dmat      = 0,
+     &                       xc_nr_fmat      = 1,
+     &                       xc_fmat         = fock,
+     &                       xc_do_potential = .true.)
            tdxc = second() - tdxc
         end if
-
 
 C
 C        Solvent contribution
@@ -1579,6 +1597,7 @@ C*****************************************************************************
 
       use dirac_cfg
       use xcint_main
+      use fde_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1607,6 +1626,7 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
+      real(kind=8) :: fde_energy
       data besterg /1.0D100/
       save besterg
 C
@@ -1695,6 +1715,13 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + get_xc_energy()
       end if
+
+!     if (dirac_cfg_fde) then
+!        call fde_export_write_data_to_memory('DHF') 
+!     call calc_fde_interaction_energy(fde_energy,gf_active,gf_frozen)
+!        write (*,*) 'FDE energy: ',fde_energy
+!     endif
+
 
       DHFERG = DHFERG + ELERGY
 C

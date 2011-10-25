@@ -13,14 +13,6 @@
 !     and then rebuild the program using the command "make".
 !
       INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MXBSETS
-!
-! WARNING: LARGE_MOLECULES is used in maxorb.h and mxcent.h.
-!          If you define it you HAVE TO define it in both files
-!          otherwise you may experience bugs and incorrect results.
-!          the easiest and safest way to define LARGE_MOLECULES is using
-!          "MODS=-DLARGE_MOLECULES" in build/Makefile.moddef,
-!          alternatively using -DLARGE_MOLECULES in Makefile.config.
-!          You have to recompile DIRAC after you have modified one of these files.
 #if ! defined (LARGE_MOLECULES)
       PARAMETER (MXSHEL = 950, MXPRIM = 2000, MXCORB = 5000,            &
      &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)

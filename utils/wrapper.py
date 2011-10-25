@@ -353,8 +353,6 @@ class Wrapper:
             except:
                print >> sys.stderr, "Wrapper: Error creating tar archive"
                raise # TODO: Should try to copy out files as well
-            finally:
-                os.chdir(self.workdir)
         # Copy back files
         def cpout(src,dst=None):
             if self.verbose: print "Wrapper: Copying back",src
@@ -368,6 +366,7 @@ class Wrapper:
                 shutil.copytree(src,dst)
             elif self.verbose: # Just give a warning, don't panic
                 print "Wrapper: When copying out, file",src,"not found."
+        os.chdir(self.workdir)
         for f in self.copyout:
             try:
                 if len(f) == 2:

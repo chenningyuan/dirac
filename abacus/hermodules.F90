@@ -19,174 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-!     !!! MODULE FOR HANDLING FILES !!!
-!     Contains
-!       - OPEN_FILE(filename) or OPEN_FILE(filename, filenum,formatted,output)
-!         Opens a file and returns the id. Which is a new number if only the
-!         name is given, otherwise it is equal to filenum.
-!         A negative or zero indicates an error.
-!       - GET_EXTENSION(filename)
-!         Returns the first extension in the array filetypes for which
-!         filename.extension is an existing filename.
-!    
-!     JHS 05-07-07
-
-      MODULE FILE
-      IMPLICIT NONE
-
-      PRIVATE
-      PUBLIC OPEN_FILE, GET_EXTENSION, filter_comments
-
-        CHARACTER(LEN=8), DIMENSION(2), PARAMETER :: filetypes=(/'MOL', &
-     &                                                           'XYZ'/)
-        INTEGER :: linewidth=0
-
-        INTERFACE OPEN_FILE
-          MODULE PROCEDURE OPEN_FILE_NAME, OPEN_FILE_NUM, OPEN_SCRATCH
-        END INTERFACE
-        
-        
-      CONTAINS
-
-        INTEGER FUNCTION OPEN_FILE_NAME(filename)
-!     Opens a file and returns it's identifying number (>0) if the operation was succesful.
-!     If the opening was insuccesful a negative or 0 is returned. 
-!      0  -   File does not exists.
-!     -1  -   To many files opened.
-!     -99  -   Error while executing the open statement.
-          CHARACTER(LEN=*), INTENT(IN) :: filename
-          INTEGER, parameter :: maxfile=99
-          LOGICAL :: ex
-          INTEGER :: n
-
-          INQUIRE(file=filename, exist=ex)
-          IF (ex) THEN
-            DO n=1,maxfile
-              INQUIRE(n, opened=ex)
-              IF (.NOT.(ex)) THEN
-                OPEN(n, file=filename, err=563)   
-                EXIT
-              END IF
-            END DO
- 563        open_file_name=-99
-            IF (n>maxfile) THEN
-              open_file_name=-1 ! To many files opened
-            ELSE
-               open_file_name=n ! Open file
-            END IF                  
-          ELSE
-            open_file_name=0 ! Filename does not exist
-          END IF
-
-        END FUNCTION OPEN_FILE_NAME
-
-        INTEGER FUNCTION OPEN_SCRATCH()
-!     Opens a file and returns it's identifying number (>0) if the operation was succesful.
-!     If the opening was insuccesful a negative or 0 is returned. 
-!      0  -   File does not exists.
-!     -1  -   To many files opened.
-!     -99  -   Error while executing the open statement.
-          INTEGER, parameter :: maxfile=99
-          LOGICAL :: ex
-          INTEGER :: n
-
-          DO n=1,maxfile
-            INQUIRE(n, opened=ex)
-            IF (.NOT.(ex)) THEN
-              OPEN(n, status='SCRATCH')
-              EXIT
-            END IF
-          END DO
- 563      open_scratch=-99
-          IF (n>maxfile) THEN
-            open_scratch=-1 ! To many files opened
-          ELSE
-             open_scratch=n ! Open file
-          END IF                  
-
-        END FUNCTION OPEN_SCRATCH
-
-        INTEGER FUNCTION OPEN_FILE_NUM(filename, filenum, formatted,    &
-     &                                 lupri)
-!     Opens a file and returns it's identifying number (>0) if the operation was succesful.
-!     If the opening was insuccesful a negative or 0 is returned. 
-!      0   -   File does not exists.
-!     -1   -   To many files opened.
-!     -2   -   Number already assigned
-!     -3   -   File already opened with a different number.
-!     -99  -   Error while executing the open statement.
-          CHARACTER(LEN=*), INTENT(IN)  :: filename
-          INTEGER, INTENT(IN)           :: filenum
-          CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: formatted
-          INTEGER, OPTIONAL, INTENT(IN) :: lupri
-          INTEGER, PARAMETER            :: maxfile=99
-          LOGICAL                       :: ex
-          INTEGER                       :: n
-
-          INQUIRE(file=filename, exist=ex)
-          IF (.NOT. ex) THEN
-            open_file_num=0
-            RETURN
-          END IF
-          INQUIRE(filenum, exist=ex)
-          IF (.NOT. ex) THEN
-            open_file_num=-2
-            RETURN
-          END IF
-          OPEN(filenum, file=filename, FORM=formatted, err=463)   
-          open_file_num=filenum
-
-          RETURN
- 463      open_file_num=-99
-
-        END FUNCTION OPEN_FILE_NUM
-
-        FUNCTION GET_EXTENSION(filename)
-          CHARACTER(LEN=*), INTENT(IN) :: filename
-          CHARACTER(LEN=LEN(filetypes(1))) :: get_extension
-          INTEGER :: i, size_ft
-          LOGICAL :: ex
-  
-          size_ft = SIZE(filetypes)
-          DO i=1, size_ft
-            INQUIRE(file=filename//'.'//TRIM(filetypes(i)), exist=ex)
-            IF (ex) THEN
-              get_extension=TRIM(filetypes(i))
-              EXIT
-            END IF
-          END DO
-          IF (i>size_ft)  get_extension=' '
-        END FUNCTION
-               
-        subroutine filter_comments(filein,fileout)
-          integer             :: filein,fileout
-          character(len=192)  :: str
-          character(len=1)    :: chr
-          integer             :: i,ios
-
-          rewind(filein)
-          fileout=OPEN_SCRATCH()
-
-          do 
-            read(filein,'(192a)',iostat=ios) str
-            if (ios.ne.0) exit
-            do i=1,len(str)
-              select case (str(i:i))
-              case ('#','!')               
-                exit
-              end select
-            end do      
-            write(fileout,*) str(1:i-1)
-          end do
-          rewind(filein)
-          rewind(fileout)
-          
-
-        end subroutine
-
-      END MODULE FILE
-
-
 !     !!! MODULE FOR READING XYZ FILES !!!
 !     Module for reading xyz files. 
 !     The coordinates are given in the .xyz file.
@@ -202,7 +34,7 @@
 
         PRIVATE
 
-        PUBLIC READ_XYZ,WRITE_ATOMS,WRITE_ATOMTYPES,CLEAR_XYZ
+        PUBLIC READ_XYZ
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
@@ -228,8 +60,8 @@
           CHARACTER(LEN=basislen)    :: comp=' '
           CHARACTER(LEN=basislen)    :: file=' '
 !         The following can be assigned for explicitly given basissets or Family type.
-          INTEGER, POINTER           :: JCO(:)
-          REAL, POINTER              :: FAM(:)
+          INTEGER, POINTER           :: JCO(:) => NULL()
+          REAL, POINTER              :: FAM(:) => NULL()
           TYPE(basistype), POINTER   :: next
         END TYPE basistype
 
@@ -278,14 +110,18 @@
           IF (.not. associated(latom)) THEN
              fatom=>newatom
              ALLOCATE(latom)
+             latom=>newatom
+             RETURN
           END IF
 
 !         Find out whether we already have atoms of this type 
-          sameatom=>find_atom(fatom, name)
+          sameatom=>find_atom(fatom, name, .true.)
           IF (associated(sameatom)) THEN
 !            insert after the others of this type
              newatom%next=>sameatom%next
              sameatom%next=>newatom
+!            important: update the latom pointer as well
+             if (latom%name .eq. sameatom%name) latom=>newatom
           ELSE
 !            we did not see this type before, put at the end of the list
              latom%next=>newatom
@@ -324,9 +160,8 @@
           INTEGER            :: JCO(:)
           INTEGER,TARGET,ALLOCATABLE,SAVE :: JCO2(:)
           
-          ALLOCATE(JCO2(SIZE(JCO)))
-          JCO2=JCO
-          bas%jco=>JCO2
+          ALLOCATE(bas%jco(SIZE(JCO)))
+          bas%jco=JCO
         END SUBROUTINE
 
         SUBROUTINE ADD_FAM(filenum,linelen,bas)
@@ -423,24 +258,30 @@
         END SUBROUTINE READ_ATOMS
 
       
-        FUNCTION find_atom(fatom, name)
-!     JHS050707 Returns a pointer to the first atom in the list with name 
+        FUNCTION find_atom(fatom, name, last)
+!     JHS050707 Returns a pointer to the first (or last)  atom in the list with this name 
 !               or NULL() if is no such atom. 
            TYPE(atom), POINTER :: fatom 
            TYPE(atom), POINTER :: find_atom
            TYPE(atom), POINTER :: mol
+           LOGICAL, OPTIONAL   :: last
            CHARACTER(LEN=*), INTENT(IN)    :: name
+
+           find_atom=>NULL()
 
            mol=>fatom
            DO WHILE(ASSOCIATED(mol))
               IF (mol%name==name) THEN
                  find_atom=>mol
-                 EXIT
+                 if (.not. present(last)) then
+                    return
+                 else
+                    if (.not. last) return
+                 end if
               END IF
               mol=>mol%next
            END DO
 
-           find_atom=>NULL()
 
         END FUNCTION find_atom
 
@@ -661,34 +502,27 @@
      &                section(3)=='.SPECIAL') THEN
 !     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
                 tmpbas%name=' '
-                tmpbas%comp=' '
+                tmpbas%comp='LARGE'
                 tmpbas%type=' '
                 tmpbas%file=' '
                 tmpbas%next=>NULL()
                 
-                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,    &
-     &                                      tmpbas%type
+                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%type
+
+!               Check whether the user has specified less than two keywords
                 if (ios.ne.0) then
-                  backspace(tmp_file)
-                  read(tmp_file,*,iostat=ios) tmpbas%name
-                  if(.not.(ios.ne.0) .and. tmpbas%name>' ') then
-                    tmpbas%file=tmpbas%name
-                    tmpbas%comp='LARGE'
-                    tmpbas%type='BASIS'
-                    CALL ADD_BASIS(bas,firstbas,tmpbas)
-                    CYCLE
-                  else if (ios.ne.0) then
-                     write(tmp_file,*) "ERROR(readbasis) :",            &
-     &                 "Specify a filename or full basisname for ",     &
+                     write(lupri,*) "ERROR(readbasis) :",            &
+     &                 "Specify the atom name plus an option forr ",    &
      &                 ".SPECIAL basis."
-                     exit
-                  end if
-                else if(tmpbas%name>' ' .and. tmpbas%type>' '           &
-     &            .and. tmpbas%comp>' ') then
+                     CALL QUIT ('Input Error')
+                end if
+                if(tmpbas%name>' ' .and. tmpbas%type>' ' ) then
                   SELECT CASE(tmpbas%type)
+                  CASE ('NOBASIS','POINTCHARGE')
+                     CALL ADD_BASIS(bas,firstbas,tmpbas)
                   CASE ('BASIS','MOLFBAS')
                     backspace(tmp_file)               
-                    read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,&
+                    read(tmp_file,*,iostat=ios) tmpbas%name,&
      &                                      tmpbas%type,tmpbas%file
                     if (.not.(ios.ne.0) .and. tmpbas%file>' ') then
                       CALL ADD_BASIS(bas,firstbas,tmpbas)
@@ -716,6 +550,9 @@
                     CALL ADD_JCO(tmpbas,JCO)
                     CALL ADD_BASIS(bas,firstbas,tmpbas)
                     DEALLOCATE(JCO)
+!                   If we set the section back to empty, the read will skip over the
+!                   explicitly typed basis set (the exponents are read in a different routine)
+                    section(3)=' '
   
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)
@@ -743,24 +580,21 @@
                   END SELECT
                 end if
                   
-              ELSE IF (section(2)==''.AND.                              &
-     &                 section(3)=='.CENTERS') THEN
+              ELSE IF (section(2)=='*CENTERS'.AND.                      &
+     &                 section(3)=='.NUCLEUS') THEN
 !               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
-                BACKSPACE(tmp_file)
                 name=' '
                 charge=0.0
                 nucexp=0.0
   
-                read(tmp_file,*,iostat=ios) name, charge, nucexp
+                read(tmp_file,*,iostat=ios) name, charge
                 if (ios.ne.0) then
-                  read(tmp_file,*,iostat=ios) name, charge
-                  if (ios.ne.0) then
-                    write(tmp_file,*) "ERROR(readbasis) :",             &
-     &          "Not a valid name and charge specified for *CENTERS"
-                    cycle
-                  end if
+                    write(lupri,*) "ERROR(readbasis) :",             &
+     &          "Invalid name or charge specified in *CENTERS"
+                    CALL QUIT ('ERROR(readbasis): .NUCLEUS')
                 end if
 
+!               Set charge information for all atoms of this type
                 mol=>firstatom
                 DO 
                   mol=>find_atom(mol,name)
@@ -773,7 +607,7 @@
                   END IF
                 END DO
 
-              ELSE IF (section(2)==''.AND.                              &
+              ELSE IF (section(2)=='*COORDINATES'.AND.                  &
      &                 section(3)=='.UNITS') THEN
 !               If this block is specified, the coordinates in the .XYZ file are given in these 
 !               units and we have to transform them to a.u.
@@ -787,6 +621,9 @@
                 CASE('AU','a.u.','bohr')
                   UNIT_CONVERSION = ONE
                   unitname='bohr'
+                CASE('PM', 'pm', 'picometer')
+                  UNIT_CONVERSION = ONE / (100.D0 * XTANG)
+                  unitname='picometer'
                 CASE DEFAULT
                   backspace (tmp_file)
                   read(tmp_file,*,iostat=ios) unitname,unit_conversion
@@ -917,13 +754,13 @@
       END SUBROUTINE WRITE_ATOMS
 
         SUBROUTINE POS_FILE(infile,lupri,linelen,                       &
-     &     section,subsection,name,comp)
+     &     section,subsection,name)
 !         Position a file to a specific keyword.
         
           INTEGER, INTENT(IN)   :: infile,lupri,linelen
-          CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name,comp
+          CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name
           CHARACTER(LEN=linelen) :: str,pressect,pressub
-          character(len=linelen) :: tmp_name,tmp_comp
+          character(len=linelen) :: tmp_name
           INTEGER                :: ios
 
           REWIND(infile)
@@ -931,20 +768,14 @@
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
-              WRITE(lupri,*) section,subsection,name,comp
+              WRITE(lupri,*) section,subsection,name
               CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
               pressect=str              
             ELSE IF (str(1:1)=='*') THEN
               pressub=str
             ELSE IF (pressect==section.AND.pressub==subsection) THEN
-              IF (str==name) THEN
-                BACKSPACE(infile)
-                tmp_name=' '
-                tmp_comp=' '
-                read(infile,*,iostat=ios) tmp_name,tmp_comp
-                IF (ios.eq.0 .and. tmp_comp==comp) EXIT
-              END IF
+              IF (str==name) EXIT
             END IF
           END DO
         END SUBROUTINE POS_FILE
@@ -1078,20 +909,25 @@
         BASREF(1,basindex,1) = ' Reference not found in input'
         BASREF(2:10,basindex,1:3) = ' Not initialized'
 
-!     JHS060707 TMP We could introduce some additional error checks?
         SELECT CASE (baspointer%type)
+        CASE ('NOBASIS','POINTCHARGE')
+          IQM(basindex,1)=0
+          JCO(1,basindex,1)=0
+          BASNAM='Explicit'
+          BASREF(1,basindex,1) =                                        &
+     &          "No basis functions (point charge)"
         CASE ('INTGRL','EXPLICIT')
           IBSFLAG=1
           IQM(basindex,1)=SIZE(baspointer%jco)
           DO i=1,IQM(basindex,1)
             JCO(i,basindex,1)=baspointer%jco(i)
           END DO           
-          BASNAM=baspointer%file
+          BASNAM='Explicit'
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
 
 !     POSITION the input file.
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name)
 !     Additional check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,1))                         &
@@ -1134,7 +970,7 @@
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
           FAMPAR(1:i)=baspointer%fam(1:i)
@@ -1152,7 +988,7 @@
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
           CALL POS_FILE(infile, lupri, linelen,                         &
-     &         '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp)
+     &         '**MOLECULE', '*BASIS', baspointer%name)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
           CALL GENFAMEXP(infile,i)
@@ -1175,14 +1011,6 @@
         NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
         NHTYP  =   MAX(NHTYP,IQM(basindex,1))
 
-!     PRINT BASISSET
-!       IF (IQM(basindex,1).GT.0) THEN
-!         WRITE(lupri,'(3X,A)') 'Large component set:'
-!         WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-!    &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & 
-!    &    '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
-!       ENDIF
-
         DO i = 1, NBLCK(basindex,1)
            IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))              &
      &          CNTBAS = .TRUE.
@@ -1196,11 +1024,10 @@
           IF (ASSOCIATED(baspointer%next)) THEN
             IF (baspointer%next%name==baspointer%name)                    &
      &            baspointer=>baspointer%next
-!     JHS060707 Move to small component.
-!               TMP We can extend it to include a search for the small component
           END IF
 
           IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
+!       We should typically go via this routine
             IBSFLAG=4
             CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
      &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
@@ -1219,7 +1046,7 @@
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     POSITION the input file.
             CALL POS_FILE(infile, lupri, linelen,                       &
-     &           '**MOLECULE', '*BASIS', baspointer%name,baspointer%comp) 
+     &           '**MOLECULE', '*BASIS', baspointer%name) 
 !     Additional check : read iqm once more
             READ (infile,*) IQM_CHECK
             IF (IQM_CHECK .NE. IQM(basindex,2))                           &
@@ -1257,22 +1084,9 @@
 
           NOORBTS = NOORBTS.AND.IQM(basindex,2).EQ.0
 
-!         IF (IQM(basindex,2).GT.0) THEN
-!           WRITE(lupri,'(3X,A)') 'Small component set:'
-!           WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-!    &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &
-!    &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
-!         ENDIF
-
           NHTYP = MAX(NHTYP,IQM(basindex,2))
           
           IF (IQM(basindex,2).GT.0) THEN
-            IF(INPTST) THEN
-               WRITE(lupri,'(3X,A)') 'Small component set:'
-               WRITE(lupri,'(6X,A,I5,A,12I5)')                            &
-     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),           &
-     &              '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
-            ENDIF
             NHTYP     = MAX(NHTYP,IQM(basindex,2))
           ENDIF
           

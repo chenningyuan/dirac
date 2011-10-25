@@ -243,6 +243,7 @@ C               ICOUNT = 0
 * way the fetching of these will become very simple in GET_OPINT4_REL.
 * At the moment making the mapping here. Could probably be moved out to
 * speed up things.
+C          IF(NRANK.GE.3) stop 'in the name of love'
            IDIMEXDX = 0
            CALL M_TO_EX_DX_FORMAT(0,IDIMEXDX,IDUMMY,NRANK,IHSM,
      &                            IHTP(1,IHOP),
@@ -250,7 +251,6 @@ C               ICOUNT = 0
      &                            IRESOP(1,IOPRES(ICOUNT)),
      &                            INTEGRALS,
      &                            WORK,KFREE,LFREE)
-           IDIMEXDX = 1
            CALL MEMGET('REAL',KMTOEXDX,IDIMEXDX,WORK,KFREE,LFREE)
            CALL M_TO_EX_DX_FORMAT(1,IDIMEXDX,WORK(KMTOEXDX),NRANK,IHSM,
      &                            IHTP(1,IHOP),
@@ -272,7 +272,7 @@ C               ICOUNT = 0
      &             WORK,KFREE,LFREE)
               END IF
               CALL MEMCHK_KRCC(WORK)
-              CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
+C             CALL MEMREL('MAPPING',WORK,KMTOEXDX,KMTOEXDX,KFREE,LFREE)
                   END IF
                 END DO
               END IF
@@ -406,7 +406,7 @@ C     DO JCONN = 1, NCONN
       INTEGER IHCAAB(4*NGAS),TOP(4*NGAS),IRESOP(4*NGAS)
       INTEGER ICONN(2*NRANK)
 *
-      NTEST = 100
+      NTEST = 00
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Hamiltonian operator '
@@ -845,29 +845,25 @@ C
       INTEGER ISM_CAAB_L(4,*), INM_CAAB_L(4,*)
 *
       INTEGER IZ(*), IZSCR(*), ISTREO(*)
-*. Collecting info on largest T(D,L) Block
-      COMMON/CNTDL_MAX/NTDL_MAX_ACT,ID2_MAX_ACT(MXPNGAS*4),
-     &      IL1_MAX_ACT(MXPNGAS*4),IEX_MAX_ACT(MXPNGAS*4),
-     &      IT1_MAX_ACT(MXPNGAS*4),IT2_MAX_ACT(MXPNGAS*4)
 *
 * The story goes as
 *
-* Part 1 : O, T1 => OT1(d2,d3,d4,l1) in TSCR4
+* Part 1 : O, T1 => OT1(l1) in TSCR4
 *
 *    Loop over symmetry of D1
 *    Loop over batches  of D1
 *
 *    Loop over batches of Ex
-*      Fetch O as O(d1,d2,d3,d4,ex)
+*      Fetch O as O(d1,ex)
 *      Loop over batches of K1
 *        T1(I) => T1(d1,k1)
-*        OT1(d2,d3,d4,ex,k1) = sum(d1) O(d1,d2,d3,d4,ex)T1(d1,k1)
-*        OT1(d2,d3,d4,ex,k1) => OT1(d2,d3,d4,l1)
+*        OT1(ex,k1) = sum(d1) O(d1,ex)T1(d1,k1)
+*        OT1(ex,k1) => OT1(l1)
 *      End of loop over batches of K1
 *    End of loop over bathces of Ex
 *    End of loop over batches of d1
 *    End of loop over symmetry of D1
-* ( We now have OT1(l1,d4,d3,d2), all l1 !, d2,d3,d4 in batch)    
+* ( We now have OT1(l1), all l1 in batch)    
 *
 *
 * - That's all she wrote
@@ -1048,12 +1044,12 @@ C     L1SM = IDBGMULT(IOPT1SM,IADJSYM(ID234SM))
 * Thinks this should be new start Lasse
 *
 * ==============================================================
-* Part 1 O1(d1,d2,d3,d4,ex) T1(i) => OT1(d2,d3,d4,l1) in TSCR4
+* Part 1 O1(d1,ex) T1(i) => OT1(l1) in TSCR4
 * ==============================================================
 *
-* Part 1 : Obtain in TSCR4 OT1(d4,d3,d2,l1) for all l1 of correct sym
+* Part 1 : Obtain in TSCR4 OT1(l1) for all l1 of correct sym
 *
-* Length of OT1(d4,d3,d2,l1)
+* Length of OT1(l1)
       LEN_OT1 = NL1_TOT!*ID2_BATLEN*ID3_BATLEN*ID4_BATLEN
 *
 C     ZERO = 0.0D0
@@ -1133,7 +1129,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
               IEXSM_NEW = 0
 *. Length of EXD2D3D4
               LEN_EXD234 = IEX_BATLEN
-*. Obtain integrals OP(D1,D2,D3,D4,EX)
+*. Obtain integrals OP(D1,EX)
               IOFF = 1 + (IEX_START-1)*ID1_BATLEN
 *
               CALL GET_OPINT4_REL(OPSCR(IOFF),
@@ -1145,8 +1141,8 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
 *
             END DO
 *           ^ End of loop over batches of excitation operators OEX
-*. We now have OP(d1,d2,d3,d4,ex) for all ex 
-*. OP(d1,d2,d3,d4,ex)*T1(I) => OPT(d2,d3,d4,l1) in TSCR4
+*. We now have OP(d1,ex) for all ex 
+*. OP(d1,ex)*T1(I) => OPT(l1) in TSCR4
 *
             SIGNX = SP_D1K1*SIGN_D1K1
             SIGN_LK = SIGN_EXK1
@@ -1155,7 +1151,7 @@ C            ID1234SM   = IDBGMULT(ID1SM,ID234SM)
      &                                    SIGNX, SIGNG, SIGN_LK
             NDUM = 1 !ID2_BATLEN*ID3_BATLEN*ID4_BATLEN !This or 0 Lasse
             IF(NTEST.GE.100) 
-     &      WRITE(6,*) ' OP(d1,d2,d3,d4,ex)*T1(I) => OPT(d2,d3,d4,l1)'
+     &      WRITE(6,*) ' OP(d1,ex)*T1(I) => OPT(l1)'
 *
             CALL OT_T_REL(OPSCR,T1,OT1234,NDUM,
      &           K1SM,IEXSM,ID1SM,
@@ -3816,7 +3812,7 @@ C         print*,'ISM_AB,NEL_AB',ISM_AB,NEL_AB
 *. Loop over T elements as  matrix T(I_CA, I_CB, IAA, I_AB)
           IF(NTEST.GE.100) THEN
            WRITE(6,*) ' The number of strings '
-           WRITE(6,*),'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+           WRITE(6,*) 'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
      &                 NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
            CALL MEMCHK_KRCC(WORK)
           END IF

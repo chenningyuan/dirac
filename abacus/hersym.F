@@ -95,10 +95,8 @@ C  /* Deck fndsym */
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
-CCCC#ifndef PRG_DIRAC
 #include "r12int.h"
 #include "numder.h"
-CCCC#endif
 C ***********************************************************
 C *   ATMARR - Atomic coordinates
 C *   CLASS  - Full point group
@@ -107,9 +105,6 @@ C *   DIRAXS - Improper rotational axes
 C *   DMRPLN - Mirror planes
 C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
-Caspg
-CCCC         LOGICAL NOMOVE
-Caspg
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
@@ -119,9 +114,6 @@ Caspg
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
-Caspg
-CCCC         NOMOVE = .TRUE.
-Caspg
 
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
@@ -157,14 +149,9 @@ C        END IF
          IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT, MXCENT, ATMARR)
 C        Sort atoms after atom number and distance from origo
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
-CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(MXCENT, ATMARR)
          END IF
-CCCC#else
-C        Place molecular center of mass at the origin
-CCCC         CALL CNTRML(MXCENT, ATMARR)
-CCCC#endif
 C        Determine molecular point group
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
@@ -176,25 +163,16 @@ C
          IF( MYTID .eq. MPARID ) 
      &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
-CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
          END IF
-CCCC#else
-CCCC         CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
-CCCC#endif
-CCCC#ifndef PRG_DIRAC
-          IF (.NOT. NOMOVE) THEN
+         IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
             IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT , MXCENT, ATMARR)
-          ELSE
+         ELSE
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'
          END IF
-CCCC#else
-CCCC         TEXT = 'Centered and Rotated                    '
-CCCC         CALL PRNARR(TEXT , MXCENT, ATMARR)
-CCCC#endif
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No rotational axes were found.'
@@ -260,32 +238,32 @@ C ::: The reduced coordinates are moved back. :::
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
             CHARGE(I) = CHARGE(IOLD)
-C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
             GNUEXP(I) = GNUEXP(IOLD)
-#ifndef PRG_DIRAC
-            MULBSI(I) = MULBSI(IOLD)
-#endif
             NCLINE(I) = NCLINE(IOLD)
- 250     CONTINUE
-C ::: Then the different elements are counted, and arrays updated. :::
-         NONTYP = 1
-         CALL IZERO(NONT, KATOM)
-         IELMNT = NINT(ATMARR(4,1))
-         DO 275 I = 1, NINT(ATMARR(1,0))
-            IF (NINT(ATMARR(4,I)) .NE. IELMNT) THEN
-               NONTYP = NONTYP + 1
-               IELMNT = NINT(ATMARR(4,I))
-            END IF
-            NONT(NONTYP) = NONT(NONTYP) + 1
-            NAMN(I) = NAMN(NINT(ATMARR(5,I)))
+            NAMN(I)   = NAMN(IOLD)
             NAMEX(3*I)   = NAMN(I)//'z'
             NAMEX(3*I-1) = NAMN(I)//'y'
             NAMEX(3*I-2) = NAMN(I)//'x'
 #ifndef PRG_DIRAC
             ISOTOP(I) = NINT(ATMARR(6,I))
+            MULBSI(I) = MULBSI(IOLD)
 #endif
+ 250     CONTINUE
+C ::: Then the different elements are counted, and arrays updated. :::
+         NONTYP = 1
+         CALL IZERO(NONT, KATOM)
+         NONTYP = 1
+         NONT(NONTYP) = 1
+         DO 275 I = 2, NINT(ATMARR(1,0))
+            IF (NAMN(I) .NE. NAMN(I-1)) THEN
+               NONTYP = NONTYP + 1
+            END IF
+            NONT(NONTYP) = NONT(NONTYP) + 1
  275     CONTINUE
+
          NUCIND = NINT(ATMARR(1,0))
+         IF (NUCIND .LE. 0) CALL QUIT ('No atoms defined')
+
          DO 300 I = NUCIND + 1, KATOM
             NAMN(I) = '    '
             NAMEX(3*I)   = '      '

@@ -48,7 +48,6 @@
 #include "cgas.inc"
 C added
 #include "cicisp.inc"
-      COMMON/CNTDL_MAX/NTDL_MAX_ACT
 *. Scratch 
       DIMENSION VEC1(*),VEC2(*), CCVEC1(*), CCVEC2(*)
 *. Input and output
@@ -60,7 +59,6 @@ C added
 C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
 *
       LBLK = -1
-      NTDL_MAX_ACT = 0
 *
       NTEST = 000 
       IF(NTEST.GE.5) THEN

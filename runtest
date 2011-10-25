@@ -399,6 +399,9 @@ def main(*args):
                                 if not line_is_keyword(line):
                                     l.append(run(test, line, current_section[0]))
             f.close()
+        else:
+            print >> sys.stderr, '%s has no menu file' % test
+            sys.exit(1)
 
     # get number of actual runs
 

@@ -650,6 +650,12 @@ contains
          need_1el_g = .true.
       end if
 
+      if (kw_matches(word, '.PNC   ')) then
+         openrsp_cfg_pnc = .true.
+         call kw_read(word, openrsp_cfg_pnc_center)
+         need_1el_g = .true.
+      end if
+
       if (kw_matches(word, '.PVBETA')) then
          openrsp_cfg_pv_beta = .true.
          need_1el_f = .true.

@@ -422,3 +422,14 @@ int high_water_mark_(void)
 {
   return mem_high - mem_start;
 }
+
+/* 
+Make break of given amount of seconds. Call if no Fortran SLEEP() intrinsic.
+*/
+void make_pause_(int *sec)
+{
+  printf("making pause of %d seconds\n",*sec);
+  sleep(*sec);
+  return;
+}
+

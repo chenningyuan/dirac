@@ -1229,9 +1229,9 @@ C
 #include "dcbgen.h"
 #include "dcbkrci.h"
 #include "krciprop.h"
-!needed for LVCORR
 #include "dcbham.h"
 #include "frame.h"
+!frame.h needed for CORRLV for LVCORR
 C
       LOGICAL EX, FILEOPEN
       INTEGER RENAME
@@ -1285,7 +1285,9 @@ C
         call lvcorr(work(klvc),work(kfree),lfree,ipropt)
         call memrel('lvcorr-ci',work,1,kfree_save,kfree,lfree)
 !       set lvcorr value (otherwise it was initialized to 0.0d0)
-        lvcorr_mc = corrlv
+        E_lvcorr_mc = corrlv
+      else
+        E_lvcorr_mc = 0.0d0
       end if
 C
 C     ***************************************************

@@ -268,10 +268,12 @@ C
       IF(DOSIPS.OR.DODIPS) DOCCSETI=.TRUE.
 
       WRITE (IW,*) '       *** GENERAL JOB SPECIFICATION ***'
-      WRITE (IW,1006) DOSIPS,DODIPS,DOCCSETI
-1006  FORMAT (/" Calculate Single ionization spectra :",T40,L1
-     &        /" Calculate double ionization spectra :",T40,L1
-     &        /" Perform integral sorting (if necc.) :",T40,L1/)
+      WRITE (IW,1006) DOSIPS,DODIPS,DOCCSETI,USEOE,NORECMP
+1006  FORMAT (/" Calculate Single ionization spectra:",T50,L1
+     &        /" Calculate double ionization spectra:",T50,L1
+     &        /" Perform integral sorting (if necc.):",T50,L1
+     &        /" Use orbital energies from HF calc.):",T50,L1
+     &        /" Recalculating of Fock matrix forbidden:",T50,L1/)
 C     
 C     Check the memory requirements of the active modules
 C     Hereby the variable ICALC determines if there is a
@@ -1708,6 +1710,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer JVVVO_I48(MXREP+1)   !mxrep+1 is defined in symm.inc !
       LOGICAL DONE
       real*8 ddot,getimag
       complex*16 zdotc
@@ -1718,6 +1721,9 @@ c     CALL PST('Calculating coupling block AFFIN/PART+')
 C
       LENU = NV(KREP)*NOVVT(KREP)
       OFFS = LVOVVT(KREP)*RCW
+      DO I=1,NREP+1
+        JVVVO_I48(I) = JVVVO(I)
+      ENDDO
 
       IF(IVOVVT(NREP+1) .NE. LVOVVT(NREP+1)) THEN
         WRITE(IW,*) 'Unexpected size differences of arrays'
@@ -1738,8 +1744,9 @@ c     else
 c       write(*,*) 'vovv1 chksum (r)',ddot(nv5,vovv1,1,vovv1,1)
 c     endif
 
+      NV5_I48 = NV5  ! transfer true I8 variable to the default length variable
       CALL RDVOVV(VOVV1)
-      IF(CARITH) CALL CONJUGA(NV5,VOVV1,1)
+      IF(CARITH) CALL CONJUGA(NV5_I48,VOVV1,1)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NV,NO,NVVT,LVOVVT,LLOVVT,
      &             VOVV1,VOVV2)
       CALL SRT1C1N (NREP,NV,NOVVT,VOVV2,VOVV1)
@@ -1790,9 +1797,8 @@ C  no additional complex conjugation ! the transposition is accounted
 C  for in the 'T' parameter of the XGEMM routine.
 C
       CALL RDVOVV(VOVV2)
-      CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO,JJVV,JJVO,
-     &            VOVV2,VOVV1)
-c     write(*,*) '** chksum (c) SRT26:',zdotc(JVVVO(NREP+1),vovv1,1,vovv1,1)
+      CALL SRT26 (NREP,MULTB,LFA,LFA,NV,NO,NV,NV,MVV,JVVVO_I48,
+     &            JJVV,JJVO,VOVV2,VOVV1)
 C
 C  here again special contraction, with 'T' in XGEMM
 C
@@ -3423,8 +3429,15 @@ C
       LOGICAL DONE
       COMPLEX*16 zdotc
       REAL*8 ddot,getimag
+      INTEGER JVVVO_I48(MXREP+1)   !MXREP is defined in symm.inc !
+      INTEGER IVOVVTAUX
 C---------------Executable Code --------------------------------------
 C
+C  preparation of aux array by implicit type conversion
+C
+      DO I=1,NREP+1
+        JVVVO_I48(I) = JVVVO(I)
+      ENDDO
 C****************
 C***** b_oo
 C****************
@@ -3570,9 +3583,10 @@ C  the first irrep is taken !
 C  afterwards contract over Q_bc = Q^*_cb. restored after contraction
 C
       CALL RDVOVV (VOVV1)
-      IF(CARITH) CALL CONJUGA(IVOVVT(NREP+1),VOVV1,1)
+      IVOVVTAUX = IVOVVT(NREP+1)
+      IF(CARITH) CALL CONJUGA(IVOVVTAUX,VOVV1,1)
       CALL SRT20M(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,
-     &            JVVVO,JJVV,JJVO,VOVV1,VOVV2)
+     &            JVVVO_I48,JJVV,JJVO,VOVV1,VOVV2)
       IF(CARITH) CALL CONJUGA(MVV(1),QVV,1)
       CALL XGEMV ('T',MVV(1),MVO(1),A1,VOVV2,MVV(1),QVV,1,A1,BVO,1)
       IF(CARITH) CALL CONJUGA(MVV(1),QVV,1)
@@ -6463,27 +6477,23 @@ C
       LOGICAL DONE
       complex*16 zdotc
       real*8 ddot
+      integer*8 off1
 C
 C---------------Executable code--------------------------------------
 C
       OFF1 = 1
       DO 30 IRP = 1, NREP
 
-c        write(iw,*) '    irep for getvovv:',irp
-
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NVVT(IRP)
          CALL GETVOVV (IRP,ISTART,NINT,DONE,VOVV(OFF1),MINT)
-
-c        write(iw,*) '    mint/nint/done after getvovv:',mint,nint,done
 
          IF (.NOT.DONE) THEN
             WRITE(IW,*) 'Irrep',IRP,' unfinished'
             CALL QUIT('VOVV reading error in RDVOVV')
          ENDIF
          OFF1 = OFF1 + NVO(IRP)*NVVT(IRP)*RCW
-c        write(iw,*) '    off1 after getvovv:',off1
  30   CONTINUE
 
       RETURN
@@ -6515,12 +6525,12 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
+      integer*8 off1
 C
 C---------------Executable code--------------------------------------
 C
       OFF1 = 1
       DO 30 IRP = 1, NREP
-c        WRITE(IW,*) 'GETVVVV irep:',IRP
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NVVT(IRP)
@@ -6530,9 +6540,7 @@ c        WRITE(IW,*) 'GETVVVV irep:',IRP
             CALL QUIT('VVVV reading error in RDVVVV')
          ENDIF
          OFF1 = OFF1 + NVVT(IRP)*NVVT(IRP)*RCW
-c        WRITE(IW,*) 'VVVV array pointer:    ',OFF1
  30   CONTINUE
-c     WRITE(IW,*) 'total # of VVVV:',IVVVVTT(NREP+1)
 
       RETURN
       END

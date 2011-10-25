@@ -646,8 +646,6 @@ C
          ENDIF
 
          IF (IPRINT.GE.7) THEN
-        if ((prpnam(indxpr) == 'dS/dBX') .or. 
-     &      (prpnam(indxpr) == 'd|S>/dBX')) then
           CALL HEADER('PRPMA1: Symm.blocked AO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
@@ -660,7 +658,6 @@ C
           CALL PRQMAT(PRPMO(J2PMOX(I1,I2),1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)
-          endif
          ENDIF
 !
          IF (IPRINT.GE.10) THEN

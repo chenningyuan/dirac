@@ -33,8 +33,12 @@ contains
 
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.SMALLD')) then
-         call kw_read(word, dft_cfg_small_density_threshold)
+      if (kw_matches(word, '.TINYDE')) then
+         call kw_read(word, dft_cfg_tinydens)
+      end if
+
+      if (kw_matches(word, '.SCREEN')) then
+         call kw_read(word, dft_cfg_screening)
       end if
 
       if (kw_matches(word, '.GRAC  ')) then
@@ -153,7 +157,7 @@ contains
       end if
 
       if (kw_matches(word, '.POINTW')) then
-         dft_cfg_blocked = .false.
+         dft_cfg_pointwise = .true.
       end if
 
 !radovan: not documented on wiki, code not perfectly tested

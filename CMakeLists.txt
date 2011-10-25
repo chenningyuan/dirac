@@ -15,6 +15,8 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
+
+
 # set build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE
@@ -53,19 +55,29 @@ endif()
 
 include(Definitions)
 
-option(ENABLE_INTERNAL_MATH  "Enable internal math library"       OFF)
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"             OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"         OFF)
-option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard" ON)
-option(ENABLE_OMP            "Enable OpenMP parallelization"      OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"       OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int module"              OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"               ON)
-option(ENABLE_PROFILING      "Enable profiling"                   OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"               OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"    OFF)
-option(ENABLE_UTILITIES      "Enable utitilites"                  OFF)
+option(ENABLE_INTERNAL_MATH  "Enable internal math library"             OFF)
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                   OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"               OFF)
+option(ENABLE_SLOWDOWN_SLAVE "Enable initial slowing down of slaves"    OFF)
+option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"        ON)
+option(ENABLE_OMP            "Enable OpenMP parallelization"            OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"             OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int module"                    OFF)
+option(ENABLE_XCFUN          "Enable XCFun library"                      ON)
+option(ENABLE_PROFILING      "Enable profiling"                         OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                      OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"          OFF)
+option(ENABLE_UTILITIES      "Enable utitilites"                        OFF)
+option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules" OFF)
+option(ENABLE_MATLAB_LOG "Will log interesting matrices in matlab format (very verbose!)" OFF)
+
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
 
 # set cdash buildname
 set(BUILDNAME
@@ -75,18 +87,12 @@ set(BUILDNAME
     )
 
 # set ctest's own timeout
-#miro: this is not properly working as no stdout/err is displayed on CDashboard!
 set(DART_TESTING_TIMEOUT
-    "1200"
+    "600"
     CACHE STRING
     "Set default timeout in seconds for every single test"
     )
 
-#
-# set additional runtest flags - number of CPU and runtest timeout
-#
-# Miro: for CTest you can not have more than one $-variable in the add_test $-parameter !
-#
 if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
     set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
     message("-- runtest extra flag active, RUNTEST_FLAG_NR_PROC=\"${RUNTEST_FLAG_NR_PROC}\" ")
@@ -295,6 +301,9 @@ foreach(
     if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
         SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
     endif()
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        SET_TARGET_PROPERTIES(${EXECUTABLE} PROPERTIES LINK_FLAGS "-Wl,-E")
+    endif()
     target_link_libraries(
         ${EXECUTABLE}
         dirac
@@ -302,6 +311,7 @@ foreach(
         )
 endforeach()
 
+include(Slowdown)
 include(Install)
 include(Release)
 

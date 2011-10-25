@@ -36,8 +36,10 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
-      use fde_mod
-      use FDE_ImportPotentials
+! checking
+       use fde_types
+       use fde_mod
+!!     use FDE_ImportPotentials
 
 #include "implicit.h"
 #include "priunit.h"
@@ -46,6 +48,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
+      type(fde_import) :: itmp
 C
 #include "dcbgen.h"
 #include "dcbprl.h"
@@ -101,7 +104,13 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
-         if (import_vemb) then
+         IF (NOSMLV) THEN
+C          ... zero SS integrals
+           CALL NOSSNUCATT
+           COMB(4:4) = 'F'
+         END IF
+        call fde_get_import_info(itmp)
+        if (itmp%im_vemb) then
             CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
          endif
 C
@@ -329,13 +338,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
           CLSCMB(I)(4:4) = '0'
           ILBL = IPRPLBL(1,I)
           PDOINT(ILBL)(4:4) = '0'
+        ELSE IF (CLSINT(I).EQ.'FDEVEMB') THEN
+          CLSCMB(I)(4:4) = '0'
+          ILBL = IPRPLBL(1,I)
+          PDOINT(ILBL)(4:4) = '0'
         ENDIF
       ENDDO
 
       IF (MOLFLD_FOUND) THEN
         WRITE(LUPRI,'(2X,A,A4)')
-     &  'No SS-nuclear attraction integrals'// 
-     &  '(MOLFLD), adapted PDOINT=',PDOINT(ILBL)
+     & 'The SS-block of the potential energy matrix and (if present)'//
+     & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
       ELSE
         WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
      &   ' found in operator list!'
@@ -836,6 +849,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
+      use fde_types
       use fde_mod
 
 #include "implicit.h"
@@ -851,6 +865,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
+      type(fde_import) :: itmp
       LOGICAL FIRST(NZ),TOBE
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
@@ -880,14 +895,16 @@ CMI     ... dcbham.h is needed
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
-C
+
 C     Embedding potential integrals, if FDE is requested
 C     ==================================================
 C
 C aspg: i wonder whether or not there should be more control to allow 
 C       for the possibility of not including the static potential to
 C       the one-electron matrix prior to the scf...
-      IF (dirac_cfg_fde.and.import_vemb) THEN
+
+      call fde_get_import_info(itmp)
+      if (dirac_cfg_fde .and. itmp%im_vemb) then
          IOP = IPVEMB0
          CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
      &          OP1INT,FIRST,IPRHAM)
@@ -4140,7 +4157,7 @@ CMI .. mover before diagonalization which can destroy SMAT
         CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_text('% Entering LOWGEN')
       call matexport_double2('S',SMAT,LDM,NS,NS)
 #endif
@@ -4215,7 +4232,7 @@ C
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,-1,LUPRI)
       ENDIF
 
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
       call matexport_double2('V',VMAT,LDM,NS,NV)
       call matexport_text('% Leaving LOWGEN')
 #endif

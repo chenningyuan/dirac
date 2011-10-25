@@ -27,7 +27,7 @@ It is your machine and you have Ubuntu or Debian::
 
 If this is another system, ask Google.
 
-If it is a cluster, please ask the admin to install/upgrade CMake.
+If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
@@ -162,7 +162,7 @@ You can run the test suite with::
   $ make test
 
 It is HIGHLY recommended to run the test set after you have compiled
-DIRAC.
+DIRAC to make sure that your binary correctly reproduces reference results.
 
 
 Compiling in verbose mode
@@ -222,3 +222,49 @@ Inside ccmake activate ENABLE_UTILITIES to ON, then compile::
   $ make
 
 Voila! You can do these steps also after you have compiled the DIRAC binary.
+
+
+How can I change optimization flags?
+------------------------------------
+
+If you want to turn optimization off (debug mode), there are several ways to do that.
+
+Either use setup::
+
+  $ ./setup --debug [other flags]
+  $ cd build
+  $ make
+
+Or use Cmake directly (default here is debug mode)::
+
+  $ mkdir build
+  $ cd build
+  $ [FC=ifort CC=icc] cmake ..
+  $ make
+
+If you want to modify compiler flags, edit cmake/FCompilers.cmake and/or cmake/CCompilers.cmake.
+
+
+Where should $PATH point to? Source directory or build directory?
+-----------------------------------------------------------------
+
+We recommend to let $PATH point to the install directory::
+
+  $ ./setup [--flags] --install=/install/path
+  $ cd build
+  $ make
+  $ make install
+
+This way everything (binary, scripts, basis sets) will be at the right place
+under /install/path and $PATH should contain /install/path.
+
+
+How can I compile DIRAC for large molecules?
+--------------------------------------------
+
+Set ENABLE_LARGE_MOLECULES to ON via ccmake::
+
+  $ cd build
+  $ ccmake ..
+
+Then rebuild the binary.

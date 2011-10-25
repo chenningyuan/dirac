@@ -33,6 +33,8 @@ program dirprg
   use os_utils
   use dft_cfg
   use xmlout
+  use interface_ao
+  use interface_mo
 
   implicit none
 #include "priunit.h"
@@ -206,6 +208,9 @@ program dirprg
 #endif
 
    call allocator_cleanup()
+
+   call interface_ao_clear()
+   call interface_mo_clear()
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 end subroutine dirprg

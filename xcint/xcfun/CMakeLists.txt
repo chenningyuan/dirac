@@ -19,7 +19,7 @@ include(ConfigCompilerFlags)
 if (CMAKE_COMPILER_IS_GNUCXX)
 	set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -Wno-sign-compare -fno-rtti -fno-exceptions ")
 	set (CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -DDEBUG")
-	set (CMAKE_CXX_FLAGS_RELEASE "-g -O2 -DNDEBUG -Wno-unused")
+	set (CMAKE_CXX_FLAGS_RELEASE "-g -O3 -DNDEBUG -Wno-unused")
 
 	if (XCFUN_NO_STDC++)
 		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-threadsafe-statics")
@@ -77,7 +77,7 @@ if (XCFUN_ENABLE_TESTS)
 	add_subdirectory(test)
 endif()
 
-find_package(Doxygen)
+find_package(Doxygen QUIET)
 if (DOXYGEN_FOUND)
 	add_custom_target(docs
 		COMMAND ${DOXYGEN_EXECUTABLE}
