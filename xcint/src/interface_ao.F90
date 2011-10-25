@@ -501,6 +501,24 @@ contains
             end do
          end do
 
+!        sanity check
+         do i = 1, nr_ao_blocks
+            do jxyz = 0, 3
+               do irep = 0, nr_boson_ireps - 1
+                  if (llss_block_partner(iblock, jxyz, irep) == 0) then
+                     print *, 'error: llss_block_partner == 0'
+                     print *, 'iblock, jxyz, irep = ', iblock, jxyz, irep
+                     stop 1
+                  end if
+                  if (lssl_block_partner(iblock, jxyz, irep) == 0) then
+                     print *, 'error: lssl_block_partner == 0'
+                     print *, 'iblock, jxyz, irep = ', iblock, jxyz, irep
+                     stop 1
+                  end if
+               end do
+            end do
+         end do
+
          if (basis_is_spherical) then
             allocate(isymao(l_max, 2*l_max + 1))
             isymao = 0
