@@ -6,7 +6,7 @@ implicit none
 public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
-private :: getk_cdiag, getk_rdiag, getk_full, get_hessian, get_gradient, exp_func, hdiag
+private :: getk_diag, getk_full, get_hessian, get_gradient, exp_func, hdiag
 private :: get_mu, updateT
 
 type :: localization_flags
@@ -271,14 +271,16 @@ contains
     else
       call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
-    if(     full) call getk_full(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
-    if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
+    if(full)then
+      call getk_full(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
+      call exp_func(pkappa,tgrad,eval,nish,dinvmq)
+    endif
+    if(.not.full) call getk_diag(xkappa,grad,hmat,ipqtoq,dnrmk,dinvmq)
     if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
-    call exp_func(pkappa,tgrad,eval,nish,full,dinvmq)
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
@@ -871,125 +873,10 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_cdiag(pmat,xkappa,gradient,dnrmk,ipqtoq)
+  subroutine getk_diag(xkappa,gradient,hmat,ipqtoq,dnrmk,dinvmq)
   !******************************************************************************!
   !                                                                              !
   !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
-  !                             (complex algebra)                                !
-  !                                                                              !
-  ! Notes: 1. Deffinition of kappa matrix in rotcmo_mod is different as in       !
-  !           calculation of gradient and hessian in get_gradient and get_hessian!
-  !           --> Indexes are exchanged and j quaterion is with minus sign       !
-  !               Qkappa_lk = kappa_kl - bar{kappa}_kl^* j                       !
-  !               It follows from definition of bared unitary matrix:            !
-  !               tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                    !
-  !        2. Be also careful about complex cojnugation of gradient in           !
-  !                                H * K = - g*                                  !
-  !                                                                              !
-  !******************************************************************************!
-  implicit none
-
-  ! External variables
-  integer*4, intent(in), dimension(4,0:7) :: ipqtoq
-
-  real*8, intent(out) :: dnrmk
-
-  real*8, intent(in ), dimension(:,:)     :: gradient
-  real*8, intent(in ), dimension(:,:,:,:) :: pmat
-  real*8, intent(out), dimension(:,:,:)   :: xkappa
-
-  ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
-
-  integer*4 :: i, j, k, ij, ij1, iz, nucdep, ni, ni12, lupri
-  real*8    :: pii, pjj, pn2
-
-  real*8, allocatable, dimension(:) :: hmat_d
-
-  !------------------------------------------------------------------------------!
-  call qenter('getk_cdiag')
-
-  ! Get some dimensions
-  lupri  = var%lupri
-  nucdep = size(pmat,4)
-  ni     = size(pmat,1)
-  ni12   = size(gradient,1) / 4
-
-  call alloc(hmat_d,2*ni12,id='hmat_d in getk_cdiag')
-
-  ! Construct diagonal Hessian matrix
-  hmat_d(:) = d0
-  ij = 0
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      if(i==j)cycle
-      do k = 1,nucdep
-        pii = pmat(i,i,1,k); pjj = pmat(j,j,1,k)
-
-        pn2 = pmat(i,j,1,k)*pmat(i,j,1,k) + pmat(i,j,2,k)*pmat(i,j,2,k)
-        hmat_d(ij) = hmat_d(ij) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
-
-        pn2 = pmat(i,j,3,k)*pmat(i,j,3,k) + pmat(i,j,4,k)*pmat(i,j,4,k)
-        hmat_d(ij+ni12) = hmat_d(ij+ni12) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))
-      enddo
-    enddo
-  enddo
-
-  ! Construction and print of the kappa matrix
-  xkappa(:,:,:) = d0
-  dnrmk = d0
-  ij = 0
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      ij1= ij + ni12
-      if(i==j) cycle
-      xkappa(j,i,1) = - gradient(ij ,1) / hmat_d(ij )
-      xkappa(j,i,2) =   gradient(ij ,2) / hmat_d(ij )   !!! gradient is complex conjugate
-      xkappa(j,i,3) =   gradient(ij1,1) / hmat_d(ij1)   !!! j component is with minus sign
-      xkappa(j,i,4) =   gradient(ij1,2) / hmat_d(ij1)   !!! gradient is complex conjugate
-      xkappa(i,j,1) = - xkappa(j,i,1)
-      xkappa(i,j,2) =   xkappa(j,i,2)
-      xkappa(i,j,3) =   xkappa(j,i,3)
-      xkappa(i,j,4) =   xkappa(j,i,4)
-      dnrmk = dnrmk + xkappa(j,i,1)*xkappa(j,i,1) + xkappa(j,i,2)*xkappa(j,i,2) &
-                    + xkappa(j,i,3)*xkappa(j,i,3) + xkappa(j,i,4)*xkappa(j,i,4)
-    enddo
-  enddo
-
-  ! Norm of the kappa vector
-  dnrmk = dsqrt(dnrmk)
-  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
-
-  do iz=1,4
-    write(lupri,*)
-    write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
-    do j=1,ni
-      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
-    enddo
-  enddo
-
-  ! Print some kappa matrix
-  if(loc%iprloc .ge. 5) then
-     write (lupri,'(/a)') '* KAPPA matrix :'
-     call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
-  endif
-
-  call dealloc(hmat_d,id='hmat_d in getk_cdiag')
-
-  call qexit('getk_cdiag')
-
-  end subroutine getk_cdiag
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine getk_rdiag(pmat,xkappa,gradient,dnrmk,ipqtoq)
-  !******************************************************************************!
-  !                                                                              !
-  !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
-  !                              (real algebra)                                  !
   !                                                                              !
   ! Notes: 1. Deffinition of kappa matrix in rotcmo_mod is different as in       !
   !           calculation of gradient and hessian in get_gradient and get_hessian!
@@ -1008,78 +895,54 @@ contains
   ! External variables
   integer*4, intent(in), dimension(4,0:7) :: ipqtoq
 
-  real*8, intent(out) :: dnrmk
+  real*8, intent(out) :: dnrmk, dinvmq
 
-  real*8, intent(in ), dimension(:,:)     :: gradient
-  real*8, intent(in ), dimension(:,:,:,:) :: pmat
+  real*8, intent(in ), dimension(:)       :: gradient
+  real*8, intent(in ), dimension(:,:)     :: hmat
   real*8, intent(out), dimension(:,:,:)   :: xkappa
 
   ! Internal variables
   real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
-  integer*4 :: i, j, k, ij, ij1, ij2, ij3, iz, nucdep, ni, ni12, lupri
-  real*8    :: pii, pjj, pn2
-
-  real*8, allocatable, dimension(:) :: hmat_d
+  integer*4 :: i, j, ij, ij1, ij2, ij3, ij4, iz, ni, ni12, lupri
 
   !------------------------------------------------------------------------------!
-  call qenter('getk_rdiag')
+  call qenter('getk_diag')
 
-  ! Get some dimensions
-  lupri  = var%lupri
-  nucdep = size(pmat,4)
-  ni     = size(pmat,1)
-  ni12   = size(gradient,1) / 4
-
-  call alloc(hmat_d,4*ni12,id='hmat_d in getk_rdiag')
-
-  ! Construct diagonal Hessian matrix
-  hmat_d(:) = d0
-  ij = 0
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      ij1= ij + 1*ni12
-      ij2= ij + 2*ni12
-      ij3= ij + 3*ni12
-      if(i==j)cycle
-      do k = 1,nucdep
-        pii = pmat(i,i,1,k); pjj = pmat(j,j,1,k)
-
-        pn2 = d2*pmat(i,j,1,k)*pmat(i,j,1,k)
-        hmat_d(ij ) = hmat_d(ij ) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! uu: A^R + B^R
-
-        pn2 = d2*pmat(i,j,2,k)*pmat(i,j,2,k)
-        hmat_d(ij2) = hmat_d(ij2) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! uu: A^R - B^R
-
-        pn2 = pmat(i,j,3,k)*pmat(i,j,3,k) + pmat(i,j,4,k)*pmat(i,j,4,k)
-        hmat_d(ij1) = hmat_d(ij1) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! bb: A^R + B^R
-        hmat_d(ij3) = hmat_d(ij3) + d4*pn2 - d2*((pii-pjj)*(pii-pjj))  ! bb: A^R - B^R
-      enddo
-    enddo
-  enddo
-
-  ! Construction and print of the kappa matrix
+  ! Initialize code
+  lupri = var%lupri
+  ni    = size(xkappa,1)
+  ni12  = ni*(ni+1) / 2
   xkappa(:,:,:) = d0
-  dnrmk = d0
-  ij = 0
+
+  ! Construct kappa matrix, its norm and functional value
+  dnrmk  = d0
+  dinvmq = d0
+  ij = 0; ij1 = 0
   do j = 1,ni
     do i = j,ni
-      ij = ij + 1
-      ij1= ij + 1*ni12
-      ij2= ij + 2*ni12
-      ij3= ij + 3*ni12
+      ij  = ij  + 1
+      ij2 = ij  + ni12-ni
+      ij3 = ij2 + ni12
+      ij4 = ij3 + ni12
       if(i==j) cycle
-      xkappa(j,i,1) = - gradient(ij ,1) / hmat_d(ij )
-      xkappa(j,i,2) =   gradient(ij ,2) / hmat_d(ij2)   !!! g^I is with minus
-      xkappa(j,i,3) =   gradient(ij1,1) / hmat_d(ij1)   !!! j component is with minus sign
-      xkappa(j,i,4) =   gradient(ij1,2) / hmat_d(ij3)   !!! g^I is with minus
+      ij1 = ij1 + 1
+      xkappa(j,i,1) = - gradient(ij1) / hmat(ij1,ij1)
+      xkappa(j,i,2) = - gradient(ij3) / hmat(ij3,ij3)
+      xkappa(j,i,3) =   gradient(ij2) / hmat(ij2,ij2)   !!! j component is with minus sign
+      xkappa(j,i,4) = - gradient(ij4) / hmat(ij4,ij4)
       xkappa(i,j,1) = - xkappa(j,i,1)
       xkappa(i,j,2) =   xkappa(j,i,2)
       xkappa(i,j,3) =   xkappa(j,i,3)
       xkappa(i,j,4) =   xkappa(j,i,4)
-      dnrmk = dnrmk + xkappa(j,i,1)*xkappa(j,i,1) + xkappa(j,i,2)*xkappa(j,i,2) &
-                    + xkappa(j,i,3)*xkappa(j,i,3) + xkappa(j,i,4)*xkappa(j,i,4)
+      dnrmk  = dnrmk  + xkappa(j,i,1)*xkappa(j,i,1) + xkappa(j,i,2)*xkappa(j,i,2) &
+                      + xkappa(j,i,3)*xkappa(j,i,3) + xkappa(j,i,4)*xkappa(j,i,4)
+      dinvmq = dinvmq + d2 * ( xkappa(j,i,1)*gradient(ij1) + xkappa(j,i,2)*gradient(ij3)  &
+                             + xkappa(j,i,3)*gradient(ij2) + xkappa(j,i,4)*gradient(ij4)) &
+                      + xkappa(j,i,1)*hmat(ij1,ij1)*xkappa(j,i,1) &
+                      + xkappa(j,i,2)*hmat(ij3,ij3)*xkappa(j,i,2) &
+                      + xkappa(j,i,3)*hmat(ij2,ij2)*xkappa(j,i,3) &
+                      + xkappa(j,i,4)*hmat(ij4,ij4)*xkappa(j,i,4)
     enddo
   enddo
 
@@ -1088,24 +951,21 @@ contains
   write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
 
   do iz=1,4
-    write(lupri,*)
-    write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
-    do j=1,ni
-      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
+    write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
+    do i=1,ni
+      write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
     enddo
   enddo
 
-  ! Print some kappa matrix
+  ! Print kappa matrix
   if(loc%iprloc .ge. 5) then
      write (lupri,'(/a)') '* KAPPA matrix :'
      call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
   endif
 
-  call dealloc(hmat_d,id='hmat_d in getk_rdiag')
+  call qexit('getk_diag')
 
-  call qexit('getk_rdiag')
-
-  end subroutine getk_rdiag
+  end subroutine getk_diag
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -1205,8 +1065,7 @@ contains
   enddo
 
   do iz=1,4
-    write(lupri,*)
-    write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
+    write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
     do i=1,ni
       write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
     enddo
@@ -2483,7 +2342,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine exp_func(pkappa,tgrad,eval,ni,full,dinvmq)
+  subroutine exp_func(pkappa,tgrad,eval,ni,dinvmq)
   !******************************************************************************!
   !                                                                              !
   !       Calculate value of the quadratic approximation to the functional       !
@@ -2492,7 +2351,6 @@ contains
   implicit none
 
   ! External variables
-  logical,   intent(in ) :: full
   integer*4, intent(in ) :: ni
   real*8,    intent(out) :: dinvmq
 
