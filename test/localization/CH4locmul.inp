@@ -19,8 +19,6 @@ Projection CH4 pour diff. bases
 .MULPOP
 .LOCALIZE
 *LOCALIZE
-.HESTHR
-1.0D-16
 .THRESH
-1.0D-15
+1.0D-13
 *END OF 

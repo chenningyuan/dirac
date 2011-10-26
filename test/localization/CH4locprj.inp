@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
-Projection CH4
+Projection CH4 pour diff. bases
 .ANALYZE
 **HAMILTONIAN
 .LVCORR
@@ -20,10 +20,8 @@ Projection CH4
 .LOCALIZE
 *LOCALIZE
 .PRJLOC
-.HESTHR
-1.0D-16
 .THRESH
-1.0D-15
+1.0D-13
 .OWNBAS
 .VECREF
 5
