@@ -232,15 +232,6 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
 )
 
-if(VERBOSE_OUTPUT)
-add_custom_command(
-    TARGET dirac.x Experimental Nightly
-    POST_BUILD COMMAND 
-    COMMAND make info_ext
-    COMMENT "print out list of objects sorted according to their sizes"
-)
-endif()
-
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     add_executable(
