@@ -291,6 +291,20 @@ contains
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
       end if
 
+#ifndef MOD_UNRELEASED
+      if (do_london_rhs_direct .or. &
+          do_london_rhs_ro     .or. &
+          do_london_ks         .or. &
+          do_london_lr) then
+         print *, 'error: LAO+DFT not available in this version'
+         stop 1
+      end if
+      if (do_overlap_diagnostic) then
+         print *, 'error: overlap diagnostic not available in this version'
+         stop 1
+      end if
+#endif
+
 #ifdef VAR_MPI
       if (parallel_xc) then
 !        broadcast non-allocatables
@@ -437,6 +451,13 @@ contains
       end if
 #endif
 #ifdef MOD_XCFUN
+      end if
+#endif
+
+#ifndef MOD_UNRELEASED
+      if (fun_is_tau_mgga(xc_fun)) then
+         print *, 'error: meta-GGA not available in this version'
+         stop 1
       end if
 #endif
 
