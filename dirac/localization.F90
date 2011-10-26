@@ -271,7 +271,7 @@ contains
     else
       call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
-    if(     full) call getk_full(pmat,xkappa,hmat,grad,pkappa,tgrad,eval,evec,shift,dnrmk)
+    if(     full) call getk_full(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
     if(.not.full) call getk_rdiag(pmat,xkappa,grad_c,dnrmk,ipqtoq)
     if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
@@ -1110,10 +1110,18 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_full(pmat,xkappa,hmat,gradient,pkappa,tgrad,eval,evec,shift,dnrmk)
+  subroutine getk_full(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
   !           Construction of the XKAPPA matrix using full hessian               !
+  !          The linear set of equations is solved using information             !
+  !                   from diagonalization of the hessian                        !
+  !                                                                              !
+  !   (H-shift) * X = -g     -->     (tilde{H}-shift) * tilde{X} = - tilde{g}    !
+  !                                                                              !
+  !   tilde{H} = U^T * H * U = eval                 U = evec                     !
+  !   tilde{X} = U^T * X     = pkappa               X = xkappa                   !
+  !   tilde{g} = U^T * g     = tgrad                dnrmk = |X|                  !
   !                                                                              !
   !******************************************************************************!
   implicit none
@@ -1122,24 +1130,19 @@ contains
   real*8, intent(in ) :: shift
   real*8, intent(out) :: dnrmk
 
-  real*8, intent(in ), dimension(:)       :: gradient
-  real*8, intent(in ), dimension(:,:)     :: hmat, evec
-  real*8, intent(in ), dimension(:,:,:,:) :: pmat
+  real*8, intent(in ), dimension(:,:)     :: evec
   real*8, intent(out), dimension(:,:,:)   :: xkappa
 
   real*8, intent(in ), pointer :: tgrad(:), eval(:)
   real*8, intent(out), pointer :: pkappa(:)
 
   ! Internal variables
-  real*8, parameter     :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
-  complex*16, parameter :: c2 = (2.0d0,0.0d0)
+  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
-  integer*4 :: i, j, k, i1, j1, ij, iz, nucdep, ni, nhtmp, ni12, lupri, ier, nred
-  real*8    :: pii, pjj, pn2, dnrm2, dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
+  integer*4 :: i, j, ij, iz, ni, nhtmp, ni12, nred, lupri
+  real*8    :: dnrm2
 
-  integer*4,  allocatable, dimension(:)   :: ipiv
-  real*8,     allocatable, dimension(:)   :: gtmp, xtmp
-  real*8,     allocatable, dimension(:,:) :: htmp
+  real*8, allocatable, dimension(:) :: xtmp
 
   !------------------------------------------------------------------------------!
   call qenter('getk_full')
@@ -1147,47 +1150,22 @@ contains
   lupri  = var%lupri
 
   ! Get some dimensions
-  nucdep = size(pmat,4)
-  ni     = size(pmat,1)
-  ni12   = (size(hmat,1)+ni) / 4
-  nhtmp  = size(hmat,1)
+  ni    = size(xkappa,1)
+  nhtmp = size(evec,1)
+  ni12  = (nhtmp+ni) / 4
+  nred  = size(eval,1)
 
-  call alloc(ipiv,nhtmp      ,id='ipiv in getk_full')
-  call alloc(gtmp,nhtmp      ,id='gtmp in getk_full')
-  call alloc(xtmp,nhtmp      ,id='xtmp in getk_full')
-  call alloc(htmp,nhtmp,nhtmp,id='htmp in getk_full')
-
-  ! prepare hessian for dgetrf
-  htmp(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
-  do i=1,nhtmp
-    htmp(i,i) = htmp(i,i) - shift
-  enddo
-
-  ! prepare gradient for dgetrf
-  gtmp(1:nhtmp) = - gradient(1:nhtmp)
-
-  ! Solve linear set of equations
-  call dgetrf(nhtmp,nhtmp,htmp,nhtmp,ipiv,ier)
-  if(ier /= 0)then
-    write(lupri,*) ' ERROR: The dgetrf LAPACK subroutine in getk_full finished unsuccessfully'
-    write(lupri,*) ' info =',ier
-    stop
-  endif
-
-  call dgetrs('N',nhtmp,1,htmp,nhtmp,ipiv,gtmp,nhtmp,ier)
-  if(ier /= 0)then
-    write(lupri,*) ' ERROR: The dgetrs LAPACK subroutine in getk_full finished unsuccessfully'
-    write(lupri,*) ' info =',ier
-    stop
-  endif
-
-  ! solve linear set of equations using diagonalization of hessian
-  nred = size(eval,1)
+  ! allocate arrays
   if(associated(pkappa)) call deallocp(pkappa,id='pkappa in getk_full')
-  call allocp(pkappa,nred,id='pkappa in getk_full')
+  call allocp(pkappa,nred ,id='pkappa in getk_full')
+  call alloc(xtmp  ,nhtmp,id='xtmp   in getk_full')
+
+  ! calculate tilde{X}
   do i=1,nred
     pkappa(i) = - tgrad(i) / (eval(i) - shift)
   enddo
+
+  ! calculate X
   xtmp(:) = d0
   do j=1,nred
     do i=1,nhtmp
@@ -1195,10 +1173,11 @@ contains
     enddo
   enddo
 
-  ! Norm of the kappa
-  dnrmk  = dnrm2(nhtmp,xtmp,1)
+  ! Norm of the X
+  dnrmk = dnrm2(nhtmp,xtmp,1)
   write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
 
+  ! Unpack X to kappa matrix
   xkappa(:,:,:) = d0
   ij = 0
   do j = 1,ni
@@ -1228,15 +1207,13 @@ contains
   do iz=1,4
     write(lupri,*)
     write(lupri,'(a,i4)') 'Print xkappa matrix, IZ =',iz
-    do j=1,ni
-      write(lupri,'(i4,10es9.1)') j,(xkappa(j,k,iz),k=1,ni)
+    do i=1,ni
+      write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
     enddo
   enddo
 
-  call dealloc(ipiv,id='ipiv in getk_full')
-  call dealloc(gtmp,id='gtmp in getk_full')
+  !------------------------------------------------------------------------------!
   call dealloc(xtmp,id='xtmp in getk_full')
-  call dealloc(htmp,id='htmp in getk_full')
 
   call qexit('getk_full')
 
