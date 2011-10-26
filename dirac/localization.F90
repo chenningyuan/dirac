@@ -131,7 +131,7 @@ contains
 
   ! Internal variables
   character*12 :: sectid, cputid, walltid
-  character    :: daytid*24, hessian*4 = 'DIAG'
+  character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
   logical      :: tobe, full, diagonly, rejected, Iminmax
 
   integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
@@ -167,18 +167,20 @@ contains
   rejected = .false.
   Iminmax  = .false.
   if(loc%hesthr < loc%thrloc) diagonly = .true.
+  chstart = 'START ITERATION NO.    '
 
   tradius = 10.0d0
 
-  ! TMP print
-  write(lupri,*) 'lupri =',lupri
-  write(lupri,*) 'nish  =',nish
-  write(lupri,*) 'norb  =',norb
-  write(lupri,*) 'nucdep=',nucdep
-  write(lupri,*) 'maxref=',maxref
-  write(lupri,*) 'full  =',full
-  write(lupri,*) 'hesthr=',loc%hesthr
-  write(lupri,*) 'thrloc=',loc%thrloc
+  if(loc%iprloc.ge.4)then
+    write(lupri,*) 'lupri =',lupri
+    write(lupri,*) 'nish  =',nish
+    write(lupri,*) 'norb  =',norb
+    write(lupri,*) 'nucdep=',nucdep
+    write(lupri,*) 'maxref=',maxref
+    write(lupri,*) 'full  =',full
+    write(lupri,*) 'hesthr=',loc%hesthr
+    write(lupri,*) 'thrloc=',loc%thrloc
+  endif
 
   call titler('Molecular orbital localization','*',122)
 
@@ -222,7 +224,7 @@ contains
 
   ! Get overlap matrix 
   call gtovlx(smat,var%ssmtrc)
-  if(loc%iprloc.ge.6) then
+  if(loc%iprloc.ge.6)then
     write(lupri,'(/a)') '* orbloc: Molecular coefficients:'
     call prqmat(cmo,nfbas(0),norb,nfbas(0),norb,4,ipqtoq(1,0),lupri)
 
@@ -233,7 +235,7 @@ contains
   ! Occupied electronic orbital coeffients selection
   call occupy(isel,nish)
   call selcfs(cmo,ifrp,scoef,nish,isel,d0,nish,nfbas(0),norb)
-  if(loc%iprloc.ge.5) then
+  if(loc%iprloc.ge.5)then
     write(lupri,'(/a)') '* orblo1: Selected molecular coefficients'
     call prqmat(scoef,nfbas(0),nish,nfbas(0),nish,4,ipqtoq(1,0),lupri)
   endif
@@ -301,8 +303,10 @@ contains
     if(.not.rejected)then
       itr = itr + 1
       call gtinfo(daytid)
-      write(lupri,'(/5x,a,i4,a,3x)')'########## START ITERATION NO. ',itr,' ##########'
-      write(lupri,'(5x,a,a24,a)')'########## ',daytid,' ##########'
+
+      write(chstart(20:23),'(i4)') itr
+      call titler(chstart,'=',122)
+      write(lupri,'(/6x,a,a24)')'>>> ',daytid
 
       if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
@@ -322,20 +326,20 @@ contains
 
   enddo
 
-  write(lupri,'(/5x,a)')         '***********************************************************'
+  write(lupri,'(/11x,a)')        '***********************************************************'
   if(Iminmax)then
-    write(lupri,'(5x,a,i5,a)')   '****       MAXIMUM reached after',itr,'  iterations      ****'
+    write(lupri,'(11x,a,i5,a)')  '>>>>       MAXIMUM reached after',itr,'  iterations      <<<<'
   elseif(diffa < loc%thrloc)then
-    write(lupri,'(5x,a,i5,a)')   '****          Convergence in',itr,'  iterations          ****'
+    write(lupri,'(11x,a,i5,a)')  '>>>>          Convergence in',itr,'  iterations          <<<<'
   else
-    write(lupri,'(5x,a,i5,a)')   '****       No convergence after',itr,'  iterations       ****'
+    write(lupri,'(11x,a,i5,a)')  '>>>>       No convergence after',itr,'  iterations       <<<<'
   endif
-  write(lupri,'(5x,a,f20.13,a)') '**** Inverse mean delocalization =',dinvmo,' ****'
-  write(lupri,'(5x,a/)')         '***********************************************************'
+  write(lupri,'(11x,a,f20.13,a)')'>>>> Inverse mean delocalization =',dinvmo,' <<<<'
+  write(lupri,'(11x,a/)')        '***********************************************************'
 
   timend = second()
   time   = timend - timstr
-  call timtxt('>>> Time used in localization is :',time,lupri)
+  call timtxt('          >>> Time used in localization is :',time,lupri)
 
   ! Put the localised coefficients in DFCOEF
   call orblo5(scoef,nfbas(0),nish,norb)
@@ -481,7 +485,7 @@ contains
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
                NSTR(1,0,I))
-          IF(LOC%IPRLOC .GE. 5) THEN
+          IF(LOC%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
             CALL PRQMAT(RCOEF(NQ),NB,NSTR(IFRP,0,I),NB,NSTR(IFRP,0,I),4,IPQTOQ(1,0),LUPRI)
@@ -532,7 +536,7 @@ contains
 
 ! Construction of W = Ac
 
-      IF(LOC%IPRLOC .GE. 5) THEN
+      IF(LOC%IPRLOC.GE.5)THEN
         WRITE(LUPRI,'(/A)') '* Matrice BV'
         CALL PRQMAT(BV,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
         WRITE(LUPRI,'(/A)') '* Matrice AMAT'
@@ -543,7 +547,7 @@ contains
            'N','N',IPQTOQ(1,0),BV,NREF,NI,4,     &
            D0,IPQTOQ(1,0),WMAT,NREF,NI,4)
 
-      IF(LOC%IPRLOC.GE.5) THEN
+      IF(LOC%IPRLOC.GE.5)THEN
         WRITE(LUPRI,'(/A)') '* Matrice W'
         CALL PRQMAT(WMAT,NREF,NI,NREF,NI,4,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -579,19 +583,21 @@ contains
         ENDDO
       ENDDO
 
-      DO IZ=1,4
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
-        DO I=1, NUCDEP
-          WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
-          DO J=1,NI
-            WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
-          ENDDO
+      IF(LOC%IPRLOC.GE.2)THEN
+        DO IZ=1,4
           WRITE(LUPRI,*)
+          WRITE(LUPRI,'(A,I3)') 'Print Q^A matrices, IZ = ',IZ
+          DO I=1, NUCDEP
+            WRITE(LUPRI,'(A,I4)') ' Nucleus #',I
+            DO J=1,NI
+              WRITE(LUPRI,'(I4,10ES9.1)') J,(PMAT(J,K,IZ,I),K=1,NI)
+            ENDDO
+            WRITE(LUPRI,*)
+          ENDDO
         ENDDO
-      ENDDO
+      ENDIF
 
-      IF(LOC%IPRLOC .GE. 1) THEN
+      IF(LOC%IPRLOC.GE.5)THEN
         DO I = 1,NUCDEP
           WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
           WRITE(LUPRI,'(A)') '  ============================'
@@ -601,8 +607,8 @@ contains
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(A)')  '  ===================================  '
+      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
+      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
       DINV = D0
       DO I = 1,NI
         QLOC2 = D0
@@ -611,11 +617,11 @@ contains
         ENDDO
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
-        WRITE(LUPRI,'(A,I3,A,2F7.4)') &
+        WRITE(LUPRI,'(11X,A,I3,A,2F7.4)') &
         '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/A,F20.16)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/11X,A,F20.16)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -699,7 +705,7 @@ contains
 
 !       Print overlaps
 
-        IF(LOC%IPRLOC .GE. 5) THEN
+        IF(LOC%IPRLOC.GE.5)THEN
            JOFF = 1
            DO J = 1,NREFS
               KOFF = 1
@@ -793,7 +799,7 @@ contains
               D0,IPQTOQ(1,0),WSMAT,NBS,NI,4)
       ENDIF
 
-      IF(LOC%IPRLOC.GE.5) THEN
+      IF(LOC%IPRLOC.GE.5)THEN
          WRITE(LUPRI,'(/A)') '* WL matrix :'
          CALL PRQMAT(WLMAT,NBL,NI,NBL,NI,4,IPQTOQ(1,0),LUPRI)
          IF(.NOT.VAR%TWOCOMPBSS) THEN
@@ -830,7 +836,7 @@ contains
          ENDDO
       ENDDO
 !
-      IF(LOC%IPRLOC.GE.1) THEN
+      IF(LOC%IPRLOC.GE.5)THEN
          DO I = 1,NUCDEP
             WRITE(LUPRI,'(/A,I3)') '* ORBLO1: Matrice P  Atom ', I
             WRITE(LUPRI,'(A)') '  ============================'
@@ -840,8 +846,8 @@ contains
 
 ! Calculation and print of the localisation criterion
 
-      WRITE(LUPRI,'(/A)') '** Pipek-Mezey localization criteria **' 
-      WRITE(LUPRI,'(A)')  '  ===================================  '
+      WRITE(LUPRI,'(/20X,A)') '** Pipek-Mezey localization criteria **' 
+      WRITE(LUPRI,'(20X,A)')  '  ===================================  '
       DINV = D0
       DO I = 1,NI
          QLOC2 = D0
@@ -850,11 +856,11 @@ contains
          ENDDO
          DLOC = D1/QLOC2
          DINV = DINV + QLOC2
-         WRITE(LUPRI,'(A,I3,A,F7.4)') &
+         WRITE(LUPRI,'(11X,A,I3,A,F7.4)') &
          '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/A,F20.16)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/11X,A,F20.16)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -942,17 +948,21 @@ contains
 
   ! Norm of the kappa vector
   dnrmk = dsqrt(dnrmk)
-  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
+  if(loc%iprloc.ge.1)then
+    write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
+  endif
 
-  do iz=1,4
-    write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
-    do i=1,ni
-      write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
+  if(loc%iprloc.ge.2)then
+    do iz=1,4
+      write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
+      do i=1,ni
+        write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
+      enddo
     enddo
-  enddo
+  endif
 
   ! Print kappa matrix
-  if(loc%iprloc .ge. 5) then
+  if(loc%iprloc.ge.5)then
      write (lupri,'(/a)') '* KAPPA matrix :'
      call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
   endif
@@ -1027,7 +1037,9 @@ contains
 
   ! Norm of the X
   dnrmk = dnrm2(nhtmp,xtmp,1)
-  write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
+  if(loc%iprloc.ge.1)then
+    write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
+  endif
 
   ! Unpack X to kappa matrix
   xkappa(:,:,:) = d0
@@ -1056,12 +1068,14 @@ contains
     enddo
   enddo
 
-  do iz=1,4
-    write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
-    do i=1,ni
-      write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
+  if(loc%iprloc.ge.2)then
+    do iz=1,4
+      write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
+      do i=1,ni
+        write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
+      enddo
     enddo
-  enddo
+  endif
 
   !------------------------------------------------------------------------------!
   call dealloc(xtmp,id='xtmp in getk_full')
@@ -1158,7 +1172,7 @@ contains
           ENDDO
         ENDDO
       ENDDO
-      IF (LOC%IPRLOC .GE. 5) THEN
+      IF (LOC%IPRLOC.GE.5)THEN
          WRITE(VAR%LUPRI,'(/A)') '*ORBLO6 : New CMO matrix'
          CALL PRQMAT(CMO,NB,NO,NB,NO,4,VAR%IPQTOQ(1,0),VAR%LUPRI)
       ENDIF
@@ -1224,7 +1238,7 @@ contains
       LUPRI  = VAR%LUPRI
 
       CALL GETTIM(CPU1,WALL1)
-      IF (LOC%IPRLOC .GE. 5) CALL HEADER('Output from ROTCMO_MOD',-1)
+      IF (LOC%IPRLOC.GE.5) CALL HEADER('Output from ROTCMO_MOD',-1)
 
       NORBXQ = NORBI*NORBI*NZ
       CALL ALLOC(REIG,NORBI ,ID='REIG IN ROTCMO_MOD')
@@ -1243,7 +1257,7 @@ contains
                  'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
                  D0,IP,RCOS,NORBI,NORBI,NZ)
 
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: -kappa^2',-1)
          CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1253,7 +1267,7 @@ contains
 
       CALL QDIAG90(NZ,NORBI,RCOS,NORBI,NORBI, &
                    REIG,1,RV,NORBI,NORBI,IERR)
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: V matrix (eigenvector)',-1)
          CALL PRQMAT(RV,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
          CALL HEADER('ROTCMO_MOD: eigenvalues',-1)
@@ -1270,7 +1284,7 @@ contains
          IADDR = (I-1) + (I-1)*NORBI
          EIG = REIG(I)
          IF (EIG .LT. D0) THEN
-            IF (LOC%IPRLOC .GE. 3 .AND. ABS(EIG).GT. VAR%THRZER) WRITE(LUPRI,9010) EIG
+            IF (LOC%IPRLOC.GE.3 .AND. ABS(EIG).GT.VAR%THRZER) WRITE(LUPRI,9010) EIG
             EIG = D0
             REIG(I)   = D0
          END IF
@@ -1289,7 +1303,7 @@ contains
             RSIN(1+IADDR) = SIN(SQEIG)/SQEIG
          END IF
       END DO
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: sin(d)/d',-1)
          CALL PRQMAT(RSIN,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
          CALL HEADER('ROTCMO_MOD: cos(d)',-1)
@@ -1307,7 +1321,7 @@ contains
                     RCOS,NORBI,NORBI,NZ,IP,                &
                     RV,NORBI,NORBI,NZ,IP,                  &
                     RV,NORBI,NORBI,NZ,IP,LOC%IPRLOC)
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: V cos(d) V^{dagger}',-1)
          CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1321,7 +1335,7 @@ contains
                     RSIN,NORBI,NORBI,NZ,IP,                &
                     RV,NORBI,NORBI,NZ,IP,                  &
                     RV,NORBI,NORBI,NZ,IP,LOC%IPRLOC)
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: V sin(d)/d V^{dagger}',-1)
          CALL PRQMAT(RCOS,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1333,7 +1347,7 @@ contains
                  'N','N',IP,RCOS,NORBI,NORBI,NZ,   &
                  'N','N',IP,XKAPPA,NORBT,NORBT,NZ, &
                  D1,IP,RTMP,NORBI,NORBI,NZ)
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: exp(-kappa)',-1)
          CALL PRQMAT(RTMP,NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1366,15 +1380,17 @@ contains
          IOFF = IOFF + 1
       END DO
       END DO
-      IF (D_MAX .GT. VAR%THRZER) THEN
-         WRITE(LUPRI,*) 'ROTCMO_MOD: maximum deviation from unitary matrix'
-         WRITE(LUPRI,*) 'Element ',J_MAX,I_MAX,' value :',D_MAX
-      END IF
+      IF(LOC%IPRLOC.GE.1)THEN
+        IF(D_MAX.GT.VAR%THRZER)THEN
+           WRITE(LUPRI,'(/A)')' WARNING: ROTCMO_MOD: maximum deviation from unitary matrix'
+           WRITE(LUPRI,*)'WARNING: Element ',J_MAX,I_MAX,' value :',D_MAX
+        ENDIF
+      ENDIF
 
 !     Calculate new orbitals: CMO_{old} exp(-kappa)
 !     ---------------------------------------------
 
-      IF (LOC%IPRLOC .GE. 10) THEN
+      IF (LOC%IPRLOC.GE.10)THEN
          CALL HEADER('ROTCMO_MOD: old orbitals',-1)
          CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
@@ -1384,12 +1400,12 @@ contains
                  'N','N',IP,RTMP,NORBI,NORBI,NZ, &
                  D0,IP,RCOS,NBASI,NORBI,NZ)
       CALL DCOPY(NBASI*NORBI*NZ,RCOS,1,CMO,1)
-      IF (LOC%IPRLOC .GE. 5) THEN
+      IF (LOC%IPRLOC.GE.5)THEN
          CALL HEADER('ROTCMO_MOD: new orbitals',-1)
          CALL PRQMAT(cmo,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
       CALL GETTIM(CPU4,WALL4)
-      IF (LOC%IPRLOC .GE. 2) THEN
+      IF (LOC%IPRLOC.GE.2)THEN
          CPUTID = SECTID(CPU4-CPU1)
          WALLTID = SECTID(WALL4-WALL1)
          WRITE(LUPRI,9020) CPUTID,WALLTID
@@ -1545,16 +1561,20 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
-  do j=1,ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-  enddo
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
-  do j=1,ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-  enddo
-  write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_uu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
+    do j=1,ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+    enddo
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
+    do j=1,ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_uu:'
+    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
+  endif
   totdiag = totdiag + sumdiag
   totnond = totnond + sumnond
 
@@ -1640,16 +1660,20 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
-  do j=2*ni12+1, 3*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-  enddo
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
-  do j=2*ni12+1, 3*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-  enddo
-  write(lupri,*) 'Sum of elements of B_uu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumtmp,sumnond
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
+    do j=2*ni12+1, 3*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+    enddo
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
+    do j=2*ni12+1, 3*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,*) 'Sum of elements of B_uu:'
+    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumtmp,sumnond
+  endif
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -1758,16 +1782,20 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bu'
-  do j=ni12+1,2*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-  enddo
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bu'
-  do j=ni12+1,2*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-  enddo
-  write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumtmp,sumnond
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bu'
+    do j=ni12+1,2*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+    enddo
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bu'
+    do j=ni12+1,2*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bu:'
+    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumtmp,sumnond
+  endif
   totnond = totnond + sumnond
 
   !  d^2 G / dK_ij dK_kl   -->   (38)
@@ -1873,16 +1901,20 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_bu'
-  do j=3*ni12+1, 4*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-  enddo
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_bu'
-  do j=3*ni12+1, 4*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-  enddo
-  write(lupri,*) 'Sum of elements of B_bu:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumtmp,sumnond
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_bu'
+    do j=3*ni12+1, 4*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
+    enddo
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_bu'
+    do j=3*ni12+1, 4*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,*) 'Sum of elements of B_bu:'
+    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumtmp,sumnond
+  endif
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -1974,16 +2006,20 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bb'
-  do j=ni12+1,2*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
-  enddo
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bb'
-  do j=ni12+1,2*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
-  enddo
-  write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bb:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bb ',sumdiag,sumnond
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bb'
+    do j=ni12+1,2*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
+    enddo
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bb'
+    do j=ni12+1,2*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bb:'
+    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bb ',sumdiag,sumnond
+  endif
   totdiag = totdiag + sumdiag
   totnond = totnond + sumnond
 
@@ -2096,16 +2132,20 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_ub'
-  do j=2*ni12+1, 3*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
-  enddo
-  write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_ub'
-  do j=2*ni12+1, 3*ni12
-    write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
-  enddo
-  write(lupri,*) 'Sum of elements of B_ub:'
-  write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumtmp,sumnond
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_ub'
+    do j=2*ni12+1, 3*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
+    enddo
+    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_ub'
+    do j=2*ni12+1, 3*ni12
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,*) 'Sum of elements of B_ub:'
+    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumtmp,sumnond
+  endif
   totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
@@ -2158,7 +2198,9 @@ contains
       endif
     enddo
   enddo
-  write(lupri,'(a,5d11.2)')' Real hessian diag vs. non-diag: ',sumdiag,sumnond
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,5d11.2)')' Real hessian diag vs. non-diag: ',sumdiag,sumnond
+  endif
 
   ! TMP: check properties of hessian
   dtmp1 = d0; dtmp2 = d0; dtmp3 = d0; dtmp4 = d0; dtmp5 = d0; dtmp6 = d0
@@ -2185,6 +2227,7 @@ contains
                   + dabs(hmat(i,i+2*ni12,2) + hmat(i+2*ni12,i,2))
   enddo
   if((dtmp1/=d0).or.(dtmp2/=d0).or.(dtmp3/=d0).or.(dtmp4/=d0).or.(dtmp5/=d0).or.(dtmp6/=d0))then
+    write(lupri,*) ' WARNING: Something is wrong with symetry of the hessian (see output)'
     write(lupri,*) 'symetry A_R',dtmp1
     write(lupri,*) 'anti-symetry A_I',dtmp2
     write(lupri,*) 'symetry B_R',dtmp3
@@ -2281,14 +2324,16 @@ contains
     enddo
   enddo
 
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
-  write(lupri,'(9d12.4)') (gradient(j),j=1,ni12-ni)
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
-  write(lupri,'(9d12.4)') (gradient(j),j=1+2*ni12-ni,3*ni12-ni)
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
-  write(lupri,'(9d12.4)') (gradient(j),j=1+ni12-ni,2*ni12-ni)
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
-  write(lupri,'(9d12.4)') (gradient(j),j=1+3*ni12-ni,4*ni12-ni)
+  if(loc%iprloc.ge.2)then
+    write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
+    write(lupri,'(9d12.4)') (gradient(j),j=1,ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
+    write(lupri,'(9d12.4)') (gradient(j),j=1+2*ni12-ni,3*ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
+    write(lupri,'(9d12.4)') (gradient(j),j=1+ni12-ni,2*ni12-ni)
+    write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
+    write(lupri,'(9d12.4)') (gradient(j),j=1+3*ni12-ni,4*ni12-ni)
+  endif
 
   ! Norm of the gradient
   dnrmg = dnrm2(ndimg,gradient,1)
@@ -2418,8 +2463,10 @@ contains
   enddo
   if(np == 0)Iminmax = .true.  ! we reached the maximum of the function
 
-  write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
-  write(lupri,'(8d12.4)') (etmp(i),i=1,nhtmp)
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
+    write(lupri,'(8d12.4)') (etmp(i),i=1,nhtmp)
+  endif
 
   !------------------------------------------------------------------------------!
   call dealloc(work,id='work in hdiag')
