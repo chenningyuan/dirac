@@ -13,6 +13,11 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
+include(CheckFortranSourceCompiles)
+
+# for windows need substitute (type)
+set(cat_program cat)
+
 # set build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE

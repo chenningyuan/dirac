@@ -7,7 +7,15 @@ if(ENABLE_MPI)
 
         if(ENABLE_MPI2_DETECTION)
             # test whether MPI-2 is available
-            include(MPI-2-test)
+            exec_program(
+                ${cat_program}
+                ARGS ${CMAKE_SOURCE_DIR}/cmake/MPI-2-test.F90
+                OUTPUT_VARIABLE mpi2test
+                )
+            check_fortran_source_compiles(
+                ${mpi2test}
+                MPI_2_SUPPORT_OK
+                )
             if(MPI_2_SUPPORT_OK)
                 add_definitions(-DVAR_MPI2)
                 message("-- MPI-2 support found")
