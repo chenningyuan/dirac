@@ -312,6 +312,13 @@ foreach(
 endforeach()
 
 include(Slowdown)
+
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
+
 include(Install)
 include(Release)
 
