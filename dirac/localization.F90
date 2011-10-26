@@ -35,7 +35,9 @@ end type external_variales
 type( localization_flags ), private :: loc
 type( external_variales  ), private :: var
 
-real*8, parameter :: tresh = 1.0d-13, trsh_mu = 1.0d-4
+! Some global parameters
+real*8, parameter, private :: tresh = 1.0d-13, trsh_mu = 1.0d-4
+real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
 contains
 
@@ -128,8 +130,6 @@ contains
   implicit none
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0
-
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG'
   logical      :: tobe, full, diagonly, rejected, Iminmax
@@ -394,7 +394,7 @@ contains
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
       CHARACTER*72 :: VECREF(2,MAXREF)
-      REAL*8, PARAMETER :: D0=0.0D0, D2=2.0D0, DM1=-1.0D0, D1=1.0D0
+      REAL*8, PARAMETER :: DM1=-1.0D0
 
       LOGICAL   :: TOBE
 
@@ -665,7 +665,7 @@ contains
       INTEGER*4    :: IPQTOQ(4,0:7)
 
       REAL*8    :: PTOL
-      REAL*8, PARAMETER :: D0=0.0D0, DC=1.0D-2, D2=2.0D0
+      REAL*8, PARAMETER :: DC=1.0D-2
 
       LOGICAL DOPOP
 
@@ -765,8 +765,6 @@ contains
       INTEGER*4 :: IPQTOQ(4,0:7)
       REAL*8    :: DINV, QLOC2, DLOC
 
-      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
-
       REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
 
   !------------------------------------------------------------------------------!
@@ -848,7 +846,7 @@ contains
       DO I = 1,NI
          QLOC2 = D0
          DO J = 1,NUCDEP
-            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/4.0D0
+            QLOC2 = QLOC2 + PMAT(I,I,1,J)*PMAT(I,I,1,J)/D4
          ENDDO
          DLOC = D1/QLOC2
          DINV = DINV + QLOC2
@@ -900,8 +898,6 @@ contains
   real*8, intent(out), dimension(:,:,:)   :: xkappa
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
-
   integer*4 :: i, j, ij, ij1, ij2, ij3, ij4, iz, ni, ni12, lupri
 
   !------------------------------------------------------------------------------!
@@ -995,8 +991,6 @@ contains
   real*8, intent(out), pointer :: pkappa(:)
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
-
   integer*4 :: i, j, ij, iz, ni, nhtmp, ni12, nred, lupri
   real*8    :: dnrm2
 
@@ -1100,7 +1094,6 @@ contains
 
       ! Internal variables
       INTEGER*4 :: IFRP, I
-      REAL*8, PARAMETER :: D1 = 1.0D0
 
   !------------------------------------------------------------------------------!
       IFRP = 1
@@ -1139,7 +1132,6 @@ contains
       ! Internal variables
       INTEGER*4 :: I, J, K, L
       REAL*8    :: TOTERG
-      REAL*8, PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
       INTEGER*4, ALLOCATABLE :: IBEIG(:)
       REAL*8,    ALLOCATABLE :: CMO(:,:,:), EIG(:)
@@ -1215,9 +1207,8 @@ contains
       REAL*8,    INTENT(INOUT) :: CMO(NBASI,NORBI,NZ)
 
       ! Internal variables
-      REAL*8, PARAMETER :: D1 = 1.00D00, D0 = 0.00D00, DM1 = -D1
       REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
-      REAL*8, PARAMETER :: D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12
+      REAL*8, PARAMETER :: D1P5 = 1.5D00, THREQL = 1.0D-12, DM1 = -D1
 
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 
@@ -1273,8 +1264,8 @@ contains
 !     ------------------------------------------------
 
       CALL GETTIM(CPU2,WALL2)
-      RCOS(1:NORBXQ) = 0.0D0
-      RSIN(1:NORBXQ) = 0.0D0
+      RCOS(1:NORBXQ) = D0
+      RSIN(1:NORBXQ) = D0
       DO I = 1,NORBI
          IADDR = (I-1) + (I-1)*NORBI
          EIG = REIG(I)
@@ -1442,7 +1433,7 @@ contains
   real*8, intent(out), dimension(:,:,:)   :: hmat
 
   ! Internal variables
-  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0, dhalf = 0.5d0, d4 = 4.0d0
+  real*8, parameter :: dhalf = 0.5d0
 
   real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pil1, pli1, pkj1
   real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pil2, pli2, pkj2
@@ -2253,8 +2244,6 @@ contains
   integer*4 :: i, j, k, ij, ij1, ij2, ij3, ij4
   integer*4 :: nucdep, ni, ndimg, ni12, lupri
 
-  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
-
   real*8 :: dtmp, dnrm2
 
   !------------------------------------------------------------------------------!
@@ -2327,7 +2316,6 @@ contains
 
   ! Internal variables
   integer*4  :: i
-  real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
 
   !------------------------------------------------------------------------------!
   call qenter('exp_func')
@@ -2411,7 +2399,7 @@ contains
   enddo
 
   ! calculate transformed gradient: tilde{g} = U^T * g
-  tgrad(:) = 0.0d0
+  tgrad(:) = d0
   do i=1,nred
     do j=1,nhtmp
       tgrad(i) = tgrad(i) + evec(j,i) * gradient(j)
@@ -2422,8 +2410,8 @@ contains
   np=0; nm=0; nb=0
   do i=1,nhtmp
     if(dabs(etmp(i)) > tresh)then
-      if(etmp(i) < 0.0d0)nm = nm + 1
-      if(etmp(i) > 0.0d0)np = np + 1
+      if(etmp(i) < d0)nm = nm + 1
+      if(etmp(i) > d0)np = np + 1
     else
       nb = nb + 1
     endif
@@ -2464,7 +2452,6 @@ contains
   ! Internal variables
   integer*4 :: i, j, k, ndim, lupri, imax
   real*8    :: tcurr, xcurr, cutoff, xmax, xmin, step
-  real*8, parameter :: d2 = 2.0d0
 
   !------------------------------------------------------------------------------!
   call qenter('get_mu')
@@ -2537,7 +2524,7 @@ contains
     real*8    :: f
     integer*4 :: ii
 
-    f = 0.0d0
+    f = d0
     do ii=1,ndim
       if(dabs(eval(ii) - x) < 1.0d-14)then
         write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
@@ -2571,7 +2558,6 @@ contains
   ! Internal variables
   character*6 :: cond
   integer*4 :: lupri
-  real*8, parameter :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
   real*8 :: R, tradius_old
 
