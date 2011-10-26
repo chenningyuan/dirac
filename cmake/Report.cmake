@@ -1,3 +1,5 @@
+if(VERBOSE_OUTPUT)
+
 message("Report of configuration settings:")
 message("CMAKE_SYSTEM_NAME          ${CMAKE_SYSTEM_NAME}          ")
 message("CMAKE_GENERATOR            ${CMAKE_GENERATOR}            ")
@@ -77,3 +79,5 @@ else()
     message("Actual Windows environment variable PATH=$ENV{PATH}")
         message("Actual Windows environment variable LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
 endif()
+
+endif(VERBOSE_OUTPUT)

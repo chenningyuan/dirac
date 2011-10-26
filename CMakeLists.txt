@@ -288,9 +288,5 @@ endif()
 
 include(Install)
 include(Release)
-
-if(VERBOSE_OUTPUT)
-    include(Report)
-endif()
-
+include(Report)
 include(Documentation)
