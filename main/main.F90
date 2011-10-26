@@ -156,8 +156,8 @@ program dirprg
 #ifndef NO_SELFTEST
      call selftest_lapack()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility
-     if ( parcal ) call selftest_mpi()
+!    MASTER checks MPI library compatibility (now done at compile time)
+!    if ( parcal ) call selftest_mpi()
 #endif
 #endif
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
