@@ -58,7 +58,6 @@ include(Definitions)
 option(ENABLE_INTERNAL_MATH  "Enable internal math library"             OFF)
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                   OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"               OFF)
-option(ENABLE_SLOWDOWN_SLAVE "Enable initial slowing down of slaves"    OFF)
 option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"        ON)
 option(ENABLE_OMP            "Enable OpenMP parallelization"            OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"             OFF)
@@ -310,8 +309,6 @@ foreach(
         ${LIBS}
         )
 endforeach()
-
-include(Slowdown)
 
 # forward CPP directly to the code
 set(CPP)
