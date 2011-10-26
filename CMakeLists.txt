@@ -8,14 +8,10 @@ set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     )
-
-
 
 # set build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -53,58 +49,26 @@ else()
     message("-- You are lazy. Running pamadm -a for you ...")
 endif()
 
-include(Definitions)
+option(ENABLE_INTERNAL_MATH   "Enable internal math library"                              OFF)
+option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
+option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
+option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
+option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
+option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
+option(ENABLE_GEN1INT         "Enable Gen1Int module"                                     OFF)
+option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
+option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
+option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
+option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
+option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
+option(ENABLE_UTILITIES       "Enable utitilites"                                         OFF)
+option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules"      OFF)
+option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 
-option(ENABLE_INTERNAL_MATH  "Enable internal math library"             OFF)
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                   OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"               OFF)
-option(ENABLE_SLOWDOWN_SLAVE "Enable initial slowing down of slaves"    OFF)
-option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"        ON)
-option(ENABLE_OMP            "Enable OpenMP parallelization"            OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"             OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int module"                    OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"                      ON)
-option(ENABLE_PROFILING      "Enable profiling"                         OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                      OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"                     OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"          OFF)
-option(ENABLE_UTILITIES      "Enable utitilites"                        OFF)
-option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecules" OFF)
-option(ENABLE_MATLAB_LOG "Will log interesting matrices in matlab format (very verbose!)" OFF)
-
-if(ENABLE_LARGE_MOLECULES)
-    add_definitions(-DLARGE_MOLECULES)
-endif()
-if(ENABLE_MATLAB_LOG)
-    add_definitions(-DMOD_MATLAB_LOG)
-endif()
-
-# set cdash buildname
-set(BUILDNAME
-    "BUILDNAME-not-set"
-    CACHE STRING
-    "Name of build on the dashboard"
-    )
-
-# set ctest's own timeout
-set(DART_TESTING_TIMEOUT
-    "600"
-    CACHE STRING
-    "Set default timeout in seconds for every single test"
-    )
-
-if(NOT "${RUNTEST_NR_PROC}" STREQUAL "")
-    set(RUNTEST_FLAG_NR_PROC "--mpi=${RUNTEST_NR_PROC}")
-    message("-- runtest extra flag active, RUNTEST_FLAG_NR_PROC=\"${RUNTEST_FLAG_NR_PROC}\" ")
-endif()
-if(NOT "${RUNTEST_TIMEOUT}" STREQUAL "")
-    set(RUNTEST_FLAG_TIMEOUT "--timeout=${RUNTEST_TIMEOUT}")
-    message("-- runtest extra flag active, RUNTEST_FLAG_TIMEOUT=\"${RUNTEST_FLAG_TIMEOUT}\" ")
-endif()
-
-include(Tests)
-include(CTest)
-enable_testing()
+option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
+option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
+mark_as_advanced(FORCE_DIRAC_BLAS)
+mark_as_advanced(FORCE_DIRAC_LAPACK)
 
 # set work memory
 set(WORK_MEM_WORDS
@@ -114,16 +78,21 @@ set(WORK_MEM_WORDS
     )
 add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
 
+if(ENABLE_LARGE_MOLECULES)
+    add_definitions(-DLARGE_MOLECULES)
+endif()
+
+if(ENABLE_MATLAB_LOG)
+    add_definitions(-DMOD_MATLAB_LOG)
+endif()
+
+include(Testing)
+include(Definitions)
 include(Archs)
 include(FCompilers)
 include(CCompilers)
 
 set(LIBS)
-
-option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
-option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
-mark_as_advanced(FORCE_DIRAC_BLAS)
-mark_as_advanced(FORCE_DIRAC_LAPACK)
 
 include(Math)
 if(NOT BLAS_FOUND OR FORCE_DIRAC_BLAS)
@@ -263,15 +232,6 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size_ext.py dirac.x
 )
 
-if(VERBOSE_OUTPUT)
-add_custom_command(
-    TARGET dirac.x Experimental Nightly
-    POST_BUILD COMMAND 
-    COMMAND make info_ext
-    COMMENT "print out list of objects sorted according to their sizes"
-)
-endif()
-
 set(LIST_OF_EXECUTABLES)
 macro(compile_standalone _executable _source LIST_OF_EXECUTABLES)
     add_executable(
@@ -311,12 +271,13 @@ foreach(
         )
 endforeach()
 
-include(Slowdown)
-include(Install)
-include(Release)
-
-if(VERBOSE_OUTPUT)
-    include(Report)
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
 endif()
 
+include(Install)
+include(Release)
+include(Report)
 include(Documentation)
