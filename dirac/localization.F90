@@ -278,7 +278,7 @@ contains
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
     endif
-    call exp_func(xkappa,hmat,grad,pkappa,tgrad,eval,full,dinvmq)
+    call exp_func(pkappa,tgrad,eval,nish,full,dinvmq)
 
     if(.not.rejected) storec(:) = scoef(:)  ! store MO coeff. in the case you reject the step
     if(     rejected) scoef(:)  = storec(:) ! restore MO coeff.; previous step was rejected
@@ -2483,100 +2483,35 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine exp_func(xkappa,hmat,gradient,pkappa,tgrad,eval,full,dinvmq)
+  subroutine exp_func(pkappa,tgrad,eval,ni,full,dinvmq)
   !******************************************************************************!
   !                                                                              !
-  !                  Calculate predicted functional value                        !
-  !                       (quadratic approximation)                              !
+  !       Calculate value of the quadratic approximation to the functional       !
   !                                                                              !
   !******************************************************************************!
   implicit none
 
   ! External variables
-  logical, intent(in ) :: full
-  real*8,  intent(out) :: dinvmq
-
-  real*8, intent(in), dimension(:)     :: gradient
-  real*8, intent(in), dimension(:,:)   :: hmat
-  real*8, intent(in), dimension(:,:,:) :: xkappa
+  logical,   intent(in ) :: full
+  integer*4, intent(in ) :: ni
+  real*8,    intent(out) :: dinvmq
 
   real*8, intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
 
   ! Internal variables
-  integer*4  :: i, j, i1, j1, ij, id, ni, ni12, nhtmp, ii, jj
+  integer*4  :: i
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
-
-  real*8, allocatable, dimension(:)   :: ktmp
-  real*8, allocatable, dimension(:,:) :: htmp
-  complex*16 :: ch, cki, ckj
 
   !------------------------------------------------------------------------------!
   call qenter('exp_func')
 
-  ! Get some dimensions
-  ni     = size(xkappa,1)
-  nhtmp  = size(hmat,1)
-  ni12   = (size(hmat,1)+ni) / 4
-
-  call alloc(ktmp,nhtmp,      id='ktmp in exp_func')
-  call alloc(htmp,nhtmp,nhtmp,id='htmp in exp_func')
-
-  ! pack the kappa matrices
-  ij = 0
-  do j = 1,ni
-    do i = j,ni
-      if(i==j)cycle
-      ij = ij + 1
-      ktmp(ij) = xkappa(j,i,1)
-    enddo
-  enddo
-
-  ij = ni12-ni
-  do j = 1,ni
-    do i = j,ni
-      ij = ij + 1
-      ktmp(ij+0*ni12) = - xkappa(j,i,3)
-      ktmp(ij+1*ni12) =   xkappa(j,i,2)
-      ktmp(ij+2*ni12) =   xkappa(j,i,4)
-    enddo
-  enddo
-
-  ! prepare htmp
-  htmp(:,:) = d0
-  do i=1,nhtmp
-    do j=1,nhtmp
-      if((.not.full).and.(i/=j))cycle
-      htmp(i,j) = hmat(i,j)
-    enddo
-  enddo
-
-  ! contribution from hessian
-  dinvmq = d0
-  do i=1,nhtmp
-    do j=1,nhtmp
-      dinvmq = dinvmq + ktmp(i) * htmp(i,j) * ktmp(j)
-    enddo
-  enddo
-
-  ! contribution from gradient
-  do i=1,nhtmp
-    dinvmq = dinvmq + d2*ktmp(i) * gradient(i)
-  enddo
-  dinvmq = dinvmq / dfloat(ni)
-
   dinvmq = d0
   do i=1,size(eval,1)
-    dinvmq = dinvmq + pkappa(i) * (d2*tgrad(i)+eval(i)*pkappa(i))
+    dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
   enddo
   dinvmq = dinvmq / dfloat(ni)
 
-  !------------------------------------------------------------------------------!
-  call dealloc(ktmp,id='ktmp in exp_func')
-  call dealloc(htmp,id='htmp in exp_func')
-
   call qexit('exp_func')
-
-  !------------------------------------------------------------------------------!
 
   end subroutine exp_func
 
