@@ -21,13 +21,13 @@
 
 module moltra_labeling
 
-  integer, parameter, private ::  MAX_KRAMERS_PAIRS = 800
+  integer, parameter, private ::  MAX_KRAMERS_PAIRS = 8000
 
   save
 
 ! Arrays needed to toggle between different indexing (TODO: figure out how to use parameters below)
-  integer, public  :: moltra_isp (-800:800)
-  integer, public  :: moltra_ikr (2*800)
+  integer, public  :: moltra_isp (-MAX_KRAMERS_PAIRS:MAX_KRAMERS_PAIRS)
+  integer, public  :: moltra_ikr (2*MAX_KRAMERS_PAIRS)
   integer, public  :: moltra_nkr
  
 contains

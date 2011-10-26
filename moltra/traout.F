@@ -121,7 +121,7 @@ C
 C     Every integral takes at most 32 bytes on 4 byte integer machines
 C     Make a new file if we have written more than 60 million integrals.
 C     This solves the 2Gb problem on Linux.
-      IF (NTKL.GT.60 000 000) THEN
+      IF (NTKL.GT. 600 000 000) THEN
          N2EFIL = N2EFIL + 1
          IF (N2EFIL.LT.10) THEN
             WRITE (NEXTFIL,'(A4,I1)') 'MDC0',N2EFIL
@@ -262,10 +262,11 @@ C
 C     LV   Deactivated this filesplitting option, should be obsolete now. 
 C     If the lines below are still commented out in 2013, please delete altogether !
 C
+C     
 C     We may exceed the maximum file length. Check it in the following
 C     routine !
 C
-C     CALL MDINTN (NZKL)
+      CALL MDINTN (NZKL)
 
 C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
