@@ -628,10 +628,8 @@ contains
             end if
          end if
 
-! gosia: later i will join it with what is done above (now it is not working if i just
-! add another if)
          if (do_london_rhs_direct) then
-           call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
          call insert_half_phases()
@@ -974,7 +972,9 @@ contains
          deallocate(buffer)
 
       end do loop_over_points_block
-   else
+   end if !if (use_blas3_scheme) then
+
+   if (.not. use_blas3_scheme) then
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -1612,7 +1612,7 @@ contains
     deallocate(ao)
     deallocate(buffer)
 
-   end if !if (use_blas3_scheme) then
+   end if !if (.not. use_blas3_scheme) then
 
     deallocate(derv)
     deallocate(derv_nadd)
