@@ -8,14 +8,10 @@ set(VERSION_MAJOR 11)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     )
-
-
 
 # set build type
 if(NOT CMAKE_BUILD_TYPE)

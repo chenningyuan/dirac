@@ -144,12 +144,8 @@ program dirprg
      write(lupri, '(a)') '----------------'
      write(lupri, *)
 
-#ifdef THIS_IS_CMAKE_BUILD
      call print_compilation_info()
      call print_git_revision_info()
-#else
-     call sysinf(iparcal)
-#endif
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
