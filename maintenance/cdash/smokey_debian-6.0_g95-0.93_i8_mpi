@@ -1,7 +1,9 @@
 #!/bin/bash
 
-source /opt/intel/bin/compilervars.sh intel64
-export PATH=$PATH':/opt/intel/mkl'
+export PATH=$PATH':/home/bast/openmpi/g95/bin'
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/g95/lib'
+
+export MATH_ROOT='/opt/intel/mkl'
 
 TMP_DIR=/scratch/scratch-nightly-compile
 SCRATCH_DIR=/scratch/scratch-nightly-run
@@ -12,7 +14,7 @@ git clone git@repo.ctcc.no:dirac.git $TMP_DIR
 cd $TMP_DIR
 git checkout -b prepare-release-11 origin/prepare-release-11
 ./pamadm --release
-./setup --fc=ifort --cc=icc --int64 -D BUILDNAME="smokey-debian_6.0-x86_64-intel_12.1.0-i8-mkl-release"
+./setup --fc=mpif90 --cc=mpicc --int64 -D BUILDNAME="smokey_debian-6.0_g95-0.93_i8_mpi" -D RUNTEST_NR_PROC=2
 
 cd $TMP_DIR/build
 make Nightly

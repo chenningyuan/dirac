@@ -11,7 +11,8 @@ export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/dirac-git-repo
 #BUILD=build_gfortran_gcc_ownlibs_ILP64_cdash
-BUILD=build_g95_gcc_ownlibs_ILP64_cdash
+#BUILD=build_g95_gcc_ownlibs_ILP64_cdash
+BUILD=build
 
 # go to the local DIRAC directory
 cd $DIRAC
@@ -29,7 +30,7 @@ make info_ext
 make Experimental
 
 ###
-### now run the Nightly test suite
+### now run the Nightly test suite of 'release'
 ###
 TMP_DIR=/var/tmp/dirac_build
 mkdir -p $TMP_DIR
