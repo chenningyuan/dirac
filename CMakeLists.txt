@@ -13,6 +13,11 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
+include(CheckFortranSourceCompiles)
+
+# for windows need substitute (type)
+set(cat_program cat)
+
 # set build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE
@@ -91,6 +96,7 @@ include(Definitions)
 include(Archs)
 include(FCompilers)
 include(CCompilers)
+include(Parallel)
 
 set(LIBS)
 
@@ -108,37 +114,6 @@ endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DINT_STAR8)
-endif()
-
-if(ENABLE_MPI)
-    find_package(MPI)
-    if(MPI_FOUND)
-        add_definitions(-DVAR_MPI)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
-        include_directories(${MPI_INCLUDE_PATH})
-
-        if(ENABLE_MPI2_DETECTION)
-            # test whether MPI-2 is available
-            include(MPI-2-test)
-            if(MPI_2_SUPPORT_OK)
-                add_definitions(-DVAR_MPI2)
-                message("-- MPI-2 support found, define -DVAR_MPI2")
-            else()
-                message("-- no MPI-2 support found, will try with MPI-1")
-            endif()
-        else()
-            message("-- MPI-2 support disabled, will try with MPI-1")
-        endif()
-    endif()
-endif()
-
-if(ENABLE_OMP)
-    find_package(OpenMP)
-    if(OpenMP_FOUND)
-        add_definitions(-DVAR_OMP)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_COMPILE_FLAGS}")
-        include_directories(${OpenMP_INCLUDE_PATH})
-    endif()
 endif()
 
 if(ENABLE_CUDA)
