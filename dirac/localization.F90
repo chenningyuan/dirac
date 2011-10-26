@@ -142,7 +142,7 @@ contains
 
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
   real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, etmp
-  real*8,    allocatable, dimension(:,:)     :: grad_c, hmat, evec
+  real*8,    allocatable, dimension(:,:)     :: hmat, evec
   real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
@@ -198,7 +198,6 @@ contains
   call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
   call alloc(hmat_c,ndimh,ndimh,2,     id='hmat_c in orbloc')
   call alloc(hmat  ,ndimhr,ndimhr,     id='hmat   in orbloc')
-  call alloc(grad_c,ndimh,2,           id='grad_c in orbloc')
   call alloc(grad  ,ndimhr,            id='grad   in orbloc')
   call alloc(etmp  ,ndimhr,            id='etmp   in orbloc')
   call alloc(evec  ,ndimhr,ndimhr,     id='evec   in orbloc')
@@ -264,7 +263,7 @@ contains
     ! get new kappa
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
-      call get_gradient(pmat,grad_c,grad,dnrmg)
+      call get_gradient(pmat,grad,dnrmg)
       call hdiag(hmat,grad,etmp,tgrad,eval,evec,Iminmax)
       if(Iminmax) exit
       shift = d0
@@ -351,7 +350,6 @@ contains
   call dealloc(xkappa,id='xkappa in orbloc')
   call dealloc(hmat_c,id='hmat_c in orbloc')
   call dealloc(hmat  ,id='hmat   in orbloc')
-  call dealloc(grad_c,id='grad_c in orbloc')
   call dealloc(grad  ,id='grad   in orbloc')
   call dealloc(etmp  ,id='etmp   in orbloc')
   call dealloc(evec  ,id='evec   in orbloc')
@@ -2237,10 +2235,10 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_gradient(pmat,grad_c,grad_r,dnrmg)
+  subroutine get_gradient(pmat,gradient,dnrmg)
   !******************************************************************************!
   !                                                                              !
-  !  Construction of gradient                                                    !
+  !                     Construction of the gradient                             !
   !                                                                              ! 
   !******************************************************************************!
   implicit none
@@ -2249,91 +2247,62 @@ contains
   real*8, intent(out) :: dnrmg
 
   real*8, intent(in ), dimension(:,:,:,:) ::  pmat
-  real*8, intent(out), dimension(:)       ::  grad_r
-  real*8, intent(out), dimension(:,:)     ::  grad_c
+  real*8, intent(out), dimension(:)       ::  gradient
 
   ! Internal variables
-  integer*4 :: i, j, k, ij, i1, nucdep, ni, ndimg, ndimgr, ni12, lupri
+  integer*4 :: i, j, k, ij, ij1, ij2, ij3, ij4
+  integer*4 :: nucdep, ni, ndimg, ni12, lupri
 
   real*8, parameter :: d0 = 0.0d0, d2 = 2.0d0
 
-  real*8 :: pij1, pij2, dtmp
-
-  real*8, allocatable, dimension(:) :: gtmp
+  real*8 :: dtmp, dnrm2
 
   !------------------------------------------------------------------------------!
   call qenter('get_gradient')
 
   lupri = var%lupri
-  grad_c(:,:) = d0
+  gradient(:) = d0
 
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
-  ndimg  = size(grad_c,1)
-  ndimgr = size(grad_r,1)
-  ni12   = ndimg / 4
-
-  !------------------------------------------------------------------------------!
-  !               Calculate complex representation of the gradient               !
-  !------------------------------------------------------------------------------!
-  ij = 0
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      do k = 1,nucdep
-        dtmp = d2*(pmat(j,j,1,k) - pmat(i,i,1,k))
-        grad_c(ij,1)      = grad_c(ij,1)      + dtmp * pmat(i,j,1,k)
-        grad_c(ij,2)      = grad_c(ij,2)      + dtmp * pmat(i,j,2,k)
-        grad_c(ij+ni12,1) = grad_c(ij+ni12,1) + dtmp * pmat(i,j,3,k)
-        grad_c(ij+ni12,2) = grad_c(ij+ni12,2) + dtmp * pmat(i,j,4,k)
-      enddo
-      grad_c(ij+2*ni12,1) =   grad_c(ij,1)
-      grad_c(ij+2*ni12,2) = - grad_c(ij,2)
-      grad_c(ij+3*ni12,1) =   grad_c(ij+ni12,1)
-      grad_c(ij+3*ni12,2) = - grad_c(ij+ni12,2)
-    enddo
-  enddo
-
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
-  write(lupri,'(9d12.4)') (grad_c(j,1),j=1,ni12)
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
-  write(lupri,'(9d12.4)') (grad_c(j,2),j=1,ni12)
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
-  write(lupri,'(9d12.4)') (grad_c(j,1),j=1+ni12,2*ni12)
-  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
-  write(lupri,'(9d12.4)') (grad_c(j,2),j=1+ni12,2*ni12)
-
-  dnrmg = d0
-  do i=1,2*ni12
-    dnrmg = dnrmg + grad_c(i,1)*grad_c(i,1) + grad_c(i,2)*grad_c(i,2)
-  enddo
-  dnrmg = dsqrt(dnrmg)
+  ndimg  = size(gradient,1)
+  ni12   = (ndimg+ni) / 4
 
   !------------------------------------------------------------------------------!
   !               Calculate real representation of the gradient                  !
   !------------------------------------------------------------------------------!
-  call alloc(gtmp,ndimg,id='gtmp in get_gradient')
-  do i=1,2*ni12
-    i1 = i + 2*ni12
-    gtmp(i ) =   grad_c(i,1)
-    gtmp(i1) = - grad_c(i,2)
-  enddo
-
-  ! remove redundant parameters (remove diagonal real parameters of unbared kappa)
-  ij = 1
-  do k=1,ni
-    do j=ij+1,ndimg-k+1
-      gtmp(j-1) = gtmp(j)
+  ! Do not calculate redundant parameters (diagonal real parameters of unbared kappa)
+  ij = 0; ij1 = 0
+  do j=1,ni
+    do i=j,ni
+      ij  = ij  + 1
+      ij2 = ij  + ni12-ni
+      ij3 = ij2 + ni12
+      ij4 = ij3 + ni12
+      if(i==j) cycle
+      ij1 = ij1 + 1
+      do k = 1,nucdep
+        dtmp = d2*(pmat(j,j,1,k) - pmat(i,i,1,k))
+        gradient(ij1) = gradient(ij1) + dtmp * pmat(i,j,1,k)
+        gradient(ij2) = gradient(ij2) + dtmp * pmat(i,j,3,k)
+        gradient(ij3) = gradient(ij3) - dtmp * pmat(i,j,2,k)
+        gradient(ij4) = gradient(ij4) - dtmp * pmat(i,j,4,k)
+      enddo
     enddo
-    ij = ij + ni - (k-1) - 1 ! diagonal
   enddo
 
-  ! copy result to grad_r
-  grad_r(1:ndimgr) = gtmp(1:ndimgr)
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  gradient'
+  write(lupri,'(9d12.4)') (gradient(j),j=1,ni12-ni)
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  gradient'
+  write(lupri,'(9d12.4)') (gradient(j),j=1+2*ni12-ni,3*ni12-ni)
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,1)  -->  /bar{gradient}'
+  write(lupri,'(9d12.4)') (gradient(j),j=1+ni12-ni,2*ni12-ni)
+  write(lupri,'(/a,2f10.5)') 'Print gradient(:,2)  -->  /bar{gradient}'
+  write(lupri,'(9d12.4)') (gradient(j),j=1+3*ni12-ni,4*ni12-ni)
 
-  call dealloc(gtmp,id='gtmp in get_gradient')
+  ! Norm of the gradient
+  dnrmg = dnrm2(ndimg,gradient,1)
 
   call qexit('get_gradient')
 
