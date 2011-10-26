@@ -4091,9 +4091,6 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A)') ' NMR shieldings:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE (LUPRI,'(A,F9.4,A)')
-     &   ' Shieldings printed for atoms with '//
-     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========
