@@ -11,8 +11,9 @@ private :: get_mu, updateT
 
 type :: localization_flags
   integer*4 :: iprloc, itrloc
-  real*8    :: thrloc, hesthr
-  logical   :: prjloc, hesloc, auto
+  real*8    :: thfull, thdiag
+  logical   :: prjloc, lgfull, lgdiag
+  character*4 :: hesloc
 end type localization_flags
 
 type :: external_variales
@@ -66,11 +67,12 @@ contains
   ! dcbloc.h
   loc%iprloc     = iprloc
   loc%itrloc     = itrloc
-  loc%thrloc     = thrloc
-  loc%hesthr     = hesthr
+  loc%thfull     = thfull
+  loc%thdiag     = thdiag
   loc%prjloc     = prjloc
+  loc%lgfull     = lgfull
+  loc%lgdiag     = lgdiag
   loc%hesloc     = hesloc
-  loc%auto       = auto
   ! priunit.h
   var%lupri      = lupri
   ! dcbgen.h
@@ -132,7 +134,7 @@ contains
   ! Internal variables
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
-  logical      :: tobe, full, diagonly, rejected, Iminmax
+  logical      :: tobe, full, rejected, Iminmax, diagconv
 
   integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
   integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
@@ -158,15 +160,15 @@ contains
   norb   = var%norb(ifrp)
   nucdep = var%nucdep
   maxref = var%maxref
-  full   = loc%auto
 
   nfbas(:)    = var%nfbas(ifrp,:)
   ipqtoq(:,:) = var%ipqtoq(:,:)
 
-  diagonly = .false.
+  full = .false.
+  if(loc%hesloc == 'FULL') full = .true.
+
   rejected = .false.
   Iminmax  = .false.
-  if(loc%hesthr < loc%thrloc) diagonly = .true.
   chstart = 'START ITERATION NO.    '
 
   tradius = 10.0d0
@@ -178,8 +180,11 @@ contains
     write(lupri,*) 'nucdep=',nucdep
     write(lupri,*) 'maxref=',maxref
     write(lupri,*) 'full  =',full
-    write(lupri,*) 'hesthr=',loc%hesthr
-    write(lupri,*) 'thrloc=',loc%thrloc
+    write(lupri,*) 'thdiag=',loc%thdiag
+    write(lupri,*) 'thfull=',loc%thfull
+    write(lupri,*) 'lgdiag=',loc%lgdiag
+    write(lupri,*) 'lgfull=',loc%lgfull
+    write(lupri,*) 'hesloc=',loc%hesloc
   endif
 
   call titler('Molecular orbital localization','*',122)
@@ -267,14 +272,13 @@ contains
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
       call get_gradient(pmat,grad,dnrmg)
       call hdiag(hmat,grad,etmp,tgrad,eval,evec,Iminmax,full)
-      if(Iminmax) exit
       shift = d0
     else
       call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
     call get_kappa(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
     call exp_func(pkappa,tgrad,eval,nish,dinvmq)
-    if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
+    if( (rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
         ' WARNING: itr:',itr,' Predicted:',tpred,' Actual:',dnrmk,' Trust-radius:',tradius
@@ -295,7 +299,7 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    if(full) call updateT(dnrmk,diffg,diffq,tradius,rejected,itr)
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,full,itr)
 
     if(.not.rejected)then
       itr = itr + 1
@@ -316,9 +320,29 @@ contains
         '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq
 
       ! Exit conditions
-      if((diffa < loc%thrloc).and.(full.or.diagonly)) exit
-      if( diffa < loc%hesthr ) full = .true.
+      if(loc%hesloc == 'DIAG')then
+        if(Iminmax) exit
+        if(loc%lgdiag.and.(diffa < loc%thdiag)) exit
+      endif
+
+      if(loc%hesloc == 'FULL')then
+        if(Iminmax) exit
+        if(loc%lgfull.and.(diffa < loc%thfull)) exit
+      endif
+
+      if(loc%hesloc == 'COMB')then
+        if(full)then
+          if(Iminmax) exit
+          if(loc%lgfull.and.(diffa < loc%thfull)) exit
+        else
+          if(.not.loc%lgdiag.and.Iminmax) full = .true.
+          if(     loc%lgdiag.and.(diffa < loc%thdiag)) full = .true.
+        endif
+      endif
+
       if(itr > loc%itrloc)exit
+      ! Exit conditions
+
     endif
 
   enddo
@@ -326,7 +350,7 @@ contains
   write(lupri,'(/11x,a)')        '***********************************************************'
   if(Iminmax)then
     write(lupri,'(11x,a,i5,a)')  '>>>>       MAXIMUM reached after',itr,'  iterations      <<<<'
-  elseif(diffa < loc%thrloc)then
+  elseif((full.and.(diffa < loc%thfull)).or.(.not.full.and.(diffa < loc%thdiag)))then
     write(lupri,'(11x,a,i5,a)')  '>>>>          Convergence in',itr,'  iterations          <<<<'
   else
     write(lupri,'(11x,a,i5,a)')  '>>>>       No convergence after',itr,'  iterations       <<<<'
@@ -2419,6 +2443,7 @@ contains
     endif
   enddo
   if(np == 0)Iminmax = .true.  ! we reached the maximum of the function
+  if(np /= 0)Iminmax = .false.
 
   if(loc%iprloc.ge.1)then
     write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
@@ -2542,7 +2567,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,itr)
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,full,itr)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2554,6 +2579,7 @@ contains
   integer*4, intent(in   ) :: itr
   real*8,    intent(in   ) :: dnrmk, diffg, diffq
   real*8,    intent(inout) :: tradius
+  logical,   intent(in   ) :: full
   logical,   intent(inout) :: rejected
 
   ! Internal variables
@@ -2609,14 +2635,15 @@ contains
       rejected = .true.
     else
       if(diffq > d0)then
+        if(full.and.(R < d1q)) tradius = dnrmk
         if(R < d0 ) rejected = .true.
-        if(R < d1q) tradius  = d1q * dnrmk
-        if(R > d5q) tradius  = max(d2*dnrmk,tradius)
+        if(R < d1q) tradius  = d1q * tradius
+        if(R > d5q) tradius  = max(d2*dnrmk,tradius_old)
       else 
         if(R > d0 ) rejected = .true.
-        tradius = dnrmk
-        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
-        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradius)
+        if(full) tradius = dnrmk
+        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * tradius
+        if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradius_old)
       endif
     endif
   endif

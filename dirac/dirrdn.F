@@ -7294,9 +7294,9 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
-     S            '.VECPRJ','.VECREF','.OWNBAS','.HESSUN',
-     S            '.HESTHR','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
+     S            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
+     S            '.THDIAG','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -7315,12 +7315,13 @@ C     Initialize /CBILOC/
 C     ===================
 C
       PRJLOC = .FALSE.
-      THRLOC = 1.0D-6
       ITRLOC = 100
       IPRLOC = IPRGEN
-      HESLOC = .FALSE.
-      AUTO   = .TRUE.
-      HESTHR = 1.0D-1
+      HESLOC = 'FULL'
+      LGFULL = .FALSE.
+      LGDIAG = .FALSE.
+      THFULL = 1.0D-15
+      THDIAG = 1.0D-6
 C
 C     Process input from CBILOC
 C     =========================
@@ -7358,8 +7359,8 @@ C   Do localisation from projection analysis
                   PRJLOC = .TRUE.
                GO TO 100
  3                       CONTINUE
-C   Threshold
-                  READ(LUCMD,*) THRLOC
+C   Model of the Hessian
+                  READ(LUCMD,'(A4)') HESLOC
                GO TO 100
  4                       CONTINUE
 C   Maximum number of iterations
@@ -7389,12 +7390,14 @@ C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis s
                OWNBAS = .TRUE.
                GO TO 100
  8                       CONTINUE
-C   HESSIAN is the identity matrix
-               HESLOC = .TRUE.
+C   Set threshold for convergence using full hessian 
+               LGFULL = .TRUE.
+               READ(LUCMD,*) THFULL
+               GO TO 100
  9                       CONTINUE
-C
-               AUTO = .FALSE.
-               READ(LUCMD,*) HESTHR
+C   Set threshold for convergence using diagonal aproximation of the hessian 
+               LGDIAG = .TRUE.
+               READ(LUCMD,*) THDIAG
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
