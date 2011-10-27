@@ -1,5 +1,5 @@
-DIRAC pam run in /home/uachstno/repo/build/Dirac-ST-Localization-debug/test/localization
-DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC pam run in /home/uachstno/APPL/Dirac/Localization/CH4
+DIRAC serial starts by allocating 65536000 words (500 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
 Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
@@ -160,17 +160,17 @@ Compilation info
  LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
                           | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
                           | group
- Configuration time       | 2011-10-26 18:17:56.589275
- Last commit rev          | 168b84b829701d7dde8ddda19a40a278efcf3663
+ Configuration time       | 2011-10-27 17:44:17.005096
+ Last commit rev          | b20b43873c4bd99a9d6b3bcd5e351e3ac632e130
  Last commit author       | Stano 
- Last commit time         | Wed Oct 26 18:16:01 2011 +0200
+ Last commit time         | Thu Oct 27 13:40:12 2011 +0200
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Oct 26 18:20:23 2011
+     Date and time (Linux)  : Thu Oct 27 18:19:20 2011
      Host name              : Bassilus                                
  
  
@@ -199,8 +199,6 @@ Projection CH4 pour diff. bases
 .LOCALIZE                                                                                           
 *LOCALIZE                                                                                           
 .PRJLOC                                                                                             
-.THRESH                                                                                             
-1.0D-13                                                                                             
 .OWNBAS                                                                                             
 .VECREF                                                                                             
 5                                                                                                   
@@ -287,7 +285,6 @@ FINISH
   -------------------
 
  Print level in TWOINT:    1
- Extra output for the following shells:  0  0  0  0
  * Direct calculation of Fock matrices in SO-basis.
  * User specified screening threshold in direct Fock matrix construction: 1.00E-11
  * Separate density screening of Coulomb integral batches
@@ -617,7 +614,7 @@ H4    -0.6270023464   0.6270023464  -0.6270023464
  LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
 ===========================================================================
  * Molecular orbital localization from projection analysis
- * Threshold for convergence of the localization process : 0.10D-12
+ * Threshold for convergence of the localization process : 0.79-315
    (based on the inverse mean delocalization)
  * Maximum number of iterations :   100
  * Fragments are calculated in their individual bases !
@@ -828,7 +825,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:23 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     1   0.54D+00   0.58D-01   0.10D+02   0.40D+01   0.96D+01    FULL   0.54D+00   0.69D+01
@@ -865,7 +862,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:23 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     2   0.24D-01   0.16D+00   0.25D+01   0.53D+01   0.14D+02    FULL   0.24D-01   0.67D+00
@@ -902,7 +899,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:23 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     3   0.47D-01   0.18D+00   0.62D+00   0.80D+01   0.11D+02    FULL   0.47D-01   0.59D-01
@@ -952,7 +949,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:23 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     4   0.13D-01   0.20D+00   0.31D+00   0.13D+02   0.55D+01    FULL   0.13D-01   0.16D-01
@@ -989,7 +986,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:23 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     5   0.24D-04   0.96D-02   0.63D+00   0.14D+02   0.20D+01    FULL   0.24D-04   0.32D-04
@@ -1026,7 +1023,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:24 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     6   0.20D-05   0.27D-02   0.63D+00   0.14D+02   0.19D+01    FULL   0.20D-05   0.27D-05
@@ -1063,7 +1060,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:24 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     7   0.36D-07   0.47D-03   0.13D+01   0.14D+02   0.19D+01    FULL   0.36D-07   0.15D-06
@@ -1100,7 +1097,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:24 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     8   0.23D-07   0.29D-03   0.31D+00   0.14D+02   0.19D+01    FULL   0.23D-07   0.32D-07
@@ -1137,7 +1134,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:24 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     9   0.11D-08   0.62D-04   0.31D+00   0.14D+02   0.18D+01    FULL   0.11D-08   0.12D-08
@@ -1174,7 +1171,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:24 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    10   0.43D-11   0.40D-05   0.63D+00   0.14D+02   0.18D+01    FULL   0.43D-11   0.62D-11
@@ -1211,20 +1208,44 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:24 2011
+      >>> Thu Oct 27 18:19:20 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    11   0.14D-12   0.72D-06   0.63D+00   0.14D+02   0.18D+01    FULL   0.14D-12   0.22D-12
 
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+           * Orbital   1 Pipek-Mezey localization measure d =  0.9974
+           * Orbital   2 Pipek-Mezey localization measure d =  1.9011
+           * Orbital   3 Pipek-Mezey localization measure d =  1.9012
+           * Orbital   4 Pipek-Mezey localization measure d =  1.9012
+           * Orbital   5 Pipek-Mezey localization measure d =  1.9011
+
+           * Inverse mean delocalization =   0.6213229537392789
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T    11   0.62D+00   0.62D+00   0.26D-06    1.17870   F   qP q>0   0.11D-13   0.96D-14
+
+
+      =====================================================================
+      ====================== START ITERATION NO.  12 ======================
+      =====================================================================
+
+
+      >>> Thu Oct 27 18:19:20 2011
+
+     ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
+*C    12   0.11D-13   0.19D-06   0.26D-06   0.14D+02   0.18D+01    FULL   0.11D-13   0.96D-14
+
            ***********************************************************
-           >>>>       MAXIMUM reached after   11  iterations      <<<<
+           >>>>       MAXIMUM reached after   12  iterations      <<<<
            >>>> Inverse mean delocalization =     0.6213229537393 <<<<
            ***********************************************************
 
            >>> Time used in localization is :   0.14 seconds
 
  
-     Date and time (Linux)  : Wed Oct 26 18:20:24 2011
+     Date and time (Linux)  : Thu Oct 27 18:19:20 2011
      Host name              : Bassilus                                
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1232,11 +1253,11 @@ Gross  | L A  H4 s      A  C  _small
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         0.52
+  Mean allocation size (Mb) :         0.51
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine                                            for work array at main                        
+      500.00 Mb at subroutine                                            for work array at main                        
         0.50 Mb at subroutine                                            for CMO in ORBLP1                             
         0.50 Mb at subroutine                                            for CMO in ORBLP1                             
         0.50 Mb at subroutine                                            for CMO in ORBLP1                             
@@ -1247,12 +1268,12 @@ Gross  | L A  H4 s      A  C  _small
         0.50 Mb at subroutine                                            for CMO in ORBLP1                             
         0.50 Mb at subroutine                                            for CMO in ORBLP1                             
   
-  Peak memory usage    (Mb) :       490.00
+  Peak memory usage    (Mb) :       501.00
        reached at subroutine :                                           
               for variable   : KBAS in SELOWN_mod                        
   
  MEMGET high-water mark:     2.32 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 4393, majflt: 0, nvcsw: 0, nivcsw: 102, maxrss: 0
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 4402, majflt: 0, nvcsw: 0, nivcsw: 55, maxrss: 0
+>>>> Total WALL time used in DIRAC: 0s

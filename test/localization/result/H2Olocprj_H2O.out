@@ -1,5 +1,5 @@
-DIRAC pam run in /home/uachstno/repo/build/Dirac-ST-Localization-debug/test/localization
-DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC pam run in /home/uachstno/APPL/Dirac/Localization/H2O
+DIRAC serial starts by allocating 65536000 words (500 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
 Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
@@ -160,17 +160,17 @@ Compilation info
  LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
                           | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
                           | group
- Configuration time       | 2011-10-26 18:17:56.589275
- Last commit rev          | 168b84b829701d7dde8ddda19a40a278efcf3663
+ Configuration time       | 2011-10-27 17:44:17.005096
+ Last commit rev          | b20b43873c4bd99a9d6b3bcd5e351e3ac632e130
  Last commit author       | Stano 
- Last commit time         | Wed Oct 26 18:16:01 2011 +0200
+ Last commit time         | Thu Oct 27 13:40:12 2011 +0200
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Oct 26 18:20:31 2011
+     Date and time (Linux)  : Thu Oct 27 18:06:24 2011
      Host name              : Bassilus                                
  
  
@@ -199,8 +199,6 @@ Projection H2O
 .LOCALIZE                                                                                           
 *LOCALIZE                                                                                           
 .PRJLOC                                                                                             
-.THRESH                                                                                             
-1.0D-13                                                                                             
 .OWNBAS                                                                                             
 .VECREF                                                                                             
 3                                                                                                   
@@ -581,7 +579,7 @@ H2     0.7685504811   0.0000000000   0.4760602904
  LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
 ===========================================================================
  * Molecular orbital localization from projection analysis
- * Threshold for convergence of the localization process : 0.10D-12
+ * Threshold for convergence of the localization process : 0.79-315
    (based on the inverse mean delocalization)
  * Maximum number of iterations :   100
  * Fragments are calculated in their individual bases !
@@ -768,7 +766,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     1   0.81D+00   0.28D-01   0.11D+01   0.24D+01   0.20D+01    FULL   0.81D+00  -0.58D-03
@@ -792,7 +790,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     2   0.28D-04   0.61D-02   0.14D+00   0.24D+01   0.17D+01    FULL   0.28D-04   0.22D-04
@@ -829,7 +827,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     3   0.32D-02   0.10D-02   0.28D+00   0.24D+01   0.13D+01    FULL   0.32D-02   0.36D-02
@@ -866,7 +864,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     4   0.78D-02   0.51D-01   0.56D+00   0.27D+01   0.13D+01    FULL   0.78D-02   0.17D-01
@@ -890,7 +888,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     5   0.15D-03   0.13D-01   0.31D+00   0.37D+01   0.24D+00    FULL   0.15D-03   0.15D-03
@@ -927,7 +925,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     6   0.15D-01   0.24D-03   0.56D+00   0.37D+01   0.22D+00    FULL   0.15D-01   0.11D-01
@@ -964,7 +962,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     7   0.35D-02   0.77D-01   0.11D+01   0.51D+01   0.18D+01    FULL   0.35D-02   0.67D-02
@@ -1001,7 +999,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     8   0.41D-03   0.30D-01   0.11D+01   0.54D+01   0.15D+01    FULL   0.41D-03   0.81D-03
@@ -1038,7 +1036,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C     9   0.21D-04   0.99D-02   0.11D+01   0.55D+01   0.15D+01    FULL   0.21D-04   0.11D-03
@@ -1075,7 +1073,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    10   0.25D-04   0.73D-02   0.28D+00   0.55D+01   0.14D+01    FULL   0.25D-04   0.34D-04
@@ -1112,7 +1110,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    11   0.99D-06   0.13D-02   0.28D+00   0.55D+01   0.13D+01    FULL   0.99D-06   0.10D-05
@@ -1149,7 +1147,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    12   0.19D-06   0.30D-04   0.56D+00   0.55D+01   0.13D+01    FULL   0.19D-06   0.46D-06
@@ -1186,7 +1184,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    13   0.12D-07   0.34D-05   0.56D+00   0.55D+01   0.12D+01    FULL   0.12D-07   0.17D-07
@@ -1223,7 +1221,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    14   0.21D-08   0.62D-06   0.56D+00   0.55D+01   0.12D+01    FULL   0.21D-08   0.28D-08
@@ -1282,7 +1280,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    15   0.20D-10   0.90D-07   0.11D+01   0.55D+01   0.12D+01    FULL   0.20D-10   0.67D-10
@@ -1319,7 +1317,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    16   0.36D-11   0.41D-07   0.11D+01   0.55D+01   0.12D+01    FULL   0.36D-11   0.22D-10
@@ -1356,7 +1354,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:24 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    17   0.55D-11   0.27D-07   0.28D+00   0.55D+01   0.12D+01    FULL   0.55D-11   0.72D-11
@@ -1380,20 +1378,44 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      >>> Wed Oct 26 18:20:31 2011
+      >>> Thu Oct 27 18:06:25 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
 *C    18   0.14D-12   0.49D-08   0.25D+00   0.55D+01   0.12D+01    FULL   0.14D-12   0.13D-12
 
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+           * Orbital   1 Pipek-Mezey localization measure d =  1.0001
+           * Orbital   2 Pipek-Mezey localization measure d =  1.7311
+           * Orbital   3 Pipek-Mezey localization measure d =  1.7311
+           * Orbital   4 Pipek-Mezey localization measure d =  0.9544
+           * Orbital   5 Pipek-Mezey localization measure d =  1.0037
+
+           * Inverse mean delocalization =   0.8398639452694232
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T    18   0.56D+00   0.56D+00   0.65D-05   66.89488   F   qP R>5   0.38D-14   0.56D-16
+
+
+      =====================================================================
+      ====================== START ITERATION NO.  19 ======================
+      =====================================================================
+
+
+      >>> Thu Oct 27 18:06:25 2011
+
+     ITR    DIFFA      |GRAD|     |KAPPA|    H_DIAG   H_NONDIAG     H      DIFFG      DIFFQ
+*C    19   0.38D-14   0.30D-09   0.65D-05   0.55D+01   0.12D+01    FULL   0.38D-14   0.56D-16
+
            ***********************************************************
-           >>>>       MAXIMUM reached after   18  iterations      <<<<
+           >>>>       MAXIMUM reached after   19  iterations      <<<<
            >>>> Inverse mean delocalization =     0.8398639452694 <<<<
            ***********************************************************
 
            >>> Time used in localization is :   0.16 seconds
 
  
-     Date and time (Linux)  : Wed Oct 26 18:20:31 2011
+     Date and time (Linux)  : Thu Oct 27 18:06:25 2011
      Host name              : Bassilus                                
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1405,7 +1427,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine                                            for work array at main                        
+      500.00 Mb at subroutine                                            for work array at main                        
         0.31 Mb at subroutine                                            for CMO in ORBLP1                             
         0.31 Mb at subroutine                                            for CMO in ORBLP1                             
         0.31 Mb at subroutine                                            for CMO in ORBLP1                             
@@ -1416,12 +1438,12 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
         0.31 Mb at subroutine                                            for CMO in ORBLP1                             
         0.31 Mb at subroutine                                            for CMO in ORBLP1                             
   
-  Peak memory usage    (Mb) :       489.00
+  Peak memory usage    (Mb) :       501.00
        reached at subroutine :                                           
               for variable   : KBAS in SELOWN_mod                        
   
  MEMGET high-water mark:     1.41 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 4080, majflt: 0, nvcsw: 0, nivcsw: 48, maxrss: 0
->>>> Total WALL time used in DIRAC: 0s
+>>>> Node 0, utime: 0, stime: 0, minflt: 4082, majflt: 0, nvcsw: 0, nivcsw: 133, maxrss: 0
+>>>> Total WALL time used in DIRAC: 1s
