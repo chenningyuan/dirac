@@ -1016,7 +1016,7 @@ C     --------------
 C
       MAXCIT      =    4
       MXCIV       =    0
-      IOPTST      = 1531
+      IOPTST      = 1563
       KTRLVL      =    3
       IKRMCCNO    =  - 3
       IANACI      =    0

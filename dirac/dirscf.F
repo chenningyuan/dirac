@@ -1783,12 +1783,6 @@ CMI      ... print out matrixes ...
                END DO
    30          CONTINUE
             ENDIF
-            IF (dirac_cfg_dft_calculation) then
-               xc_energy = get_xc_energy()
-               WRITE(LUPRI,'(6X,A,'//FMT//')')
-     &         '* DFT xc energy              :  ',
-     &         xc_energy
-            end IF
          END IF
       ENDIF
 c     Check if this is the lowest energy so far, in that case

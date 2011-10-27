@@ -33,6 +33,8 @@ program dirprg
   use os_utils
   use dft_cfg
   use xmlout
+  use interface_ao
+  use interface_mo
 
   implicit none
 #include "priunit.h"
@@ -142,20 +144,16 @@ program dirprg
      write(lupri, '(a)') '----------------'
      write(lupri, *)
 
-#ifdef THIS_IS_CMAKE_BUILD
      call print_compilation_info()
      call print_git_revision_info()
-#else
-     call sysinf(iparcal)
-#endif
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST
      call selftest_lapack()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility
-     if ( parcal ) call selftest_mpi()
+!    MASTER checks MPI library compatibility (now done at compile time)
+!    if ( parcal ) call selftest_mpi()
 #endif
 #endif
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
@@ -206,6 +204,9 @@ program dirprg
 #endif
 
    call allocator_cleanup()
+
+   call interface_ao_clear()
+   call interface_mo_clear()
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 end subroutine dirprg

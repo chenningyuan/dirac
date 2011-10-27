@@ -69,10 +69,18 @@
 
       IF(DESREP.GT.9) THEN
         WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',DESREP
-        WRITE(ANALOUT,'(A8,I2)') 'EVCANAL.',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A8,I2)') 'SEVCANL.',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A8,I2)') 'DEVCANL.',DESREP
+        ENDIF
       ELSE
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',DESREP
-        WRITE(ANALOUT,'(A9,I1)') 'EVCANAL.0',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A9,I1)') 'SEVCANL.0',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A9,I1)') 'DEVCANL.0',DESREP
+        ENDIF
       ENDIF
       write(*,*) 'Fetching eigenvectors from: ',LEVECFN
       write(*,*) 'Writing analysis results to: ',ANALOUT
@@ -287,10 +295,18 @@
 
       IF(DESREP.GT.9) THEN
         WRITE(LEVECFN,'(A8,I2)') 'LONGEVC.',DESREP
-        WRITE(ANALOUT,'(A8,I2)') 'EVCANAL.',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A8,I2)') 'SEVCANL.',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A8,I2)') 'DEVCANL.',DESREP
+        ENDIF
       ELSE
         WRITE(LEVECFN,'(A9,I1)') 'LONGEVC.0',DESREP
-        WRITE(ANALOUT,'(A9,I1)') 'EVCANAL.0',DESREP
+        IF(ionizlevel.eq.1) THEN
+          WRITE(ANALOUT,'(A9,I1)') 'SEVCANL.0',DESREP
+        ELSE
+          WRITE(ANALOUT,'(A9,I1)') 'DEVCANL.0',DESREP
+        ENDIF
       ENDIF
       write(*,*) 'Fetching eigenvectors from: ',LEVECFN
       write(*,*) 'Writing analysis results to: ',ANALOUT

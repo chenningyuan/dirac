@@ -687,8 +687,8 @@ Options are also read from the ~/.dirac and .diracrc files."""
             type='string',
             action='store',
             dest='dest_scratch',
-            help='scratch directory [default read from  ~/.diracrc]',
-            metavar='PATH',
+            help='full path to scratch directory (DIRAC will append a subdirectory to make it unique) [default read from  ~/.diracrc]',
+            metavar='FULL_PATH',
             )
 
         group.add_option(
@@ -696,7 +696,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             type='string',
             action='store',
             dest='dest_scratchfull',
-            help='scratch directory with full path [default: script defined full path upon ~/.diracrc]',
+            help='full path to scratch directory (DIRAC will not append anything to this path; do NOT choose your /home/user as scratchfull) [default: script defined full path upon ~/.diracrc]',
             metavar='FULL_PATH',
             )
         group.add_option(
@@ -825,8 +825,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
         if options.dest_mpi_workdir_argument:
             self.argument_to_pass_scratch_dir_to_slaves = options.dest_mpi_workdir_argument
 
-        # set parallel run if both --mpi=xxx and --mpirun=xxx arguments are set
-        if options.dest_mpi and options.dest_mpirun:
+        if options.dest_mpi:
             self.nr_proc      = int(options.dest_mpi)
             self.parallel_run = True
 
@@ -846,9 +845,9 @@ Options are also read from the ~/.dirac and .diracrc files."""
         self.dirac_exe = str(options.dest_dirac)
         # check the executable
         if  os.path.isfile(self.dirac_exe) is False:
-            err_message="The specified dirac.x binary does not exist: "+self.dirac_exe
+            err_message=\
+            "The dirac.x executable either does not exist (in default build directory) or its location is wrongly or not specified. Check also the corresponding diracrc file."
             print_std_out_err(err_message)
-            sys.exit(15)
 
         if options.dest_timeout:
             self.timeout = process_time_string(options.dest_timeout)
@@ -1594,7 +1593,7 @@ Options are also read from the ~/.dirac and .diracrc files."""
             # we have all args here, therefore canceled printout of input file & molecule file 
             print '  all pam args   :', self.pam_args
             if self.dirac_exe not in self.pam_args:
-                print '  excutable      :', self.dirac_exe
+                print '  executable      :', self.dirac_exe
             print '  scratch dir    :', self.scratch_dir
             print '  output file    :', self.output_file
             print '  DIRAC run      :', dirac_run

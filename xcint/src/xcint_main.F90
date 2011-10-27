@@ -14,9 +14,9 @@ module xcint_main
    use density_eval
    use xc_blas3
    use xc_max_block_length
+   use xc_geometric
 #ifdef MOD_UNRELEASED
    use overlap_diagnostic
-   use xc_geometric
    use xc_london_c1
 #endif
 #ifdef MOD_OPENRSP
@@ -291,6 +291,20 @@ contains
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
       end if
 
+#ifndef MOD_UNRELEASED
+      if (do_london_rhs_direct .or. &
+          do_london_rhs_ro     .or. &
+          do_london_ks         .or. &
+          do_london_lr) then
+         print *, 'error: LAO+DFT not available in this version'
+         stop 1
+      end if
+      if (do_overlap_diagnostic) then
+         print *, 'error: overlap diagnostic not available in this version'
+         stop 1
+      end if
+#endif
+
 #ifdef VAR_MPI
       if (parallel_xc) then
 !        broadcast non-allocatables
@@ -437,6 +451,13 @@ contains
       end if
 #endif
 #ifdef MOD_XCFUN
+      end if
+#endif
+
+#ifndef MOD_UNRELEASED
+      if (fun_is_tau_mgga(xc_fun)) then
+         print *, 'error: meta-GGA not available in this version'
+         stop 1
       end if
 #endif
 
@@ -628,10 +649,8 @@ contains
             end if
          end if
 
-! gosia: later i will join it with what is done above (now it is not working if i just
-! add another if)
          if (do_london_rhs_direct) then
-           call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
          call insert_half_phases()
@@ -974,7 +993,9 @@ contains
          deallocate(buffer)
 
       end do loop_over_points_block
-   else
+   end if !if (use_blas3_scheme) then
+
+   if (.not. use_blas3_scheme) then
 
       allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
       ao = 0.0d0
@@ -1118,6 +1139,7 @@ contains
 
 
 
+#ifdef MOD_UNRELEASED
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
@@ -1189,6 +1211,7 @@ contains
               !                        derv, u,        &
               !                        rx(ipoint), ry(ipoint), rz(ipoint))
         end if
+#endif /* #ifdef MOD_UNRELEASED */
 
 
 !       linear response
@@ -1289,7 +1312,6 @@ contains
 #endif
 #endif
 
-#ifdef MOD_UNRELEASED
           if (do_geo_0) then
              if (use_gga) then
                 call xc_geo_0_gga_c1(property_gradient,               &
@@ -1308,6 +1330,7 @@ contains
              end if
           end if
 
+#ifdef MOD_UNRELEASED
           if (do_geo_1) then
              call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call xc_geo_1_lda_c1(property_gradient, &
@@ -1610,7 +1633,7 @@ contains
     deallocate(ao)
     deallocate(buffer)
 
-   end if !if (use_blas3_scheme) then
+   end if !if (.not. use_blas3_scheme) then
 
     deallocate(derv)
     deallocate(derv_nadd)

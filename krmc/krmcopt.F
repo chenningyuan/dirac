@@ -2977,9 +2977,34 @@ C     *******************************
 C
       IF (IROST .EQ. 0) GOTO 1100
 C
-C     (1.1) Read MP2 natural orbitals from label NEWNATOB on KRM5_NAME
+C     (1.1) Read MCSCF natural orbitals from label MCCINATO on KRM5_NAME
 C
       IF (LBIT(IROST,1)) THEN
+         IF ( LUKRM5 .GT. 0 ) THEN
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,4,LUKRM5)
+            IF (JRDMO .EQ. 0) THEN
+               IF (IPRINT .GE. 0) THEN
+                  WRITE(LUPRI,'(/2A)')
+     &                 ' (ROPTST)  Start orbitals read from' //
+     &                 ' label MCCINATO on file ',
+     &                   KRM5_NAME(1:LKRM5_NAME)
+               END IF
+C
+               IF( MOPT_MXMACRO .EQ. - 1 ) THEN
+                 WRITE(LUPRI,'(/A)')
+     &                ' (ROPTST)  Starting CI calculation' //
+     &                ' from MC/CI natural orbitals! '
+                 RCI_MCORB = .TRUE.
+               ENDIF
+               GO TO 1000
+            END IF
+         END IF
+      END IF
+C
+C     (1.2) Read MP2 natural orbitals from label NEWNATOB on KRM5_NAME
+C
+      IF (LBIT(IROST,2)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,3,LUKRM5)
@@ -3002,9 +3027,9 @@ C
          END IF
       END IF
 C
-C     (1.2) Read from label NEWORB on KRM5_NAME
+C     (1.3) Read from label NEWORB on KRM5_NAME
 C
-      IF (LBIT(IROST,2)) THEN
+      IF (LBIT(IROST,3)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,1,LUKRM5)
@@ -3050,9 +3075,9 @@ C
          END IF
       END IF
 C
-C     (1.3) Read from label OLDORB on KRM5_NAME
+C     (1.4) Read from label OLDORB on KRM5_NAME
 C
-      IF (LBIT(IROST,3)) THEN
+      IF (LBIT(IROST,4)) THEN
          IF ( LUKRM5 .GT. 0 ) THEN
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,2,LUKRM5)
@@ -3067,10 +3092,10 @@ C
          END IF
       END IF
 C
-C     (1.4) From previous DHF calculation.
+C     (1.5) From previous DHF calculation.
 C           Read orbitals from DFCOEF
 C
-      IF (LBIT(IROST,4)) THEN
+      IF (LBIT(IROST,5)) THEN
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
@@ -3087,10 +3112,10 @@ C
          END IF
       END IF
 C
-C     (1.5) From a usual DHF start guess, i.e. bare nucleus guess.
+C     (1.6) From a usual DHF start guess, i.e. bare nucleus guess.
 C           TODO FIXME: to be implemented
 C
-      IF (LBIT(IROST,5)) THEN
+      IF (LBIT(IROST,6)) THEN
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
          IF (IPRINT .GE. 0) THEN
             WRITE(LUPRI,'(/A)')

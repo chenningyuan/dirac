@@ -1,0 +1,24 @@
+#!/bin/bash
+
+export PATH=$PATH':/home/bast/openmpi/gfortran/bin'
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH':/home/bast/openmpi/gfortran/lib'
+
+export MATH_ROOT='/opt/intel/mkl'
+
+TMP_DIR=/scratch/scratch-nightly-compile
+SCRATCH_DIR=/scratch/scratch-nightly-run
+mkdir -p $TMP_DIR
+
+git clone git@repo.ctcc.no:dirac.git $TMP_DIR
+
+cd $TMP_DIR
+git checkout -b prepare-release-11 origin/prepare-release-11
+./pamadm --release
+./setup --fc=mpif90 --cc=mpicc --int64 -D BUILDNAME="smokey_debian-6.0_gfortran-4.4.5_i8_mpi" -D RUNTEST_NR_PROC=2
+
+cd $TMP_DIR/build
+make Nightly
+
+rm -rf $TMP_DIR $SCRATCH_DIR
+
+exit 0
