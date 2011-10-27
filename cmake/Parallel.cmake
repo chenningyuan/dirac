@@ -9,7 +9,7 @@ if(ENABLE_MPI)
             # test whether MPI-2 is available
             exec_program(
                 ${cat_program}
-                ARGS ${CMAKE_SOURCE_DIR}/cmake/MPI-2-test.F90
+                ARGS ${CMAKE_SOURCE_DIR}/cmake/test-MPI-2-compatibility.F90
                 OUTPUT_VARIABLE mpi2test
                 )
             check_fortran_source_compiles(

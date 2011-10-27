@@ -213,7 +213,7 @@ files_never_compiled.append('interest/selftest/module_interest_selftest.f90')
 files_never_compiled.append('interest/selftest/main_interest_selftest.f90')
 files_never_compiled.append('xcint/src/test_driver.F90')
 files_never_compiled.append('xcint/src/fake_input.F90')
-files_never_compiled.append('cmake/MPI-2-test.F90')
+files_never_compiled.append('cmake/test-MPI-2-compatibility.F90')
 
 # definition of modules
 
