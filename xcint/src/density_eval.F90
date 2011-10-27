@@ -76,7 +76,8 @@ contains
     integer, intent(in)    :: isym(nr_mat)
 !   ----------------------------------------------------------------------------
     integer                :: irep, iblock, imat, iz
-    integer                :: i, j, ii, jj, h(4)
+    integer                :: i, j, ii, jj
+    integer, parameter     :: h(4) = (/-1, 1, 1, 1/)
     integer                :: st1, st2, nr1, nr2
     real(8)                :: average
 !   ----------------------------------------------------------------------------
@@ -84,9 +85,6 @@ contains
     do imat = 1, nr_mat
 
        irep = isym(imat) - 1
-
-       h(1) = - 1
-       h(2:nz) = 1
 
        do iz = 1, nz
           do iblock = 1, nr_ao_blocks
@@ -140,8 +138,8 @@ contains
     do imat = 1, nr_mat
 
        skip = .false.
-       if (ih(imat) ==  1) skip(1:3) = .true.
-       if (ih(imat) == -1) skip(0:0) = .true.
+       if (ih(imat) ==  1) skip = (/.false., .true.,  .true.,  .true./)
+       if (ih(imat) == -1) skip = (/.true.,  .false., .false., .false./)
 
        irep = isym(imat) - 1
 

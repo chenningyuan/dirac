@@ -43,8 +43,8 @@ module interface_ao
    integer, public :: iq(0:3)
    integer, public :: irep_of_axes(3)
    integer, public :: irep_of_rotations(3)
-   integer, public :: ao_block_start(16)
-   integer, public :: ao_block_nr(16)
+   integer, public :: ao_block_start(0:16) !cheat: 0 start is to catch cases where one of AO blocks is empty
+   integer, public :: ao_block_nr(0:16)    !       in dens eval these blocks are skipped
    integer, public :: nr_ao_blocks
    integer, public :: llss_block_partner(16, 0:3, 0:7)
    integer, public :: lssl_block_partner(16, 0:3, 0:7)
