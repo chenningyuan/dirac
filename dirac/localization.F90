@@ -6,7 +6,7 @@ implicit none
 public :: ORBLOC, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
-private :: getk_diag, getk_full, get_hessian, get_gradient, exp_func, hdiag
+private :: get_kappa, get_hessian, get_gradient, exp_func, hdiag
 private :: get_mu, updateT
 
 type :: localization_flags
@@ -266,17 +266,14 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
       call get_gradient(pmat,grad,dnrmg)
-      call hdiag(hmat,grad,etmp,tgrad,eval,evec,Iminmax)
+      call hdiag(hmat,grad,etmp,tgrad,eval,evec,Iminmax,full)
       if(Iminmax) exit
       shift = d0
     else
       call get_mu(eval,tgrad,tradius,shift,tpred)
     endif
-    if(full)then
-      call getk_full(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
-      call exp_func(pkappa,tgrad,eval,nish,dinvmq)
-    endif
-    if(.not.full) call getk_diag(xkappa,grad,hmat,ipqtoq,dnrmk,dinvmq)
+    call get_kappa(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
+    call exp_func(pkappa,tgrad,eval,nish,dinvmq)
     if( (full.and.rejected) .and. (dabs(tpred-dnrmk) > trsh_mu*tradius) )then
       write(lupri,'(a)') ' WARNING: Predicted and actual norm of kappa are too different'
       write(lupri,'(a,i4,a,d12.4,a,d12.4,a,2d12.4)')&
@@ -875,10 +872,18 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine getk_diag(xkappa,gradient,hmat,ipqtoq,dnrmk,dinvmq)
+  subroutine get_kappa(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
   !******************************************************************************!
   !                                                                              !
-  !  Construction of the XKAPPA matrix using diagonal approximation of hessian   !
+  !           Construction of the XKAPPA matrix using full hessian               !
+  !          The linear set of equations is solved using information             !
+  !                   from diagonalization of the hessian                        !
+  !                                                                              !
+  !   (H-shift) * X = -g     -->     (tilde{H}-shift) * tilde{X} = - tilde{g}    !
+  !                                                                              !
+  !   tilde{H} = U^T * H * U = eval                 U = evec                     !
+  !   tilde{X} = U^T * X     = pkappa               X = xkappa                   !
+  !   tilde{g} = U^T * g     = tgrad                dnrmk = |X|                  !
   !                                                                              !
   ! Notes: 1. Deffinition of kappa matrix in rotcmo_mod is different as in       !
   !           calculation of gradient and hessian in get_gradient and get_hessian!
@@ -891,101 +896,6 @@ contains
   !                                 H                     K            g         !
   !  / A   B  \   -->   / A^R + B^I   B^I - A^I \      / K^R \      / g^R \      !
   !  \ B*  A* /   -->   \ B^I + A^I   A^R - B^I /      \ K^I /      \-g^I /      !
-  !******************************************************************************!
-  implicit none
-
-  ! External variables
-  integer*4, intent(in), dimension(4,0:7) :: ipqtoq
-
-  real*8, intent(out) :: dnrmk, dinvmq
-
-  real*8, intent(in ), dimension(:)       :: gradient
-  real*8, intent(in ), dimension(:,:)     :: hmat
-  real*8, intent(out), dimension(:,:,:)   :: xkappa
-
-  ! Internal variables
-  integer*4 :: i, j, ij, ij1, ij2, ij3, ij4, iz, ni, ni12, lupri
-
-  !------------------------------------------------------------------------------!
-  call qenter('getk_diag')
-
-  ! Initialize code
-  lupri = var%lupri
-  ni    = size(xkappa,1)
-  ni12  = ni*(ni+1) / 2
-  xkappa(:,:,:) = d0
-
-  ! Construct kappa matrix, its norm and functional value
-  dnrmk  = d0
-  dinvmq = d0
-  ij = 0; ij1 = 0
-  do j = 1,ni
-    do i = j,ni
-      ij  = ij  + 1
-      ij2 = ij  + ni12-ni
-      ij3 = ij2 + ni12
-      ij4 = ij3 + ni12
-      if(i==j) cycle
-      ij1 = ij1 + 1
-      xkappa(j,i,1) = - gradient(ij1) / hmat(ij1,ij1)
-      xkappa(j,i,2) = - gradient(ij3) / hmat(ij3,ij3)
-      xkappa(j,i,3) =   gradient(ij2) / hmat(ij2,ij2)   !!! j component is with minus sign
-      xkappa(j,i,4) = - gradient(ij4) / hmat(ij4,ij4)
-      xkappa(i,j,1) = - xkappa(j,i,1)
-      xkappa(i,j,2) =   xkappa(j,i,2)
-      xkappa(i,j,3) =   xkappa(j,i,3)
-      xkappa(i,j,4) =   xkappa(j,i,4)
-      dnrmk  = dnrmk  + xkappa(j,i,1)*xkappa(j,i,1) + xkappa(j,i,2)*xkappa(j,i,2) &
-                      + xkappa(j,i,3)*xkappa(j,i,3) + xkappa(j,i,4)*xkappa(j,i,4)
-      dinvmq = dinvmq + d2 * ( xkappa(j,i,1)*gradient(ij1) + xkappa(j,i,2)*gradient(ij3)  &
-                             + xkappa(j,i,3)*gradient(ij2) + xkappa(j,i,4)*gradient(ij4)) &
-                      + xkappa(j,i,1)*hmat(ij1,ij1)*xkappa(j,i,1) &
-                      + xkappa(j,i,2)*hmat(ij3,ij3)*xkappa(j,i,2) &
-                      + xkappa(j,i,3)*hmat(ij2,ij2)*xkappa(j,i,3) &
-                      + xkappa(j,i,4)*hmat(ij4,ij4)*xkappa(j,i,4)
-    enddo
-  enddo
-
-  ! Norm of the kappa vector
-  dnrmk = dsqrt(dnrmk)
-  if(loc%iprloc.ge.1)then
-    write (lupri,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
-  endif
-
-  if(loc%iprloc.ge.2)then
-    do iz=1,4
-      write(lupri,'(/a,i4)') 'Print xkappa matrix, IZ =',iz
-      do i=1,ni
-        write(lupri,'(i4,10es9.1)') i,(xkappa(i,j,iz),j=1,ni)
-      enddo
-    enddo
-  endif
-
-  ! Print kappa matrix
-  if(loc%iprloc.ge.5)then
-     write (lupri,'(/a)') '* KAPPA matrix :'
-     call prqmat(xkappa(1,1,1),ni,ni,ni,ni,4,ipqtoq(1,0),lupri)
-  endif
-
-  call qexit('getk_diag')
-
-  end subroutine getk_diag
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
-
-  subroutine getk_full(xkappa,pkappa,tgrad,eval,evec,shift,dnrmk)
-  !******************************************************************************!
-  !                                                                              !
-  !           Construction of the XKAPPA matrix using full hessian               !
-  !          The linear set of equations is solved using information             !
-  !                   from diagonalization of the hessian                        !
-  !                                                                              !
-  !   (H-shift) * X = -g     -->     (tilde{H}-shift) * tilde{X} = - tilde{g}    !
-  !                                                                              !
-  !   tilde{H} = U^T * H * U = eval                 U = evec                     !
-  !   tilde{X} = U^T * X     = pkappa               X = xkappa                   !
-  !   tilde{g} = U^T * g     = tgrad                dnrmk = |X|                  !
   !                                                                              !
   !******************************************************************************!
   implicit none
@@ -1007,7 +917,7 @@ contains
   real*8, allocatable, dimension(:) :: xtmp
 
   !------------------------------------------------------------------------------!
-  call qenter('getk_full')
+  call qenter('get_kappa')
 
   lupri  = var%lupri
 
@@ -1018,9 +928,9 @@ contains
   nred  = size(eval,1)
 
   ! allocate arrays
-  if(associated(pkappa)) call deallocp(pkappa,id='pkappa in getk_full')
-  call allocp(pkappa,nred ,id='pkappa in getk_full')
-  call alloc(xtmp  ,nhtmp,id='xtmp   in getk_full')
+  if(associated(pkappa)) call deallocp(pkappa,id='pkappa in get_kappa')
+  call allocp(pkappa,nred ,id='pkappa in get_kappa')
+  call alloc(xtmp  ,nhtmp,id='xtmp   in get_kappa')
 
   ! calculate tilde{X}
   do i=1,nred
@@ -1078,11 +988,11 @@ contains
   endif
 
   !------------------------------------------------------------------------------!
-  call dealloc(xtmp,id='xtmp in getk_full')
+  call dealloc(xtmp,id='xtmp in get_kappa')
 
-  call qexit('getk_full')
+  call qexit('get_kappa')
 
-  end subroutine getk_full
+  end subroutine get_kappa
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -2378,7 +2288,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,evec,Iminmax)
+  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,evec,Iminmax,full)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2387,6 +2297,7 @@ contains
   implicit none
 
   ! External variables
+  logical,   intent(in ) :: full
   logical,   intent(out) :: Iminmax
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
@@ -2395,9 +2306,11 @@ contains
   real*8, intent(out), pointer :: tgrad(:), eval(:)
 
   ! Internal variables
-  integer*4 :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, np, nm
+  integer*4 :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, np, nm, icur
+  real*8    :: acur
 
-  real*8, allocatable, dimension(:)   :: work
+  integer*4, allocatable, dimension(:)   :: iorig
+  real*8,    allocatable, dimension(:)   :: work
 
   !------------------------------------------------------------------------------!
   call qenter('hdiag')
@@ -2406,22 +2319,64 @@ contains
 
   ! Get some dimensions
   nhtmp = size(hmat,1)
-  nb = ilaenv(1,'dsytrd','u',nhtmp,-1,-1,-1)
-  lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
 
-  call alloc(work,lwork,      id='work in hdiag')
+  if(full)then
 
-  ! prepare evec
-  evec(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
+    nb = ilaenv(1,'dsytrd','u',nhtmp,-1,-1,-1)
+    lwork = (nb+2)*nhtmp  ! see the comment in dsyev lapack routine
+  
+    call alloc(work,lwork,id='work in hdiag')
+  
+    ! prepare evec
+    evec(1:nhtmp,1:nhtmp) = hmat(1:nhtmp,1:nhtmp)
+  
+    ! get eigenvalues (etmp) and eigenvectors (evec)
+    call dsyev('V','U',nhtmp,evec,nhtmp,etmp,work,lwork,ier)
+    if(ier /= 0)then
+      write(lupri,*) ' ERROR: The dsyev LAPACK subroutine in hdiag finished unsuccessfully'
+      write(lupri,*) ' info =',ier
+      stop
+    endif
 
-  call dsyev('V','U',nhtmp,evec,nhtmp,etmp,work,lwork,ier)
-  if(ier /= 0)then
-    write(lupri,*) ' ERROR: The dsyev LAPACK subroutine in hdiag finished unsuccessfully'
-    write(lupri,*) ' info =',ier
-    stop
+    call dealloc(work,id='work in hdiag')
+
+  else
+  
+    call alloc(iorig,nhtmp,id='iorig in hdiag')
+
+    ! get eigenvalues (etmp) and eigenvectors (evec)
+    ! We use diagonal approximation so it will just sort the diagonal of the hessian
+    do i=1,nhtmp
+      etmp(i) = hmat(i,i)
+      iorig(i)= i
+    enddo
+    evec(:,:) = d0
+    do i=1,nhtmp
+      acur = etmp(i)
+      icur = i
+      do j=i+1,nhtmp
+        if(acur > etmp(j))then
+          acur = etmp(j)
+          icur = j
+        endif
+      enddo
+      etmp(icur)  = etmp(i)
+      etmp(i)     = acur
+      j = iorig(icur)
+      iorig(icur) = iorig(i)
+      iorig(i)    = j
+    enddo
+
+    ! eigenvectors will contain information how the eigenvalues were sorted
+    do i=1,nhtmp
+      evec(iorig(i),i) = d1
+    enddo
+
+    call dealloc(iorig,id='iorig in hdiag')
+
   endif
 
-  ! project out redundant parameters (eigenvalues close to zero)
+  ! allocate unnamed arrays (dimension is number of eigenvalues over some threshold)
   nred = 0
   do i=1,nhtmp
     if(dabs(etmp(i)) > tresh) nred = nred + 1
@@ -2432,6 +2387,8 @@ contains
   endif
   call allocp(tgrad,nred,id='tgrad in hdiag')
   call allocp(eval ,nred,id='eval in hdiag')
+
+  ! project out redundant eigevalues and corresponding eigenvectors
   k = 0
   do i=1,nhtmp
     if(dabs(etmp(i)) > tresh)then
@@ -2467,9 +2424,6 @@ contains
     write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
     write(lupri,'(8d12.4)') (etmp(i),i=1,nhtmp)
   endif
-
-  !------------------------------------------------------------------------------!
-  call dealloc(work,id='work in hdiag')
 
   call qexit('hdiag')
 
