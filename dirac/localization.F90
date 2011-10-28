@@ -137,7 +137,7 @@ contains
   logical      :: tobe, full, rejected, Iminmax, diagconv
 
   integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
-  integer*4 :: nfbas(0:2), ipqtoq(4,0:7)
+  integer*4 :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
 
   real*8    :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
   real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
@@ -257,8 +257,8 @@ contains
     ! PRJLOC = FALSE localization with Mulliken analysis
     call orblo1(smat,scoef,pmat,nfbas(1),nfbas(2),nish,nucdep,nfnuc,dinvmg)
   endif
-  write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
-    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
+  write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
+    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
   write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
 
@@ -271,7 +271,7 @@ contains
     if(.not.rejected)then
       call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
       call get_gradient(pmat,grad,dnrmg)
-      call hdiag(hmat,grad,etmp,tgrad,eval,evec,Iminmax,full)
+      call hdiag(hmat,grad,etmp,tgrad,eval,evec,nep,nem,nez,Iminmax,full)
       shift = d0
     else
       call get_mu(eval,tgrad,tradius,shift,tpred)
@@ -314,10 +314,10 @@ contains
       if(full) hessian = 'FULL'
       dinvmo = dinvmg
 
-      write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 5x,a, 6x,a, 6x,a)') &
-        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H_DIAG','H_NONDIAG','H','DIFFG','DIFFQ'
-      write(lupri,'(a,2x,i4,5d11.2,4x,a,4d11.2)') &
-        '*C',itr,diffa,dnrmg,dnrmk,totdiag,totnond,hessian,diffg,diffq
+      write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
+        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
+      write(lupri,'(a,2x,i4,3d11.2,f10.4,1x,3i4,3x,a,2d11.2)') &
+        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
       ! Exit conditions
       if(loc%hesloc == 'DIAG')then
@@ -347,16 +347,16 @@ contains
 
   enddo
 
-  write(lupri,'(/11x,a)')        '***********************************************************'
+  write(lupri,'(//11x,a)')      '************************************************************'
   if(Iminmax)then
-    write(lupri,'(11x,a,i5,a)')  '>>>>       MAXIMUM reached after',itr,'  iterations      <<<<'
+    write(lupri,'(11x,a,i5,a)') '>>>>       MAXIMUM reached after',itr,'  iterations       <<<<'
   elseif((full.and.(diffa < loc%thfull)).or.(.not.full.and.(diffa < loc%thdiag)))then
-    write(lupri,'(11x,a,i5,a)')  '>>>>          Convergence in',itr,'  iterations          <<<<'
+    write(lupri,'(11x,a,i5,a)') '>>>>          Convergence in',itr,'  iterations           <<<<'
   else
-    write(lupri,'(11x,a,i5,a)')  '>>>>       No convergence after',itr,'  iterations       <<<<'
+    write(lupri,'(11x,a,i5,a)') '>>>>       No convergence after',itr,'  iterations        <<<<'
   endif
-  write(lupri,'(11x,a,f20.13,a)')'>>>> Inverse mean delocalization =',dinvmo,' <<<<'
-  write(lupri,'(11x,a/)')        '***********************************************************'
+  write(lupri,'(11x,a,f21.15,a)')'>>>> Inverse mean delocalization =',dinvmo,' <<<<'
+  write(lupri,'(11x,a//)')      '************************************************************'
 
   timend = second()
   time   = timend - timstr
@@ -642,7 +642,7 @@ contains
         '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F20.16)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/11X,A,F21.15)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -881,7 +881,7 @@ contains
          '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F20.16)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/11X,A,F21.15)') '* Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -2312,7 +2312,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,evec,Iminmax,full)
+  subroutine hdiag(hmat,gradient,etmp,tgrad,eval,evec,nep,nem,nez,Iminmax,full)
   !******************************************************************************!
   !                                                                              !
   !                Diagonalize real representation of hessian                    !
@@ -2323,6 +2323,7 @@ contains
   ! External variables
   logical,   intent(in ) :: full
   logical,   intent(out) :: Iminmax
+  integer*4, intent(out) :: nep, nem, nez
   real*8, intent(in ), dimension(:)   :: gradient
   real*8, intent(in ), dimension(:,:) :: hmat
   real*8, intent(out), dimension(:)   :: etmp
@@ -2330,7 +2331,7 @@ contains
   real*8, intent(out), pointer :: tgrad(:), eval(:)
 
   ! Internal variables
-  integer*4 :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, np, nm, icur
+  integer*4 :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, icur
   real*8    :: acur
 
   integer*4, allocatable, dimension(:)   :: iorig
@@ -2433,20 +2434,20 @@ contains
   enddo
 
   ! count number of positive, negative and zero eigenvalues
-  np=0; nm=0; nb=0
+  nep=0; nem=0; nez=0
   do i=1,nhtmp
     if(dabs(etmp(i)) > tresh)then
-      if(etmp(i) < d0)nm = nm + 1
-      if(etmp(i) > d0)np = np + 1
+      if(etmp(i) < d0)nem = nem + 1
+      if(etmp(i) > d0)nep = nep + 1
     else
-      nb = nb + 1
+      nez = nez + 1
     endif
   enddo
-  if(np == 0)Iminmax = .true.  ! we reached the maximum of the function
-  if(np /= 0)Iminmax = .false.
+  if(nep == 0)Iminmax = .true.  ! we reached the maximum of the function
+  if(nep /= 0)Iminmax = .false.
 
   if(loc%iprloc.ge.1)then
-    write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',np,nm,nb
+    write(lupri,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
     write(lupri,'(8d12.4)') (etmp(i),i=1,nhtmp)
   endif
 
