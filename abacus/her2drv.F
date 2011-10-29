@@ -18,7 +18,10 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
-
+#if defined VAR_IFORT && defined VAR_MPI
+!miro: attempt to fix ifort&OpenMPI&optimization problem with response_lao_magnetiz test
+!DEC$ NOOPTIMIZE
+#endif
 C
 C
 C  /* Deck twoint */
