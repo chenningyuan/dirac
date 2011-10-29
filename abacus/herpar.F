@@ -54,6 +54,7 @@ PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 #if defined VAR_IFORT && defined VAR_MPI
 !miro: attempt to fix ifort&OpenMPI&optimization problem with response_lao_magnetiz
 !DEC$ NOOPTIMIZE
+!DEC$ MESSAGE:'Ifort+OpenMPI-no optimization of herpar.F'
 #endif
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
