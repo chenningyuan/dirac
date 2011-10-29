@@ -51,6 +51,10 @@ SDINIT,RVINIT: removed ITRIPL message tag; moved IFCTYP and IREPDM
 CALINT: call TWOINT directly instead of CALL HERFCK
 PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 #endif
+#if defined VAR_IFORT && defined VAR_MPI
+!miro: attempt to fix ifort&OpenMPI&optimization problem with response_lao_magnetiz
+!DEC$ NOOPTIMIZE
+#endif
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
