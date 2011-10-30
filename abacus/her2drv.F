@@ -21,6 +21,7 @@
 #if defined VAR_IFORT && defined VAR_MPI
 !miro: attempt to fix ifort&OpenMPI&optimization problem with response_lao_magnetiz test
 !DEC$ NOOPTIMIZE
+!DEC$ MESSAGE:'Ifort+OpenMPI-no optimization of her2drv.F'
 #endif
 C
 C
