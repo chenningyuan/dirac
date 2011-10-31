@@ -12,9 +12,10 @@ sh ln -f -s cf.H DFH4AT
 
 CH4.inp CH4.mol --outcmo  
 
-CH4locmul.inp CH4.mol --incmo
-CH4locprj.inp CH4.mol --incmo --copy="DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
+#CH4locmul.inp CH4.mol --incmo
+CH4locprj_full.inp CH4.mol --incmo --copy="DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
 CH4locprj_comb.inp CH4.mol --incmo --copy="DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
+CH4locprj_diag.inp CH4.mol --incmo --copy="DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT"  
 
 # H2O
 O.inp O.mol --outcmo  
@@ -23,9 +24,10 @@ sh ln -f -s cf.O DFO1AT
 
 H2O.inp H2O.mol --outcmo
 
-H2Olocmul.inp H2O.mol --incmo
-H2Olocprj.inp H2O.mol --incmo --copy="DFO1AT DFH1AT DFH2AT"
+#H2Olocmul.inp H2O.mol --incmo
+H2Olocprj_full.inp H2O.mol --incmo --copy="DFO1AT DFH1AT DFH2AT"
 H2Olocprj_comb.inp H2O.mol --incmo --copy="DFO1AT DFH1AT DFH2AT"
+H2Olocprj_diag.inp H2O.mol --incmo --copy="DFO1AT DFH1AT DFH2AT"
 
 # Clean after yourself
 sh rm -f cf.C cf.H cf.O DFCOEF DFC1AT DFO1AT DFH1AT DFH2AT DFH3AT DFH4AT 
