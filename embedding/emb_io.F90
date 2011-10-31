@@ -85,9 +85,11 @@ module fde_io
     REWIND(file)
     READ(file,*) npoints
     
+    if (associated(points)) nullify(points)
     call allocp(points,4,npoints,id="grid_points")
     
     if (present(vc)) then
+       if (associated(vc)) nullify(vc)
        call allocp(vc,npoints,id="potential")
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
