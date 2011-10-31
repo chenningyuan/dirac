@@ -1,7 +1,5 @@
 $ERROR 1.E-7
 
-Nlines 1:DFT exchange-correlation energy
-Nlines 1:number of electrons from numerical integration
 Nlines 1:Electronic energy
 Nlines 1:ZZSECMOM
 
