@@ -31,12 +31,13 @@ s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
 output = ''
 output += 'subroutine print_compilation_info()\n'
+output += 'include "priunit.h"\n'
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
 def print_line(l, r):
-    return "    write(6, '(a)') ' %s | %s'\n" % (l.ljust(24), r)
+    return "    write(lupri, '(a)') ' %s | %s'\n" % (l.ljust(24), r)
 
 for line in s:
     chunk_l = chunkify(line[1], 50)

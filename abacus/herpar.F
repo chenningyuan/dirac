@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -50,6 +50,11 @@ SDINIT,RVINIT: removed ITRIPL message tag; moved IFCTYP and IREPDM
  message tags after NDMAT message tag
 CALINT: call TWOINT directly instead of CALL HERFCK
 PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
+#endif
+#if defined VAR_IFORT && defined VAR_MPI
+!miro: attempt to fix ifort&OpenMPI&optimization problem with response_lao_magnetiz
+!DEC$ NOOPTIMIZE
+!DEC$ MESSAGE:'Ifort+OpenMPI-no optimization of herpar.F'
 #endif
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,

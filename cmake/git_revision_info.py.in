@@ -33,9 +33,10 @@ if sys.version >= '2.4':
         last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
 
 print 'subroutine print_git_revision_info()'
+print '#include "priunit.h"'
 
 def print_line(l, r):
-    print "    write(6, '(a)') ' %s | %s'" % (l.ljust(24), r)
+    print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(24), r)
 
 print_line('Last commit rev',    last_commit_rev)
 print_line('Last commit author', last_commit_author)

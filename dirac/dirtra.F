@@ -1,6 +1,6 @@
 #define DEBUG_mat_transform
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
