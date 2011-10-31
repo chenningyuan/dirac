@@ -1928,8 +1928,8 @@ contains
           endif
 
           if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + pji1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + pji2 * ( pii - pjj )
+            hmat(ij,kl,1) = hmat(ij,kl,1) - pji1 * ( pii - pjj )
+            hmat(ij,kl,2) = hmat(ij,kl,2) - pji2 * ( pii - pjj )
           endif
         enddo
         hmat(kl,ij,1) =   hmat(ij,kl,1)
