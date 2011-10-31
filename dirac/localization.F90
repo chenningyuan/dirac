@@ -10,25 +10,25 @@ private :: get_kappa, get_hessian, get_gradient, exp_func, hdiag
 private :: get_mu, updateT
 
 type :: localization_flags
-  integer*4 :: iprloc, itrloc
-  real*8    :: thfull, thdiag
-  logical   :: prjloc, lgfull, lgdiag
+  integer :: iprloc, itrloc
+  real*8  :: thfull, thdiag
+  logical :: prjloc, lgfull, lgdiag
   character*4 :: hesloc
 end type localization_flags
 
 type :: external_variales
-  integer*4 :: lupri, lucoef
-  integer*4 :: nfbas(2,0:2), n2bbasx, n2bbasxq
-  integer*4 :: nish(2), norb(2), npsh(2), nesh(2), norbt
-  real*8    :: ssmtrc
-  logical   :: twocompbss, levyle
-  integer*4 :: nz, ipqtoq(4,0:7)
-  integer*4 :: nucdep
-  integer*4 :: thrzer
-  integer*4 :: nrefs, iprprj
-  integer*4 :: maxref
-  real*8    :: prothr
-  logical   :: ownbas
+  integer :: lupri, lucoef
+  integer :: nfbas(2,0:2), n2bbasx, n2bbasxq
+  integer :: nish(2), norb(2), npsh(2), nesh(2), norbt
+  real*8  :: ssmtrc
+  logical :: twocompbss, levyle
+  integer :: nz, ipqtoq(4,0:7)
+  integer :: nucdep
+  integer :: thrzer
+  integer :: nrefs, iprprj
+  integer :: maxref
+  real*8  :: prothr
+  logical :: ownbas
   character*6  :: reffil(15)    ! reffil(maxref)    -->  see dcbprj.h
   character*72 :: vecref(2,15)  ! vecref(2,maxref)  -->  see dcbprj.h
 end type external_variales
@@ -61,7 +61,7 @@ contains
 #include "dcbprj.h"
 
   ! Internal variables
-  integer*4 :: i
+  integer :: i
 
   !------------------------------------------------------------------------------!
   ! dcbloc.h
@@ -136,17 +136,17 @@ contains
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
   logical      :: tobe, full, rejected, Iminmax, diagconv
 
-  integer*4 :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
-  integer*4 :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
+  integer :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
+  integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
 
-  real*8    :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
-  real*8    :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
+  real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
+  real*8  :: timend, time, timstr, second, toterg, totdiag, totnond, shift, tradius, tpred
 
-  integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
-  real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, etmp
-  real*8,    allocatable, dimension(:,:)     :: hmat, evec
-  real*8,    allocatable, dimension(:,:,:)   :: xkappa
-  real*8,    allocatable, dimension(:,:,:,:) :: pmat
+  integer, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
+  real*8,  allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, etmp
+  real*8,  allocatable, dimension(:,:)     :: hmat, evec
+  real*8,  allocatable, dimension(:,:,:)   :: xkappa
+  real*8,  allocatable, dimension(:,:,:,:) :: pmat
 
   real*8, pointer :: pkappa(:), tgrad(:), eval(:)
 
@@ -933,8 +933,8 @@ contains
   real*8, intent(out), pointer :: pkappa(:)
 
   ! Internal variables
-  integer*4 :: i, j, ij, iz, ni, nhtmp, ni12, nred, lupri
-  real*8    :: dnrm2
+  integer :: i, j, ij, iz, ni, nhtmp, ni12, nred, lupri
+  real*8  :: dnrm2
 
   real*8, allocatable, dimension(:) :: xtmp
 
@@ -1382,12 +1382,12 @@ contains
   ! Internal variables
   real*8, parameter :: dhalf = 0.5d0
 
-  real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pjk1, pil1, pli1, pkj1
-  real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pjk2, pil2, pli2, pkj2
-  real*8 :: pii, pjj, pkk, pll, sumdiag, sumnond, sumtmp
-  real*8 :: dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
+  real*8  :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pjk1, pil1, pli1, pkj1
+  real*8  :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pjk2, pil2, pli2, pkj2
+  real*8  :: pii, pjj, pkk, pll, sumdiag, sumnond, sumtmp
+  real*8  :: dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
-  integer*4 :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
+  integer :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
   !------------------------------------------------------------------------------!
   call qenter('get_hessian')
@@ -2182,10 +2182,10 @@ contains
   real*8, intent(out), dimension(:)       ::  gradient
 
   ! Internal variables
-  integer*4 :: i, j, k, ij, ij1, ij2, ij3, ij4
-  integer*4 :: nucdep, ni, ndimg, ni12, lupri
+  integer :: i, j, k, ij, ij1, ij2, ij3, ij4
+  integer :: nucdep, ni, ndimg, ni12, lupri
 
-  real*8 :: dtmp, dnrm2
+  real*8  :: dtmp, dnrm2
 
   !------------------------------------------------------------------------------!
   call qenter('get_gradient')
@@ -2252,13 +2252,13 @@ contains
   implicit none
 
   ! External variables
-  integer*4, intent(in ) :: ni
-  real*8,    intent(out) :: dinvmq
+  integer, intent(in ) :: ni
+  real*8,  intent(out) :: dinvmq
 
-  real*8, intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
+  real*8,  intent(in), pointer :: pkappa(:), tgrad(:), eval(:)
 
   ! Internal variables
-  integer*4  :: i
+  integer :: i
 
   !------------------------------------------------------------------------------!
   call qenter('exp_func')
@@ -2285,21 +2285,21 @@ contains
   implicit none
 
   ! External variables
-  logical,   intent(in ) :: full
-  logical,   intent(out) :: Iminmax
-  integer*4, intent(out) :: nep, nem, nez
-  real*8, intent(in ), dimension(:)   :: gradient
-  real*8, intent(in ), dimension(:,:) :: hmat
-  real*8, intent(out), dimension(:)   :: etmp
-  real*8, intent(out), dimension(:,:) :: evec
-  real*8, intent(out), pointer :: tgrad(:), eval(:)
+  logical, intent(in ) :: full
+  logical, intent(out) :: Iminmax
+  integer, intent(out) :: nep, nem, nez
+  real*8,  intent(in ), dimension(:)   :: gradient
+  real*8,  intent(in ), dimension(:,:) :: hmat
+  real*8,  intent(out), dimension(:)   :: etmp
+  real*8,  intent(out), dimension(:,:) :: evec
+  real*8,  intent(out), pointer :: tgrad(:), eval(:)
 
   ! Internal variables
-  integer*4 :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, icur
-  real*8    :: acur
+  integer :: i, j, k, nhtmp, nred, ier, lupri, lwork, ilaenv, nb, icur
+  real*8  :: acur
 
-  integer*4, allocatable, dimension(:)   :: iorig
-  real*8,    allocatable, dimension(:)   :: work
+  integer, allocatable, dimension(:)   :: iorig
+  real*8,  allocatable, dimension(:)   :: work
 
   !------------------------------------------------------------------------------!
   call qenter('hdiag')
@@ -2441,8 +2441,8 @@ contains
   real*8, intent(in), pointer :: eval(:), tgrad(:)
 
   ! Internal variables
-  integer*4 :: i, j, k, ndim, lupri, imax
-  real*8    :: tcurr, xcurr, cutoff, xmax, xmin, step
+  integer :: i, j, k, ndim, lupri, imax
+  real*8  :: tcurr, xcurr, cutoff, xmax, xmin, step
 
   !------------------------------------------------------------------------------!
   call qenter('get_mu')
@@ -2512,8 +2512,8 @@ contains
     function f(x)
     implicit none
     real*8, intent(in ) :: x
-    real*8    :: f
-    integer*4 :: ii
+    real*8  :: f
+    integer :: ii
 
     f = d0
     do ii=1,ndim
@@ -2541,15 +2541,15 @@ contains
   implicit none
 
   ! External variables
-  integer*4, intent(in   ) :: itr
-  real*8,    intent(in   ) :: dnrmk, diffg, diffq
-  real*8,    intent(inout) :: tradius
-  logical,   intent(in   ) :: full
-  logical,   intent(inout) :: rejected
+  integer, intent(in   ) :: itr
+  real*8,  intent(in   ) :: dnrmk, diffg, diffq
+  real*8,  intent(inout) :: tradius
+  logical, intent(in   ) :: full
+  logical, intent(inout) :: rejected
 
   ! Internal variables
   character*6 :: cond
-  integer*4 :: lupri
+  integer :: lupri
   real*8, parameter :: d1q = 0.25d0, d3q = 0.75d0, d5q = 1.25d0
   real*8 :: R, tradius_old
 
