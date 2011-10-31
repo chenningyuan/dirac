@@ -145,7 +145,7 @@ contains
   integer*4, allocatable, dimension(:)       :: nfnuc, isel, indao, indaos, indnao
   real*8,    allocatable, dimension(:)       :: scoef, storec, smat, cmo, grad, etmp
   real*8,    allocatable, dimension(:,:)     :: hmat, evec
-  real*8,    allocatable, dimension(:,:,:)   :: xkappa, hmat_c
+  real*8,    allocatable, dimension(:,:,:)   :: xkappa
   real*8,    allocatable, dimension(:,:,:,:) :: pmat
 
   real*8, pointer :: pkappa(:), tgrad(:), eval(:)
@@ -203,7 +203,6 @@ contains
   call alloc(storec,nish*nfbas(0)*4,   id='storec in orbloc')
   call alloc(smat  ,var%n2bbasx,       id='smat   in orbloc')
   call alloc(cmo   ,var%n2bbasxq,      id='cmo    in orbloc')
-  call alloc(hmat_c,ndimh,ndimh,2,     id='hmat_c in orbloc')
   call alloc(hmat  ,ndimhr,ndimhr,     id='hmat   in orbloc')
   call alloc(grad  ,ndimhr,            id='grad   in orbloc')
   call alloc(etmp  ,ndimhr,            id='etmp   in orbloc')
@@ -269,7 +268,7 @@ contains
 
     ! get new kappa
     if(.not.rejected)then
-      call get_hessian(pmat,hmat_c,hmat,totdiag,totnond)
+      call get_hessian(pmat,hmat,totdiag,totnond)
       call get_gradient(pmat,grad,dnrmg)
       call hdiag(hmat,grad,etmp,tgrad,eval,evec,nep,nem,nez,Iminmax,full)
       shift = d0
@@ -373,7 +372,6 @@ contains
   call dealloc(smat  ,id='smat   in orbloc')
   call dealloc(pmat  ,id='pmat   in orbloc')
   call dealloc(xkappa,id='xkappa in orbloc')
-  call dealloc(hmat_c,id='hmat_c in orbloc')
   call dealloc(hmat  ,id='hmat   in orbloc')
   call dealloc(grad  ,id='grad   in orbloc')
   call dealloc(etmp  ,id='etmp   in orbloc')
@@ -1363,7 +1361,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine get_hessian(pmat,hmat,hmat_r,totdiag,totnond)
+  subroutine get_hessian(pmat,hmat,totdiag,totnond)
   !******************************************************************************!
   !                                                                              !
   !  Construction of full hessian                                                !
@@ -1379,8 +1377,7 @@ contains
   real*8, intent(out) :: totdiag, totnond
 
   real*8, intent(in ), dimension(:,:,:,:) :: pmat
-  real*8, intent(out), dimension(:,:)     :: hmat_r
-  real*8, intent(out), dimension(:,:,:)   :: hmat
+  real*8, intent(out), dimension(:,:)     :: hmat
 
   ! Internal variables
   real*8, parameter :: dhalf = 0.5d0
@@ -1390,811 +1387,25 @@ contains
   real*8 :: pii, pjj, pkk, pll, sumdiag, sumnond, sumtmp
   real*8 :: dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
-  integer*4 :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimhr, ndimhc, ni12, lupri
-
-  real*8, allocatable, dimension(:,:) :: htmp
+  integer*4 :: i, j, i1, j1, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
   !------------------------------------------------------------------------------!
   call qenter('get_hessian')
 
   lupri = var%lupri
-  hmat(:,:,:) = d0
-  totdiag = d0
-  totnond = d0
 
   ! Get some dimensions
   nucdep = size(pmat,4)
   ni     = size(pmat,1)
-  ndimhc = size(hmat,1)
-  ndimhr = size(hmat_r,1)
-  ni12   = ndimhc / 4
-
-  !------------------------------------------------------------------------------!
-  !                 Unbared-unbared contribution to the hessian                  !
-  !------------------------------------------------------------------------------!
-  !  d^2 G / dK*_ij dK_kl   -->   (32)
-  sumdiag = d0
-  sumnond = d0
-  ij = 0
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 0
-      do l=1,ni
-        do k=l,ni
-          kl = kl + 1
-          if(k==l) cycle
-          do m = 1,nucdep
-            pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
-            pkl1 = pmat(k,l,1,m); pkl2 = pmat(k,l,2,m)
-            pjl1 = pmat(j,l,1,m); pjl2 = pmat(j,l,2,m)
-            pki1 = pmat(k,i,1,m); pki2 = pmat(k,i,2,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-            dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
-            dtmp2= d2*(pij1*pkl2 - pij2*pkl1)
-
-            if(i==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
-            endif
-
-            if(j==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
-            endif
-
-            if(j==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
-            endif
-
-            if(i==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
-            endif
-          enddo
-          if(ij==kl)then
-            sumdiag=sumdiag + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          else
-            sumnond=sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          endif
-        enddo
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK*_ij dK_kk   -->   (40)
-  ij = 0
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + dhalf * pij1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) - dhalf * pij2 * ( pii - pjj )
-          endif
-
-          if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) - dhalf * pij1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + dhalf * pij2 * ( pii - pjj )
-          endif
-        enddo
-        hmat(kl,ij,1) =   hmat(ij,kl,1)
-        hmat(kl,ij,2) = - hmat(ij,kl,2)
-        sumnond=sumnond + d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.3)then
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_uu'
-    do j=1,ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-    enddo
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_uu'
-    do j=1,ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-    enddo
-  endif
-  if(loc%iprloc.ge.1)then
-    write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_uu:'
-    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_uu ',sumdiag,sumnond
-  endif
-  totdiag = totdiag + sumdiag
-  totnond = totnond + sumnond
-
-  !  d^2 G / dK_ij dK_kl   -->   (36)
-  sumnond = d0
-  sumtmp  = d0
-  ij = 2*ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 0
-      do l=1,ni
-        do k=l,ni
-          kl = kl + 1
-          if(k==l) cycle
-          do m = 1,nucdep
-            pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
-            pkl1 = pmat(k,l,1,m); pkl2 = pmat(k,l,2,m)
-            pil1 = pmat(i,l,1,m); pil2 = pmat(i,l,2,m)
-            pkj1 = pmat(k,j,1,m); pkj2 = pmat(k,j,2,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-            dtmp1= d2*(pij1*pkl1 - pij2*pkl2)
-            dtmp2= d2*(pij1*pkl2 + pij2*pkl1)
-
-            if(i==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
-            endif
-
-            if(j==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
-            endif
-
-            if(j==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 - d2 * ( pjj - dhalf*(pii + pll) ) * pil1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pjj - dhalf*(pii + pll) ) * pil2
-            endif
-
-            if(i==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
-            endif
-          enddo
-          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          if(ij==kl)then
-            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          endif
-        enddo
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK_ij dK_kk   -->   (44)
-  ij = 2*ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + dhalf * pij1 * ( pjj - pii )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + dhalf * pij2 * ( pjj - pii )
-          endif
-
-          if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) - dhalf * pij1 * ( pjj - pii )
-            hmat(ij,kl,2) = hmat(ij,kl,2) - dhalf * pij2 * ( pjj - pii )
-          endif
-        enddo
-        hmat(kl+2*ni12,ij-2*ni12,1) = hmat(ij,kl,1)
-        hmat(kl+2*ni12,ij-2*ni12,2) = hmat(ij,kl,2)
-        sumnond=sumnond + d4*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.3)then
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_uu'
-    do j=2*ni12+1, 3*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-    enddo
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_uu'
-    do j=2*ni12+1, 3*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-    enddo
-  endif
-  if(loc%iprloc.ge.1)then
-    write(lupri,*) 'Sum of elements of B_uu:'
-    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_uu ',sumtmp,sumnond
-  endif
-  totnond = totnond + sumnond
-
-  !------------------------------------------------------------------------------!
-  !                   Bared-unbared contribution to the hessian                  !
-  !------------------------------------------------------------------------------!
-  !  d^2 G / dK*_ij dK_kl   -->   (34)
-  sumnond = d0
-  sumtmp  = d0
-  ij = ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 0
-      do l=1,ni
-        do k=l,ni
-          kl = kl + 1
-          if(k==l) cycle
-          do m = 1,nucdep
-            pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-            pkl1 = pmat(k,l,1,m); pkl2 = pmat(k,l,2,m)
-            plj1 = pmat(l,j,3,m); plj2 = pmat(l,j,4,m)
-            pli1 = pmat(l,i,3,m); pli2 = pmat(l,i,4,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-            dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
-            dtmp2= d2*(pij1*pkl2 - pij2*pkl1)
-
-            if(i==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 - d2 * ( pii - dhalf*(pjj + pll) ) * plj2
-            endif
-
-            if(j==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
-            endif
-
-            if(j==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pjj - dhalf*(pii + pll) ) * pli2
-            endif
-
-            if(i==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
-            endif
-          enddo
-          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          if(ij==kl)then
-            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          endif
-        enddo
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK*_ij dK_kk   -->   (42)
-  ij = ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + dhalf * pij1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) - dhalf * pij2 * ( pii - pjj )
-          endif
-
-          if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + dhalf * pij1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) - dhalf * pij2 * ( pii - pjj )
-          endif
-        enddo
-        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK*_kk dK_ij    -->   (41)^*
-  ij = 0
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = ni12 + 1
-      do k=1,ni
-        do m = 1,nucdep
-          pji1 = pmat(j,i,3,m); pji2 = pmat(j,i,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(kl,ij,1) = hmat(kl,ij,1) + pji1 * ( pii - pjj )
-            hmat(kl,ij,2) = hmat(kl,ij,2) - pji2 * ( pii - pjj )
-          endif
-        enddo
-        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.3)then
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bu'
-    do j=ni12+1,2*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-    enddo
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bu'
-    do j=ni12+1,2*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-    enddo
-  endif
-  if(loc%iprloc.ge.1)then
-    write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bu:'
-    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bu ',sumtmp,sumnond
-  endif
-  totnond = totnond + sumnond
-
-  !  d^2 G / dK_ij dK_kl   -->   (38)
-  sumnond = d0
-  sumtmp  = d0
-  ij = 3*ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 0
-      do l=1,ni
-        do k=l,ni
-          kl = kl + 1
-          if(k==l) cycle
-          do m = 1,nucdep
-            pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-            pkl1 = pmat(k,l,1,m); pkl2 = pmat(k,l,2,m)
-            pki1 = pmat(k,i,3,m); pki2 = pmat(k,i,4,m)
-            pkj1 = pmat(k,j,3,m); pkj2 = pmat(k,j,4,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-            dtmp1= d2*(pij1*pkl1 - pij2*pkl2)
-            dtmp2= d2*(pij1*pkl2 + pij2*pkl1)
-
-            if(i==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
-            endif
-
-            if(j==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 - d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 - d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
-            endif
-
-            if(j==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
-            endif
-
-            if(i==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
-            endif
-          enddo
-          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          if(ij==kl)then
-            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          endif
-        enddo
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK_ij dK_kk   -->   (46)
-  ij = 3*ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + dhalf * pij1 * ( pjj - pii )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + dhalf * pij2 * ( pjj - pii )
-          endif
-
-          if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + dhalf * pij1 * ( pjj - pii )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + dhalf * pij2 * ( pjj - pii )
-          endif
-        enddo
-        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK_kk dK_ij    -->   (45)
-  ij = 0
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 3*ni12 + 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(j==k)then
-            hmat(kl,ij,1) = hmat(kl,ij,1) + pij1 * ( pii - pjj )
-            hmat(kl,ij,2) = hmat(kl,ij,2) + pij2 * ( pii - pjj )
-          endif
-        enddo
-        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.3)then
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_bu'
-    do j=3*ni12+1, 4*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=1,ni12)
-    enddo
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_bu'
-    do j=3*ni12+1, 4*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=1,ni12)
-    enddo
-  endif
-  if(loc%iprloc.ge.1)then
-    write(lupri,*) 'Sum of elements of B_bu:'
-    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_bu ',sumtmp,sumnond
-  endif
-  totnond = totnond + sumnond
-
-  !------------------------------------------------------------------------------!
-  !                   Bared-bared contribution to the hessian                    !
-  !------------------------------------------------------------------------------!
-  !  d^2 G / dK*_ij dK_kl   -->   (35)
-  sumdiag = d0
-  sumnond = d0
-  ij = ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = ni12
-      do l=1,ni
-        do k=l,ni
-          kl = kl + 1
-          if(k==l) cycle
-          do m = 1,nucdep
-            pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-            pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
-            pki1 = pmat(k,i,1,m); pki2 = pmat(k,i,2,m)
-            pkj1 = pmat(k,j,1,m); pkj2 = pmat(k,j,2,m)
-            pli1 = pmat(l,i,1,m); pli2 = pmat(l,i,2,m)
-            plj1 = pmat(l,j,1,m); plj2 = pmat(l,j,2,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-            dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
-            dtmp2= d2*(pij1*pkl2 - pij2*pkl1)
-
-            if(i==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * plj2
-            endif
-
-            if(j==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
-            endif
-
-            if(j==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pli2
-            endif
-
-            if(i==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
-            endif
-          enddo
-        if(ij==kl)then
-          sumdiag = sumdiag + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        else
-          sumnond = sumnond + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        endif
-        enddo
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK*_ij dK_kk   -->   (43)
-  ij = ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = ni12 + 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
-          pji1 = pmat(j,i,1,m); pji2 = pmat(j,i,2,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + pij1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + pij2 * ( pii - pjj )
-          endif
-
-          if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) - pji1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) - pji2 * ( pii - pjj )
-          endif
-        enddo
-        hmat(kl,ij,1) =   hmat(ij,kl,1)
-        hmat(kl,ij,2) = - hmat(ij,kl,2)
-        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.3)then
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  A_bb'
-    do j=ni12+1,2*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
-    enddo
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  A_bb'
-    do j=ni12+1,2*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
-    enddo
-  endif
-  if(loc%iprloc.ge.1)then
-    write(lupri,*) 'Sum of diagonal vs non-diagonal elements of A_bb:'
-    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: A_bb ',sumdiag,sumnond
-  endif
-  totdiag = totdiag + sumdiag
-  totnond = totnond + sumnond
-
-  !  d^2 G / dK_ij dK_kl = 0   -->   (49)
-  !  d^2 G / dK_ij dK_kk = 0   -->   (47)
-
-  !------------------------------------------------------------------------------!
-  !                 Unbared-bared contribution to the hessian                    !
-  !------------------------------------------------------------------------------!
-  !  d^2 G / dK_ij dK_kl   -->   (37)
-  sumnond = d0
-  sumtmp  = d0
-  ij = 2*ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = ni12
-      do l=1,ni
-        do k=l,ni
-          kl = kl + 1
-          if(k==l) cycle
-          do m = 1,nucdep
-            pij1 = pmat(i,j,1,m); pij2 = pmat(i,j,2,m)
-            pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
-            pik1 = pmat(i,k,3,m); pik2 = pmat(i,k,4,m)
-            pil1 = pmat(i,l,3,m); pil2 = pmat(i,l,4,m)
-            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
-            dtmp1= d2*(pij1*pkl1 - pij2*pkl2)
-            dtmp2= d2*(pij1*pkl2 + pij2*pkl1)
-
-            if(i==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2
-            endif
-
-            if(j==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) + dtmp1 - d2 * ( pjj - dhalf*(pii + pkk) ) * pik1
-              hmat(ij,kl,2) = hmat(ij,kl,2) + dtmp2 - d2 * ( pjj - dhalf*(pii + pkk) ) * pik2
-            endif
-
-            if(j==k)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1 - d2 * ( pjj - dhalf*(pii + pll) ) * pil1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2 - d2 * ( pjj - dhalf*(pii + pll) ) * pil2
-            endif
-
-            if(i==l)then
-              hmat(ij,kl,1) = hmat(ij,kl,1) - dtmp1
-              hmat(ij,kl,2) = hmat(ij,kl,2) - dtmp2
-            endif
-          enddo
-          sumnond=sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          if(ij==kl)then
-            sumtmp = sumtmp + dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-          endif
-        enddo
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK_ij dK_kk   -->   (45)
-  ij = 2*ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = ni12 + 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(j==k)then
-            hmat(ij,kl,1) = hmat(ij,kl,1) + pij1 * ( pii - pjj )
-            hmat(ij,kl,2) = hmat(ij,kl,2) + pij2 * ( pii - pjj )
-          endif
-        enddo
-        sumnond = sumnond+d2*dsqrt( hmat(ij,kl,1)*hmat(ij,kl,1) + hmat(ij,kl,2)*hmat(ij,kl,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  !  d^2 G / dK_kk dK_ij    -->   (46)
-  ij = ni12
-  do j=1,ni
-    do i=j,ni
-      ij = ij + 1
-      if(i==j) cycle
-      kl = 2*ni12 + 1
-      do k=1,ni
-        do m = 1,nucdep
-          pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
-          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
-
-          if(i==k)then
-            hmat(kl,ij,1) = hmat(kl,ij,1) + dhalf * pij1 * ( pjj - pii )
-            hmat(kl,ij,2) = hmat(kl,ij,2) + dhalf * pij2 * ( pjj - pii )
-          endif
-
-          if(j==k)then
-            hmat(kl,ij,1) = hmat(kl,ij,1) + dhalf * pij1 * ( pjj - pii )
-            hmat(kl,ij,2) = hmat(kl,ij,2) + dhalf * pij2 * ( pjj - pii )
-          endif
-        enddo
-        sumnond = sumnond+d2*dsqrt( hmat(kl,ij,1)*hmat(kl,ij,1) + hmat(kl,ij,2)*hmat(kl,ij,2) )
-        kl = kl + ni - (k-1)  ! diagonal
-      enddo
-    enddo
-  enddo
-
-  if(loc%iprloc.ge.3)then
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,1)  -->  B_ub'
-    do j=2*ni12+1, 3*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,1),k=ni12+1,2*ni12)
-    enddo
-    write(lupri,'(/a,2f10.5)') 'Print hmat(:,:,2)  -->  B_ub'
-    do j=2*ni12+1, 3*ni12
-      write(lupri,'(i4,15f10.5)') j,(hmat(j,k,2),k=ni12+1,2*ni12)
-    enddo
-  endif
-  if(loc%iprloc.ge.1)then
-    write(lupri,*) 'Sum of elements of B_ub:'
-    write(lupri,'(a,2f10.5)') 'Diag vs. non-diag: B_ub ',sumtmp,sumnond
-  endif
-  totnond = totnond + sumnond
-
-  !------------------------------------------------------------------------------!
-  !                     Get the rest of the hessian matrix                       !
-  !------------------------------------------------------------------------------!
-  ! 2,1  -->  1,2
-  do i=ni12+1,2*ni12
-    do j=1,ni12
-      hmat(j,i,1) =   hmat(i,j,1)
-      hmat(j,i,2) = - hmat(i,j,2)
-    enddo
-  enddo
-
-  ! 12,12  -->  34,34
-  do i=1,2*ni12
-    do j=1,2*ni12
-      hmat( i+2*ni12 , j+2*ni12 , 1 ) =   hmat(i,j,1)
-      hmat( i+2*ni12 , j+2*ni12 , 2 ) = - hmat(i,j,2)
-    enddo
-  enddo
-
-  ! 34,12  -->  12,34
-  do i=2*ni12+1,4*ni12
-    do j=1,2*ni12
-      hmat(j,i,1) =   hmat(i,j,1)
-      hmat(j,i,2) = - hmat(i,j,2)
-    enddo
-  enddo
+  ndimh  = size(hmat,1)
+  ni12   = (ndimh+ni) / 4
 
   !------------------------------------------------------------------------------!
   ! Calculate real representation of hessian and get the diagonal dominance info !
   !------------------------------------------------------------------------------!
-  call alloc(htmp,ndimhc,ndimhc,id='htmp in get_hessian')
-
-  sumdiag = d0
-  sumnond = d0
-  do i=1,2*ni12
-    do j=1,2*ni12
-      i1 = i + 2*ni12
-      j1 = j + 2*ni12
-      htmp(i ,j ) = hmat(i,j ,1) + hmat(i,j1,1)
-      htmp(i ,j1) = hmat(i,j1,2) - hmat(i,j ,2)
-      htmp(i1,j ) = hmat(i,j1,2) + hmat(i,j ,2)
-      htmp(i1,j1) = hmat(i,j ,1) - hmat(i,j1,1)
-      sumnond = sumnond + dabs(htmp(i,j1)) + dabs(htmp(i1,j))
-      if(i==j)then
-        sumdiag = sumdiag + dabs(htmp(i,j)) + dabs(htmp(i1,j1))
-      else
-        sumnond = sumnond + dabs(htmp(i,j)) + dabs(htmp(i1,j1))
-      endif
-    enddo
-  enddo
-  if(loc%iprloc.ge.1)then
-    write(lupri,'(a,5d11.2)')' Real hessian diag vs. non-diag: ',sumdiag,sumnond
-  endif
-
-  ! TMP: check properties of hessian
-  dtmp1 = d0; dtmp2 = d0; dtmp3 = d0; dtmp4 = d0; dtmp5 = d0; dtmp6 = d0
-  do i=1,2*ni12
-    do j=i,2*ni12
-      if(i==j)cycle
-      dtmp1 = dtmp1 + dabs(hmat(i,j,1) - hmat(j,i,1))                   ! sym A^R
-      dtmp2 = dtmp2 + dabs(hmat(i,j,2) + hmat(j,i,2))                   ! anti-sym A^I
-      dtmp3 = dtmp3 + dabs(hmat(i,j+2*ni12,1) - hmat(j,i+2*ni12,1))     ! sym B^R
-      dtmp4 = dtmp4 + dabs(hmat(i,j+2*ni12,2) - hmat(j,i+2*ni12,2))     ! sym B^I
-      dtmp5 = dtmp5 + dabs(hmat(i,j,1) - hmat(i+2*ni12,j+2*ni12,1)) &   ! H_11 = H_22*
-                    + dabs(hmat(j,i,1) - hmat(j+2*ni12,i+2*ni12,1)) &
-                    + dabs(hmat(i,j,2) + hmat(i+2*ni12,j+2*ni12,2)) &
-                    + dabs(hmat(j,i,2) + hmat(j+2*ni12,i+2*ni12,2))
-      dtmp6 = dtmp6 + dabs(hmat(i,j+2*ni12,1) - hmat(i+2*ni12,j,1)) &   ! H_12 = H_21*
-                    + dabs(hmat(j,i+2*ni12,1) - hmat(j+2*ni12,i,1)) &
-                    + dabs(hmat(i,j+2*ni12,2) + hmat(i+2*ni12,j,2)) &
-                    + dabs(hmat(j,i+2*ni12,2) + hmat(j+2*ni12,i,2))
-    enddo
-    dtmp2 = dtmp2 + dabs(hmat(i,i,2))                                  ! anti-sym A^I
-    dtmp5 = dtmp5 + dabs(hmat(i,i,1) - hmat(i+2*ni12,i+2*ni12,1)) &    ! H_11 = H_22*
-                  + dabs(hmat(i,i,2) + hmat(i+2*ni12,i+2*ni12,2))
-    dtmp6 = dtmp6 + dabs(hmat(i,i+2*ni12,1) - hmat(i+2*ni12,i,1)) &    ! H_12 = H_21*
-                  + dabs(hmat(i,i+2*ni12,2) + hmat(i+2*ni12,i,2))
-  enddo
-  if((dtmp1/=d0).or.(dtmp2/=d0).or.(dtmp3/=d0).or.(dtmp4/=d0).or.(dtmp5/=d0).or.(dtmp6/=d0))then
-    write(lupri,*) ' WARNING: Something is wrong with symetry of the hessian (see output)'
-    write(lupri,*) 'symetry A_R',dtmp1
-    write(lupri,*) 'anti-symetry A_I',dtmp2
-    write(lupri,*) 'symetry B_R',dtmp3
-    write(lupri,*) 'symetry B_I',dtmp4
-    write(lupri,*) 'A and A*',dtmp5
-    write(lupri,*) 'B and B*',dtmp6
-  endif
-
-  ! remove redundant parameters (remove diagonal real parameters of unbared kappa)
-  do ij=1,ndimhc
-    kl = 1
-    do k=1,ni
-      do j=kl+1,ndimhc-k+1
-        htmp(ij,j-1) = htmp(ij,j)
-      enddo
-      kl = kl + ni - (k-1) - 1 ! diagonal
-    enddo
-  enddo
-
-  do ij=1,ndimhc
-    kl = 1
-    do k=1,ni
-      do j=kl+1,ndimhc-k+1
-        htmp(j-1,ij) = htmp(j,ij)
-      enddo
-      kl = kl + ni - (k-1) - 1 ! diagonal
-    enddo
-  enddo
-
-  ! copy result to hmat_r
-  hmat_r(1:ndimhr,1:ndimhr) = htmp(1:ndimhr,1:ndimhr)
-
-  htmp(:,:) = d0
+  hmat(:,:) = d0
+  totdiag = d0
+  totnond = d0
 
   !------------------------------------------------------------------------------!
   !                 Unbared-unbared contribution to the hessian                  !
@@ -2222,20 +1433,32 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp1= d4*pij1*pkl1
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl1
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 - d2 * ( pjj - dhalf*(pii + pll) ) * pil1
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl1
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp1 - d2 * ( pjj - dhalf*(pii + pll) ) * pil1
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
           enddo
           if(ij==kl)then
-            sumdiag = sumdiag + dabs( htmp(ij,kl) )
+            sumdiag = sumdiag + dabs( hmat(ij,kl) )
           else
-            sumnond = sumnond + dabs( htmp(ij,kl) )
+            sumnond = sumnond + dabs( hmat(ij,kl) )
           endif
         enddo
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
+    do j=1,ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^R + B^R)_uu elements (diag. vs. non-diag): ',sumdiag,sumnond
+  endif
+  totdiag = totdiag + sumdiag
+  totnond = totnond + sumnond
 
   ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
   !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
@@ -2259,12 +1482,12 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp2= -d4*pij2*pkl1
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pil2
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pil2
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
           enddo
-          sumnond = sumnond + d2*dabs( htmp(ij,kl) )
+          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         enddo
       enddo
     enddo
@@ -2284,14 +1507,25 @@ contains
           pij2 = pmat(i,j,2,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(kl,ij) = htmp(kl,ij) + pij2 * ( pii - pjj )
-          if(j==k) htmp(kl,ij) = htmp(kl,ij) - pij2 * ( pii - pjj )
+          if(i==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
+          if(j==k) hmat(kl,ij) = hmat(kl,ij) - pij2 * ( pii - pjj )
         enddo
-        sumnond = sumnond + d2*dabs( htmp(kl,ij) )
+        sumnond = sumnond + d2*dabs( hmat(kl,ij) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_uu'
+    do j=2*ni12-ni+1,3*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^I + B^I)_uu elements (non-diag): ',sumnond
+  endif
+  totnond = totnond + sumnond
 
   ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
   !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
@@ -2316,15 +1550,15 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp1= d4*pij2*pkl2
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl1
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pil1
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl1
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pil1
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
           enddo
           if(ij==kl)then
-            sumdiag = sumdiag + dabs( htmp(ij,kl) )
+            sumdiag = sumdiag + dabs( hmat(ij,kl) )
           else
-            sumnond = sumnond + dabs( htmp(ij,kl) )
+            sumnond = sumnond + dabs( hmat(ij,kl) )
           endif
         enddo
       enddo
@@ -2348,15 +1582,27 @@ contains
           pij1 = pmat(i,j,1,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
-          if(j==k) htmp(ij,kl) = htmp(ij,kl) - pij1 * ( pii - pjj )
+          if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
+          if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij1 * ( pii - pjj )
         enddo
-        htmp(kl,ij) = htmp(ij,kl)
-        sumnond = sumnond + d2*dabs( htmp(ij,kl) )
+        hmat(kl,ij) = hmat(ij,kl)
+        sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_uu'
+    do j=2*ni12-ni+1,3*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=2*ni12-ni+1,3*ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^R - B^R)_uu elements (diag. vs. non-diag): ',sumdiag,sumnond
+  endif
+  totdiag = totdiag + sumdiag
+  totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
   !                   Bared-unbared contribution to the hessian                  !
@@ -2383,12 +1629,12 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp1= d4*pij1*pkl1
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 - d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp1 - d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp1 - d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
           enddo
-          sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         enddo
       enddo
     enddo
@@ -2408,14 +1654,25 @@ contains
           pij1 = pmat(i,j,3,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(kl,ij) = htmp(kl,ij) - pij1 * ( pii - pjj )
-          if(j==k) htmp(kl,ij) = htmp(kl,ij) + pij1 * ( pii - pjj )
+          if(i==k) hmat(kl,ij) = hmat(kl,ij) - pij1 * ( pii - pjj )
+          if(j==k) hmat(kl,ij) = hmat(kl,ij) + pij1 * ( pii - pjj )
         enddo
-        sumnond = sumnond + d2*dabs( htmp(kl,ij) )
+        sumnond = sumnond + d2*dabs( hmat(kl,ij) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bu'
+    do j=ni12-ni+1,2*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^R + B^R)_bu elements (non-diag): ',sumnond
+  endif
+  totnond = totnond + sumnond
 
   ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
   !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
@@ -2439,12 +1696,12 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp2= -d4*pij2*pkl1
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp2 - d2 * ( pii - dhalf*(pjj + pll) ) * plj2
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp2 - d2 * ( pjj - dhalf*(pii + pll) ) * pli2
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp2 - d2 * ( pii - dhalf*(pjj + pll) ) * plj2
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp2 - d2 * ( pjj - dhalf*(pii + pll) ) * pli2
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
           enddo
-          sumnond = sumnond + d2*dabs( htmp(ij,kl) )
+          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         enddo
       enddo
     enddo
@@ -2464,14 +1721,25 @@ contains
           pij2 = pmat(i,j,4,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(kl,ij) = htmp(kl,ij) + pij2 * ( pii - pjj )
-          if(j==k) htmp(kl,ij) = htmp(kl,ij) - pij2 * ( pii - pjj )
+          if(i==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
+          if(j==k) hmat(kl,ij) = hmat(kl,ij) - pij2 * ( pii - pjj )
         enddo
-        sumnond = sumnond + d2*dabs( htmp(kl,ij) )
+        sumnond = sumnond + d2*dabs( hmat(kl,ij) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_bu'
+    do j=3*ni12-ni+1,4*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=1,ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^I + B^I)_bu elements (non-diag): ',sumnond
+  endif
+  totnond = totnond + sumnond
 
   ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
   !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
@@ -2495,12 +1763,12 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp1= d4*pij2*pkl2
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
           enddo
-          sumnond = sumnond + d2*dabs( htmp(ij,kl) )
+          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         enddo
       enddo
     enddo
@@ -2523,15 +1791,26 @@ contains
           pij1 = pmat(i,j,3,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
-          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+          if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
+          if(j==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
         enddo
-        htmp(kl+ni12,ij-ni12) = - htmp(ij,kl)
-        sumnond = sumnond + d4*dsqrt( htmp(ij,kl) )
+        hmat(kl+ni12,ij-ni12) = - hmat(ij,kl)
+        sumnond = sumnond + d4*dabs( hmat(ij,kl) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bu'
+    do j=3*ni12-ni+1,4*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=2*ni12-ni+1,3*ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^R - B^R)_bu elements (non-diag): ',sumnond
+  endif
+  totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
   !                   Bared-bared contribution to the hessian                    !
@@ -2560,15 +1839,15 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
           enddo
         if(ij==kl)then
-          sumdiag = sumdiag + dsqrt( htmp(ij,kl) )
+          sumdiag = sumdiag + dabs( hmat(ij,kl) )
         else
-          sumnond = sumnond + dsqrt( htmp(ij,kl) )
+          sumnond = sumnond + dabs( hmat(ij,kl) )
         endif
         enddo
       enddo
@@ -2592,15 +1871,27 @@ contains
           pij1 = pmat(i,j,1,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
-          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+          if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
+          if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij1 * ( pii - pjj )
         enddo
-        htmp(kl,ij) = htmp(ij,kl)
-        sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        hmat(kl,ij) = hmat(ij,kl)
+        sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
+    do j=ni12-ni+1,2*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=ni12-ni+1,2*ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^R + B^R)_bb elements (diag. vs. non-diag): ',sumdiag,sumnond
+  endif
+  totdiag = totdiag + sumdiag
+  totnond = totnond + sumnond
 
   ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
   !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
@@ -2625,12 +1916,12 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp2= d2*(pij1*pkl2 - pij2*pkl1)
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * plj2
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pli2
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * plj2
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pli2
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
           enddo
-        sumnond = sumnond + dsqrt( htmp(ij,kl) )
+        sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         enddo
       enddo
     enddo
@@ -2653,15 +1944,26 @@ contains
           pij2 = pmat(i,j,2,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij2 * ( pii - pjj )
-          if(j==k) htmp(ij,kl) = htmp(ij,kl) - pij2 * ( pii - pjj )
+          if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij2 * ( pii - pjj )
+          if(j==k) hmat(ij,kl) = hmat(ij,kl) + pij2 * ( pii - pjj )
         enddo
-        htmp(kl+2*ni12,ij-2*ni12) = - htmp(ij,kl)
-        sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        hmat(kl+2*ni12,ij-2*ni12) = - hmat(ij,kl)
+        sumnond = sumnond + d4*dabs( hmat(ij,kl) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_bb'
+    do j=3*ni12-ni+1,4*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=ni12-ni+1,2*ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^I + B^I)_bb elements (non-diag): ',sumnond
+  endif
+  totnond = totnond + sumnond
 
   ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
   !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
@@ -2687,15 +1989,15 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
  
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
           enddo
         if(ij==kl)then
-          sumdiag = sumdiag + dsqrt( htmp(ij,kl) )
+          sumdiag = sumdiag + dabs( hmat(ij,kl) )
         else
-          sumnond = sumnond + dsqrt( htmp(ij,kl) )
+          sumnond = sumnond + dabs( hmat(ij,kl) )
         endif
         enddo
       enddo
@@ -2719,15 +2021,27 @@ contains
           pij1 = pmat(i,j,1,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
  
-          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
-          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+          if(i==k) hmat(ij,kl) = hmat(ij,kl) + pij1 * ( pii - pjj )
+          if(j==k) hmat(ij,kl) = hmat(ij,kl) - pij1 * ( pii - pjj )
         enddo
-        htmp(kl,ij) = htmp(ij,kl)
-        sumnond = sumnond+d2*dsqrt( htmp(ij,kl) )
+        hmat(kl,ij) = hmat(ij,kl)
+        sumnond = sumnond+d2*dabs( hmat(ij,kl) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
+    do j=3*ni12-ni+1,4*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=3*ni12-ni+1,4*ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^R - B^R)_bb elements (diag. vs. non-diag): ',sumdiag,sumnond
+  endif
+  totdiag = totdiag + sumdiag
+  totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
   !                 Unbared-bared contribution to the hessian                    !
@@ -2754,12 +2068,12 @@ contains
             pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
             dtmp2= - d4*pij2*pkl1
 
-            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
-            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pik2
-            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pil2
-            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pjk2
+            if(i==k) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
+            if(j==l) hmat(ij,kl) = hmat(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pik2
+            if(j==k) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pil2
+            if(i==l) hmat(ij,kl) = hmat(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pjk2
           enddo
-          sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+          sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         enddo
       enddo
     enddo
@@ -2779,10 +2093,10 @@ contains
           pji2 = pmat(j,i,4,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pji2 * ( pii - pjj )
-          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pji2 * ( pii - pjj )
+          if(i==k) hmat(ij,kl) = hmat(ij,kl) + pji2 * ( pii - pjj )
+          if(j==k) hmat(ij,kl) = hmat(ij,kl) + pji2 * ( pii - pjj )
         enddo
-        sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        sumnond = sumnond + d2*dabs( hmat(ij,kl) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
@@ -2802,14 +2116,25 @@ contains
           pij2 = pmat(i,j,4,m)
           pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
 
-          if(i==k) htmp(kl,ij) = htmp(kl,ij) + pij2 * ( pii - pjj )
-          if(j==k) htmp(kl,ij) = htmp(kl,ij) + pij2 * ( pii - pjj )
+          if(i==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
+          if(j==k) hmat(kl,ij) = hmat(kl,ij) + pij2 * ( pii - pjj )
         enddo
-        sumnond = sumnond + d2*dsqrt( htmp(kl,ij) )
+        sumnond = sumnond + d2*dabs( hmat(kl,ij) )
         kl = kl + ni - (k-1)  ! diagonal
       enddo
     enddo
   enddo
+
+  if(loc%iprloc.ge.3)then
+    write(lupri,'(/a,2f10.5)') 'Print (A^I + B^I)_ub'
+    do j=2*ni12-ni+1,3*ni12-ni
+      write(lupri,'(i4,15f10.5)') j,(hmat(j,k),k=ni12-ni+1,2*ni12-ni)
+    enddo
+  endif
+  if(loc%iprloc.ge.1)then
+    write(lupri,'(a,2f10.5)') '(A^I + B^I)_ub elements (non-diag): ',sumnond
+  endif
+  totnond = totnond + sumnond
 
   !------------------------------------------------------------------------------!
   !                     Get the rest of the hessian matrix                       !
@@ -2817,45 +2142,23 @@ contains
   ! 2,1  -->  1,2
   do i=1*ni12-ni+1,2*ni12-ni
     do j=1,ni12-ni
-      htmp(j,i) = htmp(i,j)
+      hmat(j,i) = hmat(i,j)
     enddo
   enddo
 
   ! 43  -->  34
   do i=3*ni12-ni+1,4*ni12-ni
     do j=2*ni12-ni+1,3*ni12-ni
-      htmp(j,i) = htmp(i,j)
+      hmat(j,i) = hmat(i,j)
     enddo
   enddo
 
   ! 34,12  -->  12,34
   do i=2*ni12-ni+1,4*ni12-ni
     do j=1,2*ni12-ni
-      htmp(j,i) = htmp(i,j)
+      hmat(j,i) = hmat(i,j)
     enddo
   enddo
-
-! ! test
-! dtmp1 = d0; dtmp2 = d0
-! do i=1,4*ni12-ni
-!   do j=1,4*ni12-ni
-!     dtmp1 = dtmp1 + dabs( htmp(i,j) - hmat_r(i,j))
-!     if(dabs(htmp(i,j)-hmat_r(i,j)) > dtmp2)then
-!       i1 = i
-!       j1 = j
-!       dtmp2 = dabs(htmp(i,j)-hmat_r(i,j))
-!       dtmp3 = htmp(i,j)
-!       dtmp4 = hmat_r(i,j)
-!     endif
-!   enddo
-! enddo
-!
-! write(6,*) dtmp1,i1,j1
-! write(6,*) 'maxdiff htmp  ',dtmp3
-! write(6,*) 'maxdiff hmat_r',dtmp4
-! stop
-
-  call dealloc(htmp,id='htmp in get_hessian')
 
   call qexit('get_hessian')
 
