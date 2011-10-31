@@ -1385,8 +1385,8 @@ contains
   ! Internal variables
   real*8, parameter :: dhalf = 0.5d0
 
-  real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pil1, pli1, pkj1
-  real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pil2, pli2, pkj2
+  real*8 :: pij1, pji1, pkl1, pjl1, plj1, pki1, pik1, pjk1, pil1, pli1, pkj1
+  real*8 :: pij2, pji2, pkl2, pjl2, plj2, pki2, pik2, pjk2, pil2, pli2, pkj2
   real*8 :: pii, pjj, pkk, pll, sumdiag, sumnond, sumtmp
   real*8 :: dtmp1, dtmp2, dtmp3, dtmp4, dtmp5, dtmp6
 
@@ -2533,10 +2533,312 @@ contains
     enddo
   enddo
 
-  ! test
+  !------------------------------------------------------------------------------!
+  !                   Bared-bared contribution to the hessian                    !
+  !------------------------------------------------------------------------------!
+  ! A^R + B^R = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK*_ij dK*_kl }
+  !           = Real{ d^2 G / dK*_ij dK_kl } + Real{ d^2 G / dK_ij dK_kl }
+  !           = Real{ (35) }                 + Real{ (39) }
+  sumdiag = d0
+  sumnond = d0
+  ij = ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = ni12 - ni
+      do l=1,ni
+        do k=l,ni
+          kl = kl + 1
+          if(k==l) cycle
+          do m = 1,nucdep
+            pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
+            pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
+            pki1 = pmat(k,i,1,m); pkj1 = pmat(k,j,1,m)
+            pli1 = pmat(l,i,1,m); plj1 = pmat(l,j,1,m)
+            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
+            dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
+
+            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
+            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
+            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+          enddo
+        if(ij==kl)then
+          sumdiag = sumdiag + dsqrt( htmp(ij,kl) )
+        else
+          sumnond = sumnond + dsqrt( htmp(ij,kl) )
+        endif
+        enddo
+      enddo
+    enddo
+  enddo
+
+  ! A^R + B^R = Real{ d^2 G / dK*_ij dK_kk } + Real{ d^2 G / dK*_ij dK*_kk }
+  !           = Real{ d^2 G / dK*_ij dK_kk } + Real{ d^2 G / dK_ij dK_kk }
+  !           = Real{ (43) }                 + Real{ (47) }
+  ! A^R + B^R = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK*_kk dK*_ij }
+  !           = Real{ d^2 G / dK*_kk dK_ij } + Real{ d^2 G / dK_kk dK_ij }
+  !           = Real{ (43) }                 + Real{ (47) }
+  ij = ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = ni12 - ni + 1
+      do k=1,ni
+        do m = 1,nucdep
+          pij1 = pmat(i,j,1,m)
+          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+
+          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+        enddo
+        htmp(kl,ij) = htmp(ij,kl)
+        sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        kl = kl + ni - (k-1)  ! diagonal
+      enddo
+    enddo
+  enddo
+
+  ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
+  !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
+  !           = Imag{ (35) }                 - Imag{ (39) }
+  sumnond = d0
+  ij = 3*ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = ni12 - ni
+      do l=1,ni
+        do k=l,ni
+          kl = kl + 1
+          if(k==l) cycle
+          do m = 1,nucdep
+            pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
+            pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
+            pki2 = pmat(k,i,2,m); pkj2 = pmat(k,j,2,m)
+            pli2 = pmat(l,i,2,m); plj2 = pmat(l,j,2,m)
+            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
+            dtmp2= d2*(pij1*pkl2 - pij2*pkl1)
+
+            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * plj2
+            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki2
+            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pli2
+            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj2
+          enddo
+        sumnond = sumnond + dsqrt( htmp(ij,kl) )
+        enddo
+      enddo
+    enddo
+  enddo
+
+  ! A^I + B^I =   Imag{ d^2 G / dK*_ij dK_kk } + Imag{ d^2 G / dK*_ij dK*_kk }
+  !           =   Imag{ d^2 G / dK*_ij dK_kk } - Imag{ d^2 G / dK_ij dK_kk }
+  !           =   Imag{ (43) }                 - Imag{ (47) }
+  ! A^I + B^I =   Imag{ d^2 G / dK*_kk dK_ij } + Imag{ d^2 G / dK*_kk dK*_ij }
+  !           =   Imag{ d^2 G / dK*_kk dK_ij } - Imag{ d^2 G / dK_kk dK_ij }
+  !           = - Imag{ (43) }                 - Imag{ (47) }
+  ij = 3*ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = ni12 - ni + 1
+      do k=1,ni
+        do m = 1,nucdep
+          pij2 = pmat(i,j,2,m)
+          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+
+          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij2 * ( pii - pjj )
+          if(j==k) htmp(ij,kl) = htmp(ij,kl) - pij2 * ( pii - pjj )
+        enddo
+        htmp(kl+2*ni12,ij-2*ni12) = - htmp(ij,kl)
+        sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        kl = kl + ni - (k-1)  ! diagonal
+      enddo
+    enddo
+  enddo
+
+  ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
+  !           = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK_ij dK_kl }
+  !           = Real{ (35) }                 - Real{ (39) }
+  sumdiag = d0
+  sumnond = d0
+  ij = 3*ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = 3*ni12 - ni
+      do l=1,ni
+        do k=l,ni
+          kl = kl + 1
+          if(k==l) cycle
+          do m = 1,nucdep
+            pij1 = pmat(i,j,3,m); pij2 = pmat(i,j,4,m)
+            pkl1 = pmat(k,l,3,m); pkl2 = pmat(k,l,4,m)
+            pki1 = pmat(k,i,1,m); pkj1 = pmat(k,j,1,m)
+            pli1 = pmat(l,i,1,m); plj1 = pmat(l,j,1,m)
+            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
+            dtmp1= d2*(pij1*pkl1 + pij2*pkl2)
+ 
+            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pii - dhalf*(pjj + pll) ) * plj1
+            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp1 + d2 * ( pjj - dhalf*(pii + pkk) ) * pki1
+            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pjj - dhalf*(pii + pll) ) * pli1
+            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp1 + d2 * ( pii - dhalf*(pjj + pkk) ) * pkj1
+          enddo
+        if(ij==kl)then
+          sumdiag = sumdiag + dsqrt( htmp(ij,kl) )
+        else
+          sumnond = sumnond + dsqrt( htmp(ij,kl) )
+        endif
+        enddo
+      enddo
+    enddo
+  enddo
+ 
+  ! A^R - B^R = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK*_ij dK*_kk }
+  !           = Real{ d^2 G / dK*_ij dK_kk } - Real{ d^2 G / dK_ij dK_kk }
+  !           = Real{ (43) }                 - Real{ (47) }
+  ! A^R - B^R = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK*_kk dK*_ij }
+  !           = Real{ d^2 G / dK*_kk dK_ij } - Real{ d^2 G / dK_kk dK_ij }
+  !           = Real{ (43) }                 - Real{ (47) }
+  ij = 3*ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = 3*ni12 - ni + 1
+      do k=1,ni
+        do m = 1,nucdep
+          pij1 = pmat(i,j,1,m)
+          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+ 
+          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pij1 * ( pii - pjj )
+        enddo
+        htmp(kl,ij) = htmp(ij,kl)
+        sumnond = sumnond+d2*dsqrt( htmp(ij,kl) )
+        kl = kl + ni - (k-1)  ! diagonal
+      enddo
+    enddo
+  enddo
+
+  !------------------------------------------------------------------------------!
+  !                 Unbared-bared contribution to the hessian                    !
+  !------------------------------------------------------------------------------!
+  ! A^I + B^I = Imag{ d^2 G / dK*_ij dK_kl } + Imag{ d^2 G / dK*_ij dK*_kl }
+  !           = Imag{ d^2 G / dK*_ij dK_kl } - Imag{ d^2 G / dK_ij dK_kl }
+  !           = Imag{ (33) }                 - Imag{ (37) }
+  sumnond = d0
+  ij = 2*ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = ni12 - ni
+      do l=1,ni
+        do k=l,ni
+          kl = kl + 1
+          if(k==l) cycle
+          do m = 1,nucdep
+            pij2 = pmat(i,j,2,m); pkl1 = pmat(k,l,3,m)
+            pik2 = pmat(i,k,4,m); pjk2 = pmat(j,k,4,m)
+            pil2 = pmat(i,l,4,m); pjl2 = pmat(j,l,4,m)
+            pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+            pkk  = pmat(k,k,1,m); pll  = pmat(l,l,1,m)
+            dtmp2= - d4*pij2*pkl1
+
+            if(i==k) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pii - dhalf*(pjj + pll) ) * pjl2
+            if(j==l) htmp(ij,kl) = htmp(ij,kl) + dtmp2 + d2 * ( pjj - dhalf*(pii + pkk) ) * pik2
+            if(j==k) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pjj - dhalf*(pii + pll) ) * pil2
+            if(i==l) htmp(ij,kl) = htmp(ij,kl) - dtmp2 + d2 * ( pii - dhalf*(pjj + pkk) ) * pjk2
+          enddo
+          sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        enddo
+      enddo
+    enddo
+  enddo
+
+  ! A^I + B^I =   Imag{ d^2 G / dK*_ij dK_kk } + Imag{ d^2 G / dK*_ij dK*_kk }
+  !           =   Imag{ d^2 G / dK*_ij dK_kk } - Imag{ d^2 G / dK_ij dK_kk }
+  !           =   Imag{ (41) }                 - Imag{ (45) }
+  ij = 2*ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = ni12 - ni + 1
+      do k=1,ni
+        do m = 1,nucdep
+          pji2 = pmat(j,i,4,m)
+          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+
+          if(i==k) htmp(ij,kl) = htmp(ij,kl) + pji2 * ( pii - pjj )
+          if(j==k) htmp(ij,kl) = htmp(ij,kl) + pji2 * ( pii - pjj )
+        enddo
+        sumnond = sumnond + d2*dsqrt( htmp(ij,kl) )
+        kl = kl + ni - (k-1)  ! diagonal
+      enddo
+    enddo
+  enddo
+
+  ! A^I + B^I =   Imag{ d^2 G / dK*_kk dK_ij } + Imag{ d^2 G / dK*_kk dK*_ij }
+  !           =   Imag{ d^2 G / dK*_kk dK_ij } - Imag{ d^2 G / dK_kk dK_ij }
+  !           = - Imag{ (42) }                 - Imag{ (46) }
+  ij = ni12 - ni
+  do j=1,ni
+    do i=j,ni
+      ij = ij + 1
+      if(i==j) cycle
+      kl = 2*ni12 - ni + 1
+      do k=1,ni
+        do m = 1,nucdep
+          pij2 = pmat(i,j,4,m)
+          pii  = pmat(i,i,1,m); pjj  = pmat(j,j,1,m)
+
+          if(i==k) htmp(kl,ij) = htmp(kl,ij) + pij2 * ( pii - pjj )
+          if(j==k) htmp(kl,ij) = htmp(kl,ij) + pij2 * ( pii - pjj )
+        enddo
+        sumnond = sumnond + d2*dsqrt( htmp(kl,ij) )
+        kl = kl + ni - (k-1)  ! diagonal
+      enddo
+    enddo
+  enddo
+
+  !------------------------------------------------------------------------------!
+  !                     Get the rest of the hessian matrix                       !
+  !------------------------------------------------------------------------------!
+  ! 2,1  -->  1,2
+  do i=1*ni12-ni+1,2*ni12-ni
+    do j=1,ni12-ni
+      htmp(j,i) = htmp(i,j)
+    enddo
+  enddo
+
+  ! 43  -->  34
+  do i=3*ni12-ni+1,4*ni12-ni
+    do j=2*ni12-ni+1,3*ni12-ni
+      htmp(j,i) = htmp(i,j)
+    enddo
+  enddo
+
+  ! 34,12  -->  12,34
+  do i=2*ni12-ni+1,4*ni12-ni
+    do j=1,2*ni12-ni
+      htmp(j,i) = htmp(i,j)
+    enddo
+  enddo
+
+! ! test
 ! dtmp1 = d0; dtmp2 = d0
-! do i=3*ni12-ni+1,4*ni12-ni
-!   do j=2*ni12-ni+1,3*ni12-ni
+! do i=1,4*ni12-ni
+!   do j=1,4*ni12-ni
 !     dtmp1 = dtmp1 + dabs( htmp(i,j) - hmat_r(i,j))
 !     if(dabs(htmp(i,j)-hmat_r(i,j)) > dtmp2)then
 !       i1 = i
