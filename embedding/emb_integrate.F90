@@ -565,15 +565,15 @@ endif
                w(1) = rw(ipoint)
 
                fde_active_n(ipoint)    = n_0(1)
-               fde_active_gn(ipoint,1) = gn_0_pointwise(1)
-               fde_active_gn(ipoint,2) = gn_0_pointwise(2)
-               fde_active_gn(ipoint,3) = gn_0_pointwise(3)
+               fde_active_gn(1,ipoint) = gn_0_pointwise(1)
+               fde_active_gn(2,ipoint) = gn_0_pointwise(2)
+               fde_active_gn(3,ipoint) = gn_0_pointwise(3)
 
                if ( fde_frozen_n(ipoint) > (dft_cfg_tinydens/10000D0) ) then
                   n_0_t(1) = fde_active_n(ipoint)    + fde_frozen_n(ipoint)
-                  z0tt(1)  = fde_active_gn(ipoint,1) + fde_frozen_gn(ipoint,1)
-                  z0tt(2)  = fde_active_gn(ipoint,2) + fde_frozen_gn(ipoint,2)
-                  z0tt(3)  = fde_active_gn(ipoint,3) + fde_frozen_gn(ipoint,3)
+                  z0tt(1)  = fde_active_gn(1,ipoint) + fde_frozen_gn(1,ipoint)
+                  z0tt(2)  = fde_active_gn(2,ipoint) + fde_frozen_gn(2,ipoint)
+                  z0tt(3)  = fde_active_gn(3,ipoint) + fde_frozen_gn(3,ipoint)
 
                   gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
