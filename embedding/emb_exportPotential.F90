@@ -112,7 +112,7 @@ module FDE_exportPotentials
 !not handling hessian now
 !        character(len=132) :: csizehesrho1
          type(xml_tag),pointer :: tag
-         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:)
+         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:), hes(:,:)
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
@@ -158,8 +158,6 @@ module FDE_exportPotentials
 
          write (csizept1,*)     size(gp,1) 
          write (csizept2,*)     size(gp,2)
-! not handling hessian now
-!        write (csizehesrho1,*) size(fde_active_hn,1)
          write (csizegrdrho1,*) size(gnp,1)
 
          csizept1     = adjustl(csizept1)
@@ -193,14 +191,18 @@ module FDE_exportPotentials
              endif
 
 !
-! while it's possible to do it, we don't export the hessian at the
-! moment since there's no use for it...
+! export a dummy hessian
 !
-!            tag=>xml_tag_open(tag,'dataset','hessian')
-!              call set_attribute(tag,'size',  csizept2)
-!              call set_attribute(tag,'width', csizehesrho1)    
-!              call xml_add_data(tag,hes_rho)
-!            tag=>xml_tag_close(tag)
+            call allocp(hes, 6,int(SIZE(gp,2)))
+            hes  = 0.0d0
+
+             tag=>xml_tag_open(tag,'dataset','hessian')
+               call set_attribute(tag,'size',  csizept2)
+               call set_attribute(tag,'width', '6')    
+               call xml_add_data(tag,hes)
+             tag=>xml_tag_close(tag)
+
+             call deallocp(hes)
 
              if (etmp%ex_coulomb) then
                 tag=>xml_tag_open(tag,'dataset','vc')
