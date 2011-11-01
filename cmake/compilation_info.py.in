@@ -50,4 +50,4 @@ output += print_line('Configuration time', datetime.datetime.now())
 
 output += 'end subroutine'
 
-print output
+print(output)
