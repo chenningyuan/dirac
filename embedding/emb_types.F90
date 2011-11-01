@@ -59,7 +59,7 @@ module fde_types
          gf%npoints = size
          gf%nspin   = 1
          allocate(gf%n(size))
-         allocate(gf%gn(size,3))
+         allocate(gf%gn(3,size))
          allocate(gf%elpot(size))
          
          gf%n  = 0.0d0
