@@ -11,7 +11,7 @@ import subprocess
 from optparse import OptionParser, OptionGroup
 
 if sys.version < '2.4':
-    print('setup requires python version >= 2.4')
+    print('requires python version >= 2.4')
     sys.exit(1)
 
 root_directory = os.path.realpath(__file__)[:-5]

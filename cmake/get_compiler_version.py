@@ -3,8 +3,12 @@
 import sys
 import subprocess
 
+if sys.version < '2.4':
+    print('requires python version >= 2.4')
+    sys.exit(1)
+
 if len(sys.argv) == 1:
-   sys.exit('call script with argument')
+    sys.exit('call script with argument')
 
 compiler_name = sys.argv[1].split('/')[-1]
 
@@ -30,20 +34,16 @@ command_d['pgCC']     = 'pgCC     -V'
 command_d['xlCC']     = 'xlCC     -qversion'
 
 version = 'unknown'
-if sys.version >= '2.4':
-    if compiler_name in command_d:
-        p = subprocess.Popen(command_d[compiler_name], shell=True, \
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out = p.communicate()[0]
-        if out != '':
-            # use only first line, not the copyright stuff
-            version = out.split('\n')[0]
-    else:
-        print  >> sys.stderr,'compiler name ',compiler_name,' not found in the list...'
-        sys.exit(2)
+if compiler_name in command_d:
+    p = subprocess.Popen(command_d[compiler_name], shell=True, \
+                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out = p.communicate()[0]
+    if out != '':
+        # use only first line, not the copyright stuff
+        version = out.split('\n')[0]
 else:
-    print  >> sys.stderr,'can not run this python script, needs python version >= 2.4'
-    sys.exit(1)
+    print  >> sys.stderr,'compiler name ',compiler_name,' not found in the list...'
+    sys.exit(2)
 
 # finally flush the stdout what is wanted variable
 print version
