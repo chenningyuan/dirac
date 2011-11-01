@@ -136,7 +136,7 @@ contains
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
   logical      :: tobe, full, rejected, Iminmax, diagconv
 
-  integer :: ifrp, ndimh, ndimhr, idum, itr, lupri, nish, norb, nucdep, maxref
+  integer :: ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
 
   real*8  :: dinvmo, dinvmg, dinvmq, dnrmk, dnrmg, diffg, diffq, diffa
@@ -264,8 +264,10 @@ contains
   ! SCF cycle
   dinvmq = d0
   itr    = 0
+  ist    = 0
   do
 
+    ist = ist + 1
     ! get new kappa
     if(.not.rejected)then
       call get_hessian(pmat,hmat,totdiag,totnond)
@@ -348,11 +350,14 @@ contains
 
   write(lupri,'(//11x,a)')      '************************************************************'
   if(Iminmax)then
-    write(lupri,'(11x,a,i5,a)') '>>>>       MAXIMUM reached after',itr,'  iterations       <<<<'
+    write(lupri,'(11x,a,i4,a,i4,a)') &
+         '>>>> MAXIMUM reached after',itr,' iterations and',ist,' steps <<<<'
   elseif((full.and.(diffa < loc%thfull)).or.(.not.full.and.(diffa < loc%thdiag)))then
-    write(lupri,'(11x,a,i5,a)') '>>>>          Convergence in',itr,'  iterations           <<<<'
+    write(lupri,'(11x,a,i4,a,i4,a)') &
+         '>>>>    Convergence in',itr,' iterations and',ist,' steps     <<<<'
   else
-    write(lupri,'(11x,a,i5,a)') '>>>>       No convergence after',itr,'  iterations        <<<<'
+    write(lupri,'(11x,a,i4,a,i4,a)') &
+         '>>>> No convergence after',itr,' iterations and',ist,' steps  <<<<'
   endif
   write(lupri,'(11x,a,f21.15,a)')'>>>> Inverse mean delocalization =',dinvmo,' <<<<'
   write(lupri,'(11x,a//)')      '************************************************************'
