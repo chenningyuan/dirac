@@ -2573,18 +2573,28 @@ contains
     if(R > d3q) cond = 'r  R>3'
   else
     if(dnrmk > tradius)then
-      cond = '   k>T'
+      if(diffq > d0)then
+        cond = 'KQ    '
+        if(R < d0 ) cond = 'TQ R<0'
+        if(R < d1q) cond = 'TQ R<1'
+        if(R > d5q) cond = 'TQ R>5'
+      else
+        cond = 'Kq    '
+        if(R > d0 ) cond = 'Tq R>0'
+        if((R < d1q).or.(R > d1+d3q)) cond = 'Tq R>7'
+        if((R > d3q).and.(R < d5q))   cond = 'Tq R<5'
+      endif
     else
       if(diffq > d0)then
-        cond = 'qP q>0 '
-        if(R < d0 ) cond = 'qP R<0'
-        if(R < d1q) cond = 'qP R<1'
-        if(R > d5q) cond = 'qP R>5'
+        cond = 'tQ q>0 '
+        if(R < d0 ) cond = 'tQ R<0'
+        if(R < d1q) cond = 'tQ R<1'
+        if(R > d5q) cond = 'tQ R>5'
       else 
-        cond = 'qN    '
-        if(R > d0 ) cond = 'qN R>0'
-        if((R < d1q).or.(R > d1+d3q)) cond = 'qN R>7'
-        if((R > d3q).and.(R < d5q))   cond = 'qN R<5'
+        cond = 'tq    '
+        if(R > d0 ) cond = 'tq R>0'
+        if((R < d1q).or.(R > d1+d3q)) cond = 'tq R>7'
+        if((R > d3q).and.(R < d5q))   cond = 'tq R<5'
       endif
     endif
   endif
@@ -2601,8 +2611,17 @@ contains
     if(R > d3q) tradius  = d2 * tradius
   else
     if(dnrmk > tradius)then
-!     if(diffg < d0) rejected = .true.
-      rejected = .true.
+      if(diffq > d0)then
+        tradius = dnrmk
+        if(R < d0 ) rejected = .true.
+        if(R < d1q) tradius  = d1q*tradius
+        if(R > d5q) tradius  = d2*tradius
+      else 
+        if(R > d0 ) rejected = .true.
+        tradius = dnrmk
+        if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
+        if((R > d3q).and.(R < d5q))   tradius = d2*tradius
+      endif
     else
       if(diffq > d0)then
         if(full.and.(R < d1q)) tradius = dnrmk
