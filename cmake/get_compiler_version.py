@@ -3,10 +3,6 @@
 import sys
 import subprocess
 
-if sys.version < '2.4':
-    print('requires python version >= 2.4')
-    sys.exit(1)
-
 if len(sys.argv) == 1:
     sys.exit('call script with argument')
 
@@ -34,13 +30,14 @@ command_d['pgCC']     = 'pgCC     -V'
 command_d['xlCC']     = 'xlCC     -qversion'
 
 version = 'unknown'
-if compiler_name in command_d:
-    p = subprocess.Popen(command_d[compiler_name], shell=True, \
-                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out = p.communicate()[0]
-    if out != '':
-        # use only first line, not the copyright stuff
-        version = out.split('\n')[0]
+if sys.version >= '2.4':
+    if compiler_name in command_d:
+        p = subprocess.Popen(command_d[compiler_name], shell=True, \
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = p.communicate()[0]
+        if out != '':
+            # use only first line, not the copyright stuff
+            version = out.split('\n')[0]
 
 # finally flush the stdout what is wanted variable
 print(version)
