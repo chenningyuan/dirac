@@ -41,9 +41,6 @@ if compiler_name in command_d:
     if out != '':
         # use only first line, not the copyright stuff
         version = out.split('\n')[0]
-else:
-    print  >> sys.stderr,'compiler name ',compiler_name,' not found in the list...'
-    sys.exit(2)
 
 # finally flush the stdout what is wanted variable
-print version
+print(version)
