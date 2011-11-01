@@ -134,7 +134,7 @@ contains
   ! Internal variables
   character*12 :: sectid, cputid, walltid
   character    :: daytid*24, hessian*4 = 'DIAG', chstart*23
-  logical      :: tobe, full, rejected, Iminmax, diagconv
+  logical      :: tobe, full, rejected, Iminmax, diagconv, trdef, flat
 
   integer :: ifrp, ndimh, ndimhr, idum, itr, ist, lupri, nish, norb, nucdep, maxref
   integer :: nfbas(0:2), ipqtoq(4,0:7), nep, nem, nez
@@ -172,6 +172,8 @@ contains
   chstart = 'START ITERATION NO.    '
 
   tradius = 10.0d0
+  trdef   = .true.
+  flat    = .false.
 
   if(loc%iprloc.ge.4)then
     write(lupri,*) 'lupri =',lupri
@@ -300,7 +302,7 @@ contains
     ! Update Trust-radius
     diffg = dinvmg - dinvmo
     diffq = dinvmq
-    call updateT(dnrmk,diffg,diffq,tradius,rejected,full,itr)
+    call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
 
     if(.not.rejected)then
       itr = itr + 1
@@ -345,6 +347,8 @@ contains
       ! Exit conditions
 
     endif
+
+    if(ist > 2*loc%itrloc)exit
 
   enddo
 
@@ -2537,7 +2541,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,full,itr)
+  subroutine updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
   !******************************************************************************!
   !                                                                              !
   !                           Update trust radius                                !
@@ -2546,11 +2550,11 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in   ) :: itr
+  integer, intent(in   ) :: itr, nep
   real*8,  intent(in   ) :: dnrmk, diffg, diffq
   real*8,  intent(inout) :: tradius
   logical, intent(in   ) :: full
-  logical, intent(inout) :: rejected
+  logical, intent(inout) :: rejected, trdef, flat
 
   ! Internal variables
   character*6 :: cond
@@ -2574,19 +2578,19 @@ contains
   else
     if(dnrmk > tradius)then
       if(diffq > d0)then
-        cond = 'KQ    '
+        cond = 'TQ    '
         if(R < d0 ) cond = 'TQ R<0'
         if(R < d1q) cond = 'TQ R<1'
         if(R > d5q) cond = 'TQ R>5'
       else
-        cond = 'Kq    '
+        cond = 'Tq    '
         if(R > d0 ) cond = 'Tq R>0'
         if((R < d1q).or.(R > d1+d3q)) cond = 'Tq R>7'
         if((R > d3q).and.(R < d5q))   cond = 'Tq R<5'
       endif
     else
       if(diffq > d0)then
-        cond = 'tQ q>0 '
+        cond = 'tQ     '
         if(R < d0 ) cond = 'tQ R<0'
         if(R < d1q) cond = 'tQ R<1'
         if(R > d5q) cond = 'tQ R>5'
@@ -2597,6 +2601,9 @@ contains
         if((R > d3q).and.(R < d5q))   cond = 'tq R<5'
       endif
     endif
+  endif
+  if( (dabs(diffg)<tresh).and.(dabs(diffq)<tresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
+    cond(3:3) = '!'
   endif
 
   if(rejected)then
@@ -2617,25 +2624,39 @@ contains
         if(R < d1q) tradius  = d1q*tradius
         if(R > d5q) tradius  = d2*tradius
       else 
-        if(R > d0 ) rejected = .true.
         tradius = dnrmk
+        if(R > d0 ) rejected = .true.
         if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
         if((R > d3q).and.(R < d5q))   tradius = d2*tradius
       endif
     else
       if(diffq > d0)then
-        if(full.and.(R < d1q)) tradius = dnrmk
+        tradius = tradius_old
+        if(trdef) tradius = dnrmk
         if(R < d0 ) rejected = .true.
-        if(R < d1q) tradius  = d1q * tradius
+        if(R < d1q) tradius  = d1q * dnrmk
         if(R > d5q) tradius  = max(d2*dnrmk,tradius_old)
       else 
+        tradius = tradius_old
+        if(trdef) tradius = dnrmk
         if(R > d0 ) rejected = .true.
-        if(full) tradius = dnrmk
-        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * tradius
+        if((R < d1q).or.(R > d1+d3q)) tradius = d1q * dnrmk
         if((R > d3q).and.(R < d5q))   tradius = max(d2*dnrmk,tradius_old)
       endif
     endif
   endif
+
+  if( (dabs(diffg)<tresh).and.(dabs(diffq)<tresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
+    rejected = .true.
+    tradius  = tradius_old
+    if(flat) tradius = 10.0d0*tradius
+    flat     = .true.
+  else
+    flat     = .false.
+  endif
+
+  if(full.and.(nep==0)) rejected = .false.
+  if(tradius /= tradius_old) trdef = .false.
 
   write(lupri,'(/a,2x,a4,2x, 2x,a,4x, 2x,a,3x, 2x,a,2x, 2x,a,2x, 1x,a, 4x,a, 5x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
