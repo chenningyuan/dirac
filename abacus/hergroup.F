@@ -273,6 +273,7 @@ c     export it to ARGOS
 c     ==================
 #ifdef MOD_ECP
       ndptag = ndptags(IGROUP)
+      IGRPAG = IGROUP
 #endif
 C
 C     Generate character table
