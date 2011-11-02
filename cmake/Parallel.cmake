@@ -19,7 +19,7 @@ if(ENABLE_MPI)
             if(NOT MPI_COMPILER_MATCHES)
                 message(
                     FATAL_ERROR
-                    "ERROR: MPI incompatible - mpi.mod compiled with different compiler"
+                    "ERROR: MPI incompatible - mpi.mod compiled with different compiler (consult the manual; if you know what you are doing you can disable this check using ./setup --nochecks)"
                     )
             endif()
 
@@ -37,12 +37,12 @@ if(ENABLE_MPI)
                 if(ENABLE_64BIT_INTEGERS)
                     message(
                         FATAL_ERROR
-                        "ERROR: You want to compile DIRAC with 64bit integers but your MPI is built with 32bit integers"
+                        "ERROR: You want to compile DIRAC with 64bit integers but your MPI is built with 32bit integers (consult the manual; if you know what you are doing you can disable this check using ./setup --nochecks)"
                         )
                 else()
                     message(
                         FATAL_ERROR
-                        "ERROR: You want to compile DIRAC with 32bit integers but your MPI is built with 64bit integers"
+                        "ERROR: You want to compile DIRAC with 32bit integers but your MPI is built with 64bit integers (consult the manual; if you know what you are doing you can disable this check using ./setup --nochecks)"
                         )
                 endif()
             endif()
