@@ -6,6 +6,23 @@ if(ENABLE_MPI)
         include_directories(${MPI_INCLUDE_PATH})
 
         if(ENABLE_SANITY_CHECKS)
+            # test whether MPI module is compatible with compiler
+            exec_program(
+                ${cat_program}
+                ARGS ${CMAKE_SOURCE_DIR}/cmake/test-MPI-compiler-compatibility.F90
+                OUTPUT_VARIABLE _source
+                )
+            check_fortran_source_compiles(
+                ${_source}
+                MPI_COMPILER_MATCHES
+                )
+            if(NOT MPI_COMPILER_MATCHES)
+                message(
+                    FATAL_ERROR
+                    "ERROR: MPI incompatible - mpi.mod compiled with different compiler"
+                    )
+            endif()
+
             # test whether MPI integer type matches
             exec_program(
                 ${cat_program}
@@ -16,18 +33,17 @@ if(ENABLE_MPI)
                 ${_source}
                 MPI_ITYPE_MATCHES
                 )
-            if(MPI_ITYPE_MATCHES)
-            else()
+            if(NOT MPI_ITYPE_MATCHES)
                 if(ENABLE_64BIT_INTEGERS)
-                   message(
-                       FATAL_ERROR
-                       "ERROR: You want to compile DIRAC with 64bit integers but your MPI is built with 32bit integers"
-                       )
+                    message(
+                        FATAL_ERROR
+                        "ERROR: You want to compile DIRAC with 64bit integers but your MPI is built with 32bit integers"
+                        )
                 else()
-                   message(
-                       FATAL_ERROR
-                       "ERROR: You want to compile DIRAC with 32bit integers but your MPI is built with 64bit integers"
-                       )
+                    message(
+                        FATAL_ERROR
+                        "ERROR: You want to compile DIRAC with 32bit integers but your MPI is built with 64bit integers"
+                        )
                 endif()
             endif()
         endif()
