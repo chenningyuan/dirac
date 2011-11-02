@@ -21,7 +21,7 @@
 
 module moltra_labeling
 
-  integer, parameter, private ::  MAX_KRAMERS_PAIRS = 800
+  integer, parameter, private ::  MAX_KRAMERS_PAIRS = 3200
 
   save
 
