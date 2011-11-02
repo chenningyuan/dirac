@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1822,11 +1822,11 @@ C
        
       do i = 1, IXSYM
         if(i.lt.10)then
-          write(XSYMFLAB(I),'(i1,a2)'),i,'  '
+          write(XSYMFLAB(I),'(i1,a2)') i,'  '
         else if(i.lt.100)then
-          write(XSYMFLAB(I),'(i2,a1)'),i,' '
+          write(XSYMFLAB(I),'(i2,a1)') i,' '
         else
-          write(XSYMFLAB(I),'(i3)'),i
+          write(XSYMFLAB(I),'(i3)')i
         end if
       end do
       END

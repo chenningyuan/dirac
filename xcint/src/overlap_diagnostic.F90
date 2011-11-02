@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,6 +21,7 @@
 
 module overlap_diagnostic
 
+#ifdef MOD_UNRELEASED
 !  MO overlap diagnostic according to Peach, Benfield, Helgaker, and Tozer:
 !  M. J. G. Peach, P. Benfield, T. U. Helgaker, and D. J. Tozer
 !  J. Chem. Phys. 128, 044118 (2008)
@@ -393,4 +394,5 @@ contains
 
    end subroutine
 
+#endif /* #ifdef MOD_UNRELEASED */
 end module

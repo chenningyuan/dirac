@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1289,7 +1289,7 @@ C
 C        Get density matrices (normed to one)
 C
          CALL DENMAT(DMAT,CMO,IPRSCF)
-#ifdef MOD_LOG
+#ifdef MOD_MATLAB_LOG
          call matexport_text('% In SCFCYC1')
          call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ)
@@ -1783,12 +1783,6 @@ CMI      ... print out matrixes ...
                END DO
    30          CONTINUE
             ENDIF
-            IF (dirac_cfg_dft_calculation) then
-               xc_energy = get_xc_energy()
-               WRITE(LUPRI,'(6X,A,'//FMT//')')
-     &         '* DFT xc energy              :  ',
-     &         xc_energy
-            end IF
          END IF
       ENDIF
 c     Check if this is the lowest energy so far, in that case

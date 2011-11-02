@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1016,7 +1016,7 @@ C     --------------
 C
       MAXCIT      =    4
       MXCIV       =    0
-      IOPTST      = 1531
+      IOPTST      = 1563
       KTRLVL      =    3
       IKRMCCNO    =  - 3
       IANACI      =    0

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -6877,7 +6877,7 @@ C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
                   IF (N .EQ. 1) THEN
                      DO 410 M = 1, NNUC
                         IPRIMD = IPRIMD + 1
-                           WRITE (LUTMP2,'(F20.10)') PRIEXP(IPSTRT-1+M)
+                           WRITE (LUTMP2,'(F24.11)') PRIEXP(IPSTRT-1+M)
 C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
  410                 CONTINUE
                   END IF

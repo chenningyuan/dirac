@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -264,15 +264,13 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
+#ifdef MOD_UNRELEASED
       if (dirac_cfg_fde) then
 #ifdef MOD_XML
-#ifdef MOD_UNRELEASED
          call fde_export_write_data_to_file(wf)
 #endif
-#else
-         call quit("FDE density export unsupported in this version.")
-#endif
       END IF
+#endif
 
 #ifdef MOD_OPENRSP
       if (dirac_cfg_openrsp) then
@@ -4093,9 +4091,6 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(A)') ' NMR shieldings:'
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE (LUPRI,'(A,F9.4,A)')
-     &   ' Shieldings printed for atoms with '//
-     &   'abundance greater than', ABUND,' %'
 C
 C     A operators
 C     ===========

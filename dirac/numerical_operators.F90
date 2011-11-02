@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -194,7 +194,6 @@ module numoper_integrals
 
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
-         use fde_io
          use interface_ao_specific
          use ao_eval
 
@@ -207,13 +206,21 @@ module numoper_integrals
          real(kind=8), allocatable :: ao(:), buffer(:)
          real(kind=8), pointer     :: grid(:,:), operator(:)
          real(kind=8) :: wt_oper
-         integer :: irrep, irrep1, irrep2, k
+         integer :: irrep, irrep1, irrep2, k, i
          integer, allocatable :: offt_bu(:)
 
-         if (.not.numoper_cb_initialized) call NumOper_CB_init() 
+         if (.not.numoper_cb_initialized) call NumOper_CB_init()
 
-         call read_grid(from_file,grid,operator)
-         npoint = size(grid,2)
+
+         rewind(from_file)
+         read (from_file,*) npoint
+
+         call allocp(grid,4,npoint)
+         call allocp(operator,npoint)
+
+         do i = 1, npoint
+            read(from_file,*) grid(:,i),operator(i)
+         enddo
 
          call interface_ao_write()
          call ao_eval_init(0, 0, .false.)

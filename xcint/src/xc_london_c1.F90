@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,6 +21,7 @@
 
 module xc_london_c1
 
+#ifdef MOD_UNRELEASED
 
 ! radovan: this is the "equation on paper approach" to LAO XC
 !
@@ -346,4 +347,5 @@ contains
 
    end subroutine
 
+#endif /* #ifdef MOD_UNRELEASED */
 end module
