@@ -14,9 +14,7 @@
       USE RECP_OUTPUT
       USE RECP_WRITE
       implicit logical(a-z)
-#include "argos_mxvalue.h"
-#include "argos_files.h"
-#include "argos_error.h"
+#include "inc_mxvalue.h"
 #include "inc_print.h"
       INTEGER    INT_AREP,N1MAX,L1REC
       real*8         tol
@@ -169,7 +167,7 @@ c       # computed together.
       ENDIF
 
       if(ncc.gt.mccu) then
-        call bummer('change mccup (one place) to ',ncc,faterr)
+        call bummer('change mccup (one place) to ',ncc,2)
       endif
 
 !     --------------------------------------
@@ -271,11 +269,9 @@ c       # computed together.
 520       continue
         enddo
       endif
- 
 !     # put integrals and labels into the intermediate storage arrays.
       CALL RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,
      &        nopir,ilxyz,iapt,mpru,ipr,N_INTEGRAL,IPT_ONE_H2,esf)
-
 !     Deallocate IPT_ONE_H2
       CALL RECP_IPTD_ONEINT
 696   continue

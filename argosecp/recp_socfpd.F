@@ -15,9 +15,7 @@
       integer    ilfact
       parameter( ilfact=1024 )
 
-#include "argos_mxvalue.h"
-#include "argos_files.h"
-#include "argos_error.h"
+#include "inc_mxvalue.h"
 #include "inc_print.h"
 
       integer
@@ -66,8 +64,7 @@ c     # local:
       ENDDO
 !     # check the il(*) packing factor.
       if ( nbft .ge. ilfact ) then
-        call bummer('socfpd: larger ilfact required, nbft=',
-     &   nbft, faterr )
+        call bummer('socfpd: larger ilfact required, nbft=',nbft,2)
       endif
  
       ea = inam(nu).eq.5
@@ -165,7 +162,7 @@ c     # local:
  
                   if ( npru .gt. mnru ) then
                     call bummer('change mnrup (one place) to ',
-     &               npru,faterr)
+     &               npru,2)
                   endif
  
                   npr = 0
@@ -234,7 +231,7 @@ c     # local:
                   endif
                   if ( icxu .gt. mcxu ) then
                     call bummer('socfpd: (icxu-mcxu)=',
-     &               (icxu-mcxu), faterr )
+     &               (icxu-mcxu),2)
                   endif
  
 !                 # compute new cx block

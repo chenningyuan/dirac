@@ -46,10 +46,6 @@
 
       integer ic0,ic1,ltot1,mproju,lproju,lamau,lambu,i,IPQ_TEMP 
 
-!  bummer error types.
-      integer    wrnerr,  nfterr,  faterr
-      parameter (wrnerr=0,nfterr=1,faterr=2)
-
       CALL OUTPUT_LOC('ARGOS_STVCZ','E')
 
       lijt = lit*ljt
@@ -91,6 +87,7 @@
 !
       ij=0
       do it=itl,itu
+!       print *,'stvcz-it',it
         nx=ljt*lmnv(1,it)+1
         ny=ljt*lmnv(2,it)+1
         nz=ljt*lmnv(3,it)+1
@@ -122,9 +119,10 @@
 !     Allocate variables
       CALL RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,
      &     lamau,lambu)
-      do i = 1, nc2
-         IPT_CZ_G2(i) = 0.0d0
-      enddo
+!!     do i = 1, nc2
+!     do i = 1, ic1
+!        IPT_CZ_G2(i) = 0.0d0
+!     enddo
 
 !     ------------------
 !     Calculate integral 
@@ -193,10 +191,34 @@
 c          if(iopu.eq.0) go to 82
 c          if(npr.eq.0) go to 84
           do 80 iop=1,iopu
-            val=IPT_CZ_G2(index+ilxyz(iop,ist))
+            IF (ic1.NE.0) THEN
+               IF ((index+ilxyz(iop,ist)).GT.ic1) THEN
+                  print *,'IPT_CZ_G2 index exceeded maximum'
+                  print *,(index+ilxyz(iop,ist)),'>',ic1,'(ic1)'
+                  stop
+               ENDIF
+               val = IPT_CZ_G2(index+ilxyz(iop,ist))
+            ELSEIF (ic0.NE.0) THEN
+               IF ((index+ilxyz(iop,ist)).GT.ic0) THEN
+                  print *,'IPT_CZ_G1 index exceeded maximum'
+                  print *,(index+ilxyz(iop,ist)),'>',ic0,'(ic0)'
+                  stop
+               ENDIF
+               val = IPT_CZ_G1(index+ilxyz(iop,ist))
+!              print *,'g2-1',val
+            ELSE
+               IF ((index+ilxyz(iop,ist)).GT.ij) THEN
+                  print *,'IPT_CZ_GOUT index exceeded maximum'
+                  print *,(index+ilxyz(iop,ist)),'>',ij,'(ij)'
+                  stop
+               ENDIF
+               val = IPT_CZ_GOUT(index+ilxyz(iop,ist))
+!              print *,'g2-2',val
+            ENDIF
             if(chsign) val=-val
 c      print *, 'fnfct = ',fnfct
             val=fnfct*val
+
             do 76 ibl=1,npr
               IPT_ONE_H2(ndxb+ibl)=IPT_ONE_H2(ndxb+ibl)
      &                             +IPT_CX(icx+ibl)*val

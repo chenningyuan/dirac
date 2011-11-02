@@ -4,12 +4,14 @@
       INTEGER ngenag, nsag, naordsag, nconsag, ngcsag, itolag,          &
      &        icutag, aointsag, only1eag, inruag, ncrsag, l1recag,      &
      &        l2recag, aoint2ag, fsplitag, nstag, ndag(0:7),            &
-     &        ndptag, maxang(60), irowmax(60,60), ireparg(60,60,100)
+     &        ndptag, maxang(60), irowmax(60,60), ireparg(60,60,100),   &
+     &        IGRPAG, ECPNUC
 !CSK   fixed alignment: REAL, INTERGER
       COMMON /argoscom/ ngenag, nsag, naordsag, nconsag, ngcsag, itolag,&
      &                  icutag, aointsag, only1eag, inruag, ncrsag,     &
      &                  l1recag, l2recag, aoint2ag, fsplitag, nstag,    &
-     &                  ndag, ndptag, maxang, irowmax, ireparg
+     &                  ndag, ndptag, maxang, irowmax, ireparg,         &
+     &                  IGRPAG, ECPNUC 
       INTEGER ndptags(0:7)
       data ndptags/ 0,0,0,0,1,1,1,7/
 !    -- end of argoscom.h --

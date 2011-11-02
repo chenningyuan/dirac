@@ -775,8 +775,12 @@ C     ****************************************
       do i = 0, nstag-1
          ndag(i) = 1
       enddo
+      CALL RECP_LNK_CHECKMOL(DOCART)
+      CALL RECP_LNK_IRREP(MAXREP)
+      CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,
+     &     IQM,JCO,KATOM,KANG)
 #endif
-c
+C
 C     JHS The check whether the arrays are still allocated is in principle redundant.
       IF (ALLOCATED(JCO)) DEALLOCATE(JCO)
       IF (ALLOCATED(JCO2)) DEALLOCATE(JCO2)
@@ -905,6 +909,7 @@ C***********************************************************************
 #include "gencon.h"
 #include "r12int.h"
 #include "dcbgen.h"
+#include "argoscom.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Additional scratch arrays needed for MULTIBASIS option
@@ -1873,7 +1878,7 @@ C
 C
 C       Read RECP parameter if exist
 C
-        CALL RECP_LNK_READCP(LUINFO,I,Q)
+        CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
 #endif
 C
 C     End of loop over unique atom types
@@ -1939,6 +1944,7 @@ C
 #include "ibtfun.h"
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "argoscom.h"
 C
       IF (GAUNUC.AND.NINT(Q).NE.0) THEN
         IF(QEXP.EQ.D0) THEN
@@ -1963,6 +1969,7 @@ C
          GEXP = D0
          IF (ECPCALC) GEXP = 6.66D+37
       END IF
+      ECPNUC = NUCIND
       NUCSTR = NUCIND + 1
       IF (INPTST) WRITE(LUPRI,'(3X,A)') 'Symmetry independent centers:'
       DO 100 N = 1,NONTVC
@@ -2124,6 +2131,12 @@ C*****************************************************************************
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
+#ifdef MOD_ECP
+C      For ECP integeral
+       CALL RECP_LNK_RDORB(IQM(1,1),JCO(1,1,1),NUC(1,1),NRC(1,1),
+     &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
+     &            KATOM,KANG,KBLOCK,KPRIM)
+#endif /* ifdef MOD_ECP */ 
       NLRGSH = ISHELL
       NLARGE = IORBD
       NORBL  = IORB
@@ -4573,15 +4586,13 @@ C
           ENDDO
         ENDDO
       ENDDO
-
-c
-c---------------------------------------------------------------
 #ifdef MOD_ECP
-C For ARGOS
-!!fixme: check whether user wants .ECP
+C
+C     For ECP integral
+C
       CALL RECP_LNK_CTRAN(blk)
 #endif /* ifdef MOD_ECP */
-c
+C
       RETURN
       END
 C  /* Deck symout */
