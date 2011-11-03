@@ -3,7 +3,7 @@ module localization
 use memory_allocator
 implicit none
 
-public :: ORBLOC, initialize_localization
+public :: orbloc, initialize_localization
 
 private :: ORBLP1, ORBLP2, ORBLO1, ORBLO4, ORBLO5, ROTCMO_MOD
 private :: get_kappa, get_hessian, get_gradient, exp_func, hdiag
@@ -24,7 +24,7 @@ type :: external_variales
   logical :: twocompbss, levyle
   integer :: nz, ipqtoq(4,0:7)
   integer :: nucdep
-  integer :: thrzer
+  real*8  :: thrzer
   integer :: nrefs, iprprj
   integer :: maxref
   real*8  :: prothr
@@ -37,7 +37,7 @@ type( localization_flags ), private :: loc
 type( external_variales  ), private :: var
 
 ! Some global parameters
-real*8, parameter, private :: tresh = 1.0d-13, trsh_mu = 1.0d-4
+real*8, parameter, private :: thresh = 1.0d-13, trsh_mu = 1.0d-4
 real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
 
 contains
@@ -163,15 +163,15 @@ contains
   ipqtoq(:,:) = var%ipqtoq(:,:)
 
   ! Check thresholds
-  if(loc%thdiag < tresh)then
+  if(loc%thdiag < thresh)then
     write(6,'(/a)')      ' WARNING: The threshold (THDIAG) from the input is too small '
-    write(6,'(a,d8.1)')  ' WARNING: It will be changed to the minimal reasonable value: ',tresh
-    loc%thdiag = tresh
+    write(6,'(a,d8.1)')  ' WARNING: It will be changed to the minimal reasonable value: ',thresh
+    loc%thdiag = thresh
   endif
-  if(loc%thfull < tresh)then
+  if(loc%thfull < thresh)then
     write(6,'(/a)')      ' WARNING: The threshold (THFULL) from the input is too small '
-    write(6,'(a,d8.1)')  ' WARNING: It will be changed to the minimal reasonable value: ',tresh
-    loc%thfull = tresh
+    write(6,'(a,d8.1)')  ' WARNING: It will be changed to the minimal reasonable value: ',thresh
+    loc%thfull = thresh
   endif
 
   ! Set defaults
@@ -198,6 +198,7 @@ contains
     write(lupri,*) 'lgdiag=',loc%lgdiag
     write(lupri,*) 'lgfull=',loc%lgfull
     write(lupri,*) 'hesloc=',loc%hesloc
+    write(lupri,*) 'thrzer=',var%thrzer
   endif
 
   call titler('Molecular orbital localization','*',122)
@@ -420,7 +421,6 @@ contains
 !     Modify by S. Dubillard - Apr 21 2004
 !
 !***********************************************************************
-      USE MEMORY_ALLOCATOR
       USE SELECT_COEFF_OWN_BAS
       IMPLICIT NONE
 
@@ -792,7 +792,6 @@ contains
 !     Calculation of the localisation criteria DINV
 !
 !***********************************************************************
-      USE MEMORY_ALLOCATOR
       IMPLICIT NONE
 
       ! External variables
@@ -1087,7 +1086,6 @@ contains
 !     Put the localised coefficients into the DFCOEF file (1/2)
 !
 !***********************************************************************
-      USE MEMORY_ALLOCATOR
       IMPLICIT NONE
 
       ! External variables
@@ -1163,7 +1161,6 @@ contains
 !     Written by J. Thyssen - Nov 24 1998
 !
 !***********************************************************************
-      USE MEMORY_ALLOCATOR
       IMPLICIT NONE
 
       ! External variables
@@ -2442,7 +2439,7 @@ contains
   ! allocate unnamed arrays (dimension is number of eigenvalues over some threshold)
   nred = 0
   do i=1,ndimh
-    if(dabs(etmp(i)) > tresh) nred = nred + 1
+    if(dabs(etmp(i)) > thresh) nred = nred + 1
   enddo
   if(associated(eval))then
     call deallocp(tgrad,id='tgrad in hdiag')
@@ -2454,7 +2451,7 @@ contains
   ! project out redundant eigevalues and corresponding eigenvectors
   k = 0
   do i=1,ndimh
-    if(dabs(etmp(i)) > tresh)then
+    if(dabs(etmp(i)) > thresh)then
       k = k + 1
       eval(k) = etmp(i)
       if(full)then
@@ -2482,7 +2479,7 @@ contains
   ! count number of positive, negative and zero eigenvalues
   nep=0; nem=0; nez=0
   do i=1,ndimh
-    if(dabs(etmp(i)) > tresh)then
+    if(dabs(etmp(i)) > thresh)then
       if(etmp(i) < d0)nem = nem + 1
       if(etmp(i) > d0)nep = nep + 1
     else
@@ -2659,7 +2656,7 @@ contains
       endif
     endif
   endif
-  if( (dabs(diffg)<tresh).and.(dabs(diffq)<tresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
+  if( (dabs(diffg)<thresh).and.(dabs(diffq)<thresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
     cond(3:3) = '!'
   endif
 
@@ -2703,7 +2700,7 @@ contains
     endif
   endif
 
-  if( (dabs(diffg)<tresh).and.(dabs(diffq)<tresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
+  if( (dabs(diffg)<thresh).and.(dabs(diffq)<thresh) .and. (dabs(R-d1)>d1q) .and. (nep/=0))then
     rejected = .true.
     tradius  = tradius_old
     if(flat) tradius = 10.0d0*tradius
