@@ -2376,9 +2376,9 @@ contains
   real*8,  intent(in ), dimension(:)   :: gradient
   real*8,  intent(out), dimension(:)   :: etmp
 
-  integer, intent(out), pointer :: iorig(:)
-  real*8,  intent(in ), pointer :: hmat(:,:)
-  real*8,  intent(out), pointer :: tgrad(:), eval(:)
+  integer, intent(  out), pointer :: iorig(:)
+  real*8,  intent(inout), pointer :: hmat(:,:)
+  real*8,  intent(  out), pointer :: tgrad(:), eval(:)
 
   ! Internal variables
   integer :: i, j, k, ndimh, nred, ier, lupri, lwork, ilaenv, nb, icur
