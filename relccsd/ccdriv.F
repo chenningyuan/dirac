@@ -666,7 +666,11 @@ C
 C
 C     Report memory in megaBytes
 C
+      if ( maxcor .gt. 0 ) then 
       WRITE (IW,1000) MAXCOR / (128 * 1024)
+      else
+      WRITE (IW,1410)
+      endif
 C
 C     General setup
 C     -------------
@@ -686,8 +690,13 @@ C
          NELECT = NELECT + NELEC(I)
       ENDDO
 C
+      if ( maxcor .gt. 0) then
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
+      else
+      WRITE (IW,1414) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
+     &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
+      endif
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -864,12 +873,25 @@ C
       RETURN
 C
 1000  FORMAT (/" Total memory available :",T50,I10," MB")
+1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
      &        T50,I10," 8-byte words")
 1002  FORMAT (" Not enough memory, increase to at least",
      &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
 1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
      &        /" Number of passes :",T50,I10)
+1414  FORMAT (//" Number of electrons :",T40,I5
+     &        /" Number of virtual spinors :",T40,I5
+     &        /" Complex arithmetic mode :",T44,L1
+     &        /" Do integral sorting     :",T44,L1
+     &        /" Do energy calculation   :",T44,L1
+     &        /" Do gradient calculation :",T44,L1
+     &        /" Do response calculation :",T44,L1
+     &        /" Debug information       :",T44,L1
+     &        /" Timing information      :",T44,L1
+     &        /" Print level          :",T40,I5
+     &        /" Memory limit (MWord) not set in Dirac but by the OS"
+     &        /" Interface used       :",T40,A10//)
 1004  FORMAT (//" Number of electrons :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
