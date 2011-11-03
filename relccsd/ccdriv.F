@@ -2803,7 +2803,7 @@ C
      &         " Check that you specified DOENER and DOCCSD !")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCHESS (ICALC,MXCORR,EPS,
+      SUBROUTINE CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &                   NSP,IREPSPI)
 C
       use memory_allocator
@@ -2832,6 +2832,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
+      REAL*8 CC(*)
       REAL*8 EPS(*)
       DIMENSION IREPSPI(*)
 C
@@ -2859,7 +2860,7 @@ C
      &                                         a_BUF1(:), a_BUF2(:),
      &                                         a_CBUF(:) 
 
-      real(kind=kreal), allocatable, target :: a_AVO(:,:), a_AOV(:,:) 
+      real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
       real(kind=kreal)       :: total_mem_new = 0
       integer(kind=klongint) :: current_mem_use = 0
@@ -2882,8 +2883,8 @@ C
       call alloc( a_X2    ,          NDIMX*RCW    , id="x2"  )
       call alloc( a_Y1    ,          NDIMX*RCW    , id="y1"  )
       call alloc( a_Y2    ,          NDIMX*RCW    , id="y2"  )
-      call alloc( a_AVO   , NAOPER,  NDIMX*RCW    , id="avo" )
-      call alloc( a_AOV   , NAOPER,  NDIMX*RCW    , id="aov" )
+      call alloc( a_AVO   , NAOPER * NDIMX*RCW    , id="avo" )
+      call alloc( a_AOV   , NAOPER * NDIMX*RCW    , id="aov" )
       call alloc( a_BVO   ,          NDIMX*RCW    , id="bvo" )
       call alloc( a_BOV   ,          NDIMX*RCW    , id="bov" )
       call alloc( a_DG    ,          NDIMX*RCW    , id="dg"  )
@@ -2911,8 +2912,9 @@ C
       TOL = 10.0D0**(-NTOLRP)
       MAXDIM = MXDIMRP
       DO AOPER = 1, NAOPER
+         AOFF = (AOPER-1)*NDIMX*RCW+1
          CALL RDPROP(IPRNT,NAMEA(AOPER),NSP,LFA,a_CBUF,IREPSPI,
-     &              APHASE(AOPER),a_AVO(AOPER,:),a_AOV(AOPER,:),DUM,DUM)
+     &              APHASE(AOPER),a_AVO(AOFF),a_AOV(AOFF),DUM,DUM)
       ENDDO
       DO BOPER = 1, NBOPER
          BDONE = .FALSE.
@@ -2924,7 +2926,7 @@ C
      &       (MAXIT,NAOPER,NAMEA,NAMEB(BOPER),APHASE,BPHASE,BDONE,EPS,
      &        EFREQ(IFREQ),a_AVO,a_AOV,a_BVO,a_BOV,a_X1
      &        a_X2,a_Y1,aY2,a_DG,a_BUF1,a_BUF2,
-     &        a_CC,a_BB1,a_BB2,TOL,IPRNT,DEBUG,
+     &        a_CCC,a_BB1,a_BB2,TOL,IPRNT,DEBUG,
      &        TIMING)
             CALL FLSHFO(IW)
          ENDDO
