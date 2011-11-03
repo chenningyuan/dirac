@@ -151,8 +151,6 @@ contains
   real*8,  pointer :: pkappa(:), tgrad(:), eval(:), hmat(:,:)
 
   !------------------------------------------------------------------------------!
-  call qenter('orbloc')
-
   ! Set some parameters
   ifrp   = 1
   lupri  = var%lupri
@@ -409,8 +407,6 @@ contains
   call deallocp(tgrad ,id='tgrad  in orbloc')
   call deallocp(eval  ,id='eval   in orbloc')
   call deallocp(hmat  ,id='hmat   in orbloc')
-
-  call qexit('orbloc')
 
   end subroutine orbloc
 
@@ -963,8 +959,6 @@ contains
   real*8, allocatable, dimension(:) :: xtmp
 
   !------------------------------------------------------------------------------!
-  call qenter('get_kappa')
-
   lupri  = var%lupri
 
   ! Get some dimensions
@@ -1037,10 +1031,7 @@ contains
     enddo
   endif
 
-  !------------------------------------------------------------------------------!
   call dealloc(xtmp,id='xtmp in get_kappa')
-
-  call qexit('get_kappa')
 
   end subroutine get_kappa
 
@@ -1419,8 +1410,6 @@ contains
   integer :: i, j, k, l, m, ij, kl, nucdep, ni, ndimh, ni12, lupri
 
   !------------------------------------------------------------------------------!
-  call qenter('get_hessian')
-
   lupri = var%lupri
 
   ! Get some dimensions
@@ -2266,8 +2255,6 @@ contains
 
   endif ! label 111
 
-  call qexit('get_hessian')
-
   end subroutine get_hessian
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -2294,8 +2281,6 @@ contains
   real*8  :: dtmp, dnrm2
 
   !------------------------------------------------------------------------------!
-  call qenter('get_gradient')
-
   lupri = var%lupri
   gradient(:) = d0
 
@@ -2342,8 +2327,6 @@ contains
   ! Norm of the gradient
   dnrmg = dnrm2(ndimg,gradient,1)
 
-  call qexit('get_gradient')
-
   end subroutine get_gradient
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -2367,15 +2350,11 @@ contains
   integer :: i
 
   !------------------------------------------------------------------------------!
-  call qenter('exp_func')
-
   dinvmq = d0
   do i=1,size(eval,1)
     dinvmq = dinvmq + d2*pkappa(i)*tgrad(i) + pkappa(i)*eval(i)*pkappa(i)
   enddo
   dinvmq = dinvmq / dfloat(ni)
-
-  call qexit('exp_func')
 
   end subroutine exp_func
 
@@ -2408,8 +2387,6 @@ contains
   real*8,  allocatable, dimension(:)   :: work
 
   !------------------------------------------------------------------------------!
-  call qenter('hdiag')
-
   lupri = var%lupri
 
   ! Get some dimensions
@@ -2520,10 +2497,6 @@ contains
     write(lupri,'(8d12.4)') (etmp(i),i=1,ndimh)
   endif
 
-  call qexit('hdiag')
-
-  !------------------------------------------------------------------------------!
-
   end subroutine hdiag
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -2550,8 +2523,6 @@ contains
   real*8  :: tcurr, xcurr, cutoff, xmax, xmin, step
 
   !------------------------------------------------------------------------------!
-  call qenter('get_mu')
-
   lupri = var%lupri
 
   ! Get some dimensions
@@ -2608,10 +2579,6 @@ contains
 
   !------------------------------------------------------------------------------!
 
-  call qexit('get_mu')
-
-  !------------------------------------------------------------------------------!
-
   contains
 
     function f(x)
@@ -2655,8 +2622,6 @@ contains
   real*8 :: R, tradius_old
 
   !------------------------------------------------------------------------------!
-  call qenter('updateT')
-
   lupri  = var%lupri
   R = diffg / diffq
   tradius_old = tradius
@@ -2754,10 +2719,6 @@ contains
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(lupri,'(a,2x,i4,3d11.2,f11.5,a,l,a,2x,a,4d11.2)') &
     '*T',itr,tradius_old,tradius,dnrmk,R,'  ',rejected,' ',cond,diffg,diffq
-
-  call qexit('updateT')
-
-  !------------------------------------------------------------------------------!
 
   end subroutine updateT
 
