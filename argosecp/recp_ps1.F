@@ -75,12 +75,14 @@ c     # on qsum
 
       ijt=0
       do 90 it=itl,itu
+!       print *,'pseud1-it',it 
         na1=lmnv(1,it)+1
         la1=lmnv(2,it)+1
         ma1=lmnv(3,it)+1
         do 80 jt=jtl,jtu
           ijt=ijt+1
           s=a0
+!         print *,'pseud1-jt',jt 
           nb1=lmnv(1,jt)+1
           lb1=lmnv(2,jt)+1
           mb1=lmnv(3,jt)+1

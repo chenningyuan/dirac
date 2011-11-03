@@ -4,7 +4,7 @@ import subprocess, sys
 
 binary = sys.argv[1]
 
-command = "size %s 2> /dev/null | grep dirac.x || echo 'can not be determined'" % binary
+command = "size %s 2> /dev/null | grep dirac.x" % binary
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 output = process.stdout.read().strip()
 

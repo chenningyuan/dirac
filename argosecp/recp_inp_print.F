@@ -18,7 +18,6 @@
       USE RECP_IPT
       implicit logical(a-z)
 #include "inc_print.h"
-#include "argos_error.h"
       integer    nbfmx,     nmap,   nenrgy,   nrtype
       parameter( nbfmx=1000, nmap=2, nenrgy=1, nrtype=-1 )
 !     parameter( nbfmx=500, nmap=2, nenrgy=1, nrtype=-1 )
