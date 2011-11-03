@@ -22,6 +22,8 @@ Projection CH4 pour diff. bases
 .PRJLOC
 .HESLOC
 DIAGONAL
+.THDIAG
+1.0D-13
 .OWNBAS
 .VECREF
 5

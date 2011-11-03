@@ -324,8 +324,8 @@ contains
 
       ! Exit conditions
       if(loc%hesloc == 'DIAG')then
-        if(Iminmax) exit
-        if(loc%lgdiag.and.(diffa < loc%thdiag)) exit
+        if(.not.loc%lgdiag.and.Iminmax) exit
+        if(     loc%lgdiag.and.(diffa < loc%thdiag).and.Iminmax) exit
       endif
 
       if(loc%hesloc == 'FULL')then

@@ -160,17 +160,17 @@ Compilation info
  LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
                           | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
                           | group
- Configuration time       | 2011-11-03 10:30:06.464585
- Last commit rev          | e5fc0f6bbd60db4a6b962bea227156f6f6bd0d08
+ Configuration time       | 2011-11-03 11:09:06.482945
+ Last commit rev          | fa916a3e70410eae12e9731ccfacecd3df9da931
  Last commit author       | Stano 
- Last commit time         | Thu Nov 3 10:29:48 2011 +0100
+ Last commit time         | Thu Nov 3 10:39:15 2011 +0100
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Nov  3 10:31:32 2011
+     Date and time (Linux)  : Thu Nov  3 14:19:10 2011
      Host name              : Bassilus                                
  
  
@@ -201,6 +201,8 @@ Projection H2O
 .PRJLOC                                                                                             
 .HESLOC                                                                                             
 DIAGONAL                                                                                            
+.THDIAG                                                                                             
+1.0D-13                                                                                             
 .OWNBAS                                                                                             
 .VECREF                                                                                             
 3                                                                                                   
@@ -281,6 +283,7 @@ FINISH
   -------------------
 
  Print level in TWOINT:    1
+ Extra output for the following shells:  0  0  0  0
  * Direct calculation of Fock matrices in SO-basis.
  * User specified screening threshold in direct Fock matrix construction: 1.00E-11
  * Separate density screening of Coulomb integral batches
@@ -768,7 +771,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:32 2011
+      --- Thu Nov  3 14:19:10 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     1   0.81D+00   0.28D-01   0.10D+01    0.0000    3  37  15   DIAG   0.81D+00  -0.37D-03
@@ -805,7 +808,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     2   0.29D-02   0.11D-01   0.26D+00    0.0000    2  38  15   DIAG   0.29D-02   0.32D-02
@@ -842,7 +845,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     3   0.81D-02   0.48D-01   0.61D+00    0.0000    4  36  15   DIAG   0.81D-02   0.20D-01
@@ -866,7 +869,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     4   0.39D-03   0.20D-01   0.30D+00    0.0000    3  37  15   DIAG   0.39D-03   0.41D-03
@@ -890,7 +893,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     5   0.78D-05   0.27D-02   0.13D+00    0.0000    3  37  15   DIAG   0.78D-05   0.79D-05
@@ -914,7 +917,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     6   0.31D-07   0.17D-03   0.99D-02    0.0000    3  37  15   DIAG   0.31D-07   0.31D-07
@@ -938,7 +941,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     7   0.13D-11   0.11D-05   0.94D-04    0.0000    3  37  15   DIAG   0.13D-11   0.13D-11
@@ -975,7 +978,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:11 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     8   0.17D-01   0.25D-08   0.61D+00    0.0000    3  37  15   DIAG   0.17D-01   0.13D-01
@@ -999,7 +1002,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     9   0.24D-02   0.64D-01   0.19D+00    0.0000    1  39  15   DIAG   0.24D-02   0.25D-02
@@ -1023,7 +1026,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:33 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    10   0.20D-04   0.65D-02   0.20D-01    0.0000    1  39  15   DIAG   0.20D-04   0.21D-04
@@ -1047,7 +1050,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    11   0.21D-06   0.69D-03   0.84D-02    0.0000    1  39  15   DIAG   0.21D-06   0.23D-06
@@ -1071,7 +1074,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    12   0.32D-08   0.84D-04   0.49D-02    0.0000    1  39  15   DIAG   0.32D-08   0.34D-08
@@ -1095,7 +1098,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    13   0.52D-10   0.11D-04   0.99D-03    0.0000    1  39  15   DIAG   0.52D-10   0.56D-10
@@ -1119,7 +1122,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    14   0.84D-12   0.14D-05   0.63D-04    0.0000    1  39  15   DIAG   0.84D-12   0.92D-12
@@ -1143,7 +1146,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    15   0.15D-13   0.18D-06   0.17D-04    0.0000    1  39  15   DIAG   0.15D-13   0.15D-13
@@ -1180,7 +1183,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    16   0.14D-06   0.23D-07   0.12D+01    0.0000    1  39  15   DIAG   0.14D-06   0.19D-05
@@ -1217,7 +1220,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:12 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    17   0.19D-06   0.31D-05   0.44D+00    0.0000    1  39  15   DIAG   0.19D-06   0.33D-06
@@ -1241,22 +1244,70 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:34 2011
+      --- Thu Nov  3 14:19:13 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C    18   0.41D-09   0.26D-05   0.17D-01    0.0000    0  40  15   DIAG   0.41D-09   0.41D-09
 
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  1.0037
+            Orbital   2 Pipek-Mezey localization measure d =  0.9544
+            Orbital   3 Pipek-Mezey localization measure d =  1.7311
+            Orbital   4 Pipek-Mezey localization measure d =  1.7311
+            Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+            Inverse mean delocalization =     0.839863945269430
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T    18   0.44D+00   0.44D+00   0.68D-04    0.93063   F   tQ       0.17D-12   0.19D-12
+
+
+      =====================================================================
+      ====================== START ITERATION NO.  19 ======================
+      =====================================================================
+
+
+      --- Thu Nov  3 14:19:13 2011
+
+     ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
+*C    19   0.17D-12   0.49D-06   0.68D-04    0.0000    0  40  15   DIAG   0.17D-12   0.19D-12
+
+                    ** Pipek-Mezey localization criteria **
+                      ===================================  
+            Orbital   1 Pipek-Mezey localization measure d =  1.0037
+            Orbital   2 Pipek-Mezey localization measure d =  0.9544
+            Orbital   3 Pipek-Mezey localization measure d =  1.7311
+            Orbital   4 Pipek-Mezey localization measure d =  1.7311
+            Orbital   5 Pipek-Mezey localization measure d =  1.0001
+
+            Inverse mean delocalization =     0.839863945269431
+
+     ITR    T_old      T_new      |KAPPA|      R      REJ    CON     DIFFG      DIFFQ
+*T    19   0.44D+00   0.44D+00   0.36D-05    0.27058   F   tQ       0.56D-15   0.21D-14
+
+
+      =====================================================================
+      ====================== START ITERATION NO.  20 ======================
+      =====================================================================
+
+
+      --- Thu Nov  3 14:19:13 2011
+
+     ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
+*C    20   0.56D-15   0.61D-07   0.36D-05    0.0000    0  40  15   DIAG   0.56D-15   0.21D-14
+
 
            ************************************************************
-           **** MAXIMUM reached after  18 iterations and  23 steps ****
-           **** Inverse mean delocalization =    0.839863945269256 ****
+           **** MAXIMUM reached after  20 iterations and  25 steps ****
+           **** Inverse mean delocalization =    0.839863945269431 ****
            ************************************************************
 
 
-           --- Time used in localization is :   2.20 seconds
+           --- Time used in localization is :   2.42 seconds
 
  
-     Date and time (Linux)  : Thu Nov  3 10:31:34 2011
+     Date and time (Linux)  : Thu Nov  3 14:19:13 2011
      Host name              : Bassilus                                
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1264,7 +1315,7 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         0.60
+  Mean allocation size (Mb) :         0.55
   
   Largest          10  allocations
   
@@ -1286,5 +1337,5 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
  MEMGET high-water mark:     1.41 MB
 
 *****************************************************
->>>> Node 0, utime: 2, stime: 0, minflt: 4084, majflt: 0, nvcsw: 0, nivcsw: 294, maxrss: 0
->>>> Total WALL time used in DIRAC: 2s
+>>>> Node 0, utime: 2, stime: 0, minflt: 4074, majflt: 0, nvcsw: 0, nivcsw: 282, maxrss: 0
+>>>> Total WALL time used in DIRAC: 3s
