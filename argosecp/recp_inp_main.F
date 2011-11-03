@@ -9,16 +9,14 @@
  
 !  read and verify the user input: symmetry info, basis sets,
 !  geometry, etc.
-      USE RECP_INPUT_READ
+      USE RECP_INP_READ
       USE RECP_INP_ORBITAL 
       USE RECP_IPT
       USE RECP_OUTPUT
       
       implicit logical(a-z)
 
-#include "argos_mxvalue.h"
-#include "argos_files.h" 
-#include "argos_error.h" 
+#include "inc_mxvalue.h"
 #include "inc_print.h" 
 
 !     # /bufout/ holds some output integral file parameters.
@@ -37,29 +35,25 @@
      & mccu, mconu, mcu,   mpru, nbft, nnbft,
      & mrcru, mstu, msu,   ng,   ns,   nst
       integer
-     & mconsu, mru,   mcru, msfu, 
-     & msfru,  mnru,   ngcs,  nu,   
-     & lxyzir,         inam,        nnam, mdum
+     & mconsu, mru,  mcru, msfu, 
+     & msfru,  mnru, ngcs, nu,   
+     & lxyzir, inam, nnam, mdum
       common /ntgr/
-     & mconsu, mru,   mcru, msfu, 
-     & msfru,  mnru,   ngcs,  nu,   
-     & lxyzir(3),      inam(5),     nnam, mdum(32)
+     & mconsu, mru,  mcru, msfu, 
+     & msfru,  mnru, ngcs, nu,   
+     & lxyzir(3),inam(5),nnam,mdum(32)
 !     # dummy:
-      integer lcore
+      integer lcore,ierr
       integer
-     & ica(mcu,msu,*), idp(mstu,mstu,*), ipt(*),     la(mru,*),
-     & lb(*),          lcr(*),           lls(*),     lmnp1(*),
-     &   lmn1u,            lproju,     maords(*),
-     & mcons(*),       mcrs(*),          mgcs(*),    mnl(*),
-     & ms(*),          nblpr(*),         nc(*),      ncon(*),
-     & ncr(*),         ncru,             nct(*),     nd(*),
-     & nf(*),          nir(*),           nkcrl(6,*), nkcru(6,*),
-     & nklsl(4,*),     nklsu(4,*),       nrcr(*),    nso(*),
-     & nsopr(*),       nt(*),            ntl(*),     ntu(*)
+     & ica(mcu,msu,*),idp(mstu,mstu,*),ipt(*),la(mru,*),
+     & lb(*),lcr(*),lls(*),lmnp1(*),lmn1u,lproju,maords(*),
+     & mcons(*),mcrs(*),mgcs(*),mnl(*),ms(*),nblpr(*),nc(*),ncon(*),
+     & ncr(*),ncru,nct(*),nd(*),nf(*),nir(*),nkcrl(6,*),nkcru(6,*),
+     & nklsl(4,*),nklsu(4,*),nrcr(*),nso(*),
+     & nsopr(*),nt(*),ntl(*),ntu(*)
       real*8
-     & a(*),               ccr(*),   chg(*),
-     & eta(mrcru,mconu,*), x(mcu,*),       y(mcu,*), z(mcu,*),
-     & zcr(*),             zet(mconu,*)
+     & a(*),ccr(*),chg(*),eta(mrcru,mconu,*),x(mcu,*),y(mcu,*),z(mcu,*),
+     & zcr(*),zet(mconu,*)
       character*3 ityp(*), mtype(*)
  
 !     # local:
@@ -74,10 +68,10 @@
       integer ixyzir(3), lblso(16),CX_TEMP
       real*8 c_sum, t, eval
       character*1 ibl, ipc, isk, lblsh(21)
-      INTEGER  ECP_INPUT
+      INTEGER  ECP_INPUT,RECPIN1,nlist
       integer  iodfac
       external iodfac
-
+      LOGICAL  OLDINP
       data ibl, isk /' ','0'/, lblsh /'s','p','d','f','g','h','i','k',
      &  'l','m','n','o','q','r','t','u','v','w','x','y','z'/
 
@@ -85,68 +79,59 @@
 
 !     assign the default unit numbers and filenames.
       ECP_INPUT = 5  ! RECP_INPUT :argos input file
-      nlist  = 6  ! DIRAC output file 
+      RECPIN1   = 51 ! RECP_INPUT :argos input file
+      nlist     = 6  ! DIRAC output file 
 !     intitalize some input variables.
       itol   = 20
       tol    = 2.30258d0 * itol   ! ln10 *itol
- 
-!     # Open the input file.
-      OPEN(UNIT=ECP_INPUT,STATUS='OLD',FILE='RECP_INPUT')
-      call ibummr(nlist)
-      REWIND ECP_INPUT
- 
+
+!     ----------------------------------------------------------------
+      OPEN(UNIT=RECPIN1,STATUS='OLD',FILE='RECP_INPUT2')
+
 !     # read general information 
-      CALL RECP_INPUT_READ_GENERAL
-     &    (ECP_INPUT,ngen,ns,naords,ncons,ngcs,ncrs)
+      CALL RECP_INP2_READGEN(RECPIN1,ngen,ns,naords,ncons,ngcs,ncrs)
 
 !     # Number of distinct products of irrep 
-      CALL RECP_INP_READ_IRREP(ECP_INPUT,idp,nd,ityp)
+      CALL RECP_INP2_READIRREP(RECPIN1,idp,nd,ityp)
 
 !     # Read AO to SO transformation matrices 
-      CALL RECP_INP_READ_AO2SO
-     &    (naords,ngcs,maords,la,nir,ECP_INPUT,CX_TEMP)
+      CALL RECP_INP2_READAO2SO
+     &    (RECPIN1,naords,ngcs,maords,la,nir,CX_TEMP)
 
 !     # read in exponents and contraction coefficients.
-      CALL ECPINT_INPUT_READ_BASISSET
-     &    (ECP_INPUT, lmnp1, nrcr, ncon, zet, eta, ncons)
- 
-!     # read in expansions for core and spin-orbit potentials.
-      CALL ECPINT_INPUT_READ_RECP
-     &   ( ncru, lproju, ncrs, ECP_INPUT, lcr,lls,nkcrl, nkcru,
-     &     nklsl,nklsu, ncr, zcr, ccr )
- 
+      CALL RECP_INP2_READORB(RECPIN1,zet,eta,lmnp1,nrcr,ncon)
+
+!     read in expansions for core and spin-orbit potentials.
+      CALL RECP_INP2_READCSO(RECPIN1,lcr,lls,nkcrl,nkcru,nklsl,
+     &     nklsu,ncr,ncrs,ncru,lproju,ns,mcrs,zcr,ccr)
+
       ngenp1 = ngen + 1
       ng     = ngenp1
- 
-!     # read in atomic labels, charges, coordinates, basis sets,
-!       and core and spin-orbit potentials
-      DO I = 1, ns
-         mcrs(I) = 0
-      ENDDO
 
-      CALL ECPINT_INPUT_READ_GEO
-     &           (mcu, msu, ng, nbft, ECP_INPUT, ns, nf,
-     &            nc, ica, mcons, mgcs, maords, lmnp1, lmn1u,
-     &            nrcr, nir, nso, nt, ntl, ntu, la, lb, mcrs,
-     &            chg, x, y, z, mtype, mru, ncrs,nst)
+!     read in atomic labels, charges, coordinates
+      CALL RECP_INP2_READGEO(RECPIN1,ns,ng,nf,nc,ica,X,Y,Z,chg,mtype,
+     &     nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,
+     &     lmnp1,maords,ncrs,mcrs)
+
+      CLOSE(UNIT=RECPIN1)
+
+!     ----------------------------------------------------------------
 
       lmnvmx = (lmn1u*(lmn1u + 1)*(lmn1u + 2))/6
       ipt(2) = ipt(1) 
-! FIXME
-!     ALLOCATE(IPT_LMNV(3,lmnvmx))
+!     check lmnvmx value
       ALLOCATE(IPT_LMNV(3,lmnvmx*3))
+
       DO I = 1, 3
-         DO J = 1, lmnvmx*3
+!        DO J = 1, lmnvmx*3
+         DO J = 1, 84
             IPT_LMNV(I,J) = 0
          ENDDO
       ENDDO
 !     # ipt(*)-->1:lmnv(1:3,1:lmnvmx)
       call mklmnv(lmn1u)
 
-!     # end of reading input file.
-      CLOSE(UNIT=ECP_INPUT)
-
-!     ---------------------------
+!     ----------------------------------------------------------------
  
 !     # determine the number of types of one-electron integrals.
  
@@ -189,14 +174,14 @@ c
 !     offsets.
       CALL RECP_INP_ORBITAL_OFFSET(nsopr,nso,nblpr,nst)
  
-c     # nnbft = total number of unique so function pairs.
-c     # mpru = the number of elements in a diagonal,
-c     #        symmetry-blocked, lower-triangle-packed matrix.  this
-c     #        is also an upper bound to the size of any
-c     #        symmetry-blocked array in which only unique
-c     #        off-diagonal elements are stored and which is
-c     #        associated with an operator that transforms as an
-c     #        irreducible representation.
+!     # nnbft = total number of unique so function pairs.
+!     # mpru = the number of elements in a diagonal,
+!     #        symmetry-blocked, lower-triangle-packed matrix.  this
+!     #        is also an upper bound to the size of any
+!     #        symmetry-blocked array in which only unique
+!     #        off-diagonal elements are stored and which is
+!     #        associated with an operator that transforms as an
+!     #        irreducible representation.
  
       nnbft = (nbft * (nbft + 1)) / 2
       mpru  = nblpr(nst) + (nso(nst)+1)*((nso(nst)+1)-1)/2
@@ -206,16 +191,22 @@ c     #        irreducible representation.
 !     # normalize the contraction coefficients.
       CALL RECP_INP_ORBITAL_CCNORM
      &   ( mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
-!     # calculate the nuclear repulsion energy.
-      CALL ARGOS_INPUT_CALC_NUCREP
-     &   ( ic, nc, chg, NLIST, PRINT_LEVEL, x, y, z )
+!     DO I = 1, ncons
+!        print *,'From RECP_INP(CCNORM)'
+!        DO J = 1, ncon(I)
+!           print *, zet(J,I),(eta(K,J,I),K=1,nrcr(I))
+!        ENDDO
+!     ENDDO
 
+!     # calculate the nuclear repulsion energy.
+!     CALL RECP_INP_NUCREP
+!    &   ( ic,nc,chg,NLIST,PRINT_LEVEL,x,y,z )
 
       call gcentr( ica, nc )
-c
+ 
       ngp1 = ng+1
       if ( ngp1 .gt. mgup ) then
-        call bummer('change mgup (two places) to ',ngp1,faterr)
+        call bummer('change mgup (two places) to ',ngp1,2)
       endif
 
       IF (PRINT_LEVEL .GE. 2) THEN
@@ -341,7 +332,7 @@ c
                       write (nlist,*) 'axis choice is unsuitable for'
      &                              //' spin-orbit integrals'
                       call bummer('syminp: ixyzir(ixyz)=',
-     &                 ixyzir(ixyz),faterr)
+     &                 ixyzir(ixyz),2)
                     endif
                     ixyzir(ixyz) = lai
   780             continue
@@ -362,7 +353,6 @@ c
   840 continue
 
 !     -------------------------------
-!     WRITE(NLIST,1000)
 
       if ( inam(nu) .eq. 5 ) then
         do 860 ixyz = 1, 3
@@ -391,7 +381,7 @@ c     # set up the 1-e record parameters.
       ENDIF
  
       if ( ierr .ne. 0 ) then
-        call bummer('syminp: from 1-e sifcfg(), ierr=',ierr,faterr)
+        call bummer('syminp: from 1-e sifcfg(), ierr=',ierr,2)
       endif
  
 !     # write out the header information
@@ -403,19 +393,20 @@ c     # set up the 1-e record parameters.
  
 !     # multiply normalization constants into contraction coefficients.
       do icons = 1,ncons
-         iconu = ncon(icons)
-         ircru = nrcr(icons)
-         do icon = 1,iconu
-            do ircr = 1,ircru
+!        print *,'From RECP_INP'
+         do icon = 1,ncon(icons)
+            do ircr = 1,nrcr(icons)
                t = 4.0d0 * zet(icon,icons)
                eta(ircr,icon,icons) =
      &          sqrt( t**lmnp1(icons) / 2.0d0 * sqrt(t / 2.0d0) )
      &          * eta(ircr,icon,icons)
             enddo   
+!           print *,zet(icon,icons),
+!    &              (eta(ircr,icon,icons),ircr=1,nrcr(icons))
          enddo   
       enddo   
 
-      IF (PRINT_LEVEL .GE. 2) THEN
+      IF (PRINT_LEVEL.GE.2) THEN
          write (nlist,880) isfr, (ityp(ist), nso(ist), ist=1,nst)
   880    format(//i9,' symmetry orbitals,',3x,4(3x,a3,':',i4),
      &                                   (/31x,4(3x,a3,':',i4)))
@@ -425,6 +416,6 @@ c     # set up the 1-e record parameters.
      & '-----------------------------------------------------------')
 
       CALL OUTPUT_LOC('RECP_INP_MAIN','X')
-      end
+      END
 
 

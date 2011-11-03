@@ -30,7 +30,6 @@ c  11-jun-91 written by ron shepard with suggestions from r. m. pitzer.
  
       USE RECP_IPT
       implicit logical(a-z)
- 
       integer itl, itu, lmn, leig, lmnv(3,*)
 !     real*8 eval, v(*)
       real*8 eval
@@ -38,15 +37,11 @@ c  11-jun-91 written by ron shepard with suggestions from r. m. pitzer.
 c     # local:
       integer l, m, n, i, j, it, jt, xyzdim, ll, mm, nn, p, q
       real*8 vi, rnorm, vnorm2
- 
 c     # small is used to determine if a vector is close enough to be
 c     #       called an eigenvector.  this should be about 1000x the
 c     #       machine epsilon to avoid sqrt() precision problems.
       real*8    zero,     one,     two,     fourth,        small
       parameter(zero=0d0, one=1d0, two=2d0, fourth=0.25d0, small=1d-10)
- 
-#include "argos_error.h"
- 
       integer  iodfac
       external iodfac
  
@@ -93,7 +88,7 @@ c     # definition in cartesian space.
  
          if ( (l+m+n) .ne. lmn ) then
 !           # inconsistent exponents in the basis function.
-            call bummer('l2opxv: (l+m+n-lmn)=', (l+m+n-lmn), wrnerr )
+            call bummer('l2opxv: (l+m+n-lmn)=', (l+m+n-lmn), 0 )
             leig = -3
             return
          endif
@@ -135,7 +130,7 @@ c     # definition in cartesian space.
    30 continue
  
       if ( vnorm2 .le. small ) then
-         call bummer('l2mxv: small vector norm, lnm=', lmn, wrnerr)
+         call bummer('l2mxv: small vector norm, lnm=', lmn, 0)
          leig = -4
          return
       endif
