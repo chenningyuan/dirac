@@ -21,6 +21,7 @@ cd $TMP_DIR
   ./pamadm --release
   mkdir build
   cd build
+  cmake ..
   make release
   tar xvzf DIRAC-11.0.0-Source.tar.gz
   cd DIRAC-11.0.0-Source
