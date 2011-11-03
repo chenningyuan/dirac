@@ -7,6 +7,7 @@ New features in DIRAC11
 * New and fast XC integration
 * Functional derivatives using automatic differentiation (XCFun)
 * New visualization options
+* RKBIMP: MO-coefficients generated using restricted kinetic balance (RKB) can be extended by their unrestricted kinetic balance (UKB) complement, thus providing magnetic balance for response calculations involving external magnetic fields
 
 
 New build system and infrastructure
