@@ -2622,10 +2622,6 @@ contains
 
     f = d0
     do ii=1,ndim
-      if(dabs(eval(ii) - x) < 1.0d-14)then
-        write(lupri,'(a)')' WARNING: mu is too close to one of the eigenvalues!!!'
-        write(lupri,'(a,i4,a,d12.4)')' WARNING: i=',ii,' mu-e_i =',x-eval(ii)
-      endif
       f = f + tgrad(ii) * tgrad(ii) / ((eval(ii) - x) * (eval(ii) - x))
     enddo
     f = dsqrt(f)
