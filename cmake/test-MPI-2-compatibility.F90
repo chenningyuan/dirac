@@ -1,7 +1,3 @@
-include(CheckFortranSourceCompiles)
-
-check_fortran_source_compiles(
-"
       program MPI2_TEST
       implicit real*8 (A-H,O-Z)
       include 'mpif.h'
@@ -112,6 +108,3 @@ check_fortran_source_compiles(
       call MPI_FINALIZE(MPIERR)
 
       end program
-"
-    MPI_2_SUPPORT_OK
-    )

@@ -1,6 +1,5 @@
-#define DEBUG_mat_transform
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -435,9 +434,6 @@ C
       CHARACTER TYP*1
       DIMENSION AMAT(*)
 C
-#ifdef DEBUG_mat_transform
-      print '(a,i4)', ' phase factor insertion: jfac is',jfac
-#endif
       do irp1 = 0, nbsym-1
         do ic1 = 1, 2
 
@@ -464,10 +460,6 @@ C
                   ioff = i2bbasx(irp1,irp2,ic1,1)
                   do icol = 1, nb2
                     call dscal(nb1,dm1,amat(ioff+1),1)
-#ifdef DEBUG_mat_transform
-                   print *, ' scaling w -1 at off, l, COL ,i1,i2,c1,c2',
-     &                        IOFF,NB1,ICOL,IRP1,IRP2,IC1,1
-#endif
                     ioff = ioff + ntbas(0)
                   end do
                 endif
@@ -1750,9 +1742,6 @@ C
       integer                :: ndim_mat
 
       call qenter('bstobu_no_work_nonquadmat_LS_L')
-#ifdef DEBUG_mat_transform
-      print *,'bstobu...: dim of buf is',mz*ntbas(0)*ntbas(1)
-#endif
       ! component L (1) S (2)
       do i = 1, 2
         do j = 0, maxrep
@@ -1780,10 +1769,6 @@ C     Memory allocation
 
       izoff = 0
       do iz = 1,mz
-#ifdef DEBUG_mat_transform
-        print '(a,i3,a,i6)',' loop over iz =',iz,' starts now with off',
-     &                        izoff
-#endif
         do jrep = 0,maxrep
           do j = 0,nbbas(jrep,1)-1
             joff = izoff + (ibbas(jrep,1)+j)*ntbas(0)
@@ -1798,15 +1783,6 @@ C     Memory allocation
                    call dcopy(nbbas(irep,ic),bufx(1+isoff),1,
      &                                       amat(1+iuoff),1)
 
-#ifdef DEBUG_mat_transform
-                   print *,'copy: NBBAS(IREP,IC) irep',
-     &                            NBBAS(IREP,IC),irep
-                   print *,'2nd   loop: ISOFF, IUOFF',ISOFF, IUOFF
-                   do jjj = 1, NBBAS(IREP,IC)
-                     print *,'copy: AMAT(',IUOFF+1+jjj-1,') = ',
-     &                              AMAT(  IUOFF+1+jjj-1)
-                   end do
-#endif
                 end if
 
               end do
