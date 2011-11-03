@@ -7320,8 +7320,8 @@ C
       HESLOC = 'FULL'
       LGFULL = .FALSE.
       LGDIAG = .FALSE.
-      THFULL = 1.0D-15
-      THDIAG = 1.0D-6
+      THFULL = 1.0D-10
+      THDIAG = 1.0D-10
 C
 C     Process input from CBILOC
 C     =========================

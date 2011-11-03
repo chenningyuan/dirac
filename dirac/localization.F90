@@ -164,6 +164,19 @@ contains
   nfbas(:)    = var%nfbas(ifrp,:)
   ipqtoq(:,:) = var%ipqtoq(:,:)
 
+  ! Check thresholds
+  if(loc%thdiag < tresh)then
+    write(6,'(/a)')      ' WARNING: The threshold (THDIAG) from the input is too small '
+    write(6,'(a,d8.1)')  ' WARNING: It will be changed to the minimal reasonable value: ',tresh
+    loc%thdiag = tresh
+  endif
+  if(loc%thfull < tresh)then
+    write(6,'(/a)')      ' WARNING: The threshold (THFULL) from the input is too small '
+    write(6,'(a,d8.1)')  ' WARNING: It will be changed to the minimal reasonable value: ',tresh
+    loc%thfull = tresh
+  endif
+
+  ! Set defaults
   full = .false.
   if(loc%hesloc == 'FULL') full = .true.
 
