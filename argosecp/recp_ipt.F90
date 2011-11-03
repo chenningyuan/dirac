@@ -126,6 +126,7 @@ SUBROUTINE RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu)
   USE RECP_OUTPUT
   IMPLICIT NONE  
   INTEGER  ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu,IOS 
+  INTEGER  I,J,K
   ltot1   = lit+ljt-1
   mproju  = 2*lproju+1
   lamau   = lit+lproju
@@ -133,12 +134,30 @@ SUBROUTINE RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu)
 
   ALLOCATE (IPT_CZ_G2(ic1),STAT=IOS)                  ! stvcz,26:g2(1:ic1)
   IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  DO I = 1, ic1
+     IPT_CZ_G2(I) = 0.0d0
+  ENDDO
+
   ALLOCATE (IPT_CZ_G1(ic0),STAT=IOS)                  ! c/lsints,27:g1(1:ic0)
   IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G1')
+  DO I = 1, ic0 
+     IPT_CZ_G1(I) = 0.0d0
+  ENDDO
+
   ALLOCATE (IPT_CZ_GOUT(ij),STAT=IOS)                 ! c/lsints,28:gout(1:ij)
   IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_GOUT')
+  DO I = 1, ij
+     IPT_CZ_GOUT(I) = 0.0d0
+  ENDDO
+
   ALLOCATE (IPT_CZ_CRDA(lit,3),STAT=IOS)              ! c/lsints,29:crda(1:lit,1:3)
   IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_CRDA')
+  DO I = 1, 3
+     DO J = 1, lit
+        IPT_CZ_CRDA(J,I) = 0.0d0
+     ENDDO
+  ENDDO
+
   ALLOCATE (IPT_CZ_CRDB(ljt,3),STAT=IOS)              ! c/lsints,30:crdb(1:ljt,1:3)
   IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_CRDB')
   ALLOCATE (IPT_P1_ANG(ltot1,ltot1),STAT=IOS)         ! pseud1,31:ang(1:ltot1,1:ltot1)
@@ -166,21 +185,21 @@ SUBROUTINE RECP_IPTA_STVCZ(ic0,ic1,ij,lit,ljt,ltot1,mproju,lproju,lamau,lambu)
   ALLOCATE (IPT_P23_ATERM2(ljt),STAT=IOS)             ! qbess,42:aterm2(1:ljt) 
   IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_ATERM2')
   ALLOCATE (IPT_P23_BPREF(ljt),STAT=IOS)              ! qbess,43:bpref(1:ljt)
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_')
   ALLOCATE (IPT_P23_BPWR(lit),STAT=IOS)               ! qbess,44:bpwr(1:lit) 
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_')
   ALLOCATE (IPT_P23_BTERM1(lit),STAT=IOS)             ! qbess,45:bterm1(1:lit) 
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_')
   ALLOCATE (IPT_P23_SSI(ltot1+lproju),STAT=IOS)       ! qbess,46:ssi(ltot1+lproju)
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_')
   ALLOCATE (IPT_P23_ABESS(lamau),STAT=IOS)            ! ptwt, 47:abess(1:lamau)
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_')
   ALLOCATE (IPT_P23_BBESS(lambu),STAT=IOS)            ! ptwt, 48:bbess(1:lambu)
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_')
   ALLOCATE (IPT_P23_PTPOW(ltot1),STAT=IOS)            ! ptwt, 49:ptpow(1:ltot1)
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_PTPOW')
   ALLOCATE (IPT_P23_Q2(lambu,lamau),STAT=IOS)         ! ptwt, 50:q2(1:lambu,1:lamau) 
-  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_CZ_G2')
+  IF(IOS.NE.0) CALL RECP_EXIT_IPT('IPT_P23_Q2')
 
 END SUBROUTINE RECP_IPTA_STVCZ
 

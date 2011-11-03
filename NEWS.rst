@@ -7,6 +7,8 @@ New features in DIRAC11
 * New and fast XC integration
 * Functional derivatives using automatic differentiation (XCFun)
 * New visualization options
+* RKBIMP: MO-coefficients generated using restricted kinetic balance (RKB) can be extended by their unrestricted kinetic balance (UKB) complement, thus providing magnetic balance for response calculations involving external magnetic fields
+* New and improved 2c Hamiltonian schemes
 
 
 New build system and infrastructure
@@ -34,6 +36,7 @@ Methods
 
 * Hartree-Fock
 * Density Functional Theory
+* Kramers-restricted Multi-Configuration Self-Consistent-Field
 * Coupled Cluster
 * Configuration Interaction
 * Moeller-Plesset Perturbation Theory
@@ -48,6 +51,7 @@ Hamiltonians
 * 4c Levy-Leblond (nonrelativistic)
 * 2c X2C, the one-step exact two-component Hamiltonian
 * 2c BSS, the two-step exact two-component Hamiltonian (= DKH(infinity,0))
+* 2c molecular-mean-field (= X2Cmmf), X2C transformation with the converged 4c-Fock operator as defining Hamiltonian
 
 
 Molecular properties
@@ -57,6 +61,7 @@ Molecular properties
 * First order properties with MP2
 * Core excitation energies in the static exchange (STEX) approximation.
 * Ionization energies at the ADC(3) level of theory
+* selected first order properties with CI
 
 
 Efficiency

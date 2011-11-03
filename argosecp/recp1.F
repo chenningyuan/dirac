@@ -23,9 +23,6 @@
       RECP_DBG    = 0
       RECP_OUT    = 6 ! DIRAC output
 
-!     RECP_INPUT generation
-      CALL RECP_GENINP
-
 !     Main part
       CALL RECP_DRIVER
  
@@ -40,9 +37,7 @@
       USE RECP_IPT
       implicit logical(a-z)
 
-#include "argos_mxvalue.h"
-#include "argos_files.h"
-#include "argos_error.h"
+#include "inc_mxvalue.h"
 #include "inc_print.h"
 
       integer
@@ -101,9 +96,7 @@
       USE RECP_OUTPUT
       implicit logical(a-z)
 
-#include "argos_mxvalue.h"
-#include "argos_files.h"
-#include "argos_error.h" 
+#include "inc_mxvalue.h"
 #include "inc_print.h" 
 
       integer INT_AREP
