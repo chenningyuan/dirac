@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -34,6 +34,8 @@ module fde_io
       module procedure read_grid_onecol
       module procedure read_grid_manycol
    end interface read_grid
+
+   real(kind=8) :: threshold = 1.0d-18
 
    contains
 
@@ -85,13 +87,16 @@ module fde_io
     REWIND(file)
     READ(file,*) npoints
     
+    if (associated(points)) nullify(points)
     call allocp(points,4,npoints,id="grid_points")
     
     if (present(vc)) then
+       if (associated(vc)) nullify(vc)
        call allocp(vc,npoints,id="potential")
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
        END DO
+
     else
        DO i=1,npoints
           READ(file,*) points(:,i)
@@ -113,15 +118,15 @@ module fde_io
 !                                 have in file
 !
   SUBROUTINE READ_GRID_manycol(file,points,properties)
-    REAL(kind=8),POINTER :: points(:,:)
+    REAL(kind=8),POINTER :: points(:,:), ptmp_many(:,:)
     REAL(kind=8),pointer :: properties(:,:)
     INTEGER              :: file
     INTEGER              :: i,npoints, nprop
    
-
     REWIND(file)
     READ(file,*) npoints, nprop
-   
+
+    if (associated(points)) nullify(points)
     call allocp(points,4,npoints, id="grid_points")
     call allocp(properties,nprop,npoints, id="properties_on_grid")
 

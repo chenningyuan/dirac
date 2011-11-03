@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -889,10 +889,10 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                            end if
                          end if
                          if(mod(nael+nbel,2).eq.0)then
-                           write(6,'("  MJ =",i5,a1)'), mjval/2,
+                           write(6,'("  MJ =",i5,a1)')  mjval/2,
      &                                                       inv_symbol
                          else 
-                           write(6,'("  MJ =",i5,"/2",a1)'), mjval,
+                           write(6,'("  MJ =",i5,"/2",a1)')  mjval,
      &                                                       inv_symbol
                          end if
                        else

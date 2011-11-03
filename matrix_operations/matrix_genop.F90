@@ -40,7 +40,8 @@ module matrix_genop
             mat_scal,                     &
             mat_trans,                    &
             mat_trab,                     &
-            mat_dotproduct
+            mat_dotproduct,               &
+            get_common_nz
 #endif
 
    implicit none
@@ -77,7 +78,6 @@ module matrix_genop
    end interface
 
 #ifdef PRG_DIRAC
-#include "dgroup.h"
 #include "priunit.h"
 #endif /* ifdef PRG_DIRAC */
 
@@ -91,13 +91,13 @@ contains
    end subroutine
 
 
-   subroutine mat_init_from(C, A, ta, B, tb, complex, reset, zero, alias, mz)
+   subroutine mat_init_from(C, A, ta, B, tb, complex, reset, zero, alias, nz)
       type(matrix),           intent(inout) :: C
       type(matrix), optional, intent(in)    :: A, B
       character*1,  optional, intent(in)    :: ta, tb
       logical,      optional, intent(in)    :: complex, zero, reset
       character*2,  optional, intent(in)    :: alias
-      integer,      optional, intent(in)    :: mz
+      integer,      optional, intent(in)    :: nz
       logical :: taa, tbb, zer, res, cplx
       integer :: nrow, ncol
       if (present(ta) .and. .not.present(A)) &
@@ -142,12 +142,14 @@ contains
       if (present(B)) ncol = merge(B%nrow, B%ncol, tbb)
       C%nrow = nrow
       C%ncol = ncol
-      if(present(mz))then
-        C%mz = mz
+      if(present(nz))then
+        C%nz = nz
       elseif(present(A))then
-        C%mz = A%mz
+        C%nz = A%nz
+      elseif(present(B))then
+        C%nz = B%nz
       else
-        C%mz = nz  ! take nz from dgroup.h
+        C%nz = get_common_nz()
       endif
       if (zer .or. res) then
          nullify(C%elms)
@@ -161,7 +163,7 @@ contains
          C%ih_sym = 0
          C%tr_sym = 0
          C%irep   = 0
-         C%mz     = 4
+         C%nz     = 4
          if (present(A) .and. .not. present(B)) then
            call copy_matrix_sym(C, A)
          end if
@@ -172,8 +174,8 @@ contains
            C%ih_sym = A%ih_sym*B%ih_sym
            C%tr_sym = A%tr_sym*B%tr_sym
            C%irep   = ieor(A%irep, B%irep)
-           C%mz     = A%mz
-           if(B%mz > A%mz) C%mz = B%mz
+           C%nz     = A%nz
+           if(B%nz > A%nz) C%nz = B%nz
          end if
 #endif /* ifdef PRG_DIRAC */
       else if (present(alias)) then
@@ -193,7 +195,7 @@ contains
          end if
       else
          !print *,'mat_init',loc(C)
-         call mat_init_full(C, nrow, ncol, mz=C%mz)
+         call mat_init_full(C, nrow, ncol, nz=C%nz)
       end if
    end subroutine
 
@@ -579,6 +581,7 @@ contains
       integer                            :: uni, colw, dec, i, j, siz
       character*8                        :: fmt
       character*4                        :: brac
+#include "dgroup.h"
 #ifndef PRG_DIRAC
       uni = 6 !process optional argument unit, which defaults to stdout
       if (present(unit)) uni = unit
@@ -625,7 +628,7 @@ contains
       write(*, *) 'ih_sym = ', A%ih_sym
       write(*, *) 'tr_sym = ', A%tr_sym
       write(*, *) 'irep   = ', A%irep
-      write(*, *) 'nz     = ', A%mz
+      write(*, *) 'nz     = ', A%nz
 
       if (associated(A%elms)) then
         call prqmat(A%elms,            &
@@ -633,7 +636,7 @@ contains
                     A%ncol,            &
                     A%nrow,            &
                     A%ncol,            &
-                    A%mz,              &
+                    A%nz,              &
                     ipqtoq(1, A%irep), &
                     lupri)
       else
@@ -710,7 +713,7 @@ contains
      A%ih_sym = B%ih_sym
      A%tr_sym = B%tr_sym
      A%irep   = B%irep
-     A%mz     = B%mz
+     A%nz     = B%nz
    
    end subroutine
 #endif

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1188,7 +1188,7 @@ C     total length of sigma block
 #endif
       print *,'LEN_S is',LEN_S
       if(LEN_S.eq.0)then
-        print *,'oops, zero sigma vector???'
+        print *,"oops, zero sigma vector???"
         goto 9999
       end if
       IF(ISD.EQ.2)THEN ! check S norm (only density runs)
@@ -2742,7 +2742,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
             NSTR = NST_FOR_OCC(KSPGRP,NOBPT,NGAS)
             NORB = NOBPT(IOPTP)
             LEN = LEN + NSTR*NORB 
-       if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
+!      if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
 *. Update KSPGRP 
             KSPGRP(IOPTP) = KSPGRP(IOPTP) + 1
           END DO
@@ -2753,10 +2753,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END DO
 *
 #if defined LUCI_DEBUG
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
-      END IF
+      WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
 #endif
 *
       RETURN

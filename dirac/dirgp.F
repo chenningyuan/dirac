@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2569,35 +2569,41 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-      LOGICAL TOBE
+      LOGICAL TOBE, TOBEK
       DIMENSION WORK(LWORK)
 C
 #include "memint.h"
 C
-C     Check if coefficients are on file
-C
+C     check if file KRMCSCF or DFCOEF is present
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
+      IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
+        WRITE(LUPRI,'(A)') 
+     &  'PSTORB: Coefficient file DFCOEF/KRMCSCF not found !'
+         CALL QUIT('PSTORB: Coefficient file not found !')
+      ENDIF
+
+!     assign mcscf file higher priority
+      if(tobek .and. tobe) tobe = .false.
+C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
 C
       CALL PSTOR1(WORK(KCMO),WORK(KEIG),WORK(KIBG),
-     &            WORK(KFREE),LFREE)
+     &            tobek,WORK(KFREE),LFREE)
 C
 C     Memory deallocation
       CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
 C
  1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'PSTORB: Coefficient file not found !'
-      CALL QUIT('PSTORB: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/*Deck Pstor1 */
-      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,read_mcscf,WORK,LWORK)
 C***********************************************************************
 C
 C     Post orbital modifications
@@ -2614,14 +2620,56 @@ C
 #include "dgroup.h"
 #include "dcbreo.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(*)
+      logical, intent(in) :: read_mcscf
+      logical             :: mcorb, mjava, boson_irrep_info
+      logical             :: fndlab
 #include "memint.h"
 
-C
-C     Read coefficients, eigenvalues and irrep identification 
-C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &            WORK,KFREE,LFREE)
+C     Get coefficients from KRMCSCF/DFCOEF
+C     ====================================
+      if(read_mcscf)then
+
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
+        REWIND LUKRMC
+        MCORB = .not.FNDLAB('MCCINATO',LUKRMC)
+        REWIND LUKRMC
+        MJAVA = FNDLAB('MJVEC   ',LUKRMC)
+
+!       read mj-values / boson irrep info
+        IF(MJAVA)THEN
+          CALL IREAKRMC(LUKRMC,'MJVEC   ',IBEIG,NORBT)
+        ELSE
+          REWIND LUKRMC
+          boson_irrep_info = FNDLAB('IBEIG   ',LUKRMC)
+          if(boson_irrep_info)then
+            CALL IREAKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
+          else
+            CALL IZERO(IBEIG,NORBT)
+          end if
+        END IF
+
+!       read mcscf /natural orbitals
+        IF(MCORB)THEN
+          JRDMO = -1
+          CALL RREADMO(CMO,JRDMO,1,LUKRMC)
+!         ... set to zero
+          CALL DZERO(EIG,NORBT)
+        ELSE
+!         read CI/MCSCF natural orbitals and occupancies
+          JRDMO = -1
+          CALL RREADMO(CMO,JRDMO,4,LUKRMC)
+          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+        END IF
+
+!       remove old MCSCF - we write a new one as this reordering step requires 
+!       a recalculation of the reference state vector in any following
+!       MCSCF/CI run.
+        CLOSE (LUKRMC,STATUS='DELETE')
+      ELSE
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSTOR1')
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &              WORK,KFREE,LFREE)
+      END IF
 C
 C     Reorder orbitals
 C
@@ -2638,8 +2686,30 @@ C
 C
 C     Write new coefficients
 C
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      if(read_mcscf)then
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
+        CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
+        REWIND(LUKRMC)
+!       mj-values / boson irrep info
+        if(mjava)then
+          CALL IWRTKRMC(LUKRMC,'MJVEC   ',IBEIG,NORBT)
+        else
+          if(boson_irrep_info)then
+            CALL IWRTKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
+          end if
+        end if
+!       reordered orbitals
+        if(mcorb)then
+          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+        else
+          CALL WRTKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+          CALL WRTKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
+        end if
+        close(LUKRMC,status='keep')
+      else
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        CLOSE(LUCOEF,STATUS='KEEP')
+      end if
 C
       RETURN
       END
