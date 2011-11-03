@@ -545,6 +545,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #include "waio.h"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 CSK#include "infpar.h"
 #include "mpif.h"
@@ -665,7 +666,7 @@ C
 C
 C     Report memory in megaBytes
 C
-      WRITE (IW,1000) (MAXCOR / (1024 * 1024))*8
+      WRITE (IW,1000) MAXCOR / (128 * 1024)
 C
 C     General setup
 C     -------------
@@ -1866,9 +1867,6 @@ C
 #include "eqns.inc"
 #include "waio.h"
 #include "complex.inc"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1944,9 +1942,9 @@ C
 C     The maximum necessary size is
 C
       NVT = MAX(NV5,NV6)
-      NVT = MAX(NVT,NV4)
-      NVT = MAX(NVT,JOOOO(2))
-      NVT = MAX(NVT,JVOOO(2))
+      NVT = MAX(NVT,INT(NV4,8))
+      NVT = MAX(NVT,INT(JOOOO(2),8))
+      NVT = MAX(NVT,INT(JVOOO(2),8))
 C
 C     The remaining space is
       call allocator_get_maxbuff(freemem,kind(a_VT))
@@ -1970,7 +1968,7 @@ C     We must be able to store at least a NV4 size array, check that.
 C     Since we use this array as work in MAKEFM we also need to store the
 C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
-      NVTMIN = MAX(NVT,NV4)
+      NVTMIN = MAX(NVT,INT(NV4,8))
       NVTMIN = MAX(NVTMIN,JOOOO(2))
       NVTMIN = MAX(NVTMIN,JVOOO(2))
 C
@@ -2160,12 +2158,12 @@ C
          NV5IRP = 1
          NV6IRP = 1
          DO IRP = 1, NREP
-            NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
-            NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
+            NV5IRP = MAX(NV5IRP,INT(NVO (IRP),8)*INT(NVVT(IRP),8))
+            NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
          ENDDO
 C
          NVIRP = MAX(NV5IRP,NV6IRP)
-         NBUF3 = MIN(NVIRP,NBUF3)
+         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
 C
 C        Check the minimum size for the general use of this array
 C
@@ -2202,7 +2200,6 @@ C
             GOTO 10
          ENDIF
 C
-C if we ire only doing
          CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        This is a restart point: save the amplitudes and update status.
@@ -2243,7 +2240,6 @@ C
 C
 C           Use standard initialization
 C
-
             CALL XCOPY (NDIMT1,a_FVO,1,a_T1,1)
             CALL GETVVOO (a_T2)
             CALL DENOM (EPS,a_T1,a_T2,a_T1,a_T2)
@@ -2426,6 +2422,8 @@ C
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "dcbmp2no.h"
+#include "mp1stpr.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2494,6 +2492,20 @@ C
 
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
+
+C     Calculate the size of the array needed for the sorted T2 array that      
+C     is used in MOLTRA. In spinfree calculations this will be larger than     
+C     the the dimension used in RELCCSD (was a nasty bug in DIRAC08)           
+C     This initialization does not fix the problem with spinfree calculations, 
+C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be     
+C     adapted to the fact that in spinfree calculations there is a many-to-1   
+C     correspondence between the list of irreps used by RELCCSD and the        
+C     fermion irreps of DIRAC. Probably the best solution is to rewrite these  
+C     routines using an index vector that gives the correspondence.            
+
+      CALL INIT_T1(a_T2,.FALSE.)
+      CALL INIT_T2(a_T2,.FALSE.)
+      NBUF1 = MAX(NBUF1, NTMATR1, NTMATR2)
       NBUF2 = NBUF1
 C
 C The DIIS algorithm is used for the Z-vector and Lamda-equations
@@ -2595,18 +2607,24 @@ C
      &                   a_DVO, a_DOV, a_DMO)
 C        Solve Z-vector equations 
 C
-         TOL = 10.0D0**(-NTOLGR)
-         MAXIT  = MXITGR
-         MAXDIM = MXDIMGR
-         CALL CCDENSZ (1, NSP, IREPSPI, EPS,  a_T1, a_S1, a_T2, a_S2,
-     &                 a_BUF1, a_BUF2, a_BUF3, NBUF2 , NBUF3, a_CBUF,
-     &                 a_XVO , a_XOV , a_DOO , a_DVV , a_DVO, a_DOV,
-     &                 a_EVO , a_EOV , a_D2VO, a_D2OV, a_DG,
-     &                 a_CCC , a_BB1 , a_BB2 , TOL)
+         IF (.NOT. NOZG) THEN 
+            TOL = 10.0D0**(-NTOLGR)
+            MAXIT  = MXITGR
+            MAXDIM = MXDIMGR
+            CALL CCDENSZ (1, NSP, IREPSPI, EPS,  a_T1, a_S1, a_T2, a_S2,
+     &                    a_BUF1, a_BUF2, a_BUF3, NBUF2 , NBUF3, a_CBUF,
+     &                    a_XVO , a_XOV , a_DOO , a_DVV , a_DVO, a_DOV,
+     &                    a_EVO , a_EOV , a_D2VO, a_D2OV, a_DG,
+     &                    a_CCC , a_BB1 , a_BB2 , TOL)
+         ENDIF
 C
 C        Calculate expecation value
 C
-         WRITE (IW,1002) '    MP2'
+         IF (NOZG) THEN
+            WRITE (IW,1002) 'MP2 noZ'
+         ELSE
+            WRITE (IW,1002) '    MP2'
+         END IF
          DO EOPER = 1, NEOPER
             EOFF = (EOPER-1)*NDIMX*RCW+1
             CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LTR,a_CBUF,IREPSPI,
@@ -2677,29 +2695,25 @@ C         this means that, for the time being, we can deallocate everything?
           ENDIF
 #endif
 C
-C        Solve relativistic MP2 lambda equations
+C        Get MP2 amplitudes and lambdas
 C
-         WRITE (IW,1008) 
          CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 
 C
 C        Get amplitude part of density matrix
 C
-         WRITE (IW,1008) 
          CALL CCDENSC (1, a_T1  , a_S1  , a_T2,   a_S2,
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
 C
 C        Solve Z-vector equations 
 C
-         WRITE (IW,1008) 
          IF (.NOT.NOZG)
-     &       CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
+     &      CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
 C
 C        Create upper triangle of density matrix
 C
-         WRITE (IW,1008) 
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C
 C        Write density matrix to file for later processing
@@ -2716,7 +2730,7 @@ C
           KFREE1=1
           LFREE1=NBUF3*RCW
 C
-            CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
+          CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG, a_BUF3,KFREE1,LFREE1)
          END IF
 C
 c        CALL MEMCHK('mp2g 2.1',CC,1)
@@ -3172,7 +3186,7 @@ C     Ask for the memory requirements of the modules
 C
       MXCORR1 = 0
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &            NSP,IREPSP,IREPSPI)
+     &             NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
 C
 C     Set restart on sorted integrals to false
@@ -3185,7 +3199,7 @@ C Allocate space for the calculation of the amplitudes
 C
       MAXDIM = MXDIMFS
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
-     &            JVVOO(NREP+1),JVOVO(NREP+1))
+     &             JVVOO(NREP+1),JVOVO(NREP+1))
       NBUF2 = NBUF1
 
       call alloc( a_FVO , NFVO*RCW              , id="fvo")
@@ -3221,12 +3235,12 @@ C
       NV5IRP = 1
       NV6IRP = 1
       DO IRP = 1, NREP
-         NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
-         NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
+         NV5IRP = MAX(NV5IRP,INT(NVO(IRP),8)*INT(NVVT(IRP),8))
+         NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
       ENDDO
 C
       NVIRP = MAX(NV5IRP,NV6IRP)
-      NBUF3 = MIN(NVIRP,NBUF3)
+      NBUF3 = MIN(NVIRP,INT(NBUF3,8))
 C
 C     Check the minimum size for the general use of this array
 C
