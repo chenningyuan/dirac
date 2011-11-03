@@ -646,10 +646,10 @@ contains
         DLOC = D1/QLOC2
         DINV = DINV + QLOC2
         WRITE(LUPRI,'(11X,A,I3,A,2F7.4)') &
-        '* Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
+        ' Orbital ', I ,' Pipek-Mezey localization measure d = ',DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
@@ -885,10 +885,10 @@ contains
          DLOC = D1/QLOC2
          DINV = DINV + QLOC2
          WRITE(LUPRI,'(11X,A,I3,A,F7.4)') &
-         '* Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
+         ' Orbital ', I ,' Pipek-Mezey localization measure d = ', DLOC
       ENDDO
       DINVM = DINV/DFLOAT(NI)
-      WRITE(LUPRI,'(/11X,A,F21.15)') '* Inverse mean delocalization = ',DINVM
+      WRITE(LUPRI,'(/11X,A,F21.15)') ' Inverse mean delocalization = ',DINVM
 
   !------------------------------------------------------------------------------!
   !                             Deallocate arrays                                !
