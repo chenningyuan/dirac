@@ -3,6 +3,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
                                    # -fcray-pointer is for VAR_MPI2
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -static"
+            )
+    endif()
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
@@ -45,6 +50,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT -g -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
+            )
+    endif()
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
