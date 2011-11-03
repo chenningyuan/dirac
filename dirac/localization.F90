@@ -310,7 +310,7 @@ contains
 
       write(chstart(20:23),'(i4)') itr
       call titler(chstart,'=',122)
-      write(lupri,'(/6x,a,a24)')'>>> ',daytid
+      write(lupri,'(/6x,a,a24)')'--- ',daytid
 
       if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
@@ -355,20 +355,20 @@ contains
   write(lupri,'(//11x,a)')      '************************************************************'
   if(Iminmax)then
     write(lupri,'(11x,a,i4,a,i4,a)') &
-         '>>>> MAXIMUM reached after',itr,' iterations and',ist,' steps <<<<'
+         '**** MAXIMUM reached after',itr,' iterations and',ist,' steps ****'
   elseif((full.and.(diffa < loc%thfull)).or.(.not.full.and.(diffa < loc%thdiag)))then
     write(lupri,'(11x,a,i4,a,i4,a)') &
-         '>>>>    Convergence in',itr,' iterations and',ist,' steps     <<<<'
+         '****    Convergence in',itr,' iterations and',ist,' steps     ****'
   else
     write(lupri,'(11x,a,i4,a,i4,a)') &
-         '>>>> No convergence after',itr,' iterations and',ist,' steps  <<<<'
+         '**** No convergence after',itr,' iterations and',ist,' steps  ****'
   endif
-  write(lupri,'(11x,a,f21.15,a)')'>>>> Inverse mean delocalization =',dinvmo,' <<<<'
+  write(lupri,'(11x,a,f21.15,a)')'**** Inverse mean delocalization =',dinvmo,' ****'
   write(lupri,'(11x,a//)')      '************************************************************'
 
   timend = second()
   time   = timend - timstr
-  call timtxt('          >>> Time used in localization is :',time,lupri)
+  call timtxt('          --- Time used in localization is :',time,lupri)
 
   ! Put the localised coefficients in DFCOEF
   call orblo5(scoef,nfbas(0),nish,norb)
