@@ -7309,13 +7309,6 @@ C
          SET = .TRUE.
       END IF
 #include "memint.h"
-CST
-CST   STOP: Localization is not working yet. The old code is broken.
-CST
-      WRITE(LUPRI,'(/a)')' STOP: Localization is not implemented yet!'
-      WRITE(LUPRI,'(a)') '       ----------------------------------- '
-      STOP
-C
 C
 C     Initialize /CBILOC/
 C     ===================
