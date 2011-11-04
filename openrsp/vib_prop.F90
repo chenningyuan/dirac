@@ -1107,11 +1107,12 @@ contains
       real(8)                        :: qw
 
       real(8), parameter             :: sthetaw2 = 0.2319d0
-      real(8), parameter             :: dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
+      real(8)                        :: dfac
       real(8), parameter             :: hartree2hz = 6.579683920721d15
 
 #include "mxcent.h"
 #include "nuclei.h"
+      dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
 
       allocate(epnc(nc))
       allocate(epnc_gradient(nr_atoms*3, nc))
