@@ -145,9 +145,10 @@ Compilation info
  64-bit integers          | OFF
  MPI                      | OFF
  XCFun                    | ON
- Fortran compiler         | /opt/intel/composerxe-2011.4.191/bin/intel64/ifort
- Fortran compiler version | ifort (IFORT) 12.0.4 20110427
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
+ Fortran compiler         | /usr/bin/gfortran-4.4
+ Fortran compiler version | unknown
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -O0 -g
  C compiler               | /usr/bin/gcc
  C compiler version       | gcc (SUSE Linux) 4.4.1 [gcc-4_4-branch revision 15
                           | 0839]
@@ -160,17 +161,17 @@ Compilation info
  LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
                           | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
                           | group
- Configuration time       | 2011-11-03 10:30:06.464585
- Last commit rev          | e5fc0f6bbd60db4a6b962bea227156f6f6bd0d08
+ Configuration time       | 2011-11-03 15:53:26.193289
+ Last commit rev          | bcfb79c9d5612c29eac81e56cb8b58f77834bd75
  Last commit author       | Stano 
- Last commit time         | Thu Nov 3 10:29:48 2011 +0100
+ Last commit time         | Thu Nov 3 15:39:45 2011 +0100
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Nov  3 10:31:41 2011
+     Date and time (Linux)  : Fri Nov  4 14:47:20 2011
      Host name              : Bassilus                                
  
  
@@ -269,6 +270,7 @@ FINISH
   -------------------
 
  Print level in TWOINT:    1
+ Extra output for the following shells:  0  0  0  0
  * Direct calculation of Fock matrices in SO-basis.
  * User specified screening threshold in direct Fock matrix construction: 1.00E-11
  * Separate density screening of Coulomb integral batches
@@ -569,11 +571,12 @@ H2     0.7685504811   0.0000000000   0.4760602904
  LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
 ===========================================================================
  * Molecular orbital localization from Mulliken analysis
- * Threshold for convergence of the localization process : 0.80-315
-   (based on the inverse mean delocalization)
+ * Full hessian will be used
+ * Convergence criteria of the localization process :
+   - If the maximum is reached (= there are no positive eigenvalues)
  * Maximum number of iterations :   100
- * Localised MO are written in file DFCOEF !!!
  * Print level :    0
+ * Localised MO are written in file DFCOEF !!!
 ===========================================================================
  POPINP: Mulliken population analysis
 ===========================================================================
@@ -744,10 +747,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     1   0.81D+00   0.64D-01   0.13D+01    0.4514   24  28   3   FULL   0.81D+00  -0.86D-03
+*C     1   0.81D+00   0.64D-01   0.13D+01    0.0084   24  28   3   FULL   0.81D+00  -0.86D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -781,10 +784,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     2   0.70D-04   0.80D-02   0.31D-01    0.4023   20  32   3   FULL   0.70D-04   0.28D-03
+*C     2   0.70D-04   0.80D-02   0.31D-01    0.0075   20  32   3   FULL   0.70D-04   0.28D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -818,10 +821,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     3   0.10D-02   0.39D-01   0.11D+00    0.4054   20  32   3   FULL   0.10D-02   0.42D-02
+*C     3   0.10D-02   0.39D-01   0.11D+00    0.0075   20  32   3   FULL   0.10D-02   0.42D-02
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -855,10 +858,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     4   0.12D-01   0.15D+00   0.64D+00    0.4102   20  32   3   FULL   0.12D-01   0.11D+00
+*C     4   0.12D-01   0.15D+00   0.64D+00    0.0076   20  32   3   FULL   0.12D-01   0.11D+00
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -879,10 +882,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     5   0.30D-05   0.57D-02   0.53D-01    0.0166   18  34   3   FULL   0.30D-05   0.12D-04
+*C     5   0.30D-05   0.57D-02   0.53D-01    0.0003   18  34   3   FULL   0.30D-05   0.12D-04
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -903,10 +906,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     6   0.30D-09   0.87D-05   0.55D+00    0.0068   11  38   6   FULL   0.30D-09   0.32D-08
+*C     6   0.30D-09   0.87D-05   0.55D+00    0.0001   11  38   6   FULL   0.30D-09   0.32D-08
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -927,10 +930,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     7   0.12D-09   0.19D-06   0.47D+00    0.0068    8  38   9   FULL   0.12D-09   0.17D-08
+*C     7   0.12D-09   0.19D-06   0.47D+00    0.0001    8  38   9   FULL   0.12D-09   0.17D-08
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -951,10 +954,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     8   0.14D-09   0.16D-07   0.25D+00    0.0067    5  38  12   FULL   0.14D-09   0.75D-09
+*C     8   0.14D-09   0.16D-07   0.25D+00    0.0001    5  38  12   FULL   0.14D-09   0.75D-09
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -975,10 +978,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     9   0.12D-10   0.62D-08   0.56D-01    0.0067    5  38  12   FULL   0.12D-10   0.51D-10
+*C     9   0.12D-10   0.62D-08   0.56D-01    0.0001    5  38  12   FULL   0.12D-10   0.51D-10
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1012,10 +1015,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    10   0.17D-04   0.48D-08   0.14D-01    0.0067    2  38  15   FULL   0.17D-04   0.31D-04
+*C    10   0.17D-04   0.48D-08   0.14D-01    0.0001    2  38  15   FULL   0.17D-04   0.31D-04
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1036,10 +1039,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    11   0.54D-05   0.24D-01   0.31D-01    0.0159   13  39   3   FULL   0.54D-05  -0.14D-03
+*C    11   0.54D-05   0.24D-01   0.31D-01    0.0003   13  39   3   FULL   0.54D-05  -0.14D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1060,10 +1063,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    12   0.72D-05   0.28D-01   0.36D-01    0.0175   13  39   3   FULL   0.72D-05  -0.19D-03
+*C    12   0.72D-05   0.28D-01   0.36D-01    0.0003   13  39   3   FULL   0.72D-05  -0.19D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1084,10 +1087,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    13   0.96D-05   0.32D-01   0.67D-01    0.0191   13  39   3   FULL   0.96D-05  -0.25D-03
+*C    13   0.96D-05   0.32D-01   0.67D-01    0.0004   13  39   3   FULL   0.96D-05  -0.25D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1108,10 +1111,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    14   0.13D-04   0.37D-01   0.16D+00    0.0211   13  39   3   FULL   0.13D-04  -0.34D-03
+*C    14   0.13D-04   0.37D-01   0.16D+00    0.0004   13  39   3   FULL   0.13D-04  -0.34D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1132,10 +1135,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:42 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    15   0.18D-04   0.43D-01   0.49D+00    0.0234   15  39   1   FULL   0.18D-04  -0.45D-03
+*C    15   0.18D-04   0.43D-01   0.49D+00    0.0004   15  39   1   FULL   0.18D-04  -0.45D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1156,10 +1159,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    16   0.25D-04   0.49D-01   0.10D+01    0.0262   15  39   1   FULL   0.25D-04  -0.60D-03
+*C    16   0.25D-04   0.49D-01   0.10D+01    0.0005   15  39   1   FULL   0.25D-04  -0.60D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1180,10 +1183,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    17   0.34D-04   0.57D-01   0.28D+01    0.0300   15  39   1   FULL   0.34D-04  -0.82D-03
+*C    17   0.34D-04   0.57D-01   0.28D+01    0.0006   15  39   1   FULL   0.34D-04  -0.82D-03
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1204,10 +1207,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    18   0.50D-04   0.67D-01   0.11D+01    0.0359   15  39   1   FULL   0.50D-04  -0.11D-02
+*C    18   0.50D-04   0.67D-01   0.11D+01    0.0007   15  39   1   FULL   0.50D-04  -0.11D-02
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1228,10 +1231,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:21 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    19   0.71D-04   0.78D-01   0.79D+01    0.0466   16  39   0   FULL   0.71D-04  -0.16D-02
+*C    19   0.71D-04   0.78D-01   0.79D+01    0.0009   16  39   0   FULL   0.71D-04  -0.16D-02
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1252,10 +1255,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    20   0.74D-04   0.93D-01   0.23D+01    0.0634   16  39   0   FULL   0.74D-04  -0.21D-02
+*C    20   0.74D-04   0.93D-01   0.23D+01    0.0012   16  39   0   FULL   0.74D-04  -0.21D-02
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1289,10 +1292,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    21   0.62D-03   0.11D+00   0.14D+01    0.1098   16  39   0   FULL   0.62D-03   0.43D+00
+*C    21   0.62D-03   0.11D+00   0.14D+01    0.0020   16  39   0   FULL   0.62D-03   0.43D+00
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1326,10 +1329,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    22   0.95D-02   0.21D+00   0.27D+00    0.2573   16  39   0   FULL   0.95D-02   0.40D-01
+*C    22   0.95D-02   0.21D+00   0.27D+00    0.0048   16  39   0   FULL   0.95D-02   0.40D-01
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1363,10 +1366,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    23   0.49D-02   0.44D+00   0.55D+01    0.3191   15  40   0   FULL   0.49D-02   0.94D+00
+*C    23   0.49D-02   0.44D+00   0.55D+01    0.0059   15  40   0   FULL   0.49D-02   0.94D+00
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1387,10 +1390,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    24   0.49D-02   0.41D+00   0.96D+01    0.3138   15  40   0   FULL   0.49D-02   0.34D-01
+*C    24   0.49D-02   0.41D+00   0.96D+01    0.0058   15  40   0   FULL   0.49D-02   0.34D-01
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1411,10 +1414,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    25   0.16D-02   0.23D+00   0.31D+01    0.2833   15  40   0   FULL   0.16D-02   0.66D-02
+*C    25   0.16D-02   0.23D+00   0.31D+01    0.0052   15  40   0   FULL   0.16D-02   0.66D-02
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1435,10 +1438,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    26   0.10D-04   0.20D-01   0.35D+00    0.2181   15  40   0   FULL   0.10D-04   0.42D-04
+*C    26   0.10D-04   0.20D-01   0.35D+00    0.0040   15  40   0   FULL   0.10D-04   0.42D-04
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1459,10 +1462,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    27   0.53D-08   0.44D-03   0.46D+00    0.2084   14  40   1   FULL   0.53D-08   0.21D-07
+*C    27   0.53D-08   0.44D-03   0.46D+00    0.0039   14  40   1   FULL   0.53D-08   0.21D-07
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1483,10 +1486,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    28   0.35D-11   0.11D-04   0.42D+00    0.2051    8  40   7   FULL   0.35D-11   0.14D-10
+*C    28   0.35D-11   0.11D-04   0.42D+00    0.0038    8  40   7   FULL   0.35D-11   0.14D-10
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1507,10 +1510,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
       =====================================================================
 
 
-      --- Thu Nov  3 10:31:43 2011
+      --- Fri Nov  4 14:47:22 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C    29   0.20D-14   0.22D-06   0.12D-06    0.2227    0  40  15   FULL   0.20D-14   0.53D-14
+*C    29   0.20D-14   0.22D-06   0.12D-06    0.0041    0  40  15   FULL   0.20D-14   0.53D-14
 
 
            ************************************************************
@@ -1519,10 +1522,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
            ************************************************************
 
 
-           --- Time used in localization is :   1.46 seconds
+           --- Time used in localization is :   1.47 seconds
 
  
-     Date and time (Linux)  : Thu Nov  3 10:31:43 2011
+     Date and time (Linux)  : Fri Nov  4 14:47:22 2011
      Host name              : Bassilus                                
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1535,10 +1538,10 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
   Largest          10  allocations
   
       500.00 Mb at subroutine MAIN__+0x8d4                               for work array at main                        
-        0.31 Mb at subroutine localization_mp_orbloc_+0xde9              for cmo    in orbloc                          
+        0.31 Mb at subroutine localization_mp_orbloc_+0x12e6             for cmo    in orbloc                          
         0.09 Mb at subroutine localization_mp_orblo5_+0x189              for CMO   IN ORBLO5                           
         0.08 Mb at subroutine butobs_no_work_+0x91                       for buf in butobs                             
-        0.08 Mb at subroutine localization_mp_orbloc_+0xdbd              for smat   in orbloc                          
+        0.08 Mb at subroutine localization_mp_orbloc_+0x12ba             for smat   in orbloc                          
         0.08 Mb at subroutine butobs_no_work_+0x91                       for buf in butobs                             
         0.08 Mb at subroutine butobs_no_work_+0x91                       for buf in butobs                             
         0.08 Mb at subroutine gtovlt_+0xd9                               for unnamed variable                          
@@ -1552,5 +1555,5 @@ Gross      Total    |    L A  O  s      L A  O  px     L A  O  py     L A  O  pz
  MEMGET high-water mark:     1.41 MB
 
 *****************************************************
->>>> Node 0, utime: 1, stime: 0, minflt: 4126, majflt: 0, nvcsw: 0, nivcsw: 185, maxrss: 0
+>>>> Node 0, utime: 1, stime: 0, minflt: 4113, majflt: 0, nvcsw: 0, nivcsw: 362, maxrss: 0
 >>>> Total WALL time used in DIRAC: 2s

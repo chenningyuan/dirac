@@ -145,9 +145,10 @@ Compilation info
  64-bit integers          | OFF
  MPI                      | OFF
  XCFun                    | ON
- Fortran compiler         | /opt/intel/composerxe-2011.4.191/bin/intel64/ifort
- Fortran compiler version | ifort (IFORT) 12.0.4 20110427
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -O0
+ Fortran compiler         | /usr/bin/gfortran-4.4
+ Fortran compiler version | unknown
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -O0 -g
  C compiler               | /usr/bin/gcc
  C compiler version       | gcc (SUSE Linux) 4.4.1 [gcc-4_4-branch revision 15
                           | 0839]
@@ -160,17 +161,17 @@ Compilation info
  LAPACK                   | -Wl,--start-group;/opt/intel/composerxe-2011.4.191
                           | /mkl/lib/intel64/libmkl_lapack95_lp64.a;-Wl,--end-
                           | group
- Configuration time       | 2011-11-03 10:30:06.464585
- Last commit rev          | e5fc0f6bbd60db4a6b962bea227156f6f6bd0d08
+ Configuration time       | 2011-11-03 15:53:26.193289
+ Last commit rev          | bcfb79c9d5612c29eac81e56cb8b58f77834bd75
  Last commit author       | Stano 
- Last commit time         | Thu Nov 3 10:29:48 2011 +0100
+ Last commit time         | Thu Nov 3 15:39:45 2011 +0100
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Nov  3 10:32:20 2011
+     Date and time (Linux)  : Fri Nov  4 14:44:50 2011
      Host name              : Bassilus                                
  
  
@@ -618,9 +619,18 @@ H4    -0.6270023464   0.6270023464  -0.6270023464
  LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
 ===========================================================================
  * Molecular orbital localization from projection analysis
- * Threshold for convergence of the localization process : 0.80-315
-   (based on the inverse mean delocalization)
+ * First the diagonal approximation of the hessian will be used
+   and after reaching some convergence criterion we will
+   switch on the construction of the full hessian
+ * Convergence criteria of the localization process :
+   * First part - diagonal approximation of the hessian
+     - If the maximum is reached (= there are no positive eigenvalues)
+       and the change of the functional is below threshold:  0.10D-05
+       (functional = inverse mean delocalization)
+   * Second part - full hessian
+     - If the maximum is reached (= there are no positive eigenvalues)
  * Maximum number of iterations :   100
+ * Print level :    0
  * Fragments are calculated in their individual bases !
      The indexing of fragment spinor sets is assumed 
      to follow list of symmetry independent nuclei.
@@ -640,7 +650,6 @@ H4    -0.6270023464   0.6270023464  -0.6270023464
   - read from file DFH4AT
     - Orbitals in fermion ircop E1  :1                                                                       
  * Localised MO are written in file DFCOEF !!!
- * Print level :    0
 ===========================================================================
  POPINP: Mulliken population analysis
 ===========================================================================
@@ -817,7 +826,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:21 2011
+      --- Fri Nov  4 14:44:50 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     1   0.53D+00   0.58D-01   0.13D+01    0.0000   19  21  15   DIAG   0.53D+00   0.76D-04
@@ -854,7 +863,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:21 2011
+      --- Fri Nov  4 14:44:51 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     2   0.20D-01   0.64D-01   0.21D+01    0.0000   13  27  15   DIAG   0.20D-01   0.23D+00
@@ -891,7 +900,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:21 2011
+      --- Fri Nov  4 14:44:51 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     3   0.57D-02   0.17D+00   0.99D+01    0.0000    5  35  15   DIAG   0.57D-02   0.46D+01
@@ -928,7 +937,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:21 2011
+      --- Fri Nov  4 14:44:51 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     4   0.67D-01   0.24D+00   0.74D+00    0.0000    0  40  15   DIAG   0.67D-01   0.56D-01
@@ -952,7 +961,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:21 2011
+      --- Fri Nov  4 14:44:51 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     5   0.31D-02   0.10D+00   0.15D+00    0.0000    0  40  15   DIAG   0.31D-02   0.31D-02
@@ -976,7 +985,7 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:21 2011
+      --- Fri Nov  4 14:44:51 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
 *C     6   0.91D-06   0.18D-02   0.25D-02    0.0000    0  40  15   DIAG   0.91D-06   0.89D-06
@@ -1000,10 +1009,10 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:22 2011
+      --- Fri Nov  4 14:44:51 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     7   0.36D-08   0.11D-03   0.19D+00    0.1083   15  40   0   FULL   0.36D-08   0.36D-08
+*C     7   0.36D-08   0.11D-03   0.19D+00    0.0020   15  40   0   FULL   0.36D-08   0.36D-08
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1024,10 +1033,10 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:22 2011
+      --- Fri Nov  4 14:44:52 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     8   0.15D-12   0.71D-06   0.47D-02    0.1078    3  40  12   FULL   0.15D-12   0.14D-12
+*C     8   0.15D-12   0.71D-06   0.47D-02    0.0020    3  40  12   FULL   0.15D-12   0.14D-12
 
                     ** Pipek-Mezey localization criteria **
                       ===================================  
@@ -1048,10 +1057,10 @@ Gross  | L A  H4 s      A  C  _small
       =====================================================================
 
 
-      --- Thu Nov  3 10:32:22 2011
+      --- Fri Nov  4 14:44:52 2011
 
      ITR    DIFFA      |GRAD|     |KAPPA|  H(nonD/D)   e: +,-,0     H      DIFFG      DIFFQ
-*C     9   0.22D-15   0.23D-09   0.32D-09    0.1079    0  40  15   FULL   0.22D-15   0.15D-19
+*C     9   0.22D-15   0.23D-09   0.32D-09    0.0020    0  40  15   FULL   0.22D-15   0.15D-19
 
 
            ************************************************************
@@ -1060,10 +1069,10 @@ Gross  | L A  H4 s      A  C  _small
            ************************************************************
 
 
-           --- Time used in localization is :   1.40 seconds
+           --- Time used in localization is :   1.41 seconds
 
  
-     Date and time (Linux)  : Thu Nov  3 10:32:22 2011
+     Date and time (Linux)  : Fri Nov  4 14:44:52 2011
      Host name              : Bassilus                                
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1093,5 +1102,5 @@ Gross  | L A  H4 s      A  C  _small
  MEMGET high-water mark:     2.32 MB
 
 *****************************************************
->>>> Node 0, utime: 1, stime: 0, minflt: 4484, majflt: 0, nvcsw: 0, nivcsw: 210, maxrss: 0
+>>>> Node 0, utime: 1, stime: 0, minflt: 4473, majflt: 0, nvcsw: 0, nivcsw: 247, maxrss: 0
 >>>> Total WALL time used in DIRAC: 2s
