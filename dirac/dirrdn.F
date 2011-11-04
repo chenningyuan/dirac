@@ -7295,8 +7295,8 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
-     S            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
-     S            '.THDIAG','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
+     &            '.THDIAG','.THGRAD','.CHECK ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -7320,8 +7320,11 @@ C
       HESLOC = 'FULL'
       LGFULL = .FALSE.
       LGDIAG = .FALSE.
-      THFULL = 1.0D-10
-      THDIAG = 1.0D-10
+      LGGRAD = .FALSE.
+      LGCHCK = .FALSE.
+      THFULL = 1.0D-13
+      THDIAG = 1.0D-13
+      THGRAD = 1.0D-07
 C
 C     Process input from CBILOC
 C     =========================
@@ -7339,7 +7342,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -7390,14 +7393,26 @@ C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis s
                OWNBAS = .TRUE.
                GO TO 100
  8                       CONTINUE
-C   Set threshold for convergence using full hessian 
+C   Set convergence criterion in scheme using full hessian
+C       - change of the functional between iterations
                LGFULL = .TRUE.
                READ(LUCMD,*) THFULL
                GO TO 100
  9                       CONTINUE
-C   Set threshold for convergence using diagonal aproximation of the hessian 
+C   Set convergence criterion in scheme using diagonal aproximation of the hessian 
+C       - change of the functional between iterations
                LGDIAG = .TRUE.
                READ(LUCMD,*) THDIAG
+               GO TO 100
+ 10                      CONTINUE
+C   Set convergence criterion - norm of the gradient
+               LGGRAD = .TRUE.
+               READ(LUCMD,*) THGRAD
+               GO TO 100
+ 11                      CONTINUE
+C   After last iteration using diagonal approximation calculate one step using full hessian
+               LGCHCK = .TRUE.
+               HESLOC = 'COMB'
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

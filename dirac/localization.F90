@@ -11,8 +11,8 @@ private :: get_mu, updateT
 
 type :: localization_flags
   integer :: iprloc, itrloc
-  real*8  :: thfull, thdiag
-  logical :: prjloc, lgfull, lgdiag
+  real*8  :: thfull, thdiag, thgrad
+  logical :: prjloc, lgfull, lgdiag, lggrad, lgchck
   character*4 :: hesloc
 end type localization_flags
 
@@ -69,9 +69,12 @@ contains
   loc%itrloc     = itrloc
   loc%thfull     = thfull
   loc%thdiag     = thdiag
+  loc%thgrad     = thgrad
   loc%prjloc     = prjloc
   loc%lgfull     = lgfull
   loc%lgdiag     = lgdiag
+  loc%lggrad     = lggrad
+  loc%lgchck     = lgchck
   loc%hesloc     = hesloc
   ! priunit.h
   var%lupri      = lupri
@@ -195,8 +198,11 @@ contains
     write(lupri,*) 'full  =',full
     write(lupri,*) 'thdiag=',loc%thdiag
     write(lupri,*) 'thfull=',loc%thfull
+    write(lupri,*) 'thgrad=',loc%thgrad
     write(lupri,*) 'lgdiag=',loc%lgdiag
     write(lupri,*) 'lgfull=',loc%lgfull
+    write(lupri,*) 'lggrad=',loc%lggrad
+    write(lupri,*) 'lgchck=',loc%lgchck
     write(lupri,*) 'hesloc=',loc%hesloc
     write(lupri,*) 'thrzer=',var%thrzer
   endif
@@ -316,7 +322,7 @@ contains
     diffq = dinvmq
     call updateT(dnrmk,diffg,diffq,tradius,rejected,trdef,flat,full,itr,nep)
 
-    if(.not.rejected)then
+    if( .not.rejected .or. (full.and.loc%lgchck) )then
       itr = itr + 1
       call gtinfo(daytid)
 
@@ -336,22 +342,27 @@ contains
 
       ! Exit conditions
       if(loc%hesloc == 'DIAG')then
-        if(.not.loc%lgdiag.and.Iminmax) exit
-        if(     loc%lgdiag.and.(diffa < loc%thdiag).and.Iminmax) exit
+        if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) exit
+        if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) exit
+        if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmax ) exit
       endif
 
       if(loc%hesloc == 'FULL')then
         if(Iminmax) exit
-        if(loc%lgfull.and.(diffa < loc%thfull)) exit
+        if( loc%lggrad .and. (dnrmg < loc%thgrad) ) exit
+        if( loc%lgfull .and. (diffa < loc%thfull) ) exit
       endif
 
       if(loc%hesloc == 'COMB')then
         if(full)then
+          if(loc%lgchck) exit
           if(Iminmax) exit
-          if(loc%lgfull.and.(diffa < loc%thfull)) exit
+          if( loc%lggrad .and. (dnrmg < loc%thgrad) ) exit
+          if( loc%lgfull .and. (diffa < loc%thfull) ) exit
         else
-          if(.not.loc%lgdiag.and.Iminmax) full = .true.
-          if(     loc%lgdiag.and.(diffa < loc%thdiag)) full = .true.
+          if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) full = .true.
+          if(      loc%lggrad .and. (dnrmg < loc%thgrad) .and. Iminmax ) full = .true.
+          if(      loc%lgdiag .and. (diffa < loc%thdiag) .and. Iminmax ) full = .true.
         endif
       endif
 
@@ -368,7 +379,7 @@ contains
   if(Iminmax)then
     write(lupri,'(11x,a,i4,a,i4,a)') &
          '**** MAXIMUM reached after',itr,' iterations and',ist,' steps ****'
-  elseif((full.and.(diffa < loc%thfull)).or.(.not.full.and.(diffa < loc%thdiag)))then
+  elseif( full .and. ((diffa < loc%thfull).and.(dnrmg < loc%thgrad)) )then
     write(lupri,'(11x,a,i4,a,i4,a)') &
          '****    Convergence in',itr,' iterations and',ist,' steps     ****'
   else
