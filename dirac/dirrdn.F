@@ -7294,9 +7294,9 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
-     S            '.VECPRJ','.VECREF','.OWNBAS','.HESSUN',
-     S            '.HESTHR','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
+     &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
+     &            '.THDIAG','.THGRAD','.CHECK ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -7321,12 +7321,16 @@ C     Initialize /CBILOC/
 C     ===================
 C
       PRJLOC = .FALSE.
-      THRLOC = 1.0D-6
       ITRLOC = 100
       IPRLOC = IPRGEN
-      HESLOC = .FALSE.
-      AUTO   = .TRUE.
-      HESTHR = 1.0D-1
+      HESLOC = 'FULL'
+      LGFULL = .FALSE.
+      LGDIAG = .FALSE.
+      LGGRAD = .FALSE.
+      LGCHCK = .FALSE.
+      THFULL = 1.0D-13
+      THDIAG = 1.0D-13
+      THGRAD = 1.0D-07
 C
 C     Process input from CBILOC
 C     =========================
@@ -7344,7 +7348,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -7352,7 +7356,7 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in ANWINP.'
+     &            '" not recognized in ANWINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in POPINP.')
  1                       CONTINUE
@@ -7364,8 +7368,8 @@ C   Do localisation from projection analysis
                   PRJLOC = .TRUE.
                GO TO 100
  3                       CONTINUE
-C   Threshold
-                  READ(LUCMD,*) THRLOC
+C   Model of the Hessian
+                  READ(LUCMD,'(A4)') HESLOC
                GO TO 100
  4                       CONTINUE
 C   Maximum number of iterations
@@ -7395,18 +7399,31 @@ C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis s
                OWNBAS = .TRUE.
                GO TO 100
  8                       CONTINUE
-C   HESSIAN is the identity matrix
-               HESLOC = .TRUE.
+C   Set convergence criterion in scheme using full hessian
+C       - change of the functional between iterations
+               LGFULL = .TRUE.
+               READ(LUCMD,*) THFULL
+               GO TO 100
  9                       CONTINUE
-C
-               AUTO = .FALSE.
-               READ(LUCMD,*) HESTHR
+C   Set convergence criterion in scheme using diagonal aproximation of the hessian 
+C       - change of the functional between iterations
+               LGDIAG = .TRUE.
+               READ(LUCMD,*) THDIAG
+               GO TO 100
+ 10                      CONTINUE
+C   Set convergence criterion - norm of the gradient
+               LGGRAD = .TRUE.
+               READ(LUCMD,*) THGRAD
+               GO TO 100
+ 11                      CONTINUE
+C   After last iteration using diagonal approximation calculate one step using full hessian
+               LGCHCK = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in ANWINP.'
+     &            '" not recognized in ANWINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in ANWINP.')
             END IF
@@ -7417,70 +7434,185 @@ C     Print section
 C     =============
 C
       IF(.NOT. DOLOC) GOTO 999
+C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
-     S 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
+     & 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
       CALL PRSYMB(LUPRI,'=',75,0)
-      IF(PRJLOC) THEN
-         WRITE(LUPRI,'(1X,A)')
-     S      '* Molecular orbital localization from projection analysis'
+C     -----------------------------------------------------------------
+C     Localization method
+C
+      IF(PRJLOC)THEN
+        WRITE(LUPRI,'(1X,A)')
+     &    '* Molecular orbital localization from projection analysis'
       ELSE
-         WRITE(LUPRI,'(1X,A)')
-     S      '* Molecular orbital localization from Mulliken analysis'
+        WRITE(LUPRI,'(1X,A)')
+     &    '* Molecular orbital localization from Mulliken analysis'
       ENDIF
-      WRITE(LUPRI,'(1X,A,D9.2)')
-     S     '* Threshold for convergence of the localization process :',
-     S     THRLOC
-      WRITE(LUPRI,'(1X,A)')
-     S     '  (based on the inverse mean delocalization)'
-      WRITE(LUPRI,'(1X,A,I6)')
-     S     '* Maximum number of iterations :',ITRLOC
-      IF(PRJLOC) THEN
-         IF(OWNBAS) THEN
-            WRITE(LUPRI,'(1X,A)')
-     S   '* Fragments are calculated in their individual bases !',
-     S   '    The indexing of fragment spinor sets is assumed ',
-     S   '    to follow list of symmetry independent nuclei.'
-            DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
-     S              ' --> ',NAMDEP(J)
-              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-              DO I = 1,NFSYM
-                 NVEC = 0
-                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
-                 IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)')
-     S                   '- No orbitals in fermion ircop ',FREP(I)
-                 ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)')
-     S           '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-                 ENDIF
-              ENDDO
-           ENDDO
-        ELSE
-           DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
-              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-              DO I = 1,NFSYM
-                 NVEC = 0
-                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
-                 IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)')
-     S                   '- No orbitals in fermion ircop ',FREP(I)
-                 ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)')
-     S          '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-                 ENDIF
-              ENDDO
-           ENDDO
+C     -----------------------------------------------------------------
+C     Convergence criterion for different schemes
+C
+      IF(LGCHCK.AND.(HESLOC /= 'COMB'))THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &   ' WARNING: STOP --> you requested check of the diagonal',
+     &   ' convergence (.CHECK)'
+        WRITE(LUPRI,'(1X,A,A)') ' WARNING: Use this keyword only with'
+        WRITE(LUPRI,'(1X,A,A)') ' WARNING: .HESLOC'
+        WRITE(LUPRI,'(1X,A,A)') ' WARNING: COMBINATION'
+        STOP
+      ENDIF
+C     Diagonal approximation
+      IF(HESLOC == 'DIAG')THEN
+       WRITE(LUPRI,'(1X,A)')
+     &  '* The diagonal approximation of the hessian will be used'
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Convergence criteria of the localization process :'
+       IF( .NOT.LGDIAG .AND. .NOT.LGGRAD)THEN
+        WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                         ' (= there are no positive eigenvalues)'
+       ELSE
+        IF(LGDIAG)THEN
+         WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(5X,A,D9.2)')
+     &    'and the change of the functional is below threshold: ',THDIAG
+         WRITE(LUPRI,'(5X,A)')
+     &    '(functional = inverse mean delocalization)'
         ENDIF
+        IF(LGGRAD)THEN
+         WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(5X,A,D9.2)')
+     &    'and the norm of the gradient is below threshold: ',THGRAD
+        ENDIF
+       ENDIF
+      ENDIF
+C     Full hessian
+      IF(HESLOC == 'FULL')THEN
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Full hessian will be used'
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Convergence criteria of the localization process :'
+       WRITE(LUPRI,'(1X,A,A)')'  - If the maximum is reached',
+     &                        ' (= there are no positive eigenvalues)'
+       IF(LGFULL)THEN
+        WRITE(LUPRI,'(3X,A,D9.2)')
+     &   '- If the change of the functional is below threshold: ',THFULL
+        WRITE(LUPRI,'(1X,A)')
+     &   '    (functional = inverse mean delocalization)'
+       ENDIF
+       IF(LGGRAD)THEN
+        WRITE(LUPRI,'(1X,A,D9.2)')
+     &   '  - If the norm of the gradient is below threshold: ',THGRAD
+       ENDIF
+      ENDIF
+C     Combination of the diagonal approximation and the full hessian
+      IF(HESLOC == 'COMB')THEN
+       WRITE(LUPRI,'(1X,A)')
+     &  '* First the diagonal approximation of the hessian will be used'
+       WRITE(LUPRI,'(1X,A)')
+     &  '  and after reaching some convergence criterion we will'
+       WRITE(LUPRI,'(1X,A)')
+     &  '  switch on the construction of the full hessian'
+       WRITE(LUPRI,'(1X,A)')
+     &  '* Convergence criteria of the localization process :'
+C
+       WRITE(LUPRI,'(1X,A)')
+     &  '  * First part - diagonal approximation of the hessian'
+       IF( .NOT.LGDIAG .AND. .NOT.LGGRAD)THEN
+        WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                         ' (= there are no positive eigenvalues)'
+       ELSE
+        IF(LGDIAG)THEN
+         WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(7X,A,D9.2)')
+     &    'and the change of the functional is below threshold: ',THDIAG
+         WRITE(LUPRI,'(7X,A)')
+     &    '(functional = inverse mean delocalization)'
+        ENDIF
+        IF(LGGRAD)THEN
+         WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                          ' (= there are no positive eigenvalues)'
+         WRITE(LUPRI,'(7X,A,D9.2)')
+     &    'and the norm of the gradient is below threshold: ',THGRAD
+        ENDIF
+       ENDIF
+C
+       WRITE(LUPRI,'(1X,A)')
+     &  '  * Second part - full hessian'
+       IF(LGCHCK)THEN
+        WRITE(LUPRI,'(3X,A)')
+     &   '  - Only one step will be performed'
+       ELSE
+        WRITE(LUPRI,'(3X,A,A)')'  - If the maximum is reached',
+     &                         ' (= there are no positive eigenvalues)'
+        IF(LGFULL)THEN
+         WRITE(LUPRI,'(5X,A,D9.2)')
+     &   '- If the change of the functional is below threshold: ',THFULL
+         WRITE(LUPRI,'(3X,A)')
+     &   '    (functional = inverse mean delocalization)'
+        ENDIF
+       ENDIF
+      ENDIF
+C     -----------------------------------------------------------------
+C     Other keywords
+C
+      WRITE(LUPRI,'(1X,A,I6)') '* Maximum number of iterations :',ITRLOC
+      WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
+      IF(LGCHCK)THEN
+        WRITE(LUPRI,'(1X,A,A)') 
+     &   '* After the diagonal approximation will converge',
+     &   ' calculate one step using full hessian'
+      ENDIF
+C     -----------------------------------------------------------------
+C     Fragments of spinors used in the projection analysis
+C
+      IF(PRJLOC)THEN
+       IF(OWNBAS)THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Fragments are calculated in their individual bases !',
+     &   '    The indexing of fragment spinor sets is assumed ',
+     &   '    to follow list of symmetry independent nuclei.'
+        DO J = 1,NREFS
+         WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
+     &         ' --> ',NAMDEP(J)
+         WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+         DO I = 1,NFSYM
+          NVEC = 0
+          CALL NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     &         -NFBAS(I,2),NFBAS(I,1),I,NVEC)
+          IF(NVEC.EQ.0) THEN
+           WRITE(LUPRI,'(4X,A,A3)')
+     &      '- No orbitals in fermion ircop ',FREP(I)
+          ELSE
+           WRITE(LUPRI,'(4X,A,A3,A,A72)')
+     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+          ENDIF
+         ENDDO
+        ENDDO
+       ELSE
+        DO J = 1,NREFS
+         WRITE(LUPRI,'(1X,A,I3)') '* Fragment spinor set ',J
+         WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+         DO I = 1,NFSYM
+          NVEC = 0
+          CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     &         -NFBAS(I,2),NFBAS(I,1),I,NVEC)
+          IF(NVEC.EQ.0) THEN
+           WRITE(LUPRI,'(4X,A,A3)')
+     &      '- No orbitals in fermion ircop ',FREP(I)
+          ELSE
+           WRITE(LUPRI,'(4X,A,A3,A,A72)')
+     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+          ENDIF
+         ENDDO
+        ENDDO
+       ENDIF
       ENDIF
       WRITE(LUPRI,'(1X,A)')
-     S     '* Localised MO are written in file DFCOEF !!!'
-      WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
- 999   CONTINUE
+     &     '* Localised MO are written in file DFCOEF !!!'
+ 999  CONTINUE
       RETURN
 C
       END
