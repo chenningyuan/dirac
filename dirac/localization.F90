@@ -330,7 +330,8 @@ contains
       call titler(chstart,'=',122)
       write(lupri,'(/6x,a,a24)')'--- ',daytid
 
-      if (diffg < d0) write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
+      if((diffg < d0).and.(diffg > thresh)) &
+        write(lupri,'(a,i4)')' WARNING: dinvm_new - dinvm_old < 0; itr =',itr
       diffa = dabs(dinvmg - dinvmo)
       if(full) hessian = 'FULL'
       dinvmo = dinvmg
