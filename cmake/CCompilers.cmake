@@ -3,6 +3,11 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
 endif()
+if(ENABLE_STATIC_LINKING)
+    set(CMAKE_C_FLAGS
+        "${CMAKE_C_FLAGS} -static"
+        )
+endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS         "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")

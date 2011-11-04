@@ -3,18 +3,21 @@
 Installation
 ============
 
+DIRAC is configured using CMake and typically compiled using make or gmake.
+Alternatively we provide pre-compiled packages.
+
 
 Dependencies
 ------------
 
-configuration/compilation step requires:
+The configuration/compilation step requires:
 CMake  >= 2.6.0
 
-configuration/compilation step using setup script requires:
+The configuration/compilation step using setup script requires:
 CMake  >= 2.6.0
 python >= 2.4.0
 
-pam and runtest require:
+The scripts pam and runtest require:
 python >= 2.4.0
 
 
