@@ -338,7 +338,7 @@ contains
 
       write(lupri,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
         '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
-      write(lupri,'(a,2x,i4,3d11.2,f10.4,1x,3i4,3x,a,2d11.2)') &
+      write(lupri,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
         '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
 
       ! Exit conditions
@@ -1502,7 +1502,7 @@ contains
       enddo
     enddo
 
-  else
+  else ! label 111
 
     if(associated(hmat)) call deallocp(hmat,id='hmat in get_hessian')
     call allocp(hmat,ndimh,ndimh,id='hmat in get_hessian')
@@ -2262,6 +2262,10 @@ contains
     enddo
 
   endif ! label 111
+
+  ! Calculate mean value
+  totdiag = totdiag / dfloat(ndimh)
+  totnond = totnond / dfloat(ndimh*ndimh-ndimh)
 
   end subroutine get_hessian
 
