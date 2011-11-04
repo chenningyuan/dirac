@@ -738,6 +738,13 @@ C
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 C
+C excitation energy code (e.g. rpa) is disabled
+C     IF (DOEXCIT) THEN
+C        MXCORR1 = 0
+C        CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+C        MXCORR = MAX(MXCORR,MXCORR1)
+C     ENDIF
+C
 C MXCORR is a cumulative maximum of individual memory requirements
 C and MAXCOR is the fixed maximum of core memory available on this
 C node. ===> if any subroutine would need more core memory we quit.
@@ -2904,7 +2911,23 @@ C
          WRITE (IW,1001) "RPA calculation",mxcorr
          goto 4441
       ENDIF
-C
+
+      a_X1    = 0.0d0
+      a_X2    = 0.0d0
+      a_Y1    = 0.0d0
+      a_Y2    = 0.0d0
+      a_AVO   = 0.0d0
+      a_AOV   = 0.0d0
+      a_BVO   = 0.0d0
+      a_BOV   = 0.0d0
+      a_DG    = 0.0d0
+      a_CCC   = 0.0d0
+      a_BB1   = 0.0d0
+      a_BB2   = 0.0d0
+      a_BUF1  = 0.0d0
+      a_BUF2  = 0.0d0
+      a_CBUF  = 0.0d0
+
 C  Solve relativistic Random Phase Approximation equations
 C
       WRITE (IW,1009) MXITRP,MXDIMRP,10.0D0**(-NTOLRP)
@@ -2912,9 +2935,9 @@ C
       TOL = 10.0D0**(-NTOLRP)
       MAXDIM = MXDIMRP
       DO AOPER = 1, NAOPER
-         AOFF = (AOPER-1)*NDIMX*RCW+1
+         AOFF = (AOPER-1)*NDIMX*RCW
          CALL RDPROP(IPRNT,NAMEA(AOPER),NSP,LFA,a_CBUF,IREPSPI,
-     &              APHASE(AOPER),a_AVO(AOFF),a_AOV(AOFF),DUM,DUM)
+     &               APHASE(AOPER), a_AVO(AOFF+1),a_AOV(AOFF+1),DUM,DUM)
       ENDDO
       DO BOPER = 1, NBOPER
          BDONE = .FALSE.
@@ -2924,9 +2947,9 @@ C
             IF (IPRNT.GE.1) WRITE (IW,1010) NAMEB(BOPER),EFREQ(IFREQ)
             CALL RPAA
      &       (MAXIT,NAOPER,NAMEA,NAMEB(BOPER),APHASE,BPHASE,BDONE,EPS,
-     &        EFREQ(IFREQ),a_AVO,a_AOV,a_BVO,a_BOV,a_X1
-     &        a_X2,a_Y1,aY2,a_DG,a_BUF1,a_BUF2,
-     &        a_CCC,a_BB1,a_BB2,TOL,IPRNT,DEBUG,
+     &        EFREQ(IFREQ), a_AVO, a_AOV, a_BVO, a_BOV, a_X1,
+     &        a_X2, a_Y1, a_Y2, a_DG, a_BUF1, a_BUF2,
+     &        a_CCC, a_BB1, a_BB2, TOL,IPRNT,DEBUG,
      &        TIMING)
             CALL FLSHFO(IW)
          ENDDO
@@ -2960,7 +2983,7 @@ C
      &        " at frequency :",F15.5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCEXC (ICALC,MXCORR,EPS,
+      SUBROUTINE CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &                  NSP,IREPSPI)
 C
       use memory_allocator
@@ -2989,6 +3012,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
+      REAL*8 CC(*)
       REAL*8 EPS(*)
 C
 C---------------Common Blocks--------------------------------------
