@@ -29,30 +29,33 @@ if(NOT ENABLE_INTERNAL_MATH)
     endif()
 
     # try to find the best libraries using environment variables
-    if(NOT BLAS_FOUND)
-        find_package(BLAS)
-        if(BLAS_FOUND)
-            set(LIBS
-                ${LIBS}
-                ${BLAS_LIBRARIES}
-                )
+    if(NOT FORCE_DIRAC_BLAS)
+        if(NOT BLAS_FOUND)
+            find_package(BLAS)
+            if(BLAS_FOUND)
+                set(LIBS
+                    ${LIBS}
+                    ${BLAS_LIBRARIES}
+                    )
+            endif()
+        endif()
+        if(NOT BLAS_FOUND)
+            message("-- No external BLAS library found")
         endif()
     endif()
-    if(NOT LAPACK_FOUND)
-        find_package(LAPACK)
-        if(LAPACK_FOUND)
-            set(LIBS
-                ${LIBS}
-                ${LAPACK_LIBRARIES}
-                )
+    if(NOT FORCE_DIRAC_LAPACK)
+        if(NOT LAPACK_FOUND)
+            find_package(LAPACK)
+            if(LAPACK_FOUND)
+                set(LIBS
+                    ${LIBS}
+                    ${LAPACK_LIBRARIES}
+                    )
+            endif()
         endif()
-    endif()
-
-    if(NOT BLAS_FOUND)
-        message("-- No external BLAS library found")
-    endif()
-    if(NOT LAPACK_FOUND)
-        message("-- No external LAPACK library found")
+        if(NOT LAPACK_FOUND)
+            message("-- No external LAPACK library found")
+        endif()
     endif()
 
 endif()

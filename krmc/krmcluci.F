@@ -91,7 +91,9 @@ C     set "I/O node master" + "shared memory node master"
 
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
+!     write(lupri,*) 'bla - go in here???? '
 #if defined VAR_IFORT && !defined INT_STAR8
+!     write(lupri,*) 'bla - go in here, yes!!!! '
       if(myproc .eq. master)then
         luxxx = lupri
       else
