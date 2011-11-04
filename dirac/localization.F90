@@ -357,7 +357,6 @@ contains
         if(full)then
           if(loc%lgchck) exit
           if(Iminmax) exit
-          if( loc%lggrad .and. (dnrmg < loc%thgrad) ) exit
           if( loc%lgfull .and. (diffa < loc%thfull) ) exit
         else
           if( .not.loc%lgdiag .and.   .not.loc%lggrad    .and. Iminmax ) full = .true.
