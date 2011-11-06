@@ -17,13 +17,13 @@ contains
 
   ! external variables
   character*6, intent(in) :: cmofil
-  integer*4,   intent(in) :: iopt, inuc, nnuc, iunit
+  integer, intent(in) :: iopt, inuc, nnuc, iunit
 
-  integer*4,   intent(in), dimension(  :  ) :: kvec
-  integer*4,   intent(in), dimension(2,0:2) :: nstr
-  integer*4,   intent(in), dimension(  2  ) :: nvecs, ioff
-  integer*4,   intent(in), dimension(  *  ) :: ibeig, ibsel
-  real*8,      intent(in), dimension(  *  ) :: eig, cmo, csel, esel
+  integer, intent(in), dimension(  :  ) :: kvec
+  integer, intent(in), dimension(2,0:2) :: nstr
+  integer, intent(in), dimension(  2  ) :: nvecs, ioff
+  integer, intent(in), dimension(  *  ) :: ibeig, ibsel
+  real*8,  intent(in), dimension(  *  ) :: eig, cmo, csel, esel
 
   ! internal variables
 
@@ -63,7 +63,7 @@ contains
 !***********************************************************************
       USE MEMORY_ALLOCATOR
       IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT INTEGER (I-N)
 #include "priunit.h"
 #include "mxcent.h"
 !
@@ -78,7 +78,7 @@ contains
       DIMENSION IDIM(3,2)
       REAL*8 CMCSCF_MAGIC
 !
-      INTEGER*4, ALLOCATABLE :: KBAS(:)
+      INTEGER, ALLOCATABLE :: KBAS(:)
 !
 !     flag for MCSCF coefficients on file CMOFIL
       CMCSCF_MAGIC = 137.0D0
@@ -229,7 +229,7 @@ contains
 !
 !*****************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT INTEGER (I-N)
 #include "priunit.h"
 !
       DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*), &
@@ -273,7 +273,7 @@ contains
 !
 !*****************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT INTEGER (I-N)
 #include "priunit.h"
 !
 #include "dgroup.h"
@@ -313,7 +313,7 @@ contains
 !
 !*****************************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT INTEGER (I-N)
 #include "priunit.h"
 !
 #include "dgroup.h"
@@ -355,7 +355,7 @@ contains
 !
 !***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-      IMPLICIT INTEGER*4 (I-N)
+      IMPLICIT INTEGER (I-N)
 #include "priunit.h"
 #include "maxorb.h"
 !
@@ -378,7 +378,7 @@ contains
   END SUBROUTINE SELOWI_mod
 
   FUNCTION JGET(I)
-  INTEGER*4 I, JGET
+  INTEGER I, JGET
 !
 #if defined (SYS_CRAY) || defined (INT_STAR8)
       JGET = IAND(ISHFT(I,-32),65535)
