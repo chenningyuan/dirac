@@ -33,6 +33,9 @@ Important input changes
 Changed defaults
 ----------------
 
+* .LVCORR is now default
+  you can force explicit evaluation of (SS|SS) integrals with .DOSSSS
+
 
 Methods
 -------
