@@ -6929,7 +6929,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     
 
 
-#ifdef HAVE_MKL_BLAS
       DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
 *     .. Scalar Arguments ..
       INTEGER INCX,INCY,N
@@ -6986,4 +6985,3 @@ c
       ZDOTC = ZTEMP
       RETURN
       END
-#endif
