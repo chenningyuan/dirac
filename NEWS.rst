@@ -7,7 +7,10 @@ New features in DIRAC11
 * New and fast XC integration
 * Functional derivatives using automatic differentiation (XCFun)
 * New visualization options
-* RKBIMP: MO-coefficients generated using restricted kinetic balance (RKB) can be extended by their unrestricted kinetic balance (UKB) complement, thus providing magnetic balance for response calculations involving external magnetic fields
+* RKBIMP: MO-coefficients generated using restricted kinetic balance (RKB) can
+  be extended by their unrestricted kinetic balance (UKB) complement, thus
+  providing magnetic balance for response calculations involving external
+  magnetic fields
 * New and improved 2c Hamiltonian schemes
 
 
@@ -46,7 +49,7 @@ Hamiltonians
 ------------
 
 * 4c Dirac-Coulomb (includes scalar relativistic effects and spin-own-orbit coupling)
-* 4c Dirac-Coulomb-Gaunt (includes also spin-other-orbit coupling) (only HF)
+* 4c Dirac-Coulomb-Gaunt (only HF; includes also spin-other-orbit coupling)
 * 4c spin-free Dirac-Coulomb (scalar relativistic effects only)
 * 4c Levy-Leblond (nonrelativistic)
 * 2c X2C, the one-step exact two-component Hamiltonian
@@ -57,11 +60,11 @@ Hamiltonians
 Molecular properties
 --------------------
 
-* Up to quadratic response properties at the Hartree-Fock and DFT level
-* First order properties with MP2
-* Core excitation energies in the static exchange (STEX) approximation.
+* Up to quadratic response properties at the HF and DFT level
+* First-order properties with MP2
+* Core excitation energies in the static exchange (STEX) approximation
 * Ionization energies at the ADC(3) level of theory
-* selected first order properties with CI
+* Selected first-order properties with CI
 
 
 Efficiency
