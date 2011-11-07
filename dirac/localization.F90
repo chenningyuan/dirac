@@ -436,12 +436,12 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4, INTENT(IN ) :: NBL, NBS, NI, NUCDEP, MAXREF
-      REAL*8,    INTENT(OUT) :: DINVM
+      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP, MAXREF
+      REAL*8,  INTENT(OUT) :: DINVM
 
-      REAL*8,    INTENT(IN   ) :: SCOEF(*)
-      REAL*8,    INTENT(INOUT) :: SMAT(*)
-      REAL*8,    INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
+      REAL*8,  INTENT(IN   ) :: SCOEF(*)
+      REAL*8,  INTENT(INOUT) :: SMAT(*)
+      REAL*8,  INTENT(  OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
@@ -450,17 +450,17 @@ contains
 
       LOGICAL   :: TOBE
 
-      INTEGER*4 :: I, J, K, IZ, IER, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, NMOL
-      INTEGER*4 :: IVEC, JOFF, NREF, N2REF, LUPRI, NPSH, NESH, NORB, NREFS
-      INTEGER*4 :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2), IPQTOQ(4,0:7)
+      INTEGER :: I, J, K, IZ, IER, IFRP, ICFS, NB, NQ, NCDIM, NBDIM, NMOL
+      INTEGER :: IVEC, JOFF, NREF, N2REF, LUPRI, NPSH, NESH, NORB, NREFS
+      INTEGER :: NSTR(2,0:2,0:MAXREF), NVECS(2,0:2), IOFF(2), IDUMARR(2), IPQTOQ(4,0:7)
 
       REAL*8    :: DDUMARR(2), DINV, QLOC2, DLOC
 
-      INTEGER*4, ALLOCATABLE, DIMENSION(:) :: KVECTMP, JREF, IPIV
-      REAL*8,    ALLOCATABLE, DIMENSION(:) :: RCOEF, CMO, BV, GVEC, AMAT, WMAT
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: KVECTMP, JREF, IPIV
+      REAL*8,  ALLOCATABLE, DIMENSION(:) :: RCOEF, CMO, BV, GVEC, AMAT, WMAT
 
       TYPE :: PTR2ARRAY
-        INTEGER*4, DIMENSION(:), POINTER :: P
+        INTEGER, DIMENSION(:), POINTER :: P
       END TYPE PTR2ARRAY
 
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
@@ -704,21 +704,21 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4, INTENT(IN ) :: NB, NMOL, NREF, MAXREF
-      INTEGER*4, INTENT(IN ) :: NSTR(2,0:2,0:MAXREF)
-      INTEGER*4, INTENT(OUT) :: IPIVOT(*)
+      INTEGER, INTENT(IN ) :: NB, NMOL, NREF, MAXREF
+      INTEGER, INTENT(IN ) :: NSTR(2,0:2,0:MAXREF)
+      INTEGER, INTENT(OUT) :: IPIVOT(*)
 
-      REAL*8,    INTENT(IN   ) :: SCOEF(*), RCOEF(*)
-      REAL*8,    INTENT(INOUT) :: SMAT(*)
-      REAL*8,    INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
+      REAL*8,  INTENT(IN   ) :: SCOEF(*), RCOEF(*)
+      REAL*8,  INTENT(INOUT) :: SMAT(*)
+      REAL*8,  INTENT(  OUT) :: AMAT(NREF,NREF,4), BVEC(NREF,NMOL,4)
 
       ! Internal variables
       CHARACTER*6  :: REFFIL(MAXREF)
       CHARACTER*72 :: VECREF(2,MAXREF)
-      INTEGER*4    :: I, J, IFRP, JOFF, KOFF, JOB, NEFF, NREFS, LUPRI
-      INTEGER*4    :: IPQTOQ(4,0:7)
+      INTEGER      :: I, J, IFRP, JOFF, KOFF, JOB, NEFF, NREFS, LUPRI
+      INTEGER      :: IPQTOQ(4,0:7)
 
-      REAL*8    :: PTOL
+      REAL*8 :: PTOL
       REAL*8, PARAMETER :: DC=1.0D-2
 
       LOGICAL DOPOP
@@ -806,17 +806,17 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
-      REAL*8,    INTENT(OUT) :: DINVM
+      INTEGER, INTENT(IN ) :: NBL, NBS, NI, NUCDEP
+      REAL*8,  INTENT(OUT) :: DINVM
 
-      INTEGER*4, INTENT(IN ) :: NFNUC(*)
-      REAL*8,    INTENT(IN ) :: SMAT(*), SCOEF(*)
-      REAL*8,    INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
+      INTEGER, INTENT(IN ) :: NFNUC(*)
+      REAL*8,  INTENT(IN ) :: SMAT(*), SCOEF(*)
+      REAL*8,  INTENT(OUT) :: PMAT(NI,NI,4,NUCDEP)
 
       ! Internal variables
-      INTEGER*4 :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
-      INTEGER*4 :: IPQTOQ(4,0:7)
-      REAL*8    :: DINV, QLOC2, DLOC
+      INTEGER :: I, J, IZ, NB, IOFFL, IOFFS, LUPRI
+      INTEGER :: IPQTOQ(4,0:7)
+      REAL*8  :: DINV, QLOC2, DLOC
 
       REAL*8, ALLOCATABLE, DIMENSION(:) :: WLMAT, WSMAT
 
@@ -1062,13 +1062,13 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4, INTENT(IN ) :: NUCDEP
+      INTEGER, INTENT(IN ) :: NUCDEP
 
-      INTEGER*4, INTENT(IN ) :: INDNAO(2,*)
-      INTEGER*4, INTENT(OUT) :: NFNUC(2*NUCDEP)
+      INTEGER, INTENT(IN ) :: INDNAO(2,*)
+      INTEGER, INTENT(OUT) :: NFNUC(2*NUCDEP)
 
       ! Internal variables
-      INTEGER*4 :: IFRP, I
+      INTEGER :: IFRP, I
 
   !------------------------------------------------------------------------------!
       IFRP = 1
@@ -1100,15 +1100,15 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4 :: NB, NI, NO
-      REAL*8    :: SCOEF(NB,NI,4)
+      INTEGER :: NB, NI, NO
+      REAL*8  :: SCOEF(NB,NI,4)
 
       ! Internal variables
-      INTEGER*4 :: I, J, K, L
-      REAL*8    :: TOTERG
+      INTEGER :: I, J, K, L
+      REAL*8  :: TOTERG
 
-      INTEGER*4, ALLOCATABLE :: IBEIG(:)
-      REAL*8,    ALLOCATABLE :: CMO(:,:,:), EIG(:)
+      INTEGER, ALLOCATABLE :: IBEIG(:)
+      REAL*8,  ALLOCATABLE :: CMO(:,:,:), EIG(:)
 
   !------------------------------------------------------------------------------!
       CALL QENTER('ORBLO5')
@@ -1175,9 +1175,9 @@ contains
       IMPLICIT NONE
 
       ! External variables
-      INTEGER*4, INTENT(IN   ) :: NBASI, NORBI, NZ, NORBT, IP(4)
-      REAL*8,    INTENT(IN   ) :: XKAPPA(NORBT,NORBT,NZ)
-      REAL*8,    INTENT(INOUT) :: CMO(NBASI,NORBI,NZ)
+      INTEGER, INTENT(IN   ) :: NBASI, NORBI, NZ, NORBT, IP(4)
+      REAL*8,  INTENT(IN   ) :: XKAPPA(NORBT,NORBT,NZ)
+      REAL*8,  INTENT(INOUT) :: CMO(NBASI,NORBI,NZ)
 
       ! Internal variables
       REAL*8, PARAMETER :: DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00
@@ -1185,9 +1185,9 @@ contains
 
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 
-      INTEGER*4 :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI
-      REAL*8    :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
-      REAL*8    :: ABS, SQRT, COS, SIN
+      INTEGER :: I, J, NORBXQ, IERR, IADDR, IOFF, I_MAX, J_MAX, LUPRI
+      REAL*8  :: CPU1, WALL1, CPU2, WALL2, CPU3, WALL3, CPU4, WALL4, EIG, SQEIG, D_MAX
+      REAL*8  :: ABS, SQRT, COS, SIN
 
       REAL*8, ALLOCATABLE, DIMENSION(:) :: REIG, RSIN, RCOS, RV, RTMP
 

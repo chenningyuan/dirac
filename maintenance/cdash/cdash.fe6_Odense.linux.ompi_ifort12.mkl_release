@@ -56,6 +56,7 @@ cd $DIRAC/$BUILD
 #make Experimental
 make Nightly
 
-/bin/rm -rf $DIRAC
+# do not delete - it shall be done by crontab prescription
+##/bin/rm -rf $DIRAC
 
 exit 0
