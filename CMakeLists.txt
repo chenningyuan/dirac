@@ -72,7 +72,7 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
 if(ENABLE_STATIC_LINKING)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 
