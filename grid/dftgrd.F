@@ -121,6 +121,7 @@ C..added for density-based atomic size estimates
 C..added for the MOLCAS scheme:
       NDIM=2*NHTYP*NUCIND
       CALL alloc(KAA  ,2*NDIM)
+      kaa = 0.0d0
       CALL alloc(KNUCO,NDIM  )
 
 
