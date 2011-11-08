@@ -37,7 +37,7 @@ module relcc_cfg
   logical, public :: relcc_debug                   = .false.
   logical, public :: relcc_timing                  = .false.
   logical, public :: relcc_do_sort                 = .true.
-  logical, public :: relcc_do_energy               = .false.
+  logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
   logical, public :: relcc_do_fspc                 = .false.
   logical, public :: relcc_carith                  = .false.

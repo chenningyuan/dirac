@@ -4,6 +4,8 @@
 Magnesium atom. Fockspace test calculations.
 .WAVE F
 .4INDEX
+**HAMILTONIAN
+.DOSSSS
 **WAVE FUNCTIONS
 .SCF
 .RELCCSD
