@@ -34,7 +34,8 @@ SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
         DO L = 1, (K-1)
           temp = (zet(K,I) + zet(L,I)) * 0.5d0
           temp = zet(K,I)/temp * zet(L,I)/temp
-          prtint = prtint + 2.0d0 * eta(J,K,I) * eta(J,L,I) * sqrt(temp**lmnp1(I) * sqrt(temp))
+          prtint = prtint + 2.0d0 * eta(J,K,I)*eta(J,L,I)       &
+                            * sqrt(temp**lmnp1(I) * sqrt(temp))
         ENDDO
         prtint = prtint + eta(J,K,I)**2
       ENDDO
@@ -48,6 +49,12 @@ SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
     ENDDO
   ENDDO
 
+! DO I = 1, ncons
+!    print *,'From RECP_INP(CCNORM)'
+!    DO J = 1, ncon(I)
+!       print *, zet(J,I),(eta(K,J,I),K=1,nrcr(I))
+!    ENDDO
+! ENDDO
 END SUBROUTINE RECP_INP_ORBITAL_CCNORM
 
 

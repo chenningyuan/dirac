@@ -71,6 +71,11 @@ option(ENABLE_LARGE_MOLECULES "Increase common block parameters for large molecu
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
+if(ENABLE_STATIC_LINKING)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+endif()
+
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
 option(FORCE_DIRAC_LAPACK "Force use of DIRAC LAPACK" OFF)
 mark_as_advanced(FORCE_DIRAC_BLAS)
