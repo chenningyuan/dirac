@@ -4458,7 +4458,7 @@ C
 !                   57        58        59        60
      &            '.xxxxxx','.HFXATT','.xB    ','.xC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.xxxxxx','.xxxxxx'/
+     &            '.ECP   ','.X2Cmmf','.DOSSSS','.xxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4478,6 +4478,7 @@ C     Initialize /CBIHAM/
 C     ===================
 C
       IPRHAM  = 0
+      DOLVC   = .TRUE.
       QED     = .FALSE.
       MOLMF   = .FALSE.
       MOLMF3  = .FALSE.
@@ -4490,7 +4491,6 @@ C
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
-      DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
@@ -4644,7 +4644,7 @@ C&&&& GAUNT: Gaunt operator
             GAUNT = .TRUE.
             GO TO 100
   105     CONTINUE
-C&&&& LVCORR: Model interatomic SS-integral contribution by classical
+C&&&& LVCORR: Modeling of interatomic SS-integral contribution by classical
 C             repulsion of small component atomic charges
             DOLVC = .TRUE.
             GO TO 100
@@ -4680,6 +4680,7 @@ C&&& NOSMLV: Turn off small nuclear attraction integrals
   112      CONTINUE
 C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              LEVYLE = .TRUE.
+             DOLVC  = .FALSE.
 C            Levy-Leblond implies also spinfree, specify that
              SPINFR = .TRUE.
              NOSMLV = .TRUE.
@@ -4701,6 +4702,7 @@ C&&& ZORA   : Use ZORA approximation
              ZORA   = .TRUE.
              ZORA4  = (IZORA4.NE.0)
              ZORASC = (IZORAS.NE.0)
+             DOLVC  = .FALSE.
              SSMTRC = D0
              ICHANG = ICHANG + 1
              GO TO 100
@@ -4710,6 +4712,7 @@ C    jkp    : This keyword enables Luuk's one-center
 C             projection scheme
              SMLV1C = .TRUE.
              ONECAP = .TRUE.
+             DOLVC  = .FALSE.
              INTV1C = 1
              ICTLV1C(2) = 1
              ICHANG = ICHANG + 1
@@ -4779,6 +4782,7 @@ C             if no model specified, goto 199, choose onecap 2
             BACKSPACE LUCMD
   198       CONTINUE
             ONECAP  = .TRUE.
+            DOLVC   = .FALSE.
             IF(INTV1C.EQ.2) DOLVC = .TRUE.
 C
 C   ... Whether to evaluate integrals in a direct or concentional
@@ -4835,6 +4839,7 @@ C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
              TWOCOMPBSS = .TRUE.
              TWOCOMP    = .TRUE.
+             DOLVC   = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
@@ -4918,6 +4923,7 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
             TWOCOMP    = .TRUE.
+            DOLVC      = .FALSE.
 C           Check that we have not defined operators yet,
 C           as they need to be modified within BSS transformations
             IF (I_FINFIELD.GT.0) THEN
@@ -4931,6 +4937,7 @@ C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
              NOPRTR     = .true.
              x2c        = .true.
              x2cmod_x2c = .true.
+             DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
              IF (I_FINFIELD.GT.0) THEN
@@ -4974,13 +4981,16 @@ C&&& IOTC4: do IOTC in 4c-mode
              BSS = .TRUE.
              NOPRTR = .TRUE.
              IBSS = 2999
+             DOLVC      = .FALSE.
              GO TO 100
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
+             DOLVC   = .FALSE.
              GO TO 100
   145     CONTINUE
              BSS = .TRUE.
+             DOLVC = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*) IBSS
 C
@@ -5004,6 +5014,7 @@ C&&& DKH2: complex flag for second order Douglas-Kroll-Hess with AMFI SSO
              IBSS = 2022
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
   148     CONTINUE
 C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other 
@@ -5013,6 +5024,7 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              IBSS = 2011
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
   149     CONTINUE
 C&&& .NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
@@ -5036,6 +5048,7 @@ CMI  with other flags...
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
+             DOLVC = .FALSE.
              GO TO 100
 
 !         .X2C4 is alias for .IOTC4
@@ -5102,6 +5115,7 @@ CMI&& activate 4c-2c MO transformation
           x2cmod_mmf            = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
+          DOLVC      = .FALSE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
@@ -5109,6 +5123,9 @@ C         as they need to be picture-changed transformed after the 2c-transforma
      &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
   163     CONTINUE
+C&&&& DOSSSS: Including SS-integral contribution explicitly
+            DOLVC = .FALSE.
+            GO TO 100
   164     CONTINUE
           GO TO 100
 
