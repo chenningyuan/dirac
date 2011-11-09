@@ -1,5 +1,5 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,7 +16,8 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://dirac.chem.vu.nl
+!dirac_copyright_end
 !
 #ifdef HAVE_MKL_BLAS
 !radovan: workaround for strange crash when using MKL zdotc
@@ -6929,7 +6930,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     
 
 
-#ifdef HAVE_MKL_BLAS
       DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
 *     .. Scalar Arguments ..
       INTEGER INCX,INCY,N
@@ -6986,4 +6986,3 @@ c
       ZDOTC = ZTEMP
       RETURN
       END
-#endif

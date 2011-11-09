@@ -60,7 +60,6 @@ option(ENABLE_MPI             "Enable MPI parallelization"                      
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_OMP             "Enable OpenMP parallelization"                             OFF)
 option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-option(ENABLE_GEN1INT         "Enable Gen1Int module"                                     OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
 option(ENABLE_PROFILING       "Enable profiling"                                          OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
@@ -72,7 +71,7 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
 if(ENABLE_STATIC_LINKING)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
 

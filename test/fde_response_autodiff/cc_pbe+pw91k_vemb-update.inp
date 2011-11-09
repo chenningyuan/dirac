@@ -4,6 +4,7 @@ electric properties for frozen density embedding
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
+.DOSSSS
 .FDE
 *FDE
 .RSP

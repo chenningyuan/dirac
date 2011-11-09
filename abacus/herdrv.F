@@ -1035,7 +1035,7 @@ C
 #endif /* ifndef PRG_DIRAC */
 #ifdef MOD_ERI
       CALL ER2INP(WORD)
-      CALL FCK3INP(WORD)
+      IF (DOFCK3) CALL FCK3INP(WORD)
 #endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
