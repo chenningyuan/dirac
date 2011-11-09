@@ -27,7 +27,7 @@ if sys.version >= '2.4':
             last_commit_time = 'unknown'
     else:
         last_commit_rev    = string.replace(stdout.splitlines()[0], 'commit ', '')
-        if  'Merge:' in stdout.splitlines():
+        if  'Merge:' in stdout.splitlines()[1]:
             last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[2]), 'Author: ', '')
             last_commit_time   = string.replace(stdout.splitlines()[3], 'Date:   ', '')
         else:

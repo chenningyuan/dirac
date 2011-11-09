@@ -1027,13 +1027,7 @@ z         8.53068831 Debye        -6.77337478 Debye         1.75731353 Debye
        *******************************************************************
 
  Name of the outputfile:GRIDOUT
- Reading DFCOEF
- lugridout id is:           2
- Reading grid.
- Grid read from file.
- Number of gridpoints:        8884
- Calculating the density and its derivatives.
-  Integrated density adds up to   1.478989980163870E-002  electrons.
+  Exported (active) density integrates to   1.478989980163870E-002  electrons.
  Calculating the coulomb potential and its derivatives.
  Writing data to xml_file:
  GRIDOUT                                                     
@@ -1046,6 +1040,7 @@ z         8.53068831 Debye        -6.77337478 Debye         1.75731353 Debye
  Time spent in embedding output routine:           34  s.
  Time spent in embedding output routine:            0  d.           0  h.
            0  m.          34  s.
+
 
  
      Date and time (Linux)  : Sun May  8 13:09:47 2011

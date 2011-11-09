@@ -6,34 +6,47 @@
 # miro: modified to local update&build
 source ~/.bashrc
 
+export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
+
 # the directory where your DIRAC sits
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/dirac-git-repo
-BUILD=build_g95_gcc_ownlibs_ILP64_cdash
+#BUILD=build_gfortran_gcc_ownlibs_ILP64_cdash
+#BUILD=build_g95_gcc_ownlibs_ILP64_cdash
+BUILD=build
 
 # go to the local DIRAC directory
 cd $DIRAC
 /bin/rm -rf $BUILD
+#git pull 
 git pull origin master
 ./pamadm -a --minus --openrsp
+#./pamadm -a 
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
+./setup  --fc=g95  --cc=gcc  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs-no_openrsp" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
+#./setup --int64  --internal-math  -D BUILDNAME="linux.gfortran.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD
 cd $DIRAC/$BUILD
-make Experimental
+make dirac.x
 make info_ext
+make Experimental
 
 ###
-### now run the Nightly test suite
+### now run the Nightly test suite of 'release'
 ###
 TMP_DIR=/var/tmp/dirac_build
 mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
-./pamadm -a --minus --openrsp
+git checkout -b prepare-release-11 origin/prepare-release-11
+#./pamadm -a --minus --openrsp
+./pamadm --release
 # configure step
-./setup  --fc=g95  --cc=gcc-4.2  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+./setup  --fc=g95  --cc=gcc  --int64  --internal-math  -D BUILDNAME="linux.g95.gcc.ilp64.ownlibs-RELEASE" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
+#./setup  --int64  --internal-math  -D BUILDNAME="linux.gfortran.gcc.ilp64.ownlibs-RELEASE" -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON
 cd $TMP_DIR/build
+#make dirac.x
+#make info_ext
 make Nightly
-make info_ext
+#make info_ext
 rm -rf $TMP_DIR
 
 exit 0

@@ -39,33 +39,36 @@ OMPI=/home/chemia/ucitelia/milias/bin/open_mpi_ifort_ILP64/bin
 OMPI_VG=/home/chemia/ucitelia/milias/bin/open_mpi_ifort_ILP64_valgrind/bin
 
 cd $DIRAC
-
 /bin/rm -rf $BUILD
-/bin/rm -rf $BUILD_VG
+
+#/bin/rm -rf $BUILD_VG
 
 #/people/disk2/ilias/bin/subversion/bin/svn up .
 #svn up .
 ./pamadm -a 
 
 # setup, valgrind enabled
-./setup --fc=$OMPI_VG/mpif90 --cc=$OMPI_VG/mpicc --cpp=$OMPI_VG/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl_valgrind" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD_VG
-cd $DIRAC/$BUILD_VG
-cmake ..
-make dirac.x
-make info_ext
+#./setup --fc=$OMPI_VG/mpif90 --cc=$OMPI_VG/mpicc --cpp=$OMPI_VG/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl_valgrind" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD_VG
+#cd $DIRAC/$BUILD_VG
+#cmake ..
+#make dirac.x
+#make info_ext
 #make Experimental
 
 ###  return back to the main directory and rerun setup ###
 cd $DIRAC
 
+###  MKL ILP64 libraries  ###
+export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
+
 # setup, no --debug
-./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD
+#./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD
+./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$DIRAC/$BUILD
 cd $DIRAC/$BUILD
 cmake ..
 make dirac.x
 make info_ext
 make Experimental
-
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp

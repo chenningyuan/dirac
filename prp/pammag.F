@@ -669,13 +669,19 @@ C    & 'IREPT,IREPH,IREPTH:',IREPT,IREPH,IREPTH
          IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
 
 C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NORB(I2),NORB(I3),NORB(I1),DSGN,
-     &    'H','N',IPQTOQ(1,IREPT),
-     &    TMAT(IORB(I2)+1,IORB(I1)+1,1),NORBT,NORBT,NZ,
-     &    'N','N',IPQTOQ(1,IREPH),
-     &    HMAT(IORB(I1)+1,IORB(I3)+1,1),NORBT,NORBT,NZ, 
-     &    D0,IPQTOQ(1,IREPTH),
-     &    THMAT(IORB(I2)+1,IORB(I3)+1,1),NORBT,NORBT,NZ)
+          CALL QGEMM(NORB(I2), NORB(I3), NORB(I1), DSGN,
+!                    -----------------------------------
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
+     &               NORBT,NORBT,NZ,
+!                    -----------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ, 
+!                    -----------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I2)+1, IORB(I3)+1, 1),
+     &               NORBT,NORBT,NZ)
 
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
@@ -686,13 +692,19 @@ C        ... do TH(I2,I3) := dsgn*T^{H}(I2,I1).H(I1,I3)
           ENDIF
 
 C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
-          CALL QGEMM(NORB(I3),NORB(I2),NORB(I1),D1,
-     &   'N','N',IPQTOQ(1,IREPH),
-     &   HMAT(IORB(I3)+1,IORB(I1)+1,1),NORBT,NORBT,NZ,
-     &   'N','N',IPQTOQ(1,IREPT),
-     &   TMAT(IORB(I1)+1,IORB(I2)+1,1),NORBT,NORBT,NZ, 
-     &   D1,IPQTOQ(1,IREPTH),
-     &   THMAT(IORB(I3)+1,IORB(I2)+1,1),NORBT,NORBT,NZ)
+          CALL QGEMM(NORB(I3), NORB(I2), NORB(I1), D1,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I3)+1, IORB(I1)+1, 1),
+     &               NORBT, NORBT, NZ,
+!                    ---------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I1)+1, IORB(I2)+1, 1), 
+     &               NORBT, NORBT, NZ, 
+!                    ---------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I3)+1, IORB(I2)+1, 1),
+     &               NORBT,NORBT,NZ)
 
          IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -705,15 +717,19 @@ C  ...  do TH(I3,I2) := TH(I3,I2) + H(I3,I1).T(I1,I2)
          ELSE  ! Transformation in the e-e space only
 
 C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
-          CALL QGEMM(NESH(I2),NESH(I3),NESH(I1),DSGN,
-     &    'H','N',IPQTOQ(1,IREPT),
-     &    TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &    NORBT,NORBT,NZ,
-     &    'N','N',IPQTOQ(1,IREPH),
-     &    HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &    NORBT,NORBT,NZ,D0,IPQTOQ(1,IREPTH),
-     &    THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &    NORBT,NORBT,NZ)
+          CALL QGEMM(NESH(I2), NESH(I3), NESH(I1), DSGN,
+!                    ---------------------------------------------- --
+     &               'H', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D0, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
+     &               NORBT,NORBT,NZ)
 
           IF(IPRINT.GE.5) THEN
             WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
@@ -725,14 +741,18 @@ C        ... do TH(I2,I1) = dsgn*T^{H}(I2,I1).H(I1,I3)
 
 C        ...  do TH(I3,I2) = TH(I3,I2) + H(I3,I1)*T(I1,I2)
           CALL QGEMM(NESH(I3),NESH(I2),NESH(I1),D1,
-     &   'N','N',IPQTOQ(1,IREPH),
-     &   HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
-     &   NORBT,NORBT,NZ,
-     &   'N','N',IPQTOQ(1,IREPT),
-     &   TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &   NORBT,NORBT,NZ,D1,IPQTOQ(1,IREPTH),
-     &   THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
-     &   NORBT,NORBT,NZ)
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPH),
+     &               HMAT(IORB(I3)+NPSH(I3)+1,IORB(I1)+NPSH(I1)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               'N', 'N', IPQTOQ(1,IREPT),
+     &               TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT, NORBT, NZ,
+!                    -------------------------------------------------
+     &               D1, IPQTOQ(1,IREPTH),
+     &               THMAT(IORB(I3)+NPSH(I3)+1,IORB(I2)+NPSH(I2)+1,1),
+     &               NORBT,NORBT,NZ)
 
          IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -800,6 +820,7 @@ C     and the full relativistic (fermion symm.) mode
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,
      &            TOTERG,IOPT,WORK,KFREE,LFREE)
+
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 

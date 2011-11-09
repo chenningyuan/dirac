@@ -2742,7 +2742,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
             NSTR = NST_FOR_OCC(KSPGRP,NOBPT,NGAS)
             NORB = NOBPT(IOPTP)
             LEN = LEN + NSTR*NORB 
-       if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
+!      if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
 *. Update KSPGRP 
             KSPGRP(IOPTP) = KSPGRP(IOPTP) + 1
           END DO
@@ -2753,10 +2753,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
       END DO
 *
 #if defined LUCI_DEBUG
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
-      END IF
+      WRITE(6,*) ' Max length of KSTR => ISTR map = ', MAXLEN
 #endif
 *
       RETURN

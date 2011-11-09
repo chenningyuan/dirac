@@ -47,9 +47,7 @@ module FDE_exportPotentials
          character(len=3) :: level
          real(kind=8), allocatable :: dmat(:)
 
-         call fde_test_active_density
          call fde_old_density_matrix_generator(dmat)
-         call fde_test_active_density
          call fde_calculate_active_elpot(dmat,gf_active%elpot)
          call dealloc(dmat)
       end subroutine fde_export_write_data_to_memory
@@ -114,7 +112,7 @@ module FDE_exportPotentials
 !not handling hessian now
 !        character(len=132) :: csizehesrho1
          type(xml_tag),pointer :: tag
-         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:)
+         real(kind=8), pointer :: gp(:,:), np(:), gnp(:,:), vcp(:), hes(:,:)
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
@@ -155,13 +153,16 @@ module FDE_exportPotentials
 
          CALL TITLER('Output of density to XML file','*',118)
          WRITE(log_unit,*) 'Name of the outputfile:', trim(export_name)
+         call fde_test_active_density
          WRITE(log_unit,*) 'Writing data to xml_file:', export_name
 
-         write (csizept1,*)     size(gp,1)        ! ; trim (csizept1) 
-         write (csizept2,*)     size(gp,2)        ! ; trim (csizept2) 
-! not handling hessian now
-!        write (csizehesrho1,*) size(fde_active_hn,1)   ! ; trim (csizehesrho1) 
-         write (csizegrdrho1,*) size(gnp,1)  ! ; trim (csizegrdrho1) 
+         write (csizept1,*)     size(gp,1) 
+         write (csizept2,*)     size(gp,2)
+         write (csizegrdrho1,*) size(gnp,1)
+
+         csizept1     = adjustl(csizept1)
+         csizept2     = adjustl(csizept2)
+         csizegrdrho1 = adjustl(csizegrdrho1)
 
          tag=>xml_open(export_name)
            write(log_unit,*) 'tst'
@@ -183,21 +184,25 @@ module FDE_exportPotentials
 
              if (etmp%ex_gn) then
                 tag=>xml_tag_open(tag,'dataset','gradient')
-                  call set_attribute(tag,'size', csizept2)
-                  call set_attribute(tag,'width',csizegrdrho1)
+                  call set_attribute(tag,'size', csizept2) 
+                  call set_attribute(tag,'width', '3')
                   call xml_add_data(tag,gnp)
                 tag=>xml_tag_close(tag)
              endif
 
 !
-! while it's possible to do it, we don't export the hessian at the
-! moment since there's no use for it...
+! export a dummy hessian
 !
-!            tag=>xml_tag_open(tag,'dataset','hessian')
-!              call set_attribute(tag,'size',  csizept2)
-!              call set_attribute(tag,'width', csizehesrho1)    
-!              call xml_add_data(tag,hes_rho)
-!            tag=>xml_tag_close(tag)
+            call allocp(hes, 6,int(SIZE(gp,2)))
+            hes  = 0.0d0
+
+             tag=>xml_tag_open(tag,'dataset','hessian')
+               call set_attribute(tag,'size',  csizept2)
+               call set_attribute(tag,'width', '6')    
+               call xml_add_data(tag,hes)
+             tag=>xml_tag_close(tag)
+
+             call deallocp(hes)
 
              if (etmp%ex_coulomb) then
                 tag=>xml_tag_open(tag,'dataset','vc')

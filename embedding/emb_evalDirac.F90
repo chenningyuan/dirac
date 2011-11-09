@@ -160,7 +160,6 @@ module fde_eval_dirac
       character(len=60) :: file_name
       character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
-      real(kind=8) :: test_int_density
 
       real(kind=8), allocatable :: cmo(:)
       REAL(kind=8), pointer :: points(:,:)
@@ -230,31 +229,17 @@ module fde_eval_dirac
 !     Correct DMAT for occupationnumbers, both for scf and mp2...
       dmat = 2.0d0*dmat
 
-!     GET an id for LUGRIDOUT.
-      call fde_get_files_info(ftmp)
-      
-      file_unit = ftmp%export%unit
-      file_name = ftmp%export%name
-      call fde_open_file(file_name,file_unit)
+      points => fde_grid
 
-      WRITE(LUPRI,*) 'Reading grid.'
-      nullify(points)
-      CALL READ_GRID(file_unit,points)
-      call fde_close_file(file_unit)
-      WRITE(LUPRI,*) 'Grid read from file.'
-      write(lupri,*) 'Number of gridpoints:', size(points,2)
-
-      call alloc(rho,     1,SIZE(points,2))
-      call alloc(grad_rho,3,SIZE(points,2))
-      call alloc(hes_rho, 6,SIZE(points,2))
-      call alloc(vc,        SIZE(points,2))
+      call alloc(rho,     1,int(SIZE(points,2)))
+      call alloc(grad_rho,3,int(SIZE(points,2)))
+      call alloc(hes_rho, 6,int(SIZE(points,2)))
+      call alloc(vc,        int(SIZE(points,2)))
 
       rho      = 0.0d0
       grad_rho = 0.0d0
       hes_rho  = 0.0d0
       vc       = 0.0d0
-
-      test_int_density = 0.0d0
 
       WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
       DO i=1,size(points,2)
@@ -269,21 +254,17 @@ module fde_eval_dirac
              hes_rho(4,i),hes_rho(5,i),hes_rho(6,i), &
              GAO,GAO1,GAO2,DMAT,BUF)
 !     JHS Calculate the coulomb potential.
-         test_int_density = test_int_density + rho(1,i)*points(4,i)
 
          fde_active_n(i) = rho(1,i)
-         fde_active_gn(i,1) = grad_rho(1,i)
-         fde_active_gn(i,2) = grad_rho(2,i)
-         fde_active_gn(i,3) = grad_rho(3,i)
+         fde_active_gn(1,i) = grad_rho(1,i)
+         fde_active_gn(2,i) = grad_rho(2,i)
+         fde_active_gn(3,i) = grad_rho(3,i)
 
          gf_active%n(i)    = rho(1,i)
-         gf_active%gn(i,1) = grad_rho(1,i) 
-         gf_active%gn(i,2) = grad_rho(2,i) 
-         gf_active%gn(i,3) = grad_rho(3,i) 
+         gf_active%gn(1,i) = grad_rho(1,i) 
+         gf_active%gn(2,i) = grad_rho(2,i) 
+         gf_active%gn(3,i) = grad_rho(3,i) 
       END DO
-
-      WRITE(LUPRI,*) ' Integrated density adds up to ',test_int_density,&
-     &               ' electrons.'
 
       call dealloc (cmo)
       call dealloc (gao)
@@ -295,7 +276,6 @@ module fde_eval_dirac
       call dealloc (grad_rho)
       call dealloc (hes_rho)
       call dealloc (vc)
-      call deallocp (points)     
       end  subroutine fde_old_density_matrix_generator
 
 #endif /* MOD_UNRELEASED */
