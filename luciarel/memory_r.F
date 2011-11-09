@@ -23,8 +23,9 @@
 
       SUBROUTINE RMEMCHK_opt(check_label)
 #include "ipoist8.inc"
+#include "priunit.h"
       character (len=20) :: check_label
-      print '(a,a20)',' memcheck for label ==> ',check_label
+      write(lupri,'(a,a20)') ' memcheck for label ==> ',check_label
 *
 * Check memory allocated  with the memory manager
 *
@@ -90,7 +91,7 @@ C
 C
       KBASE_LOCAL = 0
       XBASE_LOCAL = 0.0D0
-      ILPRNT = 0
+      ILPRNT      = 0
       IF(ILPRNT .NE. 0 ) THEN
         WRITE(LUWRT,*) ' KBASE KADD, IR ', KBASE,KADD,IR
         WRITE(LUWRT,'(3A)') ' TASK , IDENT ', TASK,IDENT
@@ -133,6 +134,11 @@ C     Static memory
 C
       ELSE IF(TASK(1:4).EQ.'ADDS') THEN
         KBASE = KFREEL+NPAD
+#ifdef LUCI_DEBUG
+        write(luwrt,*) 'bla adds:  KBASE ==> ',KBASE
+        write(luwrt,*) 'bla adds: KFREEL ==> ',KFREEL
+        write(luwrt,*) 'bla adds: NPAD   ==> ',NPAD
+#endif
         IF( IR .EQ. 1 ) THEN
           KFREES = KFREEL +(KADD+1) + 2*NPAD
         ELSE IF( IR .EQ. 2) THEN
@@ -165,16 +171,41 @@ C
         IF(NS.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           write(LUWRT,*) ' NS has value  ',NS
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call QUIT( ' *** ERROR in MEMMAR: too many levels. ***' )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS) = IDENT
         KFREEL = KFREES
         IBASE(NS) = KBASE
+        
+#ifdef LUCI_DEBUG
+        write(luwrt,*) 'bla adds: IBASE(NS) ==> ',IBASE(NS)
+        write(luwrt,*) 'bla adds: IIDENT(NS)==> ',IIDENT(NS)
+        write(luwrt,*) 'bla adds: KFREEL    ==> ',KFREEL
+        write(luwrt,*) 'bla adds: KBASE     ==> ',KBASE
+#endif
+
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 10 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    10   CONTINUE
+#endif
+        WORK(KBASE-1 ) = PAD1
+        WORK(KFREEL-1) = PAD2
+
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
+
+#ifdef LUCI_DEBUG
+        write(luwrt,*) 'bla adds: work(pad1)    ==> ',
+     &                  WORK(KBASE-1),KBASE-1
+        write(luwrt,*) 'bla adds: work(pad2)    ==> ',
+     &                  WORK(KFREEL-1),KFREEL-1
+#endif
 C
 C     Local memory
 C
@@ -209,15 +240,22 @@ C
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call QUIT( ' *** ERROR in MEMMAR: too many levels. ***' )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS+NL) = IDENT
         IBASE(NS+NL) = KBASE
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 20 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    20   CONTINUE
+#endif
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
 C
 C     Flush local memory
 C
@@ -292,6 +330,7 @@ C
           ELSE
            JBASEN = KFREEL + 1
           END IF
+!         write(luwrt,*) 'bla bla: JBASE, JBASEN ==> ',JBASE, JBASEN
           L1OK = 1
           L2OK = 1
           DO IPAD = 1, NPAD
@@ -382,16 +421,20 @@ C
           END DO
 C
           IF(ITSOK.EQ.0) THEN
-            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                         IDENT 
-            Call QUIT( ' *** ERROR in MEMMAR: problem with IDENT:.*** ')
+            WRITE(LUWRT,*) ' *** error in memmar: array with'//
+     &      ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &      ' prior to the memory check. ***'
+            call quit(
+     &      ' *** quit in MEMMAR: out-of-bounds access detected. *** ')
           ENDIF
         END IF
 C
       IF(ISTOP.NE.0) THEN
-        WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                     IDENT
-        Call QUIT( ' *** ERROR in MEMMAR: problem with IDENT:.*** ')
+            WRITE(LUWRT,*) ' *** error in memmar: array with'//
+     &      ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &      ' prior to the memory check. ***'
+        Call QUIT(
+     &      ' *** quit in MEMMAR: out-of-bounds access detected. *** ')
       END IF
       END
 ***********************************************************************
@@ -455,36 +498,9 @@ C
       ITSOK  = 1
       IPRNTMP = 0
 C
-      IF(TASK(1:5).EQ.'PRINT') THEN
-        IPRNTMP = 1
-        NSNLI = NS + NL
-C
-      ELSE IF(TASK(1:3).EQ.'INI') THEN
-C
-C      Initialize
-C
-        NS = 0
-        NL = 0
-        NSNLI = 0
-        NM = 0
-        KFREES = KBASE
-        KFREEL = KBASE
-C
-C       Compute pointer to end element
-C
-        NWORD = KBASE + MXPWRD-1
-        IPRNTMP = 0
-        ISTOP = 0
-C
-C     First free word
-C
-      ELSE IF (TASK(1:4).EQ.'FREE') THEN
-        KBASE = KFREEL
-        NSNLI = NS+NL
-C
 C     Static memory
 C
-      ELSE IF(TASK(1:4).EQ.'ADDS') THEN
+      IF(TASK(1:4).EQ.'ADDS') THEN
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
           KFREES = KFREEL +(KADD+1) + 2*NPAD
@@ -518,16 +534,24 @@ C
         IF(NS.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           write(LUWRT,*) ' NS has value  ',NS
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1( 11 )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar_i8: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS) = IDENT
         KFREEL = KFREES
         IBASE(NS) = KBASE
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 10 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    10   CONTINUE
+#endif
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
+
 C
 C     Local memory
 C
@@ -562,69 +586,27 @@ C
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
-          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1( 11 )
+          WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
+     &    ' to at least ',MAXLVL+1
+          Call quit(' *** error in memmar_i8: too many memory access'//
+     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+     & ' re-compile. ***')
         END IF
         IIDENT(NS+NL) = IDENT
         IBASE(NS+NL) = KBASE
+#ifdef OLD_CODE_CAUSING_PROBLEMS
         DO 20 IPAD = 1, NPAD
           WORK(KBASE-NPAD-1+IPAD) = PAD1
           WORK(KFREEL-NPAD-1+IPAD) =  PAD2
    20   CONTINUE
-C
-C     Flush local memory
-C
-      ELSE IF(TASK(1:5).EQ.'FLUSH') THEN
-        NSNLI = NS+NL
-        KFREEL = KFREES
-        NL = 0
-C       Flush output unit
-        LU6 = 6
-        CALL GFLUSH(LU6)
-      ELSE IF(TASK(1:4).EQ.'MARK') THEN
-C       Set a mark at current free address
-        NM = NM + 1
-        IF(NM.GT.MAXMRK) THEN
-          WRITE(LUWRT,*) ' Too many marks  in MEMMAR '
-          WRITE(LUWRT,*) ' Increase MAXMRK from ', MAXMRK
-          Call Abend1( 11 )
-        END IF
-        MARKC(NM) = IDENT
-        MARK_ACT = IDENT 
-        IMARK(NM) = KFREEL
-        MARKL(NM) = NL
-        MARKS(NM) = NS
-        NSNLI = NS + NL
-      ELSE IF (TASK(1:5).EQ.'FLUSM') THEN
-        I_AM_INTOLERANT = 1
-        IF(I_AM_INTOLERANT.EQ.1.AND.IDENT(1:6).NE.MARK_ACT(1:6)) THEN
-          WRITE(LUWRT,*) ' Error in Flushing :  MARKS not consistent '
-          WRITE(LUWRT,'(A,A,A,A)')
-     &    ' Actual MARK and MARK to be flushed ',
-     &     IDENT,' versus ',MARK_ACT
-          STOP ' Error in memory flushing '
-        END IF
-C
-        NSNLI = NS+NL
-        KFREEL = IMARK(NM)
-        IF(KFREES.GT.IMARK(NM)) KFREES = IMARK(NM)
-        IF(NM.GT.1) MARK_ACT = MARKC(NM-1)
-        NL = MARKL(NM)
-        NS = MARKS(NM)
-        NM = NM - 1
-C       Flush output unit
-        LU6 = 6
-        CALL GFLUSH(LU6)
-      ELSE IF( TASK(1:5).EQ.'CHECK') THEN
-        NSNLI = NS+ NL
-      ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
-C       compute current free memory
-        KBASE = NWORD - KFREEL - 1
-        NSNLI = NS+ NL
+#endif
+        call setvec(work(KBASE-1), PAD1,1)
+        call setvec(work(KFREEL-1),PAD2,1)
+
       ELSE
-          WRITE(LUWRT,*) ' MEMMAR : Unknown task parameter ',TASK
-          WRITE(LUWRT,*) ' Too confused to continue  '
-          Call Abend1( 11 )
+        WRITE(LUWRT,*) ' MEMMAR_I8 : Unknown task parameter ',TASK
+        WRITE(LUWRT,*) ' Too confused to continue  '
+        call quit('*** error in MEMMAR_I8: unknown task parameter.***')
       END IF
 C
 C     Check paddings
@@ -729,15 +711,19 @@ C
           END DO
 C
           IF(ITSOK.EQ.0) THEN
-            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                         IDENT 
-            Call Abend2( ' Error observed by  memory manager ' )
+            WRITE(LUWRT,*) ' *** error in memmar_i8: array with'//
+     &    ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &    ' prior to the memory check. ***'
+            Call QUIT(
+     &    ' *** quit in MEMMAR_i8: out-of-bounds access detected. *** ')
           END IF
         END IF
 C
       IF(ISTOP.NE.0) THEN       
-            WRITE(LUWRT,*) ' Error observed by  memory manager IDENT: ',
-     &                                                         IDENT 
-            Call Abend2( ' Error observed by  memory manager ' )
+        WRITE(LUWRT,*) ' *** error in memmar_i8: array with'//
+     &  ' identification tag ',IDENT,' was accessed out-of-bounds'//
+     &  ' prior to the memory check. ***'
+        Call QUIT(
+     &  ' *** quit in MEMMAR_i8: out-of-bounds access detected. *** ')
       END IF
       END

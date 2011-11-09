@@ -308,6 +308,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 #endif
 #include "parluci.h"
       integer global_scratch_disk
+!     integer(8) :: kbla_blubb
 C
 C*******************************************
       CALL QENTER('KRMC_LUCI2')
@@ -332,7 +333,12 @@ C
       KADD = MXPWRD
 C     initialize memory
       call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+!     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
 C
+!     IDUM = 0
+!     CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
+!     call memmar(kbla_blubb,4,'ADDS  ',1,'BLABLU')
+!     call izero(work(kbla_blubb),4)
 C     ... no memchecks as default
       IMEMCK = 0
       NTEST = 0
@@ -371,6 +377,7 @@ C
       CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
 C
       CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
+!     call RMEMCHK_opt('bla bla check 1     ')
       CALL MEMMAR(KGROUPLIST, NMPROC,'ADDS  ',1,'IHOST2')
       CALL MEMMAR(KPROCLENGTH,NMPROC,'ADDS  ',1,'INAMEL')
       CALL MEMMAR(KPROCLIST2, NMPROC,'ADDS  ',1,'IHOST3')
