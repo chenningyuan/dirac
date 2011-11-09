@@ -69,9 +69,7 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
 ! write 1-e integral arrays, Y.C. Park
   IMPLICIT NONE
 ! variables
-#include "argos_mxvalue.h"
-#include "argos_files.h"
-#include "argos_error.h"
+#include "inc_mxvalue.h"
 #include "inc_print.h"
 
 ! global variable
@@ -94,7 +92,7 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   INTEGER :: itypea, itypeb
   INTEGER :: lblop
   INTEGER :: n_bfn_sym(mstup)  ! (nbpsy or nso)
-  INTEGER :: num, I,value_temp,value_index
+  INTEGER :: num, I,value_temp,value_index,RECP_OUT1
   CHARACTER(8) :: chrtyp
 
   INTEGER :: itypan(7), itypbn(7)
@@ -103,6 +101,8 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
   data itypbn / 0,   1,   2,   3,   0,   1,   2 /
 
   CALL OUTPUT_LOC('RECP_WRITE_MAIN','E')
+
+  RECP_OUT1 = 6  !DIRAC OUTPUT
 
   IF (nnam.EQ.5) THEN
      OPEN (UNIT=74,FILE='RECP_ISA1')
@@ -165,7 +165,8 @@ SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,N1MAX,L1REC,n_bfn_sym, &
     call RECP_WRITE_FILE( int_type, N_INTEGRAL, nbft,array_stvc, array_so,INT_AREP,MN_INTEGRAL, &
                            LBLOP)
 
-    IF(PRINT_LEVEL.GE. 5) write (nlist,'(4x,a,a)') chrtyp,' integrals were written in a file'
+    IF(PRINT_LEVEL.GE. 5)  &
+       WRITE (RECP_OUT1,'(4x,a,a)') chrtyp,' integrals were written in a file'
     IF(PRINT_LEVEL.GE.10) PRINT *,'   N_INTEGRAL(',LBLOP,')',N_INTEGRAL(LBLOP)
 
   enddo
@@ -197,7 +198,7 @@ SUBROUTINE RECP_WRITE_ARRAY(n_sym,int_type,n_bfn_sym,nbft,labels_stvc,mpru,array
 ! From cnvrt_stvz, Y.C. Park
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "argos_mxvalue.h"
+#include "inc_mxvalue.h"
 #include "inc_print.h"
   integer :: n_bfn_sym(mstup) ! nbpsy or nso : number of basis functions per symmetry block
   integer :: int_type         ! integral type 

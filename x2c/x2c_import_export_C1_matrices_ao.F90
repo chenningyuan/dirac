@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -9,8 +9,7 @@
 !
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the
-!      research
+!      This means also that persons (e.g. post-docs) leaving the research
 !      group of the license holder may not take any part of Dirac,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own license.

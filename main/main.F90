@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -144,19 +144,15 @@ program dirprg
      write(lupri, '(a)') '----------------'
      write(lupri, *)
 
-#ifdef THIS_IS_CMAKE_BUILD
      call print_compilation_info()
      call print_git_revision_info()
-#else
-     call sysinf(iparcal)
-#endif
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST
      call selftest_lapack()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility
+!    MASTER checks MPI library compatibility (now done at compile time)
      if ( parcal ) call selftest_mpi()
 #endif
 #endif

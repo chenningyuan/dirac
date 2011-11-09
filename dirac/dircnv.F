@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -216,7 +216,7 @@ C     ===============================================
 C
       IF(DIISON) THEN
         ITDIIS = ITDIIS + 1
-        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL1 .GT. D0) THEN
+        IF (ITDIIS .GE. 4 .AND. EVCDIF*ERGVAL .GT. D0) THEN
 C          ... often wild oscillations in the beginning,
 C              which may settle down reasonably.
            WRITE(LUPRI,'(/A/A)')

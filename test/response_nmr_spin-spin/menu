@@ -1,4 +1,4 @@
-spsp.inp               H2O.mol --mw=100 
-bss.spsp.inp           H2O.mol --mw=100  
-bss+mfsso.spsp.inp     H2O.mol --mw=100 
-bss_rkb+mfsso.spsp.inp H2O.mol --mw=100 
+spsp.inp               H2O.mol --mw=100 --aw=128 
+bss.spsp.inp           H2O.mol --mw=100 --aw=128
+bss+mfsso.spsp.inp     H2O.mol --mw=100 --aw=128
+bss_rkb+mfsso.spsp.inp H2O.mol --mw=100 --aw=128

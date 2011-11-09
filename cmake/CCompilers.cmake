@@ -2,6 +2,11 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         " ")
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_C_FLAGS
+            "${CMAKE_C_FLAGS} -static -fpic"
+            )
+    endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES Intel)

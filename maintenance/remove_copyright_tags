@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+    echo "usage: remove_copyright_tags /some/path"
+    exit 1
+fi
+
+for suffix in '*.F90' '*.f90' '*.F' '*.c'; do
+    for file in `find $1 -name $suffix`; do
+        grep -v copyright_start $file | grep -v copyright_end > deleteme
+        mv -f deleteme $file
+    done
+done
+
+exit 0

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1468,7 +1468,11 @@ C
       PERC = N_WRITTEN+N_DELETED
       PERC = 100.D0/PERC
       PERC = PERC*N_WRITTEN
+#if defined (INT_STAR8)
+      GIGABYTES = N_WRITTEN * 24.0
+#else
       GIGABYTES = N_WRITTEN * 16.0
+#endif
       GIGABYTES = GIGABYTES / (1024.0**3)
       WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
  1000 FORMAT (/" Node",I5," finished first half transformation",I16,
