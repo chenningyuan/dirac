@@ -247,7 +247,7 @@ C
      &  'CAPDIR.inp',' ',' ','FORMATTED',IDUMMY,.FALSE.)
          WRITE(LUTMP3,*) 'DIRAC unique order of atomic basis functions'
 
-         IF (IPRINT.GE.0) THEN
+         IF (IPRINT.GE.2) THEN
           WRITE(LUPRI,'(2X,A)')
      &    'CAPOUT: preparing the "CAPDIR.inp" file with DIRAC'//
      &    ' unique order of atomic basis functions. '
