@@ -260,10 +260,24 @@ module fde_eval_dirac
          fde_active_gn(2,i) = grad_rho(2,i)
          fde_active_gn(3,i) = grad_rho(3,i)
 
+         fde_active_hn(1,i) = hes_rho(1,i)
+         fde_active_hn(2,i) = hes_rho(2,i)
+         fde_active_hn(3,i) = hes_rho(3,i)
+         fde_active_hn(4,i) = hes_rho(4,i)
+         fde_active_hn(5,i) = hes_rho(5,i)
+         fde_active_hn(6,i) = hes_rho(6,i)
+
          gf_active%n(i)    = rho(1,i)
          gf_active%gn(1,i) = grad_rho(1,i) 
          gf_active%gn(2,i) = grad_rho(2,i) 
          gf_active%gn(3,i) = grad_rho(3,i) 
+
+         gf_active%hn(1,i) = hes_rho(1,i)
+         gf_active%hn(2,i) = hes_rho(2,i)
+         gf_active%hn(3,i) = hes_rho(3,i)
+         gf_active%hn(4,i) = hes_rho(4,i)
+         gf_active%hn(5,i) = hes_rho(5,i)
+         gf_active%hn(6,i) = hes_rho(6,i)
       END DO
 
       call dealloc (cmo)

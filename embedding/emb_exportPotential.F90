@@ -134,6 +134,12 @@ module FDE_exportPotentials
          else
             call quit('density gradient not available in fde export')
          endif   
+
+         if (allocated(fde_active_hn)) then
+            hes => fde_active_hn
+         else
+            call quit('density gradient not available in fde export')
+         endif   
          
          if (allocated(fde_active_elpot)) then
             vcp => fde_active_elpot
@@ -193,8 +199,8 @@ module FDE_exportPotentials
 !
 ! export a dummy hessian
 !
-            call allocp(hes, 6,int(SIZE(gp,2)))
-            hes  = 0.0d0
+!           call allocp(hes, 6,int(SIZE(gp,2)))
+!           hes  = 0.0d0
 
              tag=>xml_tag_open(tag,'dataset','hessian')
                call set_attribute(tag,'size',  csizept2)
