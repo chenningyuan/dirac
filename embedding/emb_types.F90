@@ -42,6 +42,7 @@ module fde_types
       integer :: nspin
       real(kind=8), allocatable :: n(:)
       real(kind=8), allocatable :: gn(:,:)
+      real(kind=8), allocatable :: hn(:,:)
       real(kind=8), allocatable :: elpot(:)
    end type
 
@@ -59,11 +60,13 @@ module fde_types
          gf%npoints = size
          gf%nspin   = 1
          allocate(gf%n(size))
-         allocate(gf%gn(size,3))
+         allocate(gf%gn(3,size))
+         allocate(gf%hn(6,size))
          allocate(gf%elpot(size))
          
          gf%n  = 0.0d0
          gf%gn = 0.0d0
+         gf%hn = 0.0d0
          gf%elpot = 0.0d0
       end subroutine new_grid_function
 
@@ -75,6 +78,7 @@ module fde_types
          gf%npoints = 0
          deallocate(gf%n)
          deallocate(gf%gn)
+         deallocate(gf%hn)
          deallocate(gf%elpot)
       end subroutine del_grid_function
 

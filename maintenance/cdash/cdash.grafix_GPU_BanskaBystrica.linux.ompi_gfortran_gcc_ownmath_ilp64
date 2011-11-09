@@ -27,15 +27,15 @@ make info_ext
 #
 # now do the nightly build
 #
-TMP_DIR=/tmp/ilias/dirac_build
-mkdir -p $TMP_DIR
-git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
-cd $TMP_DIR
-./pamadm -a 
-./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
-cd $DIRAC/build
-make Nightly
-make info_ext
-rm -rf $TMP_DIR
+#TMP_DIR=/tmp/ilias/dirac_build
+#mkdir -p $TMP_DIR
+#git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
+#cd $TMP_DIR
+#./pamadm -a 
+#./setup --mpi --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cpp=$OMPI/mpiCC  --int64  --internal-math  -D BUILDNAME="grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64_nightly" -D RUNTEST_NR_PROC=2   -D RUNTEST_TIMEOUT="00:18:00"   -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
+#cd $DIRAC/build
+#make Nightly
+#make info_ext
+#rm -rf $TMP_DIR
 
 exit 0

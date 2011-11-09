@@ -12,6 +12,7 @@ command_d = {}
 
 command_d['mpif90']   = 'mpif90   --version'
 command_d['gfortran'] = 'gfortran --version'
+command_d['gfortran44'] = 'gfortran44 --version'
 command_d['f95']      = 'f95      --version'
 command_d['g95']      = 'g95      --version'
 command_d['ifort']    = 'ifort    --version'
