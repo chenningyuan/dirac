@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -104,13 +104,13 @@ print *, '*                                                                     
 print *, '*                                                                            *'
 print *, '*    Written by:                                                             *'
 print *, '*                                                                            *'
+print *, '*    Radovan Bast             Universite P. Sabatier, Toulouse  France       *'
 print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *'
 print *, '*    Trond Saue               Universite P. Sabatier, Toulouse  France       *'
 print *, '*    Lucas Visscher           VU University Amsterdam           Netherlands  *'
 print *, '*                                                                            *'
-print *, '*    with new contributions since the DIRAC08 release from:                  *'
+print *, '*    with new contributions since the DIRAC10 release from:                  *'
 print *, '*                                                                            *'
-print *, '*    Radovan Bast             Universite P. Sabatier, Toulouse  France       *'
 print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *'
 print *, '*    Ulf Ekstroem             University of Oslo                Norway       *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel       *'
@@ -123,6 +123,7 @@ print *, '*    Christoph R. Jacob       Karlsruhe Institute of Technology German
 print *, '*    Stefan Knecht            University of Southern Denmark    Denmark      *'
 print *, '*    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *'
 print *, '*    Patrick Norman           Linkoeing University              Sweden       *'
+print *, '*    Gosia Olejniczak         University of Warsaw              Poland       *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark      *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany      *'
 print *, '*    Kenneth Ruud             University of Tromsoe             Norway       *'
@@ -148,11 +149,11 @@ print *, '*    appropriate citation would be:                                   
 print *, '*                                                                            *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,           *'
 print *, '*    Release DIRAC11 (2011),                                                 *'
-print *, '*    written by H. J. Aa. Jensen, T. Saue, and L. Visscher                   *'
-print *, '*    with new contributions from R. Bast, K. G. Dyall, U. Ekstroem, E. Eliav,*'
+print *, '*    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher          *'
+print *, '*    with new contributions from K. G. Dyall, U. Ekstroem, E. Eliav,         *'
 print *, '*    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *'
-print *, '*    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *'
-print *, '*    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *'
+print *, '*    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, G. Olejniczak,       *'
+print *, '*    J. Olsen, M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,     *'
 print *, '*    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *'
 print *, '*    (see http://dirac.chem.vu.nl).                                          *'
 print *, '*                                                                            *'

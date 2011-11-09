@@ -2891,7 +2891,7 @@ CMI   MXXTRP=80
 
       DGATH=1.D-4
       SCFAT=1.D-3
-      EXPMN=1.1D-3
+      EXPMN=1.1D-4
       DMNXP=1.1D-3
       RMNED=1.1D-8
       RMXED=0.99D-1
@@ -3184,7 +3184,7 @@ C --- verify number of basis functions wrt shell occupation
       I=I-1
       IF ((SCFAT.LT.1.D-4).OR.(SCFAT.GT.0.1)) GO TO 370
       I=I-1
-      IF ((EXPMN.LT.1.D-3).OR.(EXPMN.GT.1.)) GO TO 370
+      IF ((EXPMN.LT.1.D-4).OR.(EXPMN.GT.1.)) GO TO 370
       I=I-1
       IF ((DMNXP.LT.1.D-3).OR.(DMNXP.GT.1.)) GO TO 370
       I=I-1

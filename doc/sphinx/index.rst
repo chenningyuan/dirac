@@ -2,8 +2,6 @@
 Main page
 =========
 
-Write me ...
-
 .. toctree::
    :maxdepth: 2
 
@@ -13,12 +11,3 @@ Write me ...
    basis.rst
    cdash.rst
    programmers_manual.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

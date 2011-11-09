@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
+!      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1974,8 +1974,10 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
       call izero(ngsobt ,mxpngas)
       call izero(ngsobt2,mxpngas)
 
-      do igas = 1, ngas
-        do isym = nirr_dg/2+1, nirr_dg 
+!     write(luwrt,*)  'nirr_dg ==> ',nirr_dg
+      do isym = nirr_dg/2+1, nirr_dg 
+        do igas = 1, ngas
+!         write(luwrt,*)  'igas, isym ==> ',igas, isym
           ngsobt(igas)  = ngsobt(igas)  +  ngsob(isym,igas)
           ngsobt2(igas) = ngsobt2(igas) + ngsob2(isym,igas)
         end do

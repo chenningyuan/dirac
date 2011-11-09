@@ -1,0 +1,2 @@
+./setup --fc=gfortran --cc=gcc --debug -D ENABLE_STATIC_LINKING=1 --internal-math
+./setup --fc=gfortran --cc=gcc --debug -D ENABLE_STATIC_LINKING=1 --math="-L/usr/lib/atlas-base/ -latlas -lf77blas -L/usr/lib/atlas-base/atlas/ -llapack -lblas

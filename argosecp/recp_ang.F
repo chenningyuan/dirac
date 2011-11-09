@@ -94,6 +94,7 @@
          enddo
       enddo
 
+!     print *,'ang2-it',it
       na1=lmnv(1,it)+1
       la1=lmnv(2,it)+1
       ma1=lmnv(3,it)+1

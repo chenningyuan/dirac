@@ -12,8 +12,8 @@ build*/*
 cmake/Definitions.cmake
 cmake/Sources.cmake
 cmake/Tests.cmake
+cmake/IncludeFiles.cmake
 dirac.x
-gp/compinfo.h
 include/fortran_interface.h
 pamq.py
 test/*/*out
