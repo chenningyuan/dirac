@@ -208,7 +208,7 @@ module FDE_exportPotentials
                call xml_add_data(tag,hes)
              tag=>xml_tag_close(tag)
 
-             call deallocp(hes)
+!            call deallocp(hes)
 
              if (etmp%ex_coulomb) then
                 tag=>xml_tag_open(tag,'dataset','vc')
