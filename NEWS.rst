@@ -26,6 +26,12 @@ New build system and infrastructure
   dynamic allocation compared to DIRAC10.
 
 
+New mailing lists for help and announcements about the DIRAC program package
+----------------------------------------------------------------------------
+
+* http://groups.google.com/group/dirac-users
+
+
 Important input changes
 -----------------------
 
