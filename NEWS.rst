@@ -21,6 +21,9 @@ New build system and infrastructure
 * New pam script (python)
 * Alternative launcher: wrapper.py (python)
 * New testing framework based on python (runscript)
+* Many static allocation calls replaced by dynamic allocation; in practice
+  this means that you may need less WORK array memory and/or more space for
+  dynamic allocation compared to DIRAC10.
 
 
 Important input changes

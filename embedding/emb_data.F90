@@ -57,8 +57,8 @@ module fde_data
 !
 ! variables 
 !
-   public fde_frozen_n, fde_frozen_gn, fde_frozen_elpot
-   public fde_active_n, fde_active_gn, fde_active_elpot
+   public fde_frozen_n, fde_frozen_gn, fde_frozen_hn, fde_frozen_elpot
+   public fde_active_n, fde_active_gn, fde_active_hn, fde_active_elpot
    public fde_grid
    public fde_vemb
    public fde_grid_np
@@ -75,10 +75,12 @@ module fde_data
 !
    real(kind=8), save, allocatable, target :: fde_frozen_n(:)
    real(kind=8), save, allocatable, target :: fde_frozen_gn(:,:)
+   real(kind=8), save, allocatable, target :: fde_frozen_hn(:,:)
    real(kind=8), save, allocatable, target :: fde_frozen_elpot(:)
 
    real(kind=8), save, allocatable, target :: fde_active_n(:)
    real(kind=8), save, allocatable, target :: fde_active_gn(:,:)
+   real(kind=8), save, allocatable, target :: fde_active_hn(:,:)
    real(kind=8), save, allocatable, target :: fde_active_elpot(:)
 
    real(kind=8), save, allocatable, target :: fde_vemb(:)
@@ -255,6 +257,11 @@ module fde_data
             fde_frozen_gn    = 0.0d0
          endif
          
+         if (.not.allocated(fde_frozen_hn)) then
+            call alloc(fde_frozen_hn, 6,   fde_grid_np, id="fde_frozen_hn")
+            fde_frozen_hn    = 0.0d0
+         endif
+         
          if (.not.allocated(fde_frozen_elpot)) then
             call alloc(fde_frozen_elpot, fde_grid_np, id="fde_frozen_elpot")
             fde_frozen_elpot = 0.0d0
@@ -278,6 +285,11 @@ module fde_data
       if (.not.allocated(fde_active_gn)) then
          call alloc(fde_active_gn, 3,   fde_grid_np, id="fde_active_gn")
          fde_active_gn    = 0.0d0
+      endif
+
+      if (.not.allocated(fde_active_hn)) then
+         call alloc(fde_active_hn, 6,   fde_grid_np, id="fde_active_hn")
+         fde_active_hn    = 0.0d0
       endif
 
       if (.not.allocated(fde_active_elpot)) then
@@ -308,6 +320,7 @@ module fde_data
       call dealloc(fde_vemb)
       call dealloc(fde_frozen_n)
       call dealloc(fde_frozen_gn)
+      call dealloc(fde_frozen_hn)
       call dealloc(fde_frozen_elpot)
       call del_grid_function(gf_frozen)
    end subroutine fde_cleanup_frozen_data
@@ -318,6 +331,7 @@ module fde_data
 !   ----------------------------------------------------------------------------
       call dealloc(fde_active_n)
       call dealloc(fde_active_gn)
+      call dealloc(fde_active_hn)
       call dealloc(fde_active_elpot)
       call del_grid_function(gf_active)
 
