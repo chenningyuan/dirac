@@ -2302,6 +2302,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 C
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
@@ -2311,6 +2312,10 @@ C
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 
+
+      if (twocomp .and. .not. (bss .or. x2c)) then
+         call quit('stop because of a problem in QR with .NONREL')
+      end if
 
 C
       CALL QENTER('E3DRV')
