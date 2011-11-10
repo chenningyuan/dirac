@@ -218,6 +218,10 @@ module fde_inputDirac
          call fde_import_frozen
          call fde_initialize_nadd_functionals         
       endif
+
+      if (etmp%do_grid_out) then
+         call fde_import_gridout
+      endif
 #endif
       
 !     options are echoed
