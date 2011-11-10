@@ -2622,9 +2622,9 @@ C
 C     D_{ab} = C_{ai} W1_{iu} C+_{bu} - C_{au} W1_{ui} C+_{bi}
 C
       CALL QDEN1(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,WORK(KTMPAO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN1(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,WORK(KTMPAO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
 C
 C     Print
 C
@@ -2660,7 +2660,7 @@ C*****************************************************************************
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 C
-      PARAMETER ( D0 = 0.0D0, DM1 = -1.0D0 )
+      PARAMETER ( D0 = 0.0D0, DM1 = -1.0D0, D1 = 1.0D0)
 C
       CHARACTER T*1
       DIMENSION DEN(N2BBASX,NZ),DTMP(N2BBASX,NZ),W1(NORBT,NORBT,NZ)
@@ -2783,19 +2783,19 @@ C
       CALL QDEN2(1,D1,ISYM1,ITIM1,IFER1,W1,DEN,
      &     ISYM2,ITIM2,IFER2,W2,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN2(3,D1,ISYM2,ITIM2,IFER2,W2,DEN,
      &     ISYM1,ITIM1,IFER1,W1,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN2(2,DM1,ISYM2,ITIM2,IFER2,W2,DEN,
      &     ISYM1,ITIM1,IFER1,W1,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDEN2(2,DM1,ISYM1,ITIM1,IFER1,W1,DEN,
      &     ISYM2,ITIM2,IFER2,W2,WORK(KTMPAO),
      &     ISYM3,ITIM3,IFER3,WORK(KTMPMO),
-     &     CMO,WORK(KFREE),LWRK)
+     &     CMO,WORK(KFREE),LFREE)
 C
 C     Print
 C
