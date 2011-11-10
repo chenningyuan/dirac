@@ -5115,7 +5115,8 @@ CMI&& activate 4c-2c MO transformation
           x2cmod_mmf            = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
-          DOLVC      = .FALSE.
+          MOLMF3                = .TRUE.
+          DOLVC                 = .FALSE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
