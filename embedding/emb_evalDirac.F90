@@ -59,17 +59,17 @@ module fde_eval_dirac
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_calculate_active_elpot(dmat,vc)
+      subroutine fde_calculate_active_elpot(dmat,vc,grid)
 !   ----------------------------------------------------------------------------
          real(kind=8) :: dmat(:)
          real(kind=8), allocatable :: work(:)
-         real(kind=8) :: vc(:)
+         real(kind=8) :: vc(:), grid(:,:)
          integer      :: work_dim=1000000
          integer      :: iprint = 0
          
          call alloc(work,work_dim, id="scratch space emb_vc")
          write (*,*) 'Generating the Coulomb potential ...'
-         call emb_vc(dmat,fde_grid,vc,iprint,WORK,work_dim) 
+         call emb_vc(dmat,grid,vc,iprint,WORK,work_dim) 
          write (*,*) 'done!'
          call dealloc(work)
                            

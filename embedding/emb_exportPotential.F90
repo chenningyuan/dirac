@@ -48,7 +48,7 @@ module FDE_exportPotentials
          real(kind=8), allocatable :: dmat(:)
 
          call fde_old_density_matrix_generator(dmat)
-         call fde_calculate_active_elpot(dmat,gf_active%elpot)
+         call fde_calculate_active_elpot(dmat,gf_export%elpot,fde_export_grid)
          call dealloc(dmat)
       end subroutine fde_export_write_data_to_memory
 
@@ -91,7 +91,7 @@ module FDE_exportPotentials
 ! just reuse the old code in the routine below
          call fde_old_density_matrix_generator(dmat)
          call fde_test_export_density
-         call fde_calculate_active_elpot(dmat,gf_export%elpot)
+         call fde_calculate_active_elpot(dmat,gf_export%elpot,fde_export_grid)
 
          call dealloc(dmat)
 
