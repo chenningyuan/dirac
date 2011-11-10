@@ -1667,6 +1667,8 @@ C
      &           WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
      &           WORK(KTEMP2),WORK(KTEMP3))
          ELSE
+!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!                                 in the actual subroutine... - FIXME
             CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &           WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
          END IF
@@ -1910,6 +1912,8 @@ C
      &              WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
      &              WORK(KTEMP2),WORK(KTEMP3))
             ELSE
+!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!                                 in the actual subroutine... - FIXME
                CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &              WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
             END IF

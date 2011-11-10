@@ -368,6 +368,10 @@ contains
                 (visual_cfg_property(imat) == iq_ndipy) .or. &
                 (visual_cfg_property(imat) == iq_ndipz)) then
 
+               if (nr_boson_ireps > 1) then
+                  call quit('visualization of nuclear magnetic dipole only works with C1 symmetry')
+               end if
+
                if (levyle) then
                   call get_gn(density,      &
                               v,            &
@@ -427,6 +431,9 @@ contains
                 (visual_cfg_property(imat) == iq_ndipydia) .or. &
                 (visual_cfg_property(imat) == iq_ndipzdia)) then
 
+               if (nr_boson_ireps > 1) then
+                  call quit('visualization of nuclear magnetic dipole only works with C1 symmetry')
+               end if
 #ifdef MOD_UNRELEASED
                call j_dia(matrix_33,               &
                           visual_cfg_london,       &
@@ -435,6 +442,8 @@ contains
                           D(imat)%elms,            &
                           ao,                      &
                           (/px, py, pz/))
+#else
+               call quit('ndip dia not part of this released version')
 #endif
 
                if (visual_cfg_property(imat) == iq_ndipxdia) i = 1

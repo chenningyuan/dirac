@@ -37,8 +37,10 @@ module fde_data
    public get_fde_grid_weight
    public fde_test_frozen_density
    public fde_test_active_density
+   public fde_test_export_density
 #ifdef MOD_UNRELEASED
    public fde_import_frozen
+   public fde_import_gridout
 #endif
    public fde_import_static
    public fde_initialize_data
@@ -86,6 +88,19 @@ module fde_data
    real(kind=8), save, allocatable, target :: fde_vemb(:)
 
    real(kind=8), save, allocatable, target :: fde_grid(:,:) 
+
+!
+! export, using a different grid
+!
+   public fde_export_grid
+   public fde_export_grid_np
+
+   public gf_export
+
+   logical, save :: export_data_is_initialized = .false.
+   integer, save :: fde_export_grid_np = 0
+   type(grid_function), save :: gf_export
+   real(kind=8), save, allocatable, target :: fde_export_grid(:,:) 
 
    contains
 
@@ -177,7 +192,38 @@ module fde_data
       call deallocp(gridp)
    end subroutine fde_import_static
 
+
 #ifdef MOD_UNRELEASED
+   subroutine fde_import_gridout
+      integer :: file_unit
+      character(len=60) :: file_name
+      integer :: i
+      real(kind=8), pointer :: gridp(:,:)
+      type(fde_files)  :: ftmp
+
+      call fde_get_files_info(ftmp)
+
+      file_unit = ftmp%export%unit
+      file_name = ftmp%export%name
+
+      call fde_open_file(file_name,file_unit)
+      call read_grid(file_unit,gridp)
+      call fde_close_file(file_unit)
+
+      fde_export_grid_np = size(gridp,2)
+
+      call fde_initialize_export_data
+
+      do i=1, fde_export_grid_np 
+         fde_export_grid(1,i) = gridp(1,i)
+         fde_export_grid(2,i) = gridp(2,i)
+         fde_export_grid(3,i) = gridp(3,i)
+         fde_export_grid(4,i) = gridp(4,i)
+      enddo
+      call deallocp(gridp)
+   end subroutine
+
+
 !   ----------------------------------------------------------------------------
    subroutine fde_import_frozen
 !   ----------------------------------------------------------------------------
@@ -217,6 +263,25 @@ module fde_data
       call deallocp(gridp)
    end subroutine fde_import_frozen
 #endif /* MOD_UNRELEASED */ 
+
+
+!   ----------------------------------------------------------------------------
+   subroutine fde_initialize_export_data
+!   ----------------------------------------------------------------------------
+      if (.not.export_data_is_initialized) then
+         export_data_is_initialized = .true.
+         if (fde_export_grid_np > 0) then
+
+            if (.not.allocated(fde_export_grid)) then
+               call alloc(fde_export_grid, 4,fde_export_grid_np, id="fde_export_grid")
+            endif
+            call new_grid_function(gf_export,fde_export_grid_np)
+         else
+            call quit('there are no grid points for fde export!')
+         endif
+      endif
+
+   end subroutine fde_initialize_export_data
 
 
 !   ----------------------------------------------------------------------------
@@ -311,6 +376,10 @@ module fde_data
          call fde_cleanup_active_data
          call fde_cleanup_frozen_data
       endif
+
+      if (export_data_is_initialized) then
+         call del_grid_function(gf_export)
+      endif
    end subroutine fde_cleanup_data
 
 
@@ -348,7 +417,7 @@ module fde_data
          frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_n(point) 
       end do
       
-      write (*,*) '  Imported (frozen) density integrates to ',frozen_particle_number,' electrons'
+      write (*,*) '  Frozen density integrates to ',frozen_particle_number,' electrons'
       write (*,*) '  Grid points processed ',fde_grid_np
 
       frozen_particle_number = 0.0
@@ -368,12 +437,32 @@ module fde_data
          active_particle_number = active_particle_number + fde_grid(4,point)*fde_active_n(point) 
       end do
       
-      write (*,*) ' Exported (active) density integrates to ',active_particle_number,' electrons'
+      write (*,*) ' Active density integrates to ',active_particle_number,' electrons'
       write (*,*) ' Grid points processed ',fde_grid_np
 
       active_particle_number = 0.0
 
    end subroutine fde_test_active_density
+
+
+!   ----------------------------------------------------------------------------
+   subroutine fde_test_export_density
+!   ----------------------------------------------------------------------------
+      integer      :: point
+      real(kind=8) :: export_particle_number 
+
+      export_particle_number = 0.0d0
+
+      do point = 1, fde_export_grid_np 
+         export_particle_number = export_particle_number + fde_export_grid(4,point)*gf_export%n(point) 
+      end do
+      
+      write (*,*) ' Exported density integrates to ',export_particle_number,' electrons'
+      write (*,*) ' Grid points processed ',fde_export_grid_np
+
+      export_particle_number = 0.0
+
+   end subroutine fde_test_export_density
 
    
 end module fde_data

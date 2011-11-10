@@ -48,7 +48,7 @@ module FDE_exportPotentials
          real(kind=8), allocatable :: dmat(:)
 
          call fde_old_density_matrix_generator(dmat)
-         call fde_calculate_active_elpot(dmat,gf_active%elpot)
+         call fde_calculate_active_elpot(dmat,gf_export%elpot,fde_export_grid)
          call dealloc(dmat)
       end subroutine fde_export_write_data_to_memory
 
@@ -83,8 +83,6 @@ module FDE_exportPotentials
         real(kind=8), allocatable :: dmat(:)
         integer :: mat_dim
 
-         call fde_test_active_density
-
 !! calculate vc, density and gradient
 !         call fde_get_density_matrix(dmat,mat_dim,export_control%ex_level)
 !         call fde_get_active_density(dmat, mat_dim, .true.)
@@ -92,9 +90,8 @@ module FDE_exportPotentials
 ! not so nice solution: while i don't get around to writing the ones above,
 ! just reuse the old code in the routine below
          call fde_old_density_matrix_generator(dmat)
-         
-         call fde_test_active_density
-         call fde_calculate_active_elpot(dmat,fde_active_elpot)
+         call fde_test_export_density
+         call fde_calculate_active_elpot(dmat,gf_export%elpot,fde_export_grid)
 
          call dealloc(dmat)
 
@@ -117,32 +114,32 @@ module FDE_exportPotentials
          type(fde_export) :: etmp
 
 
-         if (allocated(fde_grid)) then                
-            gp  => fde_grid
+         if (allocated(fde_export_grid)) then                
+            gp  => fde_export_grid
          else
             call quit('grid not available in fde export')
          endif
 
-         if (allocated(fde_active_n)) then
-            np  => fde_active_n
+         if (associated(gf_export%n)) then
+            np  => gf_export%n
          else
             call quit('density not available in fde export')
          endif
          
-         if (allocated(fde_active_gn)) then
-            gnp => fde_active_gn
+         if (associated(gf_export%gn)) then
+            gnp => gf_export%gn
          else
             call quit('density gradient not available in fde export')
          endif   
 
-         if (allocated(fde_active_hn)) then
-            hes => fde_active_hn
+         if (associated(gf_export%hn)) then
+            hes => gf_export%hn
          else
             call quit('density gradient not available in fde export')
          endif   
          
-         if (allocated(fde_active_elpot)) then
-            vcp => fde_active_elpot
+         if (associated(gf_export%elpot)) then
+            vcp => gf_export%elpot
          else
             call quit('potential not available in fde export')
          endif
@@ -159,7 +156,7 @@ module FDE_exportPotentials
 
          CALL TITLER('Output of density to XML file','*',118)
          WRITE(log_unit,*) 'Name of the outputfile:', trim(export_name)
-         call fde_test_active_density
+         call fde_test_export_density
          WRITE(log_unit,*) 'Writing data to xml_file:', export_name
 
          write (csizept1,*)     size(gp,1) 
@@ -220,11 +217,11 @@ module FDE_exportPotentials
 
            tag=>xml_tag_close(tag)
 
-           write(log_unit,*) 'WRITING:'       
+           write(log_unit,*) 'writing xml file'       
            call xml_write(export_name)
-           write(log_unit,*) 'CLOSING:'
+
+           write(log_unit,*) 'closing xml file'
          tag=>xml_close(export_name)
-         write(*,*) 'CLOSED!'
 
 !aspg come back to this later         CALL TIME()
 
