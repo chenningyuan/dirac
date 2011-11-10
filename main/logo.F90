@@ -160,7 +160,7 @@ print *, '*    appropriate citation would be:                                   
 print *, '*                                                                            *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,           *'
 print *, '*    Release DIRAC11 (2011),                                                 *'
-print *, '*    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher          *'
+print *, '*    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *'
 print *, '*    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *'
