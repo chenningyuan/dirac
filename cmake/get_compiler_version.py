@@ -21,6 +21,7 @@ command_d['xlf']      = 'xlf      -qversion'
 
 command_d['mpicc']    = 'mpicc    --version'
 command_d['gcc']      = 'gcc      --version'
+command_d['gcc44']    = 'gcc44    --version'
 command_d['icc']      = 'icc      --version'
 command_d['pgcc']     = 'pgcc     -V'
 command_d['xlc']      = 'xlc      -qversion'
