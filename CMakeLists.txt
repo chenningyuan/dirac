@@ -73,6 +73,13 @@ option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"             
 if(ENABLE_STATIC_LINKING)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+#miro - temporarily we have to block non-internal math and parallel ...
+    if(NOT ENABLE_INTERNAL_MATH)
+        message(FATAL_ERROR "For static linking you need internal math library !")
+    endif()
+    if (ENABLE_MPI OR ENABLE_OMP)
+        message(FATAL_ERROR "Static linking works in serial mode, no MPI/OMPI!")
+    endif()
 endif()
 
 option(FORCE_DIRAC_BLAS   "Force use of DIRAC BLAS"   OFF)
