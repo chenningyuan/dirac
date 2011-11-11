@@ -218,22 +218,6 @@ C
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
-!
-!     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
-!     everything else results in nonsense energies - if overwritten by user input for example...
-      if(molmf3)then
-        if(.not.relcc_use_orbital_energies) 
-     &          relcc_use_orbital_energies = .true.
-        if(.not.relcc_no_recompute) 
-     &          relcc_no_recompute = .true.
-        USEOE   = .true.
-        NORECMP = .true.
-        write(IW,'(/A,A,A/)')
-     &  ' *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***',
-     &  ' *** use of SCF orbital energies and no re-computation of ***',
-     &  ' *** Fock matrix elements set explicitly                  ***' 
-      end if
-!
 C     
 C     Note that reading this namelist may override the Dirac style input. Leave 
 C     this at the discretion of the user for the moment.
@@ -507,6 +491,24 @@ C
       GOTO 14
    13 CALL QUIT('Error exit while reading namelist CCSORT')
    14 CONTINUE
+!
+!     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
+!     everything else results in nonsense energies - if overwritten by user input for example...
+      if(molmf3)then
+        if(.not.relcc_use_orbital_energies) 
+     &          relcc_use_orbital_energies = .true.
+        if(.not.relcc_no_recompute) 
+     &          relcc_no_recompute = .true.
+        USEOE   = .true.
+        NORECMP = .true.
+        write(IW,'(/A,/A,/A,/A,/A/)')
+     &  ' ************************************************************',
+     &  ' *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***',
+     &  ' *** use of SCF orbital energies and no re-computation of ***',
+     &  ' *** Fock matrix elements set explicitly                  ***',
+     &  ' ************************************************************' 
+      end if
+!
 C
 C     Position the file at the right spot when this routine is
 C     called as a part of DIRAC
