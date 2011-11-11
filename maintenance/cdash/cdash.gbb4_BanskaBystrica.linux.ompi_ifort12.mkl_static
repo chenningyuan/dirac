@@ -38,13 +38,14 @@ OMPI=/home/chemia/ucitelia/milias/bin/open_mpi_ifort_ILP64/bin
 cd $DIRAC
 
 ###  MKL ILP64 libraries  ###
-export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
+#export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
 
-./pamadm --release
+#./pamadm --release
+./pamadm --a
 
 # setup, no --debug
 #./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl-RELEASE" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
-./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl-RELEASE" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
+./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_STATIC_LINKING=ON --internal-math
 cd build
 cmake ..
 #make dirac.x
@@ -52,6 +53,6 @@ cmake ..
 make Nightly
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo "release buildup finished at "$timestamp
+echo "buildup finished at "$timestamp
 
 exit 0
