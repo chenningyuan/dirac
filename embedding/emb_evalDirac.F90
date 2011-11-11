@@ -59,17 +59,17 @@ module fde_eval_dirac
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_calculate_active_elpot(dmat,vc)
+      subroutine fde_calculate_active_elpot(dmat,vc,grid)
 !   ----------------------------------------------------------------------------
          real(kind=8) :: dmat(:)
          real(kind=8), allocatable :: work(:)
-         real(kind=8) :: vc(:)
+         real(kind=8) :: vc(:), grid(:,:)
          integer      :: work_dim=1000000
          integer      :: iprint = 0
          
          call alloc(work,work_dim, id="scratch space emb_vc")
          write (*,*) 'Generating the Coulomb potential ...'
-         call emb_vc(dmat,fde_grid,vc,iprint,WORK,work_dim) 
+         call emb_vc(dmat,grid,vc,iprint,WORK,work_dim) 
          write (*,*) 'done!'
          call dealloc(work)
                            
@@ -229,7 +229,7 @@ module fde_eval_dirac
 !     Correct DMAT for occupationnumbers, both for scf and mp2...
       dmat = 2.0d0*dmat
 
-      points => fde_grid
+      points => fde_export_grid
 
       call alloc(rho,     1,int(SIZE(points,2)))
       call alloc(grad_rho,3,int(SIZE(points,2)))
@@ -255,29 +255,17 @@ module fde_eval_dirac
              GAO,GAO1,GAO2,DMAT,BUF)
 !     JHS Calculate the coulomb potential.
 
-         fde_active_n(i) = rho(1,i)
-         fde_active_gn(1,i) = grad_rho(1,i)
-         fde_active_gn(2,i) = grad_rho(2,i)
-         fde_active_gn(3,i) = grad_rho(3,i)
+         gf_export%n(i)    = rho(1,i)
+         gf_export%gn(1,i) = grad_rho(1,i) 
+         gf_export%gn(2,i) = grad_rho(2,i) 
+         gf_export%gn(3,i) = grad_rho(3,i) 
 
-         fde_active_hn(1,i) = hes_rho(1,i)
-         fde_active_hn(2,i) = hes_rho(2,i)
-         fde_active_hn(3,i) = hes_rho(3,i)
-         fde_active_hn(4,i) = hes_rho(4,i)
-         fde_active_hn(5,i) = hes_rho(5,i)
-         fde_active_hn(6,i) = hes_rho(6,i)
-
-         gf_active%n(i)    = rho(1,i)
-         gf_active%gn(1,i) = grad_rho(1,i) 
-         gf_active%gn(2,i) = grad_rho(2,i) 
-         gf_active%gn(3,i) = grad_rho(3,i) 
-
-         gf_active%hn(1,i) = hes_rho(1,i)
-         gf_active%hn(2,i) = hes_rho(2,i)
-         gf_active%hn(3,i) = hes_rho(3,i)
-         gf_active%hn(4,i) = hes_rho(4,i)
-         gf_active%hn(5,i) = hes_rho(5,i)
-         gf_active%hn(6,i) = hes_rho(6,i)
+         gf_export%hn(1,i) = hes_rho(1,i)
+         gf_export%hn(2,i) = hes_rho(2,i)
+         gf_export%hn(3,i) = hes_rho(3,i)
+         gf_export%hn(4,i) = hes_rho(4,i)
+         gf_export%hn(5,i) = hes_rho(5,i)
+         gf_export%hn(6,i) = hes_rho(6,i)
       END DO
 
       call dealloc (cmo)
