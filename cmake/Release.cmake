@@ -20,14 +20,7 @@ SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
     )
 
 include(CPack)
-
-file(GLOB_RECURSE H_FILES   RELATIVE ${CMAKE_SOURCE_DIR} "*.h")
-file(GLOB_RECURSE INC_FILES RELATIVE ${CMAKE_SOURCE_DIR} "*.inc")
-
-set(INCLUDE_FILES
-    ${H_FILES}
-    ${INC_FILES}
-    )
+include(IncludeFiles)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
