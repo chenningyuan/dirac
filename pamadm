@@ -385,6 +385,7 @@ dirac_modules[this_module].add_test('dft_minnesota')
 dirac_modules[this_module].add_test('fde_response_autodiff')
 dirac_modules[this_module].add_test('fde_export_density')
 dirac_modules[this_module].add_test('london_properties_symmetry')
+dirac_modules[this_module].add_test('response_qr_nonrel')
 dirac_modules[this_module].take_out_of_release()
 
 # define input options
