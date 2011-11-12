@@ -71,7 +71,10 @@ option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very v
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 
 if(ENABLE_STATIC_LINKING)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
+##ifort: command line remark #10010: option '-pthread' is deprecated and will be removed in a future release. See '-help deprecated'
+#miro: I haven't checked whether -pthread is needed in static linking for others compilers, like GNU...needs check
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -pthread")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 #miro - temporarily we have to block non-internal math and parallel ...
     if(NOT ENABLE_INTERNAL_MATH)
