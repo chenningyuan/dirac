@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #PBS -S /bin/bash
-#PBS -N release_cdash_buildup
+#PBS -N cdash_buildup_static
 #PBS -l nodes=1
 #PBS -l walltime=6:00:00
 #PBS -j oe
@@ -45,10 +45,10 @@ cd $DIRAC
 
 # setup, no --debug
 #./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cpp=$OMPI/mpiCC --mpi --math="-L/home/chemia/ucitelia/milias/bin/intel_stuff/intel/composerxe-2011.2.137/mkl/lib/intel64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core" -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl-RELEASE" -D RUNTEST_NR_PROC=2 --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON 
-./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_STATIC_LINKING=ON --internal-math
+./setup --fc=ifort -D BUILDNAME="linux.gbb4_BanskaBystrica.ifort_gcc_opt_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_STATIC_LINKING=ON --internal-math
 cd build
-cmake ..
-#make dirac.x
+#cmake ..
+make dirac.x
 #make info_ext
 make Nightly
 
