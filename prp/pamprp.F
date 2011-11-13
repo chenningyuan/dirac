@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -129,10 +129,6 @@ C***********************************************************************
       use aoresponse_main_m
 #endif /* MOD_AORESPONSE */
 
-#ifdef MOD_EMB
-!     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
-      USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -273,15 +269,6 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-#ifdef MOD_EMB
-      IF (DO_GRID_OUT) THEN
-#ifdef MOD_XML
-         CALL FDE_GRIDOUT(WORK,LFREE)
-#else
-         call quit("FDE density export unsupported in this version.")
-#endif
-      END IF
-#endif
 
 #ifdef MOD_AORESPONSE
       if (test_aoresponse) then
@@ -3926,9 +3913,6 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-#ifdef MOD_LONDON
-        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
-#endif
       ELSE
 C
 C         Conventional atomic orbitals
@@ -4789,12 +4773,6 @@ C
       CALL IZERO(IPMSUSC,6)
     
       IF (LONDON) THEN ! use London AO's
-#ifdef MOD_LONDON
-C ... always calculate expectation value terms 
-       DOEXP = .TRUE. 
-C ... define operators for response and exp.value parts
-       CALL DEF_D1HBLOND(2,WORK,LWORK,LPRINT)  
-#endif
       ELSE ! Conventional AO
 
 C      ... XAVECTOR
@@ -5510,10 +5488,6 @@ C=============================================================================
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
 
-#ifdef MOD_LONDON
-C     ... evaluate expectation value terms
-      IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
-#endif
 
       KFRSAV = KFREE
       CALL TITLER('MAGNETIZABILITIES','*',124)
@@ -6184,63 +6158,6 @@ C        ... DMATLO contains extracted 'diamagnetic' term (NSNL)
          ENDIF
       END IF
 
-#ifdef MOD_LONDON
-C ------------------------------------------------------
-C  Get the London orbital contributions to the exp.value
-C  ... these are RNST terms
-C ------------------------------------------------------
-      IF(LONDON) THEN
-         CALL DZERO(TMPMAT,NCMAT)
-         CALL DZERO(PMAT,NCMAT)
-         DO I = 1,NNSTIN
-            IOP = IPRNST(I)
-            IPL = LEXPP(IOP)
-CMI ... take care of the correct form of PRPLBL(IPL) name
-            READ(PRPNAM(IPL)(10:11),'(I2)') IA
-            IB = MOD(I+2,3) + 1
-CMI   ... for compatibility with Dalton exp.values (NSLO) !
-CMI         TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)*D2I
-CTROND            TMPMAT(IPTAX(IB,2),IA) = EXPVAL(IOP)
-CMI   ... new sign convention !!!
-            TMPMAT(IPTAX(IB,2),IA) = -EXPVAL(IOP)
-         ENDDO
-         IF (IPRPRP.GE.2) THEN
-            CALL HEADER('London part of shielding (exp.value)'//
-     &           ' in symmetry coordinates (ppm)',1)
-            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-         ENDIF
-C         ... extract London part of shielding into the PMAT
-         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C         ... add the London exp.value parts of shield. to to the DMAT
-         CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
-      END IF
-
-C--------------------------------------------------------------------
-C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
-C--------------------------------------------------------------------
-      IF(LONDON.AND.(.NOT.NOORTH)) THEN
-         CALL MEMGET('REAL',KW,3*N2ORBXQ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KCON,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KDMAT,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL DZERO(TMPMAT,NCMAT)
-         CALL DZERO(PMAT,NCMAT)
-C  ...  get the expect. value {T,h(mK)} reorthonormalization term
-         CALL GETCON(WORK(KW),WORK(KCON),WORK(KDMAT),TMPMAT,
-     &               WORK,KFREE,LFREE,IPRPRP)
-CMI   ...  sign convention !!!
-         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
-         IF (IPRPRP.GE.2) THEN
-          CALL HEADER('Reorthonormalization part of the '// 
-     &  'shielding (expect.value) in symmetry coordinates (ppm)',1)
-          CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-         ENDIF
-C         ... extract the reorthonormalization part into the PMAT
-         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C         ... add the reorthonormalization terms to the DMAT
-         CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
-CTROND         CALL DAXPY(NCMAT,DM1,PMAT,1,DMAT,1)
-      END IF
-#endif /* MOD_LONDON */
 C
 C     *** Extract shieldings ***
 C
@@ -8107,9 +8024,6 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-#ifdef MOD_LONDON
-        CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
-#endif
       ELSE
 C
 C     Conventional atomic orbitals

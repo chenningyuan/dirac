@@ -1,3 +1,0 @@
-1) get and install PyNGL: http://www.pyngl.ucar.edu/
-2) gunzip example.2d.gz
-3) ./2d_stream_or_scalar.py

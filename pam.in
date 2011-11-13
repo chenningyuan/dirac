@@ -22,8 +22,8 @@
 #
 # Shell Script for running Dirac
 #
-# VERSION : $Revision$
-# DATE    : $Date$
+# VERSION : $Revision: 7758 $
+# DATE    : $Date: 2008-09-17 18:37:33 +0200 (Wed, 17 Sep 2008) $
 # FILE    : pam.in
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -266,7 +266,7 @@ print_header()
    echo "   **** OUTPUT FROM DIRAC SHELL SCRIPT ****"
    echo "   ****************************************"
    echo
-   echo '   $Revision$'
+   echo '   $Revision: 7758 $'
    echo "   Host        : `hostname`"
    echo "   Date        : `date`"
    echo "   Command     : $0 $ARG_SAVE "

@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamrsp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -396,9 +396,6 @@ C     ***************************
 C     *** I n i t i a l i z e ***
 C     ***************************
 C
-#ifdef MOD_KRMC
-      IF ( FKRMC ) CALL GETTIM(CPUTOT1,CPUWALL1)
-#endif
 C
       CALL XRSINI(REDGP,REDS,REDE,GPCI,GPOE,GPOP,RCNV,EVECR,RNORM,
      &            WORK,KFREE,LFREE)
@@ -765,30 +762,6 @@ C
 C     For KR-MCSCF iterations, calculate predicted energy
 C     change and update some info elements.
 C
-#ifdef MOD_KRMC
-      IF ( FKRMC ) THEN
-C
-C        Calculate predicted energy change
-C
-         CALL RSNRPRD(REDGP,REDE,EVECR,NREDM,IBTYP,NZRED)
-C
-C        Dump info needed for backsteps
-C
-         REWIND(LUKRM4)
-         CALL WRTLRED(LUKRM4,NZRED,NREDM,REDE,REDGP,EVECR,
-     &        IBTYP,IBEVC,IBPVC,IBCVC,NPRED)
-C
-C        Save info for final summary output
-C
-         CALL GETTIM(CPUTOT2,CPUWALL2)
-         DINFO(17) = CPUTOT2-CPUTOT1
-         IINFO(2) = ITMIC
-         IINFO(3) = NZRED
-         IINFO(4) = NCRED
-         IINFO(5) = NERED
-         IINFO(6) = NPRED
-      END IF
-#endif
 C
 C
 C
@@ -876,33 +849,6 @@ C     ... set proper dimension for integer arrays. default. SK - Sep 08
       LEVEC  = NESIM 
       LPVEC  = NPSIM    
       LCVEC  = NCSIM    
-#ifdef MOD_KRMC
-C     ... SK - Sep 08: if XRSST is called as part from the MCSCF
-C     optimization procedure we need to allocate at least 2* NxSIM where 
-C     x = E (e-e), P (e-p) or C (CI gradient). 
-C     In subroutine XRSST2 the corresponding integer array is accessed 
-C     by 
-C     IVEC(IP) = x
-C     IVEC(IM) = x
-C     where IP = NFREQ + IM and IM = 1, NFREQ
-C
-C     example for bad access to IVEC which caused the crash for GOSCI 
-C     (and in principle also for LUCIAREL):
-C
-C     NESIM = 1 ==> LEVEC = 1 --> DIMENSION IVEC(1)
-C     NFREQ = 1 ==> IM = 1, IP = 2 
-C
-C     allowed access:       IVEC(IM) = ...
-C     resulting bad access: IVEC(IP) = ...
-C
-C     FIXME: does this also apply to other cases with STATIC = .TRUE.? 
-C     Do we need a "#ifdef MOD_KRMC" statement?
-C     SK - Sep 08
-C
-      LEVEC  = NESIM * 2
-      LPVEC  = NPSIM * 2
-      LCVEC  = NCSIM * 2
-#endif
       CALL MEMGET('INTE',KEVEC,LEVEC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KPVEC,LPVEC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KCVEC,LCVEC,WORK,KFREE,LFREE)
@@ -1610,16 +1556,6 @@ Chj debug option
 C
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
-#ifdef MOD_KRMC
-         IF (NZCONF .GT. 1) THEN
-         DO I = 1, NTSIM
-            WRITE(LUPRI,'(/I5,A,I5)')
-     &        I,'. conf. sigma vector out of',NTSIM
-            CALL RPRCI(SCVEC(1,I),NZCONF,NZ,
-     &           XRS_CIPROGRAM,THRZER,LUPRI)
-         END DO
-         END IF
-#endif
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-e sigma vectors'
          CALL PRBVEC(LUPRI,SEVEC,NTSIM,NZXOPE)
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-p sigma vectors'
@@ -2456,14 +2392,7 @@ C
         ENDIF
       ENDIF
 C
-#ifdef MOD_KRMC
-      IF (FKRMC) THEN
-         CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
-     &        EVECR(1,1),IBTYP,NPRED,IPRXRS,WORK,KFREE,LFREE)
-      ELSE IF (LINEQ) THEN
-#else
       IF (LINEQ) THEN
-#endif
 C
 C     Solve reduced linear response problem in subspace
 C     =================================================

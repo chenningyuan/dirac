@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 7447 $
+! DATE    : $Date: 2008-08-26 21:37:53 +0200 (Tue, 26 Aug 2008) $
 ! FILE    : parluci.h
 !
 !                     PARALLEL INFORMATION

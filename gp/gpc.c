@@ -22,8 +22,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 7750 $
+ * DATE    : $Date: 2008-09-17 13:58:49 +0200 (Wed, 17 Sep 2008) $
  * FILE    : gpc.c
  *
  * frac2i:

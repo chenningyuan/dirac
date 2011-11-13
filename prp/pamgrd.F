@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamgrd.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -250,11 +250,6 @@ CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
-#ifdef MOD_LONDON
-        IB = 7 ! 0111 = full H(B) prop. gradient
-        CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
-     &                    WORK,KFREE,LFREE,IPRINT)
-#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &              WORK,KFREE,LFREE,IPRINT)
@@ -828,11 +823,6 @@ C
      &         FILE='AOPROPER')
 #endif
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
-#ifdef MOD_LONDON
-        IB = 7 ! 111
-        CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
-     &                    WORK,KFREE,LFREE,IPRINT)
-#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)

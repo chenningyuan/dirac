@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : traprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -112,22 +112,6 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-#ifdef MOD_KRMC
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      IF (TOBEK) THEN 
-         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','TRAPRP')
-         JRDMO = -1
-         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-         IF (JRDMO .EQ. 0) THEN
-            IF (IPRTRP .GE. 0) THEN
-               WRITE(LUPRI,'(/A)')
-     &              ' (TRAPRP)  Orbitals read from' //
-     &              ' label NEWORB on file KRMCSCF'
-            END IF
-         END IF
-         CLOSE (LUKRMC)
-      ELSE
-#endif /* MOD_KRMC */
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
          IF (.NOT.TOBE) THEN
             WRITE(LUPRI,'(A)') 'Coefficient file not present'
@@ -137,9 +121,6 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
-#ifdef MOD_KRMC
-      END IF
-#endif /* MOD_KRMC */
 C
 C     Get the boson symmetries of the transformed spinors
 C

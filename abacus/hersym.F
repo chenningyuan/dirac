@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7762 $
+C DATE    : $Date: 2008-09-18 11:03:03 +0200 (Thu, 18 Sep 2008) $
 C FILE    : hersym.F
 C
 C

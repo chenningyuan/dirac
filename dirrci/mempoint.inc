@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 240 $
+C DATE    : $Date: 1998-02-17 15:23:21 +0100 (Tue, 17 Feb 1998) $
 C FILE    : mempoint.inc
 C SOURCE  : $Source$
 C

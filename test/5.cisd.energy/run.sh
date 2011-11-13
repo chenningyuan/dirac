@@ -16,12 +16,6 @@ MENU=cisd;
 export MENU;
 ../run.sh
 ###############################
-#REMOVE_BEGIN
-echo "BSS+MFSSO cisd run"
-MENU=F.bss+mfsso.cisd;
-export MENU;
-../run.sh
-#REMOVE_END
 ###############################
 ###############################
 if [ "$RUNTYPE" = "short" ]; then
@@ -51,17 +45,6 @@ if [ "$RUNTYPE" = "medium" ]; then
    exit
 fi
 ###############################
-#REMOVE_BEGIN
-echo "BSS_RKB+MFSSO cisd run"
-MENU=F.bss_rkb+mfsso.cisd;
-export MENU;
-../run.sh
-###############################
-echo "BSSsfESO1+MFSSO cisd run"
-MENU=F.bss_sfEso1+mfsso.cisd;
-export MENU;
-../run.sh
-#REMOVE_END
 ###############################
 echo "BSSsfESO1 cisd run"
 MENU=F.bss_sfEso1.cisd;
@@ -83,12 +66,6 @@ MENU=F.dkh2_sfEso1.cisd;
 export MENU;
 ../run.sh
 ###############################
-#REMOVE_BEGIN
-echo "DKH2sfESO1+MFSSO cisd run"
-MENU=F.dkh2_sfEso1+mfsso.cisd;
-export MENU;
-../run.sh
-#REMOVE_END
 ###############################
 ###############################
 if [ "$RUNTYPE" = "long" ]; then

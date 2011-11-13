@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirana.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -101,9 +101,6 @@ C***********************************************************************
 C
 C
 
-#ifdef MOD_VISUAL
-      IF(DO_VISUAL) CALL VISUAL(WORK,LWORK)
-#endif /* MOD_VISUAL */
 
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CALL ANALYZE_PROPERTY_GRAD(WORK,LWORK)
@@ -183,15 +180,7 @@ C
 C
 C     Check if coefficients are on file
 C
-#ifdef MOD_KRMC
-      IF( MP2NATPOP ) THEN
-         INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
-      ELSE
-         INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      END IF
-#else
       TOBEK=.FALSE.
-#endif /* MOD_KRMC */
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
@@ -204,43 +193,11 @@ C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
 C
-#ifdef MOD_KRMC
-      IF (TOBEK) THEN
-         IF( MP2NATPOP )THEN
-           CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MULPOP')
-           KRMC_FLG = 2
-           CALL MEMGET('REAL',KEIG_NAT,NESHT,WORK,KFREE,LFREE)
-C          ... initialize
-           CALL DZERO(WORK(KEIG_NAT),NESHT)
-C          ... read from file
-           CALL READMP2NAT(WORK(KCMO),WORK(KEIG),WORK(KEIG_NAT))
-           WRITE(LUPRI,'(/A)')
-     &           ' (MULPOP)  Orbitals and occupancies read from' //
-     &           ' label NEWNATOB/MP2NATOC on file KRMCOLD'
-C
-           CLOSE(LUKRMC,STATUS='KEEP')
-         ELSE
-           CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
-           KRMC_FLG = 1
-           JRDMO = -1
-           CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-           IF (JRDMO .EQ. 0) THEN
-              WRITE(LUPRI,'(/A)')
-     &             ' (MULPOP)  Orbitals read from' //
-     &             ' label NEWORB on file KRMCSCF'
-           END IF
-         END IF
-         CLOSE (LUKRMC)
-      ELSE
-#endif /* MOD_KRMC */
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
-#ifdef MOD_KRMC
-      END IF
-#endif /* MOD_KRMC */
 C
 C     Get labels for population analysis
 C
@@ -1744,42 +1701,6 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
-#ifdef MOD_KRMC
-C
-C     Check if MCSCF coefficients are on file
-C
-      INQUIRE (FILE ='KRMCSCF',EXIST=TOBE)
-C
-      IF(.NOT.TOBE) GOTO 990
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-C
-      CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMANA')
-      IOPT = 1       ! Read from NEWORB label
-      JRDMO = -1
-      CALL RREADMO(WORK(KCMO),JRDMO,IOPT,LUKRMC)
-      CLOSE(LUKRMC,STATUS='KEEP')
-C
-      IF (NTESTL.GE.20) THEN
-C
-C     Print all coefficients (including positronic and S component)
-C
-        DO I = 1, NFSYM
-           WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
-           CALL PRQMAT(WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &          NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-        END DO
-      END IF
-C
-      CALL HEADER('Coefficients from KRMCSCF',2)
-      KEIG = KFREE
-      IPREIG = 0
-      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,
-     &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)
-C     Memory deallocation
-      CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-#endif /* MOD_KRMC */
 C
 C     No MCSCF, then check if RHF on DFCOEF :
 C

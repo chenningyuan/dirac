@@ -21,8 +21,8 @@ C
 !
 C 
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : trainp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -748,27 +748,16 @@ C
         CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 300
   313 CONTINUE
-#ifdef MOD_HSCC
-!     IF (DOHSCC) THEN
-        CALL HSCCINP(WORD,.false.)
-!     ENDIF
-#else
 C       prevent dirac.x running into an infinite loop here
 C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
         CALL QUIT('*HSCC specified, '//
      &     'but HSCC module is not included in this version')
-#endif
         GO TO 300
   314 CONTINUE
         GO TO 300
 C
   400 CONTINUE
 
-#ifdef MOD_HSCC
-!     IF (DOHSCC) THEN
-!       CALL HSCCINP(WORD,.true.)
-!     ENDIF
-#endif
 
 C
 C     Process defaults for 2- and 4-index transformations

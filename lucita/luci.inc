@@ -1,4 +1,4 @@
-*comdeck luci.inc $Revision$ 
+*comdeck luci.inc $Revision: 5515 $ 
 C     
 C     COMMON INFORMATION FOR LUCITA CI PROGRAM
 C     

@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -38,9 +38,6 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
-#ifdef MOD_CAP
-      USE Memory
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -88,18 +85,6 @@ C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
       CALL ONEGEN(WORK,LWORK)
-#ifdef MOD_CAP
-CMI ... check if CAP is not for everlap control
-CMI  ... call of F90 routine
-!        call TEST_OOF(WORK,LWORK)
-!        call StickMemory(WORK,LWORK)
-!        call TEST_OOF ! memmory was unsticked here
-!         call StickMemory(WORK,LWORK) ! stick again
-!         call cap_ovlp
-        IF (CAP) CALL CAP_STUFF(WORK,LWORK)
-!    .... independent tests
-!       call test_oof_basis_fu(WORK,LWORK)
-#endif
 
       IF(DOHRM) THEN
         CALL TIMER('PAMSET',TIMSTR,TIMEND)

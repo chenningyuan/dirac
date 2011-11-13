@@ -4,7 +4,7 @@
 !         http://www.netlib.org/lapack/double/
 !
 !
-! $Id$
+! $Id: gp_dlapack.F 7107 2008-06-12 16:18:47Z gomes $
 !
 #ifdef USE_DIRAC_DLAPACK
       SUBROUTINE DBDSDC( UPLO, COMPQ, N, D, E, U, LDU, VT, LDVT, Q, IQ,

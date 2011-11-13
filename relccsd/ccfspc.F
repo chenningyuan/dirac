@@ -743,12 +743,6 @@ c
          II = II + 1
          FAC1 = EPS(II)
          ISECTP=0
-#ifdef MOD_IHFSCC
-         IF (DOIH.AND.ICO.EQ.3) THEN
-             ISECTP=1
-             IF (IPIORB(II).EQ.1) Z1=.TRUE.
-         ENDIF
-#endif
          AOFF = IO(NREP+1) + IV(IRP)
 c
          IVA(0)=0
@@ -790,12 +784,6 @@ C
              FAC = FAC1 - EPS(AA)
              FACIH = FAC
              ISECTH=0
-#ifdef MOD_IHFSCC
-             IF (DOIH.AND.ACV.EQ.3) THEN
-                ISECTH=1
-                IF (IPIORB(AA).EQ.1) Z2=.TRUE.
-             ENDIF
-#endif
              AI = AI + 1
              DOIHDN=.FALSE.
              IHZERO=.FALSE.

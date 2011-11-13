@@ -20,8 +20,8 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 7732 $
+! DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 ! FILE    : mpi_framework.F90
 !
 !      /* Deck MPIXINIT */

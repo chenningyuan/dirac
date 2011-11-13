@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirac.F
 C
 C***********************************************************************
@@ -95,12 +95,6 @@ C***********************************************************************
 C*****  E C P  I N T E G R A L  M O D U L E  ***************************
 C***********************************************************************
 C
-#ifdef MOD_ECP
-      IF (ECPCALC) THEN
-         CALL ARGOSIN
-         CALL ARGOS
-      END IF
-#endif
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
@@ -242,13 +236,9 @@ C        *************************************************
 C
          IF ( .NOT. NOQCDHF .AND. .NOT. DODFT .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
-#ifdef MOD_KRMC
-            CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
-#else
 c           CALL QUIT(
 c    &   'Second order SCF optimization not included in this version')
 c        ... let it stop below ... /hjaaj Feb 2004
-#endif
          END IF
 C........Export mean-field integrals
 CTROND         IF(DOMFI) CALL PAMFI(WORK,LWORK)
@@ -311,24 +301,8 @@ C      Do MCSCF before CC and CI because user may want
 C      to do an MR-CC or MR-CI /hjaaj aug 03
 C
       IF(DOKRMC.AND.DOPSI) THEN
-#ifdef MOD_KRMC
-C
-C        Transfer DHF info to common block DCBORB
-C        and recalculate DCBORB.
-C
-         CALL TKRMCORB
-         CALL SETDC2(0)
-C
-C        *************************************************
-C        *** Call PSIOPT for KR-MCSCF wave function ******
-C        *************************************************
-C
-         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
-         IF(DOANA) CALL PAMANA(WORK,LWORK)
-#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
-#endif
       END IF
 C
 C***********************************************************************
@@ -386,21 +360,8 @@ C***** C I *************************************************************
 C***********************************************************************
 C
       IF(DOKRCI.AND.DOPSI) THEN
-#ifdef MOD_KRMC
-C
-C        Transfer KR-CI info to common block DCBORB
-C        and recalculate DCBORB.
-C
-C        ... reset dcbopt.h
-         CALL OPTINI
-         CALL TKRCIORB
-         CALL SETDC2(0)
-C
-         CALL KRCI_CALC('KR-CI ',WFCONV,WORK,LWORK)
-#else
             CALL QUIT(
      &  ' KR-CI module not included in this version')
-#endif
       END IF
 C
 C***********************************************************************
@@ -870,27 +831,13 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
-#ifdef MOD_KRMC
-C
-C        start KRMC-LUCIAREL calculation.
-C
-         CALL LUCINOD_REL(WORK,LWORK)
-#else
             CALL QUIT(
      &  'KRMC-LUCIAREL module not included in this version')
 
-#endif
       ELSE IF (ITASK .EQ. 7) THEN
-#ifdef MOD_KRMC
-C
-C        start KR-MCSCF calculation.
-C
-         CALL KRMC_NODE_DRIVER(WORK,LWORK)
-#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
-#endif
 #endif /* VAR_MPI2 */
       ELSE
 C
@@ -996,27 +943,13 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
-#ifdef MOD_KRMC
-C
-C        start KRMC-LUCIAREL calculation.
-C
-         CALL LUCINOD_REL(WORK,LWORK)
-#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
-#endif
       ELSE IF (ITASK .EQ. 7) THEN
-#ifdef MOD_KRMC
-C
-C        start KR-MCSCF calculation.
-C
-         CALL KRMC_NODE_DRIVER(WORK,LWORK)
-#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
-#endif
 #endif /* VAR_MPI2 */
       ELSE
 C

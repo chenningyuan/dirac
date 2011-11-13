@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : ccdriv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -176,20 +176,10 @@ C
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
 CMI   ... add sector selectives MAXITxy's
-#ifdef MOD_IHFSCC
-      NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
-     &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
-      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
-     &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
-     &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
-#else
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,TSHOLD,
      &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
-#endif /* MOD_IHFSCC */
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -219,9 +209,6 @@ C
       DOFOPR  = .FALSE.
       DOSOPR  = .FALSE.
       DOFSPC  = .FALSE.
-#ifdef MOD_IHFSCC
-      DOIH  = .FALSE.
-#endif
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
@@ -415,68 +402,6 @@ C
          FSSECT(3) = 1
          FSSECT(6) = 1
       ENDIF
-#ifdef MOD_IHFSCC
-C
-C     General input for IH procedure
-C
-      EHMIN=1000.D0
-      EHMAX=100.D0
-      EPMIN=-1.D0
-      EPMAX=-1000.D0
-      DO I = 1, 16
-         NACTHI(I) = 0 ! it's 0 for (0,2) sector
-         NACTPI(I) = 0
-      ENDDO
-      IHSCHEME=2
-C
-C     Defaults for scheme 1 that shifts the denominators
-C
-      SHIFTH11 =0.D0
-      SHIFTH12 =0.D0
-      SHIFTP11 =0.D0
-      SHIFTP12 =0.D0
-      SHIFTH2 =0.D0
-      SHIFTP2 =0.D0
-      SHIFTHP =0.D0
-      AIH=0.D0
-      NIH=1
-      REWIND (IN)
-      READ (IN,CCIH,END=22,ERR=21)
-      GOTO 22
-   21 CALL QUIT('Error exit while reading namelist CCIH')
-   22 CONTINUE
-C
-C     Some processing of the input is necessary
-C
-      ER_IH(1,1) = EHMIN ! for (1,0) or (2,0) sectors plus (1,1) sector
-      ER_IH(2,1) = EHMAX ! the same
-CMI ....
-      ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
-      ER_IH(2,2) = EPMAX
-
-      write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
-      write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
-C
-C     XIH energy shift sign definition.
-C     Array with as first dimension 1e/2e shift
-C                   second dimension sector number
-C
-C     Shifts for particles should be negative
-      SHIFT_IH(1,1) = -DABS(SHIFTP11)
-      SHIFT_IH(2,1) = -DABS(SHIFTP12)
-      SHIFT_IH(2,5) = -DABS(SHIFTP2)
-CEE     Shifts for holes must be negative (not positive)
-      SHIFT_IH(1,2) =  -DABS(SHIFTH11)
-      SHIFT_IH(2,2) =  -DABS(SHIFTH12)
-      SHIFT_IH(2,6) =  -DABS(SHIFTH2)
-C     Shifts for hole-particle excitations may be either negative or positive
-      SHIFT_IH(2,4) =  SHIFTHP
-C
-C     Input for the sorting routine.
-C     We can add a finite field here, if desired
-C     This assumes that PRTRA is called as well !
-C
-#endif /* MOD_IHFSCC */
       LOWMEM  = .FALSE.
       USEOE   = .TRUE.
       NORECMP = .FALSE.
@@ -956,10 +881,6 @@ C
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
-#ifdef MOD_IHFSCC
-      !MI: for the IH-FSCC method in linear symmetry
-      INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)   
-#endif
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
 
@@ -1764,79 +1685,9 @@ C
             ENDIF
 !           ... place orbital energy into common array; I - particular spinor
             EPS(I) = EPS1(ISP)
-#ifdef MOD_IHFSCC
-C           Always fill this array, used in intermediate Hamiltonian formalism
-            IF (I.GT.MAXSPIM)
-     &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
-!        ... 0/1 - intermediate Ham. space
-#endif /* MOD_IHFSCC */
             IPIORB(I)=0
-#ifdef MOD_IHFSCC
-            DO J = 1, 2
-               IF(EPS(I).LE.ER_IH(2,J).AND.   ! EPS(I) <= EHMAX,EPMAX
-     &            EPS(I).GE.ER_IH(1,J)) THEN  ! EPS(I) >= EHMIN,EPMIN
-                 IPIORB(I)=1
-               ENDIF
-            ENDDO
-
-            IF (IPIORB(I).EQ.1) THEN
-
-             IF ( EPS(I).GE.ER_IH(1,1).AND.EPS(I).LE.ER_IH(2,1) ) THEN
-               IF ( NAOPI(IREP).LT.NAO(IREP) ) THEN
-                 NAOPI(IREP) = NAOPI(IREP) + 1
-               ELSE
-               ENDIF
-             ENDIF
-
-             IF ( EPS(I).GE.ER_IH(1,2).AND.EPS(I).LE.ER_IH(2,2) ) THEN
-               IF (NAVPI(IREP) .LT. NAV(IREP) ) THEN
-                 NAVPI(IREP) = NAVPI(IREP) + 1
-               ELSE
-               ENDIF
-             ENDIF
-           ENDIF
-#endif /* MOD_IHFSCC */
        ENDDO
 
-#ifdef MOD_IHFSCC
-       IF (REPORT.AND.DOIH) THEN
-
-         IF (NREP.GT.8) THEN
-CMI ..... write only active irreps
-            NACT_REP = 0
-            DO I = 1, NREP
-               IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
-                  ! ... move nonzero values to new arrays ...
-                  NACT_REP = NACT_REP + 1
-                  NAOPI_ACT(NACT_REP) = NAOPI(I) 
-                  NAVPI_ACT(NACT_REP) = NAVPI(I) 
-               ENDIF
-            ENDDO
-
-            NREP1 = 1
-            NREP2 = MIN(NACT_REP,8)
-  12      WRITE (IW,1005) (REPNA_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'inactive occupied',(NIO_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'active occupied',(NAO_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'active Pi occup',(NAOPI_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'active virtual ',(NAV_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'active Pi virt ',(NAVPI_ACT(I),I=NREP1,NREP2)
-          WRITE (IW,1002) 'inactive virtual',(NIV_ACT(I),I=NREP1,NREP2)
-            NREP1 = NREP1 + 8
-            NREP2 = MIN(NACT_REP,NREP2+8)
-            IF (NREP1.LE.NACT_REP) GOTO 12
-         ELSE
-            WRITE (IW,1005) (REPNA(I),I=1,NREP)
-            WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
-            WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
-            WRITE (IW,1002) 'Pi active occup  ',(NAOPI(I),I=1,NREP)
-            WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
-            WRITE (IW,1002) 'Pi active virtual',(NAVPI(I),I=1,NREP)
-            WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
-         ENDIF
-
-       ENDIF
-#endif /* MOD_IHFSCC */
 
       ENDIF
 C
@@ -1845,11 +1696,6 @@ C
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
-#ifdef MOD_IHFSCC
- 1005 FORMAT (
-     &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
-     &       //T40,8(1X,A4))
-#endif
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
@@ -2906,19 +2752,6 @@ C
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
      
-#ifdef MOD_IHFSCC
-CMI ... more print out
-      IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
-        WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
-        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
-     &  'Energy range for the occupied Pi space is: <',
-     &  ER_IH(1,1),';',ER_IH(2,1),'>'
-
-        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
-     &  'Energy range for the virtual Pi space is:  <',
-     &  ER_IH(1,2),';',ER_IH(2,2),'>'
-      ENDIF
-#endif /* MOD_IHFSCC */
 C
 C Allocate space for the Fock space CCSD energy calculation
 C

@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : herdrv.F
 C
 C
@@ -122,10 +122,6 @@ C
         DIRAC  = .FALSE.
         SUPMAT = .NOT. DIRCAL
       ENDIF
-#ifdef MOD_DNF
-C     Initialize defaults for density fitting
-      CALL DFIINI
-#endif
 
 C#ifdef MOD_ERI
       RUNERI = .FALSE.
@@ -660,12 +656,6 @@ CC&&&& DOLINK - activates the fast exchange code
 #endif 
  182     CONTINUE
 #ifdef MOD_ERI
-#ifdef MOD_DNF
-CC&&&& DENSFIT: Density fitting (Not yet implemented)
-            DOFIT = .TRUE.
-            DOFCK3 = .TRUE.
-            GO TO 100
-#endif
 #endif
  183     CONTINUE
 
@@ -694,12 +684,6 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
          WRITE (LUPRI,'(3X,A)')
      &     'LinK scheme for exchange'
       ENDIF
-#ifdef MOD_DNF
-      IF (DOFIT) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     'Density-fitted Coulomb contribution'
-      ENDIF
-#endif
 #endif
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
@@ -1008,11 +992,6 @@ C&&& JENGINE: Read input for J-engine for Coulom contribution
       GO TO 201
 #endif
     8    CONTINUE
-#ifdef MOD_DNF
-C&&& JENGINE: Read input for density fitting 
-        CALL DFIINP(WORD)
-      GO TO 201
-#endif
     9    CONTINUE
       GO TO 201
 C

@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : traone.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -595,9 +595,6 @@ C     Fill in complete core-Fock matrix in complex form
 C
       CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD,IPRTRA)
 
-#ifdef MOD_CAP
-      CALL CAPMFDADAPT(CAP,NSTRT,NSTR,FMO,FMOM,WORK(KFREE),LFREE)
-#endif
 C
 C     Write MRCONEE file
 C

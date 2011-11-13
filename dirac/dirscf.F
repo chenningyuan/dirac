@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirscf.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -376,9 +376,6 @@ C
 #ifdef MOD_DFT
 #include "dftcom.h"
 #endif
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -548,11 +545,7 @@ C
 #ifdef MOD_DFT
 C       Construct Kohn-Sham contribution
 C       ================================
-#ifdef MOD_DNF
-        IF(DFTADD.AND..NOT.DF_FITVXC) THEN
-#else /* mod_dnf */ 
         IF(DFTADD) THEN
-#endif
 C          tsaue: turn off test on numerical integration,
 C                 When starting from coefficients from a different
 C                 geometry; they are not orthonormal at the new
@@ -1047,9 +1040,6 @@ C
 C   Called from PSIDHF
 C
 C*****************************************************************************
-#ifdef MOD_EMB
-      USE FDE_MOD, ONLY: GetFDEPotential_FromFile, DO_FDE
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1073,15 +1063,6 @@ C
 CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
 C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 
-#ifdef MOD_EMB
-c     call header ('1-electron matrix, before call to FDE',-1)
-c     call printdmat(1,7,fock)
-      if (do_fde) then
-         call GetFDEPotential_FromFile(fock,work,lwork)
-      endif
-c     call header ('1-electron matrix, after call to FDE',-1)
-c     call printdmat(1,ndimension,fock)
-#endif
 
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
@@ -1197,16 +1178,6 @@ C#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         IF (DODSCF) THEN
-            using_diffdens = .true.
-            CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
-          ELSE
-             using_diffdens = .false.
-          endif
-      ENDIF
-#endif
 C
 C     ***********************************
 C     ***** Perform SCF-iterations ******
@@ -1352,11 +1323,7 @@ C
 #ifdef MOD_DFT
 C        Construct Kohn-Sham contribution
 C        ================================
-#ifdef MOD_DNF
-         IF(DFTADD.AND..NOT.DF_FITVXC) THEN
-#else
          IF(DFTADD) THEN
-#endif
 C         NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
              IOPTS = 1
              CALL DFTEXC(DMAT,DUMMY,FOCK,1,1,1,IOPTS,WORK(KFREE),LFREE,
@@ -1555,9 +1522,6 @@ C
 #ifdef MOD_DFT
 #include "dfterg.h"
 #include "dftcom.h"
-#endif
-#ifdef MOD_DNF
-#include "densfit.h"
 #endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6

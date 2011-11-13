@@ -21,32 +21,6 @@ export MENU;
 ../run.sh -copy DFPROJ 
 rm DFPROJ cf.O
 
-#REMOVE_BEGIN
-###########################################
-# run 2comp. IOTC calculations with AMFI
-###########################################
-#
-# Run calculation for oxygen atom
-#
-echo "Two-component relativistic (IOTC+AMFI) calculations"
-MOL=O;
-MENU=O.2c_iotc;
-export MOL;
-export MENU;
-../run.sh -utcmo
-mv DFCOEF cf.O
-ln -sf cf.O DFPROJ
-
-#
-# Run calculation for water
-#
-MOL=H2O;
-MENU=H2O.2c_iotc;
-export MOL;
-export MENU;
-../run.sh -copy DFPROJ 
-rm DFPROJ cf.O
-#REMOVE_END
 
 ###########################################
 # run 2comp. IOTC calculations without AMFI

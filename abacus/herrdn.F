@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7761 $
+C DATE    : $Date: 2008-09-18 01:50:46 +0200 (Thu, 18 Sep 2008) $
 C FILE    : herrdn.F
 C
 C
@@ -2473,13 +2473,6 @@ CMI   ... prepare the MNF.INP basis set input file for AMFI
      &           KATOM,KANG,KBLOCK,
      &           KPRIM,CPRIMU)
 
-#ifdef MOD_CAP
-CMI   ... prepare the basis set input files for the CAP program
-      CALL CAPOUT(IPREAD,NONTYP,NONT,IQM,NBLCK,
-     &           JCO,NUC,NRC,SEG,
-     &           KATOM,KANG,KSETS,KBLOCK,
-     &           KPRIM,CPRIMU,WORK,LWORK)
-#endif
 C
 C     Print the references to the basis sets
 C

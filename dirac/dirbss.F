@@ -279,9 +279,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
 
-#ifdef MOD_OOF
-C      CALL TEST_OOF(WORK(KFREE),LFREE)
-#endif /* MOD_OOF  */
 C
 C     Print section
 C
@@ -2971,10 +2968,6 @@ C
          MZ = NZ
       END IF
 
-#ifdef MOD_OOF
-! ... perform the QTRANS inside the highly modularized routine
-      call handle_matrixes(VMAT,TMAT,WORK(KFREE),LFREE)
-#endif
 
       IOFT = 1
       IMAT = 1
@@ -8566,11 +8559,6 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-#ifdef MOD_AMFI
-       CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
-     &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
-
-#endif 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
 
@@ -9164,15 +9152,6 @@ C      .... charges per nucleis
 
        CALL MEMCHK('before AMFI2',WORK,1)
 
-#ifdef MOD_AMFI
-       CVAL_AMFI = CVAL
-
-       CALL AMFIIN(WORK(KBUF2),NB,WORK(KIPTYPAO),WORK(KHINLM),
-     &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
-     &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
-     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
-     &  CVAL_AMFI,IPRINT,WORK(KFREE),LFREE)
-#endif
       CALL MEMCHK('before S->C',WORK,1)
 
       IF (IPRINT.GE.4) THEN
@@ -9394,151 +9373,3 @@ C
       RETURN
       END
 
-#ifdef MOD_AMFI
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck amfi_relscf_inp */
-      SUBROUTINE AMFI_RELSCF_INP(WORD,RESET)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C   Input reading for AMFI/RELSCF parts.
-C
-C   Called from HAMINP.
-C
-C   Written by Miro ILIAS, Prievidza, 2008
-C   Last modifications: MI, Odense, June 2008
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"
-#include "priunit.h"
-#include "amfi_if.h"
-      PARAMETER (NTABLE = 20)
-      PARAMETER (D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
-     &           DTHRS=1.0D-13, DP5 = 0.50D00)
-C
-      LOGICAL SET, NEWDEF,RESET
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-C
-      SAVE SET
-      DATA TABLE /'.PRNT_A','.PRNT_S','.MXITER','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
-      DATA SET/.FALSE./
-C
-      IF (SET) THEN
-         IF (RESET) SET = .FALSE.
-         RETURN
-      END IF
-      IF (RESET) THEN
-         SET = .FALSE.
-      ELSE
-         SET = .TRUE.
-      END IF
-
-C     CALL TITLER('AMFI/RELSCF input reading','*',127)
-
-C
-C        *** Initialize the default values ***
-C
-        IPR_AMFI = 0
-      IPR_RELSCF = 0
-
-!    ... maximum number of iterations
-      MXXTRP_INP     = 50
-C 
-C
-C     Process input for AMFI/RELSCF
-C     ==================================
-C
-      NEWDEF = (WORD .EQ. '*AMFI  ')
-
-      ICHANG = 0
-      IF (NEWDEF) THEN
-
-         CALL TITLER('AMFI/RELSCF input reading','*',127)
-
-         WORD1 = WORD
-  100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GOTO ( 1, 2, 3, 4,
-     &                      5, 6, 7), I
-                  END IF
-  200          CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in AMFI_RELSCF_INP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in AMFI_RELSCF_INP.')
- 1             CONTINUE
-C&&&  ... print variable for AMFI
-               READ(LUCMD,*) IPR_AMFI
-               GO TO 100
- 2             CONTINUE
-C&&&  ... print variable for RELSCF
-                 READ(LUCMD,*) IPR_RELSCF
-               GO TO 100
- 3             CONTINUE
-C&&&  ... read maximum number of iterations for RELSCF
-                 READ(LUCMD,*) MXXTRP_INP
-                 GO TO 100
- 4               CONTINUE
-C&&& 
-                 GO TO 100
- 5               CONTINUE
-C&&& 
-                 GO TO 100
- 6               CONTINUE
-C&&& 
-                 GO TO 100
- 7               CONTINUE
-C&&& 
-C&&& XXXXXX
-                 GO TO 100
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     &            '" not recognized .'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in ....')
-            END IF
-      END IF
-
-  300 CONTINUE
-C
-C     Print section
-C     =============
-C
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(4X,A)')
-     & 'Set-up for AMFI/RELSCF calculations'
-      CALL PRSYMB(LUPRI,'=',75,0)
-
-      IF (.NOT.NEWDEF) THEN
-        WRITE(LUPRI,'(2x,a)')
-     &  '...no reading under *AMFI, thus default settings'
-      ENDIF
-
-      WRITE(LUPRI,'(1X,A,I5)') '  *AMFI code print level: ',IPR_AMFI
-      WRITE(LUPRI,'(1X,A,I5)') '*RELSCF code print level: ',IPR_RELSCF
-C
-      WRITE(LUPRI,'(1X,A,I5)')
-     &  '*RELSCF maximum number of iterations:',MXXTRP_INP
-
-C
-  999 CONTINUE
-C
-      RETURN
-      END
-#endif /* MOD_AMFI */

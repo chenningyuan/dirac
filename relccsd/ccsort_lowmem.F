@@ -22,7 +22,7 @@ C
 C 
 C
 C
-C  $Id$
+C  $Id: ccsort_lowmem.F 7732 2008-09-16 20:30:19Z bast $
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)

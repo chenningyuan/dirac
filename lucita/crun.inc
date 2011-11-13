@@ -1,4 +1,4 @@
-*comdeck crun.inc $Revision$ 
+*comdeck crun.inc $Revision: 5543 $ 
 * /CRUN/ : Defines LUCITA RUN 
       COMMON/CRUN/MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,
      &            ICISTR,NOCSF,IDIAG,NOINT,IDMPIN,MXINKA,ICJKAIB,

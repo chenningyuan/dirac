@@ -301,9 +301,6 @@ C
 #include "shells.h"
 #include "symmet.h"
 C
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 C
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -313,18 +310,6 @@ C
       IF (NDER.GT.1) CALL DZERO(GAO2,6*NBAST)
       IADR = 1
 Caspg+rb, 2006-09-21
-#ifdef MOD_DNF
-C XC contributions with density fitting:
-C for the integration of <V_{XC}[\rho_{fit}]|\alpha_k>,
-C as necessary for the use of density fitting as in the
-C Birkenheuer scheme, we start from the beginning of the
-C fit set, instead of from the beginning of the orbital set
-C remember that kmaxtot=nbasis(L)+nbasis(S)+nbasisaux+1
-      IF (DF_FITVXC) THEN
-         ISHBEGIN=KMAX+1
-         ISHEND  =KMAXTOT - 1
-      ELSE
-#endif
          ISHBEGIN=1
          ISHEND  =KMAX
 
@@ -332,9 +317,6 @@ C remember that kmaxtot=nbasis(L)+nbasis(S)+nbasisaux+1
 !     don't work on small component shells
       IF (MC .EQ. 1) ISHEND = NLRGSH
 
-#ifdef MOD_DNF
-      ENDIF
-#endif
       DO 100 ISHELA = ISHBEGIN,ISHEND
          NHKTA = NHKT(ISHELA)
          KHKTA = KHKT(ISHELA)
@@ -424,31 +406,15 @@ C
 #include "onecom.h"
 #include "primit.h"
 #include "sphtrm.h"
-#ifdef MOD_DNF
-C aspg, added for the density-fitting-in-XC stuff
-#include "dcbbas.h"
-#endif
 C
       ISTR = JSTA + 1
       IEND = JSTA + NUCA
       PA2 = PAX**2 + PAY**2 + PAZ**2
-#ifdef MOD_DNF
-C     write (6,*) 'debug, in getgao: jsta,nuca,istr,iend,kckta',
-C    &             JSTA,NUCA,ISTR,IEND,kckta
-#endif
       IF (KCKTA .EQ. 1) THEN
          GAO(1) = PRICCF(ISTR,NUMCFA)*DEXP(-PRIEXP(ISTR)*PA2)
-#ifdef MOD_DNF
-C           write (6,*) 'debug, in getgao... gao(1)',gao(1),
-C    &                  ''//'iprima',istr,'priexp',PRIEXP(ISTR)
-#endif
          DO 100 IPRIMA = ISTR + 1, IEND
             GAO(1) = GAO(1) + PRICCF(IPRIMA,NUMCFA)
      &                   *DEXP(-PRIEXP(IPRIMA)*PA2)
-#ifdef MOD_DNF
-C           write (6,*) 'debug, in getgao... gao(1)',gao(1),
-C    &                  ''//'iprima',iprima,'priexp',PRIEXP(IPRIMA)
-#endif
   100    CONTINUE
       ELSE IF (KCKTA .EQ. 3) THEN
          GA = PRICCF(ISTR,NUMCFA)*DEXP(-PRIEXP(ISTR)*PA2)

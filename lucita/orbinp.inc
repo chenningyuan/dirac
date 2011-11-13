@@ -1,4 +1,4 @@
-*comdeck orbinp.inc $Revision$ 
+*comdeck orbinp.inc $Revision: 2268 $ 
       COMMON/ORBINP/NINOB,NACOB,NDEOB,NOCOB,NTOOB,
      &              NORB0,NORB1,NORB2,NORB3,NORB4,
      &              NOSPIR(MXPIRR),IOSPIR(MXPOBS,MXPIRR),

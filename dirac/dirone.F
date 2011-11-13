@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirone.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -370,23 +370,6 @@ C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
 
-#ifdef MOD_ECP
-c
-C      *********************************************
-C      **                                         **
-C      **      this part adds ARGOS ARPP          **
-C      **    nuc-elec attraction integrals.       **
-C      **                                         **
-C      *********************************************
-      IF (ECPCALC) then
-         OPEN(59,FORM='UNFORMATTED',FILE='argos_vcore')
-         READ(59),(ARPP(I),I=1,NNBBAST)
-         close(59)
-         DO I=0,NNBBAST-1
-            WORK(KNUCS+i)=WORK(KNUCS+i)+arpp(i+1)
-         ENDDO
-      ENDIF
-#endif
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 
 C

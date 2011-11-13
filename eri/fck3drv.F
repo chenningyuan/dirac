@@ -31,9 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#ifndef MOD_DNF
 #define MOD_DNF
-#endif
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, GAB, GABFIT, CFIT, 
      &                    WORK, LWORK )
 #include "implicit.h"
@@ -56,12 +54,6 @@ C
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "erithr.h"
-#ifdef MOD_FMM
-#include "clsfmm.h"
-#endif
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 C
 #include "dummy.h"
 #ifdef MOD_PBC
@@ -97,19 +89,6 @@ c       the treshold is 1E-7). For up to at least 10 000 atoms these
 c       tresholds should be fine if the molecules have the same (or smaller) 
 c       geometrically distributed atomic density.
 c        THRSH = 10D0**(-IFTHRS-6)
-#ifdef MOD_DNF
-        IF (DOFIT) THEN
-CCaspg
-CC old definition:
-C          THRSH = 10D0**(-10)
-CC
-CC DF_SCRTHR (included from densfit.h) is initialized in DFIINI as 1.0E-10, 
-CC but can be changed via user input in DFIINP
-CC
-           THRSH = DF_SCRTHR
-CCaspg
-        ELSE
-#endif
 #if defined PRG_DIRAC
 CCaspg, 2006-09-05
 CC IFHTRS will dynamically change in dalton but not in dirac (it's not even used...)
@@ -122,9 +101,6 @@ CC
 CCaspg
 #else
           THRSH = 10D0**(-IFTHRS-6)
-#endif
-#ifdef MOD_DNF
-        ENDIF
 #endif
       END IF
 Caspg
@@ -150,17 +126,8 @@ CAREFUL
 
       IF ( NOSCRPRIM ) THRPOD = 0.0D0
 
-#ifdef MOD_FMM
-      IF (DOFMM) THEN
-        NCLFCK3 = .TRUE.
-        THRCLS  = THRNCL
-      ELSE
-#endif
         NCLFCK3 = .FALSE.
         THRCLS  = 0.0d0
-#ifdef MOD_FMM
-      END IF
-#endif
 
 
       IF ( .NOT. NCLFCK3 ) THEN 
@@ -174,9 +141,6 @@ c     effect on timings. Hardcoded to zero and reset afterwards.
 
       FACCLS=ERFCIV(THRCLS)
 
-#ifdef MOD_FMM
-      CALL SETBFCFMM( BRFREE ) 
-#endif
 
       IF ( NDMT .NE. 1 ) THEN 
         CALL QUIT('In FCK3 internally is not implemented NDMT > 1') 
@@ -221,13 +185,6 @@ C      whether we have ab (flag=true) or cd (flag=false) batches. /ErikT
 
 c      CALL TIMER('FCKINI',TIMSTR,TIMEND)
 
-#ifdef MOD_FMM
-      IF ( ( .NOT. OLDMOM ) .AND. DOFMM ) THEN 
-        CALL SETMM_OR_JFF(DMAT,NDMAT,CFIT,WORK(KIODBCLS),
-     &             WORK(KIODBTCH),WORK(KRODBTCH),WORK(KFREE),LFREE,
-     &             IPRFCK3,'FMM',dummy)
-      END IF
-#endif
 
 c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
 
@@ -239,53 +196,22 @@ c      CALL TIMER('FCKSMM',TIMSTR,TIMEND)
 
       DO NPARFTUV_KSTARTODCLS = 1, NPARFTUV_NPAR
        IF ( CHCKNAI ) THEN
-#ifdef MOD_DNF
-        IF (DOFIT) THEN
-         WRITE(LUPRI,*) 'CHCKNAI not yet implemented for densfit'
-         CALL QUIT('CHCKNAI not yet implemented for densfit')
-        ENDIF
-#endif /* MOD_DNF */
         IELECTR = 1
-#ifdef MOD_DNF
-        IF (RHSFIT) THEN
-          CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
-     &         KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
-     &         WORK(KRODBTCH),WORK(KIODBTCH),CFIT,ISYMDM,NDMT,
-     &         KFREE,LFREE,IELECTR,WORK,LWORK,
-     &         NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
-        ELSE
-#endif /* MOD_DNF */
           CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
      &         KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
      &         WORK(KRODBTCH),WORK(KIODBTCH),DMAT,ISYMDM,NDMT,
      &         KFREE,LFREE,IELECTR,WORK,LWORK,
      &         NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
-#ifdef MOD_DNF
-        ENDIF
-#endif /* MOD_DNF */
        END IF
 
        IELECTR = 2
 
        NPFTUVSTR = NPARFTUV_KSTARTODCLS
-#ifdef MOD_DNF
-       IF (DOFIT.AND.RHSFIT) NPFTUVSTR = NPFTUVSTR + NODCLSNORM
-       IF (RHSFIT) THEN
-         CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
-     &        KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
-     &        WORK(KRODBTCH),WORK(KIODBTCH),CFIT,ISYMDM,NDMT,
-     &        KFREE,LFREE,IELECTR,WORK,LWORK,
-     &        NPFTUVSTR,NPARFTUV_NSTEPODCLS,IPRFCK3)
-       ELSE
-#endif /* MOD_DNF */
          CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
      &        KRFBTCH,KIFBTCH,WORK(KRODBCLS),WORK(KIODBCLS),
      &        WORK(KRODBTCH),WORK(KIODBTCH),DMAT,ISYMDM,NDMT,
      &        KFREE,LFREE,IELECTR,WORK,LWORK,
      &        NPFTUVSTR,NPARFTUV_NSTEPODCLS,IPRFCK3)
-#ifdef MOD_DNF
-       ENDIF
-#endif /* MOD_DNF */
 
 #ifdef MOD_PBC
        if (dopbc .and. pbcactive) then
@@ -403,9 +329,6 @@ c       CALL TIMER('FCKGFC',TIMSTR,TIMEND)
 
       CALL FLSHFO(LUPRI)
 
-#ifdef MOD_FMM
-      CALL SETBFCFMM( .FALSE. ) 
-#endif
 
       THRSH = THRSHSAVE
 
@@ -502,12 +425,6 @@ C     ============================
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "cbifck3.h"
-#ifdef MOD_FMM
-#include "clsfmm.h"
-#endif
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -542,13 +459,7 @@ C     For the special case of parallel code run in serial NODTOT=-1
       NOFF  = 0
 #endif
 
-#ifdef MOD_DNF
-c      DOSCREENCS = ((RHSFIT .OR. LHSFIT) .AND. DOFIT) .AND. .NOT. OLD_DF
-      DOSCREENCS = ((RHSFIT .OR. LHSFIT) .AND. DOFIT) 
-     &             .AND. (.NOT. NOSCRE) .AND. .NOT. (RHSFIT.AND.LHSFIT)
-#else
       DOSCREENCS = .FALSE.
-#endif /* MOD_DNF */
 
 CMAW  We need the next line if FCK3 is to do the fully classical
 CMAW  interactions inside RPQMIN in the Branch-Free scheme:
@@ -631,13 +542,6 @@ C        in PBCDRV.F and not here.
       IABCLSSTART = 1
       IABCLSEND = NODCLSNORM
       AUX = .FALSE.
-#ifdef MOD_DNF
-      IF (DOFIT.AND.LHSFIT) THEN
-        IABCLSSTART = NODCLSNORM + 1
-        IABCLSEND   = NODCLSNORM + NODCLSAUX
-        AUX = .TRUE.
-      END IF
-#endif /* MOD_DNF */
 
 c     DO IABCLS = IABCLSSTART, IABCLSEND
       DO IABCLS = IABCLSSTART + NOFF, IABCLSEND, NSTEP
@@ -688,9 +592,6 @@ C         the translation vector l to get the PBC case right.
 
 c       IF (.TRUE.) THEN
        ACTIVE = ACTVAOBTCH(IAOBA).AND.ACTVAOBTCH(IAOBB)
-#ifdef MOD_DNF
-       IF ((.NOT.DOBOX) .OR. ACTIVE) THEN
-#endif
 
         CSABBTCH = RODBTCH(6,IABBTCH)
 
@@ -737,10 +638,6 @@ c       find largest exponent of the ab distribution
 
         IFCLSSTART = 1
         IFCLSEND   = NFTUVCLS
-#ifdef MOD_DNF
-        IF (RHSFIT) IFCLSSTART = NODCLSNORM + 1
-        IF (LHSFIT .AND. .NOT. RHSFIT) IFCLSEND = NODCLSNORM
-#endif /* MOD_DNF */
 
 
         DO IFCLS = IFCLSSTART, IFCLSEND
@@ -893,59 +790,12 @@ c           IF(NPRF.GT.0)
            END IF
           END IF          
 
-#ifdef MOD_DNF
-C         Code for Gaussian damped integrals; over the operator
-C         exp(-a*r12*r12)/r12 instead of 1/r12.
-          IF (DF_GAUDMP.AND.(LHSFIT .AND. .NOT. RHSFIT)) THEN
-            NUCABCDT = NPRFAB * NTFTUVPRIM  + 1000
-            KHARGE = KLAST + 10000
-            KHARGF = KHARGE + NUCABCDT
-            KHALPH = KHARGF + NUCABCDT
-            KHBETA = KHALPH + NUCABCDT
-            KHPRE1 = KHBETA + NUCABCDT
-            KHPRE2 = KHPRE1 + NUCABCDT
-            KHPRE3 = KHPRE2 + NUCABCDT
-            KRO000 = KHPRE3 + NUCABCDT
-            KRM000 = KRO000 + NUCABCDT * (JMAX + 1) + 1000
-            KHRIN3 = KRM000 + NUCABCDT * (JMAX + 1) + 1000
-            KHRIN4 = KHRIN3 + NUCABCDT * NTUV + 1000
-            KHRIN5 = KHRIN4 + NUCABCDT * NTUV + 1000
-            KHEXPP = KHRIN5 + NUCABCDT * NTUV + 1000
-            KHEXPQ = KHEXPP + NUCABCDT
-            KLASTT = KHEXPQ + NUCABCDT
-
-            IJ = 0
-            DO I=1,NPRFAB
-              DO J=1,NTFTUVPRIM
-                WORK(KHEXPP + IJ) = WORK(KDATAP + 6*(I-1))
-                WORK(KHEXPQ + IJ) = RFTUV(KSRFTUV + 8*(J-1))
-                IJ = IJ + 1
-              ENDDO
-            ENDDO
-            IF (KLASTT .GT. LWORK) 
-     &           CALL STOPIT('FCK3','FCK31',KLASTT,LWORK)     
-            LWRKT   = LWORK - KLASTT + 1
-              
-            CALL ERIHER(WORK(KHRINT1),dummy,WORK(KRM000),
-     &           WORK(KCOORPQ),INDHER,IODDHR(1,IPQXYZ),
-     &           WORK(KFACINT),WORK(KALPHA),WORK(KHARGE),
-     &           WORK(KHARGF),WORK(KHALPH),WORK(KHBETA),
-     &           WORK(KHPRE1),WORK(KHPRE2),WORK(KHPRE3),
-     &           WORK(KRO000),WORK(KHRIN3),WORK(KHRIN4),
-     &           WORK(KHRIN5),WORK(KHEXPP),WORK(KHEXPQ),
-     &           WORK(KLASTT),LWRKT,IPRINT)
-C         Code for regular integrals (over the operator 1/r12)
-          ELSE
-#endif /* MOD_DNF */
             CALL ERIGAM(WORK(KRJ000),WORK(KFACINT),WORK(KALPHA),
      &           WORK(KCOORPQ),WORK(KLAST),LWRK,IPRINT)
 
             CALL ERITUV(WORK(KHRINT1),WORK(KRJ000),
      &           WORK(KCOORPQ),INDHER,IODDHR(1,IPQXYZ),
      &           WORK(KLAST),LWRK,IPRINT)
-#ifdef MOD_DNF
-          ENDIF
-#endif /* MOD_DNF */
 
 #ifdef MOD_PBC
           if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
@@ -1034,9 +884,6 @@ C         =======================================
 
          END DO
         END DO
-#ifdef MOD_DNF
-       ENDIF  !Active batches
-#endif
        END DO !AB-batches
        
       END DO ! AB-calsses
@@ -1144,9 +991,6 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #ifdef MOD_PBC
 #include "pbc.h"
 #endif
@@ -1220,13 +1064,6 @@ c       FACINT(I)= FACPI*EXPQI/SQRT(EXPP+EXPQ)
        IPQ0(1) = 0
        IPQ0(2) = 0
        IPQ0(3) = 0
-#ifdef MOD_DNF
-      ELSEIF ( (DOFIT.AND.LHSFIT) ) THEN 
-       IPQXYZ  = 0
-       IPQ0(1) = 0
-       IPQ0(2) = 0
-       IPQ0(3) = 0
-#endif /* MOD_DNF */
 #ifdef MOD_PBC
       else if (dopbc .and. pbcactive .and. .not. pbc_sep_Rtensor) then
        IPQXYZ  = 0
@@ -1392,13 +1229,6 @@ C
         IPQ0(1) = 0
         IPQ0(2) = 0
         IPQ0(3) = 0
-#ifdef MOD_DNF
-      ELSEIF ( DOFIT.AND.LHSFIT ) THEN 
-        IPQXYZ  = 0
-        IPQ0(1) = 0
-        IPQ0(2) = 0
-        IPQ0(3) = 0
-#endif /* MOD_DNF */
       ELSE 
        CALL LOCSYM( COORPQ, NPRF, 1, IPQ0, IPQXYZ )
       END IF
@@ -1503,13 +1333,6 @@ C
         IPQ0(1) = 0
         IPQ0(2) = 0
         IPQ0(3) = 0
-#ifdef MOD_DNF
-      ELSEIF ( DOFIT.AND.LHSFIT ) THEN 
-        IPQXYZ  = 0
-        IPQ0(1) = 0
-        IPQ0(2) = 0
-        IPQ0(3) = 0
-#endif /*MOD_DNF */
       ELSE 
        CALL LOCSYM( COORPQ, NPRF, 1, IPQ0, IPQXYZ )
       END IF
@@ -2033,12 +1856,6 @@ C
          IAOA = INDXBTCH(KNDX - 1 + ICTFA, MODA)
          
          IOFFSET = 0
-#ifdef MOD_DNF
-         IF (DOFIT.AND.LHSFIT) THEN
-           IOFFSET = NBASE
-           IAOA = 1
-         END IF
-#endif /* MOD_DNF */
          KNDX = KNDXBTCH(ICOMPB,IAOBB,MODB)
          IAOB = INDXBTCH(KNDX - 1 + ICTFB, MODB) - IOFFSET
 C
@@ -2076,16 +1893,10 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
      &           FMAT(IAOA+ISPA-1,IAOB+ISPB-1) 
      &         + FMATSP(ISPA,ISPB) 
      &         * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#ifdef MOD_DNF
-             IF (.NOT.(DOFIT.AND.LHSFIT)) THEN
-#endif /* MOD_DNF  */
                FMAT(IAOB+ISPB-1,IAOA+ISPA-1) = 
      &              FMAT(IAOB+ISPB-1,IAOA+ISPA-1) 
      &              + FMATSP(ISPA,ISPB) 
      &              * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#ifdef MOD_DNF
-             ENDIF
-#endif /* MOD_DNF  */
            END DO
          END DO
        END IF
@@ -2349,12 +2160,6 @@ C
           IAOA = INDXBTCH(KNDX - 1 + ICTFA,1)
           
           IOFFSET = 0
-#ifdef MOD_DNF
-          IF (DOFIT.AND.LHSFIT) THEN
-            IOFFSET = NBASE
-            IAOA = 1
-          END IF
-#endif /* MOD_DNF */
           KNDX = KNDXBTCH(ICOMPB,IAOBB,1)
           IAOB = INDXBTCH(KNDX - 1 + ICTFB,1) - IOFFSET
 C
@@ -2392,16 +2197,10 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
      &            FMAT(IAOA+ISPA-1,IAOB+ISPB-1,IDMAT) 
      &          + FMATSP(ISPA,ISPB,IPRFAB) 
      &          * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#ifdef MOD_DNF
-              IF (.NOT.(DOFIT.AND.LHSFIT)) THEN
-#endif /* MOD_DNF  */
                 FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) = 
      &               FMAT(IAOB+ISPB-1,IAOA+ISPA-1,IDMAT) 
      &               + FMATSP(ISPA,ISPB,IPRFAB) 
      &               * CCFA(IPRFA,ICTFA)*CCFB(IPRFB,ICTFB)
-#ifdef MOD_DNF
-              ENDIF
-#endif /* MOD_DNF  */
             END DO
           END DO
         END IF
@@ -2471,9 +2270,6 @@ C
       THRCOD    = THRFCK3_DEFAULT 
       THRSPEXP  = THRFCK3_DEFAULT 
 
-#ifdef MOD_FMM
-      CALL SETBFCFMM( BRFREE ) 
-#endif
 
       SYMDENS = .TRUE.
 
@@ -2612,21 +2408,6 @@ C
       RETURN
       END
 
-#ifdef MOD_FMM
-C
-C  Sets the BFCFMM logical variable from cbieri common block 
-C  for the use in ERIGAM subroutine 
-C
-
-      SUBROUTINE SETBFCFMM( BRFREE )
-#include "cbieri.h" 
-      LOGICAL BRFREE
-
-      BFCFMM = BRFREE
-  
-      RETURN
-      END  
-#endif /* MOD_FMM */
 
       SUBROUTINE CHECKR2MIN( R2MIN, RODP, ICNTC,ICNTD, RCD )
 #include "implicit.h"
@@ -2720,41 +2501,14 @@ c     for given orbital exponent and
 c     /* deck dmatdim */
       SUBROUTINE DMATDIM
 #include "implicit.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "aovec.h"
 #include "maxorb.h"
 #include "fck3aob.h"
 
-#ifdef MOD_DNF
-      IF (DOFIT.AND.(RHSFIT.OR.LHSFIT)) THEN
-        IF (RHSFIT.AND.LHSFIT) THEN
-          NDIMA = 1
-          NDIMB = NBASEAUX
-          NDIMC = 1
-          NDIMD = NBASEAUX
-        ELSE IF (RHSFIT) THEN
-          NDIMA = NBASE
-          NDIMB = NBASE
-          NDIMC = 1
-          NDIMD = NBASEAUX
-        ELSE IF (LHSFIT) THEN
-          NDIMA = 1
-          NDIMB = NBASEAUX
-          NDIMC = NBASE
-          NDIMD = NBASE
-        ENDIF
-
-      ELSE
-#endif /*MOD_DNF */
         NDIMA = NBASE
         NDIMB = NBASE
         NDIMC = NBASE
         NDIMD = NBASE
-#ifdef MOD_DNF
-      END IF
-#endif /*MOD_DNF */
 
       RETURN
       END

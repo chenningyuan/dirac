@@ -22,7 +22,7 @@ C
 C 
 C
 C
-C$Id$
+C$Id: abaopt.F 7732 2008-09-16 20:30:19Z bast $
 C
 C#include "single.h"
 ! OLD_LOG

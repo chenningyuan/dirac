@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  *
  *
- * $Id$
+ * $Id: tracker_util.c 7009 2008-06-07 23:10:40Z gomes $
  *
  * tracker_util.c : functions to retrieve information from memory usage (addresses, amount of free memory)
  *

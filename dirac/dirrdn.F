@@ -22,8 +22,8 @@ C
 C
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirrdn.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -319,11 +319,6 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
-#ifdef MOD_ECP
-C&&&& ECP: do ECP calculation, non-relativistic
-            ECPCALC = .TRUE.
-            TWOCOMP = .TRUE.
-#endif
             GO TO 100
   111     CONTINUE
             GO TO 100
@@ -400,11 +395,6 @@ C
         ISSDIR = 0
         IGTDIR = 0
       ENDIF
-#ifdef MOD_ECP
-      IF (ECPCALC)
-     &  WRITE(LUPRI,'(1X,A)') 
-     &   '  employing effective-core-potentials (ECP)'
-#endif
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
@@ -733,9 +723,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#ifdef MOD_EMB
-#include "fde.h"
-#endif
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -1775,17 +1762,6 @@ C
 C
 C     Quadratic convergent DHF?
 C
-#ifdef MOD_KRMC
-      IF (NOQCDHF) THEN
-         WRITE(LUPRI,'(A)')
-     &   ' * No quadratic convergent Hartree-Fock'
-      ELSE
-         WRITE(LUPRI,'(A,2(/A,I3))')
-     &   ' * Quadratic convergent Hartree-Fock',
-     &   '   - Maximum number of macro iterations:',MXMACRO,
-     &   '   - Maximum number of micro iterations:',MXMICRO
-      END IF
-#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -2302,10 +2278,8 @@ C
      &   ' * Generate MP2 natural orbitals'
       IF(DOKRMC) WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted MCSCF calculation'
-#ifndef MOD_KRMC
       IF(DOKRMC .OR. DOLUCIAR)
      &  CALL QUIT('*** KRMCSCF is not included in this version')
-#endif
       IF(DOLUCIAR) THEN
 C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
          WRITE(LUPRI,'(A)') ' * Run LUCIAREL CI code'
@@ -2393,20 +2367,11 @@ C
         CALL RESINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
-#ifdef MOD_KRMC
-        CALL KRMCINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
     8 CONTINUE
-#ifdef MOD_KRMC
-        CALL RSTPINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C     '*OPTIMI' - control KRMCSCF optimization
     9 CONTINUE
-#ifdef MOD_KRMC
-        CALL ROPTINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C     '*MP2 NO' - MP2 Natural Orbitals
    10 CONTINUE
@@ -2414,9 +2379,6 @@ C     '*MP2 NO' - MP2 Natural Orbitals
         GO TO 200
 C     '*KRCICALC' - Kramers Restricted CI CALCulation
    11 CONTINUE
-#ifdef MOD_KRMC
-        CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C
    12 CONTINUE
@@ -2437,12 +2399,6 @@ C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
-#ifdef MOD_KRMC
-      CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
-      CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
-      CALL ROPTINP(WORD,.TRUE.,WORK,LWORK)
-      CALL KRCI_INP(WORD,.TRUE.,WORK,LWORK)
-#endif
 C
 C     Input of relccsd module
 C
@@ -2861,12 +2817,7 @@ C&&&& LOCALIZE : Molecular orbital localization
 
 !        .VISUAL
   109    continue
-#ifdef MOD_VISUAL
-         do_visual = .true.
-         njobs = njobs + 1
-#else
          call quit('.VISUAL not available in this version')
-#endif /* MOD_VISUAL */
          go to 100
 
   110    CONTINUE
@@ -2957,11 +2908,7 @@ C
 
 !      *VISUAL
     9  continue
-#ifdef MOD_VISUAL
-       call visual_input(word, .false., work, lwork)
-#else
        call quit('*VISUAL not available in this version')
-#endif /* MOD_VISUAL */
        go to 200
 
    10 CONTINUE
@@ -2981,9 +2928,6 @@ C
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
-#ifdef MOD_VISUAL
-      IF(DO_VISUAL) CALL VISUAL_INPUT(WORD,.TRUE.,WORK,LWORK)
-#endif /* MOD_VISUAL */
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -3725,9 +3669,6 @@ C     Initialize XCBXPR - list of properties
 C     ======================================
       NPRPS        = 0
 C
-#ifdef MOD_KRMC
-      CALL OPTINI()
-#endif
 #ifdef MOD_ERI
       CALL FCK3INI
 #endif
@@ -3748,9 +3689,6 @@ C     Last revision: May 27 1998 - tsaue and kmi
 C                    2005/06 - MI for 2comp.Hamiltonians
 C
 C***********************************************************************
-#ifdef MOD_EMB
-      USE FDE_MOD, ONLY: DO_FDE, FDEINI, FDEINP
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3862,9 +3800,6 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-#ifdef MOD_EMB
-      DO_FDE  = .FALSE.
-#endif
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -3895,11 +3830,7 @@ C     ... default L&S components... needs discussion about relation to DO2C4C/DO
 CMI   ... no specifications for individual AMFI center
       ALLAMFA = .TRUE.
 CMI     ... default initialization 
-#ifdef MOD_AMFI
-      NOAMFI = .FALSE.
-#else
       NOAMFI = .TRUE.
-#endif
 CMI   ... default value - no artificial atom
       QDOTS = .FALSE.
 Culfek: Do not scale gaunt integrals with exchange scale factor by default.
@@ -4203,12 +4134,6 @@ C      as they need to be modified within BSS transformations
              ENDIF
             GO TO 100
   127     CONTINUE
-#ifdef MOD_AMFI 
-C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
-C     for mean-field summations of each atom in the system
-C          ... read integer number
-             READ(LUCMD,*) IMFCH
-#endif
             GO TO 100
   128     CONTINUE
 C&&&&   Solve R-equation 1
@@ -4250,12 +4175,6 @@ C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
             GO TO 100
   136     CONTINUE
-#ifdef MOD_AMFI
-C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
-            ALLAMFA = .FALSE.
-            READ(LUCMD,*) NAMFA
-            READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
-#endif
             GO TO 100
   137     CONTINUE
 C&&&  IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
@@ -4277,11 +4196,7 @@ C&&& MIXVAC: Alternative definition of vacuum polarisation
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
-#ifdef MOD_CAP
-             CAP  =  .TRUE.
-#else
              CAP  =  .FALSE.
-#endif
              GO TO 100
   140     CONTINUE
 C&&& NOVREF: Do not generate reference vacuum
@@ -4294,10 +4209,6 @@ C&&& POSVAC: Use positronic vacuum polarisation
              GO TO 100
   142     CONTINUE
 C&&& FDE: Frozen density embedding switch 
-#ifdef MOD_EMB
-C             DO_FDE = .TRUE.
-             CALL FDEINI()
-#endif
              GO TO 100
   143     CONTINUE
 C&&& IOTC4: do IOTC in 4c-mode
@@ -4348,9 +4259,6 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              GO TO 100
   149     CONTINUE
 C&&& NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
-#ifdef MOD_AMFI
-             NOAMFI = .TRUE.
-#endif
              GO TO 100
   150     CONTINUE
 C&&& QDOTS: activate artificial atom (quantum dots)
@@ -4622,89 +4530,11 @@ CMI ... no AMFI
      &   //'2-component mode !'
         ENDIF
         IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
-#ifdef MOD_AMFI
-          WRITE(LUPRI,'(A)')
-     &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
-     &     '   interaction provided by the AMFI code. ',
-     &     '   References: ',
-     &     '     1) B. Schimmelpfennig, program AMFI, ',
-     &     '        Stockholm University, Sweden',
-     &     '     2) B. A. Hess, C. M. Marian, U. Wahlgren'//
-     &     ' and O. Gropen',
-     &     '        Chem. Phys. Lett. 251, 365 (1996)',
-     &     '     3)  M Ilias, V Kello, L Visscher'//
-     &     ' and B Schimmelpfennig',
-     &     '        J. Chem. Phys. Vol. 115 (2001) p.9667.',
-     &     '     Adding :',
-     &     '       some AMFI contribution'//
-     &     ' (see output from EXTR_BSS_INFO below)'  
-#endif
           IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
      &     '     N.B: Gaunt key is on '
           ENDIF
 
-#ifdef MOD_AMFI
-          IF (IMFCH.NE.0) THEN
-            WRITE(LUPRI,'(1X,A,I4)')
-     &     ' * AMFI mean-field summations on individual atoms'//
-     &     ' are modified due to the total charge of the system:',
-     &     IMFCH
-          ENDIF
-CMI    .... treat AMFI centers, if selected in the input          
-          IF (.NOT.ALLAMFA) THEN
-          WRITE(LUPRI,'(1X,A,I2,A,$)')
-     &' * AMFI contributions NOT calculated for',NAMFA,' centers:'
-          WRITE(LUPRI,*) ( IAMFA(I), I = 1, NAMFA )
-          WRITE(LUPRI,'(4X,A)')
-     &   'List of all nuclei (see "Cartesian Coordinates" above):'
-          IX = 0
-          DO I=1,NUCIND
-          DO J=1,NUCDEG(I)
-           IX = IX + 1
-           write(lupri,'(5X,I2,A,I4,$)')
-     &     IX,'. nuclei, charge:',NINT(CHARGE(I))
-           IZX = 0
-           DO K = 1, NAMFA
-             IF (IAMFA(K).EQ.IX) THEN
-              write(lupri,'(A)')
-     &        ' ... no AMFI contribution from this nuclei '
-              IZX=1
-             ENDIF
-           ENDDO
-           IF (IZX.EQ.0) write(lupri,*)
-          ENDDO
-          ENDDO
-C          ... do some check of entering values of NAMFA,IAMFA
-          IF (NAMFA.GT.IX) THEN
-           write(lupri,*) 'HAMINP: NAMFA=',NAMFA,
-     &     ' is greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
-          ENDIF
-          DO K=1,NAMFA
-           IF (IAMFA(K).GT.IX) THEN
-             write(lupri,*)
-     &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
-     &       ' greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
-           ENDIF
-          ENDDO
-          IF (NAMFA.GE.2) THEN
-C           ... check on identical nucleus numbers ....
-            DO K=1,NAMFA-1
-              DO L=K+1,NAMFA
-               IF (IAMFA(K).EQ.IAMFA(L)) THEN
-                write(lupri,*) K,'. and ',L,
-     &          '. AMFI-banned nuclei have identical numbers ! =',
-     &           IAMFA(K),IAMFA(L)
-                 CALL QUIT('HAMINP: Found 2 identical values'//
-     &                     ' of IAMFA(K) !!!')
-               ENDIF
-              ENDDO
-            ENDDO
-          ENDIF
-          ENDIF
-#endif /* MOD_AMFI */
 
 CMI       ... take care of AMFI CSC test transformation, if specified through the entering IBSS number
           IF (IBSS.GT.999.AND.IBSS.LE.1999) THEN
@@ -5256,28 +5086,14 @@ C       if *DFT in input but MOD_DFT not defined !!!
 #endif
         GO TO 200
     4 CONTINUE
-#ifdef MOD_CAP
-CMI    ... reading the CAP integrals characteristic
-        CALL CAPINP(WORD,.FALSE.,WORK,LWORK)
-#else
 CMI       dirac.x went into an infinite loop here
 C       if *CAP in input but MOD_CAP is not defined !!!
         CALL QUIT(
      &  '*CAP specified, but CAP is not included in this version')
         GO TO 200
-#endif
     5 CONTINUE
-#ifdef MOD_EMB
-        CALL FDEINP(WORD,.FALSE.)
-#endif
         GO TO 200
     6 CONTINUE
-#ifdef MOD_AMFI
-CMI  ... reading input routine for AMFI+RELSCF
-        IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
-          CALL AMFI_RELSCF_INP(WORD,.FALSE.)
-        ENDIF
-#endif
         GO TO 200
     7 CONTINUE
         GO TO 200
@@ -5293,18 +5109,7 @@ CJuly2003
 #endif
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 
-#ifdef MOD_CAP
-      IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
-#ifdef MOD_EMB
-      IF (DO_FDE) CALL FDEINP(WORD,.TRUE.)
-#endif
-#ifdef MOD_AMFI
-      IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
-         CALL AMFI_RELSCF_INP(WORD,.TRUE.)
-      ENDIF
-#endif
 C
  500  CONTINUE
 C
@@ -5397,27 +5202,6 @@ CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
 c
-#ifdef MOD_ECP
-        IF (ECPCALC) THEN
-c     
-c     Spin-orbit integrals for ECP centres ...
-c     ========================================
-c        
-        PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 20 ! for the new definition
-        NPCOMP           = 3
-        PFAC(1)          = +1.0
-        PFAC(2)          = +1.0
-        PFAC(3)          = +1.0
-        PLABEL(1)        = 'X1SOPP  '
-        PLABEL(2)        = 'Y1SOPP  '
-        PLABEL(3)        = 'Z1SOPP  '
-        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
-c      ... use IPSOPP defined in dcbham.h
-        IPSOPP           = INDXPR
-        END IF         
-#endif
       ELSE
 CMI  ... pure Dirac Hamiltonian stuff ...
 C

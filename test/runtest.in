@@ -1,7 +1,7 @@
 #
 #
-# VERSION : $Revision$
-# DATE    : $Date$
+# VERSION : $Revision: 7753 $
+# DATE    : $Date: 2008-09-17 15:03:43 +0200 (Wed, 17 Sep 2008) $
 # FILE    : runtest
 #
 # (c) 1998 J. Thyssen
@@ -17,15 +17,15 @@
 # Some tests do not work in parallel (yet); the "*_partest" are the short, medum
 # and long tests for parallel runs.
 #
-short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies 38.london.magn_prop 39.gaunt 40.dft_ac 49.xyzinput"
+short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies  39.gaunt 40.dft_ac 49.xyzinput"
 short_test="$short_partest"
 
 medium_partest="2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 31.symmetry_recognition 32.prjana 33.frozen 36.mp2_properties"
-medium_test="$short_test $medium_partest 27.krmc_luciarel 54.stex"
-# 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
+medium_test="$short_test $medium_partest  54.stex"
+#  is currently not working ! Nov. 2005 hjaaj
 medium_partest="$short_partest $medium_partest"
 
-long_partest="24.lucita_large 26.krmc_gosci 34.rhonuc 41.pv_nmr 46.dft_response"
+long_partest="24.lucita_large  34.rhonuc 41.pv_nmr 46.dft_response"
 long_test="$medium_test $long_partest"
 long_partest="$medium_partest $long_partest"
 
@@ -118,8 +118,8 @@ while [ $# != 0 ]; do
          ;;
       "version")
          echo $0
-         echo '$Revision$'
-         echo '$Date$'
+         echo '$Revision: 7753 $'
+         echo '$Date: 2008-09-17 15:03:43 +0200 (Wed, 17 Sep 2008) $'
          exit
          ;;
       "tests")

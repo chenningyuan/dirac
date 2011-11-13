@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 4777 $
+C DATE    : $Date: 2006-05-09 08:33:14 +0200 (Tue, 09 May 2006) $
 C FILE    : goscom.inc
 C SOURCE  : $Source$
 C

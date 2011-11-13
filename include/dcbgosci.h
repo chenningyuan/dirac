@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 5471 $
+C DATE    : $Date: 2007-02-06 15:33:25 +0100 (Tue, 06 Feb 2007) $
 C FILE    : dcbgosci.h
 C
 C     DEFINITION PARAMETERS GOSCIP :

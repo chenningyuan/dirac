@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirtwo.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3234,17 +3234,8 @@ C
       CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
      &          IFCKOP,IPRINT)
 #ifdef MOD_ERI
-#ifdef MOD_DNF
-      IF (DOFIT) THEN
-        CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
-     &            IPRINT,WORK(KLAST),LWRK)
-      ELSE
-#endif /* MOD_DNF */
         CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
      &                   IPRINT,WORK(KLAST),LWRK)
-#ifdef MOD_DNF
-      ENDIF
-#endif /* MOD_DNF */
       CALL DSCAL(NDIM,DP5,DSO,1)
 #else /* MOD_ERI */
       CALL QUIT('JENGINE only works if ERI is also present.')
@@ -3284,9 +3275,6 @@ C*****************************************************************************
           CALL ACT_ALL_BATCHES
           CALL FCK3DRV(FMAT(1,1,IDMT),DMAT(1,1,IDMT),1,DUMMY,DUMMY,
      &             DUMMY,WORK,LWORK)
-#ifdef MOD_FMM
-          IF (DOFMM) CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
-#endif /* MOD_FMM */  
         END IF
       END DO
       RETURN

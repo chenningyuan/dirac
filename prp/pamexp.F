@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamexp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -175,51 +175,6 @@ C        Get relaxed density matrix computed by RELCCSD.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
 C
-#ifdef MOD_KRMC
-      ELSE IF (WF .EQ. 'KRMC') THEN
-C
-         IF (ORBANA) 
-     &        CALL QUIT('*** ERROR in PRPEX1 *** '
-     &        // 'ORBANA not implemented for MCSCF')
-C
-         INQUIRE(FILE='KRMCSCF', EXIST=FILEX)
-C
-         IF (.NOT. FILEX) 
-     &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
-     &        'file "KRMCSCF" not found!')
-C
-         CALL OPNFIL(LUCOEF,'KRMCSCF','OLD','PRPEXP')
-         CALL REAKRMC(LUCOEF,'NEWORB  ',CMO,NCMOTQ)
-         CLOSE(LUCOEF,STATUS='KEEP')
-C
-         INQUIRE(FILE='KRMC_FOCK', EXIST=FILEX)
-C
-         IF (.NOT. FILEX) 
-     &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
-     &        'file "KRMC_FOCK" not found!')
-C
-         CALL OPNFIL(LUCOEF,'KRMC_FOCK','OLD','PRPEXP')
-         CALL REAKRMC(LUCOEF,'DTMO    ',DMAT(1+N2BBASXQ),N2ORBXQ)
-         CLOSE(LUCOEF,STATUS='KEEP')
-C
-C        Get AO density matrix.
-C
-         DO I = 1, NFSYM
-            CALL QTRANS('MOAO','S',D0,
-     &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &           DMAT(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &           DMAT(1+N2BBASXQ+I2ORBX(I,I)),
-     &           NORBT,NORBT,NZ,IPQTOQ(1,0),
-     &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &           WORK,LWORK,0)
-         END DO
-C
-C        Result is scaled by 2 in PRPEX2...
-C
-         CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
-C
-#endif
       ELSE
          WRITE(LUPRI,'(1X,2A)')
      &        '*** ERROR in PRPEX1 *** Unknown wave function: ',WF

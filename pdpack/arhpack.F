@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7734 $
+C DATE    : $Date: 2008-09-16 22:56:42 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirana.F
 C
 C

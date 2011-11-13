@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 5900 $
+! DATE    : $Date: 2007-07-02 12:10:17 +0200 (Mon, 02 Jul 2007) $
 ! FILE    : dcbdhf.h
 !
 !*** Dirac-Fock calculations ***

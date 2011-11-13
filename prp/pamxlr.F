@@ -22,8 +22,8 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamxlr.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -185,23 +185,6 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
 
-#ifdef MOD_LONDON
-C   ... When London atomic orbitals are in use...
-      IF (LONDON) THEN
-C   ... allocate memmory for MO coefficients and boson irreps info
-C       (needed dcborb.h, dcbbas.h common blocks)
-        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-C   ... accumulate 1-el. contrubution; get MO coeff+boson irreps info
-        CALL ONELON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-C   ... calculate two-electron contribution
-        IF (.NOT.NOTWOL)
-     &     CALL TWOLON(WORK(KCMO),WORK(KBEIG),WORK(KFREE),LFREE)
-C   ... calculate reorthonormalization contribution
-        IF (.NOT.NOONEI)
-     &     CALL RNTLON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-      ENDIF
-#endif /* MOD_LONDON */
 C
 C     Memory allocation
 C     =================

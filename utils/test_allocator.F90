@@ -19,10 +19,10 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
 !
-! $Id$
+! $Id: test_allocator.F90 7732 2008-09-16 20:30:19Z bast $
 !
 !
-! $Id$
+! $Id: test_allocator.F90 7732 2008-09-16 20:30:19Z bast $
 !
 ! memory allocation subsystem
 !

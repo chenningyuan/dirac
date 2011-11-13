@@ -77,27 +77,9 @@ C
       DOLND = LBIT(IOPTS,5)
       LUQUAD = 44
 C
-#ifdef MOD_DNF
-C aspg+rbast 2006-10-10
-C prepare for accumulating integrals... 
-      IF (DF_FITVXC) THEN ! 
-         CALL MEMGET('REAL',KXCVEB,NBASISAUX,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KXCVEB),NBASISAUX)
-         if (DOERG) then 
-         CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'FITVXC')
-         else if (DOLR) then 
-         CALL SAVE_MATRIX(WORK(KXCVEB),1,NBASISAUX,'LRDFVX')
-         endif
-      ENDIF
-Caspg+rbast
-#endif
 C
 C     Initial expectation value of two-electron matrix
-#ifdef MOD_DNF
-      IF (DOERG.AND..NOT.DF_FITVXC) THEN
-#else
       IF (DOERG) THEN
-#endif /* MOD_DNF */
          ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
       END IF 
 
@@ -117,9 +99,7 @@ C     Initial expectation value of two-electron matrix
       IF(DOLR) THEN
         IF(NR_GENERAL .GT. 0)
      &           CALL QUIT('DFT LR: general density matrix or matrices')
-#ifndef MOD_CDFT
         IF(NR_HERMITIAN .EQ. 0) GOTO 10
-#endif /* MOD_CDFT */
       ENDIF
 
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
@@ -127,14 +107,7 @@ C
 C     Scale density matrices
 C
       CALL DSCAL(N2BBASX,D2,DMAT,1)
-#ifdef MOD_DNF
-C aspg, how wil this symmetrization work with density fitting? 
-C up to now the code is skipped for df_fitvxc since we pass
-C 'dummy' in the place of dtrmat...
-      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
-#else
       IF (DOLR.OR.DOQR) THEN
-#endif /*MOD_DNF */
         CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
 C       Insert half-phases:
 C       The symmetry scheme tries to pack the real symemtric and three 
@@ -201,10 +174,6 @@ C
 C
 C     Integrate
         NDIMENSION = NTBAS(0)
-#ifdef MOD_DNF
-Caspg, the mult by two here is still not quite understandable...
-        IF (DF_FITVXC) NDIMENSION = MAX(NTBAS(0),NBASISAUX)
-#endif
 C
         CALL MEMGET('REAL',KGAO,NDIMENSION,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KGA1,3*NDIMENSION,WORK,KFREE,LFREE)
@@ -245,18 +214,9 @@ C    &              KFREE,LFREE)
 
       IF(DFTISGGA() .AND. .NOT. DF_FITVXC) THEN
         CALL SYM_HERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-#ifdef MOD_CDFT
-        IF(LBIT(LBIT_CDFT,1) .OR. LBIT(LBIT_CDFT,2)) THEN !if spin or current density contribution
-          CALL SYM_ANTIHERMITIAN(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
-        ENDIF
-#endif /* MOD_CDFT */
       ENDIF
 
-#ifdef MOD_DNF
-      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
-#else
       IF (DOLR.OR.DOQR) THEN
-#endif /* MOD_DNF */
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
@@ -274,28 +234,15 @@ C     Rescale density matrices
 C
       CALL DSCAL(N2BBASX,DP5,DMAT,1)
       IF(NASHT.GT.0) CALL GTDOAV(DMAT,-1)
-#ifdef MOD_DNF
-      IF ((DOLR.OR.DOQR).AND..NOT.DF_FITVXC) THEN
-#else
       IF (DOLR.OR.DOQR) THEN
-#endif /* MOD_DNF */
         CALL DSCAL(N2BBASXQ*NXCMAT,DP5,DTRMAT,1)
       END IF
 C
 C     Calculate final expectation value of two-electron matrix;
 C     the Kohn-Sham contribution can then be subtracted 
-#ifdef MOD_DNF
-      IF (DOERG.AND..NOT.DF_FITVXC) THEN
-#else
       IF (DOERG) THEN
-#endif
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         CALL MEMREL('dftexc-xcvec',WORK,KXCVEB,KXCVEB,KFREE,LFREE)
-      ENDIF
-#endif
 C
  10   RETURN
       END
@@ -606,54 +553,6 @@ C
 C
       
       NDIMENSION = NBAST
-#ifdef MOD_DNF
-      ELCTRB = 0.0D0
-      nskipped = 0
-C aspg+rbast 2006-09-21
-C memory allocation for variables to hold information related
-C to density fitting. used in connection to the scheme of
-C Birkenheuer et at (IJQC 102, 743, 2005) to compute the 
-C exchange-correlation contibutions together with density fitting 
-      IF (DF_FITVXC) THEN ! 
-C actions disabled so far...
-         DOGRD = .false.
-         DOQR  = .false.
-         DOLND = .false.
-         CALL MEMGET('REAL',KCFIT,NBASISAUX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KXCVEC,NBASISAUX,WORK,KFREE,LFREE)
-         CALL READ_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
-         if (using_diffdens) then
-            CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITDDC')
-         else
-            CALL READ_MATRIX(WORK(KCFIT),1,NBASISAUX,'FITCOE')
-         endif
-         NDIMENSION = MAX(NBAST,NBASISAUX)
-C aspg+rb, 2007-01-19
-C aspg: will we need this really for linear response?
-c        write (*,*) ' DEBUG: fit coefficients'
-c        do i=1,ndimension
-c           write (*,*) i,WORK(KCFIT+I-1)
-c        enddo
-         if (DOLR) then
-c           DF_FITVXC_LR = .true.
-            CALL MEMGET('REAL',KLRCFIT,NBASISAUX,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KLRXCVEC,NBASISAUX,WORK,KFREE,LFREE)
-            CALL READ_MATRIX(WORK(KLRXCVEC),1,NBASISAUX,'LRDFVX')
-            if (using_diffdens) then
-               CALL READ_MATRIX(WORK(KLRCFIT),1,NBASISAUX,'LRDFCD')
-            else
-               CALL READ_MATRIX(WORK(KLRCFIT),1,NBASISAUX,'LRDFCE')
-            endif
-         write (*,*) ' '
-         write (*,*) ' DEBUG: perturbed fit coefficients'
-c        do i=1,ndimension
-c           write (*,*) i,WORK(KLRCFIT+I-1)
-c        enddo
-         endif
-C aspg+rb, 2007-01-19
-      ENDIF
-Caspg+rbast, 2006-09-21
-#endif /* MOD_DNF */
 
 
 
@@ -669,12 +568,6 @@ C
 C       AOs
 C       ===
 C
-#ifdef MOD_CDFT
-!       GAO1 are needed for VRG
-        IF(LBIT(LBIT_CDFT,2)) THEN
-          IF(NDER .LT. 1) NDER = 1
-        ENDIF
-#endif /* MOD_CDFT */
 C
         CALL GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
@@ -683,15 +576,7 @@ C
 C       Density
 C       =======
 C
-#ifdef MOD_DNF
-        IF (DF_FITVXC) THEN  ! 
-          RHO = DDOT(NBASISAUX,GAO,1,WORK(KCFIT),1)
-        ELSE
-#endif
           CALL GETRHO(RHO,0,GAO,DMAT,BUF)
-#ifdef MOD_DNF
-        ENDIF
-#endif
 Caspg+rbast, 2006-09-21
         IF (RHO.LE.DFTHR0) GO TO 300
         RHO13  = RHO**DP3
@@ -699,30 +584,8 @@ C
 C       Gradient of density
 C       ===================
 C
-#ifdef MOD_CDFT
-!     gradient is needed for VRG
-      IF(LBIT(LBIT_CDFT,2)) THEN
-        DOGRHO = .TRUE.
-      ENDIF
-#endif /* MOD_CDFT */
         IF (DOGRHO) THEN
-#ifdef MOD_DNF
-          IF (DF_FITVXC) THEN  ! 
-             DO IXYZ = 1,3
-              IOFF = NBASISAUX * (IXYZ - 1) + 1
-              RHG(IXYZ) = 
-     &          D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KCFIT),1)
-C enable this later...
-c             if (dolr) 
-c    &           b3(ixyz) = 
-c    &              D1*DDOT(NBASISAUX,GAO1(IOFF),1,WORK(KLRCFIT),1)
-             ENDDO
-          ELSE
-#endif
             CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
-#ifdef MOD_DNF
-          ENDIF
-#endif
           RHOGRD = DSQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
         END IF
 C
@@ -795,19 +658,6 @@ C       =====================================================
 C
         IF (DOERG) THEN
            IREPOP = 0
-#ifdef MOD_DNF
-C aspg+rb, 2007-01-19, df-vxc modularized code
-           if (DF_FITVXC) then
-!          WRITE(lupri,*) 'DOGGA3', DOGGA
-               IF (DOGGA) THEN
-                  DO I = 1,3
-                     VT(I) = VX(FZ0)*RHG(I)
-                  ENDDO
-               ENDIF
-               CALL fit_DOEXC(DOGGA,VX(FR0),VT,GAO,GAO1,
-     &                     WORK(KXCVEC),NBASISAUX)
-           else  ! df_fitvxc
-#endif
 C conventional code...
 !            WRITE(lupri,*) 'DOGGA4', DOGGA
              IF (DOGGA .AND. .NOT.FROMVX) THEN
@@ -818,9 +668,6 @@ C conventional code...
              ELSE
                 CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
              END IF
-#ifdef MOD_DNF
-           endif ! df_fitvxc
-#endif
         END IF ! DOERG
 
 !
@@ -839,87 +686,22 @@ C conventional code...
 !       ENDIF
 
 
-#ifdef MOD_DNF
-!       Hessian transformation via density fitting
-        IF(DOLR) THEN
-C aspg+rb, 2007-01-19, df-vxc modularized code
-           if (DF_FITVXC) then
-              call fit_DFT_LR(WORK(KLRCFIT),WORK(KLRXCVEC),
-     &                        NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,
-     &                        RHO,RHOGRD,RHG,WGHT,DOGGA,B0,nskipped)
-           else  ! df_fitvxc
-!             CALL DFT_LR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
-!    &                    GAO,GAO1,RHO,RHOGRD,RHG,WGHT,DOGGA,BUF,B0)
-             call dft_lr(dtrmat,excmat,nxcmat,
-     &                   isymop,ihrmop,.false.,
-     &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dogga,buf)
-           endif
-          ELCTRB = ELCTRB + WGHT*B0
-        ENDIF
-#endif
 
 
 !       linear response
         if(dolr) then
-#ifndef MOD_DNF
           call dft_lr(dtrmat,excmat,nxcmat,
      &                isymop,ihrmop,.false.,
      &                gao,gao1,
      &                rho,rhogrd,rhg,wght,dogga,buf)
-#endif
 
-#ifdef MOD_CDFT
-!         spin magnetization contribution
-          if(lbit(lbit_cdft,1)) then
-            call sdft_lr(dtrmat,excmat,nxcmat,
-     &                   isymop,ihrmop,.false.,
-     &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dogga,buf)
-          endif
-!         VRG contribution
-          if(lbit(lbit_cdft,2)) then
-            call vrg_lr(dtrmat,excmat,nxcmat,
-     &                  isymop,ihrmop,gao,gao1,
-     &                  rho,rhogrd,rhg,wght,dogga,buf)
-          endif
-#endif /* MOD_CDFT */
         endif
 
 !       quadratic response
         if(doqr) then
-#ifdef MOD_CDFT
-          call sdft_qr(dogga,
-     &                 lbit(lbit_cdft,1),
-     &                 dtrmat,excmat,
-     &                 isymop,ihrmop,gao,gao1,
-     &                 rho,rhogrd,rhg,wght,buf)
-
-!         the idea here is that   r^[B]               \omega_{ia}^[C]
-!                                 r^[C]               \omega_{ia}^[B]
-!                                 r^[BC]              \omega_{ia}
-!         and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
-!                                 q^[C]  \cdot \nabla \omega_{ia}^[B]
-!                                 q^[BC] \cdot \nabla \omega_{ia}
-
-!         can be evaluated using (s)dft_lr (below)
-!         only the remaining part is done in sdft_qr (above)
-
-          call dft_lr(dtrmat,excmat,3,
-     &                isymop,ihrmop,.true.,
-     &                gao,gao1,
-     &                rho,rhogrd,rhg,wght,dogga,buf)
-          if(lbit(lbit_cdft,1)) then
-            call sdft_lr(dtrmat,excmat,3,
-     &                   isymop,ihrmop,.true.,
-     &                   gao,gao1,
-     &                   rho,rhogrd,rhg,wght,dogga,buf)
-          endif
-#else
           call dft_qr(dtrmat,excmat,
      &                isymop,ihrmop,gao,gao1,
      &                rho,rhogrd,rhg,wght,dogga,buf)
-#endif /* MOD_CDFT */
         endif
 
   300 CONTINUE !end of loop over grid points
@@ -927,31 +709,6 @@ C aspg+rb, 2007-01-19, df-vxc modularized code
 
 
 
-#ifdef MOD_DNF
-Caspg+rbast, 2006-09-21
-c commented code below is still in use! debugging response with dfvxc
-C
-c     write(LUPRI,'(2(A,E20.12))') 
-c    &     ' DEBUG, integrated number of electrons: '//
-c    &     ' nelect: ',ELCTRN,' electb: ',ELCTRB
-c     write(LUPRI,*) ' a total of ',nskipped,' out of ',npoint,
-c    &               ' integration were skipped while getting b0'
-      IF (DF_FITVXC) THEN ! releasing temp space used for the df code
-C aspg+rb, 2007-01-19
-C aspg: do we really need this for linear response?
-         if (DOLR) then
-            CALL SAVE_MATRIX(WORK(KXLRCVEC),1,NBASISAUX,'LRDFVX')
-          CALL MEMREL('dftdr1-lrvxc',WORK,KLRXCVEC,KLRXCVEC,KFREE,LFREE)
-          CALL MEMREL('dftdr1-lrfc', WORK,KLRCFIT ,KLRCFIT ,KFREE,LFREE)
-         endif
-C aspg+rb, 2007-01-19
-C
-         CALL SAVE_MATRIX(WORK(KXCVEC),1,NBASISAUX,'FITVXC')
-         CALL MEMREL('dftdr1-xcvec',WORK,KXCVEC,KXCVEC,KFREE,LFREE)
-         CALL MEMREL('dftdr1-fitco',WORK,KCFIT ,KCFIT ,KFREE,LFREE)
-      ENDIF
-Caspg+rbast, 2006-09-21
-#endif /* MOD_DNF */
       RETURN
       END
 C  /* Deck reaqua */
@@ -1808,11 +1565,6 @@ C     Transfer dftcom
       CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C
 
-#ifdef MOD_CDFT
-!     transfer parameters for spin/current density response
-      CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-#endif /* MOD_CDFT */
 
 !     broadcast thresholds
       CALL MPI_BCAST(DFTHR0,1,
@@ -1946,11 +1698,6 @@ C     Receive some dftcom variables
       DFTASC = LSEND(6)
 C
 
-#ifdef MOD_CDFT
-!     receive parameters for spin/current density response
-      CALL MPI_BCAST(LBIT_CDFT,1,my_MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-#endif /* MOD_CDFT */
 
 !     broadcast thresholds
       CALL MPI_BCAST(DFTHR0,1,
@@ -2064,46 +1811,3 @@ C
       END
 #endif
 
-#ifdef MOD_DNF
-C /* deck fit_DOEXC */
-      SUBROUTINE fit_DOEXC(ISGGA,VXC_scalar,VXC_vector,GAO,GAO1,
-     &                     VXC_integrals,NDIM)
-C***********************************************************************
-C
-C     Construct the set of integrals of Vxc over fit fucntions,
-C     <V_{xc}|\Chi_i>
-C
-C     Written by Andre Gomes and Radovan Bast
-C     Strasbourg, January 2007
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
-C
-      DIMENSION GAO(*), GAO1(*), VXC_vector(3), VXC_integrals(*)
-      LOGICAL ISGGA
-C
-C ndim should be equal to nbasisaux...
-C
-      IF (ISGGA) THEN
-         DO I = 1, NDIM
-            IOFF1 = I
-            IOFF2 = IOFF1 + NDIM
-            IOFF3 = IOFF2 + NDIM
-            VXC_integrals(I) = VXC_integrals(I)
-     &                       + D1 * VXC_scalar * GAO(I)
-! be careful with the factor below, compared to dalton and to the 
-! evaluation over orbital basis 
-     &                       + D1 * VXC_vector(1) * GAO1(IOFF1)
-     &                       + D1 * VXC_vector(2) * GAO1(IOFF2)
-     &                       + D1 * VXC_vector(3) * GAO1(IOFF3)
-         ENDDO
-      ELSE ! only lda
-         DO I = 1, NDIM 
-            VXC_integrals(I) = VXC_integrals(I)
-     &                       + D1 * VXC_scalar * GAO(I)
-         ENDDO
-      END IF
-      END
-#endif /* MOD_DNF */
