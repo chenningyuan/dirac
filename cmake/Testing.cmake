@@ -5,9 +5,10 @@ set(BUILDNAME
     "Name of build on the dashboard"
     )
 
-# set ctest's own timeout
-#miro: if test is terminated with "DART_TESTING_TIMEOUT", it shows empty field in CDash web;
-# therefore I prefer huge value of this parameter, DART_TESTING_TIMEOUT=99999
+# set ctest's own timeout in secs
+#miro: "DART_TESTING_TIMEOUT" is uncorrectly terminating (not killing all process threads)
+# therefore I prefer huge value of this parameter, DART_TESTING_TIMEOUT=99999, 
+# and proper pam's initiated killing
 set(DART_TESTING_TIMEOUT
     "600"
     CACHE STRING
