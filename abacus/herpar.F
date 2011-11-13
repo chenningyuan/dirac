@@ -34,8 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.38.2.3 $
+C DATE    : $Date: 2004/09/01 08:04:09 $
 C FILE    : herpar.F
 C
 C

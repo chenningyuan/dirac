@@ -1,4 +1,4 @@
-*comdeck units.inc $Revision$ 
+*comdeck units.inc $Revision: 1.3 $ 
 C     
 C     LOGICAL UNITS for MOLUC and DIRLUC
 C     

@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.21.4.1 $
+ * DATE    : $Date: 2004/09/01 08:13:52 $
  * FILE    : main.c
  * DESCR.  : Main program for dirac
  * AUTHOR  : J. Thyssen - 980709

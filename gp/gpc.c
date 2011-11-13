@@ -63,8 +63,8 @@
   */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.9.2.1 $
+ * DATE    : $Date: 2004/09/01 08:10:54 $
  * FILE    : gpc.c
  *
  * frac2i:

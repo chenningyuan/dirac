@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.18.4.1 $
+ * DATE    : $Date: 2004/09/01 08:13:52 $
  * FILE    : ini_mpi.c
  * DESCR.  : Initialize MPI if parallel run
  * AUTHOR  : J. Thyssen - 980713

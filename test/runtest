@@ -1,8 +1,8 @@
 #!/bin/sh
 #
 #
-# VERSION : $Revision$
-# DATE    : $Date$
+# VERSION : $Revision: 1.27.2.3 $
+# DATE    : $Date: 2004/09/01 09:46:18 $
 # FILE    : runtest
 #
 # (c) 1998 J. Thyssen
@@ -98,8 +98,8 @@ while [ $# != 0 ]; do
          ;;
       "version")
          echo $0
-         echo '$Revision$'
-         echo '$Date$'
+         echo '$Revision: 1.27.2.3 $'
+         echo '$Date: 2004/09/01 09:46:18 $'
          exit
          ;;
       "tests")

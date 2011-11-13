@@ -1,4 +1,4 @@
-*comdeck strinp.inc $Revision$ 
+*comdeck strinp.inc $Revision: 1.2 $ 
 *./STRINP/
       COMMON/STRINP/NSTTYP,MNRS1(MXPSTT),MXRS1(MXPSTT),
      &              MNRS3(MXPSTT),MXRS3(MXPSTT),NELEC(MXPSTT),

@@ -1,5 +1,5 @@
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 1.5 $
+! DATE    : $Date: 2004/05/26 13:06:54 $
 !
 !     needs: maxorb.h, maxash.h
 !

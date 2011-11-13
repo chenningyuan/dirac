@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 1.20.2.1 $
+! DATE    : $Date: 2004/08/31 10:00:25 $
 ! FILE    : dcbgen.h
 !
 !*** General information in DIRAC ***

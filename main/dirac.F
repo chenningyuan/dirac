@@ -33,8 +33,8 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C 
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.43.2.4 $
+C DATE    : $Date: 2004/09/01 08:13:50 $
 C FILE    : dirac.F
 C
 C***********************************************************************

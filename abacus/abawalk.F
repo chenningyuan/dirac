@@ -35,8 +35,8 @@ C
 C
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.18.2.1 $
+C DATE    : $Date: 2004/09/01 08:03:54 $
 C FILE    : abawalk.F
 C
 #ifndef PRG_DIRAC

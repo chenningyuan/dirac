@@ -1,7 +1,7 @@
  /*
   *
-  * VERSION : $Revision$
-  * DATE    : $Date$
+  * VERSION : $Revision: 1.2.12.1 $
+  * DATE    : $Date: 2004/08/31 09:55:24 $
   * FILE    : title.h
   * DESCR.  : Header 
   *

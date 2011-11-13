@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.7 $
+C DATE    : $Date: 2003/02/06 09:16:54 $
 C FILE    : inpt.inc
 C
 C MPI information for RELCCSD

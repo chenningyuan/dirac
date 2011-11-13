@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 1.8 $
+! DATE    : $Date: 2004/05/26 13:06:55 $
 ! FILE    : gencon.h
 !
 !   - Parameter for maximum number of functions in a block:

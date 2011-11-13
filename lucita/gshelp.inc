@@ -1,4 +1,4 @@
-*comdeck gshelp.inc $Revision$ 
+*comdeck gshelp.inc $Revision: 1.2 $ 
 *  Vectors required for using GSLIST/DAFILE in rdiph, where
 *  JOBIPH is read. Info is extracted for LUCITA.
 *

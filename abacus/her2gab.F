@@ -34,8 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.30.4.2 $
+C DATE    : $Date: 2004/09/01 08:04:04 $
 C FILE    : her2gab.F
 C
 C/* Deck gabdrv */

@@ -35,8 +35,8 @@ C
 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.25.4.1 $
+C DATE    : $Date: 2004/09/01 08:17:52 $
 C FILE    : ccintm.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

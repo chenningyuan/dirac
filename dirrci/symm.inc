@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.3.34.1 $
+C DATE    : $Date: 2004/09/01 10:35:38 $
 C FILE    : dirrci/symm.inc
 C
       PARAMETER (MXREP=32)

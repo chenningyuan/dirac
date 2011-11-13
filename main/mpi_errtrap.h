@@ -1,7 +1,7 @@
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.2 $
+ * DATE    : $Date: 2002/11/20 15:55:08 $
  * FILE    : mpi_errtrap.h
  * DESCR.  : Declare errhandler-type
  * AUTHOR  : J. Thyssen - 980709

@@ -1,4 +1,4 @@
-*comdeck crun.inc $Revision$ 
+*comdeck crun.inc $Revision: 1.2 $ 
 */CRUN/ : Defines RUN 
       character*3 DOUGRP
       CHARACTER*6 PROPER,ENVIRO

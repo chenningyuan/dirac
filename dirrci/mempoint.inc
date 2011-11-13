@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.2.46.1 $
+C DATE    : $Date: 2004/09/01 10:35:37 $
 C FILE    : dirrci/mempoint.inc
 C
       COMMON/IPOINT/ITR ,ITI ,IIK ,IIL ,ITIR,ITII, M1 ,M2,

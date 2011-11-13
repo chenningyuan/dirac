@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.4 $
+C DATE    : $Date: 2003/04/28 15:23:12 $
 C FILE    : dcbexp.h
 C
 C*****************************************************************************

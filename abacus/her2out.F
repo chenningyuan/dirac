@@ -34,8 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.19.4.2 $
+C DATE    : $Date: 2004/09/01 08:04:05 $
 C FILE    : her2out.F
 C
 C

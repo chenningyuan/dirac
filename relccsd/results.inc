@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.4 $
+C DATE    : $Date: 2003/02/06 09:16:55 $
 C FILE    : results.inc
 C
 C     Register the status of the independent parts of the code

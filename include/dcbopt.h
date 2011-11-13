@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 1.13 $
+! DATE    : $Date: 2004/05/26 13:06:54 $
 ! FILE    : dcbopt.h
 !
 !*** 2nd order opt. ***

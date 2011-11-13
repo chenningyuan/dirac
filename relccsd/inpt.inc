@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.12 $
+C DATE    : $Date: 2004/06/11 07:59:15 $
 C FILE    : inpt.inc
 C
       PARAMETER (MAXOP=15,MAXFR=25)

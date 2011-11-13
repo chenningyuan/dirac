@@ -1,7 +1,7 @@
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.4 $
+ * DATE    : $Date: 2002/11/20 15:55:07 $
  * FILE    : dirac.h
  * DESCR.  : Header file for Dirac subroutine
  * AUTHOR  : J. Thyssen - 980709

@@ -1,4 +1,4 @@
-*comdeck lucinp.inc $Revision$ 
+*comdeck lucinp.inc $Revision: 1.2 $ 
 *./LUCINP/
       INTEGER PNTGRP,EXTSPC
       COMMON/LUCINP/PNTGRP,NIRREP,NSMCMP,MAXML,MAXL,

@@ -35,8 +35,8 @@ C
 C
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.11.4.1 $
+C DATE    : $Date: 2004/09/01 08:03:53 $
 C FILE    : abatro.F
 C
 C  /* Deck troinp */

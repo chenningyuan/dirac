@@ -1,7 +1,7 @@
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.2.12.1 $
+ * DATE    : $Date: 2004/08/31 12:57:26 $
  * FILE    : patchlevel.h
  *
  */

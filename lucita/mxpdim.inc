@@ -1,4 +1,4 @@
-*comdeck mxpdim.inc $Revision$ 
+*comdeck mxpdim.inc $Revision: 1.2 $ 
 *
       COMMON /CMXPWRD/ MXPWRD
 *

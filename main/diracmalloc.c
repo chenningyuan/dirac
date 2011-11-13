@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.13.12.1 $
+ * DATE    : $Date: 2004/09/01 08:13:51 $
  * FILE    : diracmalloc.c
  * DESCR.  : Allocate memory and return pointer
  *           This subroutine contains all the system-dependent stuff

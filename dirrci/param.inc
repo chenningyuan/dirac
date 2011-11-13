@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.4.46.1 $
+C DATE    : $Date: 2004/09/01 10:35:38 $
 C FILE    : dirrci/param.inc
 C
 C

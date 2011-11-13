@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.5.14.1 $
+C DATE    : $Date: 2004/09/01 10:35:37 $
 C FILE    : dirrci/goscom.inc
 C
 C     DEFINITION PARAMETERS GOSCIP

@@ -1,5 +1,5 @@
 C
-C$Id$
+C$Id: past.h,v 1.1 2002/08/20 15:49:30 tsaue Exp $
 C
       LOGICAL       PASTWO, PASORT, PASDIP, PASONE, PASRES, PASREL,
      *              PASDPR, PASCRS, PASCZR, PASCTR, PASCRL, PASMAG,

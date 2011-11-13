@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 1.9 $
+! DATE    : $Date: 2004/05/26 13:06:54 $
 ! FILE    : dcbkrmc.h
 !
 !*** KR-MCSCF calculations ***

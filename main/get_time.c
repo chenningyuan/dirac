@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.6.12.1 $
+ * DATE    : $Date: 2004/09/01 08:13:52 $
  * FILE    : get_time.c
  * DESCR.  : Get timing
  * AUTHOR  : J. Thyssen - 980716, 

@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.5 $
+C DATE    : $Date: 2003/02/06 09:16:55 $
 C FILE    : eqns.inc
 C
       COMMON/CCEQNS/EQNS

@@ -34,8 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.21.4.1 $
+C DATE    : $Date: 2004/09/01 08:04:07 $
 C FILE    : herdrv.F
 C
 C

@@ -1,7 +1,7 @@
  /*
   *
-  * VERSION : $Revision$
-  * DATE    : $Date$
+  * VERSION : $Revision: 1.4 $
+  * DATE    : $Date: 2004/02/19 12:02:16 $
   * FILE    : logo.h
   * DESCR.  : DIRAC - logo , generated from gif-picture by
   *           J. Thyssen

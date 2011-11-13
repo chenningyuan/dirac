@@ -35,8 +35,8 @@ C
 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.45.2.1 $
+C DATE    : $Date: 2004/09/01 08:08:47 $
 C FILE    : dirgp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

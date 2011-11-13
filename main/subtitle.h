@@ -1,7 +1,7 @@
  /*
   *
-  * VERSION : $Revision$
-  * DATE    : $Date$
+  * VERSION : $Revision: 1.11.12.7 $
+  * DATE    : $Date: 2004/09/01 10:40:17 $
   * FILE    : subtitle.h
   * DESCR.  : Version and title of DIRAC
   *

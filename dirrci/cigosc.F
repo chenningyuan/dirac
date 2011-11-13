@@ -34,8 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.19.2.1 $
+C DATE    : $Date: 2004/09/01 08:09:37 $
 C FILE    : cigosc.F
 C
       SUBROUTINE PAMGOS(CI,MAXCORE,NELECT)

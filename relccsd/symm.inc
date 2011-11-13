@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.16 $
+C DATE    : $Date: 2003/08/25 14:54:04 $
 C FILE    : symm.inc
 C
 C     The essential double group symmetry information.

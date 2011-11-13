@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.11.12.1 $
+ * DATE    : $Date: 2004/09/01 08:13:53 $
  * FILE    : pr_timing.c
  * DESCR.  : Print timing statistic to stdout
  * AUTHOR  : J. Thyssen - 980713 

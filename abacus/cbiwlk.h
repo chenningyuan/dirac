@@ -1,5 +1,5 @@
 C
-C$Id$
+C$Id: cbiwlk.h,v 1.1 2002/08/20 15:49:28 tsaue Exp $
 C
       LOGICAL WFPRED, REJECT, KEEPSY, VIBCNV,
      *        START, DOREPW, IMAGE, STRICT, NOORTH, NATCON, V3CAL,

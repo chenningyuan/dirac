@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.6 $
+C DATE    : $Date: 2003/02/06 09:16:55 $
 C FILE    : param.inc
 C
       REAL*8 ACCUR

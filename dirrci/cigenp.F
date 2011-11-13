@@ -34,8 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.12.12.1 $
+C DATE    : $Date: 2004/09/01 08:09:36 $
 C FILE    : cigenp.F
 C
 C

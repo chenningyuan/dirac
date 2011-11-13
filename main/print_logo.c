@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.10.4.1 $
+ * DATE    : $Date: 2004/09/01 08:13:53 $
  * FILE    : pr_logo.c
  * DESCR.  : Print logo if master node
  * AUTHOR  : J. Thyssen - 980713

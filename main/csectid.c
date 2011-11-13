@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.4.12.1 $
+ * DATE    : $Date: 2004/09/01 08:13:50 $
  * FILE    : csectid.c
  * DESCR.  : Return nicely formatted character string
  *           C-version of gp/gpsaue.F:SECTID

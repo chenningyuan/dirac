@@ -34,8 +34,8 @@
 */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
+ * VERSION : $Revision: 1.4.12.1 $
+ * DATE    : $Date: 2004/09/01 08:13:51 $
  * FILE    : exec_dirac.c
  * DESCR.  : Execute Dirac or Dirnod
  * AUTHOR  : J. Thyssen - 980713 

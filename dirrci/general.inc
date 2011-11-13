@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.3.14.1 $
+C DATE    : $Date: 2004/09/01 10:35:36 $
 C FILE    : dirrci/general.inc
 C
       COMMON/CONTROL/MDET,NDET,MVEC,NVEC,NROOTS,MAXITER,ITER,NSEL(N8),

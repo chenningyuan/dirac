@@ -34,7 +34,7 @@ C...      http://dirac.chem.sdu.dk
 C 
 C
 C
-C$Id$
+C$Id: abaop2.F,v 1.5.4.1 2004/09/01 08:03:49 cjacob Exp $
 C
 C#include "single.h"
 #ifdef UNDEF

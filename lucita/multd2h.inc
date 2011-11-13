@@ -1,4 +1,4 @@
-*comdeck multd2h.inc $Revision$ 
+*comdeck multd2h.inc $Revision: 1.2 $ 
       DIMENSION MULTD2H(8,8)
       DATA MULTD2H/1,2,3,4,5,6,7,8,
      *             2,1,4,3,6,5,8,7,

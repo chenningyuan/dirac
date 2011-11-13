@@ -207,7 +207,7 @@ opt=
 echo
 echo '   Configuring the DIRAC Makefile.config and pam run script'
 echo
-echo '   configure $Revision$'
+echo '   configure $Revision: 1.17.2.30 $'
 #
 #
 #

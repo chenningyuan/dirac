@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 1.7 $
+C DATE    : $Date: 2003/08/29 16:23:29 $
 C FILE    : files.inc
 C
 C     Files to be used in RELCCSD
