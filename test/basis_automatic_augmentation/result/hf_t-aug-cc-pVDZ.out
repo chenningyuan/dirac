@@ -1,0 +1,12 @@
+
+ =========================================================================
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : larry
+ Operating system  : Linux 2.6.28-15-generic
+ Machine           : i686
+ Run               : Parallel
+ Last compilation  : 11:56:40 Oct  5 2009 (by bast@larry:/home/bast/dirac/rHEAD_gfortran_gcc_a_mpi)
+ FORTRAN compiler  : /home/bast/openmpi-1.3.2/bin/mpif90 -g -fno-range-check -O3 -ffast-math -funroll-loops -fcray-pointer -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN 433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MPI -DVAR_MFDS -DVAR_MPI2 -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+$ERROR 1.0e-4
+$SIGNCHECK
+   Electronic energy                        :    -128.49633329097912

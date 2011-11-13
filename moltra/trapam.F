@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : trapam.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -38,6 +33,9 @@ C
 C     Called from main/dirac.F if DOTRA=.true.
 C
 C***********************************************************************
+
+      Use moltra_labeling
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -93,7 +91,7 @@ C
           NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -104,6 +102,9 @@ C
         ENDDO
       ENDDO
 C
+C
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
+
       KFRSAV = KFREE
 C
 C     Print section
@@ -186,6 +187,23 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+#ifdef MOD_KRMC
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+
+      IF (TOBEK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            IF (IPRTRA .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     &              ' (PAMTRA)  Orbitals read from' //
+     &              ' label NEWORB on file KRMCSCF'
+            END IF
+         END IF
+         CLOSE (LUKRMC)
+      ELSE
+#endif /* MOD_KRMC */
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
          IF (.NOT.TOBE) THEN
             WRITE(LUPRI,'(/A)')
@@ -197,6 +215,9 @@ C
      &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
             CLOSE(LUCOEF,STATUS='KEEP')
          END IF
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Select the set that we need
 C
@@ -258,7 +279,7 @@ C
          ELSE
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                  IFRP,NSPC(IFRP,0),WORK(KFREE),LFREE)
+     &                  IFRP,NSPC(IFRP,0))
             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
@@ -337,6 +358,22 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+#ifdef MOD_KRMC
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      IF (TOBEK) THEN
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            IF (IPRTRA .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     &              ' (PAMTRA)  Orbitals read from' //
+     &              ' label NEWORB on file KRMCSCF'
+            END IF
+         END IF
+         CLOSE (LUKRMC)
+      ELSE
+#endif /* MOD_KRMC */
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
          IF (.NOT.TOBE) THEN
             WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
@@ -346,6 +383,9 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Select the set that we need
 C
@@ -362,7 +402,10 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
-      IF (PRPTRA) CALL TRAPRP(WORK,KFREE,LFREE)
+
+!.s/sya,2007.0907/ SK - 30-11-2009
+      IF (PRPTRA .OR. PRPSYA ) CALL TRAPRP(WORK,KFREE,LFREE)
+!.q
 C
       CALL FLSHFO(LUPRI)
 C
@@ -407,6 +450,11 @@ C
 C
       CALL FLSHFO(LUPRI)
 
+
+!#ifdef MOD_HSFS
+!     ... interface from HSFS module
+!      CALL HSFS_STUFF(WORK,LWORK)
+!#endif
 
       CALL QEXIT('PAMTRA')
       RETURN
@@ -517,7 +565,7 @@ C
         NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MP2_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,1))
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1)   = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
@@ -542,7 +590,7 @@ C
         NSTR(IFRP,0,2) = - 1
         CALL  NUMLST(MP2_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+     &               IFRP,NSTR(IFRP,0,2))
         CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
@@ -607,10 +655,10 @@ C
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &            DHFEMP,14,WORK,KFREE,LFREE)
+     &            ESCF,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
-     &  'Coefficients imported. Total DHF energy:', DHFEMP
+     &  'Coefficients imported. Total DHF energy:', ESCF
 C
 C     Select the set that we need
 C
@@ -692,9 +740,10 @@ C
 C     Print MP2 energy
 C     ----------------
 C
-      WRITE(LUPRI,'(/15X,A)') '######## Final MP2 energy. ########'
-      WRITE(LUPRI,'(15X,A,F23.14,4X,A)') '####', EMP2, '####'
-      WRITE(LUPRI,'(15X,A,/)') '###################################'
+      WRITE(LUPRI,1000) 
+      WRITE(LUPRI,1001) ESCF
+      WRITE(LUPRI,1002) EMP2
+      WRITE(LUPRI,1003) ESCF+EMP2
       CALL FLSHFO(LUPRI)
 C
 C     Recover information from DCBTRA
@@ -709,6 +758,10 @@ C
       CALL QEXIT('PSIMP2')
 C
       RETURN
+ 1000 FORMAT (/' Overview of calculated energies')
+ 1001 FORMAT('@ SCF energy :',T40,F25.15)
+ 1002 FORMAT('@ MP2 correlation energy :',T40,F25.15)
+ 1003 FORMAT('@ Total MP2 energy :',T40,F25.15)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck lagtau */
@@ -782,7 +835,7 @@ C
         NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MPR_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,1))
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1) = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
@@ -815,7 +868,7 @@ C
         NSTR(IFRP,0,2) = - 1
         CALL NUMLST(MPR_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,2))
         CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
@@ -848,7 +901,7 @@ C
         NSTR(IFRP,0,3) = - 1
         CALL NUMLST(MPR_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,3),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,3))
         CALL ORBCNT(WORK(KVEC(IFRP,3)),NSTR(IFRP,0,3),IFRP,
      &              NSTR(IFRP,2,3),NSTR(IFRP,1,3))
         NSTR(IFRP,0,3)   = NSTR(IFRP,1,3) + NSTR(IFRP,2,3)
@@ -884,7 +937,7 @@ C
         NSTR(IFRP,0,4) = - 1
         CALL NUMLST(MPR_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,4),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,4))
         CALL ORBCNT(WORK(KVEC(IFRP,4)),NSTR(IFRP,0,4),IFRP,
      &              NSTR(IFRP,2,4),NSTR(IFRP,1,4))
         NSTR(IFRP,0,4)   = NSTR(IFRP,1,4) + NSTR(IFRP,2,4)
@@ -1197,6 +1250,11 @@ C     Set up symmetry packing information.
 C
       CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
       CALL GISPCK(NSPCK,ISPCK,0,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
+C.....Create pointer array INDX:
+C     INDX(1,INDA) : Position of function in shell
+C     INDX(2,INDA) : Irreducible representation of function
+C     INDX(3,INDA) : Position of function within this particular irrep
+C.....MAXINSH is the maximum numbers of functions in a shell
       MXINSH = NINSH(0,-1,WORK(KINDX),IPRINT)
 C
 C     Define the MS integral types that we are going to make
@@ -1232,7 +1290,7 @@ C
 C
 C     Prepare for screening
 C
-      IF(SCRTRA.GT.D0) THEN
+      IF(SCRTRA .GT. 0.0d0) THEN
         CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
      &              WORK(KQ(1,1)),WORK(KQ(1,2)),
      &              WORK(KQ(1,3)),WORK(KQ(1,4)),
@@ -1272,14 +1330,14 @@ C
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.5) THEN
           CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
       ELSEIF (ISTRAT.EQ.6) THEN
 c..not yet activated
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
@@ -1771,7 +1829,7 @@ C
      &            INDXAB,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
      &            TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,
      &            IDUMMY,I2TYP,IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY,DINTSKP,
-     &            .TRUE.,DUMMY,DUMMY)
+     &            .TRUE.,.false.,DUMMY,DUMMY)
 C
 C     Finish buffer file if necessary
 C
@@ -2682,7 +2740,7 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.3) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: Screening matrix ',FREP(I)
           CALL OUTPUT(DRIJ(1,1,I),1,NSYMBL,1,NSYMBL,
@@ -2741,20 +2799,28 @@ C
           ENDDO
           CALL CFSORT(CAO,WORK(KCBF),NSEL,IFRP,NFBAS(IFRP,0))
         ELSE
-          IOFF = ISEL+1
+          IOFF = ISEL
           JOFF = 1
           DO IZ = 1,NZ
             CALL DCOPY(NDSEL,Q(IOFF),1,CAO(JOFF),1)
             IOFF = IOFF + NDVEC
             JOFF = JOFF + NDSEL
           ENDDO
+C.........expand coefficients to quaternion format
           CALL CFSORT(WORK(KCBF),CAO,NSEL,IFRP,NFBAS(IFRP,0))
+C.........transform to AO-basis
           CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),NTBAS(0),
      &                NSEL*4,IPRINT)
         ENDIF
         CALL MEMREL('GETCAO.AO',WORK,KCBF,KCBF,KFREE,LFREE)
       ENDIF
 C
+      IF(IPRINT.GE.6) THEN
+        WRITE(LUPRI,'(A,I5)')
+     &   '* GETCAO: Coefficients in AO-basis. Fermion ircop: ',IFRP
+            CALL PRQMAT(CAO,NFBAS(IFRP,0),NSEL,NFBAS(IFRP,0),NSEL,
+     &                  4,IQDEF,LUPRI)
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2842,6 +2908,8 @@ C/* Deck pr4scr */
 C***********************************************************************
 C
 C     Prepare for 4-index screening
+C     NSYMBL
+C      - set in PAOVE2, called by PAOVEC
 C
 C     Written by T.Saue Sep 8 1998
 C
@@ -2859,6 +2927,8 @@ C
 C
 C     Initialize
 C
+C     NSYMBL is the total number of blocks, 
+C     degeneracy of centers into account
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
       CALL DZERO(DINTSKP,8)
@@ -2875,7 +2945,7 @@ C
 C
 C     Get screening matrices
 C
-      CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
+      CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,WORK(KGAB),
      &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
      &                  ISAME,IPRINT)
 C
@@ -2883,7 +2953,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck pr4sc1 */
-      SUBROUTINE PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+      SUBROUTINE PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABAO,
      &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
      &                  ISAME,IPRINT)
 C***********************************************************************
@@ -2903,15 +2973,14 @@ C
 C
       LOGICAL SAME
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
-     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
+     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*)
       DIMENSION GABAO(*)
 C
 C     Initialize
 C
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
-C      CALL DZERO(DINTSKP,8)
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.3) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: GAB-matrix ',FREP(I)
           CALL OUTPUT(GABAO,1,NSYMBL,1,NSYMBL,
@@ -3497,7 +3566,6 @@ C
      &              IPQTOQ(1,0),LUPRI)
       ENDIF
 
-CTROND      CALL DZERO(FMO,N2ORBXQ)
       DO 10 I = 1,NFSYM
         N2FMO = NFMO(1,I)*NFMO(2,I)
         IF(N2FMO.EQ.0) GOTO 10
@@ -3532,6 +3600,8 @@ C     Based on PAMTRA
 C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
+      Use moltra_labeling
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3658,6 +3728,8 @@ C
         ENDDO
       ENDDO
 C
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
+
       KTEMP = KFREE
       IF(.NOT.SKPONE) THEN
 C
@@ -3839,6 +3911,369 @@ C
 C
       RETURN
       END
+C/* Deck SY_COSCI */
+      SUBROUTINE SY_COSCI(WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine for 4-index transformation for
+C     resolution of electronic states within open-shell manifold
+C
+C     Based on RESOLV
+C     Written by T.Saue Jan 18 1999
+!     Modified by sya, Jan 23, 2007
+!       SYA separated Transformation routine from COS_CI.
+!
+!     Called by : PAMPSI (main/dirac.F)
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#if defined (VAR_MPI)
+#include "infpar.h"
+      INCLUDE 'mpif.h'
+#endif
+C
+#include "maxorb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbres.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+!
+!     ...SYA_MAXE
+#include "cossya.h"
+      CHARACTER DAYTID*24,SECTID*12,CPUTID*12
+      LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
+      DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+     &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
+CTROND: to fix !
+      DIMENSION MINE(16),MAXE(16),NGASO(256)
+!----------------------------------------------------------------------
+C
+!@m   CALL QENTER('RESOLV')
+      CALL QENTER('SY_COSCI')
+#include "memint.h"
+      KFRSAV = KFREE
+!@m   CALL TITLER('Resolution of open-shell states','*',120)
+      CALL TITLER('Stand-alone COS_CI','*',120)
+C
+C     Determine number of active electrons
+C
+      IF (NAELEC.EQ.0) THEN
+!@m      WRITE(LUPRI,'(A)')
+!@m  &   '*WARNING: No open-shell electrons, no states to resolve!'
+        WRITE(LUPRI,'(A)')
+     &    '*WARNING: No open-shell electrons, no states to sy_cosci!'
+!.s/sya,2007.06.14
+!#       GOTO 9999
+        IF( NAELEC .EQ. 0 ) THEN
+          IACEL = 0
+          DO I = 1, SYA_NOPEN
+            IACEL = IACEL + SYA_IELC(I)
+          END DO
+          IF( IACEL .NE. 0 ) THEN
+            NAELEC = IACEL
+            WRITE(LUPRI,"(
+     &        '*WARNING: NALEC has been calculated from SYA_IELC: ',
+     &        I5)") IACEL
+          ELSE
+            DO I = 1, SYA_NOPEN
+              IACEL = MAX(IACEL,SYA_MAXE(I))
+            END DO
+            NAELEC = IACEL
+            WRITE(LUPRI,"(
+     &        '*WARNING: NALEC has been calculated from SYA_MAXE: ',
+     &        I5)") IACEL
+          END IF
+        END IF
+!.q
+      END IF
+      IND = 1
+      NGAS = NOPEN
+      NSYMRP = 2*NFSYM
+      DO IOPEN = 1,NOPEN
+        ITEMP = 0
+        DO IFRP = 1,NFSYM
+          NGASO(IND) = NACSH(IFRP,IOPEN)
+          NGASO(IND+1) = NGASO(IND)
+          IND = IND + 2
+          ITEMP = ITEMP + NACSH(IFRP,IOPEN)
+        ENDDO
+        MINE(IOPEN) = ITEMP
+        MAXE(IOPEN) = MINE(IOPEN)
+      ENDDO
+C
+C     Check for necessary files:
+C       MRCONEE - one-electron integrals and other information
+C       MDCINT  - two-electron integrals
+C
+      INQUIRE(FILE='MRCONEE',EXIST=SKPONE)
+      IF(SKPONE) THEN
+        WRITE(LUPRI,'(A)')
+     & '*WARNING: MRCONEE found. Skipping 2-index transformation.'
+      ENDIF
+      INQUIRE(FILE='MDCINT',EXIST=SKPTWO)
+      IF(SKPTWO) THEN
+        WRITE(LUPRI,'(A)')
+     & '*WARNING: MDCINT found. Skipping 4-index transformation.'
+      ENDIF
+      IF(SKPONE.AND.SKPTWO) GOTO 10
+C
+C     Transfer information from DCBRES to DCBTRA
+C     ==========================================
+C
+      TRANOP = NOPAIR
+      NOPAIR = .TRUE.
+      SCRBUF = SCRTRA
+      SCRTRA = SCRRES
+      IPRBUF = IPRTRA
+      IPRTRA = IPRRES
+      ISTBUF = ISTRAT
+      ISTRAT = ISTRES
+      THRBUF = THROUT
+      THROUT = RESOUT
+C     number of double quaternionic classes for strategy 3 and 4
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
+C
+C     Set up index arrays for active orbitals;
+C     =======================================
+C
+      NQT  = 0
+      ISAME(1) = 1
+      NSTRT(1) = 0
+      DO IFRP = 1,NFSYM
+        CALL MEMGET('INTE',KVEC(IFRP,1),NASH(IFRP),WORK,KFREE,LFREE)
+        CALL INDARR(WORK(KVEC(IFRP,1)),NISH(IFRP),NASH(IFRP),IPRINT)
+        NSTR(IFRP,1,1) = NASH(IFRP)
+        NSTR(IFRP,2,1) = 0
+        NSTR(IFRP,0,1) = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
+        NDMOQR(1,IFRP,1) = NFBAS(IFRP,0)
+        NDMOQR(2,IFRP,1) = NASH(IFRP)
+        ICMOQR(IFRP,1) = NQT + 1
+        NSTRT(1) = NSTRT(1) +  NSTR(IFRP,0,1)
+C
+        NQ(IFRP) = NFBAS(IFRP,0)*NASH(IFRP)*NZ
+        NQT      = NQT + NQ(IFRP)
+        CALL MEMGET('INTE',KIBE(IFRP,1),NSTR(IFRP,0,1),WORK,KFREE,LFREE)
+      ENDDO
+      CALL MEMGET('REAL',KQ(1,1),NQT,WORK,KFREE,LFREE)
+      KQ(2,1) = KQ(1,1) + NQ(1)
+      CALL MEMGET('REAL',KE(1,1),NSTRT(1),WORK,KFREE,LFREE)
+      KE(2,1) = KE(1,1) + NSTR(1,0,1)
+C
+C     Copy for indices 2..4
+C
+      DO I = 2,4
+        ISAME(I) = 1
+        DO IFRP = 1,NFSYM
+          KQ(IFRP,I)     = KQ(IFRP,1)
+          KE(IFRP,I)     = KE(IFRP,1)
+          KIBE(IFRP,I)   = KIBE(IFRP,1)
+          NSTR(IFRP,0,I) = NSTR(IFRP,0,1)
+          NSTR(IFRP,1,I) = NSTR(IFRP,1,1)
+          NSTR(IFRP,2,I) = NSTR(IFRP,2,1)
+          NDMOQR(1,IFRP,I) = NDMOQR(1,IFRP,1)
+          NDMOQR(2,IFRP,I) = NDMOQR(2,IFRP,1)
+          ICMOQR(IFRP,I)   = ICMOQR(IFRP,1)
+        ENDDO
+      ENDDO
+C
+      KTEMP = KFREE
+      IF(.NOT.SKPONE) THEN
+C
+C       Set up index arrays for core orbitals
+C       =======================================
+        NQT  = 0
+        DO IFRP = 1,NFSYM
+          CALL MEMGET('INTE',KVEC(IFRP,2),NISH(IFRP),WORK,KFREE,LFREE)
+          CALL INDARR(WORK(KVEC(IFRP,2)),0,NISH(IFRP),IPRINT)
+          NSPC(IFRP,1) = NISH(IFRP)
+          NSPC(IFRP,2) = 0
+          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
+          NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
+          NDMOQC(2,IFRP,1) = NISH(IFRP)
+          ICMOQC(IFRP,1) = NQT + 1
+          NQ(IFRP) = NFBAS(IFRP,0)*NISH(IFRP)*NZ
+          NQT      = NQT + NQ(IFRP)
+          KE(IFRP,2) = KE(IFRP,1)
+        ENDDO
+        CALL MEMGET('REAL',KQC(1),NQT,WORK,KFREE,LFREE)
+        KQC(2) = KQC(1) + NQ(1)
+        NSTRT(2) = NSTRT(1)
+      ENDIF
+C
+      WRITE(LUPRI,'(A,I5)') '- Number of active electrons:',NAELEC
+      WRITE(LUPRI,'(A)')    '- Active orbitals:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,1)),0,0,0,NSTR)
+      ENDDO
+      WRITE(LUPRI,'(A)')    '- Core orbitals:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,2)),0,0,0,NSPC)
+      ENDDO
+C
+C     Allocate buffer spaced for coefficients AND core Fock matrix
+C
+      CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+C
+C     Get all coefficients and eigenvalues
+C     ====================================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+!@m      WRITE(LUPRI,'(/A)')
+!@m  &      'RESOLV ERROR: MO coefficient file not present'
+         WRITE(LUPRI,'(/A)')
+     &      'SY_COSCI ERROR: MO coefficient file not present'
+         CALL QUIT('RESOLV: No MO coefficients !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14,WORK,KFREE,LFREE)
+         CLOSE(LUCOEF,STATUS='KEEP')
+      ENDIF
+C
+C     Select active orbitals
+C     ======================
+C
+!@d   DO IFRP = 1, NFSYM
+!@d     CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
+!@d  &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
+!@d  &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
+!@d  &       NFBAS(IFRP,0),NORB(IFRP))
+!@d     CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
+!@d  &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
+!@d     CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+!@d  &                WORK(KIBE(IFRP,1)),WORK(KVEC(IFRP,1)),
+!@d  &                NSTR(IFRP,2,1),NSTR(IFRP,1,1))
+!@d   ENDDO
+!@d   IF(.NOT.SKPONE) THEN
+C
+C       Select core orbitals
+C       ======================
+C
+!@d     DO IFRP = 1, NFSYM
+!@d       CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
+!@d  &         IFRP,WORK(KQC(IFRP)),NSPC(IFRP,0),WORK(KVEC(IFRP,2)),
+!@d  &         NSPC(IFRP,2),NSPC(IFRP,1),
+!@d  &         NFBAS(IFRP,0),NORB(IFRP))
+!@d     ENDDO
+C
+C       2-index transformation
+C       ======================
+C
+!@d     CALL TRAHI(IPRRES,2)
+C
+C       Get hold of the slaves if we run in parallel.
+C        ( ITASK = 1 for Fock matrices )
+C
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+C
+C       Transform core-fock matrix to active MO basis
+C       ---------------------------------------------
+C
+!@d     CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
+!@d  &              WORK(KQC(1)),NDMOQR,ICMOQR,NSTR(1,0,1),
+!@d  &              NDMOQC,ICMOQC,NSPC(1,0),
+!@d  &              INTRES,WORK,KFREE,LFREE)
+C
+C       Write MOLFDIR file MRCONEE
+C       --------------------------
+C
+!@d     CALL MEMGET('REAL',KORBE,NSTRT(1),WORK,KFREE,LFREE)
+!@d     CALL MEMGET('INTE',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
+C
+!@d     CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
+!@d  &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
+!@d  &              NSPC,NSTR,NSTRT,IPRRES,
+!@d  &              WORK,KFREE,LFREE)
+C
+C       Release the slaves if we run in parallel.
+C        ( ITASK = -1 )
+C
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+!@d   ENDIF
+C
+C     Release buffer memory
+C     ---------------------
+C
+!@d   CALL MEMREL('RESOLV.buf',WORK,KFRSAV,KTEMP,KFREE,LFREE)
+C
+C     4-index transformation
+C     ======================
+C
+!@d   IF(.NOT.SKPTWO) THEN
+!@d     CALL GETTIM(CPU1,WALL1)
+!@d     CALL TRAHI(IPRRES,3)
+C
+C       Call driver for 4-index transformation
+C       --------------------------------------
+C
+!@d     CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
+!@d  &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
+!@d  &              .TRUE.,.FALSE.,INTRES)
+C
+C        Print timing information
+C
+!@d     CALL GETTIM(CPU2,WALL2)
+!@d     WALL   = WALL2 - WALL1
+!@d     CPU    = CPU2 - CPU1
+!@d     CPUTID = SECTID(WALL)
+!@m     WRITE(LUPRI,'(//A,A12)')
+!@m  &      ' Total wall time used in RESOLV :',CPUTID
+!@d     WRITE(LUPRI,'(//A,A12)')
+!@d  &      ' Total wall time used in SY_COSCI :',CPUTID
+!@d     CPUTID = SECTID(CPU)
+!@m     WRITE(LUPRI,'(A,A12)')
+!@m  &      ' Total CPU  time used in RESOLV :',CPUTID
+!@d     WRITE(LUPRI,'(A,A12)')
+!@d  &      ' Total CPU  time used in SY_COSCI :',CPUTID
+C
+!@d     CALL GTINFO(DAYTID)
+!@d     WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
+!@d   ENDIF
+C
+C     Release all memory
+C     ------------------
+C
+!@m   CALL MEMREL('RESOLV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+!@d   CALL MEMREL('SY_COSC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+C     Do full CI in open-shell manifold
+C     =================================
+C
+ 10   CONTINUE
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+!@d   IERR = 0
+      CALL ASNUNIT(5,'-Yon',IERR)
+      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
+#endif
+      OPEN (5,FILE='DIRAC.INP')
+!.s/sya,2007.02.04
+!#    CALL GOSRES(WORK(KFREE),LFREE)
+      CALL SYA_GOSRES(WORK(KFREE),LFREE)
+!.q
+      CLOSE(5,STATUS='KEEP')
+C
+C     Restore DCBTRA information
+C
+      NOPAIR = TRANOP
+      SCRTRA = SCRBUF
+      IPRTRA = IPRBUF
+      ISTRAT = ISTBUF
+      THROUT = THRBUF
+C
+!@m 9999 CALL QEXIT('RESOLV')
+ 9999 CALL QEXIT('SY_COSCI')
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck indarr */
       SUBROUTINE INDARR(IVEC,IOFF,NVEC,IPRINT)
@@ -3909,7 +4344,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C/* Deck TRAPARI*/
       SUBROUTINE TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &                   KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &                   KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher (based on HERNOD) August 1997
@@ -3939,7 +4374,6 @@ C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),
      &          WORK(*)
-      DIMENSION DRIJ(*),GABRAO(*)
       LOGICAL NODV,NOPV,NOCONT,RETUR,NEWGEO,FINISH
 C
       CALL QENTER('TRAPARI')
@@ -3986,7 +4420,7 @@ C
 C        I2TYP will defined at each node
          CALL SDINIT(DUMMY,NDMAT,IDUMMY,IDUMMY,ITYPE,MAXDIF,IDUMMY,
      &               NODV,NOPV,NOCONT,TKTIME,RTNTWO,IDUMMY,
-     &               IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY)
+     &               IDUMMY,SCRTRA,WORK(KGAB),WORK(KDRIJ),DUMMY)
 C
       ELSE
 C
@@ -3997,15 +4431,15 @@ C
          CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &               IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &               TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCRTRA,
-     &               KFMAT,KDMAT,KIFC,KIRD,GABRAO,DRIJ,KDMRSO)
+     &               KFMAT,KDMAT,KIFC,KIRD,KGAB,KDRIJ,KDMRSO)
       ENDIF
 C
 C        *****************************************************
 C        ***** Send or receive DIRAC initialization data *****
 C        *****************************************************
+         CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
+     &               WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,LMP2)
 C
-      CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
-     &            GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     Do not call MEMREL since the variable size arrays are represented
 C     as pointers when the routine is called from a slave
@@ -4094,7 +4528,7 @@ C
 C     dcbham.h
 C     --------
 C
-      NUMELM = NDCLHAM
+      NUMELM = ICOMMSIZE(I1_DCLHAM,I2_DCLHAM)
       CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
@@ -4350,19 +4784,13 @@ C
 #include "memint.h"
       KFRSAV = KFREE
 C
-C     Get memory for screening matrices
-C
-      N2GAB   = NSYMBL*NSYMBL
-      NDRIJ   = N2GAB*NFSYM*2
-      CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
-C
 C     Initialize the common blocks.
 C
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &             KINDX,WORK(KGAB),WORK(KDRIJ),
+     &             KINDX,KGAB,KDRIJ,
      &             INTFLG,NSTR,ANTIS,LMP2)
+      CALL DZERO(DINTSKP,8)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')
@@ -4371,12 +4799,12 @@ C
       ELSEIF (ISTRAT.EQ.2) THEN
          IF (.NOT. MP2ORG) THEN
             CALL TR2NOD(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &           KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &           KINDX,WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,LMP2,
      &           DINTSKP,TIM1)
          ELSE
             CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &           KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
-     &           DINTSKP,TIM1)
+     &           KINDX,WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,
+     &           LMP2,EMP2,DINTSKP,TIM1)
          END IF
       ELSEIF (ISTRAT.EQ.3) THEN
          WRITE(LUPRI,'(A)')
@@ -4392,7 +4820,7 @@ C
          CALL QUIT('TRANOD: No parallel strategy 5 (yet)!')
       ELSEIF (ISTRAT.EQ.6) THEN
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
          WRITE(LUPRI,'(A,I10,A)')
@@ -4462,10 +4890,12 @@ C     **************************
 C
         IF(LMP2) EBUF = D0
         CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
-C       For historical reasons we need to set the third variable in the buf to -1 to
-C       signal the slave to stop computing & transforming integrals.
-        CALL IZERO (IBUFMPI,5)
-        IBUFMPI(3) = -1
+        IF(ISTRAT.EQ.4) THEN
+C         For historical reasons we need to set the third variable in the buf to -1 to
+C         signal the slave to stop computing & transforming integrals.
+          CALL IZERO (IBUFMPI,5)
+          IBUFMPI(3) = -1
+        ENDIF
         DO I = 1,NODES
  100      CONTINUE
 #if defined (MPE)
@@ -4490,8 +4920,17 @@ C         ... this node sends the wrong message, abort
      &           '- Process ',NWHO,
      &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
-          CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
+          IF(ISTRAT.EQ.4) THEN
+            CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)
+          ELSEIF(ISTRAT.EQ.2) THEN
+            ITEST = -1
+            CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,NWHO,30,
+     &                    MPI_COMM_WORLD,IERR)
+          ELSE
+            WRITE(6,*) 'Inside TRARES in scheme ..',ISTRAT
+            CALL QUIT('TRARES not adapted for this strategy !')
+          ENDIF
           CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
      &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
           CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
@@ -4631,7 +5070,7 @@ C.....Call GOSCIP module
       CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
       CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
      &            WORK(KIELC),WORK(KIELC),WORK(KGASO))
-      CALL MEMREL('GOSRES',WORK,1,KFREE,KFREE,LFREE)
+      CALL MEMREL('PAMGOS',WORK,1,KFREE,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4694,5 +5133,174 @@ C
         WRITE(LUPRI,'(32I5)') 
      &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
       ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck SYA_GOSRES */
+      SUBROUTINE SYA_GOSRES(WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine setting up correctly
+C     the resolution of electronic states within 
+C     open-shell manifold
+C
+C     Written on a rainy day in Nagoya 2006....
+C     Trond Saue
+!
+!     Modified by sya, Jan 31, 2007
+!
+!     Called by: SYA_COSCI
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (NORDER=16)
+      CHARACTER*4 REPA(4*NORDER)
+#include "dcbtra.h"
+#include "dcbdhf.h"
+!.s/sya,2007.02.02
+#include "cossya.h"
+!.q  
+      DIMENSION WORK(LWORK)
+#include "memint.h"
+C----------------------------------------------------------------------
+      CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
+      READ(LUMLF1) NORB
+C.....Skip symmetry information for parent group
+      READ(LUMLF1) 
+C.....Read symmetry information for Abelian subgroup
+      READ(LUMLF1) NREP,(REPA(IRP),IRP=1,2*NREP)
+      CLOSE(LUMLF1,STATUS='KEEP')
+!.s/sya,2007.09.21/
+!     ...set NOPEN from COSCI input
+      IF( NOPEN .EQ. 0 ) THEN
+        IF( SYA_NOPEN .GT. 0 ) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'SYA_GOSRES: NOPEN being replaced by SYA_NOPEN.'
+          NOPEN = SYA_NOPEN
+        ELSE
+          WRITE(LUPRI,'(A,2I5)') 
+     &      'GOSRES: Inconsitent data.',NOPEN,SYA_NOPEN
+          STOP
+        END IF
+      END IF
+!.q
+C.....Allocate memory for orbital symmetry information
+      NDIM = NREP*NOPEN
+      CALL MEMGET('INTE',KGASO,NDIM, WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIELC,NOPEN,WORK,KFREE,LFREE)
+!.s/sya,2007.01.31
+      CALL MEMGET('INTE',KIELC2,NOPEN,WORK,KFREE,LFREE)
+!.q
+C      
+      CALL MEMGET('INTE',KIRPA,NORB,WORK,KFREE,LFREE)
+!.s/sya,2007.02.04
+!#    CALL GOSRE1(REPA,NREP,WORK(KIRPA),
+!#   &            WORK(KGASO),WORK(KIELC),WORK(KFREE),LFREE)
+      CALL SYA_GOSRE1(REPA,NREP,WORK(KIRPA),
+     &            WORK(KGASO),WORK(KIELC),WORK(KFREE),LFREE)
+!.q
+      CALL MEMREL('GOSRES',WORK,1,KIRPA,KFREE,LFREE)
+C.....Call GOSCIP module
+      CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
+!.s/sya,2007.01.31
+!#    CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
+!#   &            WORK(KIELC),WORK(KIELC),WORK(KGASO))
+      CALL SY_PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
+     &      WORK(KIELC),WORK(KIELC2),WORK(KGASO))
+!.q
+      CALL MEMREL('GOSRES',WORK,1,KFREE,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*   Deck SYA_GOSRE1 */
+      SUBROUTINE SYA_GOSRE1(REPA,NREP,IRPAMO,NGASO,IELC,WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine setting up correctly
+C     the resolution of electronic states within 
+C     open-shell manifold
+C
+C     Written on a rainy day in Nagoya 2006....
+C     Trond Saue
+!
+!     Last-update: sya, 2007.02.01, ulp
+!
+!     Called by : SYA_GOSRES (moltra/trapam.F)
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D2=2.0D0)
+      CHARACTER*4 REPA(*)
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+!.s/sya,2007.02.01
+#include "cossya.h"
+!.q
+      DIMENSION IRPAMO(*),NGASO(NREP,*),IELC(*),WORK(LWORK)
+!----------------------------------------------------------------------
+! Comment by sya, 2007.02.02.
+!     (REPA(IRP),IRP=1,2*NREP)
+!       latter part from boson irrep.
+!----------------------------------------------------------------------
+      CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
+      READ (LUMLF1) NORB
+      READ (LUMLF1) 
+      READ (LUMLF1) NREP,(REPA(IRP),IRP=1,2*NREP)
+      READ (LUMLF1) 
+      READ (LUMLF1) (IDUM,IRPAMO(IMO),DUM,IMO=1,NORB)
+      CLOSE(LUMLF1,STATUS='KEEP')
+C
+      NDIM = NREP*NOPEN
+      CALL IZERO(NGASO,NDIM)
+      CALL IZERO(IELC,NOPEN)
+      IORB = 0
+      DO IFRP = 1,NFSYM
+        DO IOPEN = 1,NOPEN
+          IELC(IOPEN) = IELC(IOPEN) + NACSH(IFRP,IOPEN)
+          DO I = 1,NACSH(IFRP,IOPEN)
+            IORB = IORB + 1
+C...........Add orbital to GAS
+            IREP = IRPAMO(IORB)
+            NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
+C...........Add Kramers partner to GAS
+            IREP = IRPAMO(IORB+NASH_DHF(IFRP))
+            NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
+          ENDDO
+        ENDDO
+        IORB = IORB + NASH_DHF(IFRP)
+      ENDDO
+C
+      DO IOPEN = 1,NOPEN
+        IELC(IOPEN) = NINT(DF(IOPEN)*D2*IELC(IOPEN))
+      ENDDO   
+!
+!.s/sya,2007.02.01
+!
+!     Recover data defined by COSCI input data.
+!     Overwrite the data from DHF by COSCI input data.
+!
+      IF( KCOSINP ) THEN
+         DO I = 1, SYA_NOPEN
+            IELC(I) = SYA_IELC(I)
+            DO J = 1, NREP
+               NGASO(J,I) = SYA_GASO(J,I)
+            END DO
+         END DO
+         WRITE(LUPRI,'(A)') 
+     &      'GOSRES: Recovering the data defined by COSCI input.'
+      END IF
+!.q
+C
+      WRITE(LUPRI,'(A)') 'GOSRES: Set up the following information:'
+      WRITE(LUPRI,'(5X,32(1X,A4))') (REPA(I),I=1,NREP)
+      DO IOPEN = 1,NOPEN
+        WRITE(LUPRI,'(32I5)') 
+     &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
+      ENDDO
+!
       RETURN
       END

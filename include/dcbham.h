@@ -1,7 +1,7 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision: 7467 $
-! DATE    : $Date: 2008-08-28 11:08:03 +0200 (Thu, 28 Aug 2008) $
+! VERSION : $Revision: 11283 $
+! DATE    : $Date: 2010-08-09 14:37:27 +0200 (Mon, 09 Aug 2010) $
 ! FILE    : dcbham.h
 !
 !*****************************************************************************
@@ -32,6 +32,8 @@
 !
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
+!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**) in correlated calcs.
+!     MOLMF3     - Use molecular mean field approximation (^4 DCG*)    in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 !     SMLV1C     - Neglect two-center blocks of VSS
@@ -48,6 +50,11 @@
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
+!     X2C        - flag for generating matrix elements of
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!     X2C_aba    - flag for generating matrix elements of
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!                  in the molecular fragment/atom-by-atom approach
 !     IMFCH      - charge of the system to be spliited among mean-field summations of AMFI centers
 !     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode
 !                  (only for infinite order Tronds approach), if .false., we do the preliminary
@@ -64,17 +71,20 @@
 !     USEDF      - if true, use the (converged) Dirac-Fock operator to be block-diagonalized
 !                  (instead of 1 electron Dirac operator)
 !     CONT2C     - continue with 2-component (inf.order) SCF after DC-SCF
-!     I2CHAM     - integer number (1,2...) specifynig post-DC-SCF 2component Hamiltonian type
+!     I2CHAM     - integer number (1,2...) specifynig the type of post-DC-SCF 2component Hamiltonian
 !
 !     RESTFCK    - flag to denote restarting DC-SCF from BSS-SCF, or vice versa, from 2c/4c Fock matrix in MO basis
 !
 !     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in the ONEFCK routine
 !
-!     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
-!     CMPEIG     - for IOTC: compare eigenvalues of 2c and 4c Hamiltonian
+!     TRMO4C2C   - flag meaning transformation of 4c MO into 2c form using the picture change transformation matrix
 !
-!     DKH1       - own flag for 1st order DKH - very rough ...
-!     DKH2       - own flag for second order DKH 
+!     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
+!     ISORDER_AMFI_x2c - integer value determining the order of AMFI contributions to the X2C Hamiltonian.
+!     CMPEIG     - for IOTC/BSS: compare eigenvalues of 2c and 4c Hamiltonian
+!
+!     DKH1       - own flag for the 1st order DKH,  very rough approximation
+!     DKH2       - own flag for the second order DKH, classic
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
@@ -87,6 +97,8 @@
 !     LSCALE_DFT_GAUNT - If true the Gaunt contribution will be scaled together with exchange in DFT
 !                  calculations. If false 100% of the Gaunt contribution (if turned on) will be 
 !                  included in DFT calculations.
+!     NOSFMU     - in spinfree calculations, do not generate spinfree multiplicaton tables, that is
+!                  constructing direct products of spin and spatial symmetries
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
@@ -94,7 +106,8 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPSOPP                                     
+     &        INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c,         &
+     &        I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -105,33 +118,34 @@
       COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
      &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
-     &                IMFCH, I2CHAM, INI2C, I2COFK,                     &
-     &                I2_HAM, IPSOPP                                    
+     &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
+     &                ISORDER_AMFI_x2c, I2_HAM
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
 
       LOGICAL QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL, LEVYLE,      &
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
-     &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
+     &        ZORA4, ZORASC, PROJEC, PROOWN,         SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
+     &        TRMO4C2C, MOLMF3, X2C, X2C_aba
 
-! keep and actualize here number of elements in the DCLHAM common block
-! MI: in there not an automatic way how to keep this variable actual ?
-      INTEGER NDCLHAM
-      PARAMETER (NDCLHAM = 41)
-
-      COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
+      COMMON /DCLHAM/ I1_DCLHAM,                                        &
+     &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
-     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
+     &                        SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
-     &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT
+     &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
+     &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
+     &                I2_DCLHAM
+
+!    Do NOT add any variables after the end tag !!!
 !
 ! aspg, 2006-04-21
 ! checking should be done as to whether or not HFXFAC can leave 

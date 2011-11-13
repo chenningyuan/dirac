@@ -1,6 +1,4 @@
-C
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,11 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
-      SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
+      SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -83,7 +80,6 @@ C***********************************************************************
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
-      REAL*8 GABRAO(*),DRIJ(*) 
 #if defined (VAR_MPI)
       REAL*8 XINTSTAT(8)
       INTEGER ILEN_STAT
@@ -124,8 +120,8 @@ C
       CALL DEFINE_SORT (NSTR,NSTR1T,NSTR2T,TRIAN,MEM,KL_IN_BUF,
      &                  WORK(KLDIST),WORK(KLSORT),IPRINT)
       CALL MEMREL('TR6T',WORK,KLDIST,KLDIST,KFREE,LFREE)
-      CALL MEMGET('REAL',KRGBUF,MEM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIGBUF,2*MEM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRMBUF,MEM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIMBUF,2*MEM,WORK,KFREE,LFREE)
 C
 C     Initialize the buffer files for the halftransformed integrals
 C
@@ -139,29 +135,22 @@ C
 #endif
          CALL FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     GABRAO,DRIJ,
-     &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
+     &                     KGAB,KDRIJ,
+     &                     WORK(KRMBUF),WORK(KIMBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
-CSK_debug     WRITE(LUPRI,*) 'calling FIRST_HALFTR_PARALLEL: MYTID',MYTID
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     GABRAO,DRIJ,
-     &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
-#if defined (VAR_PFS)
-         CALL GLOBAL_FILE_CLOSE_WRITE
-#endif
+     &                     KGAB,KDRIJ,
+     &                     WORK(KRMBUF),WORK(KIMBUF),WORK(KLSORT))
       ENDIF
 #endif
-      CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
+      CALL MEMREL('TRDR6T',WORK,KRMBUF,KRMBUF,KFREE,LFREE)
       CALL XTIME(5,2,' First halftransformation      ')
 C
 C     Initialize MOLFDIR integral file
 C
-      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDRV1',WORK,1,KIKRA,KFREE,LFREE)
+      CALL MDINTI(NSTR,IPRINT)
 C
 C     Make index arrays to translate pair index to individual indices
 C
@@ -229,7 +218,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Serial */
       SUBROUTINE FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  GABRAO,DRIJ,RGBUF,IGBUF,LSORT)
+     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -269,7 +258,6 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
-      DIMENSION GABRAO(*),DRIJ(*)
       DIMENSION LSORT(3,NFPCK12T,0:7)
       DIMENSION RGBUF(*)
       DIMENSION IGBUF(2,*)
@@ -304,7 +292,7 @@ CLV:Gaunt       DO IC = 1, 3
              CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,WORK(KINDX),TRIAN,
      &                  KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                  GABRAO,DRIJ,DINTSKP,
+     &                  WORK(KGAB),WORK(KDRIJ),DINTSKP,
      &                  LSORT,RGBUF,IGBUF)
           ENDDO
        ENDDO
@@ -319,7 +307,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Parallel */
       SUBROUTINE FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  GABRAO,DRIJ,RGBUF,IGBUF,LSORT)
+     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -362,7 +350,6 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
-      DIMENSION GABRAO(*),DRIJ(*)
       DIMENSION LSORT(3,NFPCK12T,0:7)
       DIMENSION RGBUF(*)
       DIMENSION IGBUF(2,*)
@@ -383,7 +370,7 @@ C
 C       Initialize (for the slave this is done in TRANOD)
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
 C     - reverse order of IC and ISHLA to get better load balancing
@@ -494,7 +481,7 @@ C
          CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),WORK(KINDX),TRIAN,
      &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
-     &               GABRAO,DRIJ,DINTSKP,
+     &               WORK(KGAB),WORK(KDRIJ),DINTSKP,
      &               LSORT,RGBUF,IGBUF)
          GOTO 100
   200    CONTINUE
@@ -508,6 +495,9 @@ C
          CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
          CALL BUFFER_FILE_END ()
       ENDIF
+#if defined (VAR_PFS)
+      CALL GLOBAL_FILE_CLOSE_WRITE
+#endif
 C
       RETURN
       END
@@ -532,6 +522,7 @@ C
 C     Written by L.Visscher
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -545,6 +536,7 @@ C
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LDIST(NSTR2T),LSORT(3,NFPCK12T,0:7)
+      integer, allocatable :: node_for_buffer(:)
 C
 C     Make sure that the caller writes correct code
 C
@@ -554,13 +546,6 @@ C     Distribute the spinors over the nodes, we will also employ the master (nod
 C     in the second halftransformation, so add one to NUMNOD
 C
       NMPROC = NUMNOD + 1
-CMI   ... catch mpi-like error
-      IF (NMPROC.EQ.0) THEn
-        WRITE(LUPRI,'(/,2x,a,i8,1x,a,i12)') 
-     &  'Error NMPROC=',NMPROC,'NUMNOD=',NUMNOD
-        CALL FLSHFO(LUPRI)
-        CALL QUIT('DEFINE_SORT: mpi-like error exit, NMPROC is zero !')
-      ENDIF
       L_ON_NODE = NSTR2T / NMPROC
       L_REMAIN = MOD(NSTR2T,NMPROC)
       NODE = -1
@@ -606,6 +591,10 @@ C
       NBSYMP = NBSYM / NFSYM
       KL_IN_BUF = (NBSYMP * NSTR1T) / NBUF_L
       IF (MOD(NBSYMP*NSTR1T,NBUF_L).GT.0) KL_IN_BUF = KL_IN_BUF + 1
+
+c temporarty storage for 1HT fine-sorting 
+      call alloc(node_for_buffer,N_BUFFER)
+
 C
 C     Assign each (ireprs,k,l) combination to a buffer
 C     The incoming integrals are ordered as (k,l,iz ; r,s,ireprs,ic), we later want to read 
@@ -646,6 +635,8 @@ C                    .. and its relative position therein
                      LSORT(2,KL,IREPRS) = IN_BUF    
 C                    .. and the node to which it is assigned
                      LSORT(3,KL,IREPRS) = LDIST(L)
+c                    .. also store information for the fine-sort of 1HT integrals, if required
+                     node_for_buffer(ibuf) = ldist(l) 
                  ENDIF
                  ENDDO
               ENDDO
@@ -653,6 +644,13 @@ C                    .. and the node to which it is assigned
         ENDDO
       ENDDO
 C
+#ifndef VAR_PFS
+c aspg, for 1HT fine-sort
+      call init_finesort_commons(kl_in_buf,n_buffer,node_for_buffer)
+      call dealloc(node_for_buffer)
+c aspg, for 1HT fine-sort
+#endif
+
       IF(IPRINT.GE.3) THEN
          CALL HEADER('Arrays for sort of halftr. integrals ',-1)
          DO L = 1, NSTR2T
@@ -1178,6 +1176,16 @@ C
 C
 C     Transform righthand indices to molecular spinor basis
 C
+      call timer('START ',TIMSTR,TIMEND)
+ 
+#ifndef VAR_PFS                                                                       
+      if (do_finesort) call sort_buffers(mytid,1)
+#endif        
+
+      write (*,*) ' '
+      write (*,*) '<<< Starting 2HT on node ',mytid
+      write (*,*) ' '
+c
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
@@ -1208,7 +1216,7 @@ C           Allocate space to read halftransformed integrals
      &                             NZ*NSPCK(IREPPQ,0),ICOL,IBUF)
 #else
             CALL BUFFER_FILE_READ (1,IBUF,WORK(KGMAT),
-     &                             NZ*NSPCK(IREPPQ,0),ICOL)
+     &                             NZ*NSPCK(IREPPQ,0),ICOL,do_finesort)
 #endif
             CALL GMAT_SYM (IREPPQ,WORK(KGMAT),NSPCK(IREPPQ,0),ICS,ICF)
             IOFF = KGMAT
@@ -1287,6 +1295,11 @@ C
 #if defined (VAR_PFS)
       CALL LOCAL_FILE_CLOSE_READ
 #endif
+        write (*,*) ' '
+        write (*,*) '>>> Finished 2HT on node ',mytid
+        call timer('2HT_all',TIMSTR,TIMEND)
+        write (*,*) ' '
+
       CALL QEXIT('MS6IN2')
 C
       RETURN

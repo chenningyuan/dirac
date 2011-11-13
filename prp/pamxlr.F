@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamxlr.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -136,6 +131,10 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
+      use london_direct_hb
+      use london_reorth_hb
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
@@ -156,6 +155,10 @@ C
 C
       LOGICAL   LBUF
       CHARACTER TTYP(-1:1)*2
+
+      integer, allocatable :: ibeig(:)
+      real(8), allocatable :: cmo(:)
+
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
       SAVE TTYP
@@ -163,6 +166,10 @@ C
 C
       CALL QENTER('PRPXL1')
       KFRSAV = KFREE
+C
+C     set control variable for REDPAR (see REDPAR for an explanation of
+C     IREDJOB)
+      IREDJOB = 6
 C
 C     ****************************
 C     *** I N I T I A L I Z E  ***
@@ -177,13 +184,35 @@ C
       ELSE
         KLRO = KFREE
       ENDIF
-
 C
 C     **********************************************************
 C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
+#ifdef MOD_LONDON
+      if (london) then
+        call alloc(cmo,   ncmotq)
+        call alloc(ibeig, ntbas(0))
+
+c.......direct contribution
+        call onelon(cmo, ibeig, work, kfree, lfree)
+
+        if (.not.notwol) then
+!          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
+        end if
+
+c.......reorthonormalization contribution
+        if ((.not. noonei) .or. (.not. noorth)) then
+          call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+!old code         call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
+        end if
+
+        call dealloc(cmo)
+        call dealloc(ibeig)
+      endif
+#endif /* MOD_LONDON */
 
 C
 C     Memory allocation
@@ -214,8 +243,17 @@ C
           JSYMOP  = JFSYM(IS,JOPSY)
           NOPB    = NLRBP(JSYMOP)
           JOPB    = JLRBP(JSYMOP)
-C
           DO 30 IOPB = 1,NOPB
+C
+C
+C           Initialize configurational and orbital parameters
+C           =================================================
+C           (Note that this routine can also be shifted one 
+C            loop up, but by placing it here local restrictions
+C            are possible, see e.g. REDPAR below....)
+C
+            CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &                  WORK,KFREE,LFREE,IPRXLR)
             INDBP  = LLBPSU(JOPB+IOPB)
             INDPRB = LLRBPU(INDBP)
             JTIMOP = IPRPTIM(INDPRB)
@@ -224,12 +262,6 @@ C
      &        'FOR LINEAR RESPONSE PROPERTY >>>',
      &        PRPNAM(INDPRB),
      &        ' - Symmetry: ',REP(JSYMOP-1),TTYP(JTIMOP)
-C
-C           Initialize configurational and orbital parameters
-C           =================================================
-C
-            CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                  WORK,KFREE,LFREE,IPRXLR)
 C
 C           ******************************************
 C           *** P R O P E R T Y    G R A D I E N T ***
@@ -268,9 +300,11 @@ C           Compress number of orbital rotations
 C           ====================================
 C
             IF(THRCOM.NE.D0) THEN
-              CALL REDPAR(WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
+              CALL REDPAR(IREDJOB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
      &                    WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
-     &                    THRCOM,WORK,KFREE,LFREE,IPRXLR)
+     &                    NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
+     &                    NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
+     &                    WORK,KFREE,LFREE,IPRXLR)
             ENDIF
 C
 C           ********************************************************
@@ -360,10 +394,11 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
-     &            '.IMAGIN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
+#include "gauss_legendre.h"
 C
 
       IF (SET) THEN
@@ -399,17 +434,32 @@ C
       INTXLR     = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
 CMI ... set up only LL class of integrals 
 C        as the default for LevyLe/BSS
-      IF (LEVYLE.OR.BSS) INTXLR = ILLINT
+      IF (LEVYLE.OR.BSS.or.x2c) INTXLR = ILLINT
       ITRILR(1)  = 1
       ITRILR(2)  = 1
       NLRAPT     = 0
       NLRBPT     = 0
       CALL IZERO(NLRAP,8)
       CALL IZERO(NLRBP,8)
-      NBFREQ     = 1
-      BFREQ(1)   = D0
+      IF (.NOT. DOVDW) THEN
+C     Ordinary linear response calculation
+         XLR_IMFREQ = .FALSE.
+         NBFREQ     = 1
+         BFREQ(1)   = D0
+      ELSE
+C     Calculation of C6 dispersion coefficient
+         XLR_IMFREQ = .TRUE.
+         NBFREQ = 11
+         BFREQ(1) = 0.0D0
+         DO IFREQ=1,10
+            BFREQ(IFREQ+1)=FREQ_10PT(IFREQ)
+         END DO
+      END IF
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+     &  XLR_SKIPEP = .TRUE.
       XLR_SKIPEE = .FALSE.
       XLR_LSFG(1)= .TRUE.
       XLR_LSFG(2)= .TRUE.
@@ -418,11 +468,12 @@ C        as the default for LevyLe/BSS
       TRIAB      = .FALSE.
       XLR_XVCFIL = 'NORXVC'
       XLR_UNCOUP = .FALSE.
-      XLR_IMFREQ = .FALSE.
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
+      XSTERNC    = .FALSE.
       NOSPIA     = .FALSE.
       NOSPIB     = .FALSE.
+      XLR_E2CHEK = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
@@ -494,6 +545,14 @@ C&&&& OPERATOR: Both left/right side operator
                GO TO 100
     5          CONTINUE
 C&&&& B FREQuency
+                  IF (DOVDW) THEN
+C                 if van der Waals calculation, then frequencies are
+C                 set by the choice of quadrature scheme
+                     READ (LUCMD,*)
+                     READ (LUCMD,*)
+                     WRITE (LUPRI,'(/A)') 'Warning: frequencies ignored'
+                     GOTO 100
+                  END IF
                   READ (LUCMD, *) NBFREQ
                   IF (NBFREQ.GT.0) THEN
                     IF (NBFREQ.LE.MAXFLR) THEN
@@ -638,10 +697,53 @@ C&&& IMAGINARY: Purely imaginary frequencies
                  XLR_IMFREQ = .TRUE.
                GO TO 100
  34            CONTINUE
+C%%% GAUSS-LEGENDRE: specify number of quadrature points
+               READ(LUCMD,*) NBFREQ
+               NBFREQ = NBFREQ + 1
+               BFREQ(1) = 0.0D0
+               IF (NBFREQ-1.EQ.6) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_6PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.8) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_8PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.10) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_10PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.12) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_12PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.14) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_14PT(IFREQ)
+                  END DO
+               ELSE IF (NBFREQ-1.EQ.16) THEN
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_16PT(IFREQ)
+                  END DO                
+               ELSE
+                  NBFREQ=11
+                  DO IFREQ=1,NBFREQ-1
+                     BFREQ(IFREQ+1)=FREQ_10PT(IFREQ)
+                  END DO
+                  WRITE(LUPRI,'( 3(/A) )') 
+     &' Warning! Incorrect number of quadrature points.',
+     &' Gauss-Legendre integration only implemented for'//
+     &' 6,8,10,12,14,16 points.', 'Default of 10 points will be used.'
+               END IF
                GO TO 100
  35            CONTINUE
+C&&& E2CHEK: explicit contruction of the electronic Hessian E2
+               XLR_E2CHEK = .TRUE.
+               XLRDIH = .FALSE.
                GO TO 100
  36            CONTINUE
+C&&& STERNC: Sternheimer complement
+               XSTERNC = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -664,8 +766,6 @@ C
 C        ... then calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
-C     ... no positrons for Levy-Leblond or no-pair
 C     ... also to make sure diamagnetic terms are calculated for magn.prop.
 C           (see PRPDEF) /hj jan 2001
       IF(QED .AND. XLR_SKIPEP) THEN
@@ -673,6 +773,18 @@ C           (see PRPDEF) /hj jan 2001
      &   'QED invalid for Levy-Leblond/no-pair/.SKIPEP'
          INPERR = INPERR + 1
       END IF
+      IF(XSTERN) THEN
+        XLR_UNCOUP = .TRUE.
+        XLR_SKIPEE = .TRUE.
+        XLR_SKIPEP = .FALSE.
+        XLR_XVCFIL = 'NORXVC'
+      ENDIF
+      IF(XSTERNC) THEN
+        XLR_UNCOUP = .TRUE.
+        XLR_SKIPEE = .FALSE.
+        XLR_SKIPEP = .TRUE.
+        XLR_XVCFIL = 'NORXVC'
+      ENDIF
       IF (XLR_UNCOUP) THEN
         ITRXLR = 0
         XLRDIH = .TRUE.
@@ -693,25 +805,32 @@ C
      &  ' * NB !!! Uncoupled calculation.'
       IF(XLRANA) WRITE(LUPRI,'(A)')
      &   ' * Analysis of solution vectors.'
+      IF(XLR_E2CHEK) WRITE(LUPRI,'(A)')
+     &   ' * Explicit contruction of the electronic Hessian'
       IF(XSTERN .AND. DOXLR) THEN
         WRITE(LUPRI,'(1X,A)')
      &'* Sternheimer: Approximating Hessian for ep-rotations by -2mc^2',
      &'  and ignoring coupling between e-e and e-p rotations.',
      &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
      &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
-        IF (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEP) THEN
+        IF (LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEP)THEN
            WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP'
            CALL QUIT(
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP')
         END IF
-Chj Oct 2000: check if .STERNH should invoke the following:
-        XLRDIH = .TRUE.
-        XLR_SKIPEE = .TRUE.
-        XLR_SKIPEP = .FALSE.
-        ITRXLR = 0
-        XLR_XVCFIL = 'NORXVC'
-Chj Oct 2000 end
+      END IF
+      IF(XSTERNC .AND. DOXLR) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &'* Sternheimer complement: ',
+     &'  Note that .STERNH forces .MAXITR 0 and .SKIPEP and',
+     &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
+        IF (LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEE)THEN
+           WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
+     &     '.STERNC is not valid for Levy-Leblond/no-pair/.SKIPEE'
+           CALL QUIT(
+     &     '.STERNC is not valid for Levy-Leblond/no-pair/.SKIPEE')
+        END IF
       END IF
       IF (XLR_SKIPEE) THEN
         WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
@@ -719,10 +838,10 @@ Chj Oct 2000 end
         WRITE(LUPRI,'(A)')
      &  ' * e-e rotations are allowed in the linear response function.'
       ENDIF
-      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
+      IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
-      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
+      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &  WRITE(LUPRI,'(A)')
      &  ' * No rotations between electrons and positrons,'// 
      &  ' which are expelled.'
@@ -771,7 +890,7 @@ C
       WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
-      IF ((LEVYLE.OR.BSS).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
+      IF ((LEVYLE.OR.BSS.or.x2c).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
         WRITE(LUPRI,'(3X,A)')
      & 'Only LL integrals are allowed for LevyLe/BSS!'
         ISLINT=0
@@ -852,11 +971,17 @@ C     CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'REAL frequencies:'
-      ENDIF
+      ENDIF    
       DO J = 1,NBFREQ
         FMT = MXFORM(BFREQ(J),12)
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
       ENDDO
+      IF(DOVDW) THEN
+        WRITE(LUPRI,'(A)')
+     &' * Calculation of C6 dispersion coefficient'
+        WRITE(LUPRI,'(A,I2,A)')
+     &' * Gauss-Legendre integration with ',NBFREQ-1,' points' 
+      ENDIF
   999 CONTINUE
       IF (XLR_SKIPEE .AND. XLR_SKIPEP) THEN
          INPERR = INPERR + 1
@@ -923,25 +1048,25 @@ C       A,B operators at the beginning of the run (after the XLRINP)
 
 CMI   ... print out on what couples are going into the linear response...
       IF (IPRXLR.GE.7) THEN
-       CALL PRSYMB(LUPRI,'-',75,0)
-       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all A operators **'
-       CALL PRSYMB(LUPRI,'-',75,0)
-       DO I = 1,NLRAPT
-        INDXPR = LLRAPU(I)
-        CALL WRIXPR(I,INDXPR)
-       ENDDO
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** SETXLR: List of all A operators **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NLRAPT
+          INDXPR = LLRAPU(I)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
 
-       CALL PRSYMB(LUPRI,'-',75,0)
-       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all B operators **'
-       CALL PRSYMB(LUPRI,'-',75,0)
-       DO I = 1,NLRBPT
-        INDXPR = LLRBPU(I)
-        CALL WRIXPR(I,INDXPR)
-       ENDDO
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** SETXLR: List of all B operators **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NLRBPT
+          INDXPR = LLRBPU(I)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
       
-       WRITE(LUPRI,'(A)')
-     & ' ** SETXLR: Sorted couples of A,B operators'//
-     & ' for linear response calculations **'
+        WRITE(LUPRI,'(A)')
+     &  ' ** SETXLR: Sorted couples of A,B operators'//
+     &  ' for linear response calculations **'
 
         DO IOPSY = 1,NFSYM
           NBF = NBSYM/NFSYM
@@ -976,10 +1101,10 @@ CMI   ... print out on what couples are going into the linear response...
      &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
      &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
                 CALL PRSYMB(LUPRI,'-',95,0)
-             ENDDO
-             ENDDO
-             ENDDO
-             ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
       ENDIF
 
 C
@@ -1012,6 +1137,8 @@ C
       ITRINT(2) = ITRILR(2)
       INTDEF    = INTXLR
       STERNH    = XSTERN
+      STERNC    = XSTERNC
+      E2CHEK    = XLR_E2CHEK
 C
 C     Restart info used by MCSCF program.
 C
@@ -1038,10 +1165,13 @@ C
       IF(XLR_XVCFIL.NE.'NORXVC') THEN
         INQUIRE(FILE=XLR_XVCFIL,EXIST=TOBE)
         RSREST = TOBE
-      ENDIF
-      IF(RSREST) THEN
-        LURST = 28
-        CALL OPNFIL(LURST,XLR_XVCFIL,'OLD','PRPXLR')
+        IF(RSREST) THEN
+          LURST = 28
+          CALL OPNFIL(LURST,XLR_XVCFIL,'OLD','PRPXLR')
+        ELSE
+          WRITE(LUPRI,*)
+     &    '*** WARNING: Restart file '//XLR_XVCFIL//' not found !'
+        ENDIF
       ENDIF
 
       CALL QEXIT('SETXLR')
@@ -1475,7 +1605,7 @@ C
       DO IFREQ = 1,NFREQ
         FREQ = EVALR(IFREQ)
         IF (IROUND.EQ.1 .OR. FREQ.NE.D0) THEN
-          CALL WRTRSP(LUXVC,XPO(1,1,IFREQ),
+          CALL WRTRSP(LUXVC,XPO(1,1,IFREQ),JXOP,
      &         RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
      &         BLANK16,BLANK2,D0,0,0,RCNV(IFREQ),INTXRS,NBDIM)
         END IF
@@ -1593,82 +1723,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck xrspar */
-      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
-C***********************************************************************
-C
-C     Initialize configurational and orbital parameters for
-C     linear response calculation
-C
-C     Written by T. Saue July 18 1997
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbxrs.h"
-C
-      CHARACTER INDSTR(3,2)*72
-      LOGICAL   SKIPEE,SKIPEP
-      DIMENSION WORK(*)
-      LOGICAL GASWF
-C
-      CALL QENTER('XRSPAR')
-C
-C     Configurational parameters
-C     ==========================
-C
-      NZCONF   = 0
-      NZCONFQ  = NZCONF *NZ
-C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
-      CALL MEMGET('REAL',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
-C
-C     Orbital parameters
-C     ==================
-C
-C===TODO start
-C     hjaaj June 2001: NOROT should be 
-C     taken from common block dcbnrt.h
-C     but is not defined for DHF/DFT yet (only for KRMC now)
-C     hjaaj June 2001: GASWF should be based on either
-C     MCSCF common block or that this WF is not KRMC
-C
-      CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
-      CALL IZERO(WORK(KNOROT),NORBT)
-      GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,IPRINT)
-C     No CALL MEMREL here!!!!
-C     NZXOPE, NZHOPE, NZXOPP and the
-C     pointers KZXOPE and KXZOPP are defined in SETXOP
-C     THEY MUST NOT BE RELEASED WITH MEMREL !
-C     We must p.t. live with KNOROT allocation ...
-C
-C===TODO end
-      NZXOPEQ  = NZXOPE *NZ
-      NZXOPPQ  = NZXOPP *NZ
-      NZXOPT   = NZXOPE + NZXOPP
-      NZXOPTQ  = NZXOPT *NZ
-C
-C     Total number of parameters
-C     ==========================
-C
-      NZVAR    = NZCONF + NZXOPT
-      NZVARQ   = NZCONFQ + NZXOPTQ
-C
-      IF (IPRINT .GE. 3) THEN
-         WRITE (LUPRI,'(/A,3I10)')
-     &   'No. of configuration, e-e, and e-p variables:',
-     &   NZCONF,NZXOPE,NZXOPP
-      END IF
-C
-      CALL QEXIT('XRSPAR')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anaxrs */
       SUBROUTINE ANAXRS(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
@@ -1678,6 +1732,9 @@ C
 C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1695,6 +1752,8 @@ C
       CALL QENTER('ANAXRS')
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
+
+
 C
 C     Check if file of solution vectors is present
 C
@@ -1808,6 +1867,9 @@ C           be preserved!!!
 C
           LBUF = LAB1
         ENDIF
+C.......skip solution vector
+        READ(LUINP,END=3,ERR=2)
+C.......skip orbital rotations
         READ(LUINP,END=3,ERR=2)
         IREC = IREC + 1
       GO TO 1
@@ -1867,7 +1929,7 @@ C...secondary electron orbitals
         ENDDO
       ELSEIF(IC.EQ.2) THEN
         DO IFRP = 1,NFSYM
-C...inactive electron orbitals
+C...inactive positron orbitals
           NI = NI + NCLS(2,1,IFRP)
 C...secondary positron orbitals
           NV = NV + NCLS(1,3,IFRP)
@@ -1899,6 +1961,9 @@ C
 C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
@@ -1913,6 +1978,8 @@ C
 C     Local variables
       CHARACTER TYP(3)*1
       DATA TYP/'i','a','v'/
+      real(8) :: lambda_numerator
+      real(8) :: lambda_denominator
 C
       CALL IZERO(IIBF,NI)
       CALL IZERO(IVBF,NV)
@@ -1928,6 +1995,7 @@ C     Assign orbitals
 C
       BACKSPACE LUINP
       DO I = 1,NVEC
+        BACKSPACE LUINP
         BACKSPACE LUINP
         BACKSPACE LUINP
       ENDDO
@@ -1961,12 +2029,15 @@ C     Read vectors
           CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,
      &                NZ,IPQTOQ(1,IREP),LUPRI)
         ENDIF
+C...    skip orbital rotations
+        READ(LUINP)
       ENDDO
 C     Analyze major excitations
       CALL LSET(NVEC,.TRUE.,LFLAG)
       DO I = 1,NVEC
       IF(LFLAG(I)) THEN
         LFLAG(I) = .FALSE.
+        II = IBTYP(I)
         DO IZ = 1,NZ
           CALL DCOPY(NBDIM,BVEC(1,IZ,I),1,BUF1(1,IZ),1)
         ENDDO
@@ -1974,7 +2045,8 @@ C     Analyze major excitations
 C       Frequency dependent case; search for partner
           DO J = 1,NVEC
           IF(LFLAG(J)) THEN
-            IF(DABS(FREQ(I)-FREQ(J)).LT.DTOL) THEN
+            JJ = IBTYP(J)
+            IF(DABS(FREQ(I)-FREQ(J)).LT.DTOL.AND.(JJ.EQ.-II)) THEN
               LFLAG(J)=.FALSE.
               DO IZ = 1,NZ
                 CALL DAXPY(NBDIM,D1,BVEC(1,IZ,J),1,BUF1(1,IZ),1)

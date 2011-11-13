@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : her2el1.F
 C
 C
@@ -65,16 +60,16 @@ C
          WRITE (LUPRI, 1070) NHKT1, NHKT2
          WRITE (LUPRI, 1080) KCKT1, KCKT2, KCKT12
          WRITE (LUPRI, 1095) NUC1, NUC2
-         WRITE (LUPRI, '(1X,A,2I7)') 'NUCR1/2 ',NUCR1,NUCR2
+         WRITE (LUPRI, '(A,2I7)') 'NUCR1/2 ',NUCR1,NUCR2
          WRITE (LUPRI, 1100) NUC12, NUC34
-         WRITE (LUPRI, '(1X,A,2I7)') 'NORB1/2 ',NORB1,NORB2
-         WRITE (LUPRI, '(1X,A,2I7)') 'NORR1/2 ',NORR1,NORR2
+         WRITE (LUPRI, '(A,2I7)') 'NORB1/2 ',NORB1,NORB2
+         WRITE (LUPRI, '(A,2I7)') 'NORR1/2 ',NORR1,NORR2
          WRITE (LUPRI, 1110) NORB12
          WRITE (LUPRI, 1130) DIAG12
          WRITE (LUPRI, 1160) IHRSYM
          WRITE (LUPRI, 1170) I120X, I120Y, I120Z
          WRITE (LUPRI, 1180) NU1234
-         WRITE (LUPRI, '(1X,A,2L5)') 'RPRI12, RCNT12 ',RPRI12, RCNT12
+         WRITE (LUPRI, '(A,2L5)') 'RPRI12, RCNT12 ',RPRI12, RCNT12
       END IF
 C
 C     Work space for general contraction:
@@ -212,10 +207,10 @@ C
                   IODD = IBTXOR(IODD12(ICMP12,2),IHCSYM(IHCINT))
                   DO 630 TUV = 1, MTUV34
                   IF (IODDHR(TUV) .EQ. IODD) THEN
-                     WRITE (LUPRI,'(/,1X,A,I3,1X,A,2I3,1X,A,I3)' )
-     &                  'Integral type:', IHCINT,
-     &                  'Components:   ', ICOMP1,ICOMP2,
-     &                  'TUV:          ', TUV
+                     WRITE (LUPRI,'(/A,I3,A,2I3,A,I3)' )
+     &                  ' Integral type:', IHCINT,
+     &                  ' Components:   ', ICOMP1,ICOMP2,
+     &                  ' TUV:          ', TUV
                      CALL OUTPUT(HCINT(1,TUV,ICMP12,IHCINT),
      &                           1,NUC34,1,NORB12,NUC34,NORB12,
      &                           1,LUPRI)
@@ -227,18 +222,18 @@ C
       END IF
       CALL QEXIT('C1DRIV')
       RETURN
- 1020 FORMAT (1X,'IDERIV   ',I7)
- 1040 FORMAT (1X,'DC10     ',L7)
- 1060 FORMAT (1X,'DC1E     ',L7)
- 1070 FORMAT (1X,'NHKT     ',2I7)
- 1080 FORMAT (1X,'KCKT     ',2I7,/,1X,'KCKT12   ',I7)
- 1095 FORMAT (1X,'NUC1/2   ',2I7)
- 1100 FORMAT (1X,'NUC12/34 ',2I7)
- 1110 FORMAT (1X,'NORB12   ',I7)
- 1130 FORMAT (1X,'DIAG12   ',L7)
- 1160 FORMAT (1X,'IHRSYM   ',I7)
- 1170 FORMAT (1X,'I120     ',3I7)
- 1180 FORMAT (1X,'NU1234   ',I7)
+ 1020 FORMAT ('IDERIV   ',I7)
+ 1040 FORMAT ('DC10     ',L7)
+ 1060 FORMAT ('DC1E     ',L7)
+ 1070 FORMAT ('NHKT     ',2I7)
+ 1080 FORMAT ('KCKT     ',2I7,/'KCKT12   ',I7)
+ 1095 FORMAT ('NUC1/2   ',2I7)
+ 1100 FORMAT ('NUC12/34 ',2I7)
+ 1110 FORMAT ('NORB12   ',I7)
+ 1130 FORMAT ('DIAG12   ',L7)
+ 1160 FORMAT ('IHRSYM   ',I7)
+ 1170 FORMAT ('I120     ',3I7)
+ 1180 FORMAT ('NU1234   ',I7)
       END
 C  /* Deck c10int */
       SUBROUTINE C10INT(HERINT,INDHER,INDHVC,IODDHR,INDHSQ,HCINT,
@@ -316,15 +311,15 @@ C
                MINU = IBTAND(MAXU,INCRMU - 1)
                MINV = IBTAND(MAXV,INCRMV - 1)
                IF (IPRINT .GE. 10) THEN
-                  WRITE (LUPRI,'(1X,A,2I5)')'ICOMP1/2: ',ICOMP1,ICOMP2
-                  WRITE (LUPRI,'(1X,A,3I5)')'L/M/N1:',L1,M1,N1
-                  WRITE (LUPRI,'(1X,A,3I5)')'L/M/N2:',L2,M2,N2
-                  WRITE (LUPRI,'(1X,A,3I5)')'Loop parameters T:',
-     &                                       MINT,MAXT,INCRMT
-                  WRITE (LUPRI,'(1X,A,3I5)')'Loop parameters U:',
-     &                                       MINU,MAXU,INCRMU
-                  WRITE (LUPRI,'(1X,A,3I5)')'Loop parameters V:',
-     &                                       MINV,MAXV,INCRMV
+                  WRITE (LUPRI,'(A,2I5)')'ICOMP1/2: ',ICOMP1,ICOMP2
+                  WRITE (LUPRI,'(A,3I5)')'L/M/N1:',L1,M1,N1
+                  WRITE (LUPRI,'(A,3I5)')'L/M/N2:',L2,M2,N2
+                  WRITE (LUPRI,'(A,3I5)')'Loop parameters T:',
+     &                                    MINT,MAXT,INCRMT
+                  WRITE (LUPRI,'(A,3I5)')'Loop parameters U:',
+     &                                    MINU,MAXU,INCRMU
+                  WRITE (LUPRI,'(A,3I5)')'Loop parameters V:',
+     &                                    MINV,MAXV,INCRMV
                END IF
                CALL DZERO(HCPRIM,NTUV34*NU1234)
 C
@@ -534,11 +529,11 @@ C
          ITYPEY = JOFFEY(IHCINT)
          ITYPEZ = JOFFEZ(IHCINT)
          IF (IPRINT .GE. 10) THEN
-            WRITE (LUPRI,'(1X,A,2I5)')
+            WRITE (LUPRI,'(A,2I5)')
      &         'Integral type (ICOOR,IHCINT):',ICOOR,IHCINT
-            WRITE (LUPRI,'(1X,A,3I5)')
+            WRITE (LUPRI,'(A,3I5)')
      &         'ITYPEX,ITYPEY,ITYPEZ:       ',ITYPEX,ITYPEY,ITYPEZ
-            WRITE (LUPRI,'(1X,A,I5)') ' ICOOR ', ICOOR
+            WRITE (LUPRI,'(A,I5)') ' ICOOR ', ICOOR
          END IF
          DO 110 I = 1, KCKT12
             KODD12(I,1) = IBTXOR(IODD12(I,1),IHCSYM(IHCINT))
@@ -567,14 +562,14 @@ C
                MINU = IBTAND(MAXU,INCRMU - 1)
                MINV = IBTAND(MAXV,INCRMV - 1)
                IF (IPRINT .GE. 10) THEN
-                  WRITE (LUPRI,'(1X,A,2I5)')'ICOMP1/2:',ICOMP1,ICOMP2
-                  WRITE (LUPRI,'(1X,A,3I5)')'L/M/N1:',L1,M1,N1
-                  WRITE (LUPRI,'(1X,A,3I5)')'L/M/N2:',L2,M2,N2
-                  WRITE (LUPRI,'(1X,A,3I5)')'Loop parameters T:',
+                  WRITE (LUPRI,'(A,2I5)')'ICOMP1/2:',ICOMP1,ICOMP2
+                  WRITE (LUPRI,'(A,3I5)')'L/M/N1:',L1,M1,N1
+                  WRITE (LUPRI,'(A,3I5)')'L/M/N2:',L2,M2,N2
+                  WRITE (LUPRI,'(A,3I5)')'Loop parameters T:',
      &                                       MINT,MAXT,INCRMT
-                  WRITE (LUPRI,'(1X,A,3I5)')'Loop parameters U:',
+                  WRITE (LUPRI,'(A,3I5)')'Loop parameters U:',
      &                                       MINU,MAXU,INCRMU
-                  WRITE (LUPRI,'(1X,A,3I5)')'Loop parameters V:',
+                  WRITE (LUPRI,'(A,3I5)')'Loop parameters V:',
      &                                       MINV,MAXV,INCRMV
                END IF
 C
@@ -646,18 +641,18 @@ C
          END IF
   100 CONTINUE
       RETURN
- 1020 FORMAT (1X,'DHCEX(1/2)',3L7)
- 1030 FORMAT (1X,'DHCEY(1/2)',3L7)
- 1040 FORMAT (1X,'DHCEZ(1/2)',3L7)
- 1050 FORMAT (1X,'NCOOR     ',I7)
- 1060 FORMAT (1X,'NHCINT    ',I7)
- 1070 FORMAT (1X,'KTUV34    ',I7)
- 1080 FORMAT (1X,'INCMXT    ',(4I7))
- 1090 FORMAT (1X,'INCMXU    ',(4I7))
- 1100 FORMAT (1X,'INCMXV    ',(4I7))
- 1120 FORMAT (1X,'JOFFEX    ',(7I7))
- 1130 FORMAT (1X,'JOFFEY    ',(7I7))
- 1140 FORMAT (1X,'JOFFEZ    ',(7I7))
+ 1020 FORMAT ('DHCEX(1/2)',3L7)
+ 1030 FORMAT ('DHCEY(1/2)',3L7)
+ 1040 FORMAT ('DHCEZ(1/2)',3L7)
+ 1050 FORMAT ('NCOOR     ',I7)
+ 1060 FORMAT ('NHCINT    ',I7)
+ 1070 FORMAT ('KTUV34    ',I7)
+ 1080 FORMAT ('INCMXT    ',(4I7))
+ 1090 FORMAT ('INCMXU    ',(4I7))
+ 1100 FORMAT ('INCMXV    ',(4I7))
+ 1120 FORMAT ('JOFFEX    ',(7I7))
+ 1130 FORMAT ('JOFFEY    ',(7I7))
+ 1140 FORMAT ('JOFFEZ    ',(7I7))
       END
 C  /* Deck c1cont */
       SUBROUTINE C1CONT(HCPRIM,HCCNT,CONT1,CONT2,SCR1,SCR2,IODDHR,

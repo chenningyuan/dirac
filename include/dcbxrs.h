@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 7396 $
-! DATE    : $Date: 2008-08-20 09:45:31 +0200 (Wed, 20 Aug 2008) $
+! VERSION : $Revision: 9277 $
+! DATE    : $Date: 2009-07-18 01:21:16 +0200 (Sat, 18 Jul 2009) $
 ! FILE    : dcbxrs.h
 !
 !*** Reduced response equations
@@ -41,7 +41,8 @@
      &           3)
 
       LOGICAL RSREST, STATIC, LINEQ, LSVCFG(2), TKNORM, DIAGHE, STERNH, &
-     &        FKRMC, XRS_NOPFQ, XRS_NOFQX, UNCOUP, TRIPLET, IMFREQ
+     &        FKRMC, XRS_NOPFQ, XRS_NOFQX, UNCOUP, TRIPLET, IMFREQ,     &
+     &        E2CHEK,STERNC
       INTEGER IPRXRS, JSYMOP, JTIMOP, JOPSY, MAXITR, ITMIC, NFREQ,      &
      &        NEXSIM, NEXSTV, NEXCNV, LOFFTY, IPX, IMX, MAXSIM, NZVAR,  &
      &        NZVARQ, NZCONF, NZCONFQ, NTYP, NZXOPT, NZXOPTQ, NZXOPE,   &
@@ -65,7 +66,7 @@
 
       COMMON /WRKFLG/ STATIC, RSREST, LINEQ, LSVCFG, TKNORM, DIAGHE,    &
      &                STERNH, FKRMC, XRS_NOPFQ, XRS_NOFQX, UNCOUP,      &
-     &                TRIPLET, IMFREQ           
+     &                TRIPLET, IMFREQ, E2CHEK,STERNC
 
       INTEGER KBTOT, KBCI, KBOE, KBOP, KZCONF, KZXOPE, KZXOPP
       COMMON /MEMXRS/ KBTOT, KBCI, KBOE, KBOP, KZCONF, KZXOPE, KZXOPP

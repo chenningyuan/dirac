@@ -1,5 +1,4 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,8 +15,8 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ! This module contains functions to communicate with the operating system.
 ! ulfek march 2008
 module os_utils

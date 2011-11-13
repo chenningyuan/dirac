@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : gphjj.F
 C
 C
@@ -357,22 +352,22 @@ C
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
 #if defined (SYS_LINUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Data and time (Linux)  : ',FDATE()
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
 #ifndef VAR_EKO
 C
 C     CALL HOSTNM(HSTNAM)
 C
-      CALL GETENV('HOST',HSTNAM)
+      CALL GETENV('HOSTNAME',HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #endif
 #if defined (SYS_AIX)
-C 930414-hjaaj: apparent error IBM's xlf library routines:
-C    when 'T6' then column 1-5 not blanked but contains text
-C    from a previous print statement!
-C     AIX XL FORTRAN version 2.3+
+!C 930414-hjaaj: apparent error IBM's xlf library routines:
+!C    when 'T6' then column 1-5 not blanked but contains text
+!C    from a previous print statement!
+!C     AIX XL FORTRAN version 2.3+
       WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
 C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
 C     CALL hostnm_(HSTNAM)
@@ -545,6 +540,10 @@ C
       END
 C  /* Deck canon */
       SUBROUTINE CANON(I,J,K,L)
+C
+C     Reorder IJKL to canonical order for real 2-electron entities:
+C       I .ge. J, K .ge. L, IJ .ge. KL
+C
 #include "implicit.h"
       IP=MAX(I,J)
       JP=I+J-IP
@@ -597,7 +596,7 @@ C
 C   Subroutine DZERO sets a real array of length *LENGTH*
 C   to zero.
 C...................................................................
-C      DIMENSION DX(*)
+C     DIMENSION DX(*)
       DIMENSION DX(LENGTH)
 C
       IF (LENGTH.LE.0) RETURN
@@ -712,8 +711,8 @@ C  /* Deck imino8 */
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
-C   to zero.
+C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8*
+C   to minus one.
 C...................................................................
       INTEGER*8 INTI8(*),LENGTH8, IMIN1
 C
@@ -1083,7 +1082,7 @@ C
     1 REWIND (LU)
       RETURN
       END
-C  /* Deck readi */
+!C  /* Deck readi */
       SUBROUTINE READI (IT,N,INTX)
 C
 C (30-Jan-1984) hjaaj
@@ -1099,9 +1098,8 @@ C (30-Jan-1984) hjaaj
 C
 #if defined (VAR_STAR2)
       INTEGER*2 INTX(N)
-#endif
-#if !defined (VAR_STAR2)
-      INTEGER INTX(N)
+#else
+      INTEGER   INTX(N)
 #endif
       READ (IT) INTX
       RETURN
@@ -1109,7 +1107,9 @@ C
 C  /* Deck readdi */
       SUBROUTINE READDI(IT,IU,N,IX)
       DIMENSION IX(N)
-#if !defined (VAR_FASTIO)
+#if defined (VAR_FASTIO)
+      ERROR - READDI is not programmed for VAR_FASTIO
+#else
       READ(IT,REC=IU) IX
 #endif
       RETURN
@@ -1122,17 +1122,17 @@ C  /* Deck readt */
       READ (IT,END=10,ERR=20) X
       RETURN
  10   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: END reading file, unit ',IT
+      WRITE (STRING,'(A25,I5)') 'READT: END reading unit  ',IT
       CALL QUIT(STRING)
  20   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: Error reading file, unit ',IT
+      WRITE (STRING,'(A25,I5)') 'READT: Error reading unit',IT
       CALL QUIT(STRING)
       END
-C  /* Deck writi */
+!C  /* Deck writi */
       SUBROUTINE WRITI (IT,N,INTX)
-C
-C (30-Jan-1984) hjaaj
-C
+!C
+!C (30-Jan-1984) hjaaj
+!C
       DIMENSION INTX(N)
       WRITE (IT) INTX
       RETURN
@@ -1144,9 +1144,8 @@ C (30-Jan-1984) hjaaj
 C
 #if defined (VAR_STAR2)
       INTEGER*2 INTX(N)
-#endif
-#if !defined (VAR_STAR2)
-      INTEGER INTX(N)
+#else
+      INTEGER   INTX(N)
 #endif
       WRITE (IT) INTX
       RETURN
@@ -1188,10 +1187,10 @@ C
 C
     3 IF (LUERR.LT.0) THEN
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1225,12 +1224,12 @@ C     a non-existing file
      *       /T22,'when searching for label ',A8,
      *       /T22,'IOSTAT value :',I7)
       END
-C  /* Deck fndlab */
+!C  /* Deck fndlab */
       LOGICAL FUNCTION FNDLAB(A,LU)
-C
-C 26-May-1985 hjaaj -- logical function version of SEARCH
-C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
-C
+!C
+!C 26-May-1985 hjaaj -- logical function version of SEARCH
+!C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
+!C
       CHARACTER*8 A, B(4), C
       DATA C/'********'/
       IRDERR = 0
@@ -1244,22 +1243,63 @@ C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
 #if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
       CLOSE(LU,ERR=8)
 #endif
       GO TO 8
     3 CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
 C
     8 FNDLAB = .FALSE.
+C
+   10 RETURN
+      END
+!C  /* Deck fndlab12 */
+      LOGICAL FUNCTION FNDLAB12(A,LU)
+!C
+!C 26-May-1985 hjaaj -- logical function version of SEARCH
+!C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
+!C 02-May-2010 sk    -- copy/paste from fndlab + changed to CHARACTER*12 
+!C                      from CHARACTER*8
+!C
+      CHARACTER*12 B(4), C
+      CHARACTER*12 A
+      DATA C/'************'/
+      IRDERR = 0
+    1 READ(LU,END=3,ERR=6)B
+      IRDERR = 0
+      IF (B(1).NE.C) GO TO 1
+      IF (B(4).NE.A) GO TO 1
+      FNDLAB12 = .TRUE.
+      GO TO 10
+C
+    6 IRDERR = IRDERR + 1
+      IF (IRDERR .LT. 5) GO TO 1
+#if defined (SYS_IBM)
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
+      CLOSE(LU,ERR=8)
+#endif
+      GO TO 8
+    3 CONTINUE
+#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
+      BACKSPACE LU
+#endif
+C
+    8 FNDLAB12 = .FALSE.
 C
    10 RETURN
       END
@@ -1288,10 +1328,10 @@ C
 C
     3 IF (LUERR.LT.0) THEN
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1308,9 +1348,9 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       IF (LUERR.LT.0) THEN
 #if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
          CLOSE(LU,ERR=8)
     8    CONTINUE
 #endif
@@ -1346,18 +1386,18 @@ C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
 #if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
       CLOSE(LU,ERR=3)
 #endif
       GO TO 8
     3 CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
     8 FNDLB2 = .FALSE.
@@ -1394,10 +1434,10 @@ C     a non-existing file
       GO TO 8
     3 CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
       BACKSPACE LU
 #endif
     8 NXTLAB = .FALSE.
@@ -1482,6 +1522,30 @@ C
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLB2: output error writing label')
+      END IF
+      END
+C  /* Deck newlab12 */
+      SUBROUTINE NEWLAB12(LABEL,LU,LUERR)
+C
+C  29-Sep-1988 Hans Joergen Aa. Jensen
+C
+C  Write new MOLECULE-type label to LU
+C
+      CHARACTER*12 LABEL, LTIME, LDATE, LSTARS
+      DATA LSTARS /'************'/
+      CALL GETDAT(LDATE,LTIME)
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
+      RETURN
+C
+ 1000 IF (LUERR .LT. 0) THEN
+         LUERR = -2
+         RETURN
+      ELSE
+         WRITE (LUERR,'(/3A,I5/A,I7)')
+     &      ' NEWLAB12: error writing label "',LABEL,'" to unit',LU,
+     &      '           IOSTAT value',IOSVAL
+         CALL QTRACE(LUERR)
+         CALL QUIT('NEWLAB12: output error writing label')
       END IF
       END
 C  /* Deck second */
@@ -1760,224 +1824,6 @@ C
       RETURN
       END
 
-C  /* Deck rdonel */
-      SUBROUTINE RDONEL(KEY,FOUND,A,NA)
-C
-C 31-Jul-1987 hjaaj
-C
-C     Purpose : Read LUONEL
-C
-C     Note: if FOUND true, it must not be updated.
-C
-C
-#include "implicit.h"
-#include "priunit.h"
-C     Global array
-      DIMENSION A(NA,*)
-      CHARACTER KEY*(*)
-      LOGICAL   FOUND, RDBUF
-C
-C Used from common blocks:
-C   INFINP : TITMOL(12,2), POTNUC, CENT(*), TYPE(*)
-C   INFORB : NBAS(8), NSYM, NBAST, NNBAST
-C
-#include "maxorb.h"
-#include "infinp.h"
-#include "inforb.h"
-#include "inftap.h"
-#include "r12int.h"
-C     Local arrays
-      PARAMETER ( LBUF = 600 )
-      DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
-      DIMENSION ITMPMO(2*MXCORB)
-      EQUIVALENCE (BUF,DBUF,QBUF,ITMPMO)
-      LOGICAL   OPEND, FEXIST, ERRSTP
-C
-      CALL QENTER('RDONEL')
-      ERRSTP = FOUND
-      IF (.NOT.FOUND) FOUND  = .TRUE.
-C     Note: if FOUND true, it must not be updated.
-      RDBUF  = .FALSE.
-C
-      CALL GPINQ(FNONEL,'OPENED',OPEND)
-      IF (.NOT.OPEND) THEN
-         CALL GPINQ(FNONEL,'EXIST',FEXIST)
-       IF (FEXIST) THEN
-         CALL GPOPEN(LUONEL,FNONEL,'OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         OPEND = .TRUE.
-         IF (LBONEL .LT. 0) LBONEL = LBUF
-       ELSE
-         WRITE (LUPRI,'(/3A)')
-     *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
-         WRITE (LUERR ,'(/3A)')
-     *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
-         IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR: AOONEINT file DOES NOT EXIST')
-         ELSE
-            FOUND = .FALSE.
-            GO TO 9999
-         END IF
-       END IF
-      END IF
-C
-      IF     (KEY.EQ.'OPEN    ') THEN
-C        ... file is opened automatically first time RDONEL is called.
-      ELSE IF(KEY.EQ.'CLOSE   ') THEN
-         CALL GPCLOSE(LUONEL,'KEEP')
-      ELSE IF(KEY.EQ.'MLCLINFO') THEN
-         REWIND LUONEL
-         READ (LUONEL) ((TITMOL(I,J),I=1,12),J=1,2),
-     *                 NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
-         NBAST  = 0
-         NNBAST = 0
-         DO 110 I = 1,NSYM
-            NBAST  = NBAST  + NBAS(I)
-            NNBAST = NNBAST + NBAS(I)*(NBAS(I)+1)/2
-  110    CONTINUE
-         DO 120 I = NSYM+1,8
-            NBAS(I) = 0
-  120    CONTINUE
-         CALL MOLLAB('SYMINPUT',LUONEL,LUPRI)
-         READ (LUONEL) NBT,(ITMPMO(I),I=1,2*NBT)
-C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
-         IF (NBT .NE. NBAST) THEN
-            WRITE (LUPRI,'(//A,2(/A,I5))')
-     *      ' >>> RDONEL ERROR',
-     *      '     NBAST from first record on AOONEINT :',NBAST,
-     *      '     NBAST from "SYMINPUT"   on AOONEINT :',NBT
-            CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
-         END IF
-         REWIND LUONEL
-         DO 130 I=1,NBAST
-            WRITE(CENT(I),'(A4)') ITMPMO(I)
-            WRITE(TYPE(I),'(A4)') ITMPMO(NBAST+I)
-  130    CONTINUE
-      ELSE IF(KEY.EQ.'OVERLAP ') THEN
-C        Read overlap, in symmetry blocked triangular form
-         REWIND LUONEL
-         CALL MOLLAB('OVERLAP ',LUONEL,LUPRI)
-         RDBUF = .TRUE.
-      ELSE IF(KEY.EQ.'ONEHAMIL') THEN
-C        Read one electron part, in symmetry blocked triangular form
-         REWIND LUONEL
-         CALL MOLLAB('ONEHAMIL',LUONEL,LUPRI)
-         RDBUF = .TRUE.
-      ELSE IF(KEY.EQ.'KINETINT') THEN
-         REWIND LUONEL
-         CALL MOLLAB('KINETINT',LUONEL,LUPRI)
-         RDBUF = .TRUE.
-      ELSE IF(KEY.EQ.'DIPOLMOM') THEN
-         REWIND LUONEL
-         CALL MOLLAB('DIPOLMOM',LUONEL,LUPRI)
-         IF (LBONEL .NE. LBUF) THEN
-            WRITE(LUPRI,'(/A,2(/A,I8))')
-     *         ' ERROR RDONEL, LBONEL .ne. local LBUF for DIPOLMOM',
-     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key DIPOLMOM')
-         END IF
-  501    READ (LUONEL) DBUF,IBUF,NUT
-         IF (NUT.EQ.0)   GO TO 501
-         IF (NUT.LT.0)   GO TO 502
-         IF (NOAUXB) THEN
-            DO I=1,NUT
-               CALL INOAUX(IBUF(I),IR12)
-               IF (IR12 .GT. 0) THEN
-                  A(IR12,1) = DBUF(I,1)
-                  A(IR12,2) = DBUF(I,2)
-                  A(IR12,3) = DBUF(I,3)
-               END IF
-            END DO 
-         ELSE
-            DO I=1,NUT
-               J = IBUF(I)
-               A(J,1) = DBUF(I,1)
-               A(J,2) = DBUF(I,2)
-               A(J,3) = DBUF(I,3)
-            END DO 
-         END IF
-         GO TO 501
-  502    CONTINUE
-      ELSE IF(KEY.EQ.'QUADRP  ') THEN
-         REWIND LUONEL
-         CALL MOLLAB('QUADRP  ',LUONEL,LUPRI)
-         IF (LBONEL .NE. LBUF) THEN
-            WRITE(LUPRI,'(/A,2(/A,I8))')
-     *         ' ERROR RDONEL, LBONEL .ne. local LBUF for QUADRP  ',
-     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key QUADRP')
-         END IF
-  601    READ (LUONEL) QBUF,IBUF,NUT
-         IF (NUT.EQ.0)   GO TO 601
-         IF (NUT.LT.0)   GO TO 602
-         IF (NOAUXB) THEN
-            DO I=1,NUT
-               CALL INOAUX(IBUF(I),IR12)
-               IF (IR12 .GT. 0) THEN
-                  DO ICOMP = 1,6
-                     A(IR12,ICOMP) = QBUF(I,ICOMP)
-                  END DO
-               END IF
-            END DO
-         ELSE
-            DO I=1,NUT
-               J = IBUF(I)
-               DO ICOMP = 1,6
-                  A(J,ICOMP) = QBUF(I,ICOMP)
-               END DO
-            END DO
-         END IF
-         GO TO 601
-  602    CONTINUE
-      ELSE IF(KEY.EQ.'ISORDK  ') THEN
-         WRITE(LUPRI,'(2A)') KEY, ' IS NOT IMPLEMENTED YET IN RDONEL'
-         IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR, KEY ISORDK NOT IMPLEMENTED YET.')
-         ELSE
-            FOUND = .FALSE.
-         END IF
-      ELSE IF(KEY.EQ.'SCFINP  ') THEN
-         WRITE(LUPRI,'(2A)') KEY, ' IS NOT IMPLEMENTED YET IN RDONEL'
-         IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR, KEY SCFINP NOT IMPLEMENTED YET.')
-         ELSE
-            FOUND = .FALSE.
-         END IF
-      ELSE
-         WRITE(LUPRI,'(2A)') KEY, ' IS AN INVALID KEY TO RDONEL'
-         IF (ERRSTP) THEN
-            CALL QUIT('ERROR RDONEL, INVALID KEY')
-         ELSE
-            FOUND = .FALSE.
-         END IF
-      END IF
-      IF (RDBUF) THEN
-         IF (LBONEL .GT. LBUF) THEN
-            WRITE(LUPRI,'(/A,2(/A,I8))')
-     *         ' ERROR RDONEL, LBONEL .GT. local LBUF',
-     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('ERROR RDONEL, LBONEL .gt. LBUF')
-         END IF
-         CALL DZERO(A,NNBAST)
- 2100    READ (LUONEL) (BUF(I),I=1,LBONEL),(IBUF(I),I=1,LBONEL),LENGTH
-         IF (NOAUXB) THEN
-            DO I = 1, LENGTH
-               CALL INOAUX(IBUF(I),IR12)
-               IF (IR12 .GT. 0) A( IR12 , 1 ) = BUF(I)
-            END DO
-         ELSE
-            DO I = 1, LENGTH
-               A( IBUF(I) , 1 ) = BUF(I)
-            END DO
-         END IF
-         IF (LENGTH .GE. 0) GO TO 2100
-         REWIND LUONEL
-      END IF
-      CALL GPCLOSE(LUONEL,'KEEP')
-C
- 9999 CALL QEXIT('RDONEL')
-      RETURN
-      END
 C  /* Deck gpinq */
       SUBROUTINE GPINQ(FILENM,TASK,VALUE)
 C
@@ -2015,54 +1861,5 @@ C
       ELSE
          CALL QUIT('Unknown inquire status requested')
       END IF
-      RETURN
-      END
-C  /* Deck inoaux */
-      SUBROUTINE INOAUX(II,JJ)
-#include "implicit.h"
-#include "priunit.h"
-      INTEGER MAXFRO
-      INTEGER NSYM,NSYMFR,MULD2H,NLAMDS,N2BAST,
-     *        NRHF,NVIR,NORB,NRHFT,NVIRT,NORBT,
-     *        NRHFS,NVIRS,NORBS,NRHFTS,NVIRTS,NORBTS,
-     *        NBAS,NBAST,NNBASX,N2BASX,IORB,IBAS,
-     *        NRHFFR,NVIRFR,
-     *        KFRRHF,KFRVIR,NFC,NFV
-      PARAMETER (MAXFRO = 60)
-      LOGICAL LGLO
-      COMMON /CCORB/ NSYM,NSYMFR,MULD2H(8,8),NLAMDS,N2BAST,
-     *               NRHF(8),NVIR(8),NORB(8),NRHFT,NVIRT,NORBT,
-     *               NRHFS(8),NVIRS(8),NORBS(8),NRHFTS,NVIRTS,NORBTS,
-     *               NBAS(8),NBAST,NNBASX,N2BASX,IORB(8),IBAS(8),
-     *               NRHFFR(8),NVIRFR(8),
-     *               KFRRHF(MAXFRO,8),KFRVIR(MAXFRO,8),
-     *               NFC,NFV,LGLO
-C ... only used in RDONEL when called from cc/ routines,
-C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
-#include "maxorb.h"
-#include "r12int.h"
-      LOGICAL FIRST
-      DATA FIRST /.TRUE./
-      DIMENSION IJ(MXORBT)
-      SAVE IJ
-      IF (FIRST) THEN
-         KL = 0
-         MN = 0
-         DO ISYM = 1, NSYM
-            DO I = 1, MBAS1(ISYM) + MBAS2(ISYM)
-               DO J = 1, I
-                  KL = KL + 1
-                  IF (I. LE. MBAS1(ISYM) .AND. J .LE. MBAS1(ISYM)) THEN
-                     MN = MN + 1
-                     IJ(KL) = MN
-                  ELSE
-                     IJ(KL) = -1
-                  END IF
-               END DO
-            END DO
-         END DO
-         FIRST = .FALSE.
-      END IF
-      JJ = IJ(II)
       RETURN
       END

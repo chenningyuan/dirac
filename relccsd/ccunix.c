@@ -1,29 +1,28 @@
 /*
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-*/
+ *     Copyright (c) 2010 by the authors of DIRAC.
+ *     All Rights Reserved.
+ *
+ *     This source code is part of the DIRAC program package.
+ *     It is provided under a written license and may be used,
+ *     copied, transmitted, or stored only in accordance to the
+ *     conditions of that written license.
+ *
+ *     In particular, no part of the source code or compiled modules may
+ *     be distributed outside the research group of the license holder.
+ *     This means also that persons (e.g. post-docs) leaving the research
+ *     group of the license holder may not take any part of Dirac,
+ *     including modified files, with him/her, unless that person has
+ *     obtained his/her own license.
+ *
+ *     For information on how to get a license, as well as the
+ *     author list and the complete list of contributors to the
+ *     DIRAC program, see: http://dirac.chem.vu.nl
+ */
+
  /*
  *
- * VERSION : $Revision: 7732 $
- * DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+ * VERSION : $Revision: 11757 $
+ * DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
  * FILE    : ccunix.c
  *
         Access to C I/O routrines from FORTAN.
@@ -50,6 +49,9 @@ I/O routines:   openc(unit,fname,size,status)
         */
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -70,7 +72,7 @@ extern char  *getenv();
 
 /* Check that the large file option is enabled, if not use normal lseek */
 
-#if defined (SMALL_CFILES) || (SYS_DEC)
+#if defined (SMALL_CFILES) || (SYS_DEC) || (SYS_LINUX)
 typedef off_t off64_t;
 #define lseek64 lseek
 #elif defined (SYS_HPUX)
@@ -79,8 +81,8 @@ typedef off_t off64_t;
 
 typedef struct
 { int  fd ;
-  off64_t size, addr;
-  char fname[MAXLENGTH];
+    off64_t size, addr;
+    char fname[MAXLENGTH];
 } FILE_DEFINITION;
 
 FILE_DEFINITION files[MAXUNIT];
@@ -92,19 +94,22 @@ void MACRO_QUIT();
 #define PAM_GLOBAL_SYMBOLS_UNDERSCORED
 
 #ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
-void openc_(int*unit, char*fname, off64_t* size, int *status)
+void openc_(int *unit, char *fname, off64_t* size, int *status)
 #else
 void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
 #endif
 
 { char *cp, *env ;
+
   char  name[PATHMAX]; 
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"openc: Unit number out of range (%d)\n",*unit);
           return;
         }
-  cp=fname+strlen(fname)-1;
+
+   cp=fname+ strlen( fname )-1;
+
  /*  if (*cp==' ') { while (*cp--==' '); *(cp+2)=NULL; }  */
   if (*cp==' ') { while (*cp--==' '); *(cp+2)='\0'; }
   if (strlen(fname)-1>MAXLENGTH) fprintf(stderr,"openc: filename too int >15\n");
@@ -112,6 +117,7 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
            if it exists, use it, if not, use program supplied name 
         */  
   strcpy(name,fname); 
+
   if((env=getenv(fname)) !=NULL) 
   strcpy(name,env); 
 
@@ -145,6 +151,7 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
   files[*unit].size= *size;
   /* strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;  */
   strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)='\0';
+
   *size=(lseek64(files[*unit].fd,0L,2)+511)/512;
   files[*unit].addr= -1;
 

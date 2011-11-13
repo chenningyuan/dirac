@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirgeo.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -37,6 +32,7 @@ C     Written by Joern Thyssen 1997/06/17
 C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -58,9 +54,9 @@ C
 C
       IF(.NOT.DONGRD) THEN
 C       We want the analytical gradient, check whether it is implemented
-        DONGRD = NOGRAD.OR.DODFT.OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
+        DONGRD = NOGRAD.OR.dirac_cfg_dft_calculation
+     &           .OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
      &           DOLUCT.OR.DOKRMC.OR.DOLUCIAR
-CTROND        DONGRD = .NOT. (DODHF .AND. HAMGRD)
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use numerical molecular gradient',

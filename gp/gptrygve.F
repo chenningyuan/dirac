@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,18 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
+! If one set then set the other:
+#ifdef INT_STAR8
+#define VAR_INT64
+#else
+#ifdef VAR_INT64
+*define INT_STAR8
+#endif
+#endif
 !
-C 
-C
-C FILE    : gptrygve.F
-C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
@@ -56,13 +60,11 @@ C
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
-            WRITE (LUPRI,'()')
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
             OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
             LOUT = 17 + LTEXT + 3
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
-            WRITE (LUPRI,'()')
             CALL FLSHFO(LUPRI)
          END IF
       END IF
@@ -136,9 +138,9 @@ C     AIX XL FORTRAN version 2.3+
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
 #include "implicit.h"
+#include "priunit.h"
       CHARACTER TEXT*6
       PARAMETER (HUN = 100.0D00)
-#include "priunit.h"
       SAVE TREST
       DATA TREST /0.0D0/
       IF (TEXT .EQ. 'REST  ') THEN
@@ -182,11 +184,11 @@ C
       END IF
       IF (IN .EQ. 200) THEN
          WRITE (LUPRI, '(//150A)')
-     *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
+     *      (' ',I=1,INDENT),'.', ('-',I=1,LENGTH),'.'
          WRITE (LUPRI, '(150A)')
      &      (' ',I=1,INDENT),'| ', HEAD(1:LHEAD), ' |'
          WRITE (LUPRI, '(150A)')
-     *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
+     *      (' ',I=1,INDENT),'`', ('-',I=1,LENGTH),"'"
       ELSE IF (IN .EQ. 100) THEN
          WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
          WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
@@ -293,7 +295,7 @@ C 3 = pretty print traceback to stdout...
 
 #if defined (VAR_MPI)
 #   if defined (PRG_DIRAC)
-      IF(PARCAL) CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
+      IF (PARCAL) CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
 #   else
       CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
 #   endif
@@ -301,8 +303,29 @@ C 3 = pretty print traceback to stdout...
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)
 #endif
+
+CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
+#if defined (NO_SF_QUIT)
+      WRITE (LUPRI,*)
+     & 'Intentionally quitting without a Segmentation Fault'
+      CALL FLSHFO(LUPRI)
       STOP 1000
+#else
+CMI ... might be input defined restriction for some reasons
+      IF (.NOT.NOSFCRASH) THEN
+        WRITE (LUPRI,*)
+     & 'Intentionally causing a crash with a Segmentation Fault'
+        CALL FLSHFO(LUPRI)
+        CALL CRASH()
+      ELSE
+        WRITE (LUPRI,*)
+     & 'Intentionally quitting without a Segmentation Fault'
+        CALL FLSHFO(LUPRI)
+        STOP 1001
+      ENDIF
+#endif
       END
+
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
 C
@@ -387,7 +410,6 @@ CSK            CALL TRBK()
 #if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN) 
 CSK|| defined (SYS_LINUX)
 C
-C     Assume same for CONVEX --  1-Nov-1989 hjaaj
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
 C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj
 C     Assume same for DEC    -- 21-May-1992 hjaaj
@@ -444,19 +466,21 @@ C
 C error branches
 C
  9000 CONTINUE
-      WRITE (LUPRI,'(//A,A/A,I5)')
-     *   ' *** ERROR (OPENDX) INVALID STATUS KEYWORD: ',STATUS,
+      WRITE (LUPRI,'(//2A/2A/A,I5)')
+     *   ' --> ERROR (OPENDX) INVALID STATUS KEYWORD: ',STATUS,
+     *   '                    FILE NAME   =',NAME,
      *   '                    FILE NUMBER =',LUDX
       CALL QTRACE(LUPRI)
-      CALL QUIT('*** ERROR (OPENDX) INVALID STATUS KEYWORD')
+      CALL QUIT('ERROR (OPENDX) INVALID STATUS KEYWORD')
 C
  9100 CONTINUE
-      WRITE (LUPRI,'(//A/A,I5/A)')
-     *   ' *** ERROR (OPENDX) OLD FILE NOT FOUND',
+      WRITE (LUPRI,'(//A/2A/A,I5/A)')
+     *   ' --> ERROR (OPENDX) OLD FILE NOT FOUND',
+     *   '                    FILE NAME   =',NAME,
      *   '                    FILE NUMBER =',LUDX,
      *   ' --- or wrong record length on old file.'
       CALL QTRACE(LUPRI)
-      CALL QUIT('*** ERROR (OPENDX) FILE NOT FOUND')
+      CALL QUIT('ERROR (OPENDX) FILE NOT FOUND')
 C
 C end of OPENDX
 C
@@ -491,7 +515,7 @@ C
 #include "2gbdef.h"
 #include "dummy.h"
       LOGICAL OLDDX
-      CHARACTER*16 FNNAME, FNNM2
+      CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
 #include "inftap.h"
 #include "chrnos.h"
@@ -511,8 +535,8 @@ C
 C     Error branch for very large record lengths
 C
       IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)') 
-     &        ' ERROR: The requested record length of ', LRECL, 
+         WRITE (LUPRI,'(/A,I14,A)')
+     &        ' ERROR: The requested record length of ', LRECL,
      &        ' is larger than 2Gb'
          WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
      &        'single record to file!'
@@ -573,7 +597,7 @@ C
 #include "2gbdef.h"
 #include "priunit.h"
       LOGICAL OLDDX
-      CHARACTER*16 FNNAME, FNNM2
+      CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
 #include "inftap.h"
 #include "chrnos.h"
@@ -592,8 +616,8 @@ C
 C     Error branch for very large record lengths
 C
       IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)') 
-     &        ' ERROR: The requested record length of ', LRECL, 
+         WRITE (LUPRI,'(/A,I14,A)')
+     &        ' ERROR: The requested record length of ', LRECL,
      &        ' is larger than 2Gb'
          WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
      &        'single record to file!'
@@ -628,7 +652,7 @@ C
          CALL GPOPEN(LU,FNNM2(1:LN2),'UNKNOWN','DIRECT',' ',LRECL,
      &               OLDDX)
       ELSE
-         IRECT = I   
+         IRECT = I
       END IF
 #else
       IRECT = I
@@ -705,15 +729,15 @@ C
 C Purpose:
 C   General purpose routine for opening files in the Dalton program.
 C   The routine will dynamically allocate unit numbers that will
-C   become available again when the file is closed using GPCLSE
+C   become available again when the file is closed using GPCLOSE
 C
 C   Direct access files are provided with a UNIT-number, but the rest
 C   of the file opening process is taken care of by a call to OPENDX.
 C
-C   These files are strongly machine dependent, although care has been 
+C   These files are strongly machine dependent, although care has been
 C   taken to avoid using unit numbers that are illegal or reserved on a
 C   particular architecture. However, the use of GPOPEN and GPCLSE should
-C   remove much of the machine dependence in the rest of the Dalton 
+C   remove much of the machine dependence in the rest of the Dalton
 C   program
 C
 C Input:
@@ -726,7 +750,6 @@ C  ACCEIN   Access method. 'DIRECT' or 'SEQUENTIAL'. Default is sequential.
 C  FORMIN   Formatted or unformatted file format. Default is 'UNFORMATTED'
 C
 C Direct access-specific input:
-C
 C  NELEM    number of integer words per logical record
 C  NREC     number of logical records
 C
@@ -794,7 +817,9 @@ C
 C
 C     We've got a file number now, get rid of the direct access case
 C
-      IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
+!radovan: if we don't check for statln, valgrind issues *many* errors
+!         anyway it can't be 'DIRECT' if it's not at least six characters long
+      IF ((STATLN .GT. 5) .and. (ACCESF(1:6) .EQ. 'DIRECT')) THEN
          IF (FILELN .EQ. 0) THEN
             FILELN = 13
             FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
@@ -1212,3 +1237,38 @@ C
 C
       END
 #endif
+C /* Deck UPCASE */
+      SUBROUTINE UPCASE(WORD)
+C
+C     Routine that uppercases the word provided. Allows the input easily to
+C     be made case insensitive. F90 routine supplied by Anthony Stone and 
+C     77-ified by K.Ruud
+C
+C     Revision March 2010 hjaaj: remove any inline comment
+C
+#include "implicit.h"
+      CHARACTER*(*) word
+      CHARACTER*26  UPPER, LOWER
+C
+      UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      LOWER = "abcdefghijklmnopqrstuvwxyz"
+C
+C     Remove in-line comment /hjaaj March 2010
+      K = INDEX(WORD,'!')
+      IF (K .EQ. 0) K = INDEX(WORD,'#')
+      LEN_WORD = LNBLNK(WORD)
+      IF ( K .GT. 1 .AND. LEN_WORD .GT. 1) THEN
+C        ... NB! do not remove the "!" or "#" if in column 1
+C            because then the tests in the *INP routines do not work!
+         WORD(K:LEN_WORD) = ' '
+         LEN_WORD = LNBLNK(WORD)
+      END IF
+C
+      DO I = 1, LEN_WORD
+         K = INDEX(LOWER,WORD(I:I))
+         IF (K .NE. 0) WORD(I:I) = UPPER(K:K)
+      END DO
+C
+      RETURN
+      END
+! -- end of gptrygve.F --

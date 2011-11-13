@@ -1,6 +1,4 @@
-! 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,10 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-! 
-!
-! VERSION : $Revision: 7732 $
-! DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+! VERSION : $Revision: 11757 $
+! DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 ! FILE    : hercen.F
 !
 !------------------------------------------------------------------------------------
@@ -235,7 +231,7 @@
       CHARACTER*80 BASREF(10)
       PARAMETER (MAXBSFIL=5)
       CHARACTER*20 BSFIL(MAXBSFIL)
-      LOGICAL GENERATE
+      LOGICAL GENERATE, CNTBAS
 #include "molinp.h"
 #include "nuclei.h"
 #include "huckel.h"
@@ -289,7 +285,7 @@
 !       6      KINBAL      Generate the small component basis by kinetic balance
 !
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
+      READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
 !
       SELECT CASE (BSET)
       CASE ("LARGE")

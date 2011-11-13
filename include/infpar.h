@@ -18,11 +18,11 @@ extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
     long iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
+    long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes, iparex;
     long parher, slave, timing, debug, pario;
 #else
     int  iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
+    int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes, iparex;
     int  parher, slave, timing, debug, pario;
 #endif 
 } diracinfpar_;
@@ -36,14 +36,14 @@ extern struct common_diracinfpar {
       REAL*8 TOTWAL
 !CSK      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
-      INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID, NODE, NODES
+      INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID,NODE,NODES,IPAREX
       LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
 !CSK      COMMON /DIRACINFPAR/ TOTWAL                                        &
 !CSK     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
       COMMON /DIRACINFPAR/ TOTWAL                                        &
      &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
-     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES                         &
+     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES, IPAREX                 &
      &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
      &       ,NODNAM, MYNAME
 
@@ -56,8 +56,14 @@ extern struct common_diracinfpar {
 !     integer array ISTAT contains MPI_SOURCE information.
 !     Proper use of ISTAT on 64-bit machines in 
 !     combination with INT_STAR8 requires explicit declaration 
-!     as INTEGER*4 /March-2007 sk 
-      INTEGER*4 ISTAT
+!     as INTEGER*4 /March-2007 sk - This is only true for 
+!     32-bit MPI libraries.
+!     64-bit MPI libraries require INTEGER ISTAT (which will then be 
+!     INTEGER*8)
+!
+!     radovan: it is not ideal that istat type is not defined ifndef INT_STAR8
+!              i do not want to fix it, because maybe there is a reason
+      INTEGER   ISTAT
 #endif
 
 !C -- end of infpar.h --

@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 7428 $
-! DATE    : $Date: 2008-08-25 15:22:41 +0200 (Mon, 25 Aug 2008) $
+! VERSION : $Revision: 11587 $
+! DATE    : $Date: 2010-09-13 12:22:45 +0200 (Mon, 13 Sep 2010) $
 ! FILE    : dcbopt.h
 !
 !*** 2nd order opt. ***
@@ -45,6 +45,12 @@
 !                                             1: second-order MCSCF
 !                                             2: KR-CI
 !
+!     spinfr_krmc    - flag for running a spinfree MCSCF
+!
+!
+!     LVCORR correction (re-)calculated within the KR-MC/CI framework
+!     --> LVCORR_MC 
+!
 !     Parameters for MCTYPE:
 !
       INTEGER JDHF, JODHF, JCAS, JMCMIN, JGAS
@@ -61,7 +67,8 @@
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
      &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
-     &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE
+     &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
+     &        NMAX_SYM, nopen_mc
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -73,34 +80,39 @@
      &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
-     &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE
+     &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
+     &                NMAX_SYM, nopen_mc
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
-     &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR
+     &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
+     &       LVCORR_MC
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
-     &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR
+     &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
+     &                LVCORR_MC
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)
 
       LOGICAL FLAG(NOPTFLAGS)
       LOGICAL OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX
-      LOGICAL OPT_NOCI, OPT_UCIBOS, OPT_MKCNST
+      LOGICAL OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, OPT_CHCKJZ
       LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT, NATOLCR
       LOGICAL CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD, CINT_SPLIT
-      LOGICAL GENFOCK
+      LOGICAL GENFOCK, CHCKPT_WRT, CPBLCK_FILE, TRA_NATO, CINT_LOWSRT
+      LOGICAL spinfr_krmc
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
      &                OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, DONR, FROZCI,   &
      &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT, NATOLCR,   &
      &                CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD,       &
-     &                CINT_SPLIT, GENFOCK
+     &                CINT_SPLIT, GENFOCK, CHCKPT_WRT, CPBLCK_FILE,     &
+     &                TRA_NATO, OPT_CHCKJZ, CINT_LOWSRT, spinfr_krmc
 
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP

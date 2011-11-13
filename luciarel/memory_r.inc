@@ -1,0 +1,18 @@
+C
+C VERSION : $Revision: 6375 $
+C DATE    : $Date: 2007-11-23 13:33:36 +0100 (Fri, 23 Nov 2007) $
+C FILE    : memory_r.inc
+C
+C memory information for LUCIAREL
+C
+csk#if defined (IA64) || defined (INT_STAR8)
+      INTEGER*8 KBASE,KFREES,KFREEL,IBASE,NWORD,JBASE,JBASEN,IMARK
+csk#endif
+      CHARACTER*6 TASK,IDENT,IIDENT,MARKC,MARK_ACT
+      PARAMETER(NPAD = 1 )
+      PARAMETER(MAXLVL = 4096 )
+      PARAMETER(MAXMRK = 1024)
+      COMMON/CMEMOR/NWORD,KFREES,KFREEL,IBASE(MAXLVL),IMARK(MAXMRK),
+     &              LENGTH(MAXLVL),IIDENT(MAXLVL),NS,NL,NM,
+     &              MARKL(MAXMRK),MARKS(MAXMRK),MARKC(MAXMRK),
+     &              MARK_ACT

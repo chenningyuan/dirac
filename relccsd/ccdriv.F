@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : ccdriv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -61,19 +56,22 @@ C
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
-     &//" Written by :",/" Lucas (Luuk) Visscher"/
+     &//" Written by :",/" Lucas Visscher"/
      &/" NASA Ames Research Center    (1994)"
      &/" Rijks Universiteit Groningen (1995)"
      &/" Odense Universitet           (1996-1997)" 
-     &/" Vrije Universiteit Amsterdam (1998-present)")
+     &/" VU University Amsterdam (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
      &/"  - Initial implementation :",T30,
      &"L. Visscher, T.J. Lee and K.G. Dyall, ",
      &"J. Chem. Phys. 105 (1996) 8769."
-     &/"  - Fock space formalism :",T30,
+     &/"  - Fock Space (FSCC):",T30,
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
+     &/"  - Intermediate Hamiltonian FSCC :",T30,
+     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
+     &"J. Chem. Phys. 122 (2005) 224113.",
      &/"  - Parallelization :",T30,
      &"M. Pernpointner and L. Visscher, ",
      &"J. Comp. Chem. 24 (2003) 754.")
@@ -132,6 +130,9 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use relcc_cfg
+!     All initialization should be done in relcc_cfg, ultimately all common
+!     blocks should go, keep them for the moment for compatibility with reladc
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -178,8 +179,11 @@ C
 CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,TSHOLD,
+     &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
      &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
+      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
+     &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
+     &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -203,16 +207,19 @@ C
          NELEC_F1(I) = 0
          NELEC_F2(I) = 0
       ENDDO
-      IPRNT = 0
-      DOSORT  = .TRUE.
-      DOENER  = .TRUE.
-      DOFOPR  = .FALSE.
-      DOSOPR  = .FALSE.
-      DOFSPC  = .FALSE.
-      DEBUG  = .FALSE.
-      TIMING = .FALSE.
+      IPRNT   = relcc_print
+      DOSORT  = relcc_do_sort
+      DOENER  = relcc_do_energy
+      DOFOPR  = relcc_do_gradient
+      DOSOPR  = .FALSE. ! This option is to be removed until we have at least the MP2 Hessian
+      DOFSPC  = relcc_do_fspc
+      DOIH  = .FALSE.
+      DEBUG  = relcc_debug
+      TIMING = relcc_timing
       MWORD = 0
-C
+C     
+C     Note that reading this namelist may override the Dirac style input. Leave 
+C     this at the discretion of the user for the moment.
       READ (IN,RELCCSD,END=2,ERR=1)
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
@@ -258,6 +265,8 @@ C
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
 C     Switch on evaluation of property output if necessary
+      IF (SPFR.AND.DOMP2G) 
+     & CALL QUIT ('MP2 density matrix not available in spinfree mode')
       IF (DOMP2G) THEN
           DOEXP = .TRUE.
           IPRPWF = 0
@@ -402,6 +411,71 @@ C
          FSSECT(3) = 1
          FSSECT(6) = 1
       ENDIF
+C
+C     General input for IH procedure
+C
+      EHMIN=1000.D0
+      EHMAX=100.D0
+      EPMIN=-1.D0
+      EPMAX=-1000.D0
+      DO I = 1, 16
+         NACTHI(I) = 0 ! it's 0 for (0,2) sector
+         NACTPI(I) = 0
+      ENDDO
+      IHSCHEME=2
+C
+C     Defaults for scheme 1 that shifts the denominators
+C
+      SHIFTH11 =0.D0
+      SHIFTH12 =0.D0
+      SHIFTP11 =0.D0
+      SHIFTP12 =0.D0
+      SHIFTH2 =0.D0
+      SHIFTP2 =0.D0
+      SHIFTHP =0.D0
+      AIH=0.D0
+      NIH=1
+      REWIND (IN)
+      READ (IN,CCIH,END=22,ERR=21)
+      GOTO 22
+   21 CALL QUIT('Error exit while reading namelist CCIH')
+   22 CONTINUE
+C
+C     Some processing of the input is necessary
+C
+      ER_IH(1,1) = EHMIN ! for (1,0) or (2,0) sectors plus (1,1) sector
+      ER_IH(2,1) = EHMAX ! the same
+CMI ....
+      ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
+      ER_IH(2,2) = EPMAX
+
+! MI: control output ... 
+      write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
+     &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
+      write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
+     &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
+
+C
+C     XIH energy shift sign definition.
+C     Array with as first dimension 1e/2e shift
+C                   second dimension sector number
+C
+C     Shifts for particles should be negative
+      SHIFT_IH(1,1) = -DABS(SHIFTP11)
+      SHIFT_IH(2,1) = -DABS(SHIFTP12)
+      SHIFT_IH(2,5) = -DABS(SHIFTP2)
+CEE     Shifts for holes must be negative (not positive)
+!----------------------------------------------------------
+      SHIFT_IH(1,2) =  -DABS(SHIFTH11)
+      SHIFT_IH(2,2) =  -DABS(SHIFTH12)
+      SHIFT_IH(2,6) =  -DABS(SHIFTH2)
+C     Shifts for hole-particle excitations may be either negative or positive
+      SHIFT_IH(2,4) =  SHIFTHP
+C
+C     Input for the sorting routine.
+C     We can add a finite field here, if desired
+C     This assumes that PRTRA is called as well !
+C
       LOWMEM  = .FALSE.
       USEOE   = .TRUE.
       NORECMP = .FALSE.
@@ -489,7 +563,7 @@ C
       REAL*8 CC(MAXCORE)
 #endif
       PARAMETER (MAXSP=1000)
-      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
+      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2),IERR
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
@@ -624,13 +698,8 @@ C
 C 
       MXCORR1 = 0
 
-      if (lowmem) then
-         call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
-      else
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
-      endif
-
       IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
@@ -668,7 +737,10 @@ C
 C  Allocate the memory and check if it is a standalone version
 C
 #if defined (CC_ALONE)
-      ALLOCATE (CC(MXCORR))
+      ALLOCATE (CC(MXCORR),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in CC allocation !')
+      ENDIF
 #endif
 C
       WRITE (IW,1001) MXCORR
@@ -690,12 +762,8 @@ C
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
       IF (DOSORT) THEN
-         if (lowmem) then
-            call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
-         else
             CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
-         endif
       endif
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)
@@ -881,6 +949,8 @@ C
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
+      !MI: for the IH-FSCC method in linear symmetry
+      INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)   
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
 
@@ -1685,9 +1755,73 @@ C
             ENDIF
 !           ... place orbital energy into common array; I - particular spinor
             EPS(I) = EPS1(ISP)
+C           Always fill this array, used in intermediate Hamiltonian formalism
+            IF (I.GT.MAXSPIM)
+     &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
+!        ... 0/1 - intermediate Ham. space
             IPIORB(I)=0
+            DO J = 1, 2
+               IF(EPS(I).LE.ER_IH(2,J).AND.   ! EPS(I) <= EHMAX,EPMAX
+     &            EPS(I).GE.ER_IH(1,J)) THEN  ! EPS(I) >= EHMIN,EPMIN
+                 IPIORB(I)=1
+               ENDIF
+            ENDDO
+
+            IF (IPIORB(I).EQ.1) THEN
+
+             IF ( EPS(I).GE.ER_IH(1,1).AND.EPS(I).LE.ER_IH(2,1) ) THEN
+               IF ( NAOPI(IREP).LT.NAO(IREP) ) THEN
+                 NAOPI(IREP) = NAOPI(IREP) + 1
+               ELSE
+               ENDIF
+             ENDIF
+
+             IF ( EPS(I).GE.ER_IH(1,2).AND.EPS(I).LE.ER_IH(2,2) ) THEN
+               IF (NAVPI(IREP) .LT. NAV(IREP) ) THEN
+                 NAVPI(IREP) = NAVPI(IREP) + 1
+               ELSE
+               ENDIF
+             ENDIF
+           ENDIF
        ENDDO
 
+       IF (REPORT.AND.DOIH) THEN
+
+         IF (NREP.GT.8) THEN
+CMI ..... write only active irreps
+            NACT_REP = 0
+            DO I = 1, NREP
+               IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
+                  ! ... move nonzero values to new arrays ...
+                  NACT_REP = NACT_REP + 1
+                  NAOPI_ACT(NACT_REP) = NAOPI(I) 
+                  NAVPI_ACT(NACT_REP) = NAVPI(I) 
+               ENDIF
+            ENDDO
+
+            NREP1 = 1
+            NREP2 = MIN(NACT_REP,8)
+  12      WRITE (IW,1005) (REPNA_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive occupied',(NIO_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active occupied',(NAO_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active Pi occup',(NAOPI_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active virtual ',(NAV_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'active Pi virt ',(NAVPI_ACT(I),I=NREP1,NREP2)
+          WRITE (IW,1002) 'inactive virtual',(NIV_ACT(I),I=NREP1,NREP2)
+            NREP1 = NREP1 + 8
+            NREP2 = MIN(NACT_REP,NREP2+8)
+            IF (NREP1.LE.NACT_REP) GOTO 12
+         ELSE
+            WRITE (IW,1005) (REPNA(I),I=1,NREP)
+            WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
+            WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
+            WRITE (IW,1002) 'Pi active occup  ',(NAOPI(I),I=1,NREP)
+            WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
+            WRITE (IW,1002) 'Pi active virtual',(NAVPI(I),I=1,NREP)
+            WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
+         ENDIF
+
+       ENDIF
 
       ENDIF
 C
@@ -1696,6 +1830,9 @@ C
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
+ 1005 FORMAT (
+     &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
+     &       //T40,8(1X,A4))
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
@@ -2187,6 +2324,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #include "dcbmp2no.h"
+#include "mp1stpr.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2245,6 +2383,20 @@ C
       CALL MEMOPT('REAL',XMO,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
+
+C     Calculate the size of the array needed for the sorted T2 array that
+C     is used in MOLTRA. In spinfree calculations this will be larger than
+C     the the dimension used in RELCCSD (was a nasty bug in DIRAC08)
+C     This initialization does not fix the problem with spinfree calculations,
+C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be
+C     adapted to the fact that in spinfree calculations there is a many-to-1 
+C     correspondence between the list of irreps used by RELCCSD and the 
+C     fermion irreps of DIRAC. Probably the best solution is to rewrite these
+C     routines using an index vector that gives the correspondence.
+
+      CALL INIT_T1(CC(T2),.FALSE.)
+      CALL INIT_T2(CC(T2),.FALSE.)
+      NBUF1 = MAX(NBUF1, NTMATR1, NTMATR2)
       NBUF2 = NBUF1
 C
 C The DIIS algorithm is used for the Z-vector and Lamda-equations
@@ -2369,13 +2521,13 @@ C
              RETURN
           ENDIF
 #endif
-CMI      CALL MEMCHK('mp2g 0.1',CC,1)
+         CALL MEMCHK('mp2g 0.1',CC,1)
 C
 C        Get MP2 amplitudes and lambdas
 C
          CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 
-CMI      CALL MEMCHK('mp2g 0.2',CC,1)
+         CALL MEMCHK('mp2g 0.2',CC,1)
 C
 C        Get amplitude part of density matrix
 C
@@ -2397,7 +2549,6 @@ C
      &      CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
      &                   NBUF3,CC(XMO),CC(DMO))
 
-CMI      ... here it fails in the Levy-Leblond mode....
          CALL MEMCHK('mp2g 1.1.1',CC,T2)
          CALL MEMCHK('mp2g 1.1.2',CC,BUF1)
          CALL MEMCHK('mp2g 1.1.2',CC,BUF2)
@@ -2406,8 +2557,6 @@ CMI      ... here it fails in the Levy-Leblond mode....
          CALL MEMCHK('mp2g 1.1.5',CC,DMO)
 
          CALL MEMCHK('mp2g 1.1',CC,1)
-
-CMI       call quit('here in relccsd finished')
 
 C
 C        Create upper triangle of density matrix
@@ -2736,10 +2885,10 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC,FOCKSP,REPORT
-CMI   INTEGER IFSS(6)
       CHARACTER*2 IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
+      INTEGER :: IERR
       REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:,:),
      &                                 EIGENVECTORS(:,:)
 C
@@ -2752,6 +2901,17 @@ C
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
      
+CMI ... more print out
+      IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
+        WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
+        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
+     &  'Energy range for the occupied Pi space is: <',
+     &  ER_IH(1,1),';',ER_IH(2,1),'>'
+
+        WRITE(IW,'(1X,A,F20.7,A,F20.7,A)')
+     &  'Energy range for the virtual Pi space is:  <',
+     &  ER_IH(1,2),';',ER_IH(2,2),'>'
+      ENDIF
 C
 C Allocate space for the Fock space CCSD energy calculation
 C
@@ -2881,9 +3041,18 @@ C
      &  '...maximum number of iterations for this sector:',
      &  MAXIT_SECT(ICURFSS)
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
-        ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
-        ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
-        ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
+        ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)),STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in HEFF allocation !')
+        ENDIF
+        ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)),STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVALUES allocation !')
+        ENDIF
+        ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)),STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVECTORS allocation !')
+        ENDIF
         CALL CCEQN(MAXIT_SECT(ICURFSS),EPS,CC(FOO),CC(FVO),
      &             CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
@@ -2895,9 +3064,18 @@ C       Print the Fock space eigenvalues, compute transition moments
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
 C       Deallocate space for the effective Hamiltonian
-        DEALLOCATE (HEFF)
-        DEALLOCATE (EIGENVALUES)
-        DEALLOCATE (EIGENVECTORS)
+        DEALLOCATE (HEFF,STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in HEFF deallocation !')
+        ENDIF
+        DEALLOCATE (EIGENVALUES,STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVALUES deallocation !')
+        ENDIF
+        DEALLOCATE (EIGENVECTORS,STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVECTORS deallocation !')
+        ENDIF
 C
       ENDIF
       ENDDO

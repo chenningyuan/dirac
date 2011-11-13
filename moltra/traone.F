@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : traone.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -403,6 +398,7 @@ C
       CALL MEMGET('REAL',KFMOM,NSTRT(1)*NSTRT(1)*8,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIRPMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIRPAMO,NSTRT(1)*2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KIOCCUP,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KORBMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBSPI,NSTRT(1)*2,WORK,KFREE,LFREE)
 C
@@ -423,8 +419,8 @@ C
       ENDDO
 C
       CALL MRCON1(FMO,ORBE,IBORB,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
-     &            WORK(KIRPAMO),WORK(KORBMO),WORK(KIBSPI),NSPC,
-     &            IPRINT,WORK,KFREE,LFREE)
+     &            WORK(KIRPAMO),WORK(KIOCCUP),WORK(KORBMO),WORK(KIBSPI),
+     &            NSPC,IPRINT,WORK,KFREE,LFREE)
 C
       CALL MEMREL('TRAONE',WORK,KFRSAV,KFMOM,KFREE,LFREE)
 C
@@ -434,7 +430,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcon1 */
       SUBROUTINE MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,
-     &                  ORBMO,IBSPI,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &                  IOCCUP,ORBMO,IBSPI,NSPC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Luuk Visscher, Mar 18 1997
@@ -465,7 +461,7 @@ C
       CHARACTER*4 REPA(4*NORDER)
       DIMENSION FMO(NORBT,NORBT,NZ),ORBE(NSTRT),IBORB(NSTRT)
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
-      DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2)
+      DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2),IOCCUP(NSTRT*2)
       DIMENSION ORBMO(NSTRT*2),IBSPI(NSTRT*2)
       DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
       DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
@@ -526,7 +522,7 @@ C
 C
 C     Get multiplication table for the abelian subgroup
 C
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR.AND. .NOT.NOSFMU) THEN
          CALL GMULTSF (NSYMRPA,REPA,MULTB)
       ELSEIF (LINEAR) THEN
          CALL GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
@@ -556,7 +552,7 @@ C
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
-            IF (SPINFR.OR.LEVYLE) THEN
+            IF (SPINFR.AND. .NOT.NOSFMU) THEN
                IRPAMO(II) = IBORB(IK) + 1
             ELSEIF (LINEAR) THEN
                MJ = IBORB(IK)
@@ -568,6 +564,11 @@ C
             ENDIF
             ORBMO(II)  = ORBE(IK)
             IBSPI(II)  = IBORB(IK)
+            IF (ISTR.LE.NAEL(IREP)) THEN
+               IOCCUP(II) = 1
+            ELSE
+               IOCCUP(II) = 0
+            ENDIF
          ENDDO
          IREP = IREP + 1
          IF (NZ.NE.4) IREPA = IREPA + 1
@@ -576,7 +577,7 @@ C
             II = II + 1
             IK = IK + 1
             IRPMO(II)  = IREP
-             IF (SPINFR.OR.LEVYLE) THEN
+            IF (SPINFR.AND. .NOT.NOSFMU) THEN
                IRPAMO(II) = IBORB(IK) + NBSYM + 1
             ELSEIF (LINEAR) THEN
                MJ = -IBORB(IK)
@@ -588,6 +589,11 @@ C
             ENDIF
             ORBMO(II)  = ORBE(IK)
             IBSPI(II)  = IBORB(IK)
+            IF (ISTR.LE.NAEL(IREP)) THEN
+               IOCCUP(II) = 1
+            ELSE
+               IOCCUP(II) = 0
+            ENDIF
          ENDDO
       ENDDO
 C
@@ -606,7 +612,7 @@ C     Total number of spinors, breit active in DHF ?,
 C     DHF energy, inversion symmetry (yes : 2; no : 1),
 C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
-      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE,
+      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR,
      &               NORBT
 C     NSYMRP        - Number of fermion irreps in parent group
 C     REPN          - names of these irreps (gerade, ungerade)
@@ -644,6 +650,45 @@ C     Matrix elements over the core Fock operator.
       CLOSE (LUMLF1)
 C
       WRITE (LUPRI,1000) 
+C
+      IF (TRA_ASCII) THEN
+C     Also write some output in formatted form to facilitate interfacing with other codes
+       OPEN (LUASCII,FILE='MO_integrals.txt',FORM='FORMATTED')
+       WRITE (LUASCII,*) '*** Nuclear repulsion + core energy ***'
+       WRITE (LUASCII,*) DHFERG
+       WRITE (LUASCII,*) '*** NZ (1:real, 2:complex, 4:quaternion) ***'
+       WRITE (LUASCII,*) NZ
+       WRITE (LUASCII,*) '*** Number of double group irreps ***'
+       WRITE (LUASCII,*) 2*NSYMRPA
+       WRITE (LUASCII,*) '*** Representation names ***'
+       DO IRP = 1, 2*NSYMRPA
+          WRITE (LUASCII,*) IRP, REPA(IRP)
+       END DO
+       WRITE (LUASCII,*) '*** Multiplication table ***'
+       DO JRP = 1, 2*NSYMRPA
+          WRITE (LUASCII,'(64I3)') (MULTB(IRP,JRP),IRP=1,2*NSYMRPA)
+       END DO
+       WRITE (LUASCII,*) '*** Number of spinors ***'
+       WRITE (LUASCII,*) 2*NSTRT
+       WRITE (LUASCII,*) '*** Spinor, irrep, occupation, energy ***'
+       DO I= 1, 2*NSTRT
+          WRITE (LUASCII,*) I,
+     &                      IRPAMO(I),IOCCUP(I),ORBMO(I)
+       END DO
+       WRITE (LUASCII,*) '*** Effective 1-e integrals ***'
+       DO J = 1, NSTRT*2
+          DO I = 1, NSTRT*2
+           IF (NZ.EQ.1.AND.ABS(FMOM(I,J,1)).GT.1.E-15) THEN
+             WRITE (LUASCII,'(E30.16,4I6)') FMOM(I,J,1),I,J,0,0
+           ELSEIF (NZ.EQ.2.AND.(ABS(FMOM(I,J,1)).GT.1.E-15.OR.
+     &       ABS(FMOM(I,J,2)).GT.1.E-15)) THEN
+             WRITE (LUASCII,'(2E30.16,4I6)')
+     &             FMOM(I,J,1),FMOM(I,J,2),I,J,0,0
+           END IF
+          END DO
+       END DO
+C     We leave the file open to write also the 2-e integrals, close after that stage
+      END IF
 C
       CALL QEXIT('MRCON1')
 C

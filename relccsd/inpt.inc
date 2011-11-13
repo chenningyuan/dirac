@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision: 6883 $
-C DATE    : $Date: 2008-05-11 17:17:34 +0200 (Sun, 11 May 2008) $
+C VERSION : $Revision: 9679 $
+C DATE    : $Date: 2009-09-22 10:26:34 +0200 (Tue, 22 Sep 2009) $
 C FILE    : inpt.inc
 C
       PARAMETER (MAXOP=15,MAXFR=25)
@@ -41,6 +41,7 @@ C-----For the excitation energy module
       COMMON/CCEXCI/NEXC(16),NEOPER,NTOLEX,MXDIMEX,MXITEX
       COMMON/CCEXCC/NAMEE(MAXOP)
 C-----For the Fock space module
+      INTEGER FSSECT
       COMMON/CCFSPI/FSSECT(6),MAXIT_SECT(6),NINACT(16),NACT(16),
      &              NTOLFS,MXDIMFS,MXITFS
 

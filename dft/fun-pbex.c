@@ -1,25 +1,37 @@
 /*
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-*/
+ *     Copyright (c) 2005 by the authors of Dalton (see below).
+ *     All Rights Reserved.
+ *
+ *     The source code in this file is part of
+ *     "Dalton, a molecular electronic structure program, Release 2.0
+ *     (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
+ *     O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
+ *     E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+ *     K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+ *     H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+ *     W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
+ *     P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+ *     T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue,
+ *     S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
+ *     P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+ *     This source code is provided under a written licence and may be
+ *     used, copied, transmitted, or stored only in accord with that
+ *     written licence.
+ *
+ *     In particular, no part of the source code or compiled modules may
+ *     be distributed outside the research group of the licence holder.
+ *     This means also that persons (e.g. post-docs) leaving the research
+ *     group of the licence holder may not take any part of Dalton,
+ *     including modified files, with him/her, unless that person has
+ *     obtained his/her own licence.
+ *
+ *     For questions concerning this copyright write to:
+ *        dalton-admin@kjemi.uio.no
+ *
+ *     For information on how to get a licence see:
+ *        http://www.kjemi.uio.no/software/dalton/dalton.html
+ */
+
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-pbex.c:
 
@@ -79,8 +91,8 @@ static void pbex_second(FunSecondFuncDrv *ds, real factor,
 static void pbex_third(FunThirdFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
  
-Functional PbexFunctional = {
-  "Pbex",       /* name */
+Functional PBExFunctional = {
+  "PBEx",       /* name */
   pbex_isgga,   /* gga-corrected */
   pbex_read,
   NULL,
@@ -103,7 +115,7 @@ pbex_energy(const FunDensProp *dp)
 {
     real res;
     real rhoa = dp->rhoa, rhob = dp->rhob;
-    real grada = dp->grada, gradb = dp->gradb;
+    real grada = dp->grada, gradb = dp->gradb, gradab = dp->gradab;
 
 
     real t1;

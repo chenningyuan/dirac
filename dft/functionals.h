@@ -195,8 +195,10 @@ extern Functional PW86xFunctional;
 extern Functional PW91xFunctional;
 extern Functional PW91cFunctional;
 extern Functional PZ81Functional;
-extern Functional PbecFunctional;
-extern Functional PbexFunctional;
+extern Functional PBEcFunctional;
+extern Functional PBExFunctional;
+extern Functional RpbexFunctional;
+extern Functional RevpbexFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;
@@ -214,6 +216,8 @@ extern Functional BP86Functional;
 extern Functional BPW91Functional;
 extern Functional Camb3lypFunctional;
 extern Functional GGAKeyFunctional;
+extern Functional CamFunctional;
+extern Functional HseFunctional;
 extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;
@@ -221,6 +225,7 @@ extern Functional LDAFunctional;
 extern Functional OLYPFunctional;
 extern Functional PBE0Functional;
 extern Functional PBEFunctional;
+extern Functional RPBEFunctional;
 extern Functional SVWN3Functional;
 extern Functional SVWN5Functional;
 
@@ -231,7 +236,14 @@ extern Functional EmbInteractionFunctional;
 /* kinetic energy functionals */
 extern Functional TF_KinFunctional;     /* Thomas-Fermi */
 extern Functional VW_KinFunctional;     /* TF + Von Weizaecker */
+extern Functional PW91_KinFunctional;   /* PW91k, a reparametrization of PW91x */
 
+#ifdef MOD_UNRELEASED
+/* range-separated functionals */
+extern Functional SRVWN5Functional;
+extern Functional HjsxFunctional;
+extern Functional SrpbecFunctional;
+#endif
 
 /* Lists of available functionals: */
 extern Functional* available_functionals[];     /* XC functionals */

@@ -11,6 +11,7 @@
 !  INTNMR - what kind of integrals for LAO 2-el.contribution
 ! 
 ! ******************************************
+      INTEGER LUTWOL, LUFCKL
       PARAMETER (LUTWOL = 69,LUFCKL = 70)
       LOGICAL NOTWOL, NOONEI, DOEPRN
       COMMON/CBLNMR/NOTWOL, NOONEI, DOEPRN

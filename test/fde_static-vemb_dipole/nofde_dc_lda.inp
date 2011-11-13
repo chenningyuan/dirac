@@ -1,0 +1,24 @@
+**DIRAC
+.TITLE
+electric properties for frozen density embedding
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.LVCORR
+.DFT
+ LDA
+*DFT
+.4CGRID !here only to reproduce the reference outputs
+**INTEGRALS
+.NUCMOD
+1
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.PRINT
+2
+**PROPERTIES
+.DIPOLE
+#.POLARIZABILITY
+*END OF
+

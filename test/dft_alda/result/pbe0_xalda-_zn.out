@@ -1,0 +1,84 @@
+
+ =========================================================================
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : larry
+ Operating system  : Linux 2.6.32-24-generic
+ Machine           : i686
+ Run               : Parallel
+ Last compilation  : 13:02:57 Aug 16 2010 (by bast@larry:/home/bast/dirac/openmpi_gfortran_atlas_xcfun)
+ FORTRAN compiler  : /home/bast/openmpi/bin/mpif90  -g -fno-range-check -fcray-pointer -Iinclude -Jmodules -DARCH32BIT -DVAR_GFORTRAN -DGFORTRAN 443 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MPI -DVAR_MFDS -DVAR_MPI2 -DMOD_AMFI -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
+$ERROR 1.E-7
+$SIGNCHECK
+   Electronic energy                        :    -1779.1733864392152
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   S0Ag                         6.1749 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TyB2g                        9.6771 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TzB1g                        9.6771 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TxB3g                        9.6771 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   S0Ag                         9.8036 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   S0Ag                         9.8036 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TzB1u                        3.8154 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TxB3u                        3.8154 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TyB2u                        3.8154 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TzB1u                        6.7751 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TxB3u                        6.7751 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TyB2u                        6.7751 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   S0Ag                         6.1749 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TyB2g                        9.6771 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TzB1g                        9.6771 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TxB3g                        9.6771 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   S0Ag                         9.8036 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   S0Ag                         9.8036 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TzB1u                        3.8154 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TxB3u                        3.8154 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TyB2u                        3.8154 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TzB1u                        6.7751 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TxB3u                        6.7751 eV
+$ERROR 1.E-4
+$SIGNCHECK
+ Nonrel. sym.:   TyB2u                        6.7751 eV

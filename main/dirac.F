@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirac.F
 C
 C***********************************************************************
@@ -75,7 +70,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
-C
+
+      use basis_info
+      use occupation_info
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -88,7 +86,14 @@ C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
 C***********************************************************************
 C
       CALL PAMINP(WORK,LWORK)
-C
+
+
+!     write info to files
+!     this is then used in dft and visualization
+      call basis_info_write()
+      call occupation_info_write()
+
+
       IF ( INPTES ) RETURN
 C
 C***********************************************************************
@@ -130,6 +135,11 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
+      use dirac_cfg
+#ifdef MOD_VISUAL
+      use visual
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -154,7 +164,8 @@ C***********************************************************************
 C*****  A N A L Y S I S    M O D U L E  ********************************
 C***********************************************************************
 C
-      IF(DOANA .AND. .NOT.((DOSCF.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
+      IF(DOANA .AND. .NOT.
+     & ((dirac_cfg_scf_calculation.AND.DOPSI).OR.(DOKRMC.AND.DOPSI))) 
      &   CALL PAMANA(WORK,LWORK)
 C
 C
@@ -163,6 +174,14 @@ C*****  R E S P O N S E    M O D U L E  ********************************
 C***********************************************************************
 C
       IF(DOPRP) CALL PAMPRP(WORK,LWORK)
+
+
+
+#ifdef MOD_VISUAL
+!     visualization module
+      if (dirac_cfg_visual) call run_visual()
+#endif
+
 C
 C***********************************************************************
 C***** H E I N Z *******************************************************
@@ -187,6 +206,7 @@ C     Revision for MCSCF J. Thyssen - Oct 1998
 C     Restructured 2002 by Hans Joergen Aa. Jensen
 C
 C***********************************************************************
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -197,6 +217,9 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 C
+C.s/sya,2007.02.07 - SK - 30-11-2009
+#include "dcbgos2.h"
+C.q
       CALL QENTER('PAMPSI')
 C
 C HJAaJ Nov. 2002 TODO: PAMANA only works for closed shell SCF now
@@ -212,7 +235,7 @@ C***** D I R A C - H A R T R E E - F O C K *****************************
 C***** o r   D I R A C - K O H N - S H A M *****************************
 C***********************************************************************
 C
-      IF(DOSCF .AND. DOPSI) THEN
+      IF(dirac_cfg_scf_calculation .AND. DOPSI) THEN
 C
 C        Transfer DHF info to common block DCBORB
 C        and recalculate DCBORB.
@@ -226,7 +249,7 @@ C        *************************************************
 C        *** Call PSIDHF for Roothaan/DIIS iterations  ***
 C        *************************************************
 C
-         IF (MAXITR.GT.0.OR.MAXIT2.GT.0) THEN
+         IF (MAXITR.GT.0.OR.MAXITR2.GT.0) THEN
             CALL PSIDHF(WFCONV,WORK,LWORK)
          END IF
 C
@@ -234,11 +257,16 @@ C        *************************************************
 C        *** Call PSIOPT for second order optimization ***
 C        *************************************************
 C
-         IF ( .NOT. NOQCDHF .AND. .NOT. DODFT .AND.
+         IF ( .NOT. NOQCDHF .AND. 
+     &        .NOT. dirac_cfg_dft_calculation .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
+#ifdef MOD_KRMC
+            CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
+#else
 c           CALL QUIT(
 c    &   'Second order SCF optimization not included in this version')
 c        ... let it stop below ... /hjaaj Feb 2004
+#endif
          END IF
 C........Export mean-field integrals
 CTROND         IF(DOMFI) CALL PAMFI(WORK,LWORK)
@@ -260,7 +288,7 @@ C***** R E S O L V E    O P E N - S H E L L  S T A T E S ***************
 C***********************************************************************
 C
       IF(DORES.AND.DOPSI) THEN
-         IF (.NOT.DOSCF) THEN
+         IF (.NOT.dirac_cfg_scf_calculation) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
             CALL TDHFORB
@@ -301,8 +329,24 @@ C      Do MCSCF before CC and CI because user may want
 C      to do an MR-CC or MR-CI /hjaaj aug 03
 C
       IF(DOKRMC.AND.DOPSI) THEN
+#ifdef MOD_KRMC
+C
+C        Transfer DHF info to common block DCBORB
+C        and recalculate DCBORB.
+C
+         CALL TKRMCORB
+         CALL SETDC2(0)
+C
+C        *************************************************
+C        *** Call PSIOPT for KR-MCSCF wave function ******
+C        *************************************************
+C
+         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
+         IF(DOANA) CALL PAMANA(WORK,LWORK)
+#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
+#endif
       END IF
 C
 C***********************************************************************
@@ -333,7 +377,9 @@ C***********************************************************************
 C***** R E L A D C  M O D U L E ****************************************
 C***********************************************************************
 C
+#ifdef MOD_ADC
       IF(DOADC.AND.DOPSI) CALL PAMADC(WORK,LWORK)
+#endif
 C
 C***********************************************************************
 C***** C O S C I        stand-alone version of RESOLVE   ***************
@@ -345,14 +391,13 @@ C*****                  added by sya,2007.01.23,ulp      ***************
 C***********************************************************************
 C
       IF(DOCOSCI.AND.DOPSI) THEN
-!@d      IF (.NOT.DOSCF) THEN
+!@d      IF (.NOT.dirac_cfg_scf_calculation) THEN
 C           ... Transfer DHF info to common block DCBORB
 C           ... and recalculate DCBORB.
 !@d         CALL TDHFORB
 !@d         CALL SETDC2(0)
 !@d      END IF
-CMI  ... this routine is not defined !
-CMI      CALL SY_COSCI(WORK,LWORK)
+         CALL SY_COSCI(WORK,LWORK)
       END IF
 C
 C***********************************************************************
@@ -360,18 +405,39 @@ C***** C I *************************************************************
 C***********************************************************************
 C
       IF(DOKRCI.AND.DOPSI) THEN
+#ifdef MOD_KRMC
+C
+C        Transfer KR-CI info to common block DCBORB
+C        and recalculate DCBORB.
+C
+C        ... reset dcbopt.h
+         CALL OPTINI
+         CALL TKRCIORB
+         CALL SETDC2(0)
+C
+         CALL KRCI_CALC('KR-CI ',WFCONV,WORK,LWORK)
+#else
             CALL QUIT(
      &  ' KR-CI module not included in this version')
+#endif
       END IF
 C
 C***********************************************************************
 C***** C C *************************************************************
 C***********************************************************************
 C
-!     IF(DOKRCC.AND.DOPSI) THEN
-!        CALL KRCC_CALC('KR-CC',WFCONV,WORK,LWORK)
-!     END IF
+      IF(DOKRCC.AND.DOPSI) THEN
+            CALL QUIT(
+     &  ' KR-CC module not included in this version')
+      END IF
 C
+
+C
+C***********************************************************************
+C***** High Sect F S C C  M O D U L E **********************************
+C***********************************************************************
+C
+
       CALL QEXIT('PAMPSI')
       RETURN
 C
@@ -397,7 +463,7 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbgosci.h"
+#include "dcbgascip.h"
 C
       CALL QENTER('TDHFORB')
 C
@@ -417,7 +483,7 @@ c         NPSH(I) = NPSH_DHF(I)
       NELECT = NELECT_DHF
 C
 C     Transfer open shell average-of-configuration to GAS space notation
-C     (for e.g. ESR GOSCI) /July 2002 hjaaj
+C     (for e.g. ESR GASCIP) /July 2002 hjaaj
 C
       NAELEC = NAELEC_DHF
       NGAS_DC= NOPEN
@@ -476,6 +542,8 @@ C
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = .FALSE.
       OPT_MKCNST     = .FALSE.
+      OPT_CHCKJZ     = .FALSE.
+      IF( LINEAR ) OPT_CHCKJZ = .TRUE.
 C
 C     Set common block DCCOPT
 C
@@ -511,7 +579,8 @@ C
 #include "dcborb.h"
 #include "dcbkrmc.h"
 #include "dcbopt.h"
-#include "dcbgosci.h"
+#include "dcbgascip.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('TKRMCORB')
 C
@@ -558,6 +627,8 @@ C
       IOPT_SYMMETRY  = IKRMC_SYMMETRY
       IMEMFAC        = IKRMC_MEMFAC
       JKRRUNTYPE     = 1
+!     information from dcbdhf.h
+      nopen_mc       = nopen
 C
 C     Set common block DCROPT
 C
@@ -565,6 +636,7 @@ C
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
       THRPCI         = DKRMC_THRPCI
+      LVCORR_MC      = 0.0d0
 C
 C     Set common block DCLOPT
 C
@@ -573,6 +645,7 @@ C
       OPT_NOCI       = KRMC_NOCI
       OPT_UCIBOS     = KRMC_UCIBOS
       OPT_MKCNST     = KRMC_MKCNST
+      OPT_CHCKJZ     = KRMC_CHCKJZ
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -590,11 +663,15 @@ C
 C
 C     Set "constant" CI internal variables 
 C
+      NMAX_SYM    = IKRMC_SYMMETRY   
       NCIROOT     =    1
       ISHMEM_TYPE =  - 1
       CSHMEMO     = .FALSE.
       CINT_REORD  = .FALSE.
       CINT_SPLIT  = .FALSE.
+      CHCKPT_WRT  = .FALSE.
+      CPBLCK_FILE = .FALSE.
+      CINT_LOWSRT = .FALSE.
 C
       CALL QEXIT('TKRMCORB')
       END
@@ -619,7 +696,8 @@ C
 #include "dcborb.h"
 #include "dcbkrci.h"
 #include "dcbopt.h"
-#include "dcbgosci.h"
+#include "dcbgascip.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('TKRCIORB')
 C
@@ -665,6 +743,8 @@ C
       IOPT_SYMMETRY  = -1
       IMEMFAC        = IKRCI_MEMFAC
       JKRRUNTYPE     = 2
+!     information from dcbdhf.h
+      nopen_mc       = nopen
 C
 C     Set common block DCROPT
 C
@@ -672,14 +752,21 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
+      LVCORR_MC      = 0.0d0
 C
 C     Set common block DCLOPT
 C
       OPT_SKIPEE     = .FALSE.
       OPT_SKIPEP     = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if(npsht .eq. 0) OPT_SKIPEP = .TRUE.
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = KRCI_UCIBOS
       OPT_MKCNST     = KRCI_MKCNST
+      OPT_CHCKJZ     = .FALSE.
+!     required for KR-CI in linear symmetry set-up
+      if(linear) opt_chckjz = .true.
+!     opt_chckjz = .true.
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.
@@ -695,6 +782,7 @@ C
          OPT_DELSTR(I) = ' '
       END DO
 C
+      NMAX_SYM    = NKRCI_MAX_SYM
       MAXCIT      = MAXCIT_KRCI
       KTRLVL      = KTRLVL_KRCI
       IANACI      = IANACI_KRCI
@@ -709,14 +797,18 @@ C
       NATONL      = .FALSE.
       FOCKON      = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = .FALSE.
+      GENFOCK     = GENFOCK_KRCI
       NATOLCR     = NATOLCR_KRCI
+      TRA_NATO    = TRANATO_KRCI
       CRDFO_MAT   = CRDFO_MAT_KRCI
       CWRTFO_MAT  = CWRTFO_MAT_KRCI
       CSHMEMO     = CSHMEMO_KRCI
       CINT_REORD  = CINT_REORD_KRCI
       CINT_SPLIT  = CINT_SPLIT_KRCI
+      CINT_LOWSRT = LOWSORT_KRCI
       COMPFAC     = 0.01D00
+      CHCKPT_WRT  = CHCKPT_KRCI
+      CPBLCK_FILE = CUSE_PBLFL_KRCI
 C
       CALL QEXIT('TKRCIORB')
       END
@@ -733,6 +825,8 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
+
+      use xc_driver
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -823,7 +917,11 @@ C
 C
 C        Enter the DFT module
 C
-         CALL DFTNOD(WORK,LWORK)
+         call xc_integrator(xc_mat_dim = 1,
+     &                      xc_nz      = 1,
+     &                      xc_dmat_0  = (/0.0d0/),
+     &                      xc_nr_dmat = 0,
+     &                      xc_nr_fmat = 0)
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -831,13 +929,27 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
+#ifdef MOD_KRMC
+C
+C        start KRMC-LUCIAREL calculation.
+C
+         CALL LUCINOD_REL(WORK,LWORK)
+#else
             CALL QUIT(
      &  'KRMC-LUCIAREL module not included in this version')
 
+#endif
       ELSE IF (ITASK .EQ. 7) THEN
+#ifdef MOD_KRMC
+C
+C        start KR-MCSCF calculation.
+C
+         CALL KRMC_NODE_DRIVER(WORK,LWORK)
+#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
+#endif
 #endif /* VAR_MPI2 */
       ELSE
 C
@@ -865,6 +977,8 @@ C     of work during a calculation (i.e. : if one parallel module calls the
 C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
+
+         use xc_driver
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -935,7 +1049,11 @@ C
 C
 C        Enter the DFT module
 C
-         CALL DFTNOD(WORK,LWORK)
+         call xc_integrator(xc_mat_dim = 1,
+     &                      xc_nz      = 1,
+     &                      xc_dmat_0  = (/0.0d0/),
+     &                      xc_nr_dmat = 0,
+     &                      xc_nr_fmat = 0)
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -943,13 +1061,27 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
+#ifdef MOD_KRMC
+C
+C        start KRMC-LUCIAREL calculation.
+C
+         CALL LUCINOD_REL(WORK,LWORK)
+#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
+#endif
       ELSE IF (ITASK .EQ. 7) THEN
+#ifdef MOD_KRMC
+C
+C        start KR-MCSCF calculation.
+C
+         CALL KRMC_NODE_DRIVER(WORK,LWORK)
+#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
 
+#endif
 #endif /* VAR_MPI2 */
       ELSE
 C

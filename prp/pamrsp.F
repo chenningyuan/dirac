@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamrsp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -396,6 +391,9 @@ C     ***************************
 C     *** I n i t i a l i z e ***
 C     ***************************
 C
+#ifdef MOD_KRMC
+      IF ( FKRMC ) CALL GETTIM(CPUTOT1,CPUWALL1)
+#endif
 C
       CALL XRSINI(REDGP,REDS,REDE,GPCI,GPOE,GPOP,RCNV,EVECR,RNORM,
      &            WORK,KFREE,LFREE)
@@ -508,9 +506,12 @@ C     microiterations
 C     (used for Sternheimer and/or uncoupled approx.)
 C
       IF(MAXITR.EQ.0.OR.UNCOUP) THEN
-CTROND        DO I = 1,NFREQ
-CTROND          EVECR(1,I) = D1
-CTROND        ENDDO
+        IF (.NOT. UNCOUP) THEN
+C         ... EVECR set in subroutine XRSST2 for UNCOUP
+          DO I = 1,NFREQ
+            EVECR(1,I) = D1
+          ENDDO
+        END IF
         NZRED  = NTSIM
         NCRED  = NCSIM
         NERED  = NESIM
@@ -568,11 +569,13 @@ C
               CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
             ENDIF
             IF(NESIM.GT.0) THEN
-              WRITE(LUPRI,'(/I5,A)')NESIM,' Electron trial vectors'
+              WRITE(LUPRI,'(/I5,A)')NESIM,
+     &        ' Electronic (++) trial vectors'
               CALL PRBVEC(LUPRI,WORK(KBOE),NESIM,NZXOPE)
             ENDIF
             IF(NPSIM.GT.0) THEN
-              WRITE(LUPRI,'(/I5,A)')NPSIM,' Positron trial vectors'
+              WRITE(LUPRI,'(/I5,A)')NPSIM,
+     &        ' Electronic (-+) trial vectors'
               CALL PRBVEC(LUPRI,WORK(KBOP),NPSIM,NZXOPP)
             ENDIF
           END IF
@@ -746,11 +749,19 @@ C
       ENDIF
       IF(NZXOPE.GT.0) THEN
         CLOSE(LUBOE,STATUS = 'KEEP')
-        CLOSE(LUSOE,STATUS = 'DELETE')
+        IF (E2CHEK) THEN
+           CLOSE(LUSOE,STATUS = 'KEEP')
+        ELSE
+           CLOSE(LUSOE,STATUS = 'DELETE')
+        END IF
       ENDIF
       IF(NZXOPP.GT.0) THEN
         CLOSE(LUBOP,STATUS = 'KEEP')
-        CLOSE(LUSOP,STATUS = 'DELETE')
+        IF (E2CHEK) THEN
+           CLOSE(LUSOP,STATUS = 'KEEP')
+        ELSE
+           CLOSE(LUSOP,STATUS = 'DELETE')
+        END IF
       ENDIF
       CLOSE(LUCYCL,STATUS='DELETE')
       CALL MEMREL('XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
@@ -762,6 +773,30 @@ C
 C     For KR-MCSCF iterations, calculate predicted energy
 C     change and update some info elements.
 C
+#ifdef MOD_KRMC
+      IF ( FKRMC ) THEN
+C
+C        Calculate predicted energy change
+C
+         CALL RSNRPRD(REDGP,REDE,EVECR,NREDM,IBTYP,NZRED)
+C
+C        Dump info needed for backsteps
+C
+         REWIND(LUKRM4)
+         CALL WRTLRED(LUKRM4,NZRED,NREDM,REDE,REDGP,EVECR,
+     &        IBTYP,IBEVC,IBPVC,IBCVC,NPRED)
+C
+C        Save info for final summary output
+C
+         CALL GETTIM(CPUTOT2,CPUWALL2)
+         DINFO(17) = CPUTOT2-CPUTOT1
+         IINFO(2) = ITMIC
+         IINFO(3) = NZRED
+         IINFO(4) = NCRED
+         IINFO(5) = NERED
+         IINFO(6) = NPRED
+      END IF
+#endif
 C
 C
 C
@@ -783,6 +818,7 @@ C     Last revision : July 30 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),EVECR(*),WORK(*)
@@ -811,6 +847,12 @@ C       ... linear response
         IF(NZXOPE.GT.0) NESIM = NVEC*IFAC
         IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC
         IF(NZCONF.GT.0) NCSIM = NVEC*IFAC
+        IF(E2CHEK) THEN
+          IFAC = NZ*IFAC
+          NESIM = NZXOPE*IFAC
+          NPSIM = NZXOPP*IFAC
+          NCSIM = NZCONF*IFAC
+        ENDIF
       ELSE
 C       ... linear response single residue; excitation energies
 CHJ TODO nov.2000:
@@ -823,7 +865,7 @@ C           elements NEXSTV and NEXSTV+1/+2 are (nearly) degenerate
            NEXST2 = MIN(NEXST2,NZCONF)
            NCSIM = 2*NEXST2
         ELSE IF (NZXOPE.GT.0) THEN
-           NEXST2 = MIN(NEXST2,NZXOPE)
+           NEXST2 = MIN(NEXST2,NZXOPEQ)
            NESIM = 2*NEXST2
         ELSE
            CALL QUIT('XRSST-EXCITA: No conf or e-e variables')
@@ -831,6 +873,26 @@ C           elements NEXSTV and NEXSTV+1/+2 are (nearly) degenerate
       ENDIF
 C
       NTSIM = NESIM + NPSIM + NCSIM
+C.....Check for out of bounds
+      IF(STATIC) THEN
+        NSIM = NFREQ
+      ELSE
+        NSIM = NFREQ+NFREQ
+      ENDIF
+      NBUF = 0      
+      IF(NZXOPE.GT.0) NBUF = NBUF + 1
+      IF(NZXOPP.GT.0) NBUF = NBUF + 1
+      IF(NZCONF.GT.0) NBUF = NBUF + 1
+      NTOT = NZRED+NTSIM+NSIM*NBUF
+      IF(NTOT.GT.NREDM) THEN
+        WRITE(LUPRI,'(A,I6)') 
+     &    '* Current number of trial vectors       :',NZRED,
+     &    '* Requested number of new trial vectors :',NTSIM,
+     &    '* Solution vectors generated in XRSNEX  :',NSIM*NBUF,
+     &    '* Maximum number of trial vectors NREDM :',NREDM,
+     &    '* Increase MAXRED to                    :',NTOT
+        CALL QUIT('* XRSST: Increase size of reduced space MAXRED !')
+      ENDIF
       NBTOT = NESIM*NZXOPEQ + NPSIM*NZXOPPQ + NCSIM*NZCONFQ
       CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
       KFIRST = KBTOT
@@ -849,6 +911,36 @@ C     ... set proper dimension for integer arrays. default. SK - Sep 08
       LEVEC  = NESIM 
       LPVEC  = NPSIM    
       LCVEC  = NCSIM    
+
+!     krmc optimization
+      if(fkrmc)then
+!       ... SK - Sep 08: if XRSST is called as part from the MCSCF
+!       optimization procedure we need to allocate at least 2* NxSIM where 
+!       x = E (e-e), P (e-p) or C (CI gradient). 
+!       In subroutine XRSST2 the corresponding integer array is accessed 
+!       by 
+!       IVEC(IP) = x
+!       IVEC(IM) = x
+!       where IP = NFREQ + IM and IM = 1, NFREQ
+!
+!       example for bad access to IVEC which caused the crash for GOSCI 
+!       (and in principle also for LUCIAREL):
+!
+!       NESIM = 1 ==> LEVEC = 1 --> DIMENSION IVEC(1)
+!       NFREQ = 1 ==> IM = 1, IP = 2 
+!
+!       allowed access:       IVEC(IM) = ...
+!       resulting bad access: IVEC(IP) = ...
+!
+!       FIXME: does this also apply to other cases with STATIC = .TRUE.? 
+!       Do we need a "if(fkrmc)then" statement?
+!       SK - Sep 08
+!
+        levec  = nesim * 2
+        lpvec  = npsim * 2
+        lcvec  = ncsim * 2
+      end if
+
       CALL MEMGET('INTE',KEVEC,LEVEC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KPVEC,LPVEC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KCVEC,LCVEC,WORK,KFREE,LFREE)
@@ -1549,13 +1641,20 @@ C     Exit routine if no new trial vectors
 C     ====================================
 C
       IF (NTSIM.LT.1) GO TO 9999
-
-      e2full = .true. .and. .not. XRS_NOFQX
-      e2full = .true.
-Chj debug option
 C
+      E2FULL = .FALSE.
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
+#ifdef MOD_KRMC
+         IF (NZCONF .GT. 1) THEN
+         DO I = 1, NTSIM
+            WRITE(LUPRI,'(/I5,A,I5)')
+     &        I,'. conf. sigma vector out of',NTSIM
+            CALL RPRCI(SCVEC(1,I),NZCONF,NZ,
+     &           XRS_CIPROGRAM,THRZER,LUPRI)
+         END DO
+         END IF
+#endif
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-e sigma vectors'
          CALL PRBVEC(LUPRI,SEVEC,NTSIM,NZXOPE)
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-p sigma vectors'
@@ -1884,10 +1983,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPEQ,BVBUF,1,SEVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
-CTROND
-!           WRITE(6,*) 'old',I,J,REA       
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO          
       ENDDO
@@ -1903,10 +2005,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPEQ,BEVEC(1,IN),1,SEVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
-CTROND
-!           WRITE(6,*) 'new',I,J,REA       
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO
       ENDDO
@@ -1927,8 +2032,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPPQ,BVBUF,1,SPVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO          
       ENDDO
@@ -1944,8 +2054,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPPQ,BPVEC(1,IN),1,SPVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO
       ENDDO
@@ -2392,14 +2507,21 @@ C
         ENDIF
       ENDIF
 C
+#ifdef MOD_KRMC
+      IF (FKRMC) THEN
+         CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+     &        EVECR(1,1),IBTYP,NPRED,IPRXRS,WORK,KFREE,LFREE)
+      ELSE IF (LINEQ) THEN
+#else
       IF (LINEQ) THEN
+#endif
 C
 C     Solve reduced linear response problem in subspace
 C     =================================================
 C
          DO IFREQ = 1,NFREQ
            AFREQ = EVALR(IFREQ)
-           CALL LINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
+           CALL XRSLINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
      &          EVECR(1,IFREQ),IBTYP,INERT,NPRED,IPRXRS,
      &          WORK,KFREE,LFREE)
          ENDDO
@@ -2449,8 +2571,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Linred */
-      SUBROUTINE LINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
+C/* Deck XRSLinred */
+      SUBROUTINE XRSLINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -2469,7 +2591,7 @@ C
       DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(N),
      &          DET(2),INERT(3),IBTYP(2,*),WORK(*)
 C
-      CALL QENTER('LINRED')
+      CALL QENTER('XRSLINRED')
       KFRSAV = KFREE
 C
 C     Memory allocation
@@ -2483,14 +2605,16 @@ C
       IF (W.NE.D0) THEN
         CALL DAXPY(N2A,-W,AS,1,WORK(KA2),1)
       END IF
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 'LINRED: Reduced E[2] - WS[2] matrix'
-        CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
-      ENDIF
 C
 C     Place G in buffer X
 C
       CALL DCOPY(N,G,1,X,1)
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced E[2] - WS[2] matrix'
+        CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
+        WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced gradient'
+        CALL PRIRVC(X,N,IBTYP)
+      ENDIF
       IF(IMFREQ) THEN
         CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
         CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KPVT),INFO)
@@ -2503,27 +2627,28 @@ C
 C       Print section
 C
         IPAR = INERT(2) - NPVEC
-        IF(IPRINT.GE.3.OR.IPAR.GT.0) THEN
+        IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
           WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-          WRITE(LUPRI,'(5X,A,I5)')
+          WRITE(LUPRI,'(2(5X,A,I5/),5X,A,I5,A,I5)')
      &      '* Number of positive eigenvalues:',INERT(1),
      &      '* Number of zero     eigenvalues:',INERT(3),
-     &      '* Number of negative eigenvalues:',INERT(2)
+     &      '* Number of negative eigenvalues:',INERT(2),
+     &      '  number of +- (ep) trial vectors:',NPVEC
           IF(IPAR.GT.0) THEN
-            WRITE(LUPRI,'(A,A)')
-     &      '*** WARNING - Possible instability detected ',
+            WRITE(LUPRI,'(/A)')
+     &      '*** WARNING - Possible instability detected '//
      &      'in reduced system !'
           ENDIF
         ENDIF
       ENDIF
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A,F12.5,A)') 
-     &      'LINRED: Solution vector at frequency:',W,' a.u.'
+     &      'XRSLINRED: Solution vector at frequency:',W,' a.u.'
         CALL PRIRVC(X,N,IBTYP)
       ENDIF
 
-      CALL MEMREL('LINRED',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('LINRED')
+      CALL MEMREL('XRSLINRED',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('XRSLINRED')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2567,6 +2692,13 @@ C
         NSIM = MFREQ
       ELSE
         NSIM = MFREQ + MFREQ
+      ENDIF
+      IF((NSIM+NZRED).GT.NREDM) THEN
+        WRITE(LUPRI,'(A,I6)') 
+     &    '* Current number of trial vectors       :',NZRED,
+     &    '* Requested number of new trial vectors :',NSIM,
+     &    '* Maximum number of trial vectors NREDM :',NREDM
+        CALL QUIT('* XRSNEX:Increase size of reduced space MAXRED !')
       ENDIF
       NBTOT = NSIM*(NZXOPEQ+NZXOPPQ+NZCONFQ)
       CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
@@ -2652,6 +2784,7 @@ C
 C
       IREP = JSYMOP - 1
       DO I = 1,NBSIM
+        WRITE(6,'(A,I4)') '* Vector nr. ',I
         CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,NZ,
      &              IPQTOQ(1,IREP),IUNIT)
       ENDDO
@@ -2996,7 +3129,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM2 = -2.0D0)
+      PARAMETER(DM4 = -4.0D0)
 C
 #include "dcbgen.h"
 #include "dcbxrs.h"
@@ -3035,8 +3168,16 @@ C
 C     Electronic part
 C
       IF(NZXOPE.GT.0) THEN
-         CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
-     &           WORK(KDV),WORK(KFGENPV),JXOPE,NZXOPE)
+         IF(STERNC) THEN
+C           Sternheimer approx.: diagonal of e-p Hessian
+C           approximated with -2mc^2
+C           An extra factor two (see E2ODI1 for details)
+            FAC = -DM4*CVAL*CVAL
+            CALL DCOPY(NZXOPE,FAC,0,HEDIAG,1)
+         ELSE
+           CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
+     &             WORK(KDV),WORK(KFGENPV),JXOPE,NZXOPE)
+         ENDIF
          CALL S2ODI1(SEDIAG,WORK(KDV),JXOPE,NZXOPE)
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')
@@ -3052,7 +3193,8 @@ C
          IF(STERNH) THEN
 C           Sternheimer approx.: diagonal of e-p Hessian
 C           approximated with -2mc^2
-            FAC = DM2*CVAL*CVAL
+C           An extra factor two (see E2ODI1 for details)
+            FAC = DM4*CVAL*CVAL
             CALL DCOPY(NZXOPP,FAC,0,HPDIAG,1)
          ELSE
             CALL E2ODI1(HPDIAG,WORK(KFC),WORK(KFV),
@@ -3105,7 +3247,7 @@ C
 C     
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION HODIAG(NXOP)
@@ -3225,7 +3367,7 @@ C
 C     
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(NASHT,NASHT,NZ)
@@ -3362,7 +3504,24 @@ C
           ENDIF
         ENDIF
 
-        IF(DIAGHE) THEN
+        IF(E2CHEK) THEN
+          IB = 0
+          DO IVAR = 1,NVAR
+            DO IZ = 1,NZ
+              IXX  = IPX
+              DO IH = 1,2
+                IB = IB + 1
+                CALL DZERO(BVEC(1,1,IB),NBDIM)
+                BVEC(IVAR,IZ,IB) = D1
+                IBTYP(1,IBOFF+IB)     = NBTYP
+                IBTYP(2,IBOFF+IB)     = IXX
+                IBVEC(NBPREV+IB)      = IBOFF + IB
+                IVEC(IB)              = 1
+                IXX = IMX
+              ENDDO
+            ENDDO
+          ENDDO
+        ELSEIF(DIAGHE) THEN
           GPTMP = DNRM2(NBDIM,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
@@ -3411,11 +3570,13 @@ C               tsaue:         retain norm for numerical stability !
                 IVEC(IM) = 0
               ELSE
                 FREQ2 = FREQ**2
+Csebastien: introduce the diagonal of S[2] in preconditioning 
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = GP(IVAR,IZ)/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                    FAC = GP(IVAR,IZ)/
+     &               (FFAC*FREQ2*SDIAG(IVAR)**2-HDIAG(IVAR)**2)
                     BVEC(IVAR,IZ,IP) = HDIAG(IVAR)*FAC
-                    BVEC(IVAR,IZ,IM) = FREQ*FAC
+                    BVEC(IVAR,IZ,IM) = FREQ*SDIAG(IVAR)*FAC
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
@@ -3478,7 +3639,8 @@ C
 C     E X C I T A T I O N  E N E R G I E S etc.
 C     ========================================
 C
-         NEXST2 = NBVEC / 2
+Ctsaue: divide also by NZ to get all possible singlets and triplets
+         NEXST2 = NBVEC/2/NZ
          IF ( TYP .NE. 'C' .AND. NASHT .GT. 0) THEN
 C        ... SDIAG(i) = 1 for CI-vector and = 2 for RPA
             DO IVAR = 1,NVAR
@@ -3490,7 +3652,6 @@ C        Find lowest NEXST2 elements in HDIAG,
 C        IVEC is temporarily used as pointer
 C
          CALL FNDMIN(NEXST2,IVEC,HDIAG,NVAR,WORK(KFREE),LFREE)
-C        CALL FNDMIN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
          IF (IPRXRS.GE.3) WRITE(LUPRI,'(2A/,(2I10,F20.5))')
      &         ' Lowest HDIAG elements in XRSST2, type ',TYP,
      &         (I,IVEC(I),HDIAG(IVEC(I)),I=1,NEXST2)
@@ -3508,25 +3669,34 @@ C
                GO TO 210
             END IF
          END IF
-         NBVEC = 2*NEXST2
+         NEXST2Q=NEXST2*NZ
+         NBVEC = 2*NEXST2Q
          CALL DZERO(BVEC,NBVEC*NBDIM)
-         DO IP = 1,NEXST2
-            IM = IP + NEXST2
-            IBTYP(1,IBOFF+IP)     = NBTYP
-            IBTYP(2,IBOFF+IP)     = IPX
-            IBVEC(NBPREV+IP)      = IBOFF + IP
-            IBTYP(1,IBOFF+IM)     = NBTYP
-            IBTYP(2,IBOFF+IM)     = IMX
-            IBVEC(NBPREV+IM)      = IBOFF + IM
 C
-            IVAR = IVEC(IP)
-            BVEC(IVAR,1,IP) = D1
-            BVEC(IVAR,1,IM) = D1
-C
-            IVEC(IP) = 1
-            IVEC(IM) = 1
+Ctsaue:  One should run over all values of NZ to get all
+C        singlets and triplets allowed in the selected symmetry
+C        In C1 symmetry the spin states go as
+C           1 - S0
+C           2 - Tz
+C           3 - Ty
+C           4 - Tx
+         IP = 0
+         DO I = 1,NEXST2
+           IVAR = IVEC(I)
+           DO IZ = 1,NZ
+             IP = IP + 1
+             IM = IP + NEXST2Q
+             IBTYP(1,IBOFF+IP)     = NBTYP
+             IBTYP(2,IBOFF+IP)     = IPX
+             IBVEC(NBPREV+IP)      = IBOFF + IP
+             IBTYP(1,IBOFF+IM)     = NBTYP
+             IBTYP(2,IBOFF+IM)     = IMX
+             IBVEC(NBPREV+IM)      = IBOFF + IM
+             BVEC(IVAR,IZ,IP) = D1
+             BVEC(IVAR,IZ,IM) = D1
+           ENDDO
          ENDDO
-C
+         CALL ICOPY(NBVEC,1,0,IVEC,1)
       END IF
 C
 C     Orthogonalize new b-vectors against all previous b-vectors
@@ -3594,7 +3764,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Wrtrsp*/
-      SUBROUTINE WRTRSP(LU,RSPVEC,
+      SUBROUTINE WRTRSP(LU,RSPVEC,JXOP,
      &                  LAB1,TYP1,FREQ1,JSYMOP1,JTIMOP1,
      &                  LAB2,TYP2,FREQ2,JSYMOP2,JTIMOP2,
      &                     RNORM,INTFLG,LEN)
@@ -3611,7 +3781,7 @@ C
 #include "dcborb.h"
       LOGICAL FNDLAB16
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
-      DIMENSION RSPVEC(LEN)
+      DIMENSION RSPVEC(LEN),JXOP(2,LEN)
       REWIND LU
       IF(FNDLAB16('END_OF_THIS_FILE',LU)) THEN
         BACKSPACE LU
@@ -3622,6 +3792,7 @@ CHJ TODO: note that ERGRSP was not defined, what is the idea ????
      &          JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
      &          ERGRSP,NTBAS(0),NORBT
         CALL WRITT(LU,LEN,RSPVEC)
+        CALL WRITI(LU,2*LEN,JXOP)
         WRITE(LU) 'END_OF_THIS_FILE'
       ELSE
         WRITE(LUPRI,'(A)') 'WRTRSP: EOF flag not found !'
@@ -3858,5 +4029,7 @@ C
       FKRMC  = .FALSE.
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
+      E2CHEK = .FALSE.
+      STERNC = .FALSE.
       RETURN
       END

@@ -1,6 +1,4 @@
-C
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : gpluuk.F
 C
 C
@@ -433,8 +428,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
-     &                   INDX,IRPS,IND)
+     &                   ISIZE,INDX,IRPS,IND)
 C
+      use codata
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
@@ -456,9 +452,14 @@ C     - REPNA   : Name of each irrep
 C     - E_OFF   : Energy offset
 C     - IRCW    : 1 (real values) or 2 (complex energy values)
 C     - EV      : Eigenvalues
+C     - ISIZE   : size of INDX & IRPS arrays (checked inside)
 C     - INDX    : Work array of the same length as EV
 C     - IRPS    : Work array of the same length as EV
 C     - IND     : Work array of length N_IRPS
+C
+C----------------------------------------------------------------------
+C
+C   Called from FS_ANALYSIS1
 C
 C---------------Routines called----------------------------------------
 C
@@ -479,11 +480,8 @@ C     DIMENSION EV(*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
       REAL*8   , ALLOCATABLE :: EVI(:)
+      INTEGER :: IERR, ISIZE
       LOGICAL DODBG
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "codata.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -522,12 +520,18 @@ C     DODBG = .TRUE.
       call FLSHFO(LUPRI)
 
       IF (IRCW.EQ.2) THEN
-        ALLOCATE(EVI(N_TOTAL))
+        ALLOCATE(EVI(N_TOTAL),STAT=IERR)
+        IF (IERR.NE.0) THEN
+          CALL QUIT('PRT_EV: EVI wrong allocation !')
+        ENDIF
         DO I=1,N_TOTAL
          EVI(I) = EV(1,I)
         ENDDO
         CALL INDEXX(N_TOTAL,EVI,INDX)
-        DEALLOCATE(EVI)
+        DEALLOCATE(EVI,STAT=IERR)
+        IF (IERR.NE.0) THEN
+          CALL QUIT('PRT_EV: EVI wrong deallocation !')
+        ENDIF
       ELSE IF (IRCW.EQ.1) THEN
         CALL INDEXX(N_TOTAL,EV(1,1),INDX)
       ELSE
@@ -561,25 +565,15 @@ C
         CALL QUIT('PRT_EV: wrong IRCW value !')
       ENDIF
 C
-C     write(LUPRI,*) 'in FS_ANALYSIS1...3'
-C     call FLSHFO(LUPRI)
-
       ILEVEL=0
       EW=0.0D0
       EWIM = 0.0D0
-
-CMI   EWF=EV(INDX(1))
       EWF=EV(1,INDX(1))
       NEW=0
       AVER=0.0D0
       AVERIM=0.0D0
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...4'
-C     call FLSHFO(LUPRI)
-
       DO I=1,N_TOTAL
-
-CMI     E = EV(INDX(I))
         E = EV(1,INDX(I))
         IF (IRCW.EQ.2) EIM = EV(2,INDX(I))
 
@@ -627,11 +621,7 @@ CMI     E = EV(INDX(I))
 
       ENDDO
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...5'
-C     call FLSHFO(LUPRI)
-
       IF (NEW.NE.0) THEN
-CMI    WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
         IF (IRCW.EQ.1) THEN
           WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
         ELSE IF (IRCW.EQ.2) THEN
@@ -643,33 +633,30 @@ C    &    EV(2,INDX(I)),NEW
 
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 
-CMI ... print out conversion factors (from codata.h)
-CMI   WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-CMI  & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
-
-C     write(LUPRI,*) 'in FS_ANALYSIS1...6'
-C     call FLSHFO(LUPRI)
-
 CMI  ... printout with symmetry classification ...real energies only...
       DO IRP1 = 1, N_IRPS, 8
       IRP2 = MIN0(N_IRPS,IRP1+7)
       WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
       ILEVEL=0
       EW=0.0D0
-CMI   EWF=EV(INDX(1))
       EWF=EV(1,INDX(1))
       NEW=0
       DO JRP = IRP1, IRP2
          IND(JRP) = 0
       END DO
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...7'
-C     call FLSHFO(LUPRI)
-C
-
       DO 140 I=1,N_TOTAL
-CMI     E=EV(INDX(I))
+
+!MI: check index range 
+        IF (I.LT.1.OR.I.GT.ISIZE) THEN
+          WRITE(LUPRI,*) "I,ISIZE=",I,ISIZE,"...INDX(I)=",INDX(I)
+          WRITE(LUPRI,*) "N_TOTAL=",N_TOTAL 
+          CALL FLSHFO(LUPRI)
+          CALL QUIT('Index I in in INDX(I) out of bounds !')
+        ENDIF
+ 
         E=EV(1,INDX(I))
+
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
      &      WRITE(LUPRI,1030) ILEVEL,
@@ -679,7 +666,9 @@ CMI     E=EV(INDX(I))
             IND(JRP) = 0
           ENDDO
           ILEVEL = ILEVEL + 1
+
           IND(IRPS(INDX(I))) = 1
+
           NEW=1
           EW=E
         ELSE
@@ -688,18 +677,9 @@ CMI     E=EV(INDX(I))
           EW=((NEW-1)*EW+E)/DBLE(NEW)
         ENDIF
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...8'
-C     call FLSHFO(LUPRI)
-
  140    CONTINUE
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...8.1'
-C     call FLSHFO(LUPRI)
-
       IF (NEW.NE.0) THEN
-
-C     write(LUPRI,*) 'in FS_ANALYSIS1...9.1'
-C     call FLSHFO(LUPRI)
 
          WRITE(LUPRI,1030) ILEVEL,
      &   XTEV*(EW-EWF),XTKAYS*(EW-EWF),
@@ -707,14 +687,7 @@ C     call FLSHFO(LUPRI)
 
       ENDIF
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...9.2'
-C     call FLSHFO(LUPRI)
-
       ENDDO
-
-!      write(LUPRI,*) 'PRT_EV done.'
-      call FLSHFO(LUPRI)
-
 
  1000 FORMAT(F17.8)
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
@@ -742,6 +715,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
+      use codata
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
@@ -797,10 +771,6 @@ C
       REAL*8 E_OFF
 
 C
-C---------------Common Blocks--------------------------------------
-C
-#include "codata.h"
-C
 C---------------Local variables--------------------------------------
 C
       PARAMETER (DEGEN=1.D-9)
@@ -829,7 +799,7 @@ C     Sort them from low to high
 C
       CALL INDEXX(N_TOTAL,EV,INDX)
 C
-CMI ... print out conversion factors (from codata.h)
+CMI ... print out conversion factors (from codata)
       WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
      & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
@@ -1276,7 +1246,6 @@ C
 C
       LFNAM = LFILNAM
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_INFO (NBUF,NSIZE)
@@ -1453,6 +1422,7 @@ C     Update file pointers
 C
       LGREC(IBUF,I_FILE) = IREC
       I_BF_REC(I_FILE) = IREC
+      records_in_buffer(ibuf) = records_in_buffer(ibuf)+1      
 C
       RETURN
       END
@@ -1482,9 +1452,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Loop through the rows and check whether the data is to be flushed
 C
+      N=0
       DO I = 1, NROWS
          IBUF = IROWS(1,I)
-         N = LGBUF(IBUF,I_FILE)
+         IF (IBUF.NE.0) N = LGBUF(IBUF,I_FILE)
          IF (IBUF.GT.0.AND.N.GT.0) THEN
             INODE = IROWS(3,I)
 #if defined (VAR_PFS)
@@ -1505,56 +1476,17 @@ C
 #endif
             N = 0
          ENDIF
-         LGBUF(IBUF,I_FILE) = N
+         IF (IBUF.NE.0) LGBUF(IBUF,I_FILE) = N
       ENDDO
 C
       PERC = N_WRITTEN+N_DELETED
       PERC = 100.D0/PERC
       PERC = PERC*N_WRITTEN
-      WRITE (LUPRI,1000) N_WRITTEN,PERC
- 1000 FORMAT (/" Buffers flushed:",I16," HT integrals written (",
-     &        F6.2,"% )") 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL)
-C
-C     Read back the sorted integrals and put them at the right position
-C
-C     Written by Luuk Visscher, August 2004
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
-      REAL*8 RGBUF(NGBFSZ),A(NROW)
-      DIMENSION IGBUF(2,NGBFSZ)
-C
-      LGFIL    = I_BF_UNIT+I_FILE
-      IREC     = LGREC(IBUF,I_FILE)
-C
-      CALL DZERO (A,NROW)
-C
-    1 IF (IREC.EQ.0) RETURN
-C
-C     Read a batch and the link to the previous record.
-C
-      READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
-      IREC = IRECN
-C
-C     Pick out the integrals that we need.
-C
-      DO I = 1, N
-         IF (IGBUF(2,I).EQ.ICOL) THEN
-            A(IGBUF(1,I)) = RGBUF(I)
-         ENDIF
-      ENDDO
-C
-C     We read in reverse order, if we have the first block we're done
-C
-      GOTO 1
-C
+      GIGABYTES = N_WRITTEN * 16.0
+      GIGABYTES = GIGABYTES / (1024.0**3)
+      WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
+ 1000 FORMAT (/" Node",I5," finished first half transformation",I16,
+     &         " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1819,3 +1751,94 @@ C
       RETURN
       END
 #endif
+
+c 
+      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL,do_finesort)
+C
+C     Read back the sorted integrals and put them at the right position
+C
+C     Written by Luuk Visscher, August 2004
+c
+C        adapted by Andre Gomes,   March  2009
+c
+c        - difference now is that the records related to this buffer are sorted
+c          and we can just read those related to the column we want. the information
+c          of which columns are in which records is in the metadata file generated
+c          by the fine sorting routines before the 2HT actually starts 
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#include "infpar.h"
+       REAL*8 RGBUF(NGBFSZ),A(NROW)
+       DIMENSION IGBUF(2,NGBFSZ)
+       logical do_finesort
+
+       LGFIL         = I_BF_UNIT+I_FILE
+       irec_initial  = LGREC(IBUF,I_FILE)
+       irec_final    = 0
+
+       if (do_finesort) then
+          call set_record_range(IBUF,ICOL,irec_initial,irec_final)
+       endif
+ 
+       CALL DZERO (A,NROW)
+ 
+       irec = irec_initial
+
+    1  if ((irec.eq.0).or.(irec.lt.irec_final)) then
+          return
+       endif
+C
+C     Read a batch and the link to the previous record.
+C
+      READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
+      IREC = IRECN
+C
+C     Pick out the integrals that we need.
+C
+      DO I = 1, N
+         IF (IGBUF(2,I).EQ.ICOL) THEN
+            A(IGBUF(1,I)) = RGBUF(I)
+         else
+         ENDIF
+      ENDDO
+C
+C     We read in reverse order, if we have the first block we're done
+C
+      GOTO 1
+C
+      RETURN
+      END
+
+
+      subroutine set_record_range(IBUF,ICOL,irec_initial,irec_final)
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+         integer, intent(in)  :: ibuf, icol
+         integer, intent(out) :: irec_initial, irec_final 
+         integer :: meta(3), imdrec, imdrecn
+
+c getting metadata for this buffer, column combination in the metadata file
+
+         LMFIL  = I_MD_UNIT+1
+         imdrec = irec_md_lastwritten(ibuf)
+
+         if (imdrec.eq.0.or.irec_initial.eq.0) then
+            return
+         endif
+
+ 11      if (imdrec.eq.0) goto 12
+            read(LMFIL,REC=imdrec) imdrecn,iactive,kl,meta
+            if (meta(1).eq.icol) goto 12
+
+            imdrec = imdrecn
+            goto 11
+ 12      continue
+
+         irec_initial = meta(2)
+         irec_final   = meta(3)
+
+      end subroutine set_record_range
+

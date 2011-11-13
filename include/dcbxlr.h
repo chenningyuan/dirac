@@ -10,7 +10,7 @@
 !       must do a 'make depend' followed by 'make'.
 !
       INTEGER MAXLLR, MAXFLR
-      PARAMETER (MAXLLR = 40, MAXFLR = 20)
+      PARAMETER (MAXLLR = 45, MAXFLR = 20)
 !
 ! ----- VARIABLES:
 !
@@ -33,11 +33,11 @@
 !
       LOGICAL XLR_SKIPEE, XLR_SKIPEP, XLR_LSFG(2), XLRNRM, XLRDIH,      &
      &        ALLCMB, TRIAB, COMPRS, XSTERN, XLRANA, NOSPIA, NOSPIB,    &
-     &        XLR_UNCOUP, XLR_TRIPLET, XLR_IMFREQ
+     &        XLR_UNCOUP, XLR_TRIPLET, XLR_IMFREQ, XLR_E2CHEK,XSTERNC
       COMMON /XCBLLR/ XLR_SKIPEE, XLR_SKIPEP, XLR_LSFG, XLRNRM, XLRDIH, &
      &                ALLCMB, TRIAB, COMPRS, XSTERN, XLRANA,            &
      &                NOSPIA, NOSPIB, XLR_UNCOUP, XLR_TRIPLET,          &
-     &                XLR_IMFREQ
+     &                XLR_IMFREQ,XLR_E2CHEK,XSTERNC
 
       REAL*8 THCLR, BFREQ(MAXFLR), THRCOM, CNVXLR(2), RESXLR
       COMMON /XCBRLR/ THCLR, BFREQ, THRCOM, CNVXLR, RESXLR

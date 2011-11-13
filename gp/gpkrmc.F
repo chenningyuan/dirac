@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : gpkrmc.F
 C
 C Purpose: General Purpose utility routines originally made for krmc,
@@ -94,7 +89,265 @@ C
          END DO
       END DO
 C
-      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine mk34bindex_offset(indxb34_offset,nstr,trian)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+      logical trian
+      integer nstr(2,0:2,2)
+      integer indxb34_offset(2)
+C
+      ij = 0
+      do irepij =1, nfsym
+         indxb34_offset(irepij) = ij
+         do irepj = 1, nfsym
+            irepi = mod(irepj+irepij,2) + 1
+            if(.not.trian.or.(trian.and.irepi.gt.irepj))then
+              do j = 1, nstr(irepj,0,2)
+                 do i = 1, nstr(irepi,0,1)
+                    ij = ij + 1
+                 end do
+              end do
+            else if(irepi.eq.irepj)then
+!             same procedure for lower trangular gg or uu case..
+              do j = 1, nstr(irepj,0,2)
+                 do i = j, nstr(irepi,0,1)
+                    ij = ij + 1
+                 end do
+              end do
+            end if
+         end do
+      end do
+!
+!     write(lupri,'(2x,a,2i4)') '(mk34bindex_offset) offsets are',
+!    &                          indxb34_offset(1),indxb34_offset(2)
+!     write(lupri,'(2x,a,2i4)') '(mk34bindex_offset) input nstr(1) is',
+!    &                           (nstr(i,0,1), i = 1, nfsym)
+!     write(lupri,'(2x,a,2i4)') '(mk34bindex_offset) input nstr(2) is',
+!    &                           (nstr(i,0,2), i = 1, nfsym)
+!
+      end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine int_irreps_b2x_2(irepij,indxb34_reod,orb_info_array)
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+
+#include "maxash.h"
+C
+#include "maxorb.h"
+#include "dcbidx.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      dimension indxb34_reod(2,*) 
+      integer orb_info_array(2,norbt,norbt)
+
+      iii = 0
+      jjj = 0
+      ikl = 0
+      do irepl = 1, nfsym
+        irepk = mod(irepl + irepij, 2) + 1
+        do 10 icol = 1, nidx4(irepl)
+          jj  = idxt2g(icol+iidx4(irepl),4)
+          if(jj .le. 0) goto 10
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+!         write(lupri,'(2x,a,i4,a,i4)')
+!    &    ' (int_irreps_b2x_2) icol ==',icol, ': index jj =',jj
+#endif
+          do 20 irow = 1, nidx3(irepk)
+            ii = idxt2g(irow+iidx3(irepk),3)
+            if(ii .le. 0) goto 20
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+!           write(lupri,'(2x,a,i4,a,i4)')
+!    &      ' (int_irreps_b2x_2) irow ==',irow, ': index ii =',ii
+!           write(lupri,'(2x,a,i6)')
+!    &      '(int_irreps_b2x_2) reorder position - choice 1 ==',
+!    &      (jj-1)*norbt+ii
+!           write(lupri,'(2x,a,2i6)')
+!    &      '(int_irreps_b2x_2) symmetry + quaternion phase factor ==',
+!    &      orb_info_array(1,ii,jj), orb_info_array(2,ii,jj)
+#endif
+            indxb34_reod(1,(jj-1)*norbt+ii) = orb_info_array(1,ii,jj)
+            indxb34_reod(2,(jj-1)*norbt+ii) = orb_info_array(2,ii,jj)
+ 20       continue
+ 10     continue
+      end do
+
+      end
+!***********************************************************************
+      subroutine setorb_attrib(orb_info_array,ibeig)
+!
+!     purpose: setup the orbital info array which will on output contain 
+!              for the ( |kl) integral either 
+!
+!              - linear symmetry run : mj-values for each orbital k,l
+!
+!              - spinfree calculation: total boson symmetry of
+!                                      kl-compound and the quaternion 
+!                                      multiplication factor  
+!
+!     written by Stefan Knecht - Aug 2010
+!     based on the routine MKINDXB originally written by Luuk Visscher
+!
+!***********************************************************************
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+      integer orb_info_array(2,norbt,norbt)
+      dimension ibeig(*)
+      integer, allocatable  :: orb_sym_vec(:)
+      character (len=8)     :: orbital_info_label
+#include "ibtfun.h"
+ 
+!     step 1: read mj-values/boson irreps from file KRMCSCF
+      call alloc(orb_sym_vec,norbt,'orb_sym_vec-setorb_att')
+      orb_sym_vec = 0
+
+      call icopy(norbt,ibeig,1,orb_sym_vec,1)
+C
+C     debug print
+!     write(lupri,'(2x,a)') 
+!    & '(setorb_attrib) info: symmetry-info vector of orbitals'
+!     call iwrtma(orb_sym_vec,1,norbt,1,norbt,lupri)
+
+!     initialize
+      call izero(orb_info_array,2*norbt**2)
+
+!     step 2: setup the orbital info array
+      do irepij =1, nfsym
+         do irepl4 = 1, nfsym
+            irepk3 = mod(irepl4+irepij,2) + 1
+            do l4 = 1, norb(irepl4)
+               index_orb4 = iorb(irepl4) + l4
+               do k3 = 1, norb(irepk3)
+                  index_orb3 = iorb(irepk3) + k3
+                  irep3b = orb_sym_vec(index_orb3)
+                  irep4b = orb_sym_vec(index_orb4)
+!                 write(lupri,'(2x,a,2i5)') 
+!    &            '(setorb_attrib) index_orb3 and index_orb4',
+!    &                             index_orb3, index_orb4
+                  if(linear)then
+ 
+!                   store the mj values
+                    orb_info_array(1,index_orb3,index_orb4) = irep3b
+                    orb_info_array(2,index_orb3,index_orb4) = irep4b
+                  else
+ 
+!                   compound boson irrep can be obtained by an xor operation
+                    irep34b                      = ibtxor(irep3b,irep4b)
+!                   write(lupri,'(2x,a,3i5)') 
+!    &              '(setorb_attrib) compound irrep for k,l',
+!    &              irep34b,irep3b,irep4b
+                    orb_info_array(1,index_orb3,
+     &                               index_orb4) = irep34b
+ 
+!                    We first determine which quaternion phase
+!                    factors the individual functions receive and
+!                    than obtain the compound phase factor by
+!                    quaternion multiplication.
+!
+                     iq3 = ipqtoq(1,irep3b)
+                     iq4 = ipqtoq(1,irep4b)
+ 
+!                    The sign of the quaternion multiplication is given by iqphase,
+!                    but since IQJ is conjugated (backtransform !) we also have to 
+!                    multiply by IQSIGN (-1 for q-imaginary, 1 for real)
+!                    write(lupri,'(2x,a,3i5)') 
+!    &               '(setorb_attrib) phase factor for k,l',
+!    &               iqphase(iq3,iq4,1)*iqsign(iq4,2,1),irep3b,irep4b
+!
+                     orb_info_array(2,index_orb3,index_orb4) =
+     &                              iqphase(iq3,iq4,1)*iqsign(iq4,2,1)
+                  end if
+               end do
+            end do
+         end do
+      end do
+
+!     release scratch memory
+      call dealloc(orb_sym_vec)
+
+!     write(lupri,'(2x,a,2i4)') '(MKINDXB) input nstr(1) is',
+!    &                           (nstr(i,0,1), i = 1, nfsym)
+!     write(lupri,'(2x,a,2i4)') '(MKINDXB) input nstr(2) is',
+!    &                           (nstr(i,0,2), i = 1, nfsym)
+
+      end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LINZERO */
+      SUBROUTINE linzero_nz3(iclass,irepijb,irepklb,nkl,vnz3)
+C
+C     Zero integrals that should be zero due to symmetry
+C     This means that the MJ values stored in IREPIJB and IREPKLB should match.
+C
+!     written by Stefan Knecht, August 2010
+!     based on the routine linzero written by Luuk Visscher.
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+      DIMENSION vnz3(nkl,nz,3)
+      DIMENSION IREPIJB(2),IREPKLB(2,NKL)
+C
+C     to determine the MJ value we need to know the classes :
+!     Class 1 : (i    j    | k    l   )
+!     Class 2 : (i    jbar | k    lbar)
+!     Class 3 : (ibar j    | kbar l   )
+!
+!     Luuks classes...
+C     Class 1 : (i    j    | k    l   )
+C     Class 2 : (i    j    | kbar lbar)
+C     Class 3 : (i    jbar | k    lbar)
+C     Class 4 : (ibar j    | k    lbar)
+C
+      if(nz.gt.2)then
+        write(lupri,'(2x,a)') '*** error in (linzero_nz3):'//
+     &  'code for nz > 2 is missing yet. ***'
+        call quit('*** error in (linzero_nz3): code for nz > 2 is
+     &  missing yet. ***')
+      end if
+
+        write(lupri,'(2x,a,1i6)') '(linzero_nz3): 
+     &         iclass is:', iclass
+      IF (ICLASS.eq.1) THEN
+         MIJ = - IREPIJB(1) + IREPIJB(2)
+      ELSEIF (ICLASS.EQ.2) THEN
+         MIJ = - IREPIJB(1) - IREPIJB(2)
+      ELSE
+         MIJ =   IREPIJB(1) + IREPIJB(2)
+      ENDIF
+C
+      DO I = 1, NKL
+         IF (ICLASS.EQ.1) THEN
+            MKL = - IREPKLB(1,I) + IREPKLB(2,I)
+         ELSE IF(ICLASS.EQ.2)THEN
+            MKL = - IREPKLB(1,I) - IREPKLB(2,I)
+         ELSE
+            MKL =   IREPKLB(1,I) + IREPKLB(2,I)
+         ENDIF
+         do j = 1, nz
+           IF (MIJ+MKL.NE.0)then
+           write(lupri,'(2x,a,i6,a,1p,d10.2,4i4)')
+     &     '(linzero_nz3): removed integral(',i,')',vnz3(i,j,iclass),
+     &     MIJ,MKL, IREPKLB(1,I), IREPKLB(2,I)
+           else
+           write(lupri,'(2x,a,i6,a,1p,d10.2,4i4)')
+     &     '(linzero_nz3): kept integral(',i,')',vnz3(i,j,iclass),
+     &     MIJ,MKL, IREPKLB(1,I), IREPKLB(2,I)
+           end if
+           IF (MIJ+MKL.NE.0) vnz3(i,j,iclass) = 0.D0
+         end do
+      ENDDO
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rprkap */
@@ -172,7 +425,7 @@ C
 #include "dcbopt.h"
 C
       DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
 C
 C     Write label at end or - if already existing - after SODLABEL
 C
@@ -180,9 +433,8 @@ C
 C
 C     Write vector
 C
-      LEN = MAX(4,ISIZE)
-      CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
-      IF( CWRTFO_MAT ) CALL WRITSQ(LUNIT,IRAT*1,ECORE_LR)
+      WRITE(LUNIT) VECTOR
+      IF( CWRTFO_MAT ) WRITE(LUNIT) ECORE_LR
       CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
 C
       REWIND LUNIT
@@ -222,15 +474,21 @@ C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
 C
+      NTEST = 0
+C
       IF( IRWRT .eq. 0 )THEN
 C
 C       Write label at end or - if already existing - after SODLABEL
 C
         CALL LABKRMC(LUNIT,LABEL)
 C
-C       Write vector
-C
-        CALL WRITSQ(LUNIT,ISIZE,VECTOR)
+C       debug print
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*) ' matrix put to file with label ',LABEL
+          CALL WRTMATMN(VECTOR,1,ISIZE,1,ISIZE,LUPRI)
+        END IF
+C       ... write
+        WRITE(LUNIT) VECTOR
         CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
         REWIND LUNIT
       ELSE
@@ -238,7 +496,79 @@ C       ... read from file
         REWIND LUNIT
         CALL MOLLAB(LABEL,LUNIT,LUPRI)
         CALL READT(LUNIT,ISIZE,VECTOR)
+C
+C       debug print
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*) ' matrix read from file with label ',LABEL
+          CALL WRTMATMN(VECTOR,1,ISIZE,1,ISIZE,LUPRI)
+        END IF
       END IF
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck GET_KRCICVECS_E */
+      SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,XSYMFLAB,
+     &                           NKRCI_MAX_SYM,PRINT_EV)
+C***********************************************************************
+C
+C     read eigenstate energies from file KRCI_CVECS.INFO
+C
+C     Input:
+C        NKRCI_MAX_SYM  - highest active symmetry irrep
+C        XSYMFLAB       - array containing file labels for each symmetry
+C        NKRCI_CIROOTS  - # eigenstates per symmetry irrep
+C
+C     Output:
+C        EVEC     - vector containing eigenvalues for all eigenstates
+C        PRINT_EV - flag for printing eigenvalues in calling routine
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision: S. Knecht - Jan 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION EVEC(*), NKRCI_CIROOTS(*)
+      CHARACTER*1 XSYMFLAB(*) 
+      CHARACTER*8 FILELAB
+      LOGICAL EX, PRINT_EV, FNDLAB
+C
+C     read final energies from file KRCI_CVECS.INFO
+      INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
+      IF( .not. EX ) THEN
+        WRITE(LUPRI,'(/A,2I4)')' *** ERROR in GET_KRCICVECS_E.'//
+     &                         ' file KRCI_CVECS.INFO not found.'
+        CALL QUIT(' *** ERROR in GET_KRCICVECS_E. file KRCI_CVECS.INFO
+     &               not found.')
+      END IF
+      LU_INFO = 80
+      CALL OPNFIL(LU_INFO,'KRCI_CVECS.INFO','OLD','XGETEN')
+      NXSCR = 1
+      DO I = 1, NKRCI_MAX_SYM
+        IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
+          WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+          REWIND LU_INFO
+          PRINT_EV = FNDLAB(FILELAB,LU_INFO)
+          IF(PRINT_EV) THEN 
+            CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
+     &                        NKRCI_CIROOTS(I),1)
+          ELSE
+            WRITE(LUPRI,'(/A,/A)')
+     &      ' *** Warning: energies for requested eigenstates are not'//
+     &      ' available. Applying a simple order per symmetry. ***',
+     &      ' *** DO NOT RELY ON ANY ORDERING!'//
+     &      ' DEGENERACIES MAY NOT BE DETECTED... ***'
+            DO IVEC = 1,NKRCI_CIROOTS(I)
+              EVEC(IVEC+NXSCR-1) = (IVEC+NXSCR-1) * 1.0D0
+            END DO
+          END IF
+        END IF
+        NXSCR = NXSCR + NKRCI_CIROOTS(I)
+      END DO
+C     ... close
+      CLOSE(LU_INFO,STATUS='KEEP')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -264,7 +594,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
 C
 C     Write label at end or - if already existing - after SODLABEL
 C
@@ -357,7 +687,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -399,7 +729,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -443,7 +773,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
       CHARACTER FILENAME*(*)
       LOGICAL   FNDLAB, FEXIST, FOPEN
 C
@@ -662,7 +992,7 @@ C
      &            WORK(KCOS),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
-     &            WORK(KFREE),LFREE,IPROPT)
+     &            WORK(KFREE),LFREE,IPRINT)
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: V cos(d) V^{dagger}',-1)
          CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -677,7 +1007,7 @@ C
      &            WORK(KSIN),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
-     &            WORK(KFREE),LFREE,IPROPT)
+     &            WORK(KFREE),LFREE,IPRINT)
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: V sin(d)/d V^{dagger}',-1)
          CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -738,6 +1068,7 @@ C
          CALL HEADER('ROTCMO: old orbitals',-1)
          CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
+CSK   CALL DZERO(WORK(KCOS),NORBXQ)
       CALL QGEMM(NBASI,NORBI,NORBI,D1,
      &           'N','N',IP,CMO,NBASI,NORBI,NZ,
      &           'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ,
@@ -875,7 +1206,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1274,11 +1605,69 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MATGAT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,
+     &                       IBEIG,is_symm,NZ)
+C***********************************************************************
+C
+C     Construct BMAT from AMAT elements using IDX and ibeig arrays.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
+C
+      DO IZ = 1, NZ
+         do 5 J = 1, NCB
+            JJ = IDX(J)
+            if(IBEIG(JJ).ne.is_symm) goto 5
+            do 10 K = 1, NRB
+               KK = IDX(K)
+               if(IBEIG(kk).ne.is_symm) goto 10
+               BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
+ 10         continue
+  5      continue
+      END DO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck matgatx */
+      SUBROUTINE MATGATX(AMAT,NDIMA,BMAT,NDIMB,ISKIP,NZ)
+C***********************************************************************
+C
+C     Construct BMAT from AMAT elements.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - Nov 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NDIMA,NDIMA,NZ), BMAT(NDIMB,NDIMB,NZ)
+C
+      DO IZ = 1, NZ
+        DO J = 1, NDIMB
+          CALL DCOPY(NDIMB,AMAT(ISKIP+1,ISKIP+J,IZ),1,BMAT(1,J,IZ),1)
+        END DO
+      END DO
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck matsct */
       SUBROUTINE MATSCT(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,NZ)
 C***********************************************************************
 C
-C     Construct BMAT from AMAT elements using IDX.
+C     Construct AMAT from BMAT elements using IDX.
 C
 C     Input:
 C
@@ -1301,5 +1690,105 @@ C
             END DO
          END DO
       END DO
-      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MATSCT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,
+     &                       ibeig,is_symm,NZ)
+C***********************************************************************
+C
+C     Construct AMAT from BMAT elements using IDX and ibeig.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), ibeig(*)
+C
+      DO IZ = 1, NZ
+         DO 5 J = 1, NCB
+            JJ = IDX(J)
+            if(ibeig(jj).ne.is_symm) goto 5
+            DO 10 K = 1, NRB
+               KK = IDX(K)
+               if(ibeig(KK).ne.is_symm) goto 10
+               AMAT(KK,JJ,IZ) = BMAT(K,J,IZ)
+ 10         continue
+  5      continue
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      integer function iimax(n,iarr,inca)
+C***********************************************************************
+C
+C     find largest absolute element in integer array iarr.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION iarr(*)
+C
+      ismax = 0
+      DO ielm = 1, n
+        ismax = max(ismax,abs(iarr(ielm)))
+      END DO
+      iimax = ismax
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DETXFLAB */
+      SUBROUTINE DETXFLAB(XSYMFLAB,IXSYM)
+C***********************************************************************
+C
+C     determine KRCI_CVECS.x xSYMFLAB
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+C
+      CHARACTER*1 XSYMFLAB(IXSYM), XLAB(16)
+      DATA (XLAB(I),I=1,16) /"a","b","c","d","e","f","g","h","i","j",
+     &                       "k","l","m","n","o","p"/
+      DO I = 1, IXSYM
+        XSYMFLAB(I) = XLAB(I)
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FIND_XPRPINDEX */
+      INTEGER FUNCTION IXPRPINDEX(PRPNAMES,LPROP_KRCI,NPROP,XLABEL)
+C***********************************************************************
+C
+C     find index of property XLABEL in KRCI format
+C
+C     Written by S. Knecht - Nov 2008
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+C
+      CHARACTER*16 PRPNAMES(*), XLABEL
+      DIMENSION LPROP_KRCI(*)
+C
+      IXPRPINDEX = 0
+      I_SCR      = 0
+      DO I = 1, NPROP
+        INDXPR = LPROP_KRCI(I)
+        IF( PRPNAMES(INDXPR) .eq. XLABEL ) I_SCR = I
+      END DO
+      IXPRPINDEX = I_SCR
       END

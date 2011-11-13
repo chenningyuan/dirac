@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,18 +15,15 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : tradr4.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
-      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
+      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -84,7 +79,7 @@ C***********************************************************************
 
 #include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
-      DIMENSION NSTR(2,0:2,4),DRIJ(*),GABRAO(*),
+      DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
       CHARACTER*7 CIC(3)
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
@@ -115,7 +110,7 @@ C
 C       Initialize
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &       KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
@@ -251,7 +246,7 @@ CLV:Gaunt  DO IC = 1, 3
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                   GABRAO,DRIJ,DINTSKP)
+     &                   WORK(KGAB),WORK(KDRIJ),DINTSKP)
            ENDDO
         ENDIF
         ENDDO
@@ -270,10 +265,7 @@ C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
       IF (.NOT. NOMDCINT) THEN
-         CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-         CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-         CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
+         CALL MDINTI(NSTR,IPRINT)
       ELSE
          CALL INI4INDINFO
       END IF
@@ -1203,10 +1195,7 @@ C
 C
 C        Initialize MOLFDIR integral file on slave
 C
-         CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-         CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-         CALL MEMREL('TR4PAR',WORK,1,KIKRA,KFREE,LFREE)
+         CALL MDINTI(NSTR,IPRINT)
       END IF
 C
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')

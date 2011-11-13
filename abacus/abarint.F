@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,9 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C$Id: abarint.F 7732 2008-09-16 20:30:19Z bast $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C$Id: abarint.F 11757 2010-10-10 07:06:37Z hjj $
 C
 C#include "single.h"
 #ifdef UNDEF
@@ -158,11 +153,11 @@ C  /* Deck prnred */
 C
 C     Prints out information about redundant internal coordinates.
 C
+      use codata
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "codata.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
@@ -223,9 +218,9 @@ C  /* Deck redvib */
 C
 C     Converts normal coordinates to redundant internal coordinates.
 C
+      use codata
 #include "implicit.h"
 C
-#include "codata.h"
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4261,9 +4256,9 @@ C     nuclei - as Roland also notes in his paper;
 C     with covalent/metallic radii we should get reasonable
 C     r_ref for all bonds)
 C
+      use codata
 #include "implicit.h"
 #include "mxcent.h"
-#include "codata.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
       LOGICAL   ORIG_LINDH

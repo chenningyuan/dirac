@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,17 +15,14 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C     Contains the modifications to activate the spinfree option in 
 C     the code
 C
 C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirspf.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -148,7 +143,7 @@ C
 C
 C     Get transformation matrix S(-1/2) to go to the orthogonal MO-basis
 C
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KBUF))
 C
 C     Transform the Fock matrix to spinfree MO-basis 

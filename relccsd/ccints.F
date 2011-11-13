@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,21 +15,18 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : ccints.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDINTS(IPRNT,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
+      SUBROUTINE RDINTS(IPRNT_LOC,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
      &                  BUF1,BUF2,IREPSP,IREPSPI,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
-     &                  EPS,FOO,FVO,FVV,BREIT,SRTALL,INTERFACE,
+     &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC,
      &                  CC)
 C
       IMPLICIT INTEGER (A-Z)
@@ -57,7 +52,10 @@ C
 #include "results.inc"
 #include "files.inc"
 #include "ccpar.inc"
+#include "inpt.inc"
 #include "waio.h"
+#include "dcbgen.h"
+#include "dcbham.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -75,9 +73,9 @@ C
       REAL*8 VVVOO(RCW,*),VVVOOA(RCW,*),VVOVO(RCW,*),VVOVOA(RCW,*)
       REAL*8 VVOVV(RCW,*),VVOVVA(RCW,*),VVVVV(RCW,*),VVVVVA(RCW,*)
       REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
-      REAL*8 EPS(*)
-      LOGICAL BREIT,SRTALL
-      CHARACTER*10 INTERFACE
+      REAL*8 EPS(*), ORIG_TOTSCF
+      LOGICAL BREIT_LOC,SRTALL,TOBE
+      CHARACTER*10 INTERFACE_LOC
 C
 C---------------Local variables--------------------------------------
 C
@@ -120,7 +118,7 @@ C
       ENDIF
       OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
       REWIND(MDINT)
-      IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
+      IF (INTERFACE_LOC(1:7).EQ.'MOLFDIR') THEN
          IF (MYPROC.EQ.MASTER) THEN
 C           The oldest MOLFDIR file format
             READ (MDINT,ERR=10000,END=10) DATEX,TIMEX,NKR,
@@ -131,14 +129,15 @@ C           The newer MOLFDIR file format = identical to older DIRAC
      &       (KR(I),KR(-I),I=1,NKR)
    11       CONTINUE
          ENDIF
-      ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
-         IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
+      ELSEIF (INTERFACE_LOC(1:5).EQ.'DIRAC') THEN
+         IF (MYPROC.EQ.MASTER.OR.INTERFACE_LOC(6:6).EQ.'6') THEN
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
          ENDIF
          MREADER = MASTER
       ELSE
-         WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
+         WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE_LOC,
+     & ' not defined'
          CALL QUIT('Adapt RDINTS')
       ENDIF
 C
@@ -192,7 +191,7 @@ C
      &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) THEN
 C        We ran out of integrals on this node
-         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE_LOC(6:6).EQ.'6') THEN
 C            There will be more integrals to read on the next node
              MREADER = MREADER + 1
              GOTO 100
@@ -256,7 +255,7 @@ C
 C
 C     ADD BREIT AND COULOMB INTEGRALS
 C
-      IF (BREIT.AND.ITRSGN.LT.0) THEN
+      IF (BREIT_LOC.AND.ITRSGN.LT.0) THEN
          CALL RREAD(ITAPT+1,VOOOOA,NV1*RCW*IRW,1)
          CALL RREAD(ITAPT+2,VVOOOA,NV2*RCW*IRW,1)
          CALL RREAD(ITAPT+3,VVVOOA,NV3*RCW*IRW,1)
@@ -316,9 +315,9 @@ C ----------------------------
       NSEC = N5*IRW*RCW / NWORDS_ON_RECORD
       IF (MOD(N5*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
-      IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
+      IF (MYPROC.EQ.MASTER.OR.INTERFACE_LOC(6:6).EQ.'6') THEN
          CLOSE (MDINT,STATUS='KEEP')
-         IF (BREIT.AND.ITRSGN.EQ.-1) THEN
+         IF (BREIT_LOC.AND.ITRSGN.EQ.-1) THEN
              OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          ELSE
              OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
@@ -333,7 +332,7 @@ C
   200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,14,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) THEN
-         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE_LOC(6:6).EQ.'6') THEN
              MREADER = MREADER + 1
              GOTO 200
          ELSE
@@ -393,7 +392,7 @@ C
 C
 C     ADD BREIT AND COULOMB INTEGRALS
 C
-      IF (BREIT.AND.ITRSGN.LT.0) THEN
+      IF (BREIT_LOC.AND.ITRSGN.LT.0) THEN
          CALL RREAD(ITAPT+5,VVOVVA,N5*RCW*IRW,NSEC5)
          CALL XAXPY(N5,A1,VVOVVA,1,VVOVV,1)
       ENDIF
@@ -428,9 +427,9 @@ C --------------------------
       NSEC = N6*IRW*RCW / NWORDS_ON_RECORD
       IF (MOD(N6*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
-      IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
+      IF (MYPROC.EQ.MASTER.OR.INTERFACE_LOC(6:6).EQ.'6') THEN
          CLOSE (MDINT,STATUS='KEEP')
-         IF (BREIT.AND.ITRSGN.EQ.-1) THEN
+         IF (BREIT_LOC.AND.ITRSGN.EQ.-1) THEN
              OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          ELSE
              OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
@@ -445,7 +444,7 @@ C
   300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,16,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
       IF (NONZR.LT.0) THEN
-         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE_LOC(6:6).EQ.'6') THEN
              MREADER = MREADER + 1
              GOTO 300
          ELSE
@@ -504,7 +503,7 @@ C
 C
 C     ADD BREIT AND COULOMB INTEGRALS
 C
-      IF (BREIT.AND.ITRSGN.LT.0) THEN
+      IF (BREIT_LOC.AND.ITRSGN.LT.0) THEN
          CALL RREAD(ITAPT+6,VVVVVA,N6*RCW*IRW,NSEC6)
          CALL XAXPY(N6,A1,VVVVVA,1,VVVVV,1)
       ENDIF
@@ -524,7 +523,7 @@ C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
 C  Breit is only used with MOLFDIR in this version
 C
-      IF (BREIT.AND.ITRSGN.EQ.1) THEN
+      IF (BREIT_LOC.AND.ITRSGN.EQ.1) THEN
          WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
          OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          REWIND(MDINT)
@@ -534,7 +533,7 @@ C
          ENDIF
          ITRSGN = -1
          GOTO 1
-      ELSEIF (BREIT) THEN
+      ELSEIF (BREIT_LOC) THEN
          WRITE (IW,1000) 'Breit',DATEX,TIMEX,ICOUNT
       ELSE
          WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
@@ -562,8 +561,39 @@ C
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
       ESCF = E0 + E1 
-      WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
-      ESCF = ESCF + ECORE
+C
+C     SK - a first step towards a consistent treatment of 
+C     NORECMP == .TRUE. + USEOE == .TRUE. 
+C     when we run with the MOLMF(3) hamiltonian
+      IF(NORECMP .and. USEOE) THEN
+        WRITE(IW,'(/A,/A,/A,/A)') 
+     & ' ***********************************************************',
+     & ' * Info from RDINTS: No recomputation of SCF energy.       *',
+     & ' * Value is taken from the file DFCOEF instead.            *',
+     & ' ***********************************************************'
+        ORIG_TOTSCF = 0.0D0
+        IF( MYPROC .eq. MASTER )THEN
+          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+          IF(.NOT.TOBE) THEN
+              WRITE(IW,'(A)')
+     &          'RDINTS: Coefficient file DFCOEF not found !'
+              CALL QUIT('RDINTS: Coefficient file DFCOEF not found !')
+          ENDIF
+          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
+          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,
+     &                        ORIG_TOTSCF,1)
+          CLOSE(LUCOEF,STATUS='KEEP')
+        ENDIF
+#if defined VAR_MPI
+        CALL MPI_BCAST(ORIG_TOTSCF,1,MPI_REAL8,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+#endif
+        ESCF = ORIG_TOTSCF
+        WRITE(IW,1013) ESCF
+      ELSE 
+        WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
+        ESCF = ESCF + ECORE
+      END IF
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
@@ -580,6 +610,7 @@ C
  1010 FORMAT (/' Skipping integral sorting step 1')
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
+ 1013 FORMAT (//' SCF energy :',T40,F25.15) 
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
 10001 CALL QUIT('ERROR READING HEADER MDBINT')

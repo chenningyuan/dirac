@@ -1,9 +1,0 @@
-! This test calculates the static electric dipole polarizability of Ne
-! using the GRAC and SAOP asymptotic correction schemes.
-! The chosen functionals are GRAC: PBE0gracLB94
-!                        and SAOP: GLLBsaopLBalpha
-!
-! Note that the cc-pVDZ basis set is not appropriate for production calculations
-! of polarizabilities.
-!
-! We assume that the cc-pVDZ basis set is available in your standard path.

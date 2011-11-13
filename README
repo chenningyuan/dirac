@@ -1,19 +1,19 @@
 =========================================================
-README file for DIRAC08 release (last revision Sep. 2008)
+README file for DIRAC10 release (last revision Sep. 2010)
 =========================================================
 
-You can find more detailed installation instructions in the
-manual on the Dirac home page "http://dirac.chem.sdu.dk".
-
-The manual is not included in the tar-file and should be
-downloaded separately from "http://dirac.chem.sdu.dk".
+You can find more detailed installation instructions,
+a manual and much more useful information on the Dirac wiki 
+"http://dirac.chem.vu.nl".
 
 After running "configure":
  
-1) Before you run make, please check the "Makefile.config" and
+1) Before you run 
+   $ make
+   please check the "Makefile.config" and
    "pam" files (created by "configure"). Compiler options are
    set in this file, based on our best knowledge of this 
-   architecture in September 2008 and may be outdated by
+   architecture in September 2010 and may be outdated by
    the time that you install the program.
 
 2) In Makefile.config:
@@ -21,12 +21,11 @@ After running "configure":
    compiled with the same compiler you are using now, otherwise it
    might be necessary to link to additional run-time libraries.
     
-3) Please check 'Known issues and problems' at
-   "http://dirac.chem.sdu.dk"
-   to see hints or/and problems concerning your platform.
+3) Please check the wiki to see hints or/and problems concerning your platform.
 
-4) Then run "make" and
-   DIRAC08 should be ready to run...
+4) Then run
+   $ make
+   and DIRAC10 should be ready to run...
 
 5) If you are using a queuing system, you may want to check
    the "pamq" script as well.
@@ -41,11 +40,7 @@ an e-mail to the user mailing list dirac@dirac.chem.sdu.dk.
 
 If you later change a parameter as e.g. MXCENT in
 include/mxcent.h (MXCENT is the max. number of nuclei)
-then run
-   make depend # requires that "makedepend" has been installed
-   make
-or
-   make clean
-   make
+then (re)run
+$ make
 
 =========================================================

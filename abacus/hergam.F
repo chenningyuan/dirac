@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : hergam.F
 C
 C
@@ -63,10 +58,19 @@ C
       DATA MAXJ0 /-1/
 C
 #include "sdpre.h"
-C
       IPOINT = NINT(D10*MIN(WVAL,TEN6))
+
       IF (IPOINT .LT. 120) THEN
          ISTART = 1 + 121*JMAX0 + IPOINT
+CMI    ... watch up the value !
+!        IF (ISTART.LT.0) THEN
+!         WRITE(LUPRI,*) 'GAMFUN: wrong index calculation !' 
+!         WRITE(LUPRI,*) 'ISTART=1 + 121*JMAX0 + IPOINT=',ISTART
+!         WRITE(LUPRI,*) 'IPOINT = NINT(D10*MIN(WVAL,TEN6))=',IPOINT 
+!         WRITE(LUPRI,*) 'WVAL,TEN6=', WVAL,TEN6
+!         CALL QUIT('GAMFUN: Error exit- wrong index calculation !')
+!        ENDIF
+
          WDIF = WVAL - TENTH*SDPRE(IPOINT)
          FJW(JMAX0) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
      *                   + COEF5*TABFJW(ISTART + 605))*WDIF
@@ -185,6 +189,17 @@ C
 C        b = k + 1; a = j + k + 1
 C
 C     Commentary added by T. Saue Jun 23 2007
+
+!     radovan: in case you are interested
+!              here is a python routine that does that
+!              which i use in one of my scripts
+!     def lmn(k):
+!         for i in range(1, k + 2):
+!             for j in range(1, i + 1):
+!                 l = k + 1 - i
+!                 m = i - j
+!                 n = j - 1
+!                 print l, m, n
 C
 C***********************************************************************
 #include "priunit.h"

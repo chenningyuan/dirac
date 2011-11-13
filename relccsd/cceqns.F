@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : cceqns.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -163,6 +158,7 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
+#include "ihm.inc"
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -409,6 +405,11 @@ C
 C
  100  CONTINUE
 C
+C     Delete the Pi->Q excitations in case of Int. Ham. CCFS scheme 2
+      IF (FOCKSP.AND.DOIH.AND.IHSCHEME.EQ.2) THEN
+         CALL DENOMF (EPS,S1,S2,S1,S2,3)
+      ENDIF
+C
 C     Add the first order wave function contribution
 C
       CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
@@ -549,8 +550,8 @@ C
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'NIT',10X,'ENERGY',20X,'RMS',7X,'T1-DIAGN')
- 6004 FORMAT(//' Requested convergence not reached in CCSD : RMS = ',
-     &F20.15)
+ 6004 FORMAT(//' WARNING: Requested convergence not reached in CCSD :',
+     &         'RMS = ',F20.15)
  6071 FORMAT(//,'  CCSD results',/)
  6072 FORMAT(' SCF energy :',T40,F25.15)
  6073 FORMAT(' MP2 correlation energy :',T40,F25.15)
@@ -603,6 +604,7 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "ihm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 C
@@ -862,6 +864,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "eqns.inc"
+#include "ihm.inc"
 #include "symm.inc"
 #include "ccpar.inc"
 C

@@ -1,5 +1,3 @@
-!  --- FILE: pgroup.h ---
-!
 !  Point group information
 !
 !     SYMOP - Symmetry operations
@@ -20,9 +18,7 @@
 !
       CHARACTER*3 SYMOP(0:7), GROUPS(0:7)
       SAVE SYMOP, GROUPS
-      DATA SYMOP / ' E ','Oyz','Oxz','C2z',
+      DATA SYMOP / ' E ','Oyz','Oxz','C2z',                             &
      &             'Oxy','C2y','C2x',' i '/
-      DATA GROUPS/ 'C1 ','C2 ','Cs ','Ci ',
+      DATA GROUPS/ 'C1 ','C2 ','Cs ','Ci ',                             &
      &             'D2 ','C2v','C2h','D2h'/
-!
-!  --- end of pgroup.h ---

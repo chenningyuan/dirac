@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,9 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C$Id: abaopt.F 7732 2008-09-16 20:30:19Z bast $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C$Id: abaopt.F 11757 2010-10-10 07:06:37Z hjj $
 C
 C#include "single.h"
 ! OLD_LOG
@@ -40,7 +35,7 @@ C  /* Deck opinpu */
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #else
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #endif
@@ -964,12 +959,8 @@ C
          END IF
       END IF
 C
-      IF (IPRINT .NE. IPDEF) THEN
-         WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
-      END IF
-      IF (ITRMAX .NE. ITRMX) THEN
-         WRITE(LUPRI,'(A,I10)') ' Maximum # of iterations:',ITRMAX
-      END IF
+      WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
+      WRITE(LUPRI,'(A,I10)') ' Maximum # of iterations:',ITRMAX
       IF (MAXREJ .NE. MXREJ) THEN
          WRITE(LUPRI,'(A,I10)') ' Max # of rejected steps:',MAXREJ
       END IF
@@ -1214,7 +1205,8 @@ C
       IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
          IF ( DOTRCK ) THEN
             WRITE(LUPRI,'(3X,A)')
-     &           '- LS-integrals (skipped if estimated to be small).'
+     &'- LS-integrals (skipped if estimated to be small, or in'//
+     &' two-component calculations ).'
          ELSE
             WRITE(LUPRI,'(3X,A)') '- LS-integrals.'
          END IF
@@ -1222,7 +1214,8 @@ C
       IF ( LBIT( IGRD_INTFLG, 3 ) ) THEN
          IF ( DOTRCK ) THEN
             WRITE(LUPRI,'(3X,A)')
-     &           '- SS-integrals (skipped if estimated to be small).'
+     &'- SS-integrals (skipped if estimated to be small, or in'//
+     &' two-component calculations ).'
          ELSE
             WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
          END IF
@@ -1375,9 +1368,9 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(IWOFF,WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
+      use codata
 #include "implicit.h"
 #include "dummy.h"
-#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "optinf.h"
@@ -1398,7 +1391,7 @@ C  /* Deck runopt */
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
-      LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
+      LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP, COND1
       CHARACTER TMPLIN*80, WRDRSP*7
       DIMENSION EGRAD(MXCOOR), CSTEP(MXCOOR), SCLVEC(MXCOOR)
       DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
@@ -1878,8 +1871,14 @@ C     Check if increase of gradient norm should cause reinitialization
 C     of Hessian. Reinitialization occurs when the norm of the gradient
 C     is larger than the norm of the gradient two iterations earlier.
 C
-         IF ((.NOT. NEWTON) .AND. (GRDINI .AND. (ITRNMR .GE. 2) .AND.
-     &        (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)))) THEN
+         IF (ITRNMR-2.GE.0) THEN
+            COND1=(.NOT. NEWTON).AND.(GRDINI.AND.(ITRNMR .GE. 2).AND.
+     &        (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2)))
+         ELSE
+          COND1=(.NOT. NEWTON) .AND. (GRDINI .AND. (ITRNMR .GE. 2)) 
+         ENDIF
+
+         IF (COND1) THEN
             WRITE(LUPRI,*)
             WRITE(LUPRI,*)'***** NOTE! *****'
             WRITE(LUPRI,*)'Due to increasing gradient norm, ' //
@@ -2022,13 +2021,13 @@ C
          END IF
          ENERGY = GEINFO(ITRNMR,1)
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A,F14.6,A)')
+         WRITE(LUPRI,'(A,F20.12,A)')
      &          ' Energy at final geometry is       : ',ENERGY,' a.u.'
          ERGDIF = ENERGY - GEINFO (0,1)
-         WRITE(LUPRI,'(A,F14.6,A)')
+         WRITE(LUPRI,'(A,F20.12,A)')
      &          ' Energy change during minimization : ',ERGDIF,' a.u.'
          ERGDIF = ERGDIF * XKJMOL
-         WRITE(LUPRI,'(A,F14.3,A)')
+         WRITE(LUPRI,'(A,F20.6,A)')
      &        '                                     ',ERGDIF,' kJ/mol'
          WRITE(LUPRI,*)
          IF (DOPRE) THEN
@@ -2106,6 +2105,7 @@ C
          CALL HEADER('Final geometry (au)',-1)
          CALL PRIGEO(CORD)
       END IF
+
       CALL HEADER('Optimization information',-1)
       WRITE(LUPRI,'(A,I7)')
      &     ' Iteration number               : ',ITRNMR
@@ -2114,7 +2114,9 @@ C
       IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) MARK = '*'
       WRITE(LUPRI,'(A,L1,A1)')
      &      ' End of minimization            :       ', GECONV, MARK
-      WRITE(LUPRI,678) ' Energy at this geometry is     : ', ENERGY
+      IF (GECONV) WRITE(LUPRI,'(6X,A)') '****  minimization ended  ****'
+      WRITE(LUPRI,'(A,F20.12)') 
+     &      ' Energy at this geometry is     : ', ENERGY
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
          ERGDIF = ENERGY - ERGOLD
          IF (ABS(ERGPRO) .GT. 1.0D-10) THEN
@@ -2122,16 +2124,25 @@ C
          ELSE
             RATIO = 1.0D0
          END IF
- 678     FORMAT(A,F14.6)
-         WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
+ 678     FORMAT(A,F20.12)
+         WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
+     &   ' Energy change from last geom.  : ',ERGDIF,
+     &   ' (the threshold is:',THRERG,')'
          IF (IPRINT .GE. 3) THEN
-            WRITE(LUPRI,678)' Predicted change               : ',ERGPRO
-            WRITE(LUPRI,678)' Ratio, actual/predicted change : ',RATIO
+            WRITE(LUPRI,'(A,D12.6)')
+     &      ' Predicted change               : ',ERGPRO
+            WRITE(LUPRI,'(A,D12.6)')
+     &     ' Ratio, actual/predicted change : ',RATIO
          END IF
       END IF
-      WRITE(LUPRI,678) ' Norm of gradient               : ', GRADNM
-      WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
-      WRITE(LUPRI,678) ' Updated trust radius           : ', TRSTRA
+      WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
+     &   ' Norm of gradient               : ', GRADNM, 
+     & ' (the threshold is:',GRDTHR,')'
+      WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
+     &   ' Norm of step                   : ', STPNRM, 
+     & ' (the threshold is:',THRSTP,')'
+      WRITE(LUPRI,'(A,D12.6)')
+     &   ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3) THEN
          DO 50 I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I7)')
@@ -2247,6 +2258,9 @@ C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
+      use dirac_cfg
+      use dft_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2254,7 +2268,7 @@ C
 #include "optinf.h"
 #include "siripc.h"
 #ifndef PRG_DIRAC
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #else /* PRG_DIRAC */
@@ -2275,6 +2289,12 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
+
+      if (dirac_cfg_dft_calculation) then
+!       get a new grid at new geometry
+        call reset_grid()
+      end if
+
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
          IF (DOCCSD) THEN
@@ -2349,7 +2369,7 @@ C
             ENERGY = RGETCI()
          ELSE IF (DOMP2) THEN
             ENERGY = EMP2+DHFERG
-         ELSE IF (DODHF.OR.DODFT) THEN
+         ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
          ELSE
             call quit('no wave function...')
@@ -2411,7 +2431,7 @@ CTROND#include "pario.h"
 #include "optinf.h"
 #ifndef PRG_DIRAC
 #  include "gnrinf.h"
-#  include "mx2orb.h"
+#  include "maxorb.h"
 #  include "infinp.h"
 #  include "inftap.h"
 #else
@@ -5221,7 +5241,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "optinf.h"
       PARAMETER (DP25=0.25D0, THDE=1.0D-10)
@@ -7436,6 +7456,9 @@ C     no need to run without symmetry).
 C
 C     K.Ruud, Feb.-6 1997
 C
+#ifdef PRG_DIRAC
+         use dirac_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7469,7 +7492,7 @@ C
          ECORR = RGETCCSD()
       ELSE IF (DOMP2) THEN
          ECORR = DHFERG+EMP2
-      ELSE IF (DODHF.OR.DODFT) THEN
+      ELSE IF (dirac_cfg_scf_calculation) THEN
          ECORR = DHFERG
       ELSE
          call quit('unknown wave function...')
@@ -7577,7 +7600,7 @@ C
             ECORR = RGETCCSD()
          ELSE IF (DOMP2) THEN
             ECORR = DHFERG+EMP2
-         ELSE IF (DODHF.OR.DODFT) THEN
+         ELSE IF (dirac_cfg_scf_calculation) THEN
             ECORR = DHFERG
          ELSE
             call quit('unknown wave function...')

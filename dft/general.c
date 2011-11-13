@@ -1,25 +1,24 @@
 /*
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-*/
+ *     Copyright (c) 2010 by the authors of DIRAC.
+ *     All Rights Reserved.
+ *
+ *     This source code is part of the DIRAC program package.
+ *     It is provided under a written license and may be used,
+ *     copied, transmitted, or stored only in accordance to the
+ *     conditions of that written license.
+ *
+ *     In particular, no part of the source code or compiled modules may
+ *     be distributed outside the research group of the license holder.
+ *     This means also that persons (e.g. post-docs) leaving the research
+ *     group of the license holder may not take any part of Dirac,
+ *     including modified files, with him/her, unless that person has
+ *     obtained his/her own license.
+ *
+ *     For information on how to get a license, as well as the
+ *     author list and the complete list of contributors to the
+ *     DIRAC program, see: http://dirac.chem.vu.nl
+ */
+
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* general.c:
    (c) Pawel Salek, pawsa@theochem.kth.se, 2001-08-02
@@ -157,33 +156,62 @@ dft_func_input (const char* line, int* inperr, int len, char** ConfString,
 
     return 0; /* failed to find */
 }
-static int do_alda  = 0; /* do not do ALDA approximation by default */
+
+static int do_xalda   = 0;
+static int do_alda_hs = 0; /* ALDA for      density part (     hermitian part), off by default */
+static int do_alda_ha = 0; /* ALDA for spin density part (anti-hermitian part), off by default */
 
 void
-doalda_(const int *alda)
+setxalda_(const int *xalda)
 {
-    do_alda = *alda;
+  do_xalda = *xalda;
 }
 
+void
+setaldahs_(const int *aldahs)
+{
+  do_alda_hs = *aldahs;
+}
 
+void
+setaldaha_(const int *aldaha)
+{
+  do_alda_ha = *aldaha;
+}
 
 void
 dftpot0_(FirstDrv *ds,
          const real* weight,
-         const real* rho, 
+         const real* rho,
          const real* grad)
 {
-    FunFirstFuncDrv drvs;
-    FunDensProp dp;
-    /* HP does not grok C99's { *rhoa, *rhob, *grada, *gradb }; */
-    dp.rhoa  = dp.rhob  = *rho  *0.5;
-    dp.grada = dp.gradb = *grad *0.5;
-    dp.gradab = dp.grada * dp.gradb;
-    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
-    drv1_clear(&drvs);
-    selected_func->first(&drvs, *weight, &dp);
-    ds->fR = drvs.df1000;
-    ds->fZ = drvs.df0010 + 0.5*drvs.df00001* *grad;
+  FunFirstFuncDrv drvs;
+  FunDensProp dp;
+
+  real grada;
+  real bygrada;
+  real by2, by4;
+
+  drv1_clear(&drvs);
+
+  dp.rhoa   = dp.rhob  = *rho *0.5;
+  dp.grada  = dp.gradb = *grad*0.5;
+  dp.gradab = dp.grada * dp.gradb;
+
+  grada  = *grad*0.5;
+
+  bygrada  = 1.0/grada;
+
+  by2   = 0.50000000;
+  by4   = 0.25000000;
+
+  dp.subsystem[0] = NULL;
+  dp.subsystem[1] = NULL;
+
+  selected_func->first(&drvs, *weight, &dp);
+
+  ds->fR   = drvs.df1000;
+  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
 }
 
 void
@@ -198,6 +226,7 @@ dftpot1_(SecondDrv *ds,
   real grada, grada2, grada3;
   real bygrada, bygrada2, bygrada3;
   real by2, by4, by8, by16, by32;
+  real x;
 
   drv2_clear(&drvs);
 
@@ -222,17 +251,24 @@ dftpot1_(SecondDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-  if(do_alda)
-    LDAFunctional.second(&drvs, *weight, &dp);
+  if (do_alda_hs) {
+    if (do_xalda)
+      x = 1.0 - fun_get_hf_weight();
+    else
+      x = 1.0;
+    SlaterFunctional.second(&drvs, *weight*x, &dp);
+    VWNFunctional.second(&drvs, *weight, &dp); }
   else
     selected_func->second(&drvs, *weight, &dp);
 
   ds->fR   = drvs.df1000;
-  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
-
   ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
-  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
-  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+
+  if (!do_alda_hs) {
+     ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+     ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+     ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+  }
 }
 
 void
@@ -275,6 +311,7 @@ dftpot2_(ThirdDrv *ds,
     real grad3 = grad2* *grad;
     real grad4 = grad3* *grad;
     real grad5 = grad4* *grad;
+  real x;
 
     FunThirdFuncDrv drvs;
     FunDensProp dp;
@@ -287,10 +324,15 @@ dftpot2_(ThirdDrv *ds,
     dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
 
     /* Get the functional derivatives for the appropriate functional */
-    if(do_alda)
-        LDAFunctional.third(&drvs, *weight, &dp);
+    if (do_alda_hs) {
+      if (do_xalda)
+        x = 1.0 - fun_get_hf_weight();
+      else
+        x = 1.0;
+      SlaterFunctional.third(&drvs, *weight*x, &dp);
+      VWNFunctional.third(&drvs, *weight, &dp); }
     else
-        selected_func->third(&drvs, *weight, &dp);
+      selected_func->third(&drvs, *weight, &dp);
     
     /* Evaluate the different derivatives */
     ds->fR   = drvs.df1000;
@@ -320,6 +362,7 @@ sdftpot1_(SecondDrv *ds,
   real grada, grada2, grada3;
   real bygrada, bygrada2, bygrada3;
   real by2, by4, by8, by16, by32;
+  real x;
 
   drv2_clear(&drvs);
 
@@ -344,23 +387,28 @@ sdftpot1_(SecondDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-  if(do_alda)
-    LDAFunctional.second(&drvs, *weight, &dp);
+  if (do_alda_ha) {
+    if (do_xalda)
+      x = 1.0 - fun_get_hf_weight();
+    else
+      x = 1.0;
+    SlaterFunctional.second(&drvs, *weight*x, &dp);
+    VWNFunctional.second(&drvs, *weight, &dp); }
   else
     selected_func->second(&drvs, *weight, &dp);
        
-/*ds->fR   = drvs.df1000;
-  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
-
-  ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
-  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
-  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;*/
-
-  ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
-
+//ds->fR   = drvs.df1000;
+//ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
   ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
-  ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
-  ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+
+  if (!do_alda_ha) {
+//   ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+//   ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+//   ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+     ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
+     ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
+     ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+  }
 
 /*ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
 
@@ -384,8 +432,41 @@ sdftpot2_(ThirdDrv *ds,
   real grada, grada2, grada3, grada4, grada5;
   real bygrada, bygrada2, bygrada3, bygrada4, bygrada5;
   real by2, by4, by8, by16, by32, by64, by128, by256;
+  real x;
 
   drv3_clear(&drvs);
+
+//#define GET_REF_DATA
+#ifdef GET_REF_DATA
+//  this is useful for obtaining reference data
+//  of course you have to make sure that the *.c
+//  implementation is correct
+
+    dp.rhoa   = 0.39E+02;
+    dp.rhob   = 0.38E+02;
+    dp.grada  = sqrt(0.81E+06);
+    dp.gradb  = sqrt(0.82E+06);
+    dp.gradab = 0.82E+06;
+
+//  the derivatives below can be obtained with ->second under dftpot1
+    selected_func->third(&drvs, 1.0, &dp);
+
+    fun_printf("drvs.df00000 =%20.12e", selected_func->func(&dp));
+    fun_printf("drvs.df10000 =%20.12e", drvs.df1000);
+    fun_printf("drvs.df01000 =%20.12e", drvs.df0100);
+    fun_printf("drvs.df00100 =%20.12e", drvs.df0010*0.5/dp.grada);
+    fun_printf("drvs.df00010 =%20.12e", drvs.df0001*0.5/dp.gradb);
+    fun_printf("drvs.df00001 =%20.12e", drvs.df00001);
+    fun_printf("drvs.df20000 =%20.12e", drvs.df2000);
+    fun_printf("drvs.df11000 =%20.12e", drvs.df1100);
+    fun_printf("drvs.df10100 =%20.12e", drvs.df1010*0.5/dp.grada);
+    fun_printf("drvs.df10010 =%20.12e", drvs.df1001*0.5/dp.gradb);
+    fun_printf("drvs.df10001 =%20.12e", drvs.df10001);
+    fun_printf("drvs.df02000 =%20.12e", drvs.df0200);
+    fun_printf("drvs.df01100 =%20.12e", drvs.df0110*0.5/dp.grada);
+    fun_printf("drvs.df01010 =%20.12e", drvs.df0101*0.5/dp.gradb);
+    fun_printf("drvs.df01001 =%20.12e", drvs.df01001);
+#endif
 
   dp.rhoa   = dp.rhob  = *rho *0.5;
   dp.grada  = dp.gradb = *grad*0.5;
@@ -415,11 +496,29 @@ sdftpot2_(ThirdDrv *ds,
   dp.subsystem[0] = NULL;
   dp.subsystem[1] = NULL;
 
-  if(do_alda)
-    LDAFunctional.third(&drvs, *weight, &dp);
+  if (do_alda_ha) {
+    if (do_xalda)
+      x = 1.0 - fun_get_hf_weight();
+    else
+      x = 1.0;
+    SlaterFunctional.third(&drvs, *weight*x, &dp);
+    VWNFunctional.third(&drvs, *weight, &dp); }
   else
     selected_func->third(&drvs, *weight, &dp);
 
+  ds->fR   = drvs.df1000;
+  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+
+  ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
+  ds->fZZ  =                           drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3;
+  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+
+  ds->fRRR = drvs.df3000*by4 +3.0*drvs.df2100*by4;
+  ds->fZZZ = drvs.df0030*by256*bygrada3 +3.0*drvs.df0021*by256*bygrada3                                     
+            -3.0*drvs.df0020*by256*bygrada4 -3.0*drvs.df0011*by256*bygrada4 +3.0*drvs.df0010*by256*bygrada5;
+  ds->fRRZ = drvs.df2010*by16*bygrada +drvs.df2001*by16*bygrada +drvs.df1110*by8*bygrada +drvs.df20001*by8 +drvs.df11001*by8;
+  ds->fRZZ =                                                       drvs.df1020*by64*bygrada2 +drvs.df1011*by32*bygrada2
+            +drvs.df1002*by64*bygrada2 -drvs.df1010*by64*bygrada3 -drvs.df1001*by64*bygrada3;
 /*ds->fR   = drvs.df1000;
   ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
 
@@ -506,7 +605,11 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
+#ifdef INT_STAR8
+extern void fortwrt_(const char *line, const long *linelen);
+#else
 extern void fortwrt_(const char *line, const int *linelen);
+#endif /* ifdef INT_STAR8 */
 int
 fort_print(const char* format, ...)
 {
@@ -549,7 +652,9 @@ dftsyncfunc_(int* amImaster)
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
     if(diracinfpar_.nodes==0||Initialized) return;
-    MPI_Bcast(&do_alda,      1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_alda_hs,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_alda_ha,   1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&do_xalda,     1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&dft_conf_len, 1, MPI_INT, diracinfpar_.mparid, MPI_COMM_WORLD);
     if(dft_conf_len>0) {
         char* line = malloc(dft_conf_len);

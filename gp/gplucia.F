@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ***********************************************************************
 *
 *========================================================*
@@ -304,7 +301,7 @@ C?            END IF
 *
 * Input
 * NSTB : Number of strings before active gasspace
-* NSTA : Number of strings after accive gasspace
+* NSTA : Number of strings after active gasspace
 * IOFFK : Offset for K group of strings in active gasspace, i.e. start of
 *         this symmetry of active K group strings
 * IOFFI : Offset for I group of strings in active gasspace, i.e. start of
@@ -2063,8 +2060,11 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 *.Output
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *
+#include "parluci.h"
+*
       NTEST = 00000
       NTEST = MAX(NTEST,IPRNT)
+
 *
       IF(NTEST.GE.100) THEN
         IF(MYPROC.EQ.MASTER) THEN
@@ -2225,6 +2225,20 @@ CMI        IF(INCLUDE .EQ.1) THEN
       RETURN
       END
 ***********************************************************************
+      INTEGER FUNCTION IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISM)
+#include "implicit.h"
+      DIMENSION IXSYMLIST(IXSYMACT)
+C
+C     return active irrep # corresponding to symmetry irrep ISM
+C
+      IGET_ACTIVE_IRREP = 0
+      IRETURN           = 0
+      DO I = 1, IXSYMACT
+        IF( IXSYMLIST(I) .eq. ISM ) IRETURN = I
+      END DO
+      IGET_ACTIVE_IRREP = IRETURN
+      END 
+***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
@@ -2244,22 +2258,28 @@ CMI        IF(INCLUDE .EQ.1) THEN
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE INI_BLOCKL(IBLOCKI,NDIM,IBATS)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     initialize vector containing block length
 C
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION IBLOCKI(NDIM), IBATS(8,*)
 C
-      DO ISBLK = 1, NDIM
-        IBLOCKI( ISBLK ) = IBATS(8,ISBLK)
-      END DO
+      CALL ICOPY(NDIM,IBATS(8,1),8,IBLOCKI,1)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE INI_BLOCKL_PRP(IBLOCKI,IMAXDIM,IXSYM,NDIM,IBATS)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     initialize vector containing block length - property run
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION IBLOCKI(IMAXDIM,*),IBATS(8,*)
+C
+      CALL ICOPY(NDIM,IBATS(8,1),8,IBLOCKI(1,IXSYM),1)
 C
       END
 ***********************************************************************
@@ -2417,38 +2437,6 @@ C
         WRITE(6,1110) (IMAT(I,J),J= 1,NCOL)
   100 CONTINUE
  1110 FORMAT(/,1X,8I10,/,(1X,8I10))
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      CHARACTER*10 FUNCTION LFNAM_LUCIPAR(FILNAM)
-C
-C     Add the node identification to the file name for shared disk
-C     systems
-C     original written by Luuk Visscher, February 1998
-C     adaption for parallel run of LUCIAREL by Stefan Knecht, June 2007
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-#include "implicit.h"
-#include "dcbgen.h"
-#include "infpar.h"
-      CHARACTER*5  FILNAM
-      CHARACTER*10 LFILNAM
-      NODE = 0
- 1000 FORMAT (A5,I5)
-C
-      WRITE (LFILNAM,1000) FILNAM,NODE
-      DO I = 6, 10
-         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
-      ENDDO
-C
-      LFNAM_LUCIPAR = LFILNAM
 C
       END
 ***********************************************************************
@@ -3777,6 +3765,22 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
       END DO
 *
       RETURN 
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PRTRCCTOS(IMAT,IDIM1,IDIM2,LUPRI)
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION IMAT(IDIM1,IDIM2)
+*
+      DO I = 1, IDIM2
+         WRITE(LUPRI,*) ' priniting IMAT=RCCTOS for pair #I',I
+         CALL IWRTMAMN(IMAT(1,I),1,IDIM1,1,IDIM1,LUPRI)
+      END DO
+*
       END
 ***********************************************************************
 *                                                                     *

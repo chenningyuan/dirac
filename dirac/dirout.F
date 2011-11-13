@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirout.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -230,7 +225,7 @@ C
         NVEC = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECPRI(IFRP),WORK(KJVEC),NORB(IFRP),
-     &              -NPSH(IFRP),NESH(IFRP),IFRP,NVEC,WORK(KFREE),LFREE)
+     &              -NPSH(IFRP),NESH(IFRP),IFRP,NVEC)
         CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
 C
@@ -357,6 +352,7 @@ C
 C     Print vectors in AO-basis
 C     =========================
 C
+      print*,'ILABDF : ',ILABDF
       IF(ILABDF.EQ.1) THEN
         DO I = 1,NVEC
           IF(I.GT.NPVEC) THEN
@@ -1425,6 +1421,9 @@ C***********************************************************************
 C
       DIMENSION EIG(*),IFIRST(*),NMULT(*)
       CHARACTER FMT*6
+C.s/sya,2006.12.02 - SK - 30-11-2009
+      CHARACTER*26 FMT5
+C.q
 C
 C     Find degeneracies
 C
@@ -1432,9 +1431,15 @@ C
 C
 C     Print section
 C
-      WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,3X))')
+C.s/sya,2006.11.30 - SK - 30-11-2009
+C#    WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,3X))')
+C#   &   (EIG(IFIRST(I)),'(',
+C#   &   2*NMULT(I),')',I=1,NDEG)
+      FMT5 = '(5(' // FMT // ',2X,A1,I2,A1,3X))'
+      WRITE(LUPRI,FMT5)
      &   (EIG(IFIRST(I)),'(',
      &   2*NMULT(I),')',I=1,NDEG)
+C.q
 C
       RETURN
       END
@@ -1536,6 +1541,7 @@ C
          DO J = 1,NOCC(I)
             IF (EHOMO .LT. EIG(IORB(I)+NPSH(I)+J)) THEN
                EHOMO = EIG(IORB(I)+NPSH(I)+J)
+!radovan: but if levyle == .true. also spinfr == .true.
                IF (LEVYLE .OR. SPINFR) THEN
                   IHOMO = IBEIG(IORB(I)+NPSH(I)+J)
                ELSE
@@ -1587,6 +1593,9 @@ C       IDIM(1,IFRP) = NPSH(IFRP)    : number of positronic solutions
 C       IDIM(2,IFRP) = NESH(IFRP)    : number of electronic solutions
 C       IDIM(3,IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
 C
+C     modified for MCSCF coefficients, occupation numbers and mj-values 
+C     by S. Knecht - April 2010
+C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
@@ -1603,6 +1612,10 @@ C     Local variables
       LOGICAL LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION IDIM(3,2)
+      REAL*8 CMCSCF_MAGIC
+!
+!     flag for MCSCF coefficients on file CMOFIL
+      CMCSCF_MAGIC = 137.0D0
 C
       KFRSAV = KFREE
       REWIND IUNIT
@@ -1612,12 +1625,17 @@ C     ===============
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-
+!
+!     set local IOPT_TMP
+      IOPT_TMP = IOPT
+!
+!     found MCSCF coefficients on file CMOFIL?
+      IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
 C
 C     File info
 C     =========
 C
-      IF(LBIT(IOPT,1)) THEN
+      IF(LBIT(IOPT_TMP,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
      &   'SELOWN: Coefficients read from file ',CMOFIL,
@@ -1647,7 +1665,7 @@ C
 C     Read coefficients
 C     =================
 C    
-      IF(LBIT(IOPT,2)) THEN
+      IF(LBIT(IOPT_TMP,2)) THEN
         CALL READT(IUNIT,NCDIM,CMO)
       ELSE
         READ(IUNIT)
@@ -1656,7 +1674,7 @@ C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT,3)) THEN
+      IF(LBIT(IOPT_TMP,3)) THEN
         CALL READT(IUNIT,NEDIM,EIG)
       ELSE
         READ(IUNIT)
@@ -1665,7 +1683,7 @@ C
 C     Read boson irrep info
 C     =====================
 C
-      IF(LBIT(IOPT,4)) THEN
+      IF(LBIT(IOPT_TMP,4)) THEN
         CALL READI(IUNIT,NEDIM,IBEIG)
       ELSE
         READ(IUNIT)
@@ -1696,7 +1714,7 @@ C       Generate pointer array for bases
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
 C       Select coefficients
-        IF(LBIT(IOPT,2)) THEN
+        IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
           CALL SELOWC(INUC,CMO(ICMO),IDIM(3,IFRP),NCMO,
      &              IDIM(1,IFRP),IDIM(2,IFRP),
@@ -1707,13 +1725,13 @@ C       Select coefficients
         ENDIF
         IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
-        IF(LBIT(IOPT,3)) THEN
+        IF(LBIT(IOPT_TMP,3)) THEN
           CALL SELOWE(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
      &                ESEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
 C       Select boson irrep information
-        IF(LBIT(IOPT,4)) THEN
+        IF(LBIT(IOPT_TMP,4)) THEN
           CALL SELOWB(IBEIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
      &                IBSEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))

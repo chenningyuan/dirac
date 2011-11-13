@@ -1,25 +1,24 @@
 /*
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-*/
+ *     Copyright (c) 2010 by the authors of DIRAC.
+ *     All Rights Reserved.
+ *
+ *     This source code is part of the DIRAC program package.
+ *     It is provided under a written license and may be used,
+ *     copied, transmitted, or stored only in accordance to the
+ *     conditions of that written license.
+ *
+ *     In particular, no part of the source code or compiled modules may
+ *     be distributed outside the research group of the license holder.
+ *     This means also that persons (e.g. post-docs) leaving the research
+ *     group of the license holder may not take any part of Dirac,
+ *     including modified files, with him/her, unless that person has
+ *     obtained his/her own license.
+ *
+ *     For information on how to get a license, as well as the
+ *     author list and the complete list of contributors to the
+ *     DIRAC program, see: http://dirac.chem.vu.nl
+ */
+
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* functionals.c:
    Program for computing and testing functional routines in the DFT module.
@@ -52,8 +51,10 @@ Functional* available_functionals[] = {
     &PW91xFunctional,
     &PW91cFunctional,
     &PZ81Functional,
-    &PbecFunctional,
-    &PbexFunctional,
+    &PBEcFunctional,
+    &PBExFunctional,
+    &RpbexFunctional,
+    &RevpbexFunctional,
     &SlaterFunctional,
     &VWN3Functional,
     &VWN5Functional,
@@ -70,6 +71,8 @@ Functional* available_functionals[] = {
     &BPW91Functional,
     &Camb3lypFunctional,
     &GGAKeyFunctional,
+    &CamFunctional,
+    &HseFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,
@@ -77,6 +80,7 @@ Functional* available_functionals[] = {
     &OLYPFunctional,
     &PBE0Functional,
     &PBEFunctional,
+    &RPBEFunctional,
     &SVWN3Functional,
     &SVWN5Functional,
     NULL
@@ -220,7 +224,7 @@ funlistfuncs(Functional *l[])
 void
 dftreport_(void)
 {
-    fun_printf("\n     This is a DFT calculation of type: %s",
+    fun_printf("* Kohn-Sham calculation using the xc functional: %s",
                selected_func->name);
     if(selected_func->report)
         selected_func->report();

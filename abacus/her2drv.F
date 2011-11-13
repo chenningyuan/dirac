@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : her2drv.F
 C
 C
@@ -32,7 +27,7 @@ C  /* Deck twoint */
      &               INDX,INDXAB,ITYPE,MAXDIF,JATOM,NODV,
      &               NOPV,NOCONT,TTIME,JPRINT,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,RETUR,ISHLA,I2TYP,ICEDIF,SCREEN,
-     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT,
      &               INDEX,TIMES)
 C
 C     Trygve Helgaker, University of Oslo, Norway, 1984
@@ -64,7 +59,7 @@ C
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
-     &        ADISTR, SOFOCK, RELCAL
+     &        ADISTR, SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), WORK(LWORK),DINTSKP(*),
      &        GABRAO(*),DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
@@ -159,7 +154,7 @@ C
      &            NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &            SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,
      &            ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,DINTSKP,
-     &            GABRAO,DMRAO,DMRSO,RELCAL,INDEX,TIMES)
+     &            GABRAO,DMRAO,DMRSO,RELCAL,GENCNT,INDEX,TIMES)
       T2INT = SECOND() - T2INT
 C
 C     *******************
@@ -242,7 +237,8 @@ C  /* Deck twocal */
      &                 NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
      &                 IPRNTC,IPRNTD,SQ12EL,RETUR,NHTYP,
      &                 IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,
-     &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,INDEX,TIMES)
+     &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,GENCNT,
+     &                 INDEX,TIMES)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -250,7 +246,7 @@ C  /* Deck twocal */
 #include "aovec.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DISTRI, SQ12EL, SUSCEP, ADISTR,
-     &        SOFOCK,RELCAL
+     &        SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), GABRAO(*),DMRAO(*), DMRSO(*),
      &        DINTSKP(*), INDEX(*),TIMES(*),WORK(LWORK)
@@ -289,7 +285,7 @@ C
      &               MULE,MULTE,NODV,NOPV,
      &               NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &               SQ12EL,WORK(KINDHR),WORK(KINDSQ),
-     &               WORK(KIODHR),IFCTYP,ADISTR,I2TYP,RELCAL)
+     &               WORK(KIODHR),IFCTYP,ADISTR,I2TYP,RELCAL,GENCNT)
       ELSE IF (ADISTR) THEN
 C
 C        All g_abcd for given index a
@@ -301,7 +297,7 @@ C
      &               NODV,NOPV,NOCONT,
      &               THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &               SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-     &               IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,RELCAL)
+     &               IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,RELCAL,GENCNT)
 C
       ELSE
 C
@@ -317,7 +313,7 @@ C
      &           THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &           SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &           IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT,
      &           INDEX,TIMES)
          ELSE
 #endif
@@ -328,7 +324,7 @@ C
      &                THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &                SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &                IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
-     &                GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &                GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
          END IF
 #if defined (VAR_MPI) || defined (VAR_MPI)
       END IF
@@ -346,7 +342,7 @@ C  /* Deck twolop */
      &                  IPRNTB,IPRNTC,IPRNTD,RETUR,
      &                  SQ12EL,INDHER,INDHSQ,IODDHR,IREPDM,IFCTYP,
      &                  ADISTR,I2TYP,ICEDIF,SCREEN,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -359,7 +355,7 @@ C
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK,
-     &        RELCAL
+     &        RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), GABRAO(*),
      &        DMRAO(*),DMRSO(*),DINTSKP(*),WORK(LWORK)
@@ -670,7 +666,8 @@ C
      &                        MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,DUM,ICEDIF,DINTSKP,
-     &                        GABRAO,DMRAO,DMRSO,IREPDM,IDUM,IDUM)
+     &                        GABRAO,DMRAO,DMRSO,IREPDM,IDUM,IDUM,
+     &                        GENCNT)
 
 C
                   IF (RETUR) THEN
@@ -774,7 +771,7 @@ C  /* Deck twodsa */
      &                  NODV,NOPV,NOCONT,
      &                  THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &                  SQ12EL,INDHER,INDHSQ,IODDHR,IREPDM,IFCTYP,ISHLA,
-     &                  ADISTR,I2TYP,RELCAL)
+     &                  ADISTR,I2TYP,RELCAL,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -787,7 +784,7 @@ C
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DOINDX,
-     &        SOFOCK,RELCAL
+     &        SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), WORK(LWORK)
 #include "cbisol.h"
@@ -983,7 +980,7 @@ C
      &                     MAXDER,NOCONT,NODV,NOPV,THRESH,IPRINT,FIRST,
      &                     SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                     WORK(KDSBUF),IDUM,DUM,
-     &                     DUM,DUM,DUM,IDUM,IDUM,IDUM)
+     &                     DUM,DUM,DUM,IDUM,IDUM,IDUM,GENCNT)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
@@ -1007,7 +1004,7 @@ C  /* Deck twodis */
      &                NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
      &                IPRNTC,IPRNTD,SQ12EL,
      &                INDHER,INDHSQ,IODDHR,IFCTYP,ADISTR,I2TYP,
-     &                RELCAL)
+     &                RELCAL,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1017,7 +1014,8 @@ C
 #include "maxaqn.h"
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
-     &        DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK, RELCAL
+     &        DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK
+     &        RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IFCTYP(*),
      &      GABRAO(*),DMRAO(NSYMBL,NSYMBL,*),DINTSKP(*),
      &      INDX(2,*), INDXAB(*), INDHSQ(*), IODDHR(*), WORK(LWORK)
@@ -1097,7 +1095,8 @@ C
      &            DISTRI,LONDON,SPNORB,
      &            PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
      &            JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,SQ12EL,INDHSQ,
-     &            IODDHR,INDHER,IFCTYP,ADISTR,I2TYP,INDX,INDXAB)
+     &            IODDHR,INDHER,IFCTYP,ADISTR,I2TYP,INDX,INDXAB,
+     &            GENCNT)
 C
  999  CONTINUE
       CALL QEXIT('TWODIS')
@@ -1111,7 +1110,7 @@ C  /* Deck dislop */
      &                  NODV,NOPV,NOCONT,
      &                  THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                  SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
-     &                  I2TYP,INDX,INDXAB)
+     &                  I2TYP,INDX,INDXAB,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1122,7 +1121,7 @@ C
 #include "maxorb.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
-     &        SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK
+     &        SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK, GENCNT
       DIMENSION GMAT(*), DMAT(*), FMAT(*), IFCTYP(*), INDX(2,*),
      &          GABRAO(*),DMRAO(*),DINTSKP(*),
      &          INDXAB(*), INDHSQ(*), IODDHR(*), INDHER(*), WORK(LWORK)
@@ -1271,7 +1270,8 @@ C
      &                  SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,DUM,IDUM,
-     &                  DINTSKP,GABRAO,DMRAO,DUM,JDIS,INDX,INDXAB)
+     &                  DINTSKP,GABRAO,DMRAO,DUM,JDIS,INDX,INDXAB,
+     &                  GENCNT)
   200    CONTINUE
   100 CONTINUE
  999  CONTINUE
@@ -1284,7 +1284,8 @@ C  /* Deck twoods */
      &                  SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,WRKBUF,ICEDIF,
-     &                  DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,INDXAB)
+     &                  DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,INDXAB,
+     &                  GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -1294,7 +1295,7 @@ C  /* Deck twoods */
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
-     &        SOFOCK
+     &        SOFOCK, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IFCTYP(*), INDX(2,*),
      &          INDXAB(*), INDHSQ(*), IODDHR(*), INDHER(*), WRKBUF(*), 
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*),
@@ -1432,7 +1433,7 @@ C
      &            INDHSQ,IODDHR,INDHER,WORK(KLMNVL),
      &            WORK(KPNTAB),WORK(KPNTCD),WORK(KREDAB),WORK(KREDCD),
      &            IFCTYP,ADISTR,WRKBUF,GABRAO,DMRAO,DMRSO,
-     &            DINTSKP,IREPDM,INDX,INDXAB)
+     &            DINTSKP,IREPDM,INDX,INDXAB,GENCNT)
       LWTOT  = LWTOT - KFREE + 1
  999  CONTINUE
       CALL MEMREL('TWOODS',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1450,7 +1451,8 @@ C  /* Deck twood1 */
      &                  NUCSCD,JSTRA,JSTRB,JSTRC,JSTRD,NINDAB,NINDCD,
      &                  INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,NPNTCD,
      &                  NREDAB,NREDCD,IFCTYP,ADISTR,WRKBUF,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB,
+     &                  GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1460,7 +1462,7 @@ C  /* Deck twood1 */
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN, FIRST, LAST,
-     &        SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK
+     &        SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK, GENCNT
       DIMENSION WORK(LWORK), DMAT(*), FMAT(*), GMAT(*), PSO(*), PSA(*),
      &          IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &          CONTA(*), CONTB(*), CONTC(*), CONTD(*),
@@ -1617,7 +1619,7 @@ C
      &               NUCTAB,NUCTCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
      &               NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
-     &               INDX,INDXAB)
+     &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1640,7 +1642,7 @@ C  /* Deck symlop */
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &                  IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,INDX,
-     &                  INDXAB)
+     &                  INDXAB,GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1654,7 +1656,7 @@ C  /* Deck symlop */
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        ONECEN, FIRST, LAST, SQ12EL, SOP000, IPNTLG(3,*),
      &        LONDON, SUSCEP, ADISTR, SOFOCK, DOGAB,
-     &        DOXSAV, DOYSAV, DOZSAV
+     &        DOXSAV, DOYSAV, DOZSAV, GENCNT
       DIMENSION SOINT(NSOINT), PSO(NPMAT), PSA(NPMAT), WORK(LWORK),
      &          DMAT(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), FMAT(*), GMAT(*),
@@ -2254,7 +2256,7 @@ C
      &                     SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                     NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
      &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP,DOGAB,
-     &                     HFXFAC)
+     &                     HFXFAC,GENCNT)
                LWTOT  = LWTOT - KFREE + 1
                CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
             END IF
@@ -2348,7 +2350,7 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  DNSBUF,DINTSKP,DOGAB,HFXFAC)
+     &                  DNSBUF,DINTSKP,DOGAB,HFXFAC,GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2356,7 +2358,7 @@ C  /* Deck caoint */
 #include "maxaqn.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, BIGVEC, ONECEN,
-     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, DOGAB
+     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, DOGAB, GENCNT
       DIMENSION AOINT(NCCINT,NINTYP), SOINT(*), PSO(*),PSA(*),COEFAB(*),
      &          COEFCD(*), COORAB(*), COORCD(*), EXPAB(*), EXPCD(*),
      &          CONTA(*), CONTB(*), CONTC(*), CONTD(*), FACAB(*),
@@ -2464,7 +2466,7 @@ C
      &                     NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                     ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                     NOPV,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
-     &                     DINTSKP)
+     &                     DINTSKP,GENCNT)
                IF (TKTIME) TINTEX = TINTEX + SECOND() - TIMSTR
             END IF
 C
@@ -2485,7 +2487,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
-     &                  DINTSKP)
+     &                  DINTSKP,GENCNT)
             IF (TKTIME) TINTEX = TINTEX + SECOND() - TIMSTR
 C
 C        f) Contributions to Fock matrices
@@ -2559,7 +2561,7 @@ C  /* Deck paove2 */
       SUBROUTINE PAOVE2(IATOM,IPRINT,ORBOUT,
      &                  IPRVOR,IPRVPR,JORBSH,KORBSH)
 C
-CHJMAERKE
+CHJMAERKE TODO
 C hjaaj aug2000: possibilities:
 C                here we can also split a contracted block
 C                in more blocks, if needed for memory
@@ -2570,9 +2572,8 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 
-CMI   PARAMETER (DSM = 1.0D-10)
       PARAMETER (DSM = 1.0D-12)
-      LOGICAL ORBOUT(KMAX)
+      LOGICAL   ORBOUT(KMAX)
       DIMENSION IPRVOR(KMAX), IPRVPR(KMAX),
      *          JORBSH(KMAX,MXAOVC), KORBSH(KMAX,MXAOVC)
 
@@ -2596,22 +2597,22 @@ C     Set up information needed below
 C
       IORB = 0
       INUC = 0
+C     Loop over symmetry independent orbital shells
       DO 100 IA = 1, KMAX
-C     ... sum over symmetry independent orbital shells
 C
-         ORBOUT(IA) = .FALSE.
+        ORBOUT(IA) = .FALSE.
 C
 C        ... find off-set to this sym. indep. orb. shell
 C            in total list of contracted orbitals
-         IPRVOR(IA) = IORB
-         IORB = IORB + KHKT(IA)*MULT(ISTBAO(IA))
+        IPRVOR(IA) = IORB
+        IORB = IORB + KHKT(IA)*MULT(ISTBAO(IA))
 C
 C        ... find off-set to input block of primitives used for
 C            this sym. indep. orb. shell
-         IPRVPR(IA) = INUC
-         IF (IA.LT.KMAX) THEN
-            IF (NUMCF(IA + 1) .EQ. 1) INUC = INUC + NUCO(IA)
-         END IF
+        IPRVPR(IA) = INUC
+        IF (IA.LT.KMAX) THEN
+          IF (NUMCF(IA + 1) .EQ. 1) INUC = INUC + NUCO(IA)
+        END IF
  100  CONTINUE
 C
 C     Assign each orbital shell to a vector orbital shell
@@ -2620,92 +2621,92 @@ C
       NAOOUT = 0
       NSYMBL = 0
  1000 CONTINUE
-         DO 200 IA = 1, KMAX
-            IF (.NOT.ORBOUT(IA)) THEN
-               NHKTA  = NHKT(IA)
-               KHKTA  = KHKT(IA)
-               KCKTA  = KCKT(IA)
-               NCENTA = NCENT(IA)
-               NBCHA  = NBCH(IA)
-               NUCA   = NUCO(IA)
-               MAXSHL = MAXSHL + 1
-               LCLASH(MAXSHL) = LCLASS(IA)
-               IF(LCLASS(IA).EQ.1) NLRGBL = NLRGBL + 1
-               NHKTSH(MAXSHL) = NHKTA
-               KHKTSH(MAXSHL) = KHKTA
-               KCKTSH(MAXSHL) = KCKTA
-               ISTBSH(MAXSHL) = ISTBAO(IA)
-               SEGMSH(MAXSHL) = SEGM(IA)
-               SPHRSH(MAXSHL) = SPHR(IA)
+      DO 200 IA = 1, KMAX
+      IF (.NOT.ORBOUT(IA)) THEN
+        NHKTA  = NHKT(IA)
+        KHKTA  = KHKT(IA)
+        KCKTA  = KCKT(IA)
+        NCENTA = NCENT(IA)
+        NBCHA  = NBCH(IA)
+        NUCA   = NUCO(IA)
+        MAXSHL = MAXSHL + 1
+        LCLASH(MAXSHL) = LCLASS(IA)
+        IF(LCLASS(IA).EQ.1) NLRGBL = NLRGBL + 1
+        NHKTSH(MAXSHL) = NHKTA
+        KHKTSH(MAXSHL) = KHKTA
+        KCKTSH(MAXSHL) = KCKTA
+        ISTBSH(MAXSHL) = ISTBAO(IA)
+        SEGMSH(MAXSHL) = SEGM(IA)
+        SPHRSH(MAXSHL) = SPHR(IA)
 C
-C              Make offsets for symmetry-dependent centers
+C       Make offsets for symmetry-dependent centers
 C               
-               NDEG = NUCDEG(NCENTA)
-               DO IDEG = 1,NDEG
-                 NSYMBL = NSYMBL + 1
-                 ISYMBL(MAXSHL,IDEG) = NSYMBL
-               ENDDO
-               NCNTSH(MAXSHL)   = NCENTA
-               CENTSH(MAXSHL,1) = CENT(IA,1,1)
-               CENTSH(MAXSHL,2) = CENT(IA,2,1)
-               CENTSH(MAXSHL,3) = CENT(IA,3,1)
+        NDEG = NUCDEG(NCENTA)
+        DO IDEG = 1,NDEG
+          NSYMBL = NSYMBL + 1
+          ISYMBL(MAXSHL,IDEG) = NSYMBL
+        ENDDO
+        NCNTSH(MAXSHL)   = NCENTA
+        CENTSH(MAXSHL,1) = CENT(IA,1,1)
+        CENTSH(MAXSHL,2) = CENT(IA,2,1)
+        CENTSH(MAXSHL,3) = CENT(IA,3,1)
 C
-               IF (SEGMEN) THEN
+        IF (SEGMEN) THEN
 C aug2000 hjaaj   Task: make vector shells as small as possible
 C                 for calc. of GAB matrix. That is, for segmented
 C                 blocks we keep just one orbital shell in each
 C                 vector orbital shell.
 C
-                  NAOOUT     = NAOOUT + 1
-                  ORBOUT(IA) = .TRUE.
-                  IPTSHL(IA) = MAXSHL
-                  IORB       = 1
-                  JORBSH(MAXSHL,IORB) = IA
+          NAOOUT     = NAOOUT + 1
+          ORBOUT(IA) = .TRUE.
+          IPTSHL(IA) = MAXSHL
+          IORB       = 1
+          JORBSH(MAXSHL,IORB) = IA
 C
-C                 find first and last primitive shell
-C                 contributing to this orbital shell
+C         find first and last primitive shell
+C         contributing to this orbital shell
 C
-                  K = NUMCF(IA)
-                  JSTR  = IPRVPR(IA)
-                  IOFF  = NUCA
-                  ILAST = 0
-                  DO I = 1,NUCA
-                     IF (ABS(PRICCF(JSTR+I,K)) .GT. DSM) THEN
-                        IOFF  = MIN(IOFF,I-1)
-                        ILAST = MAX(ILAST,I)
-                     END IF
-                  END DO
-CMI               .... we might get negative value !!!!
-                  NPRI = ILAST - IOFF
-                  NUCOSH(MAXSHL) = NPRI
-CMI           ... check !!!
-                  IF (NPRI.LT.0) THEN
-                   write(LUPRI,*) 'NPRI=',NPRI,' MAXSHL=',MAXSHL
-                   write(LUPRI,*) 'ILAST,IOFF:',ILAST,IOFF
-                   write(LUPRI,*) 'DSM:',DSM
-                   call quit('PAOVE2: negative NPRI ! Decrease DMS !')
-                  ENDIF 
+          K = NUMCF(IA)
+          JSTR  = IPRVPR(IA)
+          IOFF  = NUCA
+          ILAST = 0
+          DO I = 1,NUCA
+            IF (ABS(PRICCF(JSTR+I,K)) .GT. DSM) THEN
+              IOFF  = MIN(IOFF,I-1)
+              ILAST = MAX(ILAST,I)
+            END IF
+          END DO
+CMI    .... we might get negative value !!!!
+          NPRI = ILAST - IOFF
+          NUCOSH(MAXSHL) = NPRI
+CMI     ... check !!!
+          IF (NPRI.LT.0) THEN
+            write(LUPRI,*) 'NPRI=',NPRI,' MAXSHL=',MAXSHL
+            write(LUPRI,*) 'ILAST,IOFF:',ILAST,IOFF
+            write(LUPRI,*) 'DSM:',DSM
+            call quit('PAOVE2: negative NPRI ! Decrease DMS !')
+          ENDIF 
 C
-C                 set gen.cont. shell info
-                  NSET       = 1
-                  KORBSH(MAXSHL,NSET) = IA
-                  NSETSH(MAXSHL,1) = NSET
-                  NPRIMS(MAXSHL,NSET,1) = NPRI
-                  NCONTS(MAXSHL,NSET,1) = 1
-                  JSTRSH(MAXSHL,NSET,1) = JSTR+IOFF
+C         set gen.cont. shell info
+          NSET       = 1
+          KORBSH(MAXSHL,NSET) = IA
+          NSETSH(MAXSHL,1) = NSET
+          NPRIMS(MAXSHL,NSET,1) = NPRI
+          NCONTS(MAXSHL,NSET,1) = 1
+          JSTRSH(MAXSHL,NSET,1) = JSTR+IOFF
 C
-C                 as we only use one contracted at a time
-C                 this can always be treated in code for segm.cont.
-                  SEGMSH(MAXSHL) = .TRUE.
+C         as we only use one contracted at a time
+C         this can always be treated in code for segm.cont.
+          SEGMSH(MAXSHL) = .TRUE.
 C
-C                 set segm.cont. shell info
-                  NSETSH(MAXSHL,2) = NSET
-                  NPRIMS(MAXSHL,NSET,2) = NPRI
-                  NCONTS(MAXSHL,NSET,2) = -K
-C                 ... used for getting PRICCF(IPRIM,-K)
-                  JSTRSH(MAXSHL,NSET,2) = JSTR+IOFF
+C         set segm.cont. shell info
+          NSETSH(MAXSHL,2) = NSET
+          NPRIMS(MAXSHL,NSET,2) = NPRI
+          NCONTS(MAXSHL,NSET,2) = -K
+C      ... used for getting PRICCF(IPRIM,-K)
+          JSTRSH(MAXSHL,NSET,2) = JSTR+IOFF
 C
-               ELSE
+        ELSE ! not SEGMEN
 C aug2000 hjaaj   Task: which orbital shells should we treat together
 C                 with IA in TWOINT ?
 C                 if (mxaosh .eq. 0) then
@@ -2718,61 +2719,59 @@ C
 C aug2000 th+hjj: the next section can be used to collect
 C                 input blocks for efficiency, e.g. by
 C                 defining max MXAOSH = 50 in a block;
-                  IF (MXAOSH .EQ. 0) THEN
-                      MAXVC = NUCA
-C aug2000             ... keep shell blocking from input
-                  ELSE
-                      NPRIA = KHKTA * MULT( ISTBSH(MAXSHL) )
-C                     each primitive gives NPRIA basis functions
-                      MAXVC = MAX(NUCA, MXAOSH / NPRIA)
-C aug2000             we divide by NPRIA so MXAOSH is max number
-C                     of primitive basis fu. in a shell
-                  END IF
-                  NUCSH  = 0
-                  IORB = 1
-                  NSET = 0
-                  LBCH = 0
-                  DO 210 IB = IA, KMAX
-                     IF (ORBOUT(IB))                 GO TO 210
-                     IF (NHKT(IB) .NE. NHKTA)        GO TO 210
-                     IF (KHKT(IB) .NE. KHKTA)        GO TO 210
-                     IF (NCENT(IB) .NE. NCENTA)      GO TO 210
-                     IF (LCLASS(IB).NE.LCLASS(IA))   GO TO 210
+          IF (MXAOSH .EQ. 0) THEN
+            MAXVC = NUCA
+C aug2000  ... keep shell blocking from input
+          ELSE
+             NPRIA = KHKTA * MULT( ISTBSH(MAXSHL) )
+C            each primitive gives NPRIA basis functions
+             MAXVC = MAX(NUCA, MXAOSH / NPRIA)
+C aug2000      we divide by NPRIA so MXAOSH is max number
+C              of primitive basis fu. in a shell
+          END IF
+          NUCSH  = 0
+          IORB = 1
+          NSET = 0
+          LBCH = 0
+          DO 210 IB = IA, KMAX
+            IF (ORBOUT(IB))                 GO TO 210 ! orbital alrady checked out
+            IF (NHKT(IB) .NE. NHKTA)        GO TO 210 ! not the same angular quantum number L+1
+            IF (KHKT(IB) .NE. KHKTA)        GO TO 210 ! not the same number of components
+            IF (NCENT(IB) .NE. NCENTA)      GO TO 210 ! not the same index of symmetry independent center
+            IF (LCLASS(IB).NE.LCLASS(IA))   GO TO 210 ! not the same class (large, small ...)
 C
-C                    Orbital type is correct ..
+C           Orbital type is correct ..
 C
-                     NUCB  = NUCO(IB)
-                     NBCHB = NBCH(IB)
-                     IF (NBCHB.EQ.LBCH .OR. NUCSH+NUCB.LE.MAXVC) THEN
-                        ORBOUT(IB) = .TRUE.
-                        IPTSHL(IB) = MAXSHL
-                        JORBSH(MAXSHL,IORB) = IB
-                        IORB       = IORB   + 1
-                        NAOOUT     = NAOOUT + 1
-                        IF (NBCHB .NE. LBCH) THEN
-                           NSET  = NSET + 1
-                           LBCH  = NBCHB
-                           NUCSH = NUCSH  + NUCB
-                           KORBSH(MAXSHL,NSET) = IB
-                        END IF
-                     END IF
-  210             CONTINUE
-                  NUCOSH(MAXSHL) = NUCSH
-CMI         ... check it !!
-                  IF (NUCSH.LT.0) THEN
-                    write(LUPRI,*) '...NUCSH, indx MAXSHL:',NUCSH,MAXSHL
-                    call quit('PAOVE2: negative NUCSH !')
-                  ENDIF
-         
-                  NSETSH(MAXSHL,1) = NSET
-               END IF
-               IF (NAOOUT .LT. KMAX) THEN
-                   GO TO 1000
-               ELSE
-                   GO TO 1100
-               END IF
+            NUCB  = NUCO(IB) ! number of uncontracted functions
+            NBCHB = NBCH(IB) ! index of block in AO-vector
+            IF (NBCHB.EQ.LBCH .OR. NUCSH+NUCB.LE.MAXVC) THEN
+              ORBOUT(IB) = .TRUE.
+              IPTSHL(IB) = MAXSHL
+              JORBSH(MAXSHL,IORB) = IB
+              IORB       = IORB   + 1
+              NAOOUT     = NAOOUT + 1
+              IF (NBCHB .NE. LBCH) THEN
+                NSET  = NSET + 1
+                LBCH  = NBCHB
+                NUCSH = NUCSH  + NUCB
+                KORBSH(MAXSHL,NSET) = IB
+              END IF
             END IF
-  200    CONTINUE
+  210     CONTINUE
+          NUCOSH(MAXSHL) = NUCSH
+          IF (NUCSH.LT.0) THEN
+            write(LUPRI,*) '...NUCSH, indx MAXSHL:',NUCSH,MAXSHL
+            call quit('PAOVE2: negative NUCSH !')
+          ENDIF
+          NSETSH(MAXSHL,1) = NSET
+        END IF ! IF(SEGMEN)
+        IF (NAOOUT .LT. KMAX) THEN
+          GO TO 1000
+        ELSE
+          GO TO 1100
+        END IF
+      END IF
+  200 CONTINUE
       IF (NAOOUT .LT. KMAX) GO TO 1000
  1100 CONTINUE
 C      

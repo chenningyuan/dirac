@@ -1,6 +1,4 @@
-!
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,40 +15,61 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-!
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ! this file by ulfek march 2008
 
+#if defined FORTRAN_MAIN_AS_SUBROUTINE
+! ... needed to get another Fortran executable 
+subroutine dirprg
+#else
+! default executable - dirac.x
 program dirprg
+#endif
+
   use memory_allocator
   use os_utils
+  use dft_cfg
+
   implicit none
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
-#ifdef VAR_MPI 
+#include "dcbpsi.h"
+#ifdef VAR_MPI
 #include "mpif.h"
 #endif
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
   integer :: iscr_mem
-#ifdef VAR_MPI 
-  call mpixinit()
-  call stopwatch(1,numnod+1)
-#else
-  parcal  = .false.
-  iparcal = 0
+! initialize common variables (parallel and sequential run)
   mytid   = 0
   mparid  = 0
   numnod  = 0
+  parcal  = .false.
+  iparex  = 0
+#ifdef VAR_MPI
+! check for sequential run with parallel executable 
+! iparex = 1 for parallel run mode with MPI executable (default)
+  iparex = get_environment_integer('DIRPAR',1)
+!
+! initialize MPI environment and wake up slaves - set parcal == .true.
+  if (iparex .gt. 0) call mpixinit()
+  if (parcal) then 
+    call stopwatch(1,numnod+1)
+  else
+    call stopwatch(1,numnod)
+  endif
+#else
   call stopwatch(1,numnod)
 #endif
+  iparcal = 0
   if (parcal) iparcal = 1
 
   if (mytid == 0) then
      memsize = get_environment_integer('DIRWRK',INSTALL_WRKMEM)
      maxsize = get_environment_integer('DIRMAX',maxsize)
+
   else
 !    memsize = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
 !    SK - Sep 08: DIRNOD is passed to slaves in mpixinit and 
@@ -77,6 +96,10 @@ program dirprg
     call sync_nodes(memsize,0)
     call sync_nodes(maxsize,2)
   else
+!   iparex <= 0
+    call allocator_init()
+    call allocator_setmax(maxsize)
+    print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
 #else
     call allocator_init()
     call allocator_setmax(maxsize)
@@ -89,12 +112,21 @@ program dirprg
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)
+     !call print_static_alloc
      call printtitle
      call printlogo
      call printsubtitle
      call flush(lupri)
      call sysinf(iparcal)
      call flush(lupri)
+! miro: do the selftest after printing dirac system info
+#ifndef NO_SELFTEST
+     call selftest_lapack()
+#ifdef VAR_MPI
+!    MASTER checks MPI library compatibility
+     if ( parcal ) call selftest_mpi()
+#endif
+#endif
      call dirac(iparcal,mytid,mparid,numnod,memory,memsize)
   else
 #ifdef VAR_MPI
@@ -108,20 +140,33 @@ program dirprg
      print '(a)', '*****************************************************'
   endif
 #ifdef VAR_MPI
-  if (parcal) then
+  if ( iparcal .eq. 1 ) then
     call sync_nodes(idummy,1)
   endif
 #endif
   if (mytid == 0) then
      call stopwatch(0,mytid)
-     print '(a)','********** E N D   of   D I R A C  output  **********'
-     print '(a/)', '*****************************************************'
+     print '(a)', '********** E N D   of   D I R A C  output  **********'
+     print '(a/)','*****************************************************'
   endif
   call dealloc(memory)
 #ifdef VAR_MPI
-! if (parcal) call mpixfinalize()
-!             SK - 21-07-2008 Since we have called mpixinit explicitly, a call to
-!             mpixfinalize is mandatory.
-              call mpixfinalize()
+  if (iparcal .eq. 1 ) call mpixfinalize()
 #endif
+
+
+#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
+ if (DOHSFS) then
+   print '(/,a)','*****************************************************'
+   print '(2x,a)','Continuing with the external HighSect-FSCC code.'
+   print '(/,a)','*****************************************************'
+   call HIGH_SECTOR_FSCC_METHODS
+ endif
+#endif
+
+#if defined FORTRAN_MAIN_AS_SUBROUTINE
+end subroutine dirprg
+#else
 end program dirprg
+#endif
+

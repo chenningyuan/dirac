@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -38,6 +33,9 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+#ifdef MOD_VISUAL
+      use visual_cfg
+#endif 
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -52,7 +50,7 @@ C
 #include "cbirea.h"
 #include "infpar.h"
 C
-      LOGICAL TWOBUF,GOFAST
+      LOGICAL TWOBUF,GOFAST,TOBE
       DIMENSION WORK(LWORK)
 
       CALL QENTER('PAMSET')
@@ -66,11 +64,10 @@ C
       ELSE
         CALL GOTEST(GOFAST,IPREAD)
       ENDIF
-      IF(GOFAST.AND.(.NOT.DOHRM)) GOTO 10
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
-      IF (TWOCOMPBSS) THEN                     
+      IF (TWOCOMPBSS .or. x2c_mod) THEN
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
@@ -84,7 +81,27 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-      CALL ONEGEN(WORK,LWORK)
+      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
+!     radovan: don't restart if you do a geometry optimization!
+!     gosia: don't restart and don't generate integrals if visual_cfg_london
+#ifdef MOD_VISUAL
+      if (tobe .and. visual_cfg_london) then
+        goto 11
+      endif
+#endif /* #ifdef MOD_VISUAL */
+      IF(TOBE .and. .not. optimi) THEN
+        WRITE(LUPRI,'(2X,A,A)') 
+     &  '* WARNING: DIRAC found the AOPROPER file ',
+     &  '(one-electron integrals) ...will attempt restart.'
+        IF (NOSMLV) THEN
+          CALL NOSSNUCATT
+        ENDIF
+      ELSE 
+        CALL ONEGEN(WORK,LWORK)
+      ENDIF
+#ifdef MOD_VISUAL
+ 11   continue
+#endif /* #ifdef MOD_VISUAL */
 
       IF(DOHRM) THEN
         CALL TIMER('PAMSET',TIMSTR,TIMEND)
@@ -98,12 +115,7 @@ C
 C     DO4C2C=T : after 4c SCF perform IOTC transformation
 C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
 C
-      CALL GMOTRA(WORK,LWORK)
-C
-C     Write orbital output to DFTMAT
-C     ==============================
-C
-      CALL ORBDAT
+      CALL GMOTRA(GOFAST,WORK,LWORK)
 C
  10   CONTINUE
 C
@@ -605,10 +617,6 @@ C
       LUEVEC    = 22
       LUCMOS    = 23
       LUSMOS    = 24
-      N2EVECTQ  = 0
-      DO IFRP = 1,NFSYM
-         N2EVECTQ = N2EVECTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
-      ENDDO
 C
 C     Closed shell Hartree - Fock
 C     ===========================
@@ -638,14 +646,14 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck SCDEN2 */
-      SUBROUTINE SCDEN2(Q,SCQ,N,IPRINT)
+C/* Deck SCDENS_2 */
+      SUBROUTINE SCDENS_2(Q,SCQ,N,IPRINT)
 C***********************************************************************
 C
 C     INPUT:  Charge of atom
 C     OUTPUT: Small component charge
 C
-C     Small component charges have been obtained from calculaltions
+C     Small component charges have been obtained from calculations
 C     using the relativistic atomic code GRASP.
 C     see T.SAUE, Ph.D. thesis, University of Oslo 1997
 C
@@ -830,11 +838,11 @@ C
 C
 C       Calculate electrostatic correction to nuclear repulsion energy
 C     
-        CALL LVCOR1(WORK(KSCQ),IPRINT)
+        CALL LVCORR_1(WORK(KSCQ),IPRINT)
         CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)  
       ENDIF
 C
-C     Print section (this is now printed in LVCOR1)
+C     Print section (this is now printed in LVCORR_1)
 C
 C     IF(IPRINT.GE.1) THEN
 C       CALL HEADER('Output from LVCORR',-1)
@@ -887,14 +895,14 @@ c     ... when to use tabulated charges :
 C       ... use tabulated small component charges
          IF(IPRINT.GE.1) WRITE(LUPRI,'(A/)')
      &      ' * Using tabulated small component atomic charges:'
-         CALL SCDEN2(CHARGE,SCQ,NUCIND,IPRINT)
+         CALL SCDENS_2(CHARGE,SCQ,NUCIND,IPRINT)
        ELSE
 C       ... use Mulliken small component charges
          CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
-         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL GTOVLX(WORK(KSMAT),SSMTRC)
          CALL MEMGET('INTE',KICLAB,NTBAS(2),WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KGROSS,NTBAS(2),WORK,KFREE,LFREE)
-         CALL SCDEN1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
+         CALL SCDENS_1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
      &               WORK(KICLAB),WORK(KFREE),LFREE)
 C        Adjust for nuclear multiplicities
          DO I = 1,NUCIND
@@ -913,8 +921,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Lvcor1 */
-      SUBROUTINE LVCOR1(SCQ,IPRINT)
+C/* Deck lvcorr_r1 */
+      SUBROUTINE LVCORR_1(SCQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate classic repulsive potential of 
@@ -938,20 +946,20 @@ C
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ) - POTNUC
-         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
-     &     '* ONECAP model 1 classical repulsion from small component',
+         CORRLV = GETPOT(SCQ,IPRINT) - POTNUC
+         IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
+     &     ' * ONECAP model 1 classical repulsion from small component',
      &     CORRLV
       ELSE
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ)
+         CORRLV = GETPOT(SCQ,IPRINT)
 C
 C        Print section
 C
-         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
-     &     '* Classical repulsion of small component atomic charges:',
+         IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
+     &     ' * Classical repulsion of small component atomic charges:',
      &     CORRLV
       END IF
 C
@@ -959,8 +967,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck scden1 */
-      SUBROUTINE SCDEN1(SCQ,DMAT,SMAT,GROSS,ICLAB,WORK,LWORK)
+C/* Deck SCDENS_1 */
+      SUBROUTINE SCDENS_1(SCQ,DMAT,SMAT,GROSS,ICLAB,WORK,LWORK)
 C***********************************************************************
 C
 C Calculate classic repulsive potential of 
@@ -1067,7 +1075,7 @@ C
 #include <memint.h>
       CALL DZERO(QLC,NUCIND)
       CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSMAT),SSMTRC)
       CALL MEMGET('INTE',KICLAB,NTBAS(1),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGROSS,NTBAS(1),WORK,KFREE,LFREE)
       CALL LCDEN1(QLC,DMAT,WORK(KSMAT),WORK(KGROSS),
@@ -1350,7 +1358,7 @@ C
      &                    OPNAME(IOP)
               END IF
               CALL OUTPUT(QMAT(1,1,IC,IOP),1,NUCDEP,1,NUCDEP,
-     &                    NUCDEP,NUCDEP,1,LUPRI)
+     &                    NUCDEP,NUCDEP,-1,LUPRI)
            END DO
          ENDIF
       END DO
@@ -1532,7 +1540,7 @@ C
 C
 C     Transform to MO-basis FAO --> FMO
 C
-      CALL OPNFIL(LUBUF,'DFTMAT','OLD','BARVAC')
+      CALL OPNFIL(LUBUF,'AOMOMAT','OLD','BARVAC')
       CALL READT(LUBUF,N2TMT,TMAT)
       CLOSE(LUBUF,STATUS='KEEP')
       CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
@@ -1592,32 +1600,20 @@ C
 C
       LOGICAL GOFAST
       GOFAST = .FALSE.
-      INQUIRE(FILE='DFTMAT',EXIST=GOFAST)
+      INQUIRE(FILE='AOMOMAT',EXIST=GOFAST)
       IF(GOFAST) THEN
-        INQUIRE(FILE='AOPROPER',EXIST=GOFAST)
-        IF(GOFAST.AND.BSS) THEN
-          INQUIRE(FILE='BSSMAT',EXIST=GOFAST)
-          LUBSS = 40
-        ENDIF
-      ENDIF
-      IF(GOFAST) THEN
-        WRITE(LUPRI,'(A)') 
-     &  '* GOTEST found the following files:',
-     &  '    - DFTMAT: transformation matrices',
-     &  '    - AOPROPER: one-electron integrals'
-        IF(BSS) WRITE(LUPRI,'(A)')
-     &  '    - BSSMAT: BSS stuff'
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(A,A)') 
+     &  '* WARNING: DIRAC found file AOMOMAT (transformation matrices)',
      &  '  ...will attempt restart.'
       ENDIF
 C
 C     The necessary files have been found;
 C     try to get the necessary information from
-C     file DFTMAT
+C     file AOMOMAT
 C
       IF(GOFAST) THEN
         NBRP = 4/NZ
-        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','GOFAST')
+        CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GOFAST')
 C.......skip AO2MO transformation matrix
         READ(LUTMAT)
 C.......skip inverse transformation matrix
@@ -1638,7 +1634,8 @@ C.......read records containing orbital information
           I2TMT(IFRP) = N2TMT
           N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
           I2TMOT(IFRP) = N2TMOTQ
-          N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+          N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
         ENDDO
         IF(SUB_BL) THEN
           DO IFRP = 1,NFSYM
@@ -1672,7 +1669,8 @@ C.......Look for a formatted file with same information
             I2TMT(IFRP) = N2TMT
             N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
             I2TMOT(IFRP) = N2TMOTQ
-            N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+            N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+            N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
           ENDDO
           IF(SUB_BL) THEN
             DO IFRP = 1,NFSYM
@@ -1723,7 +1721,7 @@ C/* Deck Orbdat*/
       SUBROUTINE ORBDAT
 C***********************************************************************
 C
-C     Dump information from GMOTRA as rec 3 on DFTMAT
+C     Dump information from GMOTRA as rec 3 on AOMOMAT
 C
 C     Written by T. Saue
 C
@@ -1738,10 +1736,10 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
+C      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','ORBDAT')
       NBRP = 4/NZ
-      READ(LUTMAT)
-      READ(LUTMAT)
+C      READ(LUTMAT)
+C      READ(LUTMAT)
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
       DO IFRP = 1,NFSYM
         WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
@@ -1760,7 +1758,7 @@ C
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
         ENDDO
       ENDIF
-      CLOSE(LUTMAT,STATUS='KEEP')      
+C      CLOSE(LUTMAT,STATUS='KEEP')      
 C
       RETURN
       END

@@ -1,6 +1,4 @@
-C
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 #if defined (VAR_MPI2)
 ***********************************************************************
 *                                                                     *
@@ -1159,7 +1156,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       SUBROUTINE MICDV6_PAR(VEC1,VEC2,RNRM,EIG,FINEIG,MAXIT,
      &                      NVAR,NROOT,MAXVEC,NINVEC,APROJ,AVEC,WORK,
      &                      IPRTXX,NPRDIM,H0,IPNTR,
-     &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,E_CONV,
+     &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
      &                      IROOTHOMING,LUWRTOUT,IBLOCKL,NBLOCKDN,
      &                      SCRRED,SCRRED2,RCCTOS,LU1LIST,LU2LIST,
      &                      LU3LIST,LU4LIST,LU5LIST,LU6LIST,LU7LIST,
@@ -1241,7 +1238,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 * outside (for roothoming :dim = 3*MAXVEC )
       DIMENSION XJEP(10000)
       INTEGER   IXJEP(10000)
-      DIMENSION RCCTOS(*), IGROUPLIST(NMPROC)
+      INTEGER RCCTOS(*), IGROUPLIST(NMPROC)
       DIMENSION IBLOCKL(*),NBLOCKDN(*), IPROCLIST(NMPROC)
       INTEGER NDATATYPE, NREDTYPE, IONE, NZERO
       REAL*8 REDSCRVAR
@@ -1249,7 +1246,16 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       IONE  = 1
       NZERO = 0
 *
-      TIMING = .TRUE.
+      TIMING = .false.
+C
+C      set check point parameters - after every 6th iteration
+C      of MAXIT
+       CHECKPOINT_LUCIX = .TRUE.
+       ITER_CHECKP = 0
+       ICHPARAM    = 0
+       IF( CHECKPOINT_LUCIX )THEN
+         ICHPARAM    = 6
+       END IF
 *
       WRITE(LUCIWT,'(7X,A)') '                             '
       WRITE(LUCIWT,'(7X,A)') 
@@ -1292,7 +1298,7 @@ C
       END IF
       KAPROJ = 1
       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST = 1.0D-8
+      TEST = 1.0D-4
       CONVER = .FALSE.
 C
 C     ===================
@@ -1307,6 +1313,7 @@ C
       CALL IZERO(LU2LIST,IALL_LU2)
 C
       ITER = 1
+      ITER_CHECKP = 1
 C
       DO 10 IVEC = 1, NINVEC
 *
@@ -1452,6 +1459,7 @@ C
       write(LUCIWT,'(A21,3X,I3)') ' Info from iteration ',ITER
       write(LUCIWT,*) '_______________________'
       ITER = ITER + 1
+      ITER_CHECKP = ITER_CHECKP + 1
 *
 *
 *===========================================================
@@ -1479,7 +1487,7 @@ C
 *       calculate residues ...
 *
         CALL P1_B_PAR_RL_LUCI1(VEC1,VEC2,EIGAPR,RNRM,EIGSHF,
-     &                         EIG,TEST,E_CONV,RTCNV,CONVER,ITER,MAXIT,
+     &                         EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
      &                         IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,
      &                         LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU2_OFF,MY_LU1_OFF,MY_LU5_OFF,
@@ -1505,10 +1513,10 @@ csk       CSCREEN = .FALSE.
           CALL H0M1TD_REL_PAR(ILU6,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                        LU6LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                        I1BATV,IBATV,MY_LU6_OFF,MY_DIA_OFF,
-     &                        MY_LU5_OFF,1)
+     &                        MY_LU5_OFF,1,THRES_E)
 *              H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,LISTOUT,
 *    &                        LISTIN,NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-*    &                        OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV)
+*    &                        OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV,THRES_E)
 *
 *
 *         hardwired to 1!
@@ -1972,6 +1980,28 @@ csk     CALL PRSYM(APROJ,NVEC)
 *
 *     end of resetting business
 *
+C
+C     save current solution vectors after each 6th iteration
+      IF( CHECKPOINT_LUCIX .and. (ITER_CHECKP.ge.ICHPARAM))THEN
+C
+C       reset ITER_CHECKP
+        ITER_CHECKP = 0
+C
+C       copy c-vectors from nodes and master back to the master
+        CALL REWINE(61,-1)
+        DO JXROOT = 1, NROOT
+          CALL REWINE(97,-1)
+          CALL COPVCD_PAR_BDRIV_REL(ILU1,97,VEC1,NBLOCKDN,NUM_BLOCKS2,
+     &                              IBLOCKL,MPI_COMM_WORLD,-1,JXROOT,
+     &                              LU1LIST,MY_LU1_OFF,1)
+          IF(MYPROC .eq. MASTER) THEN
+             CALL REWINE(97,-1)
+             CALL COPVCD(97,61,VEC1,0,-1)
+          END IF
+        END DO
+        IF(MYPROC .eq. MASTER) CALL REWINE(61,-1)
+      END IF
+C
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
 C
  1001 CONTINUE

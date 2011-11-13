@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : ccgrad.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -443,12 +438,10 @@ C     | Generate the T's in the right order for the    |
 C     | contraction with the 3/4 transformed integrals |
 C     +------------------------------------------------+
 C
-CMI   CALL MEMCHK('mp2zvec 1',BUF1,1) 
 
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
 
-CMI ... these two subroutines cause the memchk error in the Levy-Leblond mode...
       CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
       CALL SRTT1T2(BUF2,BUF1)
 
@@ -466,7 +459,6 @@ C     +-------------------------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW
-CMI   CALL MEMCHK('mp2zvec 1',XMO,2) 
       CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
 C
 C     +-------------------------------------------------+
@@ -483,10 +475,7 @@ C     +----------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW
-CMI   CALL MEMCHK('mp2zvec 1.1.3',XMO,1) 
-CMI    ... in this routine MEMCHK works fine..
       CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
-CMI   CALL MEMCHK('mp2zvec 1.1.3',XMO,1) 
 C 
       CALL FLSHFO(IW)
 
@@ -709,7 +698,7 @@ C
         CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
 C
         CALL WRTKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
-        CALL WRTKRMC(LUKRMC,'MP2NATOC',WORK(KOCC_NAT),NESHT)
+        CALL WRTKRMC(LUKRMC,'MP2NOOCC',WORK(KOCC_NAT),NESHT)
         CLOSE(LUKRMC,STATUS='KEEP')
 C
       END IF
@@ -953,7 +942,10 @@ C---------------Executable code--------------------------------------
 
 C     Read the appropriate correlated density from file
 
-      ALLOCATE (DMO(NORBT,NORBT,NZ))
+      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in DMO allocation !')
+      ENDIF
       CALL OPNFIL(MCCDENS,'CCDENS','OLD','GET_CC')
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)

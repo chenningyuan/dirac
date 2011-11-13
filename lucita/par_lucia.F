@@ -1,6 +1,4 @@
-C
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 #if defined (VAR_MPI2)
 ***********************************************************************
 *                                                                     *
@@ -1472,7 +1469,7 @@ C**********************************************************************
       DIMENSION NPARBLOCK(*), IBLOCKL(*)
       DIMENSION IGROUPLIST(*), IPROCLIST(*)
       CHARACTER*12 WALLTID3, SECTID
-      DIMENSION RCCTOS(*)
+      INTEGER   RCCTOS(*)
 C     some scratch
       INTEGER NZERO
 C
@@ -2773,11 +2770,18 @@ C
 *
       IF(ICOUNTABLK.LT.NTEMPP) THEN
         IMINNP = MIN(ICOUNTABLK,NTEMPP)
-        IF(NTEST.GT.0) THEN
-          WRITE(6,*) 'subroutine FIND_EVEN... speaking!'
-          WRITE(6,*) 'number of active blocks lower than number of 
-     & procs --> I only use',IMINNP,'procs'
-        END IF
+        if(IMINNP.lt.NMPROC)then
+        write(luwrt,'(/a,/a,i6,/a)') 
+     &    '   *** info from find_even_distr:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes.',
+     &    '   please decrease the number of processes to:',
+     &        IMINNP,
+     &    '   or can you afford to let the other processes idle? ;)'
+        write(luwrt,'(/a)') '   alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        end if
         NTEMPP = IMINNP
       END IF
 *

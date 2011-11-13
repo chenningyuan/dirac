@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirden.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -270,6 +265,23 @@ C
             ILOOP  = NORB(IFRP)
           ENDIF
           IF (ITEST.EQ.0) GOTO 20
+CMI ... inserted control print-out of variables
+          IF (IPRINT.GE.10) THEN
+           WRITE(LUPRI,'(/,8X,A,/)')
+     &     '* Output from GENDEN:  before calling DENST1'
+           WRITE(LUPRI,*) 'IFRP,I2BASX(IFRP,IFRP):',
+     &     IFRP,I2BASX(IFRP,IFRP)
+           WRITE(LUPRI,*) 'FAC,NTBAS(0),NFBAS(IFRP,0),NORB(IFRP):',
+     &      FAC,NTBAS(0),NFBAS(IFRP,0),NORB(IFRP)
+           WRITE(LUPRI,*) 'ISTART,ILOOP:',ISTART,ILOOP
+           WRITE(LUPRI,'(/,3X,A)')
+     &     'GENDEN - entering molecular orbitals (CMO):'
+           WRITE(LUPRI,'(/A,I1,A,I1)')
+     &     '* Fermion irrep ',IFRP,'/',NFSYM
+           CALL PRQMAT(CMO(1+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
+     &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+
           CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
      &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
@@ -278,7 +290,7 @@ C
       ENDIF
  10   CONTINUE
       IF (IPRINT.GE.10) THEN
-        WRITE(LUPRI,'(A)') '* Output from GENDEN:'
+        WRITE(LUPRI,'(/,8X,A,/)') '* Output from GENDEN:'
         DO I = 1,6
         IF (LBIT(IFLAG,I)) THEN
           IF (I.EQ.1) THEN
@@ -301,7 +313,7 @@ C
           ENDIF
         ENDIF
         ENDDO
-        DO IFRP = 1,NFSYM
+        DO IFRP = 1, NFSYM
           WRITE(LUPRI,'(/A,A3)')
      &      '* Fermion ircop ',FREP(IFRP)
           CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
@@ -374,6 +386,8 @@ C***********************************************************************
 C
 C     Generate density matrix for SCF calculations
 C
+C     Entering CMO - MO coefficients, on output - DMAT, density matrix
+C
 C     Written by T. Saue Nov 23 2004
 C
 C***********************************************************************
@@ -382,11 +396,29 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0,DM1=-1.0D0)
 #include "dcbham.h"
 #include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 #include "dcbdhf.h"
       DIMENSION DMAT(*),CMO(*)
 C
       CALL QENTER('DENMAT')
+
+      IF (IPRINT.GE.8) THEN
+        CALL HEADER('Output from DENMAT',-1)
+        WRITE(LUPRI,'(2X,A,I3)') 'NFMAT=',NFMAT
+        WRITE(LUPRI,'(3X,A)')
+     &  'Entering molecular orbitals (CMO):'
+        DO IFRP = 1, NFSYM
+          WRITE(LUPRI,'(/A,I1,A,I1)')
+     &    '* Fermion irrep ',IFRP,'/',NFSYM
+          CALL PRQMAT(CMO(1+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
+     &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+        ENDDO
+      ENDIF
+
+CMI ... entering DMAT array must be allocated before with N2BBASXQ*NFMAT 
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
+
       IDEN = 1
       IF(VACPOL.AND..NOT.MIXVAC) THEN
         IF(POSVAC) THEN
@@ -460,6 +492,12 @@ C     Construct density matrix for fermion corep IFRP
 C
 C     Written by T.Saue Mar 3 1995
 C
+!------------------------------------------------------------------------
+!  N.B. (sya, 2007.05.04)
+!     This routine makes AO-basis density matrix assuming the
+!     occupation is constant.  For closed-shell DHF, the occupation
+!     is 1, which is a half of 2.  This halving is compensated in
+!     subroutine PRPEX2.
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -527,7 +565,7 @@ C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDVEC,N2BBASXQ,WORK,KFREE,LFREE)
 C.....Read inverse MO-transformation
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
       READ(LUTMAT)
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT)
@@ -560,7 +598,7 @@ C       Diagonalize and extract the requested density
         OCC = OCC + OCCBUF
       ENDDO
 C.....Read MO-transformation
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT)
 C.....and transform back to AO-basis
@@ -806,7 +844,7 @@ C***********************************************************************
       ENDDO
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') '* MO density matrix:'
-        CALL OUTPUT(DMAT,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+        CALL OUTPUT(DMAT,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
       ENDIF
       RETURN
       END

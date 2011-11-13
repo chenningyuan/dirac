@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,18 +15,15 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamxpp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXPP */
-      SUBROUTINE PRPXPP(WORK,KPPF,KOMEGA,KCNV,KPPO,KFREE,LFREE)
+      SUBROUTINE PRPXPP(WORK,KPPF,KOMEGA,KCNV,KPPO,KSSYM,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Calculate "polarization propagator" (PP) excitation energies
@@ -148,12 +143,14 @@ C     ... ATMPPF: "A" transition moment for each excitation
 C     ... RCNV: residual error for each excitation
       CALL MEMGET('REAL',KOMEGA,NEXCF,WORK,KFREE,LFREE)
 C     ... OMEGA: excitation energies
+      CALL MEMGET('INTE',KSSYM,NEXCF,WORK,KFREE,LFREE)
+C     ... SYM: supersymmetry (if known)
 C
 C     Initialize:
       CALL DZERO(WORK(KPPF),N2PPF)
       CALL DZERO(WORK(KOMEGA),NEXCF)
       CALL PRPXP1(WORK(KPPF),WORK(KOMEGA),WORK(KCNV),WORK(KPPO),
-     &            WORK,KFREE,LFREE)
+     &            WORK(KSSYM),WORK,KFREE,LFREE)
 C
  10   CONTINUE
       IF (XPPANA) CALL ANAXRS(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
@@ -167,7 +164,7 @@ C         routine in WORK(KPPO), WORK(KPPF), WORK(KCNV), WORK(KOMEGA)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXP1 */
-      SUBROUTINE PRPXP1(ATMPPF,OMEGA,RCNV,IORBCL,WORK,KFREE,LFREE)
+      SUBROUTINE PRPXP1(ATMPPF,OMEGA,RCNV,IORBCL,ISSYM,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Calculate excitation energies and transition moments.
@@ -177,6 +174,7 @@ C     ATMPPF : "A" transition moment for each excitation
 C     OMEGA  : calculated excitation energies
 C     RCNV   : residual error for each excitation
 C     IORBCL : for orbital analysis
+C     ISSYM  : supersymmetry
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -196,13 +194,15 @@ Chj: MAXRM, MXLOAD
 #include "dcbxrs.h"
 C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
-     &          RCNV(MAXEXC,NBSYM), IORBCL(2,*),WORK(*)
+     &          RCNV(MAXEXC,NBSYM), IORBCL(4,*),
+     &          ISSYM(MAXEXC,NBSYM),WORK(*)
       CHARACTER TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
 C
       CALL QENTER('PRPXP1')
       KFRSAV = KFREE
+      CALL IZERO(ISSYM,MAXEXC*NBSYM)
 C
 C     If orbital analysis; extract relevant orbital energies
 C     ======================================================
@@ -214,6 +214,7 @@ CTROND  Check out active ones...
         DO I = 1,NFSYM
           NI = NI + NCLS_XPP(1,1,I) + NCLS_XPP(2,1,I)
         ENDDO
+        
         CALL MEMGET('REAL',KEIG,NI,WORK,KFREE,LFREE)
         CALL EIGEXT(WORK(KEIG),IORBCL,1,WORK,KFREE,LFREE)
       ELSE
@@ -272,7 +273,7 @@ C         Transfer number of excitations for this symmetry to dcbxrs.h
 C         (NFREQ is used for allocations and loops)
 C
           IF (NZCONF.EQ.0) THEN
-             NEXMAX = NZXOPE
+             NEXMAX = NZXOPEQ
           ELSE
              NEXMAX = NZCONF
           END IF
@@ -309,17 +310,18 @@ C         ************************************************************
 C
           CALL GETPPF(ATMPPF,WORK(KIBTYP),WORK(KIBCVC),
      &                WORK(KIBEVC),WORK(KIBPVC),RCNV(1,JSYMOP),
-     &                OMEGA(1,JSYMOP),WORK(KEVECR),IORBCL,WORK(KEIG),
-     &                WORK,KFREE,LFREE)
+     &                OMEGA(1,JSYMOP),WORK(KEVECR),ISSYM(1,JSYMOP),
+     &                IORBCL,WORK(KEIG),WORK,KFREE,LFREE)
+    
           CALL XPPOUT(JSYMOP,ATMPPF,OMEGA,RCNV,WORK(KEIG),
-     &                WORK,KFREE,LFREE)
+     &                ISSYM,WORK,KFREE,LFREE)
  20     CONTINUE
  10   CONTINUE
       CALL MEMREL('PRPXP1',WORK,1,KXPP,KFREE,LFREE)
 C
 C     Final print section
 C
-      CALL XPPOUT(0,ATMPPF,OMEGA,RCNV,WORK(KEIG),WORK,KFREE,LFREE)
+      CALL XPPOUT(0,ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -580,7 +582,7 @@ C              has a norm that is a fraction RESFAC of the max norm
                   READ(LUCMD,*) RESXPP
                GO TO 100
  26            CONTINUE
-C&&&& ORBANA: Analyze individual contributions to repsonse functions
+C&&&& ORBANA: Analyze individual contributions to response functions
                   ORBXPP = .TRUE.
                GO TO 100
  27            CONTINUE
@@ -627,7 +629,9 @@ C
 C        calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(LEVYLE.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
+      IF(NPSHT .EQ. 0) XPP_SKIPEP = .TRUE.
+C     ... no positronic orbitals
+      IF(LEVYLE.OR.BSS.OR.X2C.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
 C     ... no positronic orbitals for Levy-Leblond or no-pair
       IF (XPP_SKIPEE .AND. XPP_SKIPEP) THEN
          WRITE(LUPRI,'(/A)') 'INPUT ERROR: both SKIPEE and SKIPEP'
@@ -844,7 +848,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETPPF */
       SUBROUTINE GETPPF(ATMPPF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
-     &                  EVALR,EVECR,IORBCL,EIG,WORK,KFREE,LFREE)
+     &                  EVALR,EVECR,ISSYM,IORBCL,EIG,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Evaluate linear response excitation energies and transition moments
@@ -855,7 +859,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0,D0=0.0D0)
 C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
@@ -869,8 +873,8 @@ Chj: MAXRM, MXLOAD
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL FIRST
-      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
-     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(2,*),
+      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),ISSYM(*),
+     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
       CALL QENTER('GETPPF')
@@ -904,15 +908,9 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
-      IF(SPINFR.OR.LEVYLE) THEN
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
+      CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &              TOTERG,10,WORK,KFREE,LFREE)
-      ELSE
-        KIBRP = KFREE
-        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2,
-     &              WORK,KFREE,LFREE)
-      ENDIF
       CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
@@ -927,11 +925,12 @@ C
         CALL MEMGET('REAL',KXVEC,NZXOPEQ*NEXCNV,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPEQ       ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NESIM         ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBMAX,NEXCNV        ,WORK,KFREE,LFREE)
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
-     &              IBTYP,IBEVC,
+     &              IBTYP,IBEVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
      &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,WORK(KZXOPE),
-     &              WORK(KIVEC),WORK,KFREE,LFREE)
+     &              WORK(KIVEC),WORK(KBMAX),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NTRMOM,ATMPPF(1,1,JSYMOP,IOFF+1),1,
      &               ATMPPF(1,1,JSYMOP,1),1)
@@ -954,11 +953,12 @@ C
         CALL MEMGET('REAL',KXVEC,NZXOPPQ*NEXCNV,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPPQ       ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NPSIM         ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBMAX,NEXCNV        ,WORK,KFREE,LFREE)
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
-     &              IBTYP,IBPVC,
+     &              IBTYP,IBPVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
      &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,WORK(KZXOPP),
-     &              WORK(KIVEC),WORK,KFREE,LFREE)
+     &              WORK(KIVEC),WORK(KBMAX),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NTRMOM,ATMPPF(1,1,JSYMOP,IOFF+1),1,
      &               ATMPPF(1,1,JSYMOP,1),1)
@@ -985,9 +985,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETPP1 */
-      SUBROUTINE GETPP1(ATMPPF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
-     &                  GPO,XPO,BBUF,NXPAR,CMO,IBEIG,
-     &                  IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
+      SUBROUTINE GETPP1(ATMPPF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,FIRST,
+     &                  ISSYM,GPO,XPO,BBUF,NXPAR,CMO,IBEIG,
+     &                  IORBCL,EIG,JXOP,IVECS,BMAX,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Get linear response excitation function for orbital rotation parameter
@@ -1004,18 +1004,22 @@ C
 #include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
+#include "dcbham.h"
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcbxpr.h"
+      LOGICAL FIRST,TEST
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
-     &          CMO(*),EIG(*),IBEIG(*),IORBCL(2,*),
+     &          CMO(*),EIG(*),IBEIG(*),IORBCL(4,*),ISSYM(*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
-     &          JXOP(2,*),IVECS(*),WORK(*)
+     &          JXOP(2,*),IVECS(*),BMAX(NEXCNV),WORK(*)
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
 #include "chrnos.h"
+#include "ibtfun.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)
@@ -1039,7 +1043,7 @@ C
         CALL QUIT('GETPP1: Unknown NBTYP !')
       ENDIF
 C
-C     First get solution vector
+C
 C     =========================
 C
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
@@ -1050,6 +1054,9 @@ C
 C     We have two rounds,
 C     first with ITIM = IPX = JTIMOP and second with ITIM = IMX
 C
+      TEST=FIRST.AND.(LINEAR.OR.(SPINFR.AND.(NZ.EQ.1)))
+      IF(TEST) CALL DZERO(BMAX,NEXCNV)
+      XPOMAX = D0
       IROUND = 0
   100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
@@ -1058,7 +1065,6 @@ C
 C     Print section
 C     -------------
 C
-Cjth   IF(IPRXPP.GE.10) THEN
       IF(IPRXPP.GE.5) THEN
         WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
      &   ' part of solution vectors for',NEXCNV,' excitations:'
@@ -1066,8 +1072,26 @@ Cjth   IF(IPRXPP.GE.10) THEN
         CALL FLSHFO(LUPRI)
       ENDIF
 C
-C     Next form transition moments
-C     ===================================
+C     Identify largest element
+C     ========================
+C
+      IF(TEST) THEN
+        DO IEXC = 1,NEXCNV
+          DO I = 1,NXPAR
+            DTEMP = XPO(I,1,IEXC)*XPO(I,1,IEXC)
+            DO IZ = 2,NZ
+              DTEMP = DTEMP + XPO(I,IZ,IEXC)*XPO(I,IZ,IEXC)
+            ENDDO
+            IF(DTEMP.GT.BMAX(IEXC)) THEN
+              ISSYM(IEXC) = I
+              BMAX(IEXC) = DTEMP
+            ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
+C
+C     Form transition moments
+C     =======================
 C
         NOPA   = NPPAP(JSYMOP)
         JOPA   = JPPAP(JSYMOP)
@@ -1120,7 +1144,7 @@ C     Write solution vectors to unformatted file for restart
 C
       DO IEXC = 1,NEXCNV
         FREQ = EVALR(IEXC)
-        CALL WRTRSP(LUXVC,XPO(1,1,IEXC),
+        CALL WRTRSP(LUXVC,XPO(1,1,IEXC),JXOP,
      &       RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
      &       BLANK16,BLANK2,D0,0,0,RCNV(IEXC),INTXRS,NBDIM)
       ENDDO
@@ -1136,13 +1160,48 @@ C
       END IF
       CLOSE(LUBVEC,STATUS = 'KEEP')
 C
+      IF(TEST) THEN
+        IREP = JSYMOP-1
+        IFRP = JBTOF(IREP,1)
+        IF(LINEAR) THEN
+          IF(IREP.EQ.JSPINR(1,1,IFRP).OR.
+     &       IREP.EQ.JSPINR(2,1,IFRP)) THEN
+C.........excitation from unbarred to unbarred (or from barred to barred);
+C.........Total mj of excited state is therefore mj(virtual)-mj(inactive)
+            IFAC = -1
+          ELSEIF(IREP.EQ.JSPINR(3,1,IFRP).OR.
+     &           IREP.EQ.JSPINR(4,1,IFRP)) THEN
+C.........excitation from unbarred to barred (or vice versa);
+C.........Total mj of excited state is therefore mj(virtual)+mj(inactive)
+            IFAC = +1
+          ELSE
+            WRITE(6,'(A,A3)') 
+     &      'XPPsupersymmetry: something went wrong! Irrep: ',REP(IREP)
+          ENDIF
+          DO IEXC = 1,NEXCNV
+            I = ISSYM(IEXC)
+            INDI = JXOP(1,I)
+            INDA = JXOP(2,I)
+            ISSYM(IEXC) = IBEIG(INDA) + IFAC*IBEIG(INDI)
+          ENDDO
+        ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
+          DO IEXC = 1,NEXCNV
+            I = ISSYM(IEXC)
+            INDI = JXOP(1,I)
+            INDA = JXOP(2,I)
+            ISSYM(IEXC) = IBTXOR(IBEIG(INDA),IBEIG(INDI))
+          ENDDO
+        ENDIF
+      ENDIF      
+C
       CALL QEXIT('GETPP1')
       RETURN
  1000 FORMAT(/A,I2,A,I2,A,F16.10,A,/3X,A2,A,F16.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XPPOUT */
-      SUBROUTINE XPPOUT(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,WORK,KFREE,LFREE)
+      SUBROUTINE XPPOUT(JSYMTEST,ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Final output from linear response excitation energy module
@@ -1150,25 +1209,33 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
+         use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
 #include "pgroup.h"
+#include "dcbham.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
+#include "symmet.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2
+      CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2,SYMLAB*5
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
-     &          EIG(*),RCNV(MAXEXC,NBSYM),IBUF(2),WORK(*)
+     &          EIG(*),RCNV(MAXEXC,NBSYM),IBUF(2),ISSYM(MAXEXC,NBSYM),
+     &          WORK(*)
       DATA TTYP /'T-','T0','T+'/
+      DATA SYMLAB/'     '/
+#include "ibtfun.h"
 C
       IF(ORBXPP) THEN
         NI = 0
@@ -1197,8 +1264,16 @@ C
       CALL HEADER('Linear response excitations; final output ',-1)
       DO IOPSY = 1,NFSYM
         NBF = NBSYM/NFSYM
+        IF(LINEAR.AND.NFSYM.EQ.2) THEN
+          IF(IOPSY.EQ.1) THEN
+            WRITE(SYMLAB(4:4),'(A1)') 'g'
+          ELSE
+            WRITE(SYMLAB(4:4),'(A1)') 'u'
+          ENDIF
+        ENDIF
         DO IBF = 1,NBF
           ISYM = JFSYM(IBF,IOPSY)
+          IREP = ISYM-1
           IF (JSYMTEST .GT. 0) THEN
              IF (ISYM.NE.JSYMTEST) GO TO 500
           END IF
@@ -1207,22 +1282,49 @@ C
           IF (KEXCNV(ISYM).GT.0) THEN
              CALL PRSYMB(LUPRI,'=',80,0)
              WRITE(LUPRI,'(/A,I2,A,A3/)')
-     &     ' *** Excitations of boson symmetry',ISYM,' : ',REP(ISYM-1)
+     &     ' *** Excitations of boson symmetry',ISYM,' : ',REP(IREP)
           END IF
           DO I = 1,KEXCNV(ISYM)
              CALL PRSYMB(LUPRI,'-',80,0)
              IF(RCNV(I,ISYM).LT.THCPP) THEN
-               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,D9.2,A/0P,F52.4,A/)')
+               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,D9.2,A)')
      &            ' Excitation no.',I,' excitation energy',
-     &            OMEGA(I,ISYM),' a.u.',RCNV(I,ISYM),' (converged)',
-     &            OMEGA(I,ISYM)*XTEV,' eV'
+     &            OMEGA(I,ISYM),' a.u.',RCNV(I,ISYM),' (converged)'
              ELSE
-               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,D9.2,A/0P,F52.4,A/)')
+               WRITE(LUPRI,'(A,I4,A,F15.8,A,3X,1P,D9.2,A)')
      &            ' Excitation no.',I,' excitation energy',
      &            OMEGA(I,ISYM),' a.u.',
-     &            RCNV(I,ISYM),' (**NOT** converged!)',
+     &            RCNV(I,ISYM),' (**NOT** converged!)'
+             ENDIF
+             IF(LINEAR) THEN
+               WRITE(SYMLAB(1:3),'(I3)') ABS(ISSYM(I,ISYM))/2
+               WRITE(LUPRI,'(0P,A17,A5,F30.4,A)')
+     &           ' Linear symmetry:',SYMLAB,
+     &            OMEGA(I,ISYM)*XTEV,' eV'
+             ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
+               ISPACE = ISSYM(I,ISYM)
+               ISPIN = IBTXOR(ISPACE,IREP)
+               WRITE(SYMLAB(3:5),'(A3)') REP(ISPACE)
+               IF(ISPIN.EQ.0) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'S0'
+               ELSEIF(ISPIN.EQ.ISYMAX(3,2)) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'Tz'
+               ELSEIF(ISPIN.EQ.ISYMAX(2,2)) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'Ty'
+               ELSEIF(ISPIN.EQ.ISYMAX(1,2)) THEN
+                 WRITE(SYMLAB(1:2),'(A2)') 'Tx'
+               ELSE
+                 WRITE(6,*)
+     &            'ERROR: Spin-space symmetry failed',ISPIN,ISPACE
+               ENDIF
+               WRITE(LUPRI,'(0P,A17,A5,F30.4,A)')
+     &           ' Nonrel. sym.:   ',SYMLAB,
+     &            OMEGA(I,ISYM)*XTEV,' eV'
+             ELSE
+               WRITE(LUPRI,'(0P,22X,F30.4,A)')
      &            OMEGA(I,ISYM)*XTEV,' eV'
              ENDIF
+
           IF (NOPA .EQ. 0) GO TO 300
              WRITE(LUPRI,'(A/)')
      &           ' *** Transition moments <0|A|n> for this excitation:'
@@ -1288,9 +1390,9 @@ C
                    PFMT = '(5X,A,1P,D16.8)'
                 END IF
                 WRITE(LUPRI,'()')
-                IF (OSCILL .GT. 1.0D-10) WRITE(LUPRI,PFMT)
+                WRITE(LUPRI,PFMT)
      &             '-> dipole oscillator strength (length)   :',OSCILL
-                IF (OSCILV .GT. 1.0D-10) WRITE(LUPRI,PFMT)
+                WRITE(LUPRI,PFMT)
      &             '-> dipole oscillator strength (velocity) :',OSCILV
 c
 c hj TODO : mixed require code with XMOML(3), XMOMV(3) to be sure the
@@ -1492,8 +1594,6 @@ C
          ELSE
 C           singularities
             WRITE(LUPRI,1010)I, ALFAR(I),ALFAI(I),BETA(I)
- 1010       FORMAT(/' *** SINGULARITY IN REDUCED MCRSP :',
-     +             /'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
          END IF
 C        IF(ABS(ALFAR(I)).GT.ZEROT) THEN
 C    +   .OR.(ABS(ALFAR(I)).LE.ZEROT.AND.ABS(ALFAI(I)).GT.ZCRIT)) THEN
@@ -1502,8 +1602,6 @@ C        RATIO= ABS(ALFAI(I)/ALFAR(I))
 C        IF(RATIO.GT.ZCRIT) WRITE(6,1020) ALFAR(I),ALFAI(I)
          IF(ALFAI(I).NE.D0) THEN
             WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
- 1020       FORMAT(/' *** COMPLEX EIGENVALUE IN REDUCED MCRSP :',
-     +          /'     REAL AND IMAGINARY PART :',I8,1P,2D20.8)
 C
 C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS
@@ -1512,6 +1610,10 @@ C
             ALFAR(I) = COMPLX
          END IF
   10  CONTINUE
+ 1010 FORMAT(/' WARNNG *** SINGULARITY IN REDUCED PP MATRIX:'
+     &      ,/'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
+ 1020 FORMAT(/' WARNING *** COMPLEX EIGENVALUE IN REDUCED PP MATRIX :'
+     &      ,/'     REAL AND IMAGINARY PART :',I8,1P,2D20.8)
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
@@ -1625,7 +1727,7 @@ C
      &      INOPAIR = INOPAIR + 1
   110 CONTINUE
       IF (INEG.NE.IPOS) THEN
-         WRITE(LUPRI,'(3(/A))')' ***** WARNING ********* XPPORD:'
+         WRITE(LUPRI,'(/3A)')' **WARNING** XPPORD:'
      *   ,' number of eigenvalues with negative metric differ from'
      *   ,' number with positive metric'
          WRITE(LUPRI,'(/A)') '   NUMBER    EIGENVALUE '
@@ -1634,7 +1736,7 @@ C
  117     CONTINUE
       ELSE
          IF (INOPAIR.GT.0) WRITE(LUPRI,'(A/)')
-     &      ' **WARNING** XPPORD: EIGENVALUES NOT PAIRED'
+     &      ' **WARNING** XPPORD: Eigenvalues not paired'
          IF (IPRINT.GT.5 .OR. INOPAIR .GT.0) WRITE(LUPRI,'(/A)')
      *      '      NUMBER    EIGENVALUE       PAIRED EIGENVALUE'
          DO 115 I=1,IPOS
@@ -1644,7 +1746,7 @@ C
  115     CONTINUE
          IF (IZER .GT. 0) THEN
             WRITE(LUPRI,'(/A/A)')
-     *         ' **WARNING** XPPORD: ZERO METRIC EIGENVALUE(S)',
+     *         ' **WARNING** XPPORD: Zero metric eigenvalue(s)',
      *         '      NUMBER    EIGENVALUE (real part)'
             DO 116 I=1,IZER
                WRITE(LUPRI,'(I10,1P,D20.8)')

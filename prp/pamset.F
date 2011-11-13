@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -143,12 +138,13 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbibn.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
+#include "dcbxrs.h"
 C
       DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
       DIMENSION NOROT(*)
@@ -187,6 +183,24 @@ C
      &           NIND(1,1,ISYM)
          ENDIF
          IF(NIND(2,1,ISYM).EQ.0) GOTO 300
+C
+C        For Sternheimer complement add inactive-inactive elements
+C        =========================================================
+         IF(STERNC) THEN
+           JSTI  = NIND(1,1,JSYM) + 1
+           JENDI = NIND(1,1,JSYM) + NIND(2,1,JSYM)
+           DO IN = ISTI,IENDI
+             INDI = IND(IN,1,ISYM)
+             DO JA = JSTI,JENDI
+               INDA = IND(JA,1,JSYM)
+               IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDA) .EQ. 0) THEN
+                  NXOPE          = NXOPE + 1
+                  JXOPE(1,NXOPE) = INDI
+                  JXOPE(2,NXOPE) = INDA
+               END IF
+             ENDDO
+           ENDDO
+         ENDIF
 C        
 C        Inactive - active elements
 C        ==========================
@@ -197,6 +211,7 @@ C
      &           '*** WARNING(SETXEE): Active positrons detected:',
      &           NIND(1,2,JSYM)
          ENDIF
+C                 inactive               active
          IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 200
          DO IN = ISTI,IENDI
             INDI = IND(IN,1,ISYM)
@@ -214,6 +229,7 @@ C        Inactive-secondary elements
 C        ===========================
 C        
  200     CONTINUE
+C                 inactive               secondary
          IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 300
          DO IN = ISTI,IENDI
             INDI = IND(IN,1,ISYM)
@@ -231,6 +247,7 @@ C        Active-secondary elements
 C        =========================
 C        
  300     CONTINUE
+C                 active                 secondary
          IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 10
          DO IA = ISTA,IENDA
             INDA = IND(IA,2,ISYM)
@@ -312,13 +329,17 @@ C
 C     Print section
 C     =============
 C     
-      IF(IPRINT.GE.4) THEN
-         CALL HEADER('Output from SETXEE',-1)        
-         WRITE(LUPRI,'(A,I10)') 'e-e rotations (non-redundant): ',NXOPE
-         WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
-         WRITE(LUPRI,'(A,I10)') 'extra e-e rotations (redundant): ',
+      IF(IPRINT.GE.2) THEN
+        CALL HEADER('Output from SETXEE',-1)        
+        WRITE(LUPRI,'(A,I10)') '# of e-e rotations (non-redundant): ',NXOPE
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
+        ENDIF
+        WRITE(LUPRI,'(A,I10)') '# of extra e-e rotations (redundant): ',
      &        NHOPE - NXOPE
-         WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
+        ENDIF
       ENDIF
 C     
       CALL QEXIT('SETXEE')
@@ -417,10 +438,12 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.4) THEN
+      IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETXEP',-1)        
-        WRITE(LUPRI,'(A,I10)') 'e-p rotations: ',NXOPP
-        WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,NXOPP)
+        WRITE(LUPRI,'(A,I10)') '# of e-p rotations: ',NXOPP
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,NXOPP)
+        ENDIF
       ENDIF
 C
       CALL QEXIT('SETXEP')
@@ -514,6 +537,9 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
+       use dirac_cfg
+       use dft_cfg
+       use xc_driver
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -529,12 +555,11 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
+
+
 C
 #include "ibtfun.h"
 C
@@ -590,7 +615,7 @@ C
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
 
       call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
@@ -626,17 +651,34 @@ C          Hermitian operator
 
         IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
-#ifdef MOD_DFT
-C
-C     Construct Kohn-Sham contribution
-C     ================================
-      IF(DFTADD) THEN
-         CALL GENDEN(FAO,CMO,1,IPRINT)
-C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-         IOPTS = 1
-         CALL DFTEXC(FAO,DUM,FMO,1,1,1,IOPTS,WORK(KFREE),LFREE,IPRINT)
-      ENDIF
-#endif
+
+
+
+
+!       construct xc contribution
+!       =========================
+
+        if (dirac_cfg_dft_calculation) then
+           call genden(fao, cmo, 1, iprint)
+           
+           call xc_mpi_wake_up_coworkers()
+           call xc_integrator(xc_mat_dim               = ntbas(0),
+     &                        xc_nz                    = nz,
+     &                        xc_dmat_0                = fao,
+     &                        xc_nr_dmat               = 0,
+     &                        xc_nr_fmat               = 1,
+     &                        xc_fmat                  = fmo,
+     &                        xc_do_potential          = .true.,
+     &                        xc_do_overlap_diagnostic = 
+     &                           dirac_cfg_overlap_diagnostic)
+           call xc_mpi_release_coworkers()
+        end if
+
+
+
+
+
+
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -753,7 +795,7 @@ C
           NVEC = 1
           CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
      &                 NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                 IFRP,NVEC,WORK(KFREE),LFREE)
+     &                 IFRP,NVEC)
           CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
@@ -806,8 +848,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck REDPAR */
-      SUBROUTINE REDPAR(GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
-     &                  THRCOM,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
+     &                  NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
+     &                  NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Reduce number of parameters by deleting parameters
@@ -816,15 +860,21 @@ C     below threshold THRCOM
 C
 C     Written by T.Saue - July 22 1997
 C
+C     Last revision: S. Knecht - Jan 2010
+C     added control variable IREDJOB:
+C     bit 1 of IREDJOB: reduction in configurational vector
+C     bit 2 of IREDJOB: reduction in e-e orbital rotations
+C     bit 3 of IREDJOB: reduction in e-p orbital rotations
+C                    
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DC = 100.0D0)
 C
-#include "dcbxrs.h"
 #include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
      &          JCONF(*),JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
+      LOGICAL LBIT
 C
       KFRSAV = KFREE
       IF(IPRINT.GE.4) CALL HEADER('Output from REDPAR',-1)        
@@ -833,104 +883,108 @@ C
 C     Configurational part
 C     ====================
 C
-      IF(NZCONF.GT.0) THEN
-        WRITE(LUPRI,'(A)') '* REDPAR: No configurational code,',
-     &                     '          thus no reduction in conf vector.'
-C hjaaj sep 05: continue with just reduction in orb vector(s)
-C       CALL QUIT('REDPAR: No conf.code')
+      IF(LBIT(IREDJOB,1)) THEN
+        WRITE(LUPRI,'(3A)')' * REDPAR: reduction in conf vector ',
+     &                     ' not implemented; thus no reduction ',
+     &                     ' in conf vector.'
+        WRITE(LUPRI,'(1A)')' * Continuing with orbital rotations.'
       ENDIF
 C
 C     e-e orbital rotations
 C     =====================
 C
-      IF(NZXOPE.GT.0) THEN
-        CALL MEMGET('REAL',KBUF,NZXOPEQ,WORK,KFREE,LFREE)
-        II = 0
-        DO I = 1,NZXOPE
-          DTST = D0
-          IZOFF = 0
-          DO IZ = 1,NZ
-            DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)  
-            IZOFF = IZOFF + NZXOPE
-          ENDDO
-          IF(SQRT(DTST).GE.THRCOM) THEN
-            II = II + 1
-            JXOPE(1,II) = JXOPE(1,I)
-            JXOPE(2,II) = JXOPE(2,I)
-            IOFF = KBUF-1
-            JOFF = 0
+      IF(LBIT(IREDJOB,2)) THEN
+        IF(NZXOPE.GT.0) THEN
+          CALL MEMGET('REAL',KBUF,NZXOPEQ,WORK,KFREE,LFREE)
+          II = 0
+          DO I = 1,NZXOPE
+            DTST = D0
+            IZOFF = 0
             DO IZ = 1,NZ
-              WORK(IOFF+II) = GPOE(JOFF+I)
-              IOFF = IOFF + NZXOPE
-              JOFF = JOFF + NZXOPE
+              DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)  
+              IZOFF = IZOFF + NZXOPE
             ENDDO
-          ENDIF
-        ENDDO
-        IF(II.LT.NZXOPE) THEN
-          IOFF = KBUF
-          JOFF = 1
-          DO IZ = 1,NZ
-            CALL DCOPY(II,WORK(IOFF),1,GPOE(JOFF),1)
-            IOFF = IOFF + NZXOPE
-            JOFF = JOFF + II
+            IF(SQRT(DTST).GE.THRCOM) THEN
+              II = II + 1
+              JXOPE(1,II) = JXOPE(1,I)
+              JXOPE(2,II) = JXOPE(2,I)
+              IOFF = KBUF-1
+              JOFF = 0
+              DO IZ = 1,NZ
+                WORK(IOFF+II) = GPOE(JOFF+I)
+                IOFF = IOFF + NZXOPE
+                JOFF = JOFF + NZXOPE
+              ENDDO
+            ENDIF
           ENDDO
-          IF(IPRINT.GE.4) THEN
-            DTST = DC*(NZXOPE-II)/NZXOPE
-            WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
-     &            'e-e rotations: ',II,' (reduction: ',DTST,'%)'
-            WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,II)
-            CALL PRQMAT(GPOE,II,1,II,1,NZ,1,LUPRI)
+          IF(II.LT.NZXOPE) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+              CALL DCOPY(II,WORK(IOFF),1,GPOE(JOFF),1)
+              IOFF = IOFF + NZXOPE
+              JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.4) THEN
+              DTST = DC*(NZXOPE-II)/NZXOPE
+              WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
+     &              'e-e rotations: ',II,' (reduction: ',DTST,'%)'
+              WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,II)
+              CALL PRQMAT(GPOE,II,1,II,1,NZ,1,LUPRI)
+            ENDIF
+            NZXOPE  = II
+            NZXOPEQ = NZXOPE*NZ
           ENDIF
-          NZXOPE  = II
-          NZXOPEQ = NZXOPE*NZ
+          CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
         ENDIF
-        CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
-      ENDIF      
+      ENDIF
 C
 C     e-p orbital rotations
 C     =====================
 C
-      IF(NZXOPP.GT.0) THEN
-        CALL MEMGET('REAL',KBUF,NZXOPPQ,WORK,KFREE,LFREE)
-        II = 0
-        DO I = 1,NZXOPP
-          DTST = D0
-          IZOFF = 0
-          DO IZ = 1,NZ
-            DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)  
-            IZOFF = IZOFF + NZXOPP
-          ENDDO
-          IF(SQRT(DTST).GE.THRCOM) THEN
-            II = II + 1
-            JXOPP(1,II) = JXOPP(1,I)
-            JXOPP(2,II) = JXOPP(2,I)
-            IOFF = KBUF-1
-            JOFF = 0
+      IF(LBIT(IREDJOB,3)) THEN
+        IF(NZXOPP.GT.0) THEN
+          CALL MEMGET('REAL',KBUF,NZXOPPQ,WORK,KFREE,LFREE)
+          II = 0
+          DO I = 1,NZXOPP
+            DTST = D0
+            IZOFF = 0
             DO IZ = 1,NZ
-              WORK(IOFF+II) = GPOP(JOFF+I)
-              IOFF = IOFF + NZXOPP
-              JOFF = JOFF + NZXOPP
+              DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)  
+              IZOFF = IZOFF + NZXOPP
             ENDDO
-          ENDIF
-        ENDDO
-        IF(II.LT.NZXOPP) THEN
-          IOFF = KBUF
-          JOFF = 1
-          DO IZ = 1,NZ
-            CALL DCOPY(II,WORK(IOFF),1,GPOP(JOFF),1)
-            IOFF = IOFF + NZXOPP
-            JOFF = JOFF + II
+            IF(SQRT(DTST).GE.THRCOM) THEN
+              II = II + 1
+              JXOPP(1,II) = JXOPP(1,I)
+              JXOPP(2,II) = JXOPP(2,I)
+              IOFF = KBUF-1
+              JOFF = 0
+              DO IZ = 1,NZ
+                WORK(IOFF+II) = GPOP(JOFF+I)
+                IOFF = IOFF + NZXOPP
+                JOFF = JOFF + NZXOPP
+              ENDDO
+            ENDIF
           ENDDO
-          IF(IPRINT.GE.4) THEN
-            DTST = DC*(NZXOPP-II)/NZXOPP
-            WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
-     &            'e-p rotations: ',II,'(reduction: ',DTST,'%)'
-            WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,II)
+          IF(II.LT.NZXOPP) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+              CALL DCOPY(II,WORK(IOFF),1,GPOP(JOFF),1)
+              IOFF = IOFF + NZXOPP
+              JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.4) THEN
+              DTST = DC*(NZXOPP-II)/NZXOPP
+              WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
+     &              'e-p rotations: ',II,'(reduction: ',DTST,'%)'
+              WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,II)
+            ENDIF
+            NZXOPP  = II
+            NZXOPPQ = NZXOPP*NZ
           ENDIF
-          NZXOPP  = II
-          NZXOPPQ = NZXOPP*NZ
-        ENDIF
-        CALL MEMREL('REDPAR.ep',WORK,1,KFRSAV,KFREE,LFREE)
+          CALL MEMREL('REDPAR.ep',WORK,1,KFRSAV,KFREE,LFREE)
+        ENDIF      
       ENDIF      
 C
       NZXOPT   = NZXOPE + NZXOPP
@@ -941,9 +995,7 @@ C     ==========================
 C
       NZVAR    = NZCONF  + NZXOPT
       NZVARQ   = NZCONFQ + NZXOPTQ
-      RETURN
       END
-      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFORB */
       SUBROUTINE DEFORB(IORBCL,NIND,NTYP,INDSTR,WORK,KFREE,LFREE,
@@ -1016,7 +1068,7 @@ C
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS),
      &          NIND(2,NTYP,2),WORK(KFREE)
 C
-      NDIM = NORBT*3
+      NDIM = NORBT*4
       CALL IZERO(IORBCL,NDIM)
 C
 C     Unpack strings
@@ -1029,7 +1081,7 @@ C
           NVEC = 1
           CALL NUMLST(INDSTR(ITYP,IFRP),IND,
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                IFRP,NVEC,WORK(KFREE),LFREE)
+     &                IFRP,NVEC)
           CALL ORBCNT(IND,NVEC,IFRP,NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
@@ -1065,11 +1117,18 @@ C     Print section
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from DEFORB',-1)
-        DO IFRP = 1,NFSYM
-          WRITE(LUPRI,'(A,A3)') '* Fermion ircop:',FREP(IFRP)
-          WRITE(LUPRI,'(5X,3I5)')
-     &    (I,IORBCL(1,IORB(IFRP)+I),IORBCL(2,IORB(IFRP)+I),
-     &     I = 1,NORB(IFRP))
+        WRITE(6,'(A)')
+     &     '* Defined types:',
+     &     '  ITYP = 1   inactive',
+     &     '  ITYP = 2   active',
+     &     '  ITYP = 3   secondary'
+        WRITE(6,'(/3X,A)')
+     &      'IFRP IND  ITYP ITYP_IND'
+        DO I = 1,NORBT
+          IF(IORBCL(1,I).NE.0) THEN
+             WRITE(LUPRI,'(4I5)')
+     &     IORBCL(3,I),IORBCL(4,I),IORBCL(1,I),IORBCL(2,I)
+          ENDIF
         ENDDO
       ENDIF
       RETURN
@@ -1090,7 +1149,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbibn.h"
 #include "dgroup.h"
@@ -1320,23 +1379,23 @@ C
         DO I = 1,NFSYM
           INDSTR(3,I) = ' '
           IT=1
-          IF(.NOT.SKIPEP) THEN
+          IF(.NOT.SKIPEP .AND. NPSH(I).GT.0) THEN
             IF (NPSH(I) .EQ. 1) THEN
               WRITE(INDSTR(3,I),'(I2)') -1
               IT=3
-            ELSEIF (NPSH(I) .GT. 1) THEN
+            ELSE
               WRITE(INDSTR(3,I),'(I6,A4)') -NPSH(I),'..-1'
               IT=11
             ENDIF
           ENDIF
-          IF(.NOT.SKIPEE) THEN
-            IF((.NOT.SKIPEP).AND.NSSH(I).GT.0) THEN
+          IF(.NOT.SKIPEE .AND. NSSH(I).GT.0) THEN
+            IF (IT .GT. 1) THEN ! e-p rotations were added above
               WRITE(INDSTR(3,I)(IT:IT),'(A1)') ','
               IT=IT+1
             ENDIF
             IF(NSSH(I).EQ.1) THEN
               WRITE(INDSTR(3,I)(IT:IT),'(I1)') 1
-            ELSEIF(NSSH(I).GT.1) THEN
+            ELSE
               WRITE(INDSTR(3,I)(IT:IT+14),'(I6,A2,I6)')
      &             NOCC(I)+1,'..',NESH(I)
             ENDIF
@@ -1367,7 +1426,7 @@ C       -----------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+     &             IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Inactive orbitals  : No electrons'
@@ -1381,7 +1440,7 @@ C       ---------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+     &             IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Active orbitals    : No electrons'
@@ -1395,7 +1454,7 @@ C       ------------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(3,I),IDUMMY,NR(I),
-     &            IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+     &            IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Secondary orbitals : No electrons'
@@ -1406,5 +1465,81 @@ C
       ENDDO
 C
       CALL QEXIT('OSTRING')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck xrspar */
+      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
+C
+C     Initialize configurational and orbital parameters for
+C     linear response calculation
+C
+C     Written by T. Saue July 18 1997
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbxrs.h"
+C
+      CHARACTER INDSTR(3,2)*72
+      LOGICAL   SKIPEE,SKIPEP
+      DIMENSION WORK(*)
+      LOGICAL GASWF
+C
+      CALL QENTER('XRSPAR')
+C
+C     Configurational parameters
+C     ==========================
+C
+      NZCONF   = 0
+      NZCONFQ  = NZCONF *NZ
+C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
+      CALL MEMGET('REAL',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
+C
+C     Orbital parameters
+C     ==================
+C
+C===TODO start
+C     hjaaj June 2001: NOROT should be 
+C     taken from common block dcbnrt.h
+C     but is not defined for DHF/DFT yet (only for KRMC now)
+C     hjaaj June 2001: GASWF should be based on either
+C     MCSCF common block or that this WF is not KRMC
+C
+      CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KNOROT),NORBT)
+      GASWF = .FALSE.
+      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
+     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            WORK,KFREE,LFREE,IPRINT)
+C     No CALL MEMREL here!!!!
+C     NZXOPE, NZHOPE, NZXOPP and the
+C     pointers KZXOPE and KXZOPP are defined in SETXOP
+C     THEY MUST NOT BE RELEASED WITH MEMREL !
+C     We must p.t. live with KNOROT allocation ...
+C
+C===TODO end
+      NZXOPEQ  = NZXOPE *NZ
+      NZXOPPQ  = NZXOPP *NZ
+      NZXOPT   = NZXOPE + NZXOPP
+      NZXOPTQ  = NZXOPT *NZ
+C
+C     Total number of parameters
+C     ==========================
+C
+      NZVAR    = NZCONF + NZXOPT
+      NZVARQ   = NZCONFQ + NZXOPTQ
+C
+      IF (IPRINT .GE. 3) THEN
+         WRITE (LUPRI,'(/A,3I10)')
+     &   'No. of configuration, e-e, and e-p variables:',
+     &   NZCONF,NZXOPE,NZXOPP
+      END IF
+C
+      CALL QEXIT('XRSPAR')
       RETURN
       END

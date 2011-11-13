@@ -9,4 +9,4 @@ C     MAXOCC = maximum number of occupied orbitals
       PARAMETER ( MAXWOP = 5 000 , MAXOCC = 120 )
 #endif
       COMMON /INFVAR/ NCONF,NWOPT,NVAR,JWOPSY,NWOP(8),NWOPH,NVARH,
-     *                JWOP(2,MAXWOP),KLWOP(MAXOCC,MAXORB)
+     *                JWOP(2,MAXWOP),KLWOP(MAXOCC,MXCORB)

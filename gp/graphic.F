@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : graphic.F
 C
 C
@@ -36,7 +31,6 @@ C     molecule coordinate information as well as normal coordinate modes
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
 #include "implicit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -49,7 +43,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "ibtfun.h"
 C
@@ -164,7 +158,6 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "pi.h"
-#include "codata.h"
 C
       PARAMETER (LUIP = 4)
       PARAMETER (ONE=1.0D+00, HALF=0.5D+00, PT75 = 0.75D+00, 

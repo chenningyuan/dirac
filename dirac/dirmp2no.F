@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirmp2no.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -65,7 +60,7 @@ C  .MULPOP  - perform Mulliken population analysis for MP2-NOs
 C
 C  FIXME more ideas for options: (18-Apr-2008)
 C
-C  .FOCKNO  - transform to selected NO's to canonical Fock orbitals in
+C  .FOCKNO  - transform selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
 C  
       SAVE SET
@@ -391,7 +386,7 @@ C       read occ. numbers and transf. matrix
 C       ------------------------------------
 C
         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MP2NOG')
-        CALL REAKRMC(LUKRMC,'MP2NATOC',WORK(KOCC_NAT),NESHT)
+        CALL REAKRMC(LUKRMC,'MP2NOOCC',WORK(KOCC_NAT),NESHT)
 C
         IF( .NOT. SKIP_MP2DEN ) THEN
 C
@@ -623,7 +618,7 @@ C
           NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -789,7 +784,7 @@ C
          ELSE
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                  IFRP,NSPC(IFRP,0),WORK(KFREE),LFREE)
+     &                  IFRP,NSPC(IFRP,0))
             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
@@ -1001,7 +996,7 @@ C     initialize
       CALL DZERO(EIG,NORBT)
 C     read MP2-NO vecs and occupancies from file KRMCOLD
       CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
-      CALL REAKRMC(LUKRMC,'MP2NATOC',EIG_NAT,NESHT)
+      CALL REAKRMC(LUKRMC,'MP2NOOCC',EIG_NAT,NESHT)
 C
       IOFF2 = 1
 C

@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : tradr2.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -128,8 +123,8 @@ C
          CALL MEMGET('INTE',KDSLST,MAXSHL*6,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KTIMDS,MAXSHL,WORK,KFREE,LFREE)
          CALL TR2MST(EMP2,WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &        KINDX,KGAB,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
-     &        ANTIS,LMP2,MAXSHL,WORK(KDSLST),WORK(KTIMDS))
+     &        KINDX,KGAB,KDRIJ,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
+     &        ANTIS,LMP2,MAXSHL,WORK(KDSLST),WORK(KTIMDS),DINTSKP)
       ELSE IF (PARCAL .AND. MP2ORG) THEN
 C
 C     *** Original parallel MP2 algorithm ***
@@ -146,12 +141,12 @@ C
          CALL DZERO(WORK(KTIM),NTIM)
          KDRIJ = KFREE
          CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &        KINDX,WORK(KGAB),KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Divide index transformation in tasks with different batches
 C     of spinors. First find number of tasks.
 C     
-         CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,NODES,NSTRT,IPRINT)
+         CALL TSKCHK(MAXTSK,LENTSK,LFREE,NODES,NSTRT(1),IPRINT)
 C     
 C     Start loop over tasks
 C     
@@ -218,7 +213,7 @@ C
 C       Divide index transformation in tasks with different batches
 C       of spinors. First find number of tasks.
 C
-        CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,1,NSTRT,IPRINT)
+        CALL TSKCHK(MAXTSK,LENTSK,LFREE,1,NSTRT(1),IPRINT)
 C
 C       Start loop over tasks
 C
@@ -313,7 +308,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR23 */
       SUBROUTINE TRDR23(WORK,KFREE,LFREE,IPRINT,
      &     EMP2,ISPNR,JSPNR,LENTSK,INTFLG,NDMOQR,ICMOQR,
-     &     NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP,GABAO,TIM1)
+     &     NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP,GABRAO,TIM1)
 C
 C     Written by Luuk Visscher, December 1996
 C     Modifications by Jon Laerdahl, June 1997
@@ -337,7 +332,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          NSTRT(4),ITQMT(0:7,0:7,2),
      &          NDMOQR(2,2,4),ICMOQR(2,4),
      &          IJP12(0:7),IJP34(2),IHM(0:7),
-     &          TIM1(7),DINTSKP(*),GABAO(*),WORK(*)
+     &          TIM1(7),DINTSKP(*),GABRAO(*),WORK(*)
       DIMENSION ISAMEIJ(4)
 C
 #include "ibtfun.h"
@@ -395,7 +390,7 @@ CTROND  ...this may be improved TODO
         DO I = 1,4
           ISAMEIJ(I) = I
         ENDDO
-        CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+        CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABRAO,
      &              WORK(KQ(1,1)),WORK(KQ(1,2)),
      &              WORK(KQ(1,3)),WORK(KQ(1,4)),
      &              NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
@@ -549,7 +544,7 @@ C
 C
             CALL TIMEC('START ',TIMSTR,TIMEND)
             CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
-     &                  NODV,NOPV,GABAO,WORK(KDRIJ),DINTSKP,SCRTRA,
+     &                  NODV,NOPV,GABRAO,WORK(KDRIJ),DINTSKP,SCRTRA,
      &                  WORK(KFREE),LFREE,IPRINT)
 C
             CALL TIMEC('CALDIS',TIMSTR,TIMEND) 
@@ -868,7 +863,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TD23V2 */
       SUBROUTINE TD23V2(IJBTCH,MXBTCH,WORK,KFREE,LFREE,IPRINT,ERGMP2,
      &     ISPNR,JSPNR,LENTSK,INTFLG,NDMOQR,ICMOQR,NSTR,INDX,
-     &     KQ,KE,DINTSKP,GABAO,TIM1,NDSLST,IDSLST,TIMDIS)
+     &     KQ,KE,DINTSKP,GABRAO,TIM1,NDSLST,IDSLST,TIMDIS)
 C
 C     Sequential MP2 driver (modified version of TRDR23)
 C
@@ -885,7 +880,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), INDX(3,*),
      &     NSTRT(4), ITQMT(0:7,0:7,2), IJP12(0:7), NDMOQR(2,2,4),
-     &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABAO(*), WORK(*),
+     &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABRAO(*), WORK(*),
      &     IDSLST(6,NDSLST), TIMDIS(NDSLST), IDSNFO(6)
       DIMENSION ISAMEIJ(4)
       CHARACTER*(24) TMSTMP
@@ -926,7 +921,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
       ELSE
@@ -963,8 +958,8 @@ C ----------------------------------------------------------------------
          CALL FLSHFO(LUPRI)
          IF (IDSLST(1,ISHLND) .EQ. 0) GOTO 100
          CALL SHLTRA(IDSLST(1,ISHLND),WORK,KFREE,LFREE,IPRINT,KQ,
-     &        INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABAO,NDMOQR,ICMOQR,
-     &        ITQMT,NTQMT,KTQMAT,TIM1)
+     &        INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,WORK(KDRIJ),
+     &        NDMOQR,ICMOQR,ITQMT,NTQMT,KTQMAT,TIM1)
 C
 C     Print integrals if requested (above threshold TPRI34):
 C
@@ -1176,8 +1171,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SHLTRA */
       SUBROUTINE SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
-     &     INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABAO,NDMOQR,ICMOQR,
-     &     ITQMT,NTQMT,KTQMAT,TIM1)
+     &     INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,DRIJ,
+     &     NDMOQR,ICMOQR,ITQMT,NTQMT,KTQMAT,TIM1)
 C
 C     Calculate contribution to 3/4-transformed matrix from _one_
 C     R shell as specified in IDSNFO
@@ -1194,28 +1189,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbmp2.h"
 #include "dgroup.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
-     &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABAO(*), WORK(*),
-     &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7),
+     &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
+     &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7), DRIJ(*),
      &     ITQMT(0:7,0:7,2), IJP12(0:7), IHM(0:7), ISAMEIJ(4)
       CHARACTER*(24) TMSTMP
       LOGICAL NODV, NOPV, L2TYP(0:3)
 C
       CALL QENTER('SHLTRA')
       KFRSV1 = KFREE
-C
-C     Get screening matrices
-C
-      IF(SCRTRA.GT.0) THEN
-         DO I = 1, 4
-            ISAMEIJ(I) = I
-         ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
-     &        WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &        WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &        NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
-      ELSE 
-         KDRIJ = KFREE
-      ENDIF
 C
 C     Do a specific R shell (for all requested integral types)
 C
@@ -1345,8 +1326,9 @@ C
          NODV = NASHT.EQ.0
          NOPV = NASHT.LT.2
          CALL TIMEC('START ',TIMSTR,TIMEND)
-         CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),NODV,NOPV,GABAO,
-     &        WORK(KDRIJ),DINTSKP,SCRTRA,WORK(KFREE),LFREE,IPRINT)
+         CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),NODV,NOPV,
+     &        GABRAO,DRIJ,DINTSKP,SCRTRA,
+     &        WORK(KFREE),LFREE,IPRINT)
          CALL TIMEC('CALDIS',TIMSTR,TIMEND) 
          TIM1(1) = TIM1(1) + TIMEND - TIMSTR
 C
@@ -1909,7 +1891,7 @@ C        CALL TIMTXT(' Time used in '//TEXT//' is',TIME, LUPRI)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TSKCHK */
-      SUBROUTINE TSKCHK(MAXTSK,LENTSK,NSTR,LWORK,NODES,NSTRT,IPRINT)
+      SUBROUTINE TSKCHK(MAXTSK,LENTSK,LWORK,NODES,NOCC,IPRINT)
 C
 C     Written by Jon Laerdahl, June 1997
 C     Parallel polish by T.Saue Sep 18 1998
@@ -1917,11 +1899,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D8=8.0D0,D1=1.0D0,D2=2.0D0)
-#include "dgroup.h"
 #include "dcbmpt.h"
-      DIMENSION NSTRT(4),NSTR(2,0:2,4)
-#include "sdpre.h"
 C
 C     Maximum number of active occupied spinors in each
 C     task is either set in input (IJTSK) or
@@ -1931,7 +1909,7 @@ C
      &     'Memory available for Direct MP2 is (Words):',
      &     LWORK
       IF (IJTSK.GT.0) THEN
-        LENTSK = MIN(IJTSK,NSTRT(1))
+        LENTSK = MIN(IJTSK,NOCC)
         IF (IPRINT.GE.0) THEN
            WRITE(LUPRI,'(A,/A,I10/)') 
      &          'Maximum number of occupied spinors I and J in batch',
@@ -1940,11 +1918,11 @@ C
       ELSE
         IF(NODES.GT.1) THEN
 C....total number of tasks divided by number of nodes
-           MAXTSK = NSTRT(1)*(NSTRT(1)+1)/2
+           MAXTSK = NOCC*(NOCC+1)/2
            LENTSK = 1
-           DO IJTSK = 1,NSTRT(1)
-             NUM = INT(NSTRT(1)/IJTSK)
-             IF(MOD(NSTRT(1),IJTSK).NE.0) NUM = NUM + 1
+           DO IJTSK = 1,NOCC
+             NUM = INT(NOCC/IJTSK)
+             IF(MOD(NOCC,IJTSK).NE.0) NUM = NUM + 1
              NTSK = NUM*(NUM+1)/2
              IF(NTSK.LT.NODES) GOTO 10
              IF(NTSK.NE.MAXTSK) THEN
@@ -1958,12 +1936,12 @@ C....total number of tasks divided by number of nodes
      &        '** WARNING: More nodes than tasks !'
            ENDIF
         ELSE
-          LENTSK = NSTRT(1)
+          LENTSK = NOCC
         ENDIF 
         WRITE(LUPRI,'(A,/A,I6,A/)') 
      &     'Maximum number of occupied spinors in batch not set'//
      &     ' in input.', 
-     &     'Testing ALL spinors :',NSTRT(1),' in batch.'
+     &     'Testing ALL spinors :',NOCC,' in batch.'
         IF (IPRINT.GE.1) THEN
           WRITE(LUPRI,'(A/A/A/A/A/)')
      &          '==========================================',
@@ -1973,24 +1951,12 @@ C....total number of tasks divided by number of nodes
      &          '=========================================='
         ENDIF
       ENDIF
-      IOLD = LENTSK
-C
-C     Reduce LENTSK until we have enough space...
-C     May be done automatically when memory requirements are known.
-C
-c      IF (LENTSK.NE.IOLD) THEN
-c         IF (IPRINT.GE.1) THEN
-c            WRITE(LUPRI,'(/A,I5)') 'Batch Size Shrinked To:', LENTSK
-c            WRITE(LUPRI,'(A,I10)') 'Memory Needed In Transformation:',
-c     &           INEED
-c         ENDIF
-c      ENDIF
-      IF ((MOD(NSTRT(1),LENTSK)).EQ.0) THEN
-         NUM = NSTRT(1)/LENTSK
+      IF ((MOD(NOCC,LENTSK)).EQ.0) THEN
+         NUM = NOCC/LENTSK
          IF (IPRINT.GE.1) 
      &        WRITE(LUPRI,'(/A)') 'All Batches have same Size.'
       ELSE
-         NUM = NSTRT(1)/LENTSK + 1
+         NUM = NOCC/LENTSK + 1
          IF (IPRINT.GE.1) 
      &        WRITE(LUPRI,'(/A)') 'Last Batch has reduced Size.'
       ENDIF
@@ -2415,13 +2381,13 @@ C
      &         (NOCC(IND2).GT.LSTIR1)) THEN
           NSTRIJ(1,0,IND1) = LSTIR1-NOCC(IND1)+1
           NSTRIJ(2,0,IND1) = NOCC(IND2)-LSTIR1
-          NSTRS(1,IND1)   = NOCC(IND1)
-          NSTRS(2,IND1)   = 1
+          NSTRS(1,IND1)    = NOCC(IND1)
+          NSTRS(2,IND1)    = 1
 C     
 C       Whole batch in irrep 2
 C         
         ELSE
-          NSTRS(2,IND1)   = NOCC(IND1) - LSTIR1
+          NSTRS(2,IND1)    = NOCC(IND1) - LSTIR1
           NSTRIJ(2,0,IND1) = NOCC(IND2) - NOCC(IND1) + 1
         ENDIF
         NSTRIJ(1,1,IND1) = NSTRIJ(1,0,IND1)
@@ -2451,7 +2417,10 @@ C
       IF(IPRINT.GE.1) THEN
         WRITE(LUPRI,'(/A)') 'Task-info 2'
         WRITE(LUPRI,'(A,3I5)') 'I, J, LENTSK: ',ISPNR,JSPNR,LENTSK
-        WRITE(LUPRI,'(A,4I5/)') 'NOCC(1:4)   : ', (NOCC(I),I=1,4)
+        WRITE(LUPRI,'(A,2I5)') 'Occupied index I (first/last) :',
+     &        NOCC(1),NOCC(2)
+        WRITE(LUPRI,'(A,2I5)') 'Occupied index J (first/last) :',
+     &        NOCC(3),NOCC(4)
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '** Fermion ircop ',FREP(IFRP)
           DO K = 1,4
@@ -2587,8 +2556,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2MST */
       SUBROUTINE TR2MST(ERGMP2,WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &     KINDX,KGAB,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
-     &     ANTIS,LMP2,NDSLST,IDSLST,TIMDIS)
+     &     KINDX,KGAB,KDRIJ,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
+     &     ANTIS,LMP2,NDSLST,IDSLST,TIMDIS,DINTSKP)
 C***********************************************************************
 C
 C     Master driver for new parallel MP2 scheme.
@@ -2598,7 +2567,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "maxorb.h"
       INCLUDE 'mpif.h'
@@ -2613,7 +2582,7 @@ C
 #include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
-     &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),
+     &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),DINTSKP(8),
      &     ITQMT(0:7,0:7,2), IDSNFO(6), IRELEA(6), IBTNFO(2)
       CHARACTER*(24) TMSTMP
       DATA IRELEA /-1, 0, 0, 0, 0, 0/
@@ -2630,14 +2599,14 @@ C
       TMMP2 = 0.D0
       CALL MKNSTT(NSTR,NSTRT)
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &     KINDX,WORK(KGAB),KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
+     &     KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Task set-up
 C        Set up tasks with different batches of spinors if requested.
 C        In this parallel scheme the number of tasks is not related
 C        to the number of nodes in any way.
 C     
-      CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,1,NSTRT,IPRINT)
+      CALL TSKCHK(MAXTSK,LENTSK,LFREE,1,NSTRT(1),IPRINT)
 C ======================================================================
 C     Outer loop over batches of occupied spinors
 C ======================================================================
@@ -2650,7 +2619,7 @@ C
 C     Allocation
 C        Determine and allocate memory for 4/4 transformed matrix,
 C        WORK(K4QMAT), and accumulation matrix, WORK(K4QACC). The former
-C        will be used to recieve integrals from the slaves, the latter
+C        will be used to receive integrals from the slaves, the latter
 C        to accumulate them.
 C
          CALL PCKINI(NSTRIJ,ITQMT,NTQMT,N4QMT,IPRINT)
@@ -2664,7 +2633,8 @@ C        Set up the shells to be calculated and send out
 C        batch information (batch number and length of batch)
 C
          CALL DZERO(TIMDIS,NDSLST)
-         CALL SHLLST(NDSLST,IDSLST,INTFLG,INDX,LFREE,IPRINT,SRTSHL)
+         CALL SHLLST(NDSLST,IDSLST,INTFLG,WORK(KINDX),
+     &               LFREE,IPRINT,SRTSHL)
          IF ((IPRINT .EQ. 0) .AND. (IJBTCH .EQ. 1))
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
          IBTNFO(1) = IJBTCH
@@ -2750,6 +2720,7 @@ C
             IF (CMMNFO) WRITE(LUPRI,'(2A,I4)')
      &           ' <COMMINFO> Master received ',
      &           'fully transformed integrals from node #', NODE
+Csknecht: see if this can be replaced by MPI_REDUCE and MPI_IN_PLACE
             DO I = 1, N4QMT
                WORK(K4QACC+I-1) = WORK(K4QACC+I-1) + WORK(K4QMAT+I-1)
             END DO
@@ -2865,11 +2836,16 @@ C
       NTIM = 7*(NODES+1)
       CALL MEMGET('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KTIM),NTIM)
+        CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
       DO INOD = 1,NODES
          CALL MPI_RECV(WORK(KTIM+INOD*7),7,MPI_DOUBLE_PRECISION,
      &        INOD,96,MPI_COMM_WORLD,ISTAT,IERR)
          IF (CMMNFO) WRITE(LUPRI,*) '<COMMINFO> Master received '//
      &        'timing information from node #', INOD
+          NWHO = ISTAT(MPI_SOURCE)
+          CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
+     &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+          CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
       END DO
       CALL DIRAC_PARCTL( -1 )
 #if defined (VAR_PFS)
@@ -2908,7 +2884,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2NOD */
       SUBROUTINE TR2NOD(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &     KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &     KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2,
      &     DINTSKP,TIM1)
 C***********************************************************************
 C
@@ -2935,7 +2911,7 @@ C
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
      &     WORK(*), TIM1(7), DINTSKP(8), IDSNFO(6), IBTNFO(2),
-     &     ITQMT(0:7,0:7,2)
+     &     ITQMT(0:7,0:7,2),DRIJ(*),GABRAO(*)
       DIMENSION NSTRIJ(2,0:2,4), NSTTIJ(4), ICMOIJ(2,4)
       DIMENSION ISAMEIJ(4)
 C
@@ -2976,7 +2952,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
@@ -3031,8 +3007,8 @@ C
       CALL MPE_LOG_EVENT(9, 0, "start calc")
 #endif
       CALL SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
-     &        WORK(KINDX),INTFLG,NSTRIJ,NSTTIJ,DINTSKP,WORK(KGAB),
-     &        NDMOQR,ICMOIJ,ITQMT,NTQMT,KTQMAT,TIM1)
+     &        WORK(KINDX),INTFLG,NSTRIJ,NSTTIJ,DINTSKP,GABRAO,
+     &        WORK(KDRIJ),NDMOQR,ICMOIJ,ITQMT,NTQMT,KTQMAT,TIM1)
       INTGTH = INTGTH + 1
 C
 C     Print integrals if requested (above threshold TPRI34):
@@ -3119,6 +3095,8 @@ C
      &     '<COMMINFO> Sending timing information from node #', MYTID
       CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
      &     MPARID,96,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,
+     &          MPARID,40,MPI_COMM_WORLD,IERR)
       RETURN
 C     
  1002 FORMAT (/'Node #', I4, 
@@ -3131,7 +3109,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2PAR */
       SUBROUTINE TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &        KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2,
      &        EMP2,DINTSKP,TIM1)
 C***********************************************************************
 C
@@ -3157,7 +3135,7 @@ C
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
-      DIMENSION WORK(*),TIM1(7),DINTSKP(8)
+      DIMENSION WORK(*),TIM1(7),DINTSKP(8),GABRAO(*),DRIJ(*)
 C
 C     Initialization
 C
@@ -3175,6 +3153,7 @@ C
 C     Wait for tasks until we receive the end message
 C
   100 CONTINUE
+         CALL SLEEP(1)
          ITEST = 0
          CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)

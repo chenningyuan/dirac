@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : herdrv.F
 C
 C
@@ -72,9 +67,7 @@ C#endif
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
-C#ifdef MOD_DNF
 #include "densfit.h"
-C#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*JENGIN', '*DENSFI',
@@ -203,7 +196,8 @@ C#endif
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
       CALL DZERO(EXPKR ,3)
-CTSAUE
+      NPATOM = 0
+      CALL IZERO(IPATOM,MXCENT)
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus
 C      2 - Gaussian nucleus
@@ -241,9 +235,6 @@ C         if reading input from a terminal
          GOTO 1
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
-#ifdef MOD_ERI
-         CALL ER2INI
-#endif
          WORD = '*END OF'
          GOTO 1
   930 CONTINUE
@@ -311,7 +302,12 @@ C
             ONEPRP = .TRUE.
             GO TO 100
   110    CONTINUE
-            READ (LUCMD, *) (ORIGIN(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error in reading (ORIGIN(I),I=1,3)!'
+              WRITE(LUPRI,*) '(ORIGIN(I),I=1,3):', (ORIGIN(I),I=1,3)
+              CALL QUIT('Error in reading (ORIGIN(I),I=1,3)!')
+            ENDIF
             GO TO 100
   111    CONTINUE
             SECMOM = .TRUE.
@@ -594,10 +590,16 @@ C
             SUPMAT = .FALSE.
             GO TO 100
  170     CONTINUE
-            READ (LUCMD, *) (GAGORG(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+            ENDIF
             GO TO 100
  171     CONTINUE
-            READ (LUCMD, *) (DIPORG(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
+            ENDIF
             GO TO 100
  172     CONTINUE
             GFACDI = .TRUE.
@@ -621,7 +623,10 @@ C
             GO TO 100
  177     CONTINUE
 C&&& Nuclear model
-            READ (LUCMD, *) INUC
+            READ (LUCMD, *,IOSTAT=IOS) INUC
+            IF (IOS.NE.0) THEN
+             CALL QUIT('Error in reading nuclear model INUC  !')
+            ENDIF
             IF    (INUC.EQ.1) THEN
               GAUNUC = .FALSE.
             ELSEIF(INUC.EQ.2) THEN
@@ -638,25 +643,12 @@ C&&& MAGCOR - print magnetic coordinates
             GO TO 100
  179     CONTINUE
 C&&& JENGIN - activate J-engine
-#ifdef MOD_ERI
-            DOFCK3=.TRUE.
-#endif
             GO TO 100
  180     CONTINUE
 C&&& RUNERI - activates ERI code
-#ifdef MOD_ERI
-            RUNERI=.TRUE.
-#endif
             GO TO 100
  181     CONTINUE
-#ifdef MOD_ERI
-CC&&&& DOLINK - activates the fast exchange code
-            DOLINK = .TRUE. 
-            GO TO 100
-#endif 
  182     CONTINUE
-#ifdef MOD_ERI
-#endif
  183     CONTINUE
 
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -670,21 +662,6 @@ CC&&&& DOLINK - activates the fast exchange code
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
-#ifdef MOD_ERI
-      IF (RUNERI) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     ' Integrals are calculated using ERI '//
-     &     'instead of HERMIT (where possible)'
-      ENDIF
-      IF (DOFCK3) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     'J-engine (FCK3) used for Coulomb'
-      ENDIF
-      IF (DOLINK) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     'LinK scheme for exchange'
-      ENDIF
-#endif
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
      &    'Gaussian charge distribution.'
@@ -887,14 +864,17 @@ CC&&&& DOLINK - activates the fast exchange code
             WRITE (LUPRI,'(10X,A)')
      $       '- first electric derivatives of one-electron'
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
-	 ENDIF
+         ENDIF
       END IF
+
+! Miro: I hope that these coordinates are in atomic units
       IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Operator center:', (ORIGIN(I),I=1,3)
+     &    ' Operator center (a.u.):', (ORIGIN(I),I=1,3)
       IF (DNRM2(3,GAGORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Gauge origin   :', (GAGORG(I),I=1,3)
+     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
       IF (DNRM2(3,DIPORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Dipole origin  :', (DIPORG(I),I=1,3)
+     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
+
       IF (EXPIKR) WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Wave numbers:', (EXPKR(I),I=1,3)
       IF (SOTEST) WRITE (LUPRI,'(/,A,/)')
@@ -941,9 +921,6 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
-#ifdef MOD_ERI
-      CALL ER2INI
-#endif
  201  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -980,17 +957,9 @@ C
       CALL QUIT('No ERI 2-el. integrals in parallel code')
 #else
     6   CONTINUE
-#ifdef MOD_ERI
-        CALL ER2INP(WORD)
-#endif
       GO TO 201
 #endif
     7    CONTINUE
-#ifdef MOD_ERI
-C&&& JENGINE: Read input for J-engine for Coulom contribution
-        CALL FCK3INP(WORD)
-      GO TO 201
-#endif
     8    CONTINUE
     9    CONTINUE
       GO TO 201
@@ -1002,10 +971,6 @@ C
 #ifndef PRG_DIRAC
       CALL HRSINP(WORD)
 #endif /* ifndef PRG_DIRAC */
-#ifdef MOD_ERI
-      CALL ER2INP(WORD)
-      CALL FCK3INP(WORD)
-#endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
 C     kr and vb, April-96
@@ -1050,6 +1015,7 @@ C
 C
       RETURN
 C
+!radovan: this is unreachable!
  9000 WRITE (LUPRI,'(//A)') ' *** ERROR *** unable to open input file'
       CALL QUIT('*** ERROR (HERINP) unable to open input file (unit 5)')
       END
@@ -2262,31 +2228,9 @@ C     ********************************
 C     ***** New integral program *****
 C     ********************************
 C
-#ifdef MOD_ERI
-      IF (RUNERI) THEN
-#endif
 #if defined (VAR_MPI)
       CALL QUIT('No ERI 2-el. integrals in parallel version')
 #else
-#ifdef MOD_ERI
-         IF (IPRDEF .GT. 0) CALL TITLER('Output from ER2INT','*',126)
-C
-C        ********************************************
-C        ***** Two-electron repulsion integrals *****
-C        ********************************************
-C
-         IF (HAMILT) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            IRNTYP = 0
-            IF (DISTST) THEN
-CTROND               CALL ER2DIS(WORK,LWORK)
-            ELSE
-CTROND               CALL ER2INT(WORK,LWORK)
-            END IF
-            CALL TIMER('ERIDRV',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-         END IF
-#endif
 #endif
       END IF
 C

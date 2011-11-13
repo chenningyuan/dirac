@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : herpar.F
 C
 C
@@ -400,10 +395,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#ifdef MOD_DFT
-#include "dftcom.h"
-#include "dfterg.h"
-#endif
 #include "molinp.h"
 #include "aovec.h"
 C
@@ -559,7 +550,6 @@ C     Send SMLV1C and ONECAP,INTV1C
 #endif
 C
 C     Send parint.h
-
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -574,17 +564,14 @@ C
         CALL GET_PRIMITF()
 #endif
       END IF
-C
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
-      
       CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
 C
-      
       IF(NFMAT.GT.0) THEN
         CALL MPI_BCAST(IREPDM,NDMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -604,6 +591,10 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+      call mpi_bcast(spinfr, 1, mpi_logical, mparid,
+     &               mpi_comm_world, ierr)
+
+
 
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
@@ -633,7 +624,6 @@ C       ... broadcast screening matrix
         CALL MPI_BCAST(DMRSO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       END IF
-
 #endif
       RETURN
       END
@@ -771,11 +761,7 @@ C
          CALL DZERO(GRADEE,NUMGRA)
          IF (MAXDIF .GT. 1)
      &      CALL DZERO(HESSEE,NUMHES)
-CTROND      ELSE IF (ITYPE .EQ. 3) THEN
-CTROND         CALL DZERO(FMAT,NREQUI)
       ELSE IF (ITYPE .EQ. -5) THEN
-CTROND        CALL DZERO(FMAT,3*N2BASX)
-CMI      CALL DZERO(SUS2EL,9)
          CALL DZERO(SUS2ELBUF,9)
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,3*N2BASX)
@@ -840,12 +826,6 @@ C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
 
              CALL MPI_RECV(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,NWHO,40,
      &                MPI_COMM_WORLD,ISTAT,IERR)
-
-CMI         write(0,*) 'RVRES: received two-electron integral'//  
-CMI  &      ' susceptibilities from slaves:'            
-C             CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)               
-CMI           CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)               
-CMI          .... accumulate data from nodes into SUS2EL
               CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
 
             END IF
@@ -1110,7 +1090,7 @@ C
       CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &            IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
-     &            KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
+     &            KFMAT,KDMAT,KIFC,KIRD,KGABAO,KDMRAO,KDMRSO)
 C
       IF (FINISH) GOTO 999
 C
@@ -1133,11 +1113,7 @@ C
       ELSE IF (ITYPE .EQ.3.OR.ITYPE.EQ.9) THEN
          NREQUI = 0
          LFMAT  = NFMAT*N2BASX
-CMI      write(0,*) "node...dimens NFMAT,N2BASX:",NFMAT,N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-CMI      NUMSUS = 9
-CMI      NREQUI = 3*NNBASX + NUMSUS
-CMI      LFMAT  = 0
          LFMAT  = NFMAT*N2BASX
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
@@ -1161,8 +1137,6 @@ C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
          IF (MAXDIF.GT.1) CALL DZERO(HESSEE,NUMHES)
-CMI   ELSE IF (ITYPE .EQ. -5) THEN
-CMI      CALL DZERO(SUS2EL,NUMSUS)
       END IF
 C
 C     ***********************************
@@ -1182,7 +1156,7 @@ C
      &     MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,JPRINT,
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
      &     ICEDIF,SCREEN,WORK(KGABAO),
-     &     WORK(KDMRAO),WORK(KDMRSO),DINTSKP,RELCAL,
+     &     WORK(KDMRAO),WORK(KDMRSO),DINTSKP,RELCAL,.false.,
      &     WORK(KINDEX),WORK(KTIMES))
 C
 C     ****************************************
@@ -1210,7 +1184,7 @@ C  /* Deck rvinit */
       SUBROUTINE RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &                  IATOM,MAXDIF,MYTI,NODV,NOPV,NOCONT,RETUR,
      &                  TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
-     &                  KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
+     &                  KFMAT,KDMAT,KIFC,KIRD,KGABAO,KDMRAO,KDMRSO)
 C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
@@ -1237,10 +1211,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#ifdef MOD_DFT
-#include "dftcom.h"
-#include "dfterg.h"
-#endif
 #include "molinp.h"
 #include "nuclei.h"
 #include "infpar.h"
@@ -1262,7 +1232,6 @@ C
 #if defined (VAR_MPI)
 
       CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN
@@ -1385,9 +1354,7 @@ C
 C
       IF (NEWGEO) RDINPC = .FALSE.
 C     
-
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
-CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
 C     ... xyz input reader fails/gives wrong results from now on 
 C         in parallel if there is no update 
@@ -1447,6 +1414,9 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+
+      call mpi_bcast(spinfr, 1, mpi_logical, mparid,
+     &               mpi_comm_world, ierr)
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1513,7 +1483,7 @@ C  /* Deck parlop */
      &     THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &     SQ12EL,INDHER,INDHSQ,IODDHR,
      &     IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
-     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT,
      &     INDEX,TIMES)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
@@ -1536,7 +1506,7 @@ CMI changes from TEC for LAO
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, RELCAL,
-     &        SOFOCK
+     &        GENCNT, SOFOCK
       DIMENSION DMAT(*), FMAT(*), GMAT(*), INDHSQ(*), IODDHR(*),
      &          INDHER(*), WORK(LWORK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
@@ -1806,7 +1776,7 @@ C
      &              NOCONT,NODV,NOPV,THRESH,IPRINT,FIRST,
      &              SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &              ADISTR,DUMMY,ICEDIF,DINTSKP,
-     &              GABRAO,DMRAO,DMRSO,IREPDM,IDUMMY,IDUMMY)
+     &              GABRAO,DMRAO,DMRSO,IREPDM,IDUMMY,IDUMMY,GENCNT)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
@@ -1849,8 +1819,6 @@ C     This reduces the size of data transferred to Master.
 C     For itypes 2 and 3 this routine is called outside TWOINT,
 C     to avoid doing the same work more than once.
 C
-CMI      *** TEC entry ***
-CMI   IF (DDFOCK) THEN
       IF (DDFOCK.AND..NOT.LONDON) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
@@ -1939,11 +1907,6 @@ C
 #else
 #include "energy.h"
 #endif
-#ifdef MOD_DFT
-#include "dftcom.h"
-#include "dfterg.h"
-#include "dftbuf.h"
-#endif
 #include "suscpt.h"
 #include "infpar.h"
 #include "inforb.h"
@@ -1955,8 +1918,8 @@ C
 #if defined (VAR_MPI)
       CALL MPI_SEND(ICOUNT,1,my_MPI_INTEGER,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-#ifdef MOD_DFT
       IF(ITYPE.EQ.7) THEN
+!        radovan: this looks like unused code
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(ERGDRC,1,MPI_DOUBLE_PRECISION,MPARID,40,
@@ -1971,12 +1934,10 @@ C
      &                 MPI_COMM_WORLD,IERR)
          RETURN
       ENDIF
-#endif
+
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-CMI    write(0,*) "Node sending dintkip"
          CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-CMI    write(0,*) "Node sending fmat; N2BASX,LFMAT:",N2BASX,LFMAT
          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ELSE IF (ITYPE.EQ.2) THEN
@@ -1984,17 +1945,10 @@ CMI    write(0,*) "Node sending fmat; N2BASX,LFMAT:",N2BASX,LFMAT
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(GRADEE,NUMGRA,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-CMI - from TEC code...
       ELSE IF(ITYPE.EQ.-5) THEN 
           CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-
-CMI      write(0,*) 'SDRES: sending two-electron integral'//
-CMI  &               ' susceptibilities to master:' 
-CMI       CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)                        
           CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
-CMI       CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)                        
-CMI        ... sending to the master...
           CALL MPI_SEND(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
 

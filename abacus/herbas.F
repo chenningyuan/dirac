@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,9 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C$Id: herbas.F 7732 2008-09-16 20:30:19Z bast $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C$Id: herbas.F 11757 2010-10-10 07:06:37Z hjj $
 C
 C
 C*************************************************************
@@ -120,6 +115,7 @@ C      except for 2c NR calculations
         WRITE(LUPRI,'(A,A)')
      &    ' - basis file    : ',BASNAM
       ENDIF
+
       IF (ISET .EQ. 2) THEN
 C jan 2000 hjaaj:
 #ifdef STO3G_HUCKEL
@@ -167,8 +163,68 @@ C           ...  Ga, Ge, As, Se, Br, Kr
             CALL QUIT('BASLIB error: Huckel not defined for Z.gt.36')
          END IF
 #endif   /* STO3G-HUCKEL */
+C djw Feb 2005
+C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
-         IF (BASNAM(2:10) .EQ. 'aug-cc-pV') THEN
+         IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
+            BASTMP(1:78) = BASNAM(3:80)
+            IF (BASNAM(1:2) .EQ. 'd-') THEN
+               IAUG = 1
+            ELSE IF (BASNAM(1:2) .EQ. 't-') THEN
+               IAUG = 2
+            ELSE IF (BASNAM(1:2) .EQ. 'q-') THEN
+               IAUG = 3
+
+!radovan: added some nonstandard augmentation prefixes
+!         i need them to test high-order response
+!         use at own risk
+            else if (basnam(1:2) .eq. '5-') then
+               iaug = 4
+            else if (basnam(1:2) .eq. '6-') then
+               iaug = 5
+            else if (basnam(1:2) .eq. '7-') then
+               iaug = 6
+
+            ELSE
+               WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
+     &              'augmentation level'
+               CALL QUIT('Illegal augmentation level in HERBAS')
+            END IF
+
+#define ALLOW_NONSTANDARD_AUGMENTATION
+#ifdef ALLOW_NONSTANDARD_AUGMENTATION
+!        else if (basnam(3:15) == 'aug-Turbomole') then
+!radovan: this does not work because basis set is max 20 characters long
+         else if (basnam(3:13) == 'a-Turbomole') then
+           bastmp(1:76) = basnam(5:80)
+           if      (basnam(1:2) == 's-') then
+             iaug = 1
+           else if (basnam(1:2) == 'd-') then
+             iaug = 2
+           else if (basnam(1:2) == 't-') then
+             iaug = 3
+           else if (basnam(1:2) == 'q-') then
+             iaug = 4
+           else
+             call quit('illegal augmentation in herbas')
+           end if
+         else if (basnam(3:11) == 'aug-dyall') then
+           bastmp(1:74) = basnam(7:80)
+           if      (basnam(1:2) == 's-') then
+             iaug = 1
+           else if (basnam(1:2) == 'd-') then
+             iaug = 2
+           else if (basnam(1:2) == 't-') then
+             iaug = 3
+           else if (basnam(1:2) == 'q-') then
+             iaug = 4
+           else
+             call quit('illegal augmentation in herbas')
+           end if
+#endif /* ifdef ALLOW_NONSTANDARD_AUGMENTATION */
+
+C for backward compatibility the old notation is retained
+         ELSE IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
             BASTMP(1:79) = BASNAM(2:80)
             IF (BASNAM(1:1) .EQ. 'd') THEN
                IAUG = 1
@@ -185,6 +241,7 @@ C           ...  Ga, Ge, As, Se, Br, Kr
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
             ISTART = 6
+            !ISTART = 1
          ELSE IF (BASNAM(1:6) .EQ. 'sadlej') THEN
             SADLEJ = .TRUE.
             BASTMP = 'sadlej'
@@ -210,6 +267,17 @@ C
          POLFUN = .TRUE.
          IPOLST = IPOLST + 3
       END IF
+
+      IF (IPREAD.GE.10) THEN
+        CALL HEADER('Output from BASLIB',-1)
+        WRITE(LUPRI,*) 'ISTART=',ISTART
+        WRITE(LUPRI,'(A,A)') 'BASTMP=',BASTMP
+        WRITE(LUPRI,*) 'IPOLST=',IPOLST
+        WRITE(LUPRI,*) 'POLFUN=',POLFUN
+        WRITE(LUPRI,*) 'ANO=',ANO
+        WRITE(LUPRI,*) 'SADLEJ=',SADLEJ
+        WRITE(LUPRI,*) 'NQVD=',NQVD
+      ENDIF
 C      
 C Finds the right element in the file. 
 C
@@ -280,9 +348,10 @@ C
 C Reading the primitives and contraction-coeffecients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
+!              write(lupri,*) 'NBLOCK,ISTART=',NBLOCK,ISTART
                CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                     LUBAS)
+     +                     LUBAS,IPREAD)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FINPOS ( NEWEL, INTEXP, INTORB,
@@ -468,7 +537,6 @@ C
        write(lupri,*) 'DSM=',DSM
       ENDIF
 
-
 C
 C Initializing a counting variable that must be 0 before loop
 C
@@ -481,7 +549,17 @@ C Reading the primitive and contracted coeffecients
 C
          READ(LUBAS, '(A88)', IOSTAT = IOERR, ERR = 2000)
      +        STRING
+
+         IF (IPRINT.GE.7) THEN
+           WRITE(LUPRI,'(2X,A,A)') 'READNU: read STRING=',STRING
+         ENDIF
+
          READ (STRING, '(A1)') SIGN
+
+         IF (IPRINT.GE.7) THEN
+           WRITE(LUPRI,'(2X,A,A)') 'READNU: read SIGN=',SIGN
+         ENDIF
+
          IF (SIGN .EQ. ' ') THEN
 C
 C Calling a subroutine that checks whether the line is a blank one. If
@@ -503,7 +581,10 @@ C
 
                IF (INTORB .LE. 0) THEN
 C                 uncontracted basis set
-                  READ (STRING, '(F16.9)') ALPHA(J,NBLOCK)
+                  READ (STRING, '(F16.9)',IOSTAT=IOS) ALPHA(J,NBLOCK)
+                  IF (IOS.NE.0) THEN
+                   CALL QUIT('Error inreading sjsjd')
+                  ENDIF
 C                 skip contiuation lines for contraction coeff.
 
                   DO I = 2,NUMLIN
@@ -514,7 +595,7 @@ C                 skip contiuation lines for contraction coeff.
 
                   IF (IPRINT.GE.5) THEN
                     write(lupri,*)
-     &              'read 1 NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              'READNU read 1 - NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)',
      &              NUMLIN,J,NBLOCK,ALPHA(J,NBLOCK)
                   ENDIF
 
@@ -531,14 +612,26 @@ C
 C     
 C     Reading the first line with exponents and contraction- coeffecients
 C
-                  READ (STRING, '(F16.9, 6F12.9)')
+                  READ (STRING, '(F16.9, 6F12.9)',IOSTAT=IOS)
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
+                  IF (IOS.NE.0) THEN
+                    WRITE(LUPRI,*) 'KNTORB=',KNTORB
+                    WRITE(LUPRI,'(A,A)') 'STRING=',STRING
+                    WRITE(LUPRI,*) 'I,J,NBLOCK:',I,J,NBLOCK
+                    WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
+                    WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
+     &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
+                    CALL QUIT('Error in reading basis set...')
+                  ENDIF
 
                   IF (IPRINT.GE.6) THEN
                     write(lupri,*)
-     &              'read 2 J,NBLOCK,ALPHA(J,NBLOCK)',
+     &              'READNU read 2 - J,NBLOCK,ALPHA(J,NBLOCK)',
      &              J,NBLOCK,ALPHA(J,NBLOCK)
+                    write(lupri,*)
+     &              'READNU read 2 - CPRIMU:',
+     &              (CPRIMU(J,I,NBLOCK),I=1,KNTORB)
                   ENDIF
 C   
 C     If there are more lines with contraction-coeffecients, 
@@ -564,9 +657,18 @@ C
 C     
 C     We now have a line with contraction-coeffecients.
 C     
-                           READ (STRING,'(F16.9,6F12.9)') 
+                           READ (STRING,'(F16.9,6F12.9)',IOSTAT=IOS) 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
+                           IF (IOS.NE.0) THEN
+                             CALL QUIT('Error in reading sjjd393jdj')
+                           ENDIF
+                           IF (IPRINT.GE.6) THEN
+                             WRITE(LUPRI,*) 
+     &                       J,NLBLOCK,' CPRIMU(J,M,NBLOCK):'
+                             WRITE(LUPRI,*) ( CPRIMU(J,M,NBLOCK),
+     &                         M = CONEOR + (I-2)*CONORB +1, KNTORB )
+                           ENDIF
                         END IF
 C     
 C     Blank line read the next one
@@ -601,20 +703,61 @@ C Read all of the primitives, and the coeffecients
 C If this is some kind of augmented basis set, we augment it here, kr-96
 C
          IF (IAUG .GT. 0) THEN
-            DO 199 KAUG = 1, IAUG
-               INTEXP = INTEXP + 1
-               INTORB = INTORB + 1
-               ALPHA(INTEXP,NBLOCK) = ALPHA(INTEXP-1,NBLOCK)
-     &                               *ALPHA(INTEXP-1,NBLOCK)
-     &                               /ALPHA(INTEXP-2,NBLOCK)
-               CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+            do kaug = 1, iaug
+
+!             find lowest nonzero alpha
+!             note that they do not have to be monotonically decreasing!
+              alpha_lowest = maxval(alpha(1:intexp, nblock))
+              do iprim = 1, intexp
+                if (
+     &              (alpha(iprim, nblock) < alpha_lowest)
+     &              .and.
+     &              (alpha(iprim, nblock) > 0.0d0)
+     &             ) then
+                  alpha_lowest = alpha(iprim, nblock)
+                end if
+              end do
+
+!             find second lowest nonzero alpha
+              alpha_second_lowest = maxval(alpha(1:intexp, nblock))
+              do iprim = 1, intexp
+                if (
+     &              (alpha(iprim, nblock) < alpha_second_lowest)
+     &              .and.
+     &              (alpha(iprim, nblock) > alpha_lowest)
+     &             ) then
+                  alpha_second_lowest = alpha(iprim, nblock)
+                end if
+              end do
+
+              if (dabs(alpha_second_lowest 
+     &                    - alpha_lowest) < 1.0d-20) then
+#ifdef ALLOW_NONSTANDARD_AUGMENTATION
+!               if there is only one primitive in the original set
+!               then alpha_second_lowest equals alpha_lowest
+!               in this case alpha_second_lowest is multiplied by 3.5
+!               (factor 3.5 is my choice, no really good reason for it)
+                alpha_second_lowest = 3.5d0*alpha_lowest
+#else
+                call quit('error in automatic augmentation')
+#endif
+              end if
+
+              intexp = intexp + 1
+              intorb = intorb + 1
+
+              alpha(intexp, nblock) 
+     &            = alpha_lowest*alpha_lowest/alpha_second_lowest
+              cprimu(intexp, intorb, nblock) = 1.0d0
+            end do
 
              IF (IPRINT.GE.5) THEN
-              write(lupri,*) 'INTEXP,NBLOCK,ALPHA',
+              write(lupri,*) 'READNU:  INTEXP,NBLOCK,ALPHA',
      &         INTEXP,NBLOCK,ALPHA(INTEXP,NBLOCK)
+              write(LUPRI,*) 'READNU: CPRIMU(INTEXP,INTORB,NBLOCK) =',
+     &         CPRIMU(INTEXP,INTORB,NBLOCK)
              ENDIF
 
- 199        CONTINUE 
          END IF
 
          IF (POLFUN) THEN
@@ -655,7 +798,7 @@ C
 C/* Deck reaano */
       SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                  LUBAS)
+     +                  LUBAS,IPRINT)
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -669,7 +812,27 @@ C
 C
 C Determine number of contracted functions to be read
 C
-      IF (ANO) CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT')
+      IF (IPRINT.GE.8) THEN
+        CALL HEADER('Output from REAANO',-1)
+        wRITE(LUPRI,'(A,A)') 'BASNAM=',BASNAM
+        wRITE(LUPRI,*) 'ISTART=',ISTART
+        wRITE(LUPRI,*) 'INTEXP,INTORB=',INTEXP,INTORB
+        WRITE(LUPRI,*) 'NBLOCK=',NBLOCK
+        WRITE(LUPRI,*) ' KPRIM=',KPRIM
+      ENDIF
+
+!
+!      ISTART_ANO=10
+!     IF (ANO) CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT')
+!     IF (ANO) CALL FREFRM(BASNAM,ISTART_ANO,INTORB,DUMMY,'INT')
+
+      IF (IPRINT.GE.8) THEN
+        WRITE(LUPRI,'(/,8x,a)') 'REAANO - After FREFRM:'
+        WRITE(LUPRI,'(A,A)') 'BASNAM=',BASNAM
+        WRITE(LUPRI,*) 'ISTART=',ISTART
+        wRITE(LUPRI,*) 'INTEXP,INTORB=',INTEXP,INTORB
+      ENDIF
+
 C
  20   CONTINUE
 C
@@ -682,19 +845,33 @@ C
          DO I = 0, NUMEXP
             IF (I .EQ. NUMEXP) THEN
                IF (INTEXP .EQ. MAXEXP) THEN
-                  READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
+                  READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                              J - 1 + MAXEXP)
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('error in reading skdsjdj')
+                  ENDIF
                ELSE
-                  READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
+                  READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                    J - 1 + MOD(INTEXP,MAXEXP))
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('error in reading s233jdj')
+                  ENDIF
                END IF
             ELSE
-               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
+               READ (LUBAS,*,IOSTAT=IOS) 
+     &         (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
+               IF (IOS.NE.0) THEN
+                  CALL QUIT('error in reading 2s2adjj')
+               ENDIF
             END IF
             J = J + MAXEXP
          END DO
          DO I = 1, INTEXP
-            READ (LUBAS,*) (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+            READ (LUBAS,*,IOSTAT=IOS) 
+     &       (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('error in reading assjj')
+            ENDIF
          END DO
       ELSE
          DO I = 0, NUMEXP
@@ -725,6 +902,17 @@ C
             GOTO 33
          END IF
       END IF
+
+      IF (IPRINT.GE.10) THEN
+        WRITE(LUPRI,*) 'REAANO-read coefficients...'
+        WRITE(LUPRI,*) 'NBLOCK,INTEXP:',NBLOCK,INTEXP
+        WRITE(LUPRI,*) 'INTORB:',INTORB
+        DO I = 1, INTEXP
+          WRITE(LUPRI,*)
+     &   (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+        ENDDO
+      ENDIF
+
       RETURN
       END
 C
@@ -819,9 +1007,9 @@ C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
 C*********************************************************
       CHARACTER*(*) BASNAM
-      CHARACTER*140 STRING
+      CHARACTER*200 STRING  ! contains the full directory path
       CHARACTER SIGN
-      LOGICAL EXST
+      LOGICAL EXST, EXST2, USE_BASNAM
 #include "inftap.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -877,18 +1065,40 @@ C
 C     Inquire if "/path/basis-set" exists.
 C
       INQUIRE (FILE = STRING, EXIST = EXST)
+CMI  ... on certain systems (like PC-linux,OpenMPI-gfortran) string
+C     beginning with '/' is NOT the proper file name ! therefore
+C     continue in inquiring:
+      EXST2=EXST
+      USE_BASNAM=.FALSE.
+      IF (.NOT.EXST2) THEN
+        INQUIRE (FILE = BASNAM, EXIST = EXST)
+        IF (EXST) THEN  
+          WRITE(LUPRI,"(/,2X,A,A,/,A,A)")
+     &     "Info: used proper basis set name: ",
+     &    BASNAM,"  instead of: ",STRING
+          USE_BASNAM=.TRUE.
+        ENDIF
+      ENDIF
+        
       IF (EXST) THEN
+        IF (.NOT.USE_BASNAM) THEN
          OPEN(LUBAS, FILE=STRING)
-C
+        ELSE
+         OPEN(LUBAS, FILE=BASNAM)
+        ENDIF
+C     
 C
 C        Searching the file for the element.
 C
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
-         READ (STRING, '(A1)') SIGN
+         READ (STRING, '(A1)',IOSTAT=IOS) SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
-            READ (STRING, 110) SIGN, NUCEL
+            READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
+            IF (IOS.NE.0) THEN
+             CALL QUIT('Error in reading ... skdj3jhn33j')
+            ENDIF
  110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) THEN
                RETURN
@@ -913,6 +1123,8 @@ C
  301  CONTINUE
       WRITE (LUPRI,'(/,3A)')
      +     'Basis "',BASNAM(1:LSTR),'" doesn''t exist'
+      WRITE(LUPRI,'(2X,A,A)') 'basis name, STRING=',STRING
+      WRITE(LUPRI,'(2X,A,A)') 'basis name, BASNAM=',BASNAM
       IF (BASNAM(1:6) .EQ. 'Huckel') THEN
          WRITE (LUPRI,'(A)')
      +        'NB! Basis Huckel must be available to use Huckel guess!'
@@ -983,7 +1195,7 @@ C
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
-         READ (STRING, '(A1)') SIGN
+         READ (STRING, '(A1)', IOSTAT = IOS) SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
             ISTART = 2
             CALL FREFRM(STRING,ISTART,NUCEL,DUMMY,'INT')
@@ -1012,7 +1224,11 @@ C
                IF (NUCEL .LE. 4) THEN
                   ICONT = 1
                   DO ISLOOP = 1, ISPRIM
-                     READ (LUBAS,*) ALPHA(ISLOOP,NBLOCK), CONT
+                     READ (LUBAS,*,IOSTAT=IOS) 
+     &                ALPHA(ISLOOP,NBLOCK), CONT
+                     IF (IOS.NE.0) THEN
+                      CALL QUIT('Error in reading...sj33snxdhdi')
+                     ENDIF
                      IF (NUCEL .EQ. 1) ALPHA(ISLOOP,NBLOCK) =
      &                    ALPHA(ISLOOP,NBLOCK)*1.44D0
                      IF (ICONT .LT. ISCONT) THEN
@@ -1026,8 +1242,12 @@ C
                   ICONTS = 1
                   ICONTP = 1
                   DO IPLOOP = 1, IPPRIM
-                     READ (LUBAS,*) ALPHA(IPLOOP,NBLOCK), CONTS,
+                     READ (LUBAS,*,IOSTAT=IOS) 
+     &                     ALPHA(IPLOOP,NBLOCK), CONTS,
      &                           ALPHA(IPLOOP,NBLOCK + 1), CONTP
+                     IF (IOS.NE.0) THEN
+                        CALL QUIT('Error in reading...339sj33sdi')
+                     ENDIF
                      IF (ICONTP .LT. IPCONT) THEN
                         CPRIMU(IPLOOP,ICONTP,NBLOCK + 1) = 1.0D0
                         ICONTP = ICONTP + 1
@@ -1042,7 +1262,11 @@ C
                      END IF
                   END DO
                   DO ISLOOP = IPLOOP, ISPRIM
-                     READ (LUBAS,*) ALPHA(ISLOOP,NBLOCK), CONT
+                     READ (LUBAS,*,IOSTAT=IOS)
+     &                 ALPHA(ISLOOP,NBLOCK), CONT
+                     IF (IOS.NE.0) THEN
+                        CALL QUIT('Error in reading...3sxmek39i')
+                     ENDIF
                      IF (ICONTS .LT. ISCONT) THEN
                         CPRIMU(ISLOOP,ICONTS,NBLOCK) = 1.0D0
                         ICONTS = ICONTS + 1
@@ -1160,6 +1384,10 @@ C* Based on FINPOS, LV, 14-5-2003                         *
 C*********************************************************
 #include "implicit.h"
 #include "priunit.h"
+#ifdef VAR_MPI
+#include "infpar.h"
+#endif
+
       CHARACTER*80 LINE,BASREF(10), BASNAM
 C*********************************************************
 C* Variable declarations:                                *
@@ -1186,7 +1414,7 @@ C
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
       IF (IOERR .NE. 0) GO TO 200
-      READ (STRING, '(A1)') SIGN
+      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
 C
       IF (SIGN .EQ. '$') THEN
          IF (IREF.EQ.0) THEN
@@ -1217,10 +1445,29 @@ C No documentation when end of file is found
 C
  200  CONTINUE
  1000 CONTINUE
-      WRITE (LUPRI,'(//A,I5/2A/)')
-     &     'Error in reading basis set file, your basis '//
-     &     'has no documentation. IOSTAT code:',IOERR,
+!radovan: this error printout below is quite annoying
+!         when you use own libraries to organize basis sets
+!         then you may get lots (nr of processors)
+!         of these messages
+CMI: well, rather use warning message
+CMI   WRITE (LUPRI,'(//A,I5/2A/)')
+CMI  &     'Error in reading basis set file, your basis '//
+CMI  &     'has no documentation. IOSTAT code:',IOERR,
+CMI  &     'Basis set: ',BASNAM
+#ifdef VAR_MPI
+!     print only from one process
+      if (mytid == 1) then
+#endif
+      WRITE (LUPRI,'(A,/,A,A)')
+     &     'Info(warning) about the basis set file: your basis '//
+     &     'has no documentation.',
      &     'Basis set: ',BASNAM
+#ifdef VAR_MPI
+      end if
+#endif
+
+Chj   CALL QUIT('Incomplete basis set file in HERBAS')
+
 Chj   CALL QUIT('Incomplete basis set file in HERBAS')
       RETURN
       END
@@ -1261,7 +1508,7 @@ C
  20   CONTINUE
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
-      READ (STRING, '(A1)') SIGN
+      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
 C
       IF (SIGN .EQ. ' ') THEN
 C
@@ -1271,7 +1518,10 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          IF (BLANK) THEN
             GOTO 20
          ELSE
-            READ (STRING, '(BN,3I5)') INTEXP, INTORB, INTISG
+            READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading ... ssjdjncncbhd')
+            ENDIF
             IF (IPRINT.GE.10) THEN
              write(lupri,'(/,2X,A)') 'Output from FINPOS...reading'
              write(lupri,*) 'INTEXP, INTORB, INTISG',

@@ -1,10 +1,11 @@
+! FILE : gp_dlapack.F
 !
 ! lapack double routines, taken from the netlib site on 20080612
 !
 !         http://www.netlib.org/lapack/double/
 !
 !
-! $Id: gp_dlapack.F 7107 2008-06-12 16:18:47Z gomes $
+! $Id: gp_dlapack.F 11735 2010-10-09 04:27:25Z hjj $
 !
 #ifdef USE_DIRAC_DLAPACK
       SUBROUTINE DBDSDC( UPLO, COMPQ, N, D, E, U, LDU, VT, LDVT, Q, IQ,

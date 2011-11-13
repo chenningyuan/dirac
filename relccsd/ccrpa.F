@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : ccrpa.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -253,8 +248,8 @@ C
  6001 FORMAT(2X,I3,5X,2F20.15,13X,E10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'NIT',12X,' << ',A8,' ; ',A8,' >>',20X, 'RMS')
- 6004 FORMAT (//' Requested convergence not reached in RPA : RMS = ',
-     & F20.15)
+ 6004 FORMAT (//' WARNING: Requested convergence not reached in RPA :'
+     &        ' RMS = ',F20.15)
  6071 FORMAT(//,'  RPA results',//3X,'Propagator',12X,'Frequency',13X,
      & 'Real part',8X,'Imaginary part')
  6072 FORMAT('@ <<',A8,';',A8,'>> ','(',F10.5,')',T40,2F20.13)
@@ -428,8 +423,8 @@ C
  6001 FORMAT(2X,2I5,5X,F20.15,13X,E10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'Iter. Root  Excitation energy',20X, 'CNV')
- 6004 FORMAT (//' Requested convergence not reached in RPAB : CNV = ',
-     & F20.15)
+ 6004 FORMAT (//' WARNING: Requested convergence not reached in RPAB ',
+     &        ': CNV = ',F20.15)
  6071 FORMAT(//,'  Excitation energy ',12X,'Frequency',13X,
      & 'Real part',8X,'Imaginary part')
  6072 FORMAT(' <<',A8,';',A8,'>> ','(',F10.5,')',T40,2F20.13)

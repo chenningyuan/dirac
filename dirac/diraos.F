@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck getrho */
       SUBROUTINE GETRHO(RHO,IREPOP,GAO,DMAT,BUF)
@@ -237,7 +234,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getsos */
       SUBROUTINE GETSOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
-     &                  BUF,WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &                  BUF,NBAST,NDER,DOLND,IPRINT)
 C***********************************************************************
 C
 C     Calculate value of symmetry-adapted basis functions in a given
@@ -250,11 +247,11 @@ C***********************************************************************
 #include "priunit.h"
 #include "dgroup.h"
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &          GAB1(NBAST,3), BUF(NBAST),WORK(LWORK), NCNT(NBAST)
+     &          GAB1(NBAST,3), BUF(NBAST), NCNT(NBAST)
 C
 C     First get values for the Ao-basis
       CALL GETAOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
-     &            WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &            NBAST,NDER,DOLND,IPRINT)
       IF(NBSYM.EQ.1) RETURN
 C
 C     Functions
@@ -280,7 +277,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C  /* Deck getaos */
       SUBROUTINE GETAOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
-     &                  WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+     &                  NBAST,NDER,DOLND,IPRINT)
 C
 C     T. Helgaker sep 99
 C
@@ -292,7 +289,7 @@ C
 C   
       LOGICAL DOLND
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &          GAB1(NBAST,3), WORK(LWORK), NCNT(NBAST)
+     &          GAB1(NBAST,3), NCNT(NBAST)
 C
 #include "dcbham.h"
 #include "onecom.h"
@@ -315,6 +312,10 @@ Caspg+rb, 2006-09-21
 
 !     if Levy-Leblond or IOTC
 !     don't work on small component shells
+
+!radovan:
+!     comment out this check (= include all shells) if you wish
+!     to calculate the relativistic current with Levy-Leblond
       IF (MC .EQ. 1) ISHEND = NLRGSH
 
       DO 100 ISHELA = ISHBEGIN,ISHEND
@@ -371,18 +372,18 @@ C
           WRITE (LUPRI,'(A,3F12.6)') ' CORP ', CORPX,CORPY,CORPZ 
           IF (IPRINT .GT. 200) THEN
              CALL HEADER('Undifferentiated integrals at this point:',-1)
-             CALL OUTPUT(GAO,1,1,1,NBAST,1,NBAST,1,LUPRI)
+             CALL OUTPUT(GAO,1,1,1,NBAST,1,NBAST,-1,LUPRI)
              IF (NDER.GT.0) THEN
                CALL HEADER('1st derivative integrals at this point:',-1)
-               CALL OUTPUT(GAO1,1,NBAST,1,3,NBAST,3,1,LUPRI)
+               CALL OUTPUT(GAO1,1,NBAST,1,3,NBAST,3,-1,LUPRI)
              END IF
              IF (NDER.GT.1) THEN
                CALL HEADER('2nd derivative integrals at this point:',-1)
-               CALL OUTPUT(GAO2,1,NBAST,1,6,NBAST,6,1,LUPRI)
+               CALL OUTPUT(GAO2,1,NBAST,1,6,NBAST,6,-1,LUPRI)
              END IF
              IF (DOLND) THEN
                CALL HEADER('London der. integrals at this point:',-1)
-               CALL OUTPUT(GAB1,1,NBAST,1,3,NBAST,3,1,LUPRI)
+               CALL OUTPUT(GAB1,1,NBAST,1,3,NBAST,3,-1,LUPRI)
              END IF
           END IF
           WRITE (LUPRI,'(1X,A)') ' '
@@ -760,97 +761,3 @@ C
   100 CONTINUE
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine get_gradient_nh_sub(component,
-     &                               gaol,
-     &                               gaor,
-     &                               irepop,
-     &                               dmat,
-     &                               buf)
-C***********************************************************************
-C
-C     quick adaptation of GETRH1 for the release ... (radovan)
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
-C
-#include "dcbham.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION gaol(NBAST),gaor(NBAST),DMAT(NBAST,NBAST),BUF(*)
-#else
-      DIMENSION gaol(NTBAS(0)),gaor(NTBAS(0)),
-     &          DMAT(NTBAS(0),NTBAS(0)),BUF(*)
-#endif
-C
-#include "ibtfun.h"
-C      
-      do ic = 1, mc
-      DO 10 IRP1 = 0,NBSYM-1
-        NB1 = NBBAS(IRP1,IC)
-        IF(NB1.EQ.0) GOTO 10
-        JB1 = IBBAS(IRP1,IC)+1
-        IRP2 = IBTXOR(IRP1,IREPOP)
-        NB2 = NBBAS(IRP2,IC)
-        IF(NB2.EQ.0) GOTO 10
-        JB2 = IBBAS(IRP2,IC)+1
-        CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
-     &             DMAT(JB1,JB2),NTBAS(0),gaor(JB2),1,D0,BUF,1)
-        component = component + DDOT(NBBAS(IRP1,IC),gaol(JB1),1,BUF,1)
-   10 CONTINUE
-      end do
-C
-      END
-c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine get_gradient_nh(gradient,
-     &                           irepop,
-     &                           gao,
-     &                           gao1,
-     &                           dmat,
-     &                           buf)
-c=======================================================================
-c                                                           radovan bast
-c                                               last revision: july 2007
-c=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      dimension gradient(3),
-     &          gao(*),
-     &          gao1(*),
-     &          dmat(*),
-     &          buf(*)
-
-#include "dcbbas.h"
-
-#if defined (VAR_G77) || defined (SYS_SX)
-      equivalence (nbast, ntbas(0))
-      joff = nbast
-#else
-      joff = ntbas(0)
-#endif
-
-      call dzero(gradient, 3)
-
-      do ixyz = 1,3
-
-        call get_gradient_nh_sub(gradient(ixyz),
-     &                           gao,
-     &                           gao1(1+joff*(ixyz-1)),
-     &                           irepop,
-     &                           dmat,
-     &                           buf)
-        call get_gradient_nh_sub(gradient(ixyz),
-     &                           gao1(1+joff*(ixyz-1)),
-     &                           gao,
-     &                           irepop,
-     &                           dmat,
-     &                           buf)
-      enddo
-
-      end

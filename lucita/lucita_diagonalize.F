@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -90,7 +87,8 @@ C     DIMENSION INIDET(100)
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
-      DIMENSION EROOTL(NROOTSL), RCCTOS(*)
+      DIMENSION EROOTL(NROOTSL)
+      INTEGER   RCCTOS(*)
 C
 C     parameter used in parallel scheme /sk march 2007/
 C
@@ -3410,7 +3408,7 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        END IF
        KAPROJ = 1
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-8
+       TEST = 1.0D-4
        CONVER = .FALSE.
 *
 * ===================

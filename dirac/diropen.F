@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : diropen.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -95,7 +90,7 @@ C     Transform FD to MO-basis
 C     ========================
 C
       DO I = 1,NFSYM
-      IF(NORB(I).GT.0) THEN
+      IF(NTMO(I).GT.0) THEN
         IF(SUB_BL) THEN
           CALL TSUBBL(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE           
@@ -329,38 +324,38 @@ C              Transform with inverse T from left and right
 C              Store the result in DTEMP1(1,1)
 C
                CALL QTRANS('AOMO','S',D0,
-     &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &           NFBAS(I,0),NFBAS(I,0),NTMO(I),NTMO(I),
      &           DTEMP2(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &           DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &           TDINV(IOFFTDINV),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &           TDINV(IOFFTDINV),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           DTEMP1(1+I2TMOT(I),1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &           TDINV(IOFFTDINV),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
+     &           TDINV(IOFFTDINV),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRSCF)
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
                   CALL HEADER('MKMOFK: Correction matrix in MO-basis'//
      &               ' step 1, corep '//CTMP,-1)
-                  CALL PRQMAT(DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+                  CALL PRQMAT(DTEMP1(1+I2TMOT(I),1),NTMO(I),NTMO(I),
+     &               NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
 C
 C              Calculate A + At
 C
-               CALL SUMMMH(DTEMP1(1+I2ORBT(I),1),NORB(I),NZ,
-     &                  NORB(I),NORB(I))
+               CALL SUMMMH(DTEMP1(1+I2TMOT(I),1),NTMO(I),NZ,
+     &                  NTMO(I),NTMO(I))
                IF ( IPRSCF .GE. 10 ) THEN
                   WRITE(CTMP,'(I1)') I
                   CALL HEADER('MKMOFK: Correction matrix in MO-basis'//
      &               ' step 2, corep '//CTMP,-1)
-                  CALL PRQMAT(DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+                  CALL PRQMAT(DTEMP1(1+I2TMOT(I),1),NTMO(I),NTMO(I),
+     &               NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
 C
 C              Sum up FD + A
 C
-               CALL QAXPY(N2ORB(I),'N','N',D1,IPQTOQ(1,0),1,
-     &            DTEMP1(1+I2ORBT(I),1),N2ORB(I),1,
+               CALL QAXPY(N2TMO(I),'N','N',D1,IPQTOQ(1,0),1,
+     &            DTEMP1(1+I2TMOT(I),1),N2TMO(I),1,
      &            IPQTOQ(1,0),NZ,
-     &            FMO(1+I2ORBT(I)),N2ORB(I),1,
+     &            FMO(1+I2TMOT(I)),N2TMO(I),1,
      &            IPQTOQ(1,0),NZ)
 
                IF ( IPRSCF .GE. 7 ) THEN
@@ -368,12 +363,11 @@ C
      &            'MKMOFK: Total Fock matrix (output) in MO-basis',-1)
                    WRITE(LUPRI,'(A,I1,A,I1)')
      &             '* Fermion ircop no.',I,'/',NFSYM 
-                  CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+                  CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &               NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
             END IF
-CMI         IOFFTDINV = IOFFTDINV + NZ*NORB(I)*NFBAS(I,0)
-            IOFFTDINV = IOFFTDINV + NZT*NORB(I)*NFBAS(I,0)
+            IOFFTDINV = IOFFTDINV + NZT*NTMO(I)*NFBAS(I,0)
  20      CONTINUE
  10   CONTINUE
 C

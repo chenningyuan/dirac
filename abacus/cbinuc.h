@@ -1,2 +1,3 @@
+      INTEGER         IPRINT, MAXDIF
       LOGICAL         SKIP, CUT
       COMMON /CBINUC/ IPRINT, SKIP, MAXDIF, CUT

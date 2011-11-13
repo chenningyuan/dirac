@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,9 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C$Id: abaop2.F 7732 2008-09-16 20:30:19Z bast $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C$Id: abaop2.F 11757 2010-10-10 07:06:37Z hjj $
 C
 C#include "single.h"
 #ifdef UNDEF
@@ -599,5 +594,18 @@ C
          CALL HEADER('Image mode eigenvector',1)
          CALL OUTPUT(EVEC,1,ICRD,IMODE,IMODE,MXRCRD,MXRCRD,1,LUPRI)
       END IF
+      RETURN
+      END
+C  /* Deck numcrd */
+      SUBROUTINE NUMCRD(ICART, IINT)
+C
+C     Simply returns the number of Cartesian (total) coordinates and
+C     the number of redundant internal coordinates.
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+      ICART = ICRTCR
+      IINT  = IINTCR
       RETURN
       END

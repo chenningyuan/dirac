@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : traprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -81,6 +76,17 @@ C
           IR(2,I) =  NESH(I)
         ENDDO
       ENDIF
+!
+!.s/sya,2007.0907,add/ - SK - 30-11-2009
+      IF( PRPSYA ) THEN
+        WRITE(LUPRI,"(
+     &    '* Setting MO range in property integral transformation')")
+        DO IFRP = 1, NFSYM
+          TRA2_INDSTR(1,IFRP) = TRA2_INDPRP(IFRP)
+          TRA2_INDSTR(2,IFRP) = TRA2_INDPRP(IFRP)
+        END DO
+      END IF
+!.q
 C
       DO I = 1,2
         NSTRT(I) = 0
@@ -89,7 +95,7 @@ C
           NSTR(IFRP,0,I) = 1
           CALL  NUMLST(TRA2_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -112,6 +118,22 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+#ifdef MOD_KRMC
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      IF (TOBEK) THEN 
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','TRAPRP')
+         JRDMO = -1
+         CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF (JRDMO .EQ. 0) THEN
+            IF (IPRTRP .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     &              ' (TRAPRP)  Orbitals read from' //
+     &              ' label NEWORB on file KRMCSCF'
+            END IF
+         END IF
+         CLOSE (LUKRMC)
+      ELSE
+#endif /* MOD_KRMC */
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
          IF (.NOT.TOBE) THEN
             WRITE(LUPRI,'(A)') 'Coefficient file not present'
@@ -121,6 +143,9 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Get the boson symmetries of the transformed spinors
 C
@@ -395,7 +420,7 @@ C     totally symmetric matrices) it not necessary to do this because
 C     the combination with totally symmetric spinor products 
 C     makes that the phase factors cancel. 
 C
-      IF (LEVYLE.OR.SPINFR) THEN
+      IF (SPINFR) THEN
       CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
       DO IZ = 1, NZ
 C       Determine the boson character of the operator and the

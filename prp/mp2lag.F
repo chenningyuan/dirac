@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mpglvc */
       SUBROUTINE MPGLVC(DMO,XMO,WORK,KFREE,LFREE,KFLG)
@@ -152,7 +149,7 @@ C
 C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
 C            
 
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /)) 
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)

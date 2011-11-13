@@ -1,29 +1,3 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7734 $
-C DATE    : $Date: 2008-09-16 22:56:42 +0200 (Tue, 16 Sep 2008) $
 C FILE    : linextra.F
 C
 C
@@ -901,3 +875,35 @@ C
       NDXGTA = NUM
       RETURN
       END
+C  /* Deck dgetrn */
+      SUBROUTINE DGETRN(AGE,NROWA,NRDIMA)
+C
+C 3-Apr-1987 HJAaJ (DGETRS)
+C 900108-hjaaj: block with NBLK for reduced paging
+C   when virtual memory
+C new name 971103-hjaaj (old name DGETRS was same as 
+C   a routine in LAPACK for solving linear equations;
+C   when linking with complib on SGI/IRIX the LAPACK routine
+C   was loaded instead of this one).
+C
+C Replace AGE by AGE(transposed)
+C
+#include <implicit.h>
+      DIMENSION AGE(NRDIMA,*)
+      PARAMETER (NBLK = 128)
+      DO 400 JBLK = 1,NROWA,NBLK
+         JEND = MIN(NROWA,JBLK-1+NBLK)
+         DO 300 IBLK = 1,JBLK,NBLK
+            IEND = MIN(NROWA,IBLK-1+NBLK)
+            DO 200 J = JBLK,JEND
+               DO 100 I = IBLK,MIN(J-1,IEND)
+                  SWAP     = AGE(I,J)
+                  AGE(I,J) = AGE(J,I)
+                  AGE(J,I) = SWAP
+  100          CONTINUE
+  200       CONTINUE
+  300    CONTINUE
+  400 CONTINUE
+      RETURN
+      END
+

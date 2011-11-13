@@ -1,0 +1,30 @@
+**DIRAC
+.TITLE
+ DFT linear response run with the GRAC asymptotic correction
+.WAVE FUNCTION
+.PROPERTIES
+**HAMILTONIAN
+.LEVY-LEBLOND
+.DFT
+ PBE0
+*DFT
+.ALDA
+.GRAC
+LB94
+0.5 40.0 0.79248 1.0D-2
+.ZIPGRID
+.COARSE         !for the test we use a coarse grid
+**INTEGRALS
+.NUCMOD
+ 1
+**WAVE FUNCTION
+.DHF
+*DHFCAL
+.EVCCNV
+ 1.0E-5         !we use poor convergence threshold for the test
+**PROPERTIES
+.POLARIZABILITY
+*EXPECTATION
+.OPERATOR
+ ZZSECMOM
+*END OF

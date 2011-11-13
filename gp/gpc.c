@@ -1,29 +1,28 @@
 /*
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-*/
+ *     Copyright (c) 2010 by the authors of DIRAC.
+ *     All Rights Reserved.
+ *
+ *     This source code is part of the DIRAC program package.
+ *     It is provided under a written license and may be used,
+ *     copied, transmitted, or stored only in accordance to the
+ *     conditions of that written license.
+ *
+ *     In particular, no part of the source code or compiled modules may
+ *     be distributed outside the research group of the license holder.
+ *     This means also that persons (e.g. post-docs) leaving the research
+ *     group of the license holder may not take any part of Dirac,
+ *     including modified files, with him/her, unless that person has
+ *     obtained his/her own license.
+ *
+ *     For information on how to get a license, as well as the
+ *     author list and the complete list of contributors to the
+ *     DIRAC program, see: http://dirac.chem.vu.nl
+ */
+
 /*
  *
- * VERSION : $Revision: 7750 $
- * DATE    : $Date: 2008-09-17 13:58:49 +0200 (Wed, 17 Sep 2008) $
+ * VERSION : $Revision: 11757 $
+ * DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
  * FILE    : gpc.c
  *
  * frac2i:
@@ -46,14 +45,12 @@
 #include <sys/resource.h>
 #include "patchlevel.h"
 #include "compinfo.h"
+#include "fortran_interface.h"
 
-
-#ifndef  NO_C99
-#include <stdint.h>
-typedef int64_t int_star_8_t;
-#else
-typedef long int_star_8_t; /* This should be long long on many machines. */
-#endif
+void printaddr_(void *p)
+{
+   fprintf(stderr,"Address is %p\n",p);
+}
 
 
 /*
@@ -108,7 +105,7 @@ static void print_time(time_t secs, FILE *dst)
 }
 
 /* Start timers, or stop and print cpu and wall time*/
-void stopwatch_(int *start, int *node_nr)
+void stopwatch_(fortran_int_t *start, fortran_int_t *node_nr)
 {
     static struct timeval start_wall;
     if (*start)
@@ -120,15 +117,24 @@ void stopwatch_(int *start, int *node_nr)
 	struct rusage rusage;
 	if (getrusage(RUSAGE_SELF,&rusage) == 0)
 	{
-	    /* These are the fields supported by linux, we may add others on other systems. See the man page of getrusage*/
+	  /* These are the fields supported by linux, we may add others on other systems. See the man page of getrusage*/
+         /* miro: deactivated, because often it's beeing printed among master data, hurting thus output
+
 	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld\n",
 		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
 		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
+          */
 	}
+
 	if (*node_nr == 0) /* print wall time only on the master */
 	{
 	    struct timeval end_wall;
 	    gettimeofday(&end_wall, NULL);
+
+	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld, maxrss: %ld\n",
+		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
+		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
+
 	    printf(">>>> Total WALL time used in DIRAC: ");
 	    print_time(end_wall.tv_sec - start_wall.tv_sec,stdout);
 	    printf("\n");
@@ -136,7 +142,7 @@ void stopwatch_(int *start, int *node_nr)
     }
 }
 
-void sysinf_(int *parcal)
+void sysinf_(fortran_int_t *parcal)
 
 {
    struct utsname *un;
@@ -163,12 +169,16 @@ void sysinf_(int *parcal)
 
    /* Information about compilation */
 
-   printf(" Last compilation  : %s %s (by %s@%s)\n", 
-      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED);
+   printf(" Last compilation  : %s %s (by %s@%s:%s)\n", 
+      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED, COMPILED_DIRAC_DIR);
 
    printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);
-   printf(" Changeset         : %s \n", VERSION);
+   printf(" External libraries: %s \n", LIBRARIES);
+   printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
+   printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
+   printf(" SVN URL           : %s \n", DIRAC_SVN_URL);
+   printf(" SVN Revision      : %s \n", DIRAC_SVN_REVISION);
    fflush(stdout);
    free(un);
 }
@@ -176,9 +186,9 @@ void sysinf_(int *parcal)
 #define quit        quit_
     /* NOTE: if this does not link with the FORTRAN subroutine QUIT,
      * then try quit without the underscore */
-extern void quit(const char* str, int len);
+extern void quit(const char* str, fortran_int_t len);
 
-void compoff_(double *wrk, double *work, int_star_8_t *k_offset) {
+void compoff_(double *wrk, double *work, fortran_int8_t *k_offset) {
   *k_offset = wrk-work+1;
 /* Aug 2008: compoff_ shall always return k_offset as a FORTRAN INTEGER*8
  * so that we don't get nonsense if address difference is bigger than 31
@@ -189,8 +199,8 @@ void compoff_(double *wrk, double *work, int_star_8_t *k_offset) {
   {
     printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
     printf( "compoff: wrk=%p work=%p diff=%d\n", wrk, work, wrk-work+1);
-    printf( "k_offset=%d\n", *k_offset );
-    printf( "int %d long %d short int %d int_star_8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(int_star_8_t));
+    printf( "k_offset=%li\n", (long)*k_offset );
+    printf( "int %d long %d short int %d fortran_int8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(fortran_int8_t));
     quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
     exit(1);
   }
@@ -246,7 +256,7 @@ void distribute_env(const char* name, int mytid)
 #endif
 }
 
-int icommsize_(const int *istart, const int *iend)
+int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 {
   return iend-istart+1;
 }
@@ -256,7 +266,7 @@ int icommsize_(const int *istart, const int *iend)
   Workaround for buggy fortran SYSTEM() on some
   platforms (intel fortran 8.x-9.x)
 */
-int csystem_(const char *cmd, int cmdlen)
+int csystem_(const char *cmd, fortran_int_t cmdlen)
 {
   int i;
   char *s;
@@ -281,7 +291,7 @@ int csystem_(const char *cmd, int cmdlen)
 #include <time.h>
 #include <unistd.h>
 
-void unlink_(char * fname, int len)
+void unlink_(char * fname, fortran_int_t len)
 {
   int i;
   for(i=len; i>0 && !isspace(fname[i]); i--)
@@ -290,7 +300,7 @@ void unlink_(char * fname, int len)
   unlink(fname);
 }
 
-void getenv_(const char* str, char* val, int strl, int vall)
+void getenv_(const char* str, char* val, fortran_int_t strl, fortran_int_t vall)
 {
   char name[32];
   char *envv;
@@ -311,7 +321,7 @@ void getenv_(const char* str, char* val, int strl, int vall)
     val[i] = ' ';
 }
 
-void system_(char* str, int len)
+void system_(char* str, fortran_int_t len)
 {    
     char *buf = alloca(len+1);
     buf[len] = 0;
@@ -319,7 +329,7 @@ void system_(char* str, int len)
     printf("VAR_IFC defined. Ignoring call system(%s)\n",buf);
 }
 
-void flush_(int* lu)
+void flush_(fortran_int_t* lu)
 {
   /* no flushing */
 }
@@ -336,7 +346,7 @@ float etime_(float* et)
   return et[0] + et[1];
 }
 
-void fdate_(char* dt, int dtlen)
+void fdate_(char* dt, fortran_int_t dtlen)
 {
   time_t curr_time;
   time(&curr_time);
@@ -348,7 +358,7 @@ int time_(void)
   return (int)time(NULL);
 }
 
-void hostnm_(char* buf, int buflen)
+void hostnm_(char* buf, fortran_int_t buflen)
 {
   int i;
   gethostname(buf, buflen);
@@ -357,8 +367,16 @@ void hostnm_(char* buf, int buflen)
     buf[i] = ' ';
 }
 
-double* malloc_(int cnt)
+double* malloc_(fortran_int_int cnt)
 {
   return malloc(cnt);
 }
 #endif /* VAR_IFC */
+
+/* Try to cause a segmentation fault, to enable debuggers to
+   trap this and inspect the program.
+*/
+void crash_(void)
+{
+  *(int *)0 = 0;
+}

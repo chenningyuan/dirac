@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,16 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
-C FILE    : her1pro.F
-C
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C  /* Deck pr1int */
       SUBROUTINE PR1INT(WORD,WORK,LWORK,IORDER,NPQUAD,
      &                  TRIANG,PROPRI,IPRINT)
@@ -176,6 +166,11 @@ C     *******************************
 C     ****** Process integrals ******
 C     *******************************
 C
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(2(A,I5),5X,A,I15)')
+     &   '* PR1IN1: INTTYP = ',INTTYP,
+     &   ' NOPTYP= ',NOPTYP,' NELMNT= ',NELMNT
+      ENDIF
       KSOINT = KLAST
       KLAST  = KSOINT + NOPTYP*NELMNT
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1IN1','PR1IN2',KLAST,LWORK)
@@ -282,7 +277,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 77)
+      PARAMETER (NTABLE = 96)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -295,29 +290,54 @@ C
 #include "nuclei.h"
 #include "huckel.h"
 #include "cbihr1.h"
-C
+!                   1          2          3          4
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
+!                   5          6          7          8
      &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ',
+!                   9         10         11         12
      &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ',
+!                  13         14         15         16
      &            'SPIN-DI', 'DSO    ', 'SDFC   ', 'HDO    ',
+!                  17         18         19         20
      &            'S1MAG  ', 'S2MAG  ', 'ANGLON ', 'ANGMOM ',
+!                  21         22         23         24
      &            'LONMOM ', 'MAGMOM ', 'KINENER', 'DSUSNOL',
+!                  25         26         27         28
      &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO',
+!                  29         30         31         32
      &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC',
+!                  33         34         35         36
      &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ',
+!                  37         38         39         40
      &            'NUCPOT ', 'HBDO   ', 'SQHDO  ', 'DSUSCGO',
+!                  41         42         43         44
      &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
+!                  45         46         47         48
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
+!                  49         50         51         52
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
+!                  53         54         55         56
      &            'S1ELB  ', 'ONEELD ', 'PVC    ', 'EFT    ',
-     &            'EFTNTL ', 'NUCFIEL',
-     &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
-     &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
-     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
-     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ','SOPPINT',
-     &            'CAPD_VD', 'XXXXXXX', 'XXXXXXX','XXXXXXX'
-     &                         /
-
+!                  57         58         59         60
+     &            'EFTNTL ', 'NUCFIEL', 'RM1H3  ', 'RM1RN  ', 
+!                  61         62         63         64
+     &            'RM1H2  ', 'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 
+!                  65         66         67         68
+     &            'RM2H3  ', 'RM2H2  ', 'CAP_RE ', 'CAP_IM ', 
+!                  69         70         71         72
+     &            'CAP_OVL', 'CAPD1R ', 'CAPD1I ', 'CAPDVE ', 
+!                  73         74         75         76
+     &            'SOPPINT', 'CAPD_VD', 'G1O    ', 'G1N    ', 
+!                  77         78         79         80
+     &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
+!                  81         82         83         84
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'xxxxxxx', 
+!                  85         86         87         88
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+!                  89         90         91         92
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
+!                  93         94         95         96
+     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx'/
 C
 #include "ibtfun.h"
 C
@@ -331,12 +351,32 @@ C
       SOLVNT = .FALSE.
       DO 100 I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
-            GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
-     &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55,56,57,58,
-     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74
-     &             ), I
+            GO TO (
+     &               1,  2,  3,  4,
+     &               5,  6,  7,  8,
+     &               9, 10, 11, 12,
+     &              13, 14, 15, 16,
+     &              17, 18, 19, 20,
+     &              21, 22, 23, 24,
+     &              25, 26, 27, 28,
+     &              29, 30, 31, 32,
+     &              33, 34, 35, 36,
+     &              37, 38, 39, 40,
+     &              41, 42, 43, 44,
+     &              45, 46, 47, 48,
+     &              49, 50, 51, 52,
+     &              53, 54, 55, 56,
+     &              57, 58, 59, 60,
+     &              61, 62, 63, 64,
+     &              65, 66, 67, 68,
+     &              69, 70, 71, 72,
+     &              73, 74, 75, 76,
+     &              77, 78, 79, 80,
+     &              81, 82, 83, 84,
+     &              85, 86, 87, 88,
+     &              89, 90, 91, 92,
+     &              93, 94, 95, 96
+     &            ), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -568,7 +608,7 @@ C
          INTTYP = 9
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of one-electron Fermi contact integrals.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GO TO 200
@@ -888,7 +928,7 @@ C
          INTTYP = 26
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of nuclear shieldings without London contr.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSNL',
      &               INTADR)
          ANTI = .FALSE.
@@ -929,8 +969,8 @@ C
          INTTYP = 29
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -941,7 +981,7 @@ C
          INTTYP = 30
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        ' Calculation of electric field gradients (cartesian)'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL EFGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
@@ -1095,7 +1135,7 @@ C
          INTTYP = 38
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Calculation of nuclear shieldings with common gauge origin'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'NSCO',
      &               INTADR)
          ANTI = .FALSE.
@@ -1163,24 +1203,34 @@ C
          INTTYP = 42
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Calculation of first magnetic derivative of electric field'
-         NOPTYP  = 3
+         NOPTYP  = 9
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         EFDIR = FIELD1(1:1)
-         LABINT(1) = EFDIR//'-CM1 X'
-         LABINT(2) = EFDIR//'-CM1 Y'
-         LABINT(3) = EFDIR//'-CM1 Z'
-         IF (EFDIR .EQ. 'X') THEN
-            IRET = 1
-         ELSE IF (EFDIR .EQ. 'Y') THEN
-            IRET = 2
-         ELSE
-            IRET = 3
-         END IF
-         INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(IRET,1))
-         INTREP(2) = IBTXOR(ISYMAX(2,2),ISYMAX(IRET,1))
-         INTREP(3) = IBTXOR(ISYMAX(3,2),ISYMAX(IRET,1))
-         ANTI      = .TRUE.
+
+         LABINT( 1) = 'X-CM1 X '
+         LABINT( 2) = 'X-CM1 Y '
+         LABINT( 3) = 'X-CM1 Z '
+         LABINT( 4) = 'Y-CM1 X '
+         LABINT( 5) = 'Y-CM1 Y '
+         LABINT( 6) = 'Y-CM1 Z '
+         LABINT( 7) = 'Z-CM1 X '
+         LABINT( 8) = 'Z-CM1 Y '
+         LABINT( 9) = 'Z-CM1 Z '
+
+         if (maxrep > 0) then
+            call quit('implement cm1 for maxrep > 0')
+         end if
+         intrep( 1) = 0
+         intrep( 2) = 0
+         intrep( 3) = 0
+         intrep( 4) = 0
+         intrep( 5) = 0
+         intrep( 6) = 0
+         intrep( 7) = 0
+         intrep( 8) = 0
+         intrep( 9) = 0
+
+         anti = .true.
       GOTO 200
 C
 C     Second order magnetic field derivatives of electric field
@@ -1190,33 +1240,52 @@ C
          INTTYP = 43
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of second magnetic derivatives of electric field'
-         NOPTYP  = 6
+         NOPTYP  = 18
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         EFDIR      = FIELD2(1:1)
-         LABINT(1)  = EFDIR//'-CM2XX'
-         LABINT(2)  = EFDIR//'-CM2XY'
-         LABINT(3)  = EFDIR//'-CM2XZ'
-         LABINT(4)  = EFDIR//'-CM2YY'
-         LABINT(5)  = EFDIR//'-CM2YZ'
-         LABINT(6)  = EFDIR//'-CM2ZZ'
-         IF (EFDIR .EQ. 'X') THEN
-            IRET = 1
-         ELSE IF (EFDIR .EQ. 'Y') THEN
-            IRET = 2
-         ELSE
-            IRET = 3
-         END IF
-         INTREP(1)  = ISYMAX(IRET,1)
-         INTREP(2)  = IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(2,2)),
-     &                              ISYMAX(IRET,1))
-         INTREP(3)  = IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(3,2)),
-     &                              ISYMAX(IRET,1))
-         INTREP(4)  = ISYMAX(IRET,1)
-         INTREP(5)  = IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(3,2)),
-     &                              ISYMAX(IRET,1))
-         INTREP(6)  = ISYMAX(IRET,1)
-         ANTI       = .FALSE.
+
+         LABINT( 1) = 'X-CM2XX '
+         LABINT( 2) = 'X-CM2XY '
+         LABINT( 3) = 'X-CM2XZ '
+         LABINT( 4) = 'X-CM2YY '
+         LABINT( 5) = 'X-CM2YZ '
+         LABINT( 6) = 'X-CM2ZZ '
+         LABINT( 7) = 'Y-CM2XX '
+         LABINT( 8) = 'Y-CM2XY '
+         LABINT( 9) = 'Y-CM2XZ '
+         LABINT(10) = 'Y-CM2YY '
+         LABINT(11) = 'Y-CM2YZ '
+         LABINT(12) = 'Y-CM2ZZ '
+         LABINT(13) = 'Z-CM2XX '
+         LABINT(14) = 'Z-CM2XY '
+         LABINT(15) = 'Z-CM2XZ '
+         LABINT(16) = 'Z-CM2YY '
+         LABINT(17) = 'Z-CM2YZ '
+         LABINT(18) = 'Z-CM2ZZ '
+
+         if (maxrep > 0) then
+            call quit('implement cm2 for maxrep > 0')
+         end if
+         intrep( 1) = 0
+         intrep( 2) = 0
+         intrep( 3) = 0
+         intrep( 4) = 0
+         intrep( 5) = 0
+         intrep( 6) = 0
+         intrep( 7) = 0
+         intrep( 8) = 0
+         intrep( 9) = 0
+         intrep(10) = 0
+         intrep(11) = 0
+         intrep(12) = 0
+         intrep(13) = 0
+         intrep(14) = 0
+         intrep(15) = 0
+         intrep(16) = 0
+         intrep(17) = 0
+         intrep(18) = 0
+
+         anti = .false.
       GOTO 200
 C
 C     Half-derivative overlap integrals not to be antisymmetrized
@@ -1377,7 +1446,7 @@ C
          INTTYP = 62
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      $     'Parity Violation - chirality integrals'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL PVCTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
@@ -1519,7 +1588,7 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,A/)')
      &'PR1DIR:Calculation of relativ. London contrib.',
      &' to the expect. value of NMR shielding.'
-         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'RNST',
      &               INTADR)
          ANTI = .TRUE.
@@ -1853,28 +1922,331 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GO TO 200
-C                           
-C&&&&&&&&&&&&&&&&&&&&&&&&&    
-C    
-   75 CONTINUE
+
+
+!     g1o: first geo derivatives of overlap integrals
+!     ===============================================
+   
+ 75   continue
+      inttyp = 100
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'overlap integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('O', noptyp, intrep, labint, doatom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     g1n: first geo derivatives of nuclear attraction integrals
+!     ==========================================================
+   
+ 76   continue
+      inttyp = 101
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'nuclear attraction integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('N', noptyp, intrep, labint, doatom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     g1b: first geo derivatives of beta integrals
+!     ============================================
+   
+ 77   continue
+      inttyp = 102
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'beta integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('B', noptyp, intrep, labint, doatom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!todo (radovan): the kinetic energy dervs can be done much more
+!                compactly using inttyp alphadot
+!                will fix it when i have time
+
+
+!     g1kx: first geo derivatives of kinetic energy (x) integrals
+!     ===========================================================
+   
+ 78   continue
+      inttyp = 103
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy (x) integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('KX', noptyp, intrep, labint, doatom)
+      anti   = .true.
+      square = .false.
+      go to 200
+
+
+!     g1ky: first geo derivatives of kinetic energy (y) integrals
+!     ===========================================================
+   
+ 79   continue
+      inttyp = 104
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy (y) integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('KY', noptyp, intrep, labint, doatom)
+      anti   = .true.
+      square = .false.
+      go to 200
+
+
+!     g1kz: first geo derivatives of kinetic energy (z) integrals
+!     ===========================================================
+   
+ 80   continue
+      inttyp = 105
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy (z) integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('KZ', noptyp, intrep, labint, doatom)
+      anti   = .true.
+      square = .false.
+      go to 200
+
+C
+C     Dipole gradient integrals DPLGRA
+C     -------------------------
+C
+ 81   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of dipole gradient integrals'
+         INTTYP = 52
+         CALL SETATM(doatom,NATOM,INTTYP)
+         CALL DPGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GOTO 200
+C
+C     Quadrupole gradient integrals QUAGRA
+C     -----------------------------
+C
+ 82   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of quadrupole gradient integrals'
+         INTTYP = 53
+         CALL SETATM(doatom,NATOM,INTTYP)
+         CALL QUGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GOTO 200
+
+C
+C     EMD - i* Electronic kinetic energy
+C     -------------------------
+C
+ 83   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &' Calculation of EDM - i*KINENERG_LS(electronic kinetic energy)'
+         INTTYP = 21 ! the same typ as 'KINENERG'
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'KINENERG'
+         ! full symmetry ....
+         INTREP(1) = 0
+         ! force the symmetry of the Im(ab) quaternion component - wrong !
+         !INTREP(1) = ISYMAX(1,1)
+
+         !ANTI = .FALSE.
+         ANTI = .TRUE. ! it's pure imaginary !....
+
       GO TO 200
-C                           
-C&&&&&&&&&&&&&&&&&&&&&&&&&    
-C    
-   76 CONTINUE
-      GO TO 200
-C                           
-C&&&&&&&&&&&&&&&&&&&&&&&&&    
-C    
-   77 CONTINUE
-      GO TO 200
+
+ 84   continue
+ 85   continue
+ 86   continue
+ 87   continue
+ 88   continue
+ 89   continue
+ 90   continue
+ 91   continue
+      go to 200
+
+C
+C     First order magnetic field derivatives of electric field gradient QDBINT
+C     -----------------------------------------------------------------
+C
+ 92   CONTINUE
+         INTTYP = 65
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &     ' Calculation of first magnetic derivative of electric '//
+     &     'field gradient'
+         NOPTYP  = 18
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+
+         LABINT( 1) = 'XX-QDB X'
+         LABINT( 2) = 'XX-QDB Y'
+         LABINT( 3) = 'XX-QDB Z'
+         LABINT( 4) = 'YY-QDB X'
+         LABINT( 5) = 'YY-QDB Y'
+         LABINT( 6) = 'YY-QDB Z'
+         LABINT( 7) = 'ZZ-QDB X'
+         LABINT( 8) = 'ZZ-QDB Y'
+         LABINT( 9) = 'ZZ-QDB Z'
+         LABINT(10) = 'XY-QDB X'
+         LABINT(11) = 'XY-QDB Y'
+         LABINT(12) = 'XY-QDB Z'
+         LABINT(13) = 'XZ-QDB X'
+         LABINT(14) = 'XZ-QDB Y'
+         LABINT(15) = 'XZ-QDB Z'
+         LABINT(16) = 'YZ-QDB X'
+         LABINT(17) = 'YZ-QDB Y'
+         LABINT(18) = 'YZ-QDB Z'
+
+         if (maxrep > 0) then
+            call quit('implement qdb for maxrep > 0')
+         end if
+         intrep( 1) = 0
+         intrep( 2) = 0
+         intrep( 3) = 0
+         intrep( 4) = 0
+         intrep( 5) = 0
+         intrep( 6) = 0
+         intrep( 7) = 0
+         intrep( 8) = 0
+         intrep( 9) = 0
+         intrep(10) = 0
+         intrep(11) = 0
+         intrep(12) = 0
+         intrep(13) = 0
+         intrep(14) = 0
+         intrep(15) = 0
+         intrep(16) = 0
+         intrep(17) = 0
+         intrep(18) = 0
+
+         ANTI      = .TRUE.
+      GOTO 200
+
+
+C
+C     Second order contribution from overlap matrix to magnetic properties
+cdj bra, ket, and mixed bra-ket contributions separately
+C
+ 93   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' bra part'
+         INTTYP = 304
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = '<<S/B2XX'
+         LABINT(2) = '<<S/B2XY'
+         LABINT(3) = '<<S/B2XZ'
+         LABINT(4) = '<<S/B2YY'
+         LABINT(5) = '<<S/B2YZ'
+         LABINT(6) = '<<S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+ 94   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' ket part'
+         INTTYP = 305
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = '>>S/B2XX'
+         LABINT(2) = '>>S/B2XY'
+         LABINT(3) = '>>S/B2XZ'
+         LABINT(4) = '>>S/B2YY'
+         LABINT(5) = '>>S/B2YZ'
+         LABINT(6) = '>>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+ 95   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' mixed bra-ket part'
+         INTTYP = 306
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = '<>S/B2XX'
+         LABINT(2) = '<>S/B2XY'
+         LABINT(3) = '<>S/B2XZ'
+         LABINT(4) = '<>S/B2YX'
+         LABINT(5) = '<>S/B2YY'
+         LABINT(6) = '<>S/B2YZ'
+         LABINT(7) = '<>S/B2ZX'
+         LABINT(8) = '<>S/B2ZY'
+         LABINT(9) = '<>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(5) = 0
+         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(9) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+
+ 96   continue
+      go to 200
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   200 CONTINUE
 C
 C     ***** Print section *****
 C
       IF (IPRINT .GT. 5) THEN
-         WRITE (LUPRI,'(3X,A)') '**** PR1DIR output ****'
+         WRITE (LUPRI,'(/,3X,A)') '**** PR1DIR output ****'
          WRITE (LUPRI,'(A,I5)') ' Integral type:', INTTYP
          WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
          WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
@@ -1882,8 +2254,10 @@ C
          WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP
-            WRITE (LUPRI,'(2A)')   ' Molecule label: ', LABINT(I)
-            WRITE (LUPRI,'(A,I5)') ' Symmetry:', INTREP(I)
+            WRITE (LUPRI,'(I3,A,I3,2A)')  
+     &       I,'./',NOPTYP,' Molecule label: ', LABINT(I)
+            WRITE (LUPRI,'(I3,A,I3,A,I5)')
+     &       I,'./',NOPTYP,' Symmetry:', INTREP(I)
   300    CONTINUE
       END IF
 C
@@ -2405,14 +2779,17 @@ C    MI/HJaJ - extended for LAO integral
             IF (DOATOM(IATOM)) THEN
                DO 300 LCOOR = 1, 3
                   ISCOOR = IPTCNT(3*(IATOM - 1) + LCOOR, IREP,2)
-                  IF (ISCOOR .GT. 99)
-     &   CALL QUIT('NSTTYP error: not implemented for > 99 coords!')
+                  IF (ISCOOR .GT. 999)
+     &   CALL QUIT('NSTTYP error: not implemented for > 999 coords!')
                   IF (ISCOOR .GT. 0) THEN
                      DO 400 ICOOR = 1, 3
                         ITYP = ITYP + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//LABEL//
-     &                                 ' '//CHRXYZ(ICOOR)
+                        IFIRST = ISCOOR/100
+                        ISECND = MOD(ISCOOR,100)/10
+                        ITHIRD = MOD(MOD(ISCOOR,100),10)
+                        LABINT(ITYP) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                                 CHRNOS(ITHIRD)//LABEL//
+     &                                 CHRXYZ(ICOOR)
 CMI whether conventional or London orbitals, specify the symmetry
                         IF (LABEL.EQ.'RNST') THEN
 c                          ICOOR2 = MOD(2+ISCOOR,3)+1
@@ -2460,8 +2837,12 @@ C  /* Deck psotyp */
                ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,2)
                IF (ISCOOR .GT. 0) THEN
                   ITYP = ITYP + 1
-                  LABINT(ITYP) = 'PSO '//CHRNOS(ISCOOR/10)
-     &                                 //CHRNOS(MOD(ISCOOR,10))//'  '
+                  IFIRST = ISCOOR/100
+                  ISECND = MOD(ISCOOR,100)/10
+                  ITHIRD = MOD(MOD(ISCOOR,100),10)
+
+                  LABINT(ITYP) = 'PSO '//CHRNOS(IFIRST)//
+     &                           CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
                   INTREP(ITYP) = IREP
                   INTADR(ISCOOR) = ITYP
                END IF
@@ -2721,15 +3102,126 @@ C
  100  CONTINUE
       RETURN
       END
-C  /* Deck efntyp */
-      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+
+      subroutine g1_typ(what_kind,
+     &                  noptyp,
+     &                  intrep,
+     &                  labint,
+     &                  doatom)
+
+      implicit none 
+
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+
+      character(*), intent(in)  :: what_kind
+      integer     , intent(out) :: noptyp
+      integer     , intent(out) :: intrep(*)
+      character(8), intent(out) :: labint(*)
+      logical     , intent(in)  :: doatom(*)
+
+      integer                   :: is, js
+      integer                   :: ixyz, jxyz
+      integer                   :: i, iatom, irep
+
+      i = 0
+      do irep = 0, maxrep
+        do iatom = 1, nucind
+          if (doatom(iatom)) then
+            do ixyz = 1, 3
+              is = iptcnt(3*(iatom - 1) + ixyz,irep,1)
+              if (is > 0) then
+                i = i + 1
+                labint(i) = 'G1'
+     &                      //what_kind
+     &                      //chrnos(is/100)
+     &                      //chrnos(mod(is, 100)/10)
+     &                      //chrnos(mod(is, 10))
+                intrep(i) = irep
+              end if
+            end do
+          end if
+        end do
+      end do
+
+      noptyp = i
+      call ntypts(noptyp)
+
+      end subroutine
+
+      subroutine g1xyz_typ(what_kind,
+     &                     noptyp,
+     &                     intrep,
+     &                     intadr,
+     &                     labint,
+     &                     doatom)
+
+      implicit none 
+
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+
+      character(1), intent(in)  :: what_kind
+      integer     , intent(out) :: noptyp
+      integer     , intent(out) :: intrep(*)
+      integer     , intent(out) :: intadr(*)
+      character(8), intent(out) :: labint(*)
+      logical     , intent(in)  :: doatom(*)
+
+      integer                   :: is, js
+      integer                   :: ixyz, jxyz
+      integer                   :: i, iatom, irep
+
+      i = 0
+      do irep = 0, maxrep
+        do iatom = 1, nucind
+          if (doatom(iatom)) then
+            do ixyz = 1, 3
+              is = iptcnt(3*(iatom - 1) + ixyz,irep,1)
+              if (is > 0) then
+                do jxyz = 1, 3
+                  i = i + 1
+                  labint(i) = 'G1'
+     &                        //what_kind
+     &                        //chrxyz(jxyz)
+     &                        //chrnos(is/100)
+     &                        //chrnos(mod(is, 100)/10)
+     &                        //chrnos(mod(is, 10))
+                  intrep(i) = ieor(irep, isymax(jxyz, 1))
+                  js = 3*(is - 1) + jxyz
+                  intadr(js) = i
+                end do
+              end if
+            end do
+          end if
+        end do
+      end do
+
+      noptyp = i
+      call ntypts(noptyp)
+
+      end subroutine
+
+      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      DIMENSION INTREP(9*MXCENT)
+      DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
 #include "nuclei.h"
@@ -2747,9 +3239,13 @@ C
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
                      ITYP = ITYP + 1
-                     LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/10)
-     &                                    //CHRNOS(MOD(ISCOOR,10))//'  '
+                     IFIRST=ISCOOR/100
+                     ISECND=MOD(ISCOOR,100)/10
+                     ITHIRD = MOD(MOD(ISCOOR,100),10)
+                     LABINT(ITYP) = 'NEF '//CHRNOS(IFIRST)
+     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
                      INTREP(ITYP) = IREP
+                     INTADR(ISCOOR) = ITYP
                   END IF
  200           CONTINUE
             END IF
@@ -2757,6 +3253,8 @@ C
  50   CONTINUE 
       RETURN
       END
+
+
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
 #include "implicit.h"
@@ -2776,14 +3274,13 @@ C  /* Deck efgtyp */
 C
       NOPTYP = 6*NATOM
       CALL NTYPTS(NOPTYP)
-      CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
-c      CALL DZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
+
+      ifgtbl = 0
 C
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
          IJ = 0
-ctec         NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
          DO 200 ICOOR1 = 1, 3
          DO 200 ICOOR2 = ICOOR1, 3
             IJ = IJ + 1
@@ -2794,8 +3291,6 @@ ctec         NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   IFGTBL(IATOM,IJ,IREPC) = ITYP
-c                  LABINT(ITYP) = NAME//'EFG '//CHRXYZ(ICOOR1)//
-c     &                           CHRXYZ(ICOOR2)
                   LABINT(ITYP) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
      &                  CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
      &                  CHRNOS(IOFF)
@@ -3545,7 +4040,6 @@ C
 C
 C     Write label
 C
-C     CALL NEWLAB(LABEL,LUPROP,LUPRI)
       CALL NEWLB2(LABEL,RTNLBL,LUPROP,LUPRI)
 C
 C     Write integrals
@@ -3630,3 +4124,93 @@ C
      &   ' quadrature points: ',DIFMAX
       RETURN
       END
+
+
+      SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 300 ICOOR = 1, 3
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     IXY = 0
+                     DO 400 LCOOR = 1, 3
+                        ITYP = ITYP + 1
+                        IXY = IXY + 1
+                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
+     &                                 CHRNOS(MOD(ISCOOR,10))//' DPG '//
+     &                                 CHRXYZ(LCOOR)
+                        IAX = ISYMAX(LCOOR,1)
+                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        LSCOOR = 3*(ISCOOR - 1) + IXY
+                        INTADR(LSCOOR) = ITYP
+ 400                 CONTINUE
+                  END IF
+ 300           CONTINUE
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
+      RETURN
+      END
+      SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(18*MXCENT)*8
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 300 ICOOR = 1, 3
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     IXY = 0
+                     DO 400 LCOOR = 1, 3
+                     DO 400 MCOOR = LCOOR, 3
+                        ITYP = ITYP + 1
+                        IXY = IXY + 1
+                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
+     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG '//
+     &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)
+                        IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
+                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        LSCOOR = 6*(ISCOOR - 1) + IXY
+                        INTADR(LSCOOR) = ITYP
+ 400                 CONTINUE
+                  END IF
+ 300           CONTINUE
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
+      RETURN
+      END
+

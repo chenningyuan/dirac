@@ -1,7 +1,6 @@
+! FILE : gp_auxlapack.F
 !
 ! lapack real (single and double precision) routines, taken from the netlib site on 20080612
-!
-! $Id$
 !
 #if defined (USE_DIRAC_DLAPACK)||(USE_DIRAC_ZLAPACK) 
       SUBROUTINE ZDROT( N, CX, INCX, CY, INCY, C, S )
@@ -1182,8 +1181,9 @@
 *     .. Executable Statements ..
 *
       WRITE( *, FMT = 9999 )SRNAME, INFO
-*
-      STOP
+CMI   ... needs proper quit !    
+!      STOP
+      CALL QUIT('Illegal parameter value, check the code !')
 *
  9999 FORMAT( ' ** On entry to ', A6, ' parameter number ', I2, ' had ',
      $      'an illegal value' )

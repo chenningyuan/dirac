@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1093,7 +1090,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 C
 #if defined (VAR_MPI2)
       DIMENSION LUCLIST(*),LUHCLIST(*),IBLOCKL(*),NPARBLOCK(*)
-      DIMENSION RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
+      INTEGER RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
 #endif
 C
       CALL QENTER('MV7  ')
@@ -2122,7 +2119,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
-      DIMENSION IPROCLIST(*), RCCTOS(*)
+      INTEGER IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
@@ -3790,10 +3787,10 @@ C         END IF
 *
           print*,'Calling SKICKJ with incomplete argument list.'
           stop
-                CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-     &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
-     &                      I4,XI4S,I2,XI2S,IKORD,
-     &                      FACS,IROUTE )
+!               CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+!    &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
+!    &                      I4,XI4S,I2,XI2S,IKORD,
+!    &                      FACS,IROUTE )
                 FACS = 1.0D0
 *
  1930         CONTINUE

@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,18 +15,20 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE DFTGRD(DMAT,IPRINT)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+        use dft_cfg
+        use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -36,20 +36,37 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
-#include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
       PARAMETER (D0=0.0D0)
 
 #include "dftwrk.h"
 
-      DIMENSION DMAT(*),WORK(LWORK)
+      DIMENSION DMAT(*)
+      real(8), allocatable :: kzan(:)
+      real(8), allocatable :: kc(:)
+      real(8), allocatable :: ksp(:)
+      real(8), allocatable :: kx8(:)
+      real(8), allocatable :: ky8(:)
+      real(8), allocatable :: kz8(:)
+      real(8), allocatable :: kw8(:)
+      real(8), allocatable :: kpsmu(:)
+      real(8), allocatable :: krj(:)
+      real(8), allocatable :: kaccum(:)
+      real(8), allocatable :: kxmujn(:)
+      real(8), allocatable :: kxmuj2(:)
+      real(8), allocatable :: krij(:)  
+      real(8), allocatable :: kaij(:)  
+      real(8), allocatable :: krbc(:)  
+      real(8), allocatable :: krvec(:) 
+      real(8), allocatable :: kchimt(:)
+      real(8), allocatable :: kaa(:)   
+      integer, allocatable :: knuco(:)
 
 #include "ibtfun.h"
 
       TIMSTR = SECOND()
 
-#include "memint.h"
 
 C
 C     ********************************
@@ -59,124 +76,146 @@ C
 C     INFOA has been replaced
 C     =====
 
-      CALL MEMGET('REAL',KZAN,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KC  ,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL SET_GRID_INFO(NAT,NUM,WORK(KZAN),WORK(KC))
+      call alloc(kzan, nucdep)
+      call alloc(kc,   nucdep*3)
+      CALL SET_GRID_INFO(NAT,NUM,kzan,kc)
 C
 C     DFTWRK
 C     ======
 C
       RNDMAX  = 20.0D0
-      RADERR  = RADINT
-      NSCHEME = ANGINT
-      LEBMIN  = ANGMIN
+      RADERR  = dft_cfg_RADINT
+      NSCHEME = dft_cfg_ANGINT
+      LEBMIN  = dft_cfg_ANGMIN
 
 C
 C     *******************************************
 C     ***** Prepare arguments for CONSTRUCT *****
 C     *******************************************
 C
-CTROND      IBIG  = 100000
       IBIG    = 1000000
       IVECL   = 100
       NNAT    = NAT*(NAT-1)/2
       N2AT    = NAT*NAT 
 
-      CALL MEMGET('REAL',KSP   ,4*NUM    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KX8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KY8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KZ8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KW8   ,IBIG     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPSMU ,IVECL*NAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRJ   ,IVECL*NAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KACCUM,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXMUJN,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXMUJN,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXMUJ2,IVECL    ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRIJ  ,NNAT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAIJ  ,NNAT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRBC  ,N2AT     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRVEC ,3*IVECL  ,WORK,KFREE,LFREE)
+!     radovan: workaround to get nonzero length array
+      if (nnat == 0) nnat = 1
+
+      call alloc(KSP   ,4*NUM    )
+      call alloc(KX8   ,IBIG     )
+      call alloc(KY8   ,IBIG     )
+      call alloc(KZ8   ,IBIG     )
+      call alloc(KW8   ,IBIG     )
+      CALL alloc(KPSMU ,IVECL*NAT)
+      CALL alloc(KRJ   ,IVECL*NAT)
+      CALL alloc(KACCUM,IVECL    )
+      CALL alloc(KXMUJN,IVECL    )
+      CALL alloc(KXMUJ2,IVECL    )
+      CALL alloc(KRIJ  ,NNAT     )
+      CALL alloc(KAIJ  ,NNAT     )
+      CALL alloc(KRBC  ,N2AT     )
+      CALL alloc(KRVEC ,3*IVECL  )
+C..added for density-based atomic size estimates
+      CALL alloc(KCHIMT,NATOMS*NATOMS)
 C..added for the MOLCAS scheme:
       NDIM=2*NHTYP*NUCIND
-      CALL MEMGET('INTE',KNUCO,NDIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAA  ,2*NDIM,WORK,KFREE,LFREE)
-C..added for density-based atomic size estimates
-      CALL MEMGET('REAL',KCHIMT,NATOMS*NATOMS  ,WORK,KFREE,LFREE)
+      CALL alloc(KAA  ,2*NDIM)
+      CALL alloc(KNUCO,NDIM  )
+
+
 C
-C     Open unit LUQUAD
+C     Open unit
 C     ================
 C
-      LUQUAD = 44
-      IF(import_grid) THEN
-        OPEN(LUQUAD,
+      lunit_grid = 44
+      IF(dft_cfg_import_grid) THEN
+        OPEN(lunit_grid,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  GRIDFILE)
+     &       FILE   =  dft_cfg_gridfile)
       ELSE
-        OPEN(LUQUAD,
+        OPEN(lunit_grid,
      &       FORM   = 'UNFORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
      &       FILE   = 'DIRAC.QUAD')
       ENDIF
-      REWIND LUQUAD
+      REWIND lunit_grid
 
-      if (import_grid) go to 999
+      if (dft_cfg_multigrid) then
+        iunit = lunit_grid
+        do i = 0, dft_cfg_multigrid_max
+          iunit = iunit + 1
+          dft_cfg_multigrid_file_unit(i) = iunit
+          open(dft_cfg_multigrid_file_unit(i),
+     &         form   = 'formatted',
+     &         status = 'unknown',
+     &         access = 'sequential',
+     &         file   =  dft_cfg_multigrid_file(i))
+          rewind dft_cfg_multigrid_file_unit(i)
+        end do
+      end if
 
-      if (export_grid) then
-        OPEN(LUQUAD+1,
+      if (dft_cfg_import_grid .or. dft_cfg_multigrid) go to 999
+
+      if (dft_cfg_export_grid) then
+        OPEN(lunit_grid+1,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
-     &       FILE   =  GRIDFILE)
-        rewind luquad+1
+     &       FILE   =  dft_cfg_gridfile)
+        rewind lunit_grid+1
       end if
 
 C
 C     Calculate abscissas and weights
 C     ===============================
 C
-      CALL CONSTRUC(WORK(KSP),WORK(KX8),WORK(KY8),WORK(KZ8),WORK(KW8),
-     &              WORK(KPSMU),WORK(KRJ),WORK(KACCUM),
-     &              WORK(KXMUJN),WORK(KXMUJ2),
-     &              WORK(KRIJ),WORK(KAIJ),IVECL,IBIG,
-     &              WORK(KRBC),WORK(KRVEC),
-     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),
-     &              NAT,NUM,WORK(KZAN),WORK(KC),LUQUAD,
-     &              IPRINT,WORK(KFREE),LFREE)
-C
-C     Close unit LUQUAD
-C     =================
-C
-C     CLOSE(LUQUAD,STATUS='KEEP')
-C
+      CALL CONSTRUC(KSP,KX8,KY8,KZ8,KW8,
+     &              KPSMU,KRJ,KACCUM,
+     &              KXMUJN,KXMUJ2,
+     &              KRIJ,KAIJ,IVECL,IBIG,
+     &              KRBC,KRVEC,
+     &              KNUCO,KAA,DMAT,KCHIMT,
+     &              NAT,NUM,KZAN,KC,
+     &              IPRINT)
 
 
+!     check accuracy of numerical integration
+      if (dft_cfg_integration_check_level > 0) then
+        call grtest()
+      end if
 
-
-
-
-C
-C     Check accuracy of numerical integration
-C     =======================================
-C
-      IF (INTCHK .GT.0) THEN
-         CALL GRTEST(WORK(KFREE),LFREE,JPRINT)
-      END IF
 
       TIMGRD = SECOND() - TIMSTR
       WRITE (LUPRI,'(1X)')
       CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
       WRITE (LUPRI,'(1X)')
 
-C call to memrel here?
-
  999  CONTINUE
 
-      RETURN
-      END
+      call dealloc(kzan)
+      call dealloc(kc)
+      call dealloc(ksp)
+      call dealloc(kx8)
+      call dealloc(ky8)
+      call dealloc(kz8)
+      call dealloc(kw8)
+      call dealloc(kpsmu)
+      call dealloc(krj)
+      call dealloc(kaccum)
+      call dealloc(kxmujn)
+      call dealloc(kxmuj2)
+      call dealloc(krij)
+      call dealloc(kaij)
+      call dealloc(krbc)
+      call dealloc(krvec)
+      call dealloc(kchimt)
+      call dealloc(kaa)
+      call dealloc(knuco)
+
+      end subroutine
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -184,7 +223,7 @@ C  /* Deck construc */
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
      &                    NUCORB,AA,DMAT,CHIMT,
-     &                    NAT,NUM,ZAN,C,LUQUAD,IPRINT,WORK,LWORK)
+     &                    NAT,NUM,ZAN,C,IPRINT)
 C                                                                      C
 C      Creates a quadrature grid and writes it to disk                 C
 C      Original version by C.W.Murray. Rewritten by                    C
@@ -194,6 +233,7 @@ C      Adapted for Dalton by T. Helgaker                               C
 C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       use dft_cfg
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -207,8 +247,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-      DIMENSION ZAN(*), C(*)
-
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -217,13 +255,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "symmet.h"
 #include "ccom.h"
 #include "dcbbas.h"
-#include "dftcom.h"
+#include "dcbham.h"
 
+      DIMENSION ZAN(*), C(3,NUCDEP)
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
      &          PSMU(IVECL,NAT),RJ(IVECL,NAT)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND),
-     &     DMAT(*),CHIMT(NATOMS,NATOMS),WORK(LWORK)
+     &     DMAT(*),CHIMT(NATOMS,NATOMS)
 C
 C     CARE: Some equivalencing through argument list!
 C
@@ -254,10 +293,9 @@ C
 C     Get density-based atomic radii if requested AND coefficients 
 C     exist.
 C
-      IF(ATSIZE) THEN
+      IF(dft_cfg_estimate_radii) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
-C        CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
-         CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
+         CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT)
          CALL HEADER('Density based relative atomic sizes',-1)
          CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
          WRITE(LUPRI,*)
@@ -294,19 +332,13 @@ C
       APASC=0.5D0/APASC
 
       ITEMP=0
-      CALL DZERO(RBC,NAT*NAT)
+      RBC = 0.0d0
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
-          istride1 = ina 
-          jstride1 = jna 
-          istride2 = ina + nat
-          jstride2 = jna + nat
-          istride3 = ina + 2*nat
-          jstride3 = jna + 2*nat
-          RIJ(ITEMP) = 1.0D0/(DSQRT((C(istride1)-C(jstride1))**2
-     &                             +(C(istride2)-C(jstride2))**2
-     &                             +(C(istride3)-C(jstride3))**2))
+          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
+     &                             +(C(2,INA)-C(2,JNA))**2
+     &                             +(C(3,INA)-C(3,JNA))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
           RBC(JNA,INA) = 1.0D0/RIJ(ITEMP)
           CHI = CHIMT(INA,JNA)
@@ -356,7 +388,15 @@ C        Grid spacing....
          H = DUMMY
          DO LL = 1,NHTYP
            L = LL-1
-           NBAS=NUCORB(LL,1,IATOM)+NUCORB(LL,2,IATOM)
+
+           nbas = nucorb(ll, 1, iatom)
+!          radovan:
+!          if Levy-Leblond or X2C, ignore small component
+!          unless user forces 4-c grid
+           if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
+             nbas = nbas + nucorb(ll, 2, iatom)
+           end if
+
            IF(NBAS.GT.0) THEN
              HTMP = DISERR(RADERR,L)
              H = MIN(H,HTMP)
@@ -367,17 +407,34 @@ C        Grid spacing....
            ENDIF
          ENDDO
          EPH = EXP(H)
+
 C...     Inner grid point
-         AH = D2*MAX(AA(1,1,1,IATOM),AA(1,1,2,IATOM))
+         ah = aa(1, 1, 1, iatom)
+!        radovan:
+!        if Levy-Leblond or X2C, ignore small component
+!        unless user forces 4-c grid
+         if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
+           ah = max(ah, aa(1, 1, 2, iatom))
+         end if
+         ah = d2*ah
+
          RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
          RL = EXP(RL)
+
 C...     Outer point
          RH = D0
          DO LL = 1,NHTYP
            L = LL-1
            AL=DUMMY
+
            IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
-           IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+!          radovan:
+!          if Levy-Leblond or X2C, ignore small component
+!          unless user forces 4-c grid
+           if (mc .gt. 1 .or. dft_cfg_force_4c_grid) then
+             IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+           end if
+
            IF(AL.LT.DUMMY) THEN
              AL = AL+AL
              RHTMP = OUTERR(AL,L,RADERR)           
@@ -427,13 +484,13 @@ C
 C           loop over angular points
 C           ========================
 C
-            DO 30 IQ = 1, NANG
+            DO 30 iy = 1, NANG
                IPT   = IPT + 1
                INDEX = INDEX + 1
-               X8(INDEX)  = XANG(IQ)*RNODE+C(NATOM)
-               Y8(INDEX)  = YANG(IQ)*RNODE+C(NATOM+nat)
-               Z8(INDEX)  = ZANG(IQ)*RNODE+C(NATOM+2*nat)
-               WT8(INDEX) = RWT*ANGWT(IQ)
+               X8(INDEX)  = XANG(iy)*RNODE+C(1,NATOM)
+               Y8(INDEX)  = YANG(iy)*RNODE+C(2,NATOM)
+               Z8(INDEX)  = ZANG(iy)*RNODE+C(3,NATOM)
+               WT8(INDEX) = RWT*ANGWT(iy)
 C
 C              Becke partitioning
 C              ==================
@@ -477,16 +534,22 @@ C          Scale weights with multiplicity of center
 
 
 !        drop points that are redundant and rescale
-         IF(ZIPGRID) CALL ZIP_GRID(IATOM,X8,Y8,Z8,WT8,NTHIS)
+         if (dft_cfg_zipgrid) then
+           if (maxrep > 0) then
+             call zip_grid(iatom, x8, y8, z8, wt8, nthis)
+           end if
+         end if
 
 
 C
-C        Write to file LUQUAD
+C        Write to file
 C        ====================
 C
-         CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NTHIS)
-         if (export_grid) then
-           call export_dft_grid(x8, y8, z8, wt8, luquad+1, nthis)
+         lunit_grid = 44
+         CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NTHIS)
+         if (dft_cfg_export_grid) then
+           call export_dft_grid(x8, y8, z8, wt8, 
+     &                          lunit_grid+1, nthis)
          end if
 
          NTOTAL = NTOTAL + NTHIS
@@ -499,9 +562,10 @@ C
 10    CONTINUE
 
       NLAST = -1
-      CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NLAST)
-      if (export_grid) then
-        call export_dft_grid(x8, y8, z8, wt8, luquad+1, nlast)
+      CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NLAST)
+      if (dft_cfg_export_grid) then
+        call export_dft_grid(x8, y8, z8, wt8, 
+     &                       lunit_grid+1, nlast)
       end if
 
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
@@ -510,7 +574,7 @@ C
 C
 C     Print file
 C
-      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,LUQUAD)
+      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,lunit_grid)
       RETURN
       END
 
@@ -704,14 +768,14 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck sleb */                                                     C
-      SUBROUTINE SLEB(X,Y,Z,WT,NSCHEME,NCOUNT,NATOM,
-     &RNODE,RBRAGG)
+      SUBROUTINE SLEB(X,Y,Z,WT,NSCHEME,NCOUNT,NATOM,RNODE,RBRAGG)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+       use dft_cfg
+
 #include "implicit.h" 
 #include "priunit.h" 
-#include "dftcom.h"
 #include "pi.h"
 
       PARAMETER (MAXNUM=1455)
@@ -728,8 +792,10 @@ C
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
+      lebmin = dft_cfg_angmin
       NOLD=NSCHEME
-      IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
+      IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND.
+     &    .NOT.dft_cfg_no_pruning) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
          NTOT=MIN(NTOT,IANG)
          NSCHEME=NLEBSET(NTOT)
@@ -869,16 +935,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          AIJ(NAT*(NAT-1)/2),
      &          X(IVECL),Y(IVECL),Z(IVECL),WT(IVECL),
      &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20),
-     &          ZAN(*),C(*)
+     &          ZAN(*),C(3,*)
 
 C
-C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
+C     WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
-         RJ(M,INA)=DSQRT((C(INA)-X(M))**2
-     &                  +(C(INA+nat)-Y(M))**2
-     &                  +(C(INA+2*nat)-Z(M))**2)
+         RJ(M,INA)=DSQRT((C(1,INA)-X(M))**2
+     &                  +(C(2,INA)-Y(M))**2
+     &                  +(C(3,INA)-Z(M))**2)
          PSMU(M,INA)=1.0D0
   100 CONTINUE
 
@@ -904,7 +970,7 @@ C
   230    CONTINUE
   200 CONTINUE
 
-      CALL DZERO(ACCUM,IPT)
+      ACCUM = 0.0d0
       DO 300 INA=1,NAT
       DO 300 M=1,IPT
          ACCUM(M)=ACCUM(M)+PSMU(M,INA)
@@ -1122,7 +1188,7 @@ C     Newton-Raphson search
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1wt  */
-      SUBROUTINE GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
+      SUBROUTINE GETCHI(DMAT,CHIMT,NAT,C,IPRINT)
 C***********************************************************************
 C
 C     Get relative atomic size estimates by analyzing atomic
@@ -1131,24 +1197,30 @@ C
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION DMAT(*),WORK(LWORK)
-      DIMENSION C(*)
+      DIMENSION DMAT(*)
+      DIMENSION C(3,NUCDEP)
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "nuclei.h"
 C
       DIMENSION CHIMT(NATOMS,NATOMS)
+      real(8), allocatable :: kcoor(:)
+      real(8), allocatable :: kdmtao(:)
+      real(8), allocatable :: kgao(:)
+      real(8), allocatable :: ksmat(:)
+      real(8), allocatable :: kasmat(:)
+      integer, allocatable :: kiclab(:)
 C
 #include "dcbbas.h"
 #include "dcbdhf.h"
-#include "dftcom.h"
 C
       CALL QENTER('GETCHI')
 C
-#include "memint.h"
 C
 C     Quit if open shell
 C
@@ -1160,31 +1232,35 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KCOOR,6        ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMTAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMAT,NTBAS(1)*NTBAS(1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KASMAT,NATOMS*NATOMS,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KICLAB,NTBAS(0),WORK,KFREE,LFREE)
+      call alloc(KCOOR  , 6                 )
+      call alloc(KDMTAO , N2BBASX           )
+      call alloc(KGAO   , NTBAS(0)          )
+      call alloc(KSMAT  , NTBAS(1)*NTBAS(1) )
+      call alloc(KASMAT , NATOMS*NATOMS     )
+      call alloc(KICLAB , NTBAS(0)          )
 C
 C     Transform density matrix to unsorted basis, then to AO basis
 C
-      CALL BSTOBU(DMAT,1,WORK(KFREE),LFREE)
-      CALL DTSOAO(DMAT,WORK(KDMTAO),NTBAS(0),0,IPRINT)
+      CALL BSTOBU_no_work(DMAT,1)
+      CALL DTSOAO(DMAT,KDMTAO,NTBAS(0),0,IPRINT)
 C
 C     Get atomic size estimates
 C
-      CALL CHI1(CHIMT,NAT,C,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
-     &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT,WORK,KFREE,
-     &     LFREE)
+      CALL CHI1(CHIMT,NAT,C,KDMTAO,KGAO,KSMAT,
+     &     KASMAT,KICLAB,KCOOR,IPRINT)
 C
 C     Backtransform density matrix to sorted basis
 C
-      CALL BUTOBS(DMAT,1,WORK(KFREE),LFREE)
+      CALL BUTOBS_no_work(DMAT,1)
 C
 C     Memory deallocation
 C
-      CALL MEMREL('GETCHI',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(kcoor)
+      call dealloc(kdmtao)
+      call dealloc(kgao)
+      call dealloc(ksmat)
+      call dealloc(kasmat)
+      call dealloc(kiclab)
 C
  9999  CALL QEXIT('GETCHI')
       RETURN
@@ -1193,7 +1269,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1rh1 */
       SUBROUTINE CHI1(CHIMT,NAT,C,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,
-     &     IPRINT,WORK,KFREE,LFREE)
+     &     IPRINT)
 C
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1213,19 +1289,19 @@ C***********************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-      DIMENSION C(*)
+      DIMENSION C(3,NUCDEP)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
+C     equivalence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NBAST,NBAST),
      &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NBAST),WORK(*)
+     &     ICLAB(NBAST)
 #else
       DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NTBAS(0)),WORK(*)
+     &     ICLAB(NTBAS(0))
 #endif
 C
 C     
@@ -1240,14 +1316,14 @@ C
       DO 10 I = 1,NAT
          DO 20 J = 1,I-1
             CHIMT(I,J) = 1.0D0
-            COORD(1,1) = C(I)
-            COORD(2,1) = C(I+nat)
-            COORD(3,1) = C(I+nat*2)
-            COORD(1,2) = C(J)
-            COORD(2,2) = C(J+nat)
-            COORD(3,2) = C(J+nat*2)
+            COORD(1,1) = C(1,I)
+            COORD(2,1) = C(2,I)
+            COORD(3,1) = C(3,I)
+            COORD(1,2) = C(1,J)
+            COORD(2,2) = C(2,J)
+            COORD(3,2) = C(3,J)
             CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
-     &              IPRINT,WORK(KFREE),LFREE)
+     &              IPRINT)
  20      END DO
  10   END DO
       RETURN
@@ -1255,7 +1331,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C                                                                      C   
       SUBROUTINE CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,ICENTA,ICENTB,
-     &     COORD,IPRINT,WORK,LWORK)
+     &     COORD,IPRINT)
 C                                                                      C
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1263,12 +1339,12 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
 
-#include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -1280,11 +1356,11 @@ C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NBAST,NBAST),
      &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NBAST),WORK(LWORK)
+     &     ICLAB(NBAST)
 #else
       DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NTBAS(0)),WORK(LWORK)
+     &     ICLAB(NTBAS(0))
 #endif
 C
 C     Arrays for 2nd order polynomial fit:
@@ -1292,7 +1368,6 @@ C
       DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
 C
 #include "sdpre.h"
-#include "memint.h"
 
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//
@@ -1331,7 +1406,7 @@ C     atom pair (ICENTA,ICENTB).
       PZ  = COORD(3,1) + PP*DZ
 C
       CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
-     &     ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &     ASMAT,ICLAB,IPRINT)
 
       PPOLD = PP
       SUMOLD = RHOA +RHOB
@@ -1345,7 +1420,7 @@ C
       PZ  = COORD(3,1) + PP*DZ
 C
       CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
-     &     ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &     ASMAT,ICLAB,IPRINT)
 
       SUM = RHOA + RHOB
 C
@@ -1371,7 +1446,7 @@ C
          PZ  = COORD(3,1) + PP*DZ
 C
          CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &        SMAT,ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &        SMAT,ASMAT,ICLAB,IPRINT)
 
          SUM = RHOA + RHOB
          IF(SUM.LE.SUMOLD) THEN
@@ -1396,7 +1471,7 @@ C
          PZ  = COORD(3,1) + PP*DZ
 C     
          CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &        SMAT,ASMAT,ICLAB,IPRINT,WORK(KFREE),LFREE)
+     &        SMAT,ASMAT,ICLAB,IPRINT)
 C
          X(K) = PP
          Y(K) = RHOA + RHOB
@@ -1436,7 +1511,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
       SUBROUTINE CHI3(X,Y,Z,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &     SMAT,ASMAT,ICLAB,IPRINT,WORK,LWORK)
+     &     SMAT,ASMAT,ICLAB,IPRINT)
 
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1444,9 +1519,9 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -1460,22 +1535,22 @@ C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
      &     SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NBAST),WORK(LWORK)
+     &     ICLAB(NBAST)
 #else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
-     &     ICLAB(NTBAS(0)),WORK(LWORK)
+     &     ICLAB(NTBAS(0))
 #endif
 
 
-      CALL DZERO(GAO,NTBAS(0))
-      CALL DZERO(SMAT,NTBAS(1)*NTBAS(1))
-      CALL DZERO(ASMAT,NATOMS*NATOMS)
-      CALL IZERO(ICLAB,NTBAS(0))
+      GAO = 0.0d0
+      SMAT = 0.0d0
+      ASMAT = 0.0d0
+      iclab = 0
 C
 C     GET AO's
 C
-      CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,X,Y,Z,WORK,LWORK,NTBAS(0),
+      CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,X,Y,Z,NTBAS(0),
      &     0,.FALSE.,IPRINT)
 C
 C     Get "overlap" matrix
@@ -1584,27 +1659,26 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
-#include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
-      DIMENSION ZAN(*), C(*)
+      DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
       NAT = 0
       NUM = NBASIS
       DO ICENT = 1, NUCIND
-         MULCNT = ISTBNU(ICENT)
-         ZCNT   = CHARGE(ICENT)
-         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-           DO ISYMOP = 0, MAXOPR
-           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-             NAT = NAT + 1
-             ZAN(NAT) = ZCNT
-             C(NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-             C(NAT+nucdep)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-            C(NAT+nucdep*2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-           ENDIF
-           ENDDO
-         ENDIF
+        MULCNT = ISTBNU(ICENT)
+        ZCNT   = CHARGE(ICENT)
+        IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
+          DO ISYMOP = 0, MAXOPR
+          IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            NAT = NAT + 1
+            ZAN(NAT) = ZCNT
+            C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+            C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+            C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+          ENDIF
+          ENDDO
+        ENDIF
       ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1621,25 +1695,36 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-#include "dftcom.h"
 #include "nuclei.h"
 
+
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+
+      logical :: lsymop(0:7)
       DIMENSION X(*),
      &          Y(*),
      &          Z(*),
      &          W(*)
 
-      IF(ZIPGRID_TEXT(1:1) .EQ. 'X') THEN
+      lsymop = .false.
+
+      do i = 1, maxrep
+        lsymop(jsop(i)) = .true.
+      end do
+
+      IF(lsymop(1)) THEN
         IF(CORD(1,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
         ENDIF
       ENDIF
-      IF(ZIPGRID_TEXT(2:2) .EQ. 'Y') THEN
+      IF(lsymop(2)) THEN
         IF(CORD(2,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(Y,Z,X,W,NR_POINTS)
         ENDIF
       ENDIF
-      IF(ZIPGRID_TEXT(3:3) .EQ. 'Z') THEN
+      IF(lsymop(4)) THEN
         IF(CORD(3,IATOM) .EQ. D0) THEN
           CALL ZIP_GRID_SUB(Z,X,Y,W,NR_POINTS)
         ENDIF
@@ -1689,3 +1774,10 @@ C=======================================================================
 
       RETURN
       END
+
+      SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
+      real(8) :: X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
+      integer :: luquad
+      integer :: npoint
+      READ(LUQUAD) X,Y,Z,WT
+      end subroutine

@@ -1,0 +1,27 @@
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : larry
+ Operating system  : Linux 2.6.24-22-generic
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 16:08:19 Dec  5 2008 (by bast@)
+ FORTRAN compiler  : /opt/intel/fc/10.1.015/bin/ifort -g -O3 -ip -w -assume byterecl -Iinclude -module modules -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /opt/intel/cc/10.1.015/bin/icc -g -O3 -ip -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ Changeset         : '8094' 
+
+ 
+     Data and time (Linux)  : Fri Dec  5 17:59:34 2008
+     Host name              :                                         
+
+
+ *******************************************************************************
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -128.62538805495365
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :       0.00000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -128.62538805495365
+

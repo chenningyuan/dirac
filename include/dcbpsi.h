@@ -3,10 +3,7 @@
 !
 ! *** Wave function module ***
 !
-!  DOSCF - either DODHF or DODFT true
-!  DODHF - perform Dirac-Hartee-Fock calculation
 !  DOMP2 - perform direct second-order Moeller-Plesset calculation
-!  DODFT - perform Kohn-Sham DFT calculation
 !  L1ORBM- orbital pre-modifications (reordering, rotations) 
 !  L2ORBM- orbital post-modifications (reordering, phase adjustment) 
 !  DORES - resolution of open-shell manifold with GOSCIP
@@ -14,19 +11,24 @@
 !  DOMP2NO - make MP2 natural orbitals
 !  DOCCM - perform coupled-cluster calculation with RELCCSD
 !  DOHSCC - perform HSMRCC calculation with external code
+!  DOHSFS - perform higher sector FSCC calculations with external code
 !  DOCOSCI - perform CI calculation with GOSCIP
 !  DOCIM - perform CI calculation with DIRRCI/GOSCIP
 !  DOLUCT- perform CI calculation with LUCITA
 !  DOADC - compute ionization spectrum via Green's functions
 !  DOKRCI - perform CI calculation with LUCIAREL/...
 !  DOKRCC - perform coupled-cluster calculation with LUCIAREL
+!  DOCOSCI- do COSCI calculation 
+!  DOGASCIP- do GASCIP calculation 
 
-      LOGICAL DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOHSCC, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,                &
-     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC
+      LOGICAL                      DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
+     &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
+     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
+     &        DOGASCIP
 
       COMMON /DCLPSI/                                                   &
-     &        DOSCF, DODHF, DODFT, DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
-     &        DOHSCC, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,                &
-     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC
+     &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
+     &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
+     &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
+     &        DOGASCIP
 ! --- end of dcbpsi.h ---

@@ -53,7 +53,6 @@
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
-
 typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;
 typedef struct ThirdDrv_  ThirdDrv;
@@ -69,31 +68,6 @@ struct DftDensity_ {
     real *dmata, *dmatb;
 };
 
-/* Comment on use of FirstDrv_->fZ (by Christoph Jacob) :
- * It says here, that fZ sould be d/dzeta F (zeta = |\nabla\rho|^2)
- * (which I think would be a clean way of programming)
- *
- * However, what is actually done in function _dftpot0 (file functionals.c)
- * is something different:
- * fZ is NOT d/dzeta F, but fZ = (d/dzeta F) * | \nabla\rho |
- * When the result is used in DFTDRV (file dftdrv.F) this is corrected
- * by dividing by | \nabla\rho | again (in addition, we start messing
- * around with a factor 2)
- *
- * The code is working and I dont know where else these values are
- * used and what I have seen, the same problem applys in SecondDrv_
- * and so on, so I wont try to fix it.
- *
- * But it took me some time to figure this out and I got very confused,
- * so maybe these lines are helpful when someone else looks at the code!
- *
- * thanks Christoph!
- * potential still needs cleanup,
- * there Z is not (yet) \nabla R \cdot \nabla R
- * ok for LR and QR,
- *        radovan
- *
- */ 
 
 /*
  *     R = \rho_\alpha + \rho_\beta

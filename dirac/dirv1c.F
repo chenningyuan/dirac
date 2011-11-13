@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,11 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C FILE    : dirv1c.F
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck type1drv */
@@ -198,7 +193,7 @@ C            ... First case : Estimate (LL|SS) contributions
 C                Last case  : Simulate one-center SS integrals since explicit
 C                             evaluation has been omitted in this iteration.
          IF (ICTLV1C(2) .EQ. 1) THEN 
-            CALL SCDEN2(CHARGE,WORK(KCHRG),NUCIND,0)
+            CALL SCDENS_2(CHARGE,WORK(KCHRG),NUCIND,0)
          ELSE
             IOFF = 1
             DO I = 1,NUCIND
@@ -601,7 +596,7 @@ C
                IF (IPRINT.GT.5) THEN
                    WRITE(LUPRI,'(/4X,A)') 'FACCBA for this center:'
                    CALL OUTPUT(FACCBA(NCENTC,1,1),1,1,1,N2DEP,
-     &                 MXCENTC,N2DEP,1,LUPRI)
+     &                 MXCENTC,N2DEP,-1,LUPRI)
                    WRITE(LUPRI,'()')
                END IF
             ELSE
@@ -667,7 +662,7 @@ C
             IF (IPRINT.GT.5) THEN
                 WRITE(LUPRI,'(/4X,A)') 'FACCBA for this center:'
                 CALL OUTPUT(FACCBA(NCENTC,1,1),1,1,1,N2DEP,
-     &                      MXCENTC,N2DEP,1,LUPRI)
+     &                      MXCENTC,N2DEP,-1,LUPRI)
                 WRITE(LUPRI,'()')
             END IF
          ELSE
@@ -749,7 +744,7 @@ c         (We use the nuclear exponents)
 c
       CALL DZERO(WORK(KCHRG),NUCIND)
       IF (ICTLV1C(2) .EQ. 1) THEN 
-         CALL SCDEN2(CHARGE,WORK(KCHRG),NUCIND,0)
+         CALL SCDENS_2(CHARGE,WORK(KCHRG),NUCIND,0)
       ELSE
          IOFF = 1
          DO I = 1,NUCIND

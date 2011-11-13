@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,
      &                   DS1,DS2,S1,S2)
@@ -460,20 +457,34 @@ C---------------Local variables -----------------------------------
       REAL*8, ALLOCATABLE :: VECR(:,:),VECI(:,:)
       REAL*8, ALLOCATABLE :: SCR(:,:)
       INTEGER , ALLOCATABLE :: INDX(:)
+      INTEGER :: IERR
       REAL*8 FNOR(RCW),E_OFF
 C---------------Executable code--------------------------------------
 
 
-CMI    ... control print out
-
 C
 C....... Allocate memory for the diagonalization routine
 C
-      ALLOCATE (EVR(NDT))
-      ALLOCATE (EVI(NDT))
-      ALLOCATE (VECR(NDT,NDT))
-      ALLOCATE (SCR(NDT,3))
-      ALLOCATE (INDX(NDT))
+      ALLOCATE (EVR(NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EVR allocation !')
+      ENDIF
+      ALLOCATE (EVI(NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in EVI allocation !')
+      ENDIF
+      ALLOCATE (VECR(NDT,NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in VECR allocation !')
+      ENDIF
+      ALLOCATE (SCR(NDT,3),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in SCR allocation !')
+      ENDIF
+      ALLOCATE (INDX(NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in INDX allocation !')
+      ENDIF
 
 C
 C....... Diagonalize effective Hamiltonian.
@@ -482,9 +493,18 @@ C
 C        The diagonalization routine expects separate real and imaginary blocks,
 C        make a local copy
          NDT2=NDT*NDT
-         ALLOCATE (HR(NDT,NDT))
-         ALLOCATE (HI(NDT,NDT))
-         ALLOCATE (VECI(NDT,NDT))
+         ALLOCATE (HR(NDT,NDT),STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in HR allocation !')
+         ENDIF
+         ALLOCATE (HI(NDT,NDT),STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in HI allocation !')
+         ENDIF
+         ALLOCATE (VECI(NDT,NDT),STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in VECI allocation !')
+         ENDIF
          CALL DCOPY (NDT2,H,2,HR,1)
          CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
 
@@ -502,8 +522,14 @@ CMI    ... control print out
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
 Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
-         DEALLOCATE (HR)
-         DEALLOCATE (HI)
+         DEALLOCATE (HR,STAT=IERR)
+         IF (IERR.NE.0) THEN
+            CALL QUIT('Error in HR deallocation !')
+         ENDIF
+         DEALLOCATE (HI,STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in HI deallocation !')
+         ENDIF
       ELSE
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
@@ -569,12 +595,32 @@ C
 C.....Release the memory
 C
 
-      DEALLOCATE (EVR)
-      DEALLOCATE (EVI)
-      DEALLOCATE (VECR)
-      IF (CARITH) DEALLOCATE (VECI)
-      DEALLOCATE (SCR)
-      DEALLOCATE (INDX)
+      DEALLOCATE (EVR,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in EVR deallocation !')
+      ENDIF
+      DEALLOCATE (EVI,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in EVI deallocation !')
+      ENDIF
+      DEALLOCATE (VECR,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in VECR deallocation !')
+      ENDIF
+      IF (CARITH) THEN
+        DEALLOCATE (VECI,STAT=IERR)
+        IF (IERR.NE.0) THEN
+          CALL QUIT('Error in VECI deallocation !')
+        ENDIF
+      ENDIF
+      DEALLOCATE (SCR,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in SCR deallocation !')
+      ENDIF
+      DEALLOCATE (INDX,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in INDX deallocation !')
+      ENDIF
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -604,12 +650,21 @@ C
 C
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
+      INTEGER :: IERR, ISIZE
       DIMENSION IND(MXREP)
       REAL*8 E_OFF
 C---------------Executable code--------------------------------------
 
-      ALLOCATE (INDX_ALL(IFS_HE(NREP+1,ICURFSS)))
-      ALLOCATE (IRPS_ALL(IFS_HE(NREP+1,ICURFSS)))
+!miro: fixed nastry "+1" index leak bug showing up only with sensitive compilers
+      ISIZE = IFS_HE(NREP+1,ICURFSS)+1
+      ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in INDX_ALL allocation !')
+      ENDIF
+      ALLOCATE (IRPS_ALL(ISIZE),STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in IRPS_ALL allocation !')
+      ENDIF
 
 C     Initialize the reference energy
 
@@ -622,7 +677,7 @@ C
 C        Odd electron case : fermion irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
+     &                EIGENVALUES(1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE IF (ICURFSS.EQ.4) THEN
 C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
@@ -632,7 +687,7 @@ C        This makes the routine print excitation energies
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)),
+     &                EIGENVALUES(0:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
@@ -640,15 +695,21 @@ C        One should not forget this line : the real dimension of the first irrep
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
+     &                EIGENVALUES(1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ENDIF
 
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
      &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
-      DEALLOCATE (INDX_ALL)
-      DEALLOCATE (IRPS_ALL)
+      DEALLOCATE (INDX_ALL,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in INDX_ALL deallocation !')
+      ENDIF
+      DEALLOCATE (IRPS_ALL,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in IRPS_ALL deallocation !')
+      ENDIF
 
       RETURN
       END
@@ -743,6 +804,10 @@ c
          II = II + 1
          FAC1 = EPS(II)
          ISECTP=0
+         IF (DOIH.AND.ICO.EQ.3) THEN
+             ISECTP=1
+             IF (IPIORB(II).EQ.1) Z1=.TRUE.
+         ENDIF
          AOFF = IO(NREP+1) + IV(IRP)
 c
          IVA(0)=0
@@ -784,6 +849,10 @@ C
              FAC = FAC1 - EPS(AA)
              FACIH = FAC
              ISECTH=0
+             IF (DOIH.AND.ACV.EQ.3) THEN
+                ISECTH=1
+                IF (IPIORB(AA).EQ.1) Z2=.TRUE.
+             ENDIF
              AI = AI + 1
              DOIHDN=.FALSE.
              IHZERO=.FALSE.
@@ -2336,8 +2405,8 @@ C        Make Vec * Dipole * Vec (all possible transition dipoles)
      &                        NFS_PRP,A1,H,D_TERMS_C,A0,
      &                        TRANS_DIPOLE,NREP)
       ENDIF
-
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
@@ -2364,9 +2433,6 @@ C
 
 C     Determine offsets for start of orbital energies
 
-C      write(IW,*) 'in GET_FSLABEL  1'
-C      call FLSHFO(IW)
- 
       IAO(1) = NIO(1)
       IAV(1) = NIO(1) + NAO(1)
       DO IREP = 1, NREP-1
@@ -2374,41 +2440,23 @@ C      call FLSHFO(IW)
          IAV(IREP+1) = IAV(IREP) + NAV(IREP) + NIO(IREP+1) + NAO(IREP+1)
       END DO
 
-C     write(IW,*) 'in GET_FSLABEL  1.1...ICURFSS=',ICURFSS
-C     call FLSHFO(IW)
-      
       II = 0
 C     II counts the active orbitals
       IF (ICURFSS .EQ. 2) THEN
          DO IREP = 1, NREP
             DO I = 1, NAV(IREP)
                II = II + 1
-               JJ = JJ + 1
-
-C      write(IW,*) 'in GET_FSLABEL  1.1.1'
-C      call FLSHFO(IW)
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAV(IREP)+I)
             END DO
          END DO
-
-C      write(IW,*) 'in GET_FSLABEL  1.2'
-C      call FLSHFO(IW)
       
       ELSEIF (ICURFSS .EQ. 3) THEN
          DO IREP = 1, NREP
             DO I = 1, NAO(IREP)
                II = II + 1
-
-C      write(IW,*) 'in GET_FSLABEL  1.2.1'
-C      call FLSHFO(IW)
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAO(IREP)+I)
             END DO
          END DO
-
-C      write(IW,*) 'in GET_FSLABEL  1.3'
-C      call FLSHFO(IW)
 
 C     II counts single excitations
       ELSEIF (ICURFSS .EQ. 4) THEN
@@ -2418,21 +2466,13 @@ C     II counts single excitations
                DO J = 1, NAV(JREP)
                   DO I = 1, NAO(IREP)
                      II = II + 1
-
-C      write(IW,*) 'in GET_FSLABEL  1.3.1'
-C      call FLSHFO(IW)
-
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                      WRITE(LABEL(II),1011) 
-     &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
-     &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
+     &                  REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                  REPNA(JREP),J,EPS(IAV(JREP)+J)
                   END DO
                END DO
             END DO
          END DO
-
-C      write(IW,*) 'in GET_FSLABEL  1.4'
-C      call FLSHFO(IW)
 
 C     II counts the double creations
       ELSEIF (ICURFSS .EQ. 5) THEN
@@ -2443,13 +2483,6 @@ C     II counts the double creations
                   DO J = 1, NAV(JREP)
                      DO I = J+1, NAV(IREP)
                        II = II + 1
-
-C      write(IW,*)
-C    & 'in GET_FSLABEL  1.4.1, IREP,JREP,MXREP,EPS indexes:',
-C    &          IREP,JREP,MXREP,IAV(IREP)+I,IAV(JREP)+J
-       call FLSHFO(IW)
-
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
@@ -2460,28 +2493,14 @@ C    &          IREP,JREP,MXREP,IAV(IREP)+I,IAV(JREP)+J
                   DO J = 1, NAV(JREP)
                      DO I = 1, NAV(IREP)
                        II = II + 1
-
-C       write(IW,*) 'IREP=',IREP,' JREP=',JREP,' MXREP=',MXREP
-C       write(IW,*) 'I=',I,' J=',J,' II=',II,' LABEL(II)=',LABEL(II)
-C       call FLSHFO(IW)
-
-C      write(IW,*)
-C    &     'in GET_FSLABEL  1.4.2, EPS indexes:',
-C    &      IAV(IREP)+I,IAV(JREP)+J
-C      call FLSHFO(IW)
-
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
-                       call FLSHFO(IW)
                      END DO
                   END DO
                END IF
             END DO
          END DO
-C      write(IW,*) 'in GET_FSLABEL  1.5'
-       call FLSHFO(IW)
 C     II counts the double annihilations
       ELSEIF (ICURFSS .EQ. 6) THEN
          DO IJREP =1, NREP
@@ -2491,8 +2510,6 @@ C     II counts the double annihilations
                   DO J = 1, NAO(JREP)
                      DO I = J+1, NAO(IREP)
                        II = II + 1
-C      write(IW,*) 'in GET_FSLABEL  1.5.1'
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
@@ -2502,9 +2519,6 @@ C      write(IW,*) 'in GET_FSLABEL  1.5.1'
                   DO J = 1, NAO(JREP)
                      DO I = 1, NAO(IREP)
                        II = II + 1
-C      write(IW,*) 'in GET_FSLABEL  1.5.'
-       call FLSHFO(IW)
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
@@ -2513,28 +2527,11 @@ C      write(IW,*) 'in GET_FSLABEL  1.5.'
                END IF
             END DO
          END DO
-C      write(IW,*) 'in GET_FSLABEL  1.6'
-C      call FLSHFO(IW)
       END IF
-
-C      write(IW,*) 'in GET_FSLABEL  2 ... end'
-       call FLSHFO(IW)
 
  1001 FORMAT ('| ',A4,' #',I4,' (',F8.3,') |',25X)
  1002 FORMAT ('| ',A4,' #',I4,' (',F8.3,'), ',
      &             A4,' #',I4,' (',F8.3,') |')
  1011 FORMAT (1X,A4,' #',I4,' (',F8.3,') -> ',
      &             A4,' #',I4,' (',F8.3,')  ')
-      END
-
-      SUBROUTINE CHECK_LABEL_DIMENSION(II,NDIMH)
-#include "files.inc"
-      INTEGER II,NDIMH
-       IF (II.GT.NDIMH) THEN
-       call FLSHFO(IW)
-        write(IW,*) 'GET_FSLABEL: II=',II,' dimension=',NDIMH
-        write(IW,*) 'Increase NDIMH!!!'
-       call FLSHFO(IW)
-        call QUIT('GET_FSLABEL: increase dimension for LABEL array !!!')
-       ENDIF
       END

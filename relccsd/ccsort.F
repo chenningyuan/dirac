@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : ccsort.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1477,14 +1472,13 @@ C
 C
 C     Initialize the array with reordered tau's
 C
-      CALL INIT_T1(BUF2)
+      CALL INIT_T1(BUF2,.TRUE.)
 C
 C     Information needed to convert the relccsd tau's to the moltra 
 C     T's                           
 C
       CALL TAUINFO(INFOT)
 
-CMI   CALL MEMCHK('SRTDIR 1.00',BUF1,1)
 C
       ITDIR = 1 ! the pointer for the T needed in moltra
 C
@@ -1543,8 +1537,6 @@ C           The first tau
                             ELSE
       BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
                             ENDIF
-c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK*RCW+1,BUF2(ITDIR),ITDIR
-c     print*,'BUF1(ICIDK)=',BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
 C           The second tau
                             ICIDK = OFF(CIREP2) + (OFF2(DREP2,KREP2) +
      &                              (K-1)*NAVIR(IREPD))*NPAIR(CIREP2)
@@ -1556,9 +1548,6 @@ C           The second tau
                             ELSE
       BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
                             ENDIF
-c     print*,'dt',IREPCI,IREPRS,IREPI,IZ2,I,C,IZ1,D,K
-c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK*RCW+1,BUF2(ITDIR),ITDIR
-c     print*,'BUF1(ICIDK)=',BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
                             ITDIR = ITDIR + 1
                             ENDDO !k
                           ENDDO !d
@@ -1584,7 +1573,6 @@ C           The first tau
                             ELSE
       BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
                             ENDIF
-c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK*RCW+1,BUF2(ITDIR),ITDIR
 C           The second tau
                             K2 = K + INFOT(4,IQ1,IQ2,2)*NAOCC(IREPK)
                             ICIDK = OFF(IREPCI) + (OFF2(IREPD,IREPK) +
@@ -1597,8 +1585,6 @@ C           The second tau
                             ELSE
       BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
                             ENDIF
-c     print*,'dt',IREPCI,IREPRS,IREPI,IZ2,I,C,IZ1,D,K
-c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK,BUF2(ITDIR),ITDIR
                             ITDIR = ITDIR + 1
 C
                             ENDDO !k
@@ -1620,7 +1606,6 @@ C     Write the T's to file
 C
 c     CALL WRITETAU(BUF2)
 C
-CMI   CALL MEMCHK('SRTDIR 2.00',BUF1,1)
       RETURN                
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

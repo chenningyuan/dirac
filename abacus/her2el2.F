@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : her2el2.F
 C
 C
@@ -100,15 +95,15 @@ C
 C
       CALL QEXIT('C2DRIV')
       RETURN
- 1005 FORMAT (1X,'DC2H    ',L7)
- 1006 FORMAT (1X,'DC2E    ',L7)
- 1010 FORMAT (1X,'NHKT3/4 ',2I7)
- 1020 FORMAT (1X,'KCKT3/4 ',2I7)
- 1025 FORMAT (1X,'KHKT3/4 ',2I7)
- 1030 FORMAT (1X,'KCKT34  ',I7)
- 1040 FORMAT (1X,'DIAG34  ',L7)
- 1060 FORMAT (1X,'NUC34   ',I7)
- 1070 FORMAT (1X,'I340:   ',3I7)
+ 1005 FORMAT ('DC2H    ',L7)
+ 1006 FORMAT ('DC2E    ',L7)
+ 1010 FORMAT ('NHKT3/4 ',2I7)
+ 1020 FORMAT ('KCKT3/4 ',2I7)
+ 1025 FORMAT ('KHKT3/4 ',2I7)
+ 1030 FORMAT ('KCKT34  ',I7)
+ 1040 FORMAT ('DIAG34  ',L7)
+ 1060 FORMAT ('NUC34   ',I7)
+ 1070 FORMAT ('I340:   ',3I7)
       END
 C  /* Deck c2hint */
       SUBROUTINE C2HINT(AOINT,IODD12,IODD34,HCINT,COEF34,CONT3,CONT4,
@@ -263,28 +258,28 @@ C
          WRITE (LUPRI, 2180) (IVADD(I), I = 1, NCOOR)
          WRITE (LUPRI, 2190) (IOFFCC(I), I = 1, NCOOR)
          WRITE (LUPRI, 2200) (FACTOR(I), I = 1, NCOOR)
-         WRITE (LUPRI, '(1X,A,10I7)') 'NHCC 1',(NHCC(I,1),I=1,KCKT34)
-         WRITE (LUPRI, '(1X,A,10I7)') 'NHCC 2',(NHCC(I,2),I=1,KHKT34)
+         WRITE (LUPRI, '(A,10I7)') 'NHCC 1',(NHCC(I,1),I=1,KCKT34)
+         WRITE (LUPRI, '(A,10I7)') 'NHCC 2',(NHCC(I,2),I=1,KHKT34)
       END IF
- 2010 FORMAT (1X,   '           INITIALIZATION ',/)
- 2020 FORMAT(1X,'DH0000',L7)
- 2030 FORMAT(1X,'DHXP00',3L7)
- 2031 FORMAT(1X,'DHXQ00',3L7)
- 2032 FORMAT(1X,'DHXXPP',6L7)
- 2033 FORMAT(1X,'DHXXQQ',6L7)
- 2050 FORMAT(1X,'PATH1 ',L7)
- 2060 FORMAT(1X,'KCKT  ',3I7)
- 2065 FORMAT(1X,'KHKT  ',3I7)
- 2070 FORMAT(1X,'NORB  ',2I7)
- 2080 FORMAT(1X,'NUC34 ',I7)
- 2120 FORMAT(1X,'IHRSYM',I7)
- 2140 FORMAT(1X,'NCOOR ',I7)
- 2150 FORMAT(1X,'JODDIF',(10I7))
- 2160 FORMAT(1X,'ITADD ',(10I7))
- 2170 FORMAT(1X,'IUADD ',(10I7))
- 2180 FORMAT(1X,'IVADD ',(10I7))
- 2190 FORMAT(1X,'IOFFCC',(10I7))
- 2200 FORMAT(1X,'FACTOR',(10F5.2))
+ 2010 FORMAT('           INITIALIZATION '/)
+ 2020 FORMAT('DH0000',L7)
+ 2030 FORMAT('DHXP00',3L7)
+ 2031 FORMAT('DHXQ00',3L7)
+ 2032 FORMAT('DHXXPP',6L7)
+ 2033 FORMAT('DHXXQQ',6L7)
+ 2050 FORMAT('PATH1 ',L7)
+ 2060 FORMAT('KCKT  ',3I7)
+ 2065 FORMAT('KHKT  ',3I7)
+ 2070 FORMAT('NORB  ',2I7)
+ 2080 FORMAT('NUC34 ',I7)
+ 2120 FORMAT('IHRSYM',I7)
+ 2140 FORMAT('NCOOR ',I7)
+ 2150 FORMAT('JODDIF',(10I7))
+ 2160 FORMAT('ITADD ',(10I7))
+ 2170 FORMAT('IUADD ',(10I7))
+ 2180 FORMAT('IVADD ',(10I7))
+ 2190 FORMAT('IOFFCC',(10I7))
+ 2200 FORMAT('FACTOR',(10F5.2))
 C
       IF (NHCMAX .GT. 0) THEN
 C
@@ -364,7 +359,7 @@ C
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
       DIMENSION AOINT(NOABCD,KHKTCD*KHKTAB,*),
      &          IODD12(KCKT12,2), IODD34(KCKT34,2),
-     &          CCPRIM(NCCPP,*), HCINT(NCCPP,NTUV34,KHKT12,*),
+     &          CCPRIM(NCCPP,NHCMAX), HCINT(NCCPP,NTUV34,KHKT12,*),
      &          SSINT(NO1234*NHCMAX,KHKT34), CSINT(NO1234*NHCMAX,KHKT4),
      &          CCONT(NO1234*NHCMAX,KCKT34),
      &          ETUV(NCCPP), SCR1(*), SCR2(*),
@@ -590,8 +585,8 @@ C
             K = IOFFCC(ICOOR)
             DO 910 ICMPAB = 1, KHKTAB
                DO 920 ICMPCD = 1, KHKTCD
-                  WRITE (LUPRI, '(/1X,A,3I3)')' ICOOR, ICMPAB, ICMPCD ',
-     &                                          ICOOR, ICMPAB, ICMPCD
+                  WRITE (LUPRI, '(/A,3I3)')' ICOOR, ICMPAB, ICMPCD ',
+     &                                       ICOOR, ICMPAB, ICMPCD
                   ICMP = ICMP + 1
                   WRITE(LUPRI,'(1P,6D12.4)')(AOINT(I,ICMP,K),I=1,NO1234)
   920          CONTINUE
@@ -992,43 +987,43 @@ C
          WRITE (LUPRI, 2260) IHRSYM
          WRITE (LUPRI, 2290) NUC34
          DO 95 I = 1, NCOOR
-            WRITE (LUPRI,'(1X,A,I1,A,6I7/,(20X,6I7))')
+            WRITE (LUPRI,'(A,I1,A,6I7/,(20X,6I7))')
      &         'NHCC 1 for ICOOR = ',I,':',(NHCC(J,1,I),J=1,KCKT34)
-            WRITE (LUPRI,'(1X,A,I1,A,6I7/,(20X,6I7))')
+            WRITE (LUPRI,'(A,I1,A,6I7/,(20X,6I7))')
      &         'NHCC 2 for ICOOR = ',I,':',(NHCC(J,2,I),J=1,KHKT34)
    95    CONTINUE
-         WRITE (LUPRI, '(1X,A,I7)') 'NHCMAX ', NHCMAX
+         WRITE (LUPRI, '(A,I7)') 'NHCMAX ', NHCMAX
       END IF
- 2010 FORMAT (   1X,'           INITIALIZATION ',/)
- 2020 FORMAT(1X,'PATH1 ',L7)
- 2030 FORMAT(1X,'CROSS ',L7)
- 2040 FORMAT(1X,'IDERIV',I7)
- 2050 FORMAT(1X,'KCKT  ',2I7)
- 2060 FORMAT(1X,'NORB  ',2I7)
- 2070 FORMAT(1X,'NCOOR ',I7)
- 2080 FORMAT(1X,'IATOM ',I7)
- 2090 FORMAT(1X,'IHCINT',I7)
- 2100 FORMAT(1X,'INCMXT',9(I7))
- 2110 FORMAT(1X,'INCMXU',9(I7))
- 2120 FORMAT(1X,'INCMXV',9(I7))
- 2130 FORMAT(1X,'JSTRAT',9(I7))
- 2140 FORMAT(1X,'JENDAT',9(I7))
- 2150 FORMAT(/,1X,'JSTRHC')
+ 2010 FORMAT('           INITIALIZATION '/)
+ 2020 FORMAT('PATH1 ',L7)
+ 2030 FORMAT('CROSS ',L7)
+ 2040 FORMAT('IDERIV',I7)
+ 2050 FORMAT('KCKT  ',2I7)
+ 2060 FORMAT('NORB  ',2I7)
+ 2070 FORMAT('NCOOR ',I7)
+ 2080 FORMAT('IATOM ',I7)
+ 2090 FORMAT('IHCINT',I7)
+ 2100 FORMAT('INCMXT',9(I7))
+ 2110 FORMAT('INCMXU',9(I7))
+ 2120 FORMAT('INCMXV',9(I7))
+ 2130 FORMAT('JSTRAT',9(I7))
+ 2140 FORMAT('JENDAT',9(I7))
+ 2150 FORMAT(/'JSTRHC')
  2151 FORMAT(7X,10I7)
- 2160 FORMAT(/,1X,'JENDHC')
+ 2160 FORMAT(/'JENDHC')
  2161 FORMAT(7X,10I7)
- 2170 FORMAT(/,1X,'IOFFEX',(10I6))
- 2180 FORMAT(1X,'IOFFEY',(10I6))
- 2190 FORMAT(1X,'IOFFEZ',(10I6))
- 2175 FORMAT(/,1X,'IOFF2X',(10I6))
- 2185 FORMAT(1X,'IOFF2Y',(10I6))
- 2195 FORMAT(1X,'IOFF2Z',(10I6))
- 2200 FORMAT(1X,'IOFFHC',(10I6))
- 2210 FORMAT(1X,'IOFFCC',(10I6))
- 2220 FORMAT(1X,'JODDIF',(10I6))
- 2230 FORMAT(1X,'FACTOR',(10F6.2))
- 2260 FORMAT(1X,'IHRSYM',I7)
- 2290 FORMAT(1X,'NUC34 ',I7)
+ 2170 FORMAT(/'IOFFEX',(10I6))
+ 2180 FORMAT( 'IOFFEY',(10I6))
+ 2190 FORMAT( 'IOFFEZ',(10I6))
+ 2175 FORMAT(/'IOFF2X',(10I6))
+ 2185 FORMAT( 'IOFF2Y',(10I6))
+ 2195 FORMAT( 'IOFF2Z',(10I6))
+ 2200 FORMAT( 'IOFFHC',(10I6))
+ 2210 FORMAT( 'IOFFCC',(10I6))
+ 2220 FORMAT( 'JODDIF',(10I6))
+ 2230 FORMAT('FACTOR',(10F6.2))
+ 2260 FORMAT('IHRSYM',I7)
+ 2290 FORMAT('NUC34 ',I7)
 C
       IF (NHCMAX .GT. 0) THEN
 C
@@ -1334,17 +1329,17 @@ C
   900          CONTINUE
             END IF
             IF (IPRINT .GE. 10) THEN
-               WRITE (LUPRI,'(1X,A, I7 )') 'ICMP34',ICMP34
-               WRITE (LUPRI,'(1X,A,3I7)') ' MINT  ',MINT, MINU, MINV
-               WRITE (LUPRI,'(1X,A,3I7)') ' MAXT  ',MAXT, MAXU, MAXV
-               WRITE (LUPRI,'(1X,A,3I7)') ' INCRMT',INCRMT,INCRMU,INCRMV
+               WRITE (LUPRI,'(A, I7 )') 'ICMP34',ICMP34
+               WRITE (LUPRI,'(A,3I7)') ' MINT  ',MINT, MINU, MINV
+               WRITE (LUPRI,'(A,3I7)') ' MAXT  ',MAXT, MAXU, MAXV
+               WRITE (LUPRI,'(A,3I7)') ' INCRMT',INCRMT,INCRMU,INCRMV
                IF (IPRINT .GE. 15) THEN
                   CALL HEADER('Final Cartesian Integrals - C2EINT',-1)
-                  WRITE (LUPRI,'(/1X,A,I3)') ' ICMP34 ', ICMP34
+                  WRITE (LUPRI,'(/A,I3)') ' ICMP34 ', ICMP34
                   DO 1000 IATOM = ISTRAT, IENDAT
-                     WRITE (LUPRI,'(/1X,A,I3)') '  IATOM ', IATOM
+                     WRITE (LUPRI,'(/A,I3)') '  IATOM ', IATOM
                      DO 1010 I = JSTRHC(IATOM,ICOOR),JENDHC(IATOM,ICOOR)
-                        WRITE (LUPRI,'(/1X,A,I3)') ' IHCINT ', I
+                        WRITE (LUPRI,'(/A,I3)') ' IHCINT ', I
                         ITYPE = IOFFCC(I)
                         IF (PATH1) THEN
                            IADR = ICMP34
@@ -1355,7 +1350,7 @@ C
                         END IF
                         IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
                         DO 1020 ICMP12 = 1, KHKT12
-                           WRITE (LUPRI,'(/1X,A,I3)') ' ICMP12 ', ICMP12
+                           WRITE (LUPRI,'(/A,I3)') ' ICMP12 ', ICMP12
                            IF (IODD12(ICMP12,2).EQ. IODDIF) THEN
                               WRITE (LUPRI,'(1P,6D12.4)')
      &                              (AOINT(K,IADR,ITYPE),K=1,NO1234)

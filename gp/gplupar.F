@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 #if defined (VAR_MPI2)
 ***********************************************************************
 *
@@ -856,7 +853,7 @@ C
      &                          LUOUTLIST,LUINLIST,
      &                          NBATCH,LBATCH,LEBATCH,I1BATCH,
      &                          IBATCH,MY_IOFF_LUOUT,MY_IOFF_LUDIA,
-     &                          MY_IOFF_LUIN,INV)
+     &                          MY_IOFF_LUIN,INV,THRES_E)
 C
 C     calculate inverted general preconditioner matrix times vector
 C
@@ -968,10 +965,10 @@ C
            IF( CSCREEN) THEN
 C             set proper truncation factor
               THR_TRUNC  = TRUNC_FAC * RNORM_FAC
-Csk           WRITE(LUWRT,*) 'TRUNCATION FACTOR:',THR_TRUNC
+              THR_ETRUNC = 1.0D-7 * THRES_E
 Chj           14-jun-07:   disable THR_ETRUNC
-Chj           THR_ETRUNC = 1.0D-6 * THRES_E
-              THR_ETRUNC = -1.0D0
+!             THR_ETRUNC = -1.0D0
+!testprint    WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
               CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
      &                          THR_TRUNC,THR_ETRUNC)
            ELSE
@@ -1355,11 +1352,9 @@ C
         LBL = IBLOCKL(IBLK)
 C
 C       check if block is active
-C
         IF( ISCALFAC(IBLK) .ne. 0 ) THEN
 C
 C         check if block belongs to own group
-C
           IGROUPBLK = 0
           ISCRNODE = IBLOCKD(IBLK)
 C
@@ -1390,7 +1385,6 @@ csk       write(6,*)' ROOT proc should send: ICOMM_ID, ROOTPROC,MYPROC',
 csk  &    ICOMM_ID,ROOTPROC,MYPROC
 C
 C         decide whether it is necessary to take part in communication
-C
           NNCOLOR = 0
           NNKEY = 0
           NNKEY = MYPROC + 1
@@ -1443,7 +1437,6 @@ C
       ROOTPROC = 0
 C
 C     pointer for file offset: skip real part of the c-vector
-C
       IOFF_SCRATCH_P = L_COMBI
 C
       IOFFSET_IN  = IOFF_SCRATCH_P
@@ -1453,7 +1446,6 @@ C     set correct block counter for imag part
 CSK      WRITE(LUWRT,*) 'IOFF_BLOCK is',IOFF_BLOCK
 C
 C     LOOP OVER BLOCKS
-C
       DO IBLK = 1, NBLOCK 
 C
 C       get length of block
@@ -1610,6 +1602,11 @@ C     some constants
       NNULL = 0
       IONE  = 1
 C
+C     WRITE(LUWRT,*) ' NPARBLOCK in copy routine'
+C     CALL IWRTMAMN(NPARBLOCK,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C     WRITE(LUWRT,*) ' IBLOCKL in copy routine'
+C     CALL IWRTMAMN(IBLOCKL,1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
+C    
       ILEN = 0
 C
 C     loop over vectors
@@ -1670,9 +1667,9 @@ C               recieve block and transfer to file
                 CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,MASTER,91,
      &                        MPI_COMM_WORLD,ISTAT,IERR)
                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-csk                WRITE(6,*) ' S will write this to disk for block',
-csk     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
+!               WRITE(6,*) ' S will write this to disk for block',
+!    &          IOFFSET_LUOUT, IBLK
+!               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
                 CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,ISTAT,IERR)
 C
@@ -1718,9 +1715,9 @@ C               count active blocks
 C
                 IF( IMZERO .eq. 0 ) THEN
 C
-csk               WRITE(LUWRT,*) ' M will write this to disk for block',
-csk  &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
+!                 WRITE(LUWRT,*) ' M will write this to disk for block',
+!    &            IOFFSET_LUOUT, IBLK
+!                 CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
 C
                   CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,ISTAT,IERR)
@@ -3249,13 +3246,16 @@ CSK      NTEST = 10
 *
       IF(INONVAN.LT.NMPROC) THEN
         IMINNP = MIN(INONVAN,NMPROC)
-        IF(NTEST.GT.0) THEN
-          IF(MYPROC.EQ.MASTER) THEN
-            WRITE(6,*) 'subroutine DISTBLKND speaking!'
-            WRITE(6,*) 'number of active blocks lower than number of
-     & procs --> I only use',IMINNP+1,'procs'
-          END IF
-        END IF
+        write(6,'(/a,i6)') '*** error in distblknd:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         IF(MYPROC.GE.INONVAN) GOTO 1001
       ELSE
         IMINNP = NMPROC
@@ -3423,9 +3423,16 @@ C
       NTEMPP = IMINNP
       IF(ICOUNTABLK.LT.NMPROC) THEN
         IMINNP = MIN(ICOUNTABLK,IMINNP)
-        WRITE(LUWRT,*) 'subroutine DISTBLKND_1 speaking!'
-        WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & CPUs --> I only use',IMINNP,'CPUs'
+        write(6,'(/a,i6)') '*** error in distblknd_1:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_1: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF(MYPROC.GE.ICOUNTABLK) THEN
           IAM_NOT_INV =   0
@@ -3848,9 +3855,16 @@ CSK      WRITE(6,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
       NTEMPP = IMINNP
       IF( ICOUNTABLK .lt. NMPROC) THEN
         IMINNP = MIN( ICOUNTABLK, IMINNP )
-        WRITE(LUWRT,*) 'subroutine FIND_SBATCH_DISTR speaking!'
-        WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & CPUs --> I only use',IMINNP,'CPUs'
+        write(6,'(/a,i6)') '*** error in distblknd_2:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_2: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF( MYPROC .ge. ICOUNTABLK ) THEN
           IAM_NOT_INV =   0
@@ -4630,20 +4644,15 @@ C?   &                         I,IGAT(I),XGAT(I)
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE I_DO_RCCTOS(IBLOCKL,ICCTOS,NBLOCKS,ICOMPL)
+      SUBROUTINE I_DO_RCCTOS(IBLOCKL,ICCTOS,NBLOCKS)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION IBLOCKL(*), ICCTOS(*)
 C
       IONE = 1
-      DO ILOOP = 1, ICOMPL
-        DO IBLK = 1, NBLOCKS
-          IF( IBLOCKL(IBLK) .gt. 0 ) THEN
-            ICCTOS( IBLK + ( NBLOCKS * ( ILOOP -1 ) ) ) = IONE
-          END IF
-        END DO
+      DO IBLK = 1, NBLOCKS
+        IF( IBLOCKL(IBLK) .gt. 0 ) ICCTOS(IBLK) = IONE
       END DO
-C
       END 
 ***********************************************************************
 *                                                                     *
@@ -4840,6 +4849,8 @@ C     initialize scratch offsets
       ISCRATCH_SP = 0
       NUM_BLK_SP = 0
 C
+C     WRITE(LUWRT,*) 'initial C vector ',JOFF+1
+C
 C     ================
 C      COMPLEX VECTOR
 C     ================
@@ -4884,9 +4895,8 @@ C
 C
         IOFFSET_OUT = MY_IOFF_LUOUT + IOFFSET_SCRATCH
      
-CSK        WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT',IOFFSET_OUT
-CSK        CALL WRTMATMN(SCR,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
-CSK        WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT',IOFFSET_OUT
+C       WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT',IOFFSET_OUT
+C       CALL WRTMATMN(SCR,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
         
         IOFFSET_INT_OUT = NUM_BLK + 1
 C
@@ -4957,8 +4967,8 @@ C
 C
         IOFFSET_OUT = MY_IOFF_LUOUT + ILEN_COMB + IOFFSET_SCRATCH
 C     
-CSK        WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT imag',IOFFSET_OUT
-CSK        CALL WRTMATMN(SCR,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C       WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT imag',IOFFSET_OUT
+C       CALL WRTMATMN(SCR,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
       
         IOFFSET_INT_OUT = MY_ACT_BLK_ALL + NUM_BLK + 1
 C

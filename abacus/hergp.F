@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : hergp.F
 C
 C
@@ -176,6 +171,7 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -183,8 +179,9 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
+      DIMENSION SHESS(MXCOOR,MXCOOR),
      &          CSTRA(*), SCTRA(*)
+      real(8), allocatable :: chess(:)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -255,9 +252,11 @@ C        Print in non-symmetry basis
 C
          WRITE (LUPRI,'(//)')
          NCOOR = 3*NUCDEP
+         call alloc(chess, mxcoor*mxcoor)
          CALL DZERO(CHESS,NCOOR*NCOOR)
          CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,ITYPE)
          CALL PR2DER(CHESS,NCOOR,MXCOOR,LUPRI)
+         call dealloc(chess)
       END IF
       WRITE (LUPRI,'()')
       CALL FLSHFO(LUPRI)
@@ -279,11 +278,14 @@ C  /* Deck tragrd */
       END
 C  /* Deck trahes */
       SUBROUTINE TRAHES(SHESS,NDIMS,CHESS,CSTRA,SCTRA,NDIMC,NCOOR,ITYPE)
+
+      use memory_allocator
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
-     &          AMAT(MXCOOR,MXCOOR), CSTRA(NCOOR,NCOOR),
+     &                               CSTRA(NCOOR,NCOOR),
      &          SCTRA(NCOOR,NCOOR)
+      real(8), allocatable :: amat(:)
 C
       CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
       DO 100 I = 1, NCOOR
@@ -291,12 +293,14 @@ C
             SHESS(J,I) = SHESS(I,J)
   200    CONTINUE
   100 CONTINUE
+      call alloc(amat, mxcoor*mxcoor)
       CALL MPAB (SCTRA(1,1),NCOOR,NCOOR,NCOOR ,NCOOR ,
      &           SHESS,     NCOOR,NCOOR,NDIMS ,NDIMS ,
      &           AMAT,                  MXCOOR,MXCOOR)
       CALL MPABT(AMAT,      NCOOR,NCOOR,MXCOOR,MXCOOR,
      &           SCTRA(1,1),NCOOR,NCOOR,NCOOR ,NCOOR ,
      &           CHESS,                 NDIMC ,NDIMC )
+      call dealloc(amat)
       RETURN
       END
 C  /* Deck prigeo */
@@ -362,7 +366,6 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "mx2orb.h"
 #include "infinp.h"
 #include "inforb.h"
 C
@@ -1708,13 +1711,13 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "chrxyz.h"
-#include "codata.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)

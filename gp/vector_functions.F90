@@ -1,5 +1,4 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,9 +15,9 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-! Contains a module for elementairy vector operations.
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+! Contains a module for elementary 3-vector operations.
 ! 
 ! JHS, 17-04-2008
 !      

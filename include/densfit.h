@@ -1,11 +1,19 @@
-      LOGICAL DOFIT, LHSFIT,RHSFIT,ROBUST_E,DOBOX,DF_CONSTR,
-     &        DF_GAUDMP,DF_ATTENU,DIATOM, LIN_DF, SAVE_CFIT,
-     &        SAVE_VAB,DF_FITVXC,USING_DIFFDENS,DODFLR
-      COMMON /DENSFIT/ ROB_E_CORR,DF_ATTPAR,DF_GAUPAR,DF_SCRTHR,
-     &                 NDIMA, NDIMB, NDIMC, NDIMD, 
-     &                 NBASEAUX, NODCLSNORM, 
-     &                 NODCLSAUX, NODBTNORM, NODBTAUX,
-     &                 DOFIT,LHSFIT,RHSFIT,ROBUST_E,DIATOM,
-     &                 DOBOX,DF_CONSTR,DF_GAUDMP,DF_ATTENU,
-     &                 LIN_DF,SAVE_CFIT,SAVE_VAB,
-     &                 DF_FITVXC,USING_DIFFDENS,DODFLR
+      logical          dofit, lhsfit, rhsfit, robust_e, dobox,          &
+     &                 df_constr, df_gaudmp, df_attenu, diatom, lin_df, &
+     &                 save_cfit, save_vab, df_fitvxc, using_diffdens,  &
+     &                 dodflr
+
+      integer          ndima, ndimb, ndimc, ndimd, nbaseaux,            &
+     &                 nodclsnorm, nodclsaux, nodbtnorm, nodbtaux
+
+      real(8)          rob_e_corr, df_attpar, df_gaupar, df_scrthr
+
+      common /densftl/ dofit, lhsfit, rhsfit, robust_e, dobox,          &
+     &                 df_constr, df_gaudmp, df_attenu, diatom, lin_df, &
+     &                 save_cfit, save_vab, df_fitvxc, using_diffdens,  &
+     &                 dodflr
+
+      common /densfti/ ndima, ndimb, ndimc, ndimd, nbaseaux,            &
+     &                 nodclsnorm, nodclsaux, nodbtnorm, nodbtaux
+
+      common /densftr/ rob_e_corr, df_attpar, df_gaupar, df_scrthr

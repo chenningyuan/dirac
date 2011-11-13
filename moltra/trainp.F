@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : trainp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -40,7 +36,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
-      PARAMETER (NTABLE = 19)
+      PARAMETER (NTABLE = 20)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -60,7 +56,7 @@ C
       DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','xMSOUT ',
      &            '.POSITR','.SCHEME','xTHROUT','.SPECIA','.VIRTHR',
      &            '.IJTSK ','.SCLMEM','.SCREEN','.ORGALG','.NOSORT',
-     &            '.XXXXXX','.COMMIN','.TPRI34','.TPRI44'/
+     &            '.XXXXXX','.COMMIN','.TPRI34','.TPRI44','.xxxxxx'/
       DATA SET/.FALSE./
 #include "ibtfun.h"
 #include "memint.h"
@@ -93,11 +89,10 @@ C     Default orbital strings is all occupied and all virtuals
         IF(NOCC(I).GT.0) THEN
           WRITE(MP2_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NOCC(I)
         ENDIF
-        WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
+        WRITE(MP2_INDSTR(2,I),'(A)') 'all'
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
-CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
-      IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
+      IF (LEVYLE.OR.BSS.or.x2c) MP2_INTFLG = ILLINT
 C     MP2_ANTIS  = .TRUE.
       MP2_ANTIS  = .FALSE.
 C     note TODO: ANTIS is not implemented!
@@ -109,7 +104,9 @@ C     note TODO: MSOUT is not implemented!
       DMP2_VIRTHR = DUMMY
       IJTSK = 0
       MAXSCL = 0
-      SCRMP2 = 1.D-14
+Ctsaue      SCRMP2 = 1.D-14
+Ctsaue: turning of default screening for now since further testing is needed
+      SCRMP2 = -1.0D0
       SRTSHL = .TRUE.
       CMMNFO = .FALSE.
       TPRI34 = -1.D0
@@ -136,7 +133,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                    11,12,13,14,15,16,17,18,19), I
+     &                    11,12,13,14,15,16,17,18,19,20), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -166,9 +163,18 @@ C&&&& String of active virtual pairs in MP2 module
     4          CONTINUE
 C&&&& Integral classes not included in 4-index transformation
                   IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &                  ILLINT,ILSINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &       'MP2INP: Error in reading ILLINT,ILSINT,ISSINT,IGTINT')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) ILLINT,ILSINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &       'MP2INP: Error in reading ILLINT,ILSINT,ISSINT')
+                     ENDIF
                   END IF
                   MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
@@ -188,7 +194,11 @@ C&&&& SCHEME - Choose transformation scheme
     8          CONTINUE
 C&&&& THROUT - Treshold for output integrals
 C     aug 2001 hjaaj TODO: disabled this option because not implemented
-                  READ(LUCMD,*) THROUT
+                  READ(LUCMD,*,IOSTAT=IOS) THROUT
+                  IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &       'MP2INP: Error in reading THROUT !')
+                  ENDIF
                GO TO 100
     9          CONTINUE
 C&&&& SPECIAL: Mostly for testing
@@ -196,7 +206,7 @@ C
 C   'LS' gives the (LL|SS) contribution to the MP2 energy
 C   'SL' gives the (SS|LL) contribution to the MP2 energy
 C
-                  IF (LEVYLE.OR.BSS) CALL QUIT(
+                  IF (LEVYLE.OR.BSS.or.x2c) CALL QUIT(
      &         '.SPECIAL testing in MP2 not allowed for Levy-Leblond')
                   READ(LUCMD,'(A2)') WS
                   IF (WS.EQ.'LS') THEN
@@ -210,7 +220,11 @@ C
    10          CONTINUE
 C&&&& VIRTHR: Only include Kramers pairs with energy below
 C     threshold in Virtual space.
-               READ(LUCMD,'(F20.5)') DMP2_VIRTHR
+               READ(LUCMD,'(F20.5)',IOSTAT=IOS) DMP2_VIRTHR
+               IF (IOS.NE.0) THEN
+                 CALL QUIT(
+     &         'MP2INP: Error in reading DMP2_VIRTHR !')
+               ENDIF
                GO TO 100
    11          CONTINUE
 C&&&& IJTSK: Max number of active I (and J) Kramers
@@ -248,6 +262,8 @@ C&&&& TPRI34: Threshold for printing 3/4 transformed inetgrals
 C&&&& TPRI44: Threshold for printing fully-transformed inetgrals
                READ(LUCMD,*) ITHR
                TPRI44 = 10.D0**(ITHR)
+               GO TO 100
+   20          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -288,8 +304,7 @@ C
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
 C
-CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
-      IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
+      IF (LEVYLE.OR.BSS.or.x2c) MP2_INTFLG = ILLINT
       IF(SCRMP2.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRMP2
       ELSE
@@ -352,7 +367,7 @@ C     Active occupied and virtual space: only electrons allowed
         WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(1,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)')
      &       '- Occupied space : No electrons'
@@ -363,7 +378,7 @@ C     Active occupied and virtual space: only electrons allowed
         IF(DMP2_VIRTHR.NE.DUMMY) MP2_INDSTR(2,I) = 'all '
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(2,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)')
      &       '- Virtual  space : No electrons'
@@ -404,7 +419,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 4, NTABLE = 25)
+      PARAMETER (NDIR = 3, NTABLE = 26)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -419,15 +434,17 @@ C
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbham.h"
+
 C
       SAVE SET
-      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  ','xXXXXXX'/
+      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
-     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','xXXXXXX'/
+     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
+     &            '.ASCII '/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -441,8 +458,9 @@ C
       LSPES2 = .FALSE.
       LSPES4 = .FALSE.
 
-CMI  ... no HSCC
+!       ... no HSCC
       DOHSCC = .FALSE.
+
 C
 C     Initialize /DCBTRA/
 C     ===================
@@ -455,6 +473,14 @@ C      if problems are encountered, should be reverted to scheme 4
       else
          ISTRAT = 6
       endif
+
+c
+c     activate/deactivate fine sorting of 1HT data for scheme6
+c
+      is6sort           = 0
+      do_finesort       = .false.
+      set_auto_finesort = .false.
+c
 
       ITRA_INTFLG = INTGEN
       IGTINT = IBTAND(INTGEN/8,1)
@@ -475,6 +501,7 @@ C      if problems are encountered, should be reverted to scheme 4
 C     TRA_MSOUT  = .FALSE.
       TRA_MSOUT  = .TRUE.
 C     aug 2001 hjaaj TODO : disabled this option because only true implemented
+      TRA_ASCII = .FALSE.
       NO2IND = .FALSE.
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
@@ -482,6 +509,9 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
       MDCSCAT = .FALSE.
+!.s/sya,2007.0907/ SK - 30-11-2009
+      PRPSYA = .FALSE.
+!.q
       THROUT = 1.0D-14
       SCRTRA = 1.0D-14
 C
@@ -523,7 +553,7 @@ C         if reading input from a terminal
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25), I
+     &                      16,17,18,19,20,21,22,23,24,25,26), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -552,11 +582,32 @@ C&&&& Range of ACTIVE orbitals in 4-index transformation module
                GO TO 100
     3          CONTINUE
 C&&&& INTFLG - Integral classes not included in transformation
-                  IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
-                  ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  END IF
+                 IF (IGTINT .EQ. 1) THEN
+                    READ(LUCMD,*,IOSTAT=IOS) 
+     &                ILLINT,ILSINT,ISSINT,IGTINT
+                    IF (IOS.NE.0) THEN
+                     WRITE(LUPRI,*)
+     &                'TRAINP: Error in reading .INTFLG data,'//
+     &                ' ILLINT,ILSINT,ISSINT,IGTINT:'
+                     WRITE(LUPRI,*) 'read values :',
+     &               ILLINT,ILSINT,ISSINT,IGTINT
+                     CALL FLSHFO(LUPRI)
+                     CALL QUIT(
+     &               'TRAINP: Error in reading 4 .INTFLG paramaters')
+                    ENDIF
+                 ELSE
+                    READ(LUCMD,*,IOSTAT=IOS) ILLINT,ILSINT,ISSINT
+                    IF (IOS.NE.0) THEN
+                      WRITE(LUPRI,*)
+     &                'TRAINP: Error in reading .INTFLG data,'//
+     &                ' ILLINT,ILSINT,ISSINT:'
+                     WRITE(LUPRI,*) 'read values :',
+     &               ILLINT,ILSINT,ISSINT
+                     CALL FLSHFO(LUPRI)
+                     CALL QUIT(
+     &               'TRAINP: Error in reading 3 .INTFLG paramaters')
+                    ENDIF
+                 END IF
                   ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     4          CONTINUE
@@ -610,11 +661,21 @@ C&&&& Range of CORE orbitals in 2-index transformation module
                GO TO 100
     9          CONTINUE
 C&&&& SCHEME - choose method in 4-index transformation
-                  READ(LUCMD,*) ISTRAT
+                  READ(LUCMD,*,IOSTAT=IOS) ISTRAT
+                  IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*) 'TRAINP: read ISTRAT=',ISTRAT
+                   CALL QUIT(
+     &             'TRAINP: Error in reading **MOLTRA .SCHEME')
+                  ENDIF
                GO TO 100
    10          CONTINUE
 C&&&& THROUT - Treshold for output of integrals to MDCINT
-                  READ(LUCMD,*) THROUT
+                  READ(LUCMD,*,IOSTAT=IOS) THROUT
+                  IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*) 'TRAINP: read THROUT=',THROUT
+                   CALL QUIT(
+     &             'TRAINP: Error in reading **MOLTRA .THROUT')
+                  ENDIF
                GO TO 100
    11          CONTINUE
 C&&&& NO2IND - Skip 2-index transformation of effective Fock matrix
@@ -655,18 +716,41 @@ C
    14          CONTINUE
 C&&&& INTFL2 - Integral classes not included in 2-index transformation
                   IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &      'TRAINP: Error in reading  ILLINT,ILSINT,ISSINT,IGTINT'//
+     &      ' for INTFL2 !')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &     'TRAINP: Error in reading ILLINT,ILSINT,ISSINT for INTFL2!')
+                     ENDIF
                   END IF
                   ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
    15          CONTINUE
 C&&&& INTFL4 - Integral classes not included in 4-index transformation
                   IF (IGTINT .EQ. 1) THEN
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &      'TRAINP: Error in reading ILLINT,ILSINT,ISSINT,IGTINT'
+     &      //' for INTFL4 !')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ILSINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       CALL QUIT(
+     &      'TRAINP: Error in reading ILLINT,ILSINT,ISSINT'
+     &       //' for INTFL4 !')
+                     ENDIF
                   END IF
                   ITRA_INTFL4 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
@@ -706,10 +790,29 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   NOMDCINT = .FALSE.
                GO TO 100
    24          CONTINUE
-C&&&& HSMRCC - interface
+!&&&& HSMRCC - interface
                   DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
+!&&&& MOLTRA scheme 6 stuff
+               READ(LUCMD,*) IS6SORT
+#ifndef VAR_PFS
+               if (is6sort.eq.0) then
+                  do_finesort       = .false.
+                  set_auto_finesort = .false.
+               elseif (is6sort.eq.1) then
+                  do_finesort       = .true.
+                  set_auto_finesort = .false.
+               endif
+#else
+               write (*,*) 'MPI-IO enabled! 1HT sort deactivated'
+               do_finesort       = .false.
+               set_auto_finesort = .false.
+#endif
+               GO TO 100
+   26          CONTINUE
+!&&&& Write ASCII file with transformed MO integrals
+                  TRA_ASCII = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -758,7 +861,6 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 C
   400 CONTINUE
 
-
 C
 C     Process defaults for 2- and 4-index transformations
 C
@@ -785,8 +887,8 @@ C
       IF (ITRA_INTFL4.EQ.-8) THEN
          ITRA_INTFL4 = ITRA_INTFLG
       ENDIF
-CMI   IF (LEVYLE) THEN
-      IF (LEVYLE.OR.BSS) THEN
+
+      IF (LEVYLE.OR.BSS.or.x2c.OR.DO4C2C) THEN
          ITRA_INTFL2 = MOD(ITRA_INTFL2,2)
          ITRA_INTFL4 = MOD(ITRA_INTFL4,2)
       ENDIF
@@ -829,7 +931,7 @@ C
         NVEC = 0
         WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
         CALL  NUMLST(TRA_INDSTR(I),IDUMMY,NFBAS(I,IC),
-     &             IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &             IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') ' No explicit orbitals specified '
         ELSE
@@ -859,7 +961,7 @@ C
         DO J = 1,2
           NVEC = 0
           CALL  NUMLST(TRA2_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
           IF(NVEC.EQ.0) THEN
             WRITE(LUPRI,'(4X,A,I2)')
      &      ' No explicit orbitals specified for index ',J
@@ -886,6 +988,21 @@ C
   503 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - write half-transformed integrals (ij|rs) to disk'
+
+        if (set_auto_finesort) then
+           WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals to be determined'//
+     &    ' on the fly from the dimension of the problem'
+        else
+           if (do_finesort) then
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is enabled'
+           else
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is disabled'
+           endif
+        endif
+
         GOTO 500
   504 CONTINUE
         WRITE(LUPRI,'(A)')
@@ -900,6 +1017,21 @@ C
   506 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - write half-transformed integrals (ij|rs) to disk'
+
+        if (set_auto_finesort) then
+           WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals to be determined'//
+     &    ' on the fly from the dimension of the problem'
+        else
+           if (do_finesort) then
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is enabled'
+           else
+              WRITE(LUPRI,'(A)')
+     &    ' - sorting of intermediate 1HT integrals is disabled'
+           endif
+        endif
+
         GOTO 500
   500 CONTINUE
       IF(SCRTRA.GT.D0) THEN
@@ -927,7 +1059,7 @@ C
         DO J = 1,4
           NVEC = 0
           CALL  NUMLST(TRA4_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
           IF(NVEC.EQ.0) THEN
             WRITE(LUPRI,'(4X,A,I2)')
      &      ' No explicit orbitals specified for index ',J
@@ -989,7 +1121,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.OPERAT','.XXXXXX','.XXXXXX',
+      DATA TABLE /'.PRINT ','.OPERAT','.MORANG','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -1053,6 +1185,13 @@ C&&&& OPERATOR: Define operator
                   ICHANG = ICHANG + 1
                GO TO 100
     3          CONTINUE
+!.s/sya,2007.0907,add/ SK - 30-11-2009
+!&&&& MORANG - Range of MOs in property integral transformation
+                  PRPSYA = .TRUE.
+                  DO I = 1, NFSYM
+                    READ(LUCMD,'(A)') TRA2_INDPRP(I)
+                  END DO
+!.q
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -1239,7 +1378,8 @@ C
 C     Processing section
 C     ------------------
 C
-      IF (LEVYLE) THEN
+CMI ... TODO:  should be adapted properly for 2c-4c/4c-2c stuff
+      IF (LEVYLE.OR.BSS.or.x2c.OR.DO4C2C) THEN
         ILSINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -1282,15 +1422,15 @@ C
       ENDIF
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL integrals not included.'
-CMI   IF (.NOT.LEVYLE) THEN
-      IF (.NOT.(LEVYLE.OR.BSS)) THEN
+
+! .. always print out what integrals are included
          IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS integrals not included.'
          IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS integrals not included.'
          IF (IGTINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* Gaunt integrals not included.'
-      END IF
+
  999  CONTINUE
       RETURN
       END

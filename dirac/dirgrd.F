@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirgrd.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -38,6 +33,7 @@ C
 C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -72,22 +68,13 @@ C
       LUMGRD = 80
       CALL OPNFIL(LUMGRD,'RMOLGRD','NEW','RMOLGRD')
 C
-      IF (DODHF) THEN
-chj   IF (DODHF .OR. .NOT. (DOMP2 .OR. DODFT) ) THEN
-chj 03-Jul-2002: only for DODHF
+      IF (dirac_cfg_hf_calculation) THEN
 C
 C        Initialize some variables
 C
 C        If calculation of gradient requested without
 C        calculating the wavefunction SETDHF must be called -
 C        so we call it anyway.
-C
-         IF (.NOT. DODHF) THEN
-            WRITE(LUPRI,'(/A)')
-     &         'RMOLGRD WARNING: Assuming DHF wave function!'
-         END IF
-C
-C        Test for DHF wave functions not implemented in RMOLGRD
 C
 C        HJAAJ July 2001: I have discovered that some of these
 C        dirgrd.F routines (e.g. CONMAT_DHF) assume
@@ -567,7 +554,7 @@ C
          CALL HEADER('CONMAT_DHF: Final DMAT:',-1)
          WRITE(LUPRI,'(3A)') '*** ',M(1), ' part ***'
          CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $        NTBAS(0),NTBAS(0),1,LUPRI)
+     $        NTBAS(0),NTBAS(0),-1,LUPRI)
       END IF
 C
 C     The imaginary parts:
@@ -610,7 +597,7 @@ C
          IF ( IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(3A)') '*** ',M(I), ' part ***'
             CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $           NTBAS(0),NTBAS(0),1,LUPRI)
+     $           NTBAS(0),NTBAS(0),-1,LUPRI)
          END IF
 C     
       END DO
@@ -672,7 +659,7 @@ C
      $           CHAR(IMAT+48)//' :',-1)
             WRITE(LUPRI,'(3A)') '*** ',M(1), ' part ***'
             CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $           NTBAS(0),NTBAS(0),1,LUPRI)
+     $           NTBAS(0),NTBAS(0),-1,LUPRI)
          END IF
 C
 C        The imaginary parts:
@@ -713,7 +700,7 @@ C
             IF ( IPRINT .GE. 10) THEN
                WRITE(LUPRI,'(3A)') '*** ',M(I), ' part ***'
                CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $              NTBAS(0),NTBAS(0),1,LUPRI)
+     $              NTBAS(0),NTBAS(0),-1,LUPRI)
             END IF
 C     
          END DO
@@ -1231,7 +1218,7 @@ C
                CALL HEADER('RMOLGRD1: GABRAO-matrix ('//CHRXYZ(I)//')',
      &              -1)
                CALL OUTPUT(WORK(KGABRAO+N2GAB*I),1,NSYMBL,1,NSYMBL,
-     &                     NSYMBL,NSYMBL,1,LUPRI)
+     &                     NSYMBL,NSYMBL,-1,LUPRI)
             END DO
          END IF
 C
@@ -1328,7 +1315,7 @@ C
      &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
-     &        RELCAL,DUMMY,DUMMY)
+     &        RELCAL,.false.,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -1437,7 +1424,7 @@ C
      &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
-     &        RELCAL,DUMMY,DUMMY)
+     &        RELCAL,.false.,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -1550,12 +1537,12 @@ C
      &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LFREE,DUMY,WORK(KDAO),NDMAT,IDUMMY,
+         CALL TWOINT(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,IDUMMY,
      &        IFCTYP,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
      &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
-     &        RELCAL,DUMMY,DUMMY)
+     &        RELCAL,.false.,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -1784,9 +1771,9 @@ Cjth - endinsert
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('DSYM1R.INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('DSYM1R.OUTPUT:Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 C
       CALL FLSHFO(LUPRI)
@@ -1952,6 +1939,7 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1968,7 +1956,6 @@ C
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "codata.h"
 C
       CALL QENTER('ESTGLS')
 C
@@ -2031,6 +2018,7 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -2038,7 +2026,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
-#include "codata.h"
 C
       PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)

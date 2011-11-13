@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
       SUBROUTINE XQRINP(WORD,RESET,WORK,LWRK)
 C*****************************************************************************
 C
@@ -126,6 +123,9 @@ C
       XQR_ALLCMB = .FALSE.
       XQR_SKIPEE = .FALSE.
       XQR_SKIPEP = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+     &  XQR_SKIPEP = .TRUE.
       DO I = 1,NFSYM
          XQR_INDSTR(1,I) = ' '
          XQR_INDSTR(2,I) = ' '
@@ -345,17 +345,11 @@ C     .EXCPRP compute excited state properties (or matrix elements)
 C
 C     Process section
 C
-      IF (LEVYLE.OR.BSS) THEN
+!     this test is only for safety reasons - it ought to be already correct
+!     anyway - SK Aug 2010
+      IF(LEVYLE.OR.BSS.or.x2c) THEN
 C        INTXQR = ILLINT
          INTXQR = 1
-         XQR_SKIPEP = .TRUE.
-      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
-C     No positron orbitals ("no-pair")
-         XQR_SKIPEP = .TRUE.
-!
-!     radovan: the ELSE below ignores the .SKIPEP keyword!!!
-!     ELSE
-!        XQR_SKIPEP = .FALSE.
       END IF
 
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1
@@ -2290,6 +2284,11 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
+      use dirac_cfg
+      use dft_cfg
+      use xc_driver
+
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -2298,9 +2297,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
-#ifdef MOD_DFT
-#include "dftcom.h"
-#endif
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
@@ -2308,6 +2304,8 @@ C
      &          VECAEP(NZYAEP,NZ),VECBEP(NZYBEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
+
+
 C
       CALL QENTER('E3DRV')
 C
@@ -2365,13 +2363,12 @@ C
      &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
 
 
-#ifdef MOD_DFT
 
 
 !     construct XC contribution
 !     =========================
 
-      if (dftadd) then
+      if (dirac_cfg_dft_calculation) then
 
 !       get unperturbed density matrix
         call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)
@@ -2380,22 +2377,25 @@ C
 !       radovan:
 !       this is necessary iff
 !       (hybrid functional .and. gradient dependence .and. nonzero frequency)
-!       otherwise the symmetrization inside dftexc messes up the KS matrix
+!       otherwise the symmetrization inside xc_integrator messes up the KS matrix
 !       we could check here whether we have this situation and not allocate
 !       otherwise but now we just play it safe and simply allocate it
         call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
         call dzero(work(kxc), 3*n2bbasxq)
 
-        call dftexc(work(kdmat),
-     &              work(kd1ao),
-     &              work(kxc),
-     &              3,
-     &              isymop,
-     &              ihrmop,
-     &              8,
-     &              work(kfree),
-     &              lfree,
-     &              iprxqr)
+         call xc_mpi_wake_up_coworkers()
+         call xc_integrator(xc_mat_dim           = ntbas(0),
+     &                      xc_nz                = nz,
+     &                      xc_dmat_0            = work(kdmat),
+     &                      xc_nr_dmat           = 3,
+     &                      xc_nr_fmat           = 3,
+     &                      xc_dmat              = work(kd1ao),
+     &                      xc_fmat              = work(kxc),
+     &                      xc_fmat_pg_sym       = isymop,
+     &                      xc_dmat_pg_sym       = isymop,
+     &                      xc_dmat_ih_sym       = ihrmop,
+     &                      xc_response_order_mo = 2)
+         call xc_mpi_release_coworkers()
 
 !       add the (symmetrized) XC contribution on top of work(kf1ao)
         call daxpy(3*n2bbasxq, 1.0d0, work(kxc), 1, work(kf1ao), 1)
@@ -2405,7 +2405,6 @@ C
         call memrel('e3drv.dft', work, 1, kdmat, kfree, lfree)
 
       end if
-#endif
 
 
 C     Scale all Fock matrices with a factor 4 to agree with
@@ -2934,7 +2933,6 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "blocks.h"
 #include "dcbfir.h"
-#include "dftcom.h"
 C
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 C
@@ -2948,14 +2946,12 @@ C
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
-#ifdef MOD_DFT
 cjohhe changed 0 to 1 to get anything at all out of DFT static QR
 !     IF(DFTADD) THEN
 !     IHRMOP(1) = 1
 !     IHRMOP(2) = 1
 !     IHRMOP(3) = 1
 !     END IF
-#endif
 C     IFOCKOP:  1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1
       IFCKOP(2)=1

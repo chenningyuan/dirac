@@ -1,6 +1,4 @@
-!
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,11 +15,10 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-!
-! VERSION : $Revision: 7732 $
-! DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+! VERSION : $Revision: 11757 $
+! DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 ! FILE    : mpi_framework.F90
 !
 !      /* Deck MPIXINIT */
@@ -42,28 +39,20 @@ use os_utils
 #include "mpif.h"
 #include "infpar.h"
 #include "dcbgen.h"
-INTEGER             :: IPAREX, IPAREX_SCR, IERR, NUMPROC
+INTEGER             :: IERR, NUMPROC
 CHARACTER (LEN=6)   :: DIRPAR
 !
 ! initialize
 !
 IERR       = 0
-IPAREX_SCR = 6
-IPAREX     = 1
 MYTID      = 0
 NUMNOD     = 0
 NUMPROC    = 0
 MPARID     = 0
 !
-!
-! check for parallel execution
-! default: parallel if DIRPAR not defined
-!
-IPAREX = GET_ENVIRONMENT_INTEGER('DIRPAR',1)
-!
 ! initialize MPI_COMM_WORLD
 !
-IF( IPAREX .ne. 0 )THEN
+IF( IPAREX .gt. 0 )THEN
   CALL MPI_INIT( IERR )
   IF( IERR .ne. 0 ) THEN
      WRITE(LUPRI,'(/A)') '  ** ERROR in MPIXINIT ** MPI initialization failed. '
@@ -125,8 +114,6 @@ IF( IPAREX .ne. 0 )THEN
 !
   CALL DIST_ENV(1)
   CALL DIST_ENV(2)
-ELSE
-	PARCAL = .FALSE.
 END IF ! IPAREX
 END SUBROUTINE MPIXINIT
 

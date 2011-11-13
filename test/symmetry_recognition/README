@@ -1,0 +1,6 @@
+! The test is meant to check the automatic detection of symmetry and calculates the nonrelativistic energy.
+!
+! We assume that the basis sets are available in your standard path.
+! These sets can be obtained from the Dalton distribution and may later be included in the DIRAC distribution as well.
+!
+! Note that a coarse DFT grid is used and the calculation is stopped after 4 iterations.

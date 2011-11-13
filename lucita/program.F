@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -628,10 +625,13 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
       ELSE
         MULSPCA = 0
       END IF
+C
+C     check for restart without CI --> we want to run an analysis only
+      IF( MAXIT .lt. 0) GOTO 404
+C
 #if defined (VAR_MPI2)
 C
 C     copy restart vector to MPI-file format
-C
       IF( INICI .lt. 0) THEN
 C
          WRITE(LUWRTOUT,'(2X,A)')
@@ -678,7 +678,7 @@ C
 CTF
 *  If TERACI has been chosen, only 1 root is determined.
 *  So change NROOTS accordingly, otherwise program crashes.
-      if (IDIAG.eq.2) then
+ 404  if (IDIAG.eq.2) then
         NROOT_SAVE = NROOT
         NROOT = 1
       end if
@@ -694,7 +694,7 @@ C     close parallel files that are not needed anymore...
 C
       CALL SETUNITS_PAR_CLOSE_1
 C
-      IF( IAM_NOT_INV .eq. 0 ) GOTO 505
+      IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
 C
       LBLK = -1
 C
@@ -1193,7 +1193,7 @@ C     Symmetry information
 C     Number of integrals
       CALL INTDIM(IPRORB)
 C     Allocate local and global arrays
-      CALL ALLOC
+      CALL ALLOC_LUCITA
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
@@ -4165,7 +4165,8 @@ C     END IF
 * 53 : Convergence threshold for CI
 *
       IF(ISETKW(53).EQ.0) THEN
-        THRES_E = 1.0D-10
+!       THRES_E = 1.0D-10
+        THRES_E = 1.0D-7
         ISETKW(53) = 2
       END IF
 *
@@ -5201,8 +5202,8 @@ C    &  '        Allowed number of iterations    ',MAXIT
       WRITE(LUOUT,'(1H ,A,I2)')
      &  '        Allowed Dimension of CI subspace',MXCIV
 *
-      WRITE(LUOUT,'(1H ,A,E11.5)')
-     &  '        Convergence threshold for energy ',THRES_E
+      WRITE(LUOUT,'(A,1P,E11.5)')
+     &  '         Convergence threshold for energy ',THRES_E
 *. Multispace (multigrid info )
       IF(MULSPC.EQ.1) THEN
         WRITE(LUOUT,'(1H ,A,I3)')
@@ -5703,7 +5704,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *.Memory
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
-      DIMENSION IMOKW(NTABLE)
+C     DIMENSION IMOKW(NTABLE)
       CHARACTER*10 INTFCE, WORD3*7
       CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
       LOGICAL CA,LUEND

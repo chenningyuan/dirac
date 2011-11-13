@@ -1,7 +1,4 @@
-#ifdef MOD_STEX
-C
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,13 +15,11 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+#ifdef MOD_STEX
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamstex.F
 C
 C MAIN AUTHOR : Ulf Ekstroem, 2005-2006.
@@ -34,6 +29,7 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -46,7 +42,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbstex.h"
-#include "codata.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -671,7 +666,7 @@ c     Multiply with -j from the right
 #include "blocks.h"
 #include "dcbfir.h"
       integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       END
 
@@ -1421,6 +1416,7 @@ C
 C
       CALL DZERO(FMO,N2ORBXQ)
 C
+      IPRINT=0
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(NORB(I1).GT.0 .AND. NORB(I2).GT.0) THEN
@@ -1514,7 +1510,7 @@ C     Calculate the overlap between the mo's in cmo1 and cmo2
       DIMENSION CMO1(NCMOTQ),CMO2(NCMOTQ),QOVL(N2ORBXQ),WORK(LWORK)
 #include "memint.h"
       CALL MEMGET('REAL',KOVL, N2BBASX, WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KOVL),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KOVL),SSMTRC)
       CALL STEX_FAOMO2(QOVL,WORK(KOVL),1,1,1,1,CMO1,CMO2,WORK(KFREE)
      $     ,LFREE)
       END
@@ -1808,15 +1804,15 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbstex.h"
-C
+
       PARAMETER ( D0 = 0.0D0 )
-C
+
       CHARACTER T*1
-C
+
       DIMENSION FAO(N2BBASXQ),FMO(STEX_N2VIRXQ)
       DIMENSION T(-1:1),CMO(*),WORK(LWRK)
       INTEGER   JCMO(2)
-C
+
       CALL QENTER('STEXFAOMO')
       IF (IPRINT.GE.10) THEN
          CALL HEADER('STEXFAOMO: Fock matrix in AO-basis',-1)
@@ -1824,15 +1820,14 @@ C
      &        IPQTOQ(1,ISYM-1),LUPRI)
       ENDIF
 
-C
       KFREE = 1 
       LFREE = LWRK
-C
+
       JCMO(1) = ICMOQ(1) + NFBAS(1,0)*(NPSH(1)+NISH(1)) + 1
       JCMO(2) = ICMOQ(2) + NFBAS(2,0)*(NPSH(2)+NISH(2)) + 1      
-C
+
       CALL DZERO(FMO,STEX_N2VIRXQ)
-C
+      !IPRINT=0 ! mi-commented out (fixed openmpi gfortran 4.4.5 prob)
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(STEX_NVIR(I1).GT.0 .AND. STEX_NVIR(I2).GT.0) THEN

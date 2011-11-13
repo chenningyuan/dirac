@@ -34,9 +34,13 @@
       LOGICAL LINEAR
       COMMON /DGRPL/ LINEAR
 
-! CMI ... number of operator types in DIRAC is now in NOPTYP
+! =========================================================
+! ... number of operator types in DIRAC is now in NOPTYP
+! These are: 
+! 1. P, 2. i[alpha_x]P,3. i[alpha_y]P,...19. beta, 20. iS.P,21 iBETAGAMA5
+! =========================================================
       INTEGER NOPTYP
-      PARAMETER (NOPTYP = 20)
+      PARAMETER (NOPTYP = 21)
 
 ! *** 4-component operators : Matrix part ***
 !
@@ -54,5 +58,7 @@
 !     JCOM  - coefficient of component
 !
       INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
-     &         JM4REP(0:7),   JM4POS(0:7),     JM4FAS(0:7)
+     &        JM4REP(0:7),JM4POS(0:7),JM4FAS(0:7)
+      CHARACTER*4 M4COMB(0:7)
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
+      COMMON /ONECMB/ M4COMB

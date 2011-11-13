@@ -1,0 +1,325 @@
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+module london_prp_cfg
+
+  implicit none
+
+  public common_blocks_vars
+  public print_common_blocks_vars
+
+
+  save
+
+! parameters:
+  integer, parameter, public :: idummy = -9999999
+  real(8), parameter, public :: dummy  = 1.0D20
+  integer, parameter, public :: fcklon_unit = 70
+  integer, parameter, public :: twolon_unit = 69
+  integer, parameter, public :: p_lupri = 6
+  integer, parameter, public :: max_prp_operators = 400
+  integer, parameter, public :: mxqn = 10
+  integer, parameter, public :: mxaqn = mxqn*(mxqn+1)/2 
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+  integer, parameter, public :: p_irat = 1
+#else
+  integer, parameter, public :: p_irat = 2
+#endif
+
+  integer, public :: int1_unit !should also be a parameter
+  integer, public :: prp_iprint
+  integer, public :: nr_ao_total
+  integer, public :: nr_ao_large
+  integer, public :: nr_ao_small
+  integer, public :: p_n2bbasxq
+  integer, public :: p_n2bbasx
+  integer, public :: nr_qu
+  integer, public :: p_norb(1:2)
+  integer, public :: p_norbt
+  integer, public :: p_n2orbxq
+  integer, public :: p_nfsym 
+  integer, public :: p_nbsym
+  integer, public :: p_nfbas(1:2, 0:2)
+  integer, public :: p_icmoq(1:2)
+  integer, public :: p_i2basx(1:2, 1:2)
+  integer, public :: p_i2orbx(1:2, 1:2)
+  integer, public :: p_ipqtoq(1:4, 0:7)
+  integer, public :: p_iqtopq(1:4, 0:7)
+  integer, public :: p_jbtof(0:7, 1:2)
+  integer, public :: ip_conmat(1:3)
+  integer, public :: nmr_int
+  integer, public :: p_iprptim(1:max_prp_operators)
+  integer, public :: p_iprpsym(1:max_prp_operators) 
+  logical, public :: dopct_rntlon = .false.
+  logical, public :: sum_ep_rn
+  integer, public :: p_maxrep
+  integer, public :: p_kmax
+  integer, public :: p_khk(mxqn)
+  integer, public :: p_khkt(mxqn)
+  integer, public :: p_nhkt(mxqn)
+  integer, public :: p_nhtyp
+  integer, public :: p_nlrgbl
+  integer, public :: p_nsmlbl
+  logical, public :: p_first1
+  logical, public :: p_first2
+  logical, public :: p_first3
+  logical, public :: p_parcal
+  integer, public :: p_iprnta
+  integer, public :: p_iprntb
+  integer, public :: p_iprntc
+  integer, public :: p_iprntd
+  logical, public :: p_tktime
+  integer, public :: p_isymax(3, 2)
+  integer, public :: p_irqmat(4, 0:7)
+  integer, public :: p_iqmult(4, 4, 4)
+  integer, public :: p_jqbas(0:7, 2)
+  integer, public :: p_ihqmat(4, -1:1)
+  integer, public :: p_ipar(0:7)
+
+  integer, parameter, public :: p_noptyp = 21
+  integer, public :: p_jm4(3, p_noptyp)
+  integer, public :: p_jm4pos(0:7)
+
+! new variables
+  integer, public :: nr_xyz_comp
+!  integer, parameter, public :: nr_xyz_comp = 3
+!  logical, public :: get_nmr_integrals_ll
+!  logical, public :: get_nmr_integrals_ls
+!  logical, public :: get_nmr_integrals_ss
+!  integer, public :: isym_2el_lao(nr_xyz_comp)
+!  integer, public :: irep_2el_lao(nr_xyz_comp)
+!  integer, public :: iherm_2el_lao(nr_xyz_comp)
+!  integer, public :: ifckop_2el_lao(nr_xyz_comp)
+!  integer, public :: jbtof_2el_lao(nr_xyz_comp)
+!  integer, public :: nr_shells_temp
+!  logical, public :: only_large_shells
+  logical, public :: p_levyle
+!
+  integer, public :: p_nlrgsh
+
+
+
+
+  private
+
+contains
+
+
+  subroutine common_blocks_vars()
+! ----------------------------------------------------------------------
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbnmr.h"
+#include "dcbxpr.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbfir.h"
+#include "dcbham.h"
+#include "ccom.h"
+#include "iratdef.h"
+#include "shells.h"
+#include "symmet.h"
+#include "cbihr2.h"
+#include "dcbqal.h"
+!#include "dummy.h"
+!#include "maxaqn.h"
+!-----------------------------------------------------------------------
+    integer :: i, j, k
+!-----------------------------------------------------------------------
+
+    int1_unit          = lu1int
+    dopct_rntlon       = dopct
+    sum_ep_rn          = doeprn
+    prp_iprint         = iprprp 
+
+! atomic orbitals:
+    nr_ao_total        = ntbas(0)
+    nr_ao_large        = ntbas(1)
+    nr_ao_small        = ntbas(2)
+
+    p_n2bbasxq         = n2bbasxq  ! = nr_ao_total*nr_ao_total*nr_qu
+    p_n2bbasx          = n2bbasx   ! = nr_ao_total*nr_ao_total
+
+    nr_qu              = nz
+
+! molecular orbitals:
+    p_norb(1:2)        = norb(1:2)
+    p_norbt            = norbt
+    p_n2orbxq          = n2orbxq
+
+    p_nfsym            = nfsym
+    p_nbsym            = nbsym
+    
+!
+    p_nfbas = 0
+    do i = 1, 2
+      do j = 0, 2
+        p_nfbas(i, j)  = nfbas(i, j)
+      end do
+    end do
+
+!icmoq(2):
+    p_icmoq(1:2) = icmoq(1:2)
+
+!i2basx(2, 2) & i2orbx(2, 2)
+    p_i2basx(1:2, 1:2) = i2basx(1:2, 1:2)
+    p_i2orbx(1:2, 1:2) = i2orbx(1:2, 1:2)
+
+! ipqtoq & iqtopq
+    p_ipqtoq = 0
+    p_iqtopq = 0
+    do i = 1, 4
+      do j = 0, 7 
+        p_ipqtoq(i, j) = ipqtoq(i, j)
+        p_iqtopq(i, j) = iqtopq(i, j)
+      end do
+    end do
+
+! jbtof(0:7, 2)
+    p_jbtof = 0
+    do j = 1, 2
+      do i = 0, 7 
+        p_jbtof(i, j) = jbtof(i, j)
+      end do
+    end do
+
+! connection matrices:
+    ip_conmat = 0
+    do i = 1, 3
+      ip_conmat(i)     = ipcon(i)
+    end do
+
+! intnmr = illint + 2*islint + 4*issint
+    nmr_int            = intnmr
+
+!iprptim, iprpsym:
+    p_iprptim = 0
+    p_iprpsym = 0
+    do i = 1, max_prp_operators
+      p_iprptim(i)  = iprptim(i)     !(+1,-1)
+      p_iprpsym(i) = iprpsym(i)      !(1 - 8)
+    end do
+
+    p_maxrep = maxrep
+    p_kmax   = kmax
+    p_nhtyp  = nhtyp
+    do i = 1, mxqn
+      p_khk(i)  = khk(i)
+      p_khkt(i) = khkt(i)
+      p_nhkt(i) = nhkt(i)
+    end do
+
+    p_nlrgbl = nlrgbl
+    p_nsmlbl = nsmlbl
+
+    p_first1 = first1
+    p_first2 = first2
+    p_first3 = first3
+ 
+    p_parcal = parcal
+
+    p_iprnta = iprnta
+    p_iprntb = iprntb
+    p_iprntc = iprntc
+    p_iprntd = iprntd
+  
+    p_tktime = tktime
+
+    p_isymax = 0
+    do i = 1, 3
+      do j = 1, 2
+        p_isymax(i, j) = isymax(i, j)
+      end do
+    end do
+
+    p_irqmat = 0
+    do i = 1, 4
+      do j = 0, 7
+        p_irqmat(i, j) = irqmat(i, j)
+      end do
+    end do
+
+    p_iqmult = 0
+    do i = 1, 4
+      do j = 1, 4
+        do k = 1, 4
+          p_iqmult(i, j, k) = iqmult(i, j, k)
+        end do
+      end do
+    end do 
+
+    p_jqbas = 0
+    do i = 0, 7
+      do j = 1, 2
+        p_jqbas(i, j) = jqbas(i, j)
+      end do
+    end do
+
+    p_ihqmat = 0
+    do i = 1, 4
+      do j = -1, 1
+        p_ihqmat(i, j) = ihqmat(i, j)
+      end do
+    end do
+
+    if (bxlao .or. bylao .or. bzlao) then
+      nr_xyz_comp = 1
+    else
+      nr_xyz_comp = 3
+    end if
+
+
+!    do i = 0, 7
+    do i = 0, maxrep
+      p_ipar(i) = ipar(i)
+    end do
+
+    p_nlrgsh = nlrgsh
+    p_levyle = levyle
+
+
+    p_jm4 = 0
+    do i = 1, p_noptyp
+      do j = 1, 3
+        p_jm4(j, i) = jm4(j, i)
+      end do
+    end do
+
+    p_jm4pos = 0
+    do i = 0, 7
+      p_jm4pos(i) = jm4pos(i)
+    end do
+
+
+  end subroutine common_blocks_vars
+
+
+  subroutine print_common_blocks_vars()
+
+    write(p_lupri, *) 'nr_xyz_comp = ', nr_xyz_comp
+
+  end subroutine print_common_blocks_vars
+
+end module

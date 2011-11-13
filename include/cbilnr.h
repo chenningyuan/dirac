@@ -1,0 +1,6 @@
+      LOGICAL ALFA, ROAA, ROAG
+      PARAMETER       (MXFR  = 21, MAXLN = 80)
+      CHARACTER*8     LABALN
+      COMMON /LNLBL / LABALN(MAXLN)
+      COMMON /CBILNR/ THCLNR, FRVAL(MXFR), NFRVAL, IPRLNR, NABALN,           &
+     &                ALFA, ROAA, ROAG

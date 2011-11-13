@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  *
  *
- * $Id: tracing.c 7009 2008-06-07 23:10:40Z gomes $
+ * $Id: tracing.c 10839 2010-05-17 18:47:17Z bast $
  *
  * tracing.c : functions to retrieve information from the execution stack and process them into fortran-friendly data
  *
@@ -177,6 +177,10 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
       if (strncmp(symbol_name,"",1))
       {
          printf("%3d   function name:   %30s\n",j,symbol_name);
+//radovan: Ossama reports a warning (is the 30s a problem?):
+//       gp/tracing.c(179): warning #181: argument is incompatible with
+//       corresponding format string
+//       conversion                                                            
       }
       else
       {
@@ -185,7 +189,6 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
       j--;
    }
    printf("\n");
-
 }
 
 

@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11760 $
+C DATE    : $Date: 2010-10-11 07:04:49 +0200 (Mon, 11 Oct 2010) $
 C FILE    : mempkg.F
 C
 C
@@ -75,12 +70,35 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
+!-----------------------------------------------------------------------
+!  N.B. (sya, 2007.05.08)
+!     The length of array is counted by REAL*8.
+!
+!     INTENT(IN)    :: TYPE, LENGTH
+!     INTENT(OUT)   :: KBASE
+!     INTENT(INOUT) :: KFREE, LFREE
+!
+!     Before call
+!       1                 KFREE[old]                     SIZE(WORK)
+!       +-----------------+------------------------------+
+!                          <------------LFREE----------->
+!                          <--LENGTH/IRAT-->
+!
+!     After call
+!       1                 KBASE             KFREE[new]   SIZE(WORK)
+!       +-----------------+-----------------+------------+
+!                                            <---LFREE-->
+!                         KBASE=KFREE[old]+1
+!
+!-----------------------------------------------------------------------
 #include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
 C
 #include "iratdef.h"
 #include "memcb1.h"
+#include "logging.h"
 C
       EXTERNAL MEMBKD
 C
@@ -96,8 +114,12 @@ Chj1  CALL QENTER('MEMGET  ')
          LREAL = LENGTH
       ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT8') THEN
+         LREAL = LENGTH
       ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT4') THEN
+         LREAL = (LENGTH-1)/2 + 1
       ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
          LREAL = (LENGTH-1)/IRAT2 + 1
       ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
@@ -116,6 +138,9 @@ C                         ^- make sure OK for KFREE .eq. 1
          END IF
          CALL QUIT('MEMGET ERROR, illegal type')
       END IF
+      IF (LOGMEMGET) THEN
+         WRITE (LUPRI,'(/A,2I10)') '@memget:',LREAL,LFREE
+      ENDIF
 C
 C
       MEMID(2) = LREAL
@@ -158,15 +183,22 @@ C
          IF (KFREE .GT. 1) THEN
             LENIDS = LENID
             WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
+
+            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
             CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
+
          ELSE
             LENIDS = 2*LENID
             WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
+            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
          END IF
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,1010) LREAL+LENIDS,LFREE
+            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
+
             CALL QTRACE(LUEMEM)
+
          END IF
          CALL QUIT('MEMGET ERROR, insufficient work space in memory')
  1010 FORMAT(
@@ -215,6 +247,39 @@ C
 C     end of MEMGET
 C
       END
+
+      SUBROUTINE MEM_SHORTAGE_INFO (MEM_NEED, MEM_DISPOSAL)
+!------------------------------------------------------------------------
+!
+!  Print out worth info on how much the memory has to be increased
+! in the its shortage
+!
+!------------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+
+      ! calculate the difference in megawords
+      DIFF_MEM=(DFLOAT(MEM_NEED)-DFLOAT(MEM_DISPOSAL))/1000000.0D0
+      DIFF_MEM=DIFF_MEM+1.0D0
+
+      WRITE(LUPRI,'(/,/,8X,A,/,A,F6.0,A)')
+     & "**** To overcome this memory crash: ****",
+     & "...please increase the current memory allocation "//
+     & "(pam 'mw' or 'nw' parameter) by at least", 
+     & DIFF_MEM," megawords."
+
+#ifdef VAR_MPI
+      WRITE(LUPRI,'(2X,A,/,A)') "Well, this is parallel run.",
+     & "Check in the error output whether"//
+     &" the memory increase is for the master"//
+     &" (pam 'mw' parameter) or for the slave (pam 'nw' parameter)."
+#else
+      WRITE(LUPRI,'(2X,A,A)') "Well, this is serial run. ",
+     &"Increase the pam 'mw' parameter."
+#endif
+      RETURN
+      END
+
 C  /* Deck memrel */
       SUBROUTINE MEMREL(TEXT,WORK,KFIRST,KREL,KFREE,LFREE)
 C
@@ -223,6 +288,26 @@ C
 C Check memory allocation from WORK(KFIRST)
 C then free memory from WORK(KREL)
 C
+!-----------------------------------------------------------------------
+!  N.B. (sya, 2007.05.08)
+!     Usually, KFIRST is set to equal to KFREE.  However, another value
+!     is possible.
+!
+!     INTENT(IN)    :: TEXT, KFIRST, KREL
+!     INTENT(OUT)   ::
+!     INTENT(INOUT) :: KFREE, LFREE
+!
+!     Before call
+!       1                 KREL              KFREE        SIZE(WORK)
+!       +-----------------+-----------------+------------+
+!                                            <---LFREE-->
+!
+!     After call
+!       1                 KFREE                          SIZE(WORK)
+!       +-----------------+------------------------------+
+!                          <------------LFREE----------->
+!
+!-----------------------------------------------------------------------
 #include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT

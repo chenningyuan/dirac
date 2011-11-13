@@ -1,11 +1,13 @@
 !
-! VERSION : $Revision: 7531 $
-! DATE    : $Date: 2008-09-04 12:39:48 +0200 (Thu, 04 Sep 2008) $
+! VERSION : $Revision: 11283 $
+! DATE    : $Date: 2010-08-09 14:37:27 +0200 (Mon, 09 Aug 2010) $
 ! FILE    : dcbgen.h
 !
 !*** General information in DIRAC ***
+!
 !  DOPIN - read MO-coefficients from formatted file and write them to
 !          unformatted
+!  DOPIN_I3 - IBEIG in MO-coeff formatted file in I3 format (linear symmetry, large basis set)
 !  DOPUT - write MO-coefficients to formatted file
 !
 !  INTGEN - Give top level integral flag
@@ -16,10 +18,19 @@
 !  BNCRON - Improved screening of nucleus for bare nucleus starting 
 !           guess
 !
-!  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode
+!      TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
+!  TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
+!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode 
+!  X2C_mod    = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
+!
+!  SKIP2E - Skip all two electron steps.
+!
+!  DOJACO - do the Jacobi diagonalization of real matrixes
+!  DOQJACO - Jacobi diagonalization of quaternion Jacobi matrixes
 !
 !  These flags should be passed on to every module
 !
+! NOSFCRASH - No Seg.Fault crash (by call quit). This is important for preserving gmon.out
 !
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)
@@ -28,21 +39,25 @@
       COMMON /CBCPAM/ TITLE
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
-     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO, DOPIN, DOPUT,       &
+     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO, DOPIN, DOPIN_I3,    & 
+     &        DOPUT,                                                    &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
-     &        DOACIN, CBKRINI
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     & 
+     &        X2C_mod
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
-     &                DOFCK3, DOPIN, DOPUT, OPTIMI, HRINPC, RDINPC,     &
+     &                DOFCK3, DOPIN, DOPIN_I3,                          & 
+     &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
-     &                DOACIN, CBKRINI
+     &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
+     &                DOQJACO, X2C_mod
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
@@ -54,10 +69,10 @@
       COMMON /GNRPAM/ CVAL, STOL, PANAS
 
       INTEGER LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC, LUKRM1,   &
-     &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO, LUBSS
+     &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO, LUBSS,  LUX2C
       COMMON /PAMIOU/ LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC,   &
      &                LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO,   &
-     &                LUBSS
+     &                LUBSS,  LUX2C
 
       CHARACTER*(LBASDIR) BASDIR, CDIRNOD
       COMMON /GNCPAM/ BASDIR, CDIRNOD

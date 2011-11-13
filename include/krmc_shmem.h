@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 6986 $
-! DATE    : $Date: 2008-06-03 12:20:27 +0200 (Tue, 03 Jun 2008) $
+! VERSION : $Revision: 9029 $
+! DATE    : $Date: 2009-06-03 23:42:33 +0200 (Wed, 03 Jun 2009) $
 ! FILE    : krmc_shmem.h
 !
 !                MPI memory pointer 
@@ -14,7 +14,8 @@
      &                               MY_IAPROC_PTR, MY_TTOL_PTR,
      &                               MY_CHECK_F_PTR, MY_XT_PTR,
      &                               MY_VEC1_PTR, MY_VEC2_PTR,
-     &                               MY_BWEIGHT_PTR, MY_DL_PTR 
+     &                               MY_BWEIGHT_PTR, MY_DL_PTR,
+     &                               MY_T_PTRXXX 
 #endif
 !
       COMMON/MPI_MEMPOINTER1/  MY_T_SCR_PTR
@@ -29,6 +30,7 @@
       COMMON/MPI_MEMPOINTER10/ MY_BWEIGHT_PTR
       COMMON/MPI_MEMPOINTER11/ MY_BPROC_PTR
       COMMON/MPI_MEMPOINTER12/ MY_DL_PTR
+      COMMON/MPI_MEMPOINTER13/ MY_T_PTRXXX
 !
 !             MPI memory window handler 
 !     ======================================

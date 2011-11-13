@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 ***********************************************************************
 *
 *========================================================*
@@ -76,7 +73,7 @@ C?          WRITE(6,*) ' COPVCD, IAMPACK,FILE = ', IAMPACK,LUIN
           END IF
           IF(IMZERO.EQ.0) THEN
             IF(IAMPACK.EQ.0) THEN
-              CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+              CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
             ELSE
               CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
             END IF
@@ -541,37 +538,37 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION ARRAY(*)
 *
-      DIMENSION ISCR(2)
+      integer ISCR(2)
       PARAMETER(LPBLK=50000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
+      integer, intent(in) :: IFILE
  
       SAVE LBATCH
       DATA LBATCH/0/
 C
       IPACK = 1
+      ISCR(1) = 0
+      ISCR(2) = 0
       IF(IPACK.NE.0) THEN
 *. Read if ARRAY is zero
         MMBLOCK = MBLOCK
 C       IF(MMBLOCK.GE.2) MMBLOCK = 2
 C       CALL IFRMDS(ISCR,2,MMBLOCK,IFILE)
         CALL IFRMDS(ISCR,2,2,IFILE)
-        IMZERO=ISCR(1)
-        I_AM_PACKED=ISCR(2)
+        IMZERO      = ISCR(1)
+        I_AM_PACKED = ISCR(2)
         IF(I_AM_PACKED.NE.0) THEN
-C       WRITE(6,*) ' File is packed, file number = ', IFILE
+C         WRITE(6,*) ' File is packed, file number = ', IFILE
         END IF
         IF(IMZERO.EQ.1) THEN
-          ZERO = 0.0D0
-C?        write(6,*) ' frmdsc, length of zero block',NDIM
-          CALL SETVEC(ARRAY,ZERO,NDIM)
+          CALL dzero(ARRAY,NDIM)
           GOTO 1001
         END IF
       END IF
 *
       IF(I_AM_PACKED.EQ.1) THEN
-        ZERO = 0.0D0
-        CALL SETVEC(ARRAY,ZERO,NDIM)
+        CALL dzero(ARRAY,NDIM)
 *. Loop over packed records of dimension LPBLK
       NBATCH = 0
 C1000 CONTINUE
@@ -623,7 +620,6 @@ C
 *
  1001 CONTINUE
 *
-      RETURN
       END
 ***********************************************************************
       SUBROUTINE FRMDSC2(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED,
@@ -640,7 +636,7 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION ARRAY(*)
 *
-      DIMENSION ISCR(2)
+      integer ISCR(2)
       PARAMETER(LPBLK=50 000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
@@ -651,26 +647,26 @@ C
       IMZERO = 0
 C
       IPACK = 1
+      ISCR(1) = 0
+      ISCR(2) = 0
       IF(IPACK.NE.0) THEN
 *. Read if ARRAY is zero
         MMBLOCK = MBLOCK
 C       IF(MMBLOCK.GE.2) MMBLOCK = 2
 C       CALL IFRMDS(ISCR,2,MMBLOCK,IFILE)
         CALL IFRMDS(ISCR,2,2,IFILE)
-        IMZERO=ISCR(1)
-        I_AM_PACKED=ISCR(2)
+        IMZERO      = ISCR(1)
+        I_AM_PACKED = ISCR(2)
         IF(IMZERO.EQ.1) THEN
           IF(NO_ZEROING.EQ.0) THEN
-            ZERO = 0.0D0
-            CALL SETVEC(ARRAY,ZERO,NDIM)
+            CALL DZERO(ARRAY,NDIM)
           END IF
           GOTO 1001
         END IF
       END IF
 *
       IF(I_AM_PACKED.EQ.1) THEN
-        ZERO = 0.0D0
-        CALL SETVEC(ARRAY,ZERO,NDIM)
+        CALL DZERO(ARRAY,NDIM)
 *. Loop over packed records of dimension LPBLK
       NBATCH = 0
 C1000 CONTINUE
@@ -969,22 +965,19 @@ C
       REAL*8 INPROD
       DIMENSION VEC1(*),VEC2(*)
       LOGICAL DIFVEC
+      integer, intent(in) :: LU1, LU2, IREW, LBLK
+      integer :: myLU1, myLU2, NBL1, NBL2
 C
       X = 0.0D0
-      IF( LU1 .NE. LU2 ) THEN
-        DIFVEC = .TRUE.
-      ELSE
-        DIFVEC =  .FALSE.
-      END IF
+      myLU1 = LU1
+      myLU2 = LU2
+
+      DIFVEC =  .FALSE.
+      IF(myLU1.ne.myLU2) DIFVEC = .TRUE.
 C
       IF( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LU1
-          IF(DIFVEC) REWIND LU2
-         ELSE
-          REWIND LU1
-          IF( DIFVEC ) REWIND LU2
-         END IF
+        REWIND myLU1
+        IF(DIFVEC) REWIND myLU2
       END IF
 C
 C LOOP OVER BLOCKS OF VECTORS
@@ -995,8 +988,10 @@ C
           NBL1 = LBLK
           NBL2 = LBLK
         ELSE
-          READ(LU1) NBL1
-          IF( DIFVEC) READ(LU2) NBL2
+          NBL1 = 0
+          NBL2 = 0
+          READ(myLU1) NBL1
+          IF( DIFVEC) READ(myLU2) NBL2
         END IF
 C
         IF(NBL1 .GE. 0 ) THEN
@@ -1005,9 +1000,9 @@ C
           ELSE
             KBLK = -1
           END IF
-          CALL FRMDSC(VEC1,NBL1,KBLK,LU1,IMZERO,IAMPACK)
+          CALL FRMDSC(VEC1,NBL1,KBLK,myLU1,IMZERO,IAMPACK)
           IF( DIFVEC) THEN
-            CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
+            CALL FRMDSC(VEC2,NBL1,KBLK,myLU2,IMZERO,IAMPACK)
             IF(NBL1 .GT. 0 )
      &      X = X + DDOT(NBL1,VEC1,1,VEC2,1)
 C?          write(6,*) ' vec1 and vec2 in INPRDD '
@@ -1022,7 +1017,6 @@ C?         CALL WRTMAT(VEC2,1,NBL1,1,NBL1)
 C
       INPRDD = X
 C
-      RETURN
       END
 ***********************************************************************
       SUBROUTINE ITODS(IA,NDIM,MBLOCK,IFIL)
@@ -1337,7 +1331,7 @@ C RECORDS WITH LENGTH NBLOCK.
 *
         ISCR(1) = IMZERO
 *. No packing 
-         ISCR(2) = 0
+        ISCR(2) = 0
 C       CALL ITODS(ISCR,2,MMBLOCK,IFIL)
         CALL ITODS(ISCR,2,2,IFIL)
         IF(IMZERO.EQ.1) GOTO 1001

@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,14 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C FILE    : gpsaue.F
-C
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 #if defined (PRG_DIRAC)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       BLOCK DATA BDQALGEBRA
@@ -60,9 +52,9 @@ C  /* Deck prqmat */
       M(4) = 'B imag'
       DO 10 IZ = 1,NZ
         IQ = IQP(IZ)
-        WRITE(IUNIT,'(/A,A6,A,2I4/)')
-     &  '*** ',M(IQ),' part ***;    NROW,NCOL:',NROW,NCOL
-        CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,1,IUNIT)
+        WRITE(IUNIT,'(/A,A6,A,4I4/)')
+     &  '*** ',M(IQ),' part ***; NROW,NCOL,LRQ,LCQ:',NROW,NCOL,LRQ,LCQ
+        CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,-1,IUNIT)
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -516,6 +508,36 @@ C
       IF((NZ.EQ.1.OR.NZ.EQ.2).AND.(LRA.NE.LRV)) THEN
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
+
+#ifdef LAPACK_QDIAG
+C     Use the fast DSYEVR for real case
+      IF (NZ.EQ.1.AND.MATZ.EQ.1) THEN
+            DDUM = 0.0D0
+            IDUM = 0
+            WORKDUM = 0.0D0
+            IWORKDUM = 0
+C     eigval and eigvec
+c     first let lapack estimate memory use
+CMI ...  I have to initialize it for intel mkl-lapack
+            INFO = 0
+            IERR = 0
+            CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &           M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
+            LLWORK = WORKDUM
+            LILWORK = IWORKDUM
+            CALL MEMGET('REAL',KLWORK, LLWORK, WORK, KFREE, LFREE)
+            CALL MEMGET('INTE',KLIWORK, LILWORK, WORK, KFREE, LFREE)
+            CALL MEMGET('INTE',KISUPPZ, 2*N, WORK, KFREE, LFREE)
+            CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &           M,EIG,VEC,LRV,WORK(KISUPPZ),WORK(KLWORK),LLWORK,
+     &           WORK(KLIWORK),LILWORK,IERR)
+C     DSYEVR does not guarantee a sorting order, but I have never seen it
+C     do anything other than ascending, so the sorting should be a noop.
+            CALL ORDER3(VEC,EIG,LRV,N,N,1)
+            CALL QEXIT('QDIAG')
+            RETURN
+      ENDIF
+#endif
 C
 C     Memory allocation
 C
@@ -586,6 +608,36 @@ C
       RETURN
 C
       END
+
+      SUBROUTINE QDIAG90(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,IERR)
+C     Like QDIAG but uses f90 memory allocation internally.
+#include "implicit.h"
+      real(8)         , allocatable :: work(:)
+#ifdef LAPACK_QDIAG
+      DDUM = 0.0D0
+      IDUM = 0
+      WORKDUM = 0.0D0
+      IWORKDUM = 0
+c     first let lapack estimate memory use
+      INFO = 0
+      CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &            M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
+      LLWORK = WORKDUM
+      LILWORK = IWORKDUM
+      lwork = LLWORK + LILWORK + 2*N +6
+#else
+      lwork = 6 + 2*N
+      IF(NZ.GT.1) THEN
+        NTAU = N*NZ
+        lwork = lwork + ntau
+      ENDIF
+#endif
+      allocate(work(lwork))
+      work = 0
+      call qdiag(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,work,lwork,IERR)
+      deallocate(work)
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qmgath */
       SUBROUTINE QMGATH(AIN,NRW1,NCL1,AOUT,NRW2,NCL2,NZ,
@@ -1225,6 +1277,7 @@ C	variable X
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
       CHARACTER MXFORM*6
@@ -1242,7 +1295,12 @@ C
         MXFORM(1:1) = 'F'
         NDEC = NDIG - NDEC - 3
       ENDIF
-      IF(NDEC.LE.0) CALL QUIT('MXFORM: NDEC.LE.0')
+      IF(NDEC.LE.0) THEN
+        WRITE(LUPRI,*) 'MXFORM out of boundaries...'
+        WRITE(LUPRI,*) 'X=',X
+        WRITE(LUPRI,*) 'NDEC,NDIG',NDEC,NDIG
+        CALL QUIT('MXFORM: NDEC.LE.0')
+      ENDIF
       IF(NDIG.LT.10) THEN
         IDIG = ICHAR('0') + NDIG
         MXFORM(2:2) = CHAR(IDIG)
@@ -1639,6 +1697,26 @@ C
 10    CONTINUE
       RETURN
       END
+      subroutine init_factorial_common_block
+!     radovan: adaptation of dfactr for usual factorials
+
+      implicit none
+
+      real(8) :: fact
+      integer :: i
+
+      common /factrl/ fact(30)
+
+      fact(1) = 1.0d0
+     
+      do i = 2, 30
+        fact(i) = float(i)*fact(i - 1)
+      end do
+
+      end subroutine
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsjaco */
       SUBROUTINE RSJACO(LDM,NDIM,NROWE,AMAT,EIG,IJOB,IORDER,IPACK,EVEC,
@@ -2607,11 +2685,11 @@ C  /* Deck readac */
       RETURN
  10   CONTINUE
 CMI   ...adding more on error report
-      WRITE(LUPRI,*) '*** Error in READAC ***'
-      write(lupri,*) 'file number IT=',IT
-      write(lupri,*) 'number of elements to be read N=',N
-      write(lupri,*) ' RECORD #: IREC=',IREC
-      write(lupri,*) ' IOSTAT=',IOS
+      WRITE(LUPRI,'(/,6X,A)')  '*** Error in READAC ***'
+      write(lupri,'(2X,A,I4)') 'file number IT=',IT
+      write(lupri,'(2X,A,I8)') 'number of elements to be read N=',N
+      write(lupri,'(2X,A,I4)') ' RECORD #: IREC=',IREC
+      write(lupri,'(2X,A,I4)') ' IOSTAT=',IOS
       CALL QUIT('READAC: Error reading file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3341,7 +3419,7 @@ C         * complex Hermitian matrices                  NZ = 2
 C         * quaternionic Hermitian matrices             NZ = 4
 C                                                (dagger)
 C     Upper triangle Cholesky decomposition: A=UU
-C     where L is an upper triangular matrix.  
+C     where U is an upper triangular matrix.  
 C     On input/output A contains the lower triangle and diagonal of
 C     the Hermitian matrix to be decomposed.
 C     On output the upper triangle of the Cholesky matrix U is stored
@@ -3356,6 +3434,9 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4),IP(4)
+
+C
+      CALL DZERO(P,4)
 C
 C     Initialization
 C
@@ -3643,7 +3724,7 @@ C     This routine solves the NSIM simultaneous equations
 C         A(n,n,nz)*x(n,nsim,nz) = b(n,nsim,nz)
 C     where A and D is output from the Cholesky decomposition
 C     routine QCHOLD. The upper triagonal of A contains the 
-C     upper triangular Cholesky matrix and the the diagonal
+C     upper triangular Cholesky matrix and the diagonal
 C     and lower triangle is the original matrix A
 C         * a real symmetric matrix                     NZ = 1
 C         * a complex Hermitian matrix                  NZ = 2
@@ -3667,6 +3748,7 @@ C***********************************************************************
       DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ),
      &          IPIVOT(*),W(*)
       DIMENSION P(4),IQA(4),IQB(4)
+      CALL DZERO(P,4)
 C
 C     Initialization
 C
@@ -3865,6 +3947,7 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER(TOL=1.0D-16)
       DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
@@ -4102,6 +4185,7 @@ C
       DIMENSION IQW(4)
 CMI   .... IPRINT threshold 
       DATA IPRLIM / 200 /
+!     DATA IPRLIM /   4 /
 
 C
       CALL QENTER('QTRANS')
@@ -4230,10 +4314,10 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
-C        IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
+          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+        ENDIF
 C
 C     *******************************************************
 C     *****  MO - to - AO -transformation : F' = CF(C+) *****
@@ -4289,10 +4373,10 @@ C
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
         ENDIF
-C       IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
+       IF(IPRINT.GE.5) THEN
+          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
+          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+        ENDIF
       ELSE
         CALL QUIT('FTRANS: Unknown keyword TYP '//TYP)
       ENDIF
@@ -4301,6 +4385,49 @@ C
       RETURN
 C
       END
+
+      SUBROUTINE QTRANS90(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
+     &                  FAO,LRAO,LCAO,NZAO,IQAO,
+     &                  FMO,LRMO,LCMO,NZMO,IQMO,
+     &                  TM1,LR1,LC1,NZTM1,IQTM1,
+     &                  TM2,LR2,LC2,NZTM2,IQTM2,IPRINT)
+c     Like QTRANS, but uses fortran 90 memory allocation internally
+#include "implicit.h"
+      double precision, allocatable :: work(:)
+      CHARACTER TREV*1,TYP*4
+      integer IQW(4)
+C     find out how much buffer is needed in qtrans
+      IF(TYP.EQ.'AOMO') THEN
+         IF (NCAO.GE.NRAO) THEN
+            CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
+            NBUF = NRAO*NCMO*NZW
+         else
+            CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
+            NBUF = NRMO*NCAO*NZW
+         endif
+      else
+         IF(NCMO.GE.NRMO) THEN
+            CALL IQPACK(IQMO,NZMO,IQTM2,NZTM2,IQW,NZW)
+            NBUF = NRMO*NCAO*NZW
+         else
+            CALL IQPACK(IQMO,NZMO,IQTM1,NZTM1,IQW,NZW)
+            NBUF = NRAO*NCMO*NZW
+         endif
+      endif
+      allocate( work(nbuf), stat=ierr )
+      if (ierr.ne.0) call quit('QTRANS90: error in allocation !')
+      work = 0
+      call QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
+     &                  FAO,LRAO,LCAO,NZAO,IQAO,
+     &                  FMO,LRMO,LCMO,NZMO,IQMO,
+     &                  TM1,LR1,LC1,NZTM1,IQTM1,
+     &                  TM2,LR2,LC2,NZTM2,IQTM2,
+     &                  work,nbuf,IPRINT)
+CMI    ... necessary to eliminate gfortran memory bug...
+      deallocate(work,  stat=ierr)
+      if (ierr.ne.0) call quit('QTRANS90: error in dallocation !')
+      continue
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Sqstra */
       SUBROUTINE SQSTRA(IOPT,A,N,LRA,LCA,NZA,WORK,LWORK)
@@ -4429,28 +4556,31 @@ C
 C
 C  PURPOSE:  Do the selective (or full) diagonalization of 
 C            the entering hermitian (real,complex,quaternion) matrix
-C            using the Jacobi diagonalization method (extended 
-C            for quaternion matrixes).
+C            using the Jacobi diagonalization method, which is  extended 
+C            for quaternion matrixes.
 C
 C  On input:  A(N,N,NZ) ... quaternion matrix (is destroyed after!)
-C             DOEVE ... if .true., do calculate eigenvectors,
-C                   and for IPRINT.GE.2 do the consistency check 
+C             DOEVE ... if .true., calculate eigenvectors,
+C                   and for IPRINT.GE.2 also do the consistency check 
+C
+C             NBL=0 ... do the traditional diagonalization (parameter IBL substitute with dummy variable,IDUMMY)
+C             NBL>0 ... do the block diagonalization, where blocks to be zeored are specified in IBL
 C
 C             IPRINT - print level 
 C  1 ... print timing and basic info
 C  2 ... print out entering matrix into text file, reconstruct it
-C        back at using eigenvalues and eigenvectors
+C        back at using eigenvalues and eigenvectors (if DOEVE=.true.)
 C  3 ... + print out entering and final matrix, print out result fo Ph*P,P*Ph,
-C          print out iteration process, aigebvalues (if NZ=0)
-C  4 ... + do print eigenvectors (if NZ=0)
-C  5 ... + do print whole matrix in each iteration
-C  6 ... + do print whole P after iter., do print A before and after iter.
-C  7 ... + do print Ppq
+C          print out iteration process, eigenvalues (if DOEVE=.true.)
+C  4 ... +  print eigenvectors (if DOEVE=.true.)
+C  5 ... +  print whole matrix in each iteration
+C  6 ... +  print whole P after iter., print A before and after iter.
+C  7 ... +  print Ppq
 C                       
-C
 C  On output: A - diagonal (NBL=0) or block diagonal (NBL>1) matrix
-C             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
+C             so eigenvalues are on the diagonal of the (destroyed) A matrix
 C
+C             EV(N,N,NZ) - matrix of eigenvectors if DOEVE=.TRUE.
 C
 C  Written: M Ilias, Strasbourg, May 2005
 C      
@@ -4481,11 +4611,12 @@ C        .... file number and file name of the check file
       IF (IPRINT.GE.2) THEN
        CALL HEADER(
      &'QJACOBI, selective diagonalization of the quaternion matrix.',-1)
-       write(lupri,*)
+       write(lupri,'(2X,A,I5)')
      &  'size of the square hermitian/real symmetric matrix, N=',N
-       write(lupri,*)
-     &  'type of matrix {real(1), complex(2) or quaternion(4)}, NZ=',NZ
-       write(lupri,*)
+       write(lupri,'(2X,A,I2)')
+     &  'type of matrix {real(NZ=1), complex(NZ=2) or'//
+     &  ' quaternion(NZ=4)}, NZ=',NZ
+       write(lupri,'(2X,A,I5)')
      &  'PRINT level:',IPRINT
        CALL FLSHFO(LUPRI)
        CALL GETTIM(CPU1,WALL1)
@@ -4514,18 +4645,20 @@ C      ... do make unit matrixes for accumulation of future eigenvector
 
         IF (DOEVE) THEN
             OPEN(LUF,FILE=FILENAME,STATUS="UNKNOWN",FORM="FORMATTED")
-            write(lupri,*) 'The file #',LUF,' with name:',FILENAME,
+            write(lupri,'(2X,A,I2,A,A,A)')
+     &      'The file #',LUF,' with name:',FILENAME,
      &      ' has been open.'
 
             IF (IPRINT.GE.3) THEN
-            WRITE(LUPRI,'(/,2X,A)')
+             WRITE(LUPRI,'(/,2X,A)')
      & 'QJACOBI: ENTERING hermitian(real,complex,quaternion) matrix A'
+            ! CALL PRQMAT(A,N,N,N,N,NZ,IPQTOQ(1,0),LUPRI) ! IPQTOQ in dgroup.h, this contain NZ
             ENDIF
 
             DO I=1,N
             DO J=1,N
             IF (IPRINT.GE.3) THEN
-             write(lupri,*)
+             write(lupri,'(A,I3,A,I3,A,4D15.8)')
      &         '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
             ENDIF
 C            ... write matrix elements to file for later checking...
@@ -4536,12 +4669,12 @@ C            write(luf,*) I,J,(A(I,J,IZ),IZ=1,NZ)
             ENDDO
             ENDDO
         ENDIF
-         write(lupri,'(/A,A/)') 
+         write(lupri,'(2X,A,A)') 
      & '...entering matrix has been written to the file ',FILENAME
       ENDIF
 
 C  ... format of elements in the file...
- 1000 FORMAT(2I5,2X,I1,2X,F27.16) 
+ 1000 FORMAT(2I5,2X,I1,2X,D30.17) 
   
          FINISHED = .false.
          ITER = 0
@@ -5917,7 +6050,8 @@ C        ... after elimination of Apq find indexes of the next largest element
           WASELIM = .FALSE.
 
           IF (IPRINT.GE.3) THEN
-            write(lupri,*) ' ... ITER=',ITER, ' SUMSQ=',SUMSQ
+            write(lupri,'(3X,A,I6,A,D12.7)')
+     &      '...ITER=',ITER,' SUMSQ=',SUMSQ
           ENDIF
           IF (.NOT.ELIM(1).AND..NOT.ELIM(2)) FINISHED=.TRUE.
 
@@ -5929,12 +6063,12 @@ C        ... after elimination of Apq find indexes of the next largest element
        WALL   = WALL2 - WALL1
        CPUTID = SECTID(CPU)
        WALLTID = SECTID(WALL)
-       write(lupri,'(/2X,A,I7)')
+       write(lupri,'(2X,A,I7)')
      &  '>>>> QJACOBI finished, # of iterations: ',ITER
        write(lupri,'(2X,A,2D12.5,/,2X,A,D12.5)')
-     &      ' last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
-     &      ' "zero" off-diag elem. threshold: ',ZEROTHRS
-       WRITE(LUPRI,'(A,A12,A1,A12)')
+     &      'last 2 sums of largets elements: ',SUMSQA(2),SUMSQA(1),
+     &      '"zero" off-diag elem. threshold: ',ZEROTHRS
+       WRITE(LUPRI,'(2X,A,A12,A1,A12)')
      &        '>>>> CPU/wall  time used in QJACOBI:',
      &             CPUTID,'/',WALLTID
        CALL FLSHFO(LUPRI)
@@ -6006,8 +6140,13 @@ C            ... switch I,J columns of P(eigenvectors) !
      &'>>>> QJACOBI: RESULTING MATRIX after unit.transformations <<<<'
          DO I=1,N
          DO J=1,N
-          write(lupri,*)
-     &     '>>>>>  A(',I,',',J,') =',(A(I,J,IZ),IZ=1,NZ)
+           IF (I.NE.J) THEN
+          write(lupri,'(A,I4,A,I4,A,4F16.8)')
+     &     'offdiag elem, A(',I,',',J,')=',(A(I,J,IZ),IZ=1,NZ)
+           ELSE
+          write(lupri,'(A,I4,A,I4,A,4F16.8)')
+     &     'diagonal elem,A(',I,',',J,')=',(A(I,J,IZ),IZ=1,NZ)
+           ENDIF
          ENDDO
          ENDDO
          write(lupri,*)
@@ -6021,7 +6160,7 @@ C         ... rewind file
           REWIND(LUF)
 
          IF (IPRINT.GE.4) THEN
-         write(lupri,'(/3X,A)') '**** Eigenvectors:'
+           write(lupri,'(/3X,A)') '**** Eigenvectors:'
          ENDIF
 
 C ***********************************************
@@ -6050,13 +6189,14 @@ C          ....  P*P_H
 
 C          ... do print eignevector...
           IF (IPRINT.GE.4) THEN
-          write(lupri,*) '** P(',I,',',J,')_r:',
+          write(lupri,'(A,I3,A,I3,A,F18.12)') '** P(',I,',',J,')_r:',
      &     EV(I,J,1)
           ENDIF
 
 C         ... print of unit matrixes
           IF (IPRINT.GE.3) THEN
-         write(lupri,*) '>> P^H*P(',I,',',J,')_r:',
+           write(lupri,'(A,I3,A,I3,A,F18.12,A,F18.12)')
+     &      '>> P^H*P(',I,',',J,')_r:',
      &     TOPIPR,' >> P*P^H:',
      &     TOQIPR
           ENDIF
@@ -6111,10 +6251,10 @@ C         ... read elements from the file...
 C          READ(LUF,*) I1,J1,AIJFR
 
            IF (IPRINT.GE.3) THEN
-           write(lupri,*)
+           write(lupri,'(A,I3,A,I3,A,D12.5)')
      &     '>>>>>  reconstructed A(',I,',',J,')_r =',
      &     AIJ_R
-           write(lupri,*)
+           write(lupri,'(A,I3,A,I3,A,D12.5,A,D12.5)')
      &     '>>>>> entering elem. A(',I,',',J,')_r =',
      &     AIJFR,' difference: ',AIJ_R-AIJFR
            ENDIF
@@ -6137,8 +6277,9 @@ C           ... check the differences...
             ENDDO
 
             CLOSE(LUF,STATUS="KEEP")
-            write(lupri,'(/,A/)')
-     &      'The file was closed, comparison A=P.Ad.P^H was done'
+            write(lupri,'(2X,A,I2,A)')
+     &      'The auxiliary file (lu=#,',LUF,') was closed, checking'//
+     &      ' of A=P.Ad.P^H done'
 
 C ****************************************************
 C *************** Complex  matrixes ******************
@@ -6951,7 +7092,7 @@ C
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck matrix_inversion */
       subroutine matrix_inversion ( A, NP, IPIV, INDXR, INDXC )
 C     !-------------------------------------------------------------------------
@@ -6964,7 +7105,8 @@ C     !
 C     !	      J.P. Griffith  6/88
 C     !
 C     !  Added by Miro Ilias, Strasbourg, 2005
-C     !  Called from dirbss.F.
+C     !
+C     !  Called from SPHGEN (dirac/dirtra.F)
 C     !-------------------------------------------------------------------------
 #include "implicit.h" 
 #include "priunit.h"  
@@ -7035,6 +7177,49 @@ CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
 24    CONTINUE
       RETURN
       END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MINV(AB,N,LDA,SCRATCH,DET,EPS,M,MODE)
+!--------------------------------------------------------------------------------
+!C
+!C     A subroutine that calculates the determinant and inverse of
+!C          a matrix, as well as solving systems of linear equations.
+!C     Martin J. McBride.  11/25/85.
+!C     General Electric CRD, Information System Operation.
+!C
+!C  THE COMMENTS ABOVE REFER TO AN OLD "SCIPORT" VERSION OF THIS ROUTINE,
+!C  PRESUMABLY WRITTEN BY MR. MC BRIDE.  UNFORTUNATELY, IT SEEMS THAT 
+!C  HE IS A BAD PROGRAMMER AND THIS ROUTINE DID NOT WORK.  MINV IS NOW
+!C  A SIMPLE INTERFACE TO LINPACK ROUTINES WHICH *WORK*
+!C
+!CEND
+!
+! miro: called from routine DIIS, hsmrcc/high_sect_fscc_external/ccsd1.F;
+!      routine formerly part of spin-adapted hihger sector FS CC codes
+!
+!--------------------------------------------------------------------------------
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION AB(LDA,1),SCRATCH(1),X(2)
+C
+      IOFF=1+N
+      CALL DGECO(AB,LDA,N,SCRATCH,X,SCRATCH(IOFF))
+      IF(M.EQ.1)CALL DGESL(AB,LDA,N,SCRATCH,AB(1,N+1),0)
+      IF(M.GT.1)THEN
+       WRITE(6,1000)
+1000   FORMAT(T3,'@MINV-F, Only one system can be solved at a time.')
+       CALL QUIT('MINV: Only one system can be solved at a time.')
+      ENDIF
+!              ... library routine pdpack/dge.F
+      IF(M.EQ.0)CALL DGEDI(AB,LDA,N,SCRATCH,X,SCRATCH(IOFF),11)
+!C
+!C THIS IS WRONG, BUT WHO CARES?
+!C
+      DET=X(1)      
+C
+      RETURN
+      END
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C*/ Deck Totmass */
       FUNCTION TOTMASS()
@@ -7063,5 +7248,257 @@ C
         ENDIF
       END DO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEHARM(OMEGA,V2,XOPT,UM,C,NP,NORDER,ILOGG)
+C***********************************************************************
+C
+C     Given a polynomial fit, find harmonic constant
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
+      PARAMETER(XTM = XTANG*ANGM)
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
+      DIMENSION C(NP)
+C
+      V2 = POL2DER(NORDER,C,XOPT)
+      OMEGA = SQRT(V2/UM)
+      TEMP  = V2*XTJ/XTM/XTM
+      WRITE(LUPRI,'(A,1P,E18.4,A)') 
+     &   '* Force constant  :',TEMP, ' N/m'
+      WRITE(ILOGG,'(A,1P,E18.4,A)') 
+     &   '* Force constant  :',TEMP, ' N/m'
+      WRITE(LUPRI,'(A,1P,E12.5,A)') 
+     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
+     &   '                   ',OMEGA*XTKAYS,' cm-1'
+      WRITE(ILOGG,'(A,1P,E12.5,A)') 
+     &   '* Frequency       :',OMEGA*XTHZ,' Hz',
+     &   '                   ',OMEGA*XTKAYS,' cm-1'
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEANHARM(WXE,OMEGA,XOPT,UM,C,NP,NORDER,ILOGG)
+C***********************************************************************
+C
+C     Given a polynomial fit, find anharmonic constant
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
+      PARAMETER(XTM = XTANG*ANGM)
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
+C
+      DIMENSION C(NP)
+C
+      V3 = POLNDER(NORDER,C,XOPT,3)
+      V4 = POLNDER(NORDER,C,XOPT,4)
+!radovan: V2 is not set!
+      TEMP = 7.0D0*V3*V3/V2/9.0D0
+      T2 = 100.0D0*(TEMP - V4)/V4
+      WRITE(ILOGG,'(A,D20.10)')
+     &   '* Third derivative  (au)             : ', V3,
+     &   '* Fourth derivative (au)             : ', V4
+      WRITE(ILOGG,'(A,D20.10, F9.2,A)')
+     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
+      TEMP = D1/UM/OMEGA
+      T2   = TEMP*TEMP
+      WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
+      WRITE(LUPRI,'(A,1P,E12.5,A)') 
+     &   '* Omega*x_e       :',WXE*XTKAYS,' cm-1'
+      WRITE(ILOGG,'(A,1P,E12.5,A)') 
+     &   '* Omega*x_e       :',WXE*XTKAYS,' cm-1'
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEDISP(X,NP,XOPT,UM,OMEGA,ILOGG)
+C***********************************************************************
+C
+C     Given a reduced mass and harmonic frequency, check 
+C     for points outside mean displacement in
+C     harmonic ground state
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
+      DIMENSION X(NP)
+      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XMIN=XOPT-XDEV
+      XMAX=XOPT+XDEV
+      TEMP=XDEV*XTANG
+      WRITE(LUPRI,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
+     &   '* Mean displacement in harmonic ground state:',TEMP,
+     &   ' Angstroms',
+     &   '  corresponding to interval: ',
+     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
+      WRITE(ILOGG,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
+     &   '* Mean displacement in harmonic ground state:',TEMP,
+     &   ' Angstroms',
+     &   '  corresponding to interval: ',
+     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
+      IOUT=0
+      DO I = 1,NP
+        IF(X(I).LT.XMIN.OR.X(I).GT.XMAX) IOUT=IOUT+1
+      ENDDO
+      IF(IOUT.GT.0) THEN
+        WRITE(LUPRI,'(A,I5,A/A)')
+     &   '* WARNING : ',IOUT,' points lie outside interval...',
+     &   'This may reduce the quality of your spectroscopic constants.'
+        WRITE(ILOGG,'(A,I5,A/A)')
+     &   '* WARNING : ',IOUT,' points lie outside interval...',
+     &   'This may reduce the quality of your spectroscopic constants.'
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEDISS(OMEGA,WXE,ILOGG)
+C***********************************************************************
+C
+C     For a polynomial fit, estimate dissociation energy
+C     from a Morse model
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D2=2.0D0,D4=4.0D0)
+      DE = OMEGA*OMEGA/WXE/D4
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated D_e:',DE*XTKAYS, ' cm-1'
+      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
+      D0 = DE-(OMEGA/D2)+WXE/D4
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+     &       D0*XTEV, ' eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+     &       D0*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated dissociation energy:',
+     &       D0*XTKAYS  , ' cm-1'
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEFIT(NP,X,Y,A,B,C,D,MORDER,NORDER,ILOGG)
+C***********************************************************************
+C
+C     From NP points along a normal coordinate, do a polynomial fit.
+C     MORDER = maximum order of polynomial fit
+C     NORDER = actual order of polynomial fit
+C
+C     Written by T. Saue Nov 17 2008
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
+      WRITE(LUPRI,'(A)') 
+     &  'Polynomial fit: Give order of polynomial '
+      READ(LUCMD,*) NORDER
+      IF(NORDER.LT.2) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* This program requires at least a quadratic fit.'
+        STOP 'Too low order fit !'
+      ENDIF
+      IF(NORDER.LT.4) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* WARNING: a quartic fit is needed for full functionality.'
+      ENDIF
+      IF(NP.LE.NORDER) THEN
+        WRITE(LUPRI,'(A,I3)') 
+     +    'Too few points for a polynomial fit of order',NORDER
+        STOP 'Too few points !'
+      ENDIF
+      IF(NORDER.GT.MORDER) THEN
+        STOP 'Order to large ....'
+      ENDIF
+      NDIM = NORDER + 1
+      CALL POLSVD(NDIM,NP,A,B,X,Y,C,D,CHISQ,ISKIP)
+C* Estimate fit:
+      WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
+      WRITE(LUPRI,'(3X,A)') '* Coefficients:'
+      WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
+     &      C(I),I=1,NDIM)  
+C
+      WRITE(ILOGG,'(72A1)') ('=',I=1,72)
+      WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
+      WRITE(ILOGG,'(3X,A)') '* Coefficients:'
+      WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
+     &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(8X,A,4X,2A)')
+     &   'X',' Predicted Y',' Relative error'
+      DO I = 1,NP
+        YP = POLVAL(NORDER,C,X(I))
+        DEV = (YP-Y(I))/Y(I)
+        WRITE(LUPRI,'(3X,F6.3,4X,1P,E20.12,E12.4)') XTANG*X(I),YP,DEV
+      ENDDO
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MODEMIN(XOPT,NP,X,Y,C,NORDER,NITER,ILOGG)
+C***********************************************************************
+C
+C     Given a polynomial fit, find local minimum,
+C     using Newton-Raphsons method
+C
+C     Trond Saue, Nov 17 2008
+C
+C***********************************************************************
+      use codata
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(DTOL = 1.0D-4)
+C
+      DIMENSION X(NP),Y(NP),C(NP)
+C* Find smallest y-value and take corresponding x-value as start value
+C* for Newton-Raphsons method      
+      IYOPT = IDMIN(NP,Y,1)
+      XOPT = X(IYOPT)
+      CALL NEWRAP(NORDER,DTOL,C,XOPT,NITER,IERR)
+      IF(IERR.EQ.1) THEN
+        WRITE(ILOGG,'(A)') 'Newtons method failed'
+        STOP 'Did not find minimum. Newtons method failed...'
+      ELSE
+        YOPT = POLVAL(NORDER,C,XOPT)
+        TEMP = XOPT*XTANG
+        WRITE(LUPRI,'(A,F18.5,A,F18.5,A)') 
+     &    '* Local minimum   :',TEMP,' Angstroms = ',XOPT,' Bohrs'
+        WRITE(ILOGG,'(A,F18.5,A)') 
+     &    '* Local minimum   :',TEMP,' Angstroms'
+        WRITE(LUPRI,'(A,1P,E18.10,A)') 
+     &    '* Expected energy :',YOPT,' Hartrees'
+        WRITE(ILOGG,'(A,1P,E18.10,A)') 
+     &    '* Expected energy :',YOPT,' Hartrees'
+      ENDIF
       RETURN
       END

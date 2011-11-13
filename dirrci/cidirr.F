@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : cidirr.F
 C
       SUBROUTINE PAMCIM (CI,MCORE)
@@ -1918,6 +1913,7 @@ C
 C
       RETURN
 C
+!radovan: unreachable
 10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
       END
 C
@@ -3423,7 +3419,7 @@ CTROND: check this !
       DIMENSION NRAS1(16),NRAS2(16)
       DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
 C
-      NAMELIST /GOSCIP/ NELEC,NGAS
+      NAMELIST /GOSCIP/ NELACT,NGAS
       NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MINH1,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
@@ -3435,6 +3431,9 @@ C
       NELEC = 0
       REWIND (5)
       READ (5,GOSCIP,END=10,ERR=10)
+!     SK - during the merge of the COSCI-TDM this variable renaming
+!     on the NAMELIST slipped my attention.
+      NELEC = MAX(NELEC,NELACT)
  10   IF (NELEC.NE.0) THEN
         CALL PAMGOS(CI,MAXCORE,NELEC,NGAS,IGAS,MINE,MAXE,NGASO)
         DONE = .TRUE.

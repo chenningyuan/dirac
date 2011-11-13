@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirana.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -37,13 +32,16 @@ C     Written by T.Saue Sep 11 1995
 C     Last revision : KApril 27 1996
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbbas.h"
-#include "visual.h"
+#include "dcbrho.h"
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
 C  DCBBAS: N2BBASX
@@ -74,7 +72,16 @@ C***********************************************************************
 C*****  P L O T   3 - D I M E N S I O N A L     D E N S I T Y   ********
 C***********************************************************************
 C
-      IF(DO3RHO) CALL GT3RHO(WORK,LWORK)
+      IF (DO3RHO) THEN
+         IF (NCUBORB(1).EQ.0.AND.NCUBORB(2).EQ.0) THEN
+C     Total density
+            CALL GT3RHO(WORK,LWORK)
+         ELSE      
+C     Density of individual orbitals
+            CALL WRITE_ORB_CUBES(NCUBORB(1),NCUBORB(2),
+     &           ICUBORB,WORK,LWORK)
+         ENDIF
+      ENDIF
 C
 C***********************************************************************
 C*****  P R O J E C T I O N   O N T O    A N O T H E R   S O L U T I O N
@@ -87,9 +94,9 @@ C***********************************************************************
 C*****  P L O T  I N T E G R A T I O N                   ***************
 C*****  W E I G H T S   I N   O N E   D I M E N S I O N  ***************
 C***********************************************************************
-#ifdef MOD_DFT
+
       IF(DO1WT) CALL GT1WT(WORK,LWORK)
-#endif
+
 C
 C***********************************************************************
 C*************  O R B I T A L   L O C A L I S A T I O N  ***************
@@ -139,6 +146,11 @@ C  LABELS: NLAB
 #include "dcbmp2no.h"
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M,ORBDEF
+      LOGICAL FNDLAB,CINATORB
+#ifdef MOD_KRMC
+      LOGICAL MJVEC_AVAIL
+#endif
+      CHARACTER FILELABEL*8
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('MULPOP')
@@ -166,6 +178,7 @@ C       MP2-NO default values
         ILABDF_M = ILABDF
         DONETP_M = DONETP
         ADDSML_M = ADDSML
+!radovan: ORBDEF is not initialized!
         ORBDEF_M = ORBDEF
         LABDEF_M = LABDEF
 C
@@ -180,28 +193,112 @@ C
 C
 C     Check if coefficients are on file
 C
+#ifdef MOD_KRMC
+      IF( MP2NATPOP ) THEN
+         INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
+      ELSE
+         INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+      END IF
+#else
       TOBEK=.FALSE.
+#endif /* MOD_KRMC */
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+C...  may be oversized when not all orbitals are investigated
+      CALL MEMGET('REAL',KOCC ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
+      CALL IZERO(WORK(KBEIG),NORBT)
       CALL DZERO(WORK(KCMO),N2BBASXQ)
+      CALL DZERO(WORK(KOCC),NORBT)
 C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
 C
+#ifdef MOD_KRMC
+      IF (TOBEK) THEN
+         IF( MP2NATPOP )THEN
+           CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MULPOP')
+           KRMC_FLG = 2
+           CALL MEMGET('REAL',KEIG_NAT,NESHT,WORK,KFREE,LFREE)
+C          ... initialize
+           CALL DZERO(WORK(KEIG_NAT),NESHT)
+C          ... read from file
+           CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
+           WRITE(LUPRI,'(/A)')
+     &           ' (MULPOP)  Orbitals and occupancies read from' //
+     &           ' label NEWNATOB/MP2NOOCC on file KRMCOLD'
+C
+           CLOSE(LUKRMC,STATUS='KEEP')
+         ELSE
+           CINATORB = .FALSE.
+           MJVEC_AVAIL = .FALSE.
+           CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
+           REWIND(LUKRMC)
+           FILELABEL = 'MCCINATO'
+           CINATORB = FNDLAB(FILELABEL,LUKRMC)
+           JRDMO = -1
+           REWIND(LUKRMC)
+           FILELABEL = 'MJVEC   '
+           MJVEC_AVAIL = FNDLAB(FILELABEL,LUKRMC)
+           IF(CINATORB)THEN
+             KRMC_FLG = 3
+C            coefficients
+             CALL RREADMO(WORK(KCMO),JRDMO,4,LUKRMC)
+C            occupancies
+             CALL REAKRMC(LUKRMC,'MCNATOCC',WORK(KOCC),NORBT)
+             IF (JRDMO .EQ. 0) THEN
+                WRITE(LUPRI,'(/A)')
+     &               ' (MULPOP)  Orbitals read from' //
+     &               ' label MCCINATO on file KRMCSCF'
+             END IF
+           ELSE
+             KRMC_FLG = 1
+             CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+             IF (JRDMO .EQ. 0) THEN
+                WRITE(LUPRI,'(/A)')
+     &               ' (MULPOP)  Orbitals read from' //
+     &               ' label NEWORB on file KRMCSCF'
+             END IF
+           END IF
+           IF( MJVEC_AVAIL )THEN
+             CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KBEIG),NORBT)
+             WRITE(LUPRI,'(/A)')
+     &            ' (MULPOP)  mj-values read from' //
+     &            ' label MJVEC on file KRMCSCF'
+           END IF
+         END IF
+         CLOSE (LUKRMC)
+      ELSE
+#endif /* MOD_KRMC */
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
+C        check for energy 137.0D0 - if found we are doing a Mulliken
+C        population analysis of MCSCF/CI natural orbitals in C1
+C        symmetry - SK Feb 2009 - this is only a temporary fix. In the
+C        long run, occupancies should also be stored on DFCOEF. FIXME!
+         TEST_ENERGY = 137.0D0
+         IF(TOTERG .eq. TEST_ENERGY )THEN
+           CALL DCOPY(NORBT,WORK(KEIG),1,WORK(KOCC),1)
+           KRMC_FLG = 3
+         END IF
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
+C
 C     Get labels for population analysis
 C
+      IPRPOP_SAVE = IPRPOP
+      IPRPOP = 2
       CALL GETPLB(IPRPOP)
+      IPRPOP = IPRPOP_SAVE
 C
 C     Memory allocation
       NNLAB = (NPOPLAB*(NPOPLAB+1))/2
@@ -215,8 +312,9 @@ C     Memory allocation
       CALL MEMGET('REAL',KPNTOT,N2LAB*NFSYM  ,WORK,KFREE,LFREE)
 C
       CALL MULPO1(WORK(KPMAT),WORK(KSMAT),WORK(KCMO),WORK(KEIG),
-     &            WORK(KIPGR),WORK(KPOPG),WORK(KIEFF),WORK(KPGTOT),
-     &            WORK(KPNTOT),WORK(KFREE),LFREE,KRMC_FLG)
+     &            WORK(KOCC),WORK(KBEIG),WORK(KIPGR),WORK(KPOPG),
+     &            WORK(KIEFF),WORK(KPGTOT),WORK(KPNTOT),WORK(KFREE),
+     &            LFREE,KRMC_FLG)
 C
 C     Memory deallocation
       CALL MEMREL('MULPOP',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -241,7 +339,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo1 */
-      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
+      SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,OCC,IBEIG,IPGRS,POPG,IEFF,
      &                  PGTOT,PNTOT,WORK,LWORK,KRMC_FLG)
 C***********************************************************************
 C
@@ -274,8 +372,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 C
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IPGRS(*),
-     &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IBEIG(*),
+     &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),OCC(*),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
@@ -296,7 +394,7 @@ C
 C     Get overlap matrix
 C     ==================
 C
-      CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK)
+      CALL GTOVLX(SMAT,SSMTRC)
 C
 C     If necessary, backtransform overlap matrix to AO-basis
 C     ======================================================
@@ -319,7 +417,7 @@ C
         NVECS = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
-     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS,WORK(KFREE),LFREE)
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS)
         CALL ORBCNT(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
         IF(NVECS.EQ.0) GOTO 20
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
@@ -400,11 +498,13 @@ C
 C       Perform Mulliken population analysis
 C       ====================================
 C
-        CALL MEMGET('REAL',KOCC,NVECS,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KOCC2,NVECS,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
+     &              IBEIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
-     &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE,KRMC_FLG)
-        CALL MEMREL('MULPO1.occ',WORK,KOCC,KOCC,KFREE,LFREE)
+     &              WORK(KJVEC),OCC,WORK(KOCC2),WORK(KFREE),LFREE,
+     &              KRMC_FLG)
+        CALL MEMREL('MULPO1.occ',WORK,KOCC2,KOCC2,KFREE,LFREE)
  20     CONTINUE
         CALL MEMREL('MULPO1',WORK,1,KWORK,KFREE,LFREE)
  10   CONTINUE
@@ -433,9 +533,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
-      SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
-     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK,
-     &           KRMC_FLG)
+      SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IBEIG,IPGRS,POPG,IEFF,
+     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,OCC2,WORK,
+     &           LWORK,KRMC_FLG)
 C***********************************************************************
 C
 C     This routine generates net and gross Mulliken populations
@@ -446,6 +546,12 @@ C     PNET - net population(triangularly row-packed)
 C     PGRS - gross population
 C     SMAT - overlap matrix
 C     COEF - coefficients
+C
+C     KRMC_FLG = 2: Orbitals and occupancies read from 
+C                   label NEWNATOB/MP2NOOCC on file KRMCOLD
+C     KRMC_FLG = 1: Orbitals read from
+C                   label NEWORB on file KRMCSCF
+C     KRMC_FLG = 0  Orbitals read from DFCOEF
 C
 C     Written by T.Saue July 24 1994
 C     Revised       : Jan 7 1998 - jth LINUX
@@ -464,10 +570,12 @@ C  DGROUP: NZ
 C  DCBDHF: NOPEN
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcbdhf.h"
 C 
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -476,12 +584,13 @@ C
 #else
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
-      CHARACTER FMT*6,MXFORM*6
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),
-     &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IPGRS(*),
+      CHARACTER FMT*6,MXFORM*6,SYMLAB*9
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
+     &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
+      DATA SYMLAB/'         '/
 C
       CALL QENTER('MULPO2')
 #include "memint.h"
@@ -489,7 +598,7 @@ C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVECS + NEVECS
 
-      CALL DZERO(OCC,NVEC)
+      CALL DZERO(OCC2,NVEC)
       DO I = 1,NVEC
 c
 c       Find fractional occupation for each requested orbital string
@@ -500,34 +609,62 @@ c
 c     ... open shell
           NVORB =  NVORB + NACSH(IFRP,IOPEN)
           IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
-            OCC(I) = DF(IOPEN)
+            OCC2(I) = DF(IOPEN)
             GO TO 100
           ENDIF
         END DO
         IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
 c     ... closed shell
-          OCC(I) = DF(0)
+          OCC2(I) = DF(0)
         ENDIF
 100     CONTINUE
         ELSE IF(KRMC_FLG.EQ.2) THEN
 C       ... MP2-NOs
-           OCC(I) = EIG(NPSH(IFRP)+JVEC(I))
+           OCC2(I) = OCC(NPSH(IFRP)+IORB(IFRP)+JVEC(I))
+        ELSE IF(KRMC_FLG.EQ.3) THEN
+C       ... CI-NOs
+           OCC2(I) = OCC(NPSH(IFRP)+IORB(IFRP)+JVEC(I))
         END IF
+CSKdebug CALL WRTMATMN(OCC,1,NORBT,1,NORBT,LUPRI)
 c
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          IF (KRMC_FLG.EQ.1) THEN
-             WRITE(LUPRI,'(/A,I3)')
-     &       '* Electronic eigenvalue no.',JVEC(I)
-          ELSE IF (KRMC_FLG.EQ.2) THEN
-             WRITE(LUPRI,'(/A,I3,A,F12.8)')
-     &       '* Electronic eigenvalue no.',JVEC(I),
-     &       '     Occupation :',OCC(I)
-          ELSE
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+          IF (KRMC_FLG.gt.0 )THEN
+            ID = IBEIG(II)
+            WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            IF (KRMC_FLG.EQ.1) THEN
+              IF( ID .eq. 0) THEN 
+                WRITE(LUPRI,'(/A,I3,A)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': '
+              ELSE
+                WRITE(LUPRI,'(/A,I3,A,2X,A9)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',SYMLAB
+              END IF
+            ELSE
+C             ... CI-NOs, MP2-NOs,...
+              IF( ID .eq. 0) THEN 
+                WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
-     &          EIG(II),'       (Occupation : f = ',OCC(I),')'
+     &          '      Occupation :',OCC2(I)
+              ELSE
+                WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',
+     &          '      Occupation :',OCC2(I),SYMLAB
+              END IF
+            END IF
+          ELSE
+             IF(SPINFR) THEN
+               ID = IBEIG(II)
+               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+             ELSEIF(LINEAR) THEN
+               ID = IBEIG(II)
+               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+             ENDIF
+             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &          SYMLAB
           END IF
         ELSE
           II  = NPSH(IFRP)+1+JVEC(I)
@@ -536,12 +673,13 @@ c
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
-     &          EIG(II),'       (Occupation : f = ',OCC(I),')'
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &          SYMLAB
           END IF
         END IF
-        CALL PRSYMB(LUPRI,'=',80,0)
+        CALL PRSYMB(LUPRI,'=',90,0)
 C
 C       Calculate SO population matrix
 C       ==============================
@@ -559,10 +697,13 @@ C       Multiply fractional occupation on population.
 C       =============================================
 C
         IF(KRMC_FLG.EQ.0) THEN
-           FACTOR  = D2*OCC(I)
-C       ... MP2-NOs
+           FACTOR  = D2*OCC2(I)
         ELSE IF(KRMC_FLG.EQ.2) THEN
-           FACTOR = OCC(I)
+C       ... MP2-NOs
+           FACTOR = OCC2(I)
+        ELSE IF(KRMC_FLG.EQ.3) THEN
+C       ... CI-NOs
+           FACTOR = OCC2(I)
         ELSE
            GO TO 1001
         END IF
@@ -691,6 +832,7 @@ C
 C     Generate population matrix for basis
 C     ====================================
 C
+C     IPRINT = 4
       SUMA = D0
       SUMB = D0
       IOFF = IBAS(IFRP)
@@ -782,6 +924,7 @@ C
      &                1,NGLAB,NGLAB,NGLAB,1,LUPRI)
         ENDIF
       ENDIF
+C     IPRINT = 0
 C
       RETURN
 C
@@ -1005,7 +1148,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          KE(2,2),KQ(2,2),NVECS(2,0:2),NQ(2),NE(2),
-     &          KBV(2),IOFF(2),IDIM(3,2)
+     &          KI(2,2),NI(2),KBV(2),IOFF(2),IDIM(3,2)
       CHARACTER TEXT*74
 C
 #include "memint.h"
@@ -1050,7 +1193,9 @@ C
         NDIM = NDIM + NVECS(IFRP,0)
       ENDDO
       CALL MEMGET('REAL',KE(1,1),NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KI(1,1),NDIM,WORK,KFREE,LFREE)
       KE(1,2) = KE(1,1) + NVECS(1,1)
+      KI(1,2) = KI(1,1) + NVECS(1,1)
 C
 C     Calculate dimensions of coefficient arrays:
 C      reference orbitals ............... KQ(IFRP,1) 
@@ -1066,11 +1211,15 @@ C
       IF(NFSYM.EQ.2) THEN
         KE(2,1) = KE(1,1) + NVECS(1,0)
         KE(2,2) = KE(2,1) + NVECS(2,1)
+        KI(2,1) = KI(1,1) + NVECS(1,0)
+        KI(2,2) = KI(2,1) + NVECS(2,1)
         KQ(2,1) = KQ(1,1) + NQ(1)
         KQ(2,2) = KQ(2,1) + NFBAS(2,0)*NVECS(2,1)
       ELSE
         KE(2,1) = KFREE
         KE(2,2) = KFREE
+        KI(2,1) = KFREE
+        KI(2,2) = KFREE
         KQ(2,1) = KFREE
         KQ(2,2) = KFREE
       ENDIF
@@ -1082,7 +1231,8 @@ C
       IF(IPRPRJ.GE.4) IOPT = 7
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      KIBE = KFREE
+      CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KIBE),NORBT)
 C
 C
 C     Select reference orbitals and eigenvalues
@@ -1090,7 +1240,7 @@ C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
       ENDDO
-      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),IDUM,
+      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),WORK(KI(1,1)),
      &             NREFS,NSTR(1,0,1),REFFIL,OWNBAS,NPROJNUC,IOPT,
      &             KVEC(1,1),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,WORK,KFREE,LFREE)
@@ -1099,7 +1249,7 @@ C     Get molecular coefficients and eigenvalues
 C     Note that integer arrays IOFF is used to get correct
 C     positioning...
 C
-      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),IDUM,
+      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),WORK(KI(1,1)),
      &             1,NSTR(1,0,0),'DFCOEF',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,WORK,KFREE,LFREE)
@@ -1133,7 +1283,7 @@ C
       ELSE
         KBV(2)   = KFREE
       ENDIF
-      CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KBV,WORK,KFREE,LFREE)
+      CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,WORK,KFREE,LFREE)
 C
 C     Dump reference and projection coefficients to file
 C     ==================================================
@@ -1161,7 +1311,7 @@ C
      &                    WORK(KE(IFRP,1)),
      &                    WORK(KCMO),NVECS,IPRPRJ,IOFF,WORK,KFREE,LFREE)
         CALL MEMREL('POLTST',WORK,KWORK,KCMO,KFREE,LFREE)
-        CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KBV,WORK,KFREE,LFREE)
+        CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,WORK,KFREE,LFREE)
       ENDIF
 C
 C     If requested, do phase transformation of molecule coefficients
@@ -1198,17 +1348,22 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
-      SUBROUTINE PRJAN1(IFRP,NMOL,NREF,NTOT,KQ,KE,AMAT,BVEC,PMAT,
-     &                  GVEC,JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,
+      SUBROUTINE PRJAN1(IFRP,NMOL,NREF,NTOT,KQ,KE,KI,AMAT,BVEC,PMAT,
+     &                  GVEC,JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
 C
-C     KQ and KE are adresses for coefficients and eigenvalues
+C     KQ, KE and KI are adresses for coefficients, eigenvalues and
+C     boson irrep information/ mj-values (if appropriate)
 C       KQ(IFRP,1)   reference orbitals
 C       KQ(IFRP,2)   on input: Molecular Orbitals
 C                    on output: Polarization contributions
+C
+C    IOPT carries information on whether this is a regular projection
+C    analysis (IOPT == 6 or 7) or a projection analysis of
+C    MCSCF natural orbitals (IOPT == 14). S. Knecht - April 2010
 C
 C     Written by T.Saue March 26 1999
 C
@@ -1226,8 +1381,9 @@ C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
-     &          KE(2,2),KQ(2,2),AMAT(NTOT,NTOT,NZ),PMAT(NREF,NREF),
-     &          BVEC(NTOT,NMOL,NZ),SMAT(*),GVEC(*),IPIVOT(*),WORK(*)
+     &          KE(2,2),KQ(2,2),KI(2,2),AMAT(NTOT,NTOT,NZ),
+     &          PMAT(NREF,NREF),BVEC(NTOT,NMOL,NZ),SMAT(*),GVEC(*),
+     &          IPIVOT(*),WORK(*)
 C
       KFRSAV = KFREE
       DOPOP = NREFS.GT.1
@@ -1251,8 +1407,8 @@ C
           WRITE(LUPRI,'(A,A3)') 
      &     '* Raw projection coefficients for fermion ircop ',FREP(IFRP)
           CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,WORK(KE(IFRP,2)),NSTR,
-     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
+     &            JMOL,WORK(KE(IFRP,2)),WORK(KI(IFRP,2)),NSTR,
+     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL,IOPT)
         ENDIF
 C
 C       Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
@@ -1359,8 +1515,8 @@ C
 C     Mulliken-type population analysis
 C
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,WORK(KE(IFRP,2)),NSTR,
-     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
+     &            JMOL,WORK(KE(IFRP,2)),WORK(KI(IFRP,2)),NSTR,
+     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL,IOPT)
 C
 C     Löwdin type population analysis
 C
@@ -1410,7 +1566,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
-     &                  JMOL,EMOL,NSTR,JREF,EREF,GROSS,OCC,POL)
+     &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,OCC,POL,
+     &                  IOPT)
 C***********************************************************************
 C
 C
@@ -1423,7 +1580,10 @@ C     Projection coeffients:  c_ji = <Y(ref)_j|Y(mol)_i>
 C     PROTHR is threshold for print of projection coeffiencients.
 C
 C     Written by Trond Saue March 13 1996
-C     Last revision Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
+C          revision Jan  7 1998 - jth NFBAS(IFRP,0) is now parameter
+C     Last revision Apr 16 2010 - SK introduced proper handling of 
+C                                    MCSCF-NO coefficients, occupation
+C                                    numbers (and mj-values)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1439,12 +1599,14 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL DOPOP
-      CHARACTER FMT*6,MXFORM*6,OTYP*1
+      CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
-     &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),
+     &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),IBMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
+      REAL*8 Dno_occ
+      DATA SYMLAB/'         '/
       DATA OTYP/'E','P'/
       SAVE OTYP
 C
@@ -1459,6 +1621,15 @@ C
 C     Loop over molecular orbitals
 C
       CALL DZERO(OCC,NMOL)
+!
+!     copy MCSCF-NO occupancies
+      Dno_occ = D1
+      IF( IOPT .eq. 14 ) THEN 
+        CALL DCOPY(NMOL,EMOL,1,OCC,1)
+!       set scaling factor for Gross population calculation
+        Dno_occ = D1/D2
+      END IF
+!
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
         IF(K.GT.NSTR(IFRP,2,0)) THEN
@@ -1466,23 +1637,38 @@ C...    POSITIVE-ENERGY (electronic) ORBITAL
 c
 c         Find fractional occupation for each requested orbital string
 c
-          NVORB =  NISH(IFRP)
-          DO IOPEN=1,NOPEN
-c       ... open shell
-             NVORB =  NVORB + NACSH(IFRP,IOPEN)
-             IF (JMOL(K).GT.NISH(IFRP).AND.JMOL(K).LE.NVORB) THEN
-               OCC(K) = DF(IOPEN)
-               GO TO 11
-             ENDIF
-          END DO
-          IF (JMOL(K).GT.0.AND.JMOL(K).LE.NISH(IFRP)) THEN
-c       ... closed shell
-             OCC(K) = DF(0)
-          ENDIF
- 11       CONTINUE
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     +       '* Electronic eigenvalue nr.',JMOL(K),': ',
-     &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
+          IF( IOPT .lt. 14 )THEN
+            NVORB =  NISH(IFRP)
+            DO IOPEN=1,NOPEN
+c          ... open shell
+               NVORB =  NVORB + NACSH(IFRP,IOPEN)
+               IF (JMOL(K).GT.NISH(IFRP).AND.JMOL(K).LE.NVORB) THEN
+                 OCC(K) = DF(IOPEN)
+                 GO TO 11
+               ENDIF
+            END DO
+            IF (JMOL(K).GT.0.AND.JMOL(K).LE.NISH(IFRP)) THEN
+c          ... closed shell
+               OCC(K) = DF(0)
+            ENDIF
+ 11         CONTINUE
+            WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+     +         '* Electronic eigenvalue nr.',JMOL(K),': ',
+     &         EMOL(K),'       (Occupation : f = ',OCC(K),')'
+          ELSE
+            ID = IBMOL(K)
+            WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            IF( ID .eq. 0) THEN
+              WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+     &         '* Electronic eigenvalue nr.',JMOL(K),': ',
+     &            '      Occupation :',OCC(K)
+            ELSE
+                  WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+     &            '* Electronic eigenvalue no.',JMOL(K),': ',
+     &            '      Occupation :',OCC(K),SYMLAB
+            END IF
+          END IF
+
         ELSE
 C...    NEGATIVE-ENERGY (positronic) ORBITAL
           KK  = NPSH(IFRP)+1+JMOL(K)
@@ -1582,7 +1768,7 @@ C
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
-        FACTOR  = D2*OCC(K)
+        FACTOR  = D2*OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
       CALL PRSYMB(LUPRI,'=',48,0)
@@ -1596,14 +1782,14 @@ C
      &   REFFIL(KREF),OTYP(KTYP),KORB,GVEC(I,1),EREF(I)
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
-      TOTM = D2*DSUM(NMOL,OCC,1)
+      TOTM = D2*Dno_occ*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
       POL = GVEC(NMOL+1,1)
 C
       RETURN
  100  FORMAT(4X,A7,12X,A5,11X,A10,4X,2(3X,A17))
  110  FORMAT(4X,A6,2X,A1,I6,3X,F11.5,5X,E15.8,
-     &       2(3X,A1,F5.2,A1,F5.2,A1,3X))
+     &       2(3X,A1,F7.4,A1,F7.4,A1))
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getplb */
@@ -1701,6 +1887,42 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
+#ifdef MOD_KRMC
+C
+C     Check if MCSCF coefficients are on file
+C
+      INQUIRE (FILE ='KRMCSCF',EXIST=TOBE)
+C
+      IF(.NOT.TOBE) GOTO 990
+      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+C
+      CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMANA')
+      IOPT = 1       ! Read from NEWORB label
+      JRDMO = -1
+      CALL RREADMO(WORK(KCMO),JRDMO,IOPT,LUKRMC)
+      CLOSE(LUKRMC,STATUS='KEEP')
+C
+      IF (NTESTL.GE.20) THEN
+C
+C     Print all coefficients (including positronic and S component)
+C
+        DO I = 1, NFSYM
+           WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+           CALL PRQMAT(WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &          NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        END DO
+      END IF
+C
+      CALL HEADER('Coefficients from KRMCSCF',2)
+      KEIG = KFREE
+      IPREIG = 0
+      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,
+     &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)
+C     Memory deallocation
+      CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+#endif /* MOD_KRMC */
 C
 C     No MCSCF, then check if RHF on DFCOEF :
 C
@@ -2010,11 +2232,11 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include "codata.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -2048,7 +2270,7 @@ C
         PZ  = COORD(3,1) + PP*DZ
 C       Get value of SOs at (PX,PY,PZ)
         CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRINT)
+     &              BUF,NTBAS(0),0,.FALSE.,IPRINT)
 C       Get density in this point
         RHO(0) = D0
         DO IC = 1,MC
@@ -2164,6 +2386,128 @@ c
       CALL QUIT('GT1RHO: Coefficients not found !')
 C
       END
+      SUBROUTINE WRITE_ORB_CUBES(N1,N2,ORBS,WORK,LWORK)
+c     Write cube files for gerade orbitals orbs(1,1)..orbs(N1,1) 
+c     and ungerade orbitals orbs(1,2)..orbs(N2,2). 
+c     orbital indices are defined so that 1 is first occupied.
+c     Based on GT3RHO, this one by ulfek.
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      integer n1,n2,orbs
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      LOGICAL TOBE,LBIT
+      DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2),orbs(1000,2)
+      character*16 filename
+#include "dcbgen.h"
+#include "dcbrho.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+C
+      CALL QENTER('GT3RHO')
+c
+c     Start timer
+c
+      TIMSTR = SECOND()
+#include "memint.h"
+C
+      CALL TITLER('3-dimensional density plot','*',122)
+C
+      IF(LEVYLE) ILSCUB = 1
+      CALL MEMGET('REAL',KATOM,4*NUCDEP,WORK,KFREE,LFREE)
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+CTROND: Consider open shell ! (NFMAT...)
+      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAOS ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF  ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+C
+C     Read coefficients + give restart info
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
+     &            TOTERG,3,WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+C     Get cube parameters
+      CALL CUBPAR(CUBE,WORK(KATOM))
+
+      CALL MEMGET('REAL',KRHO,NCUBE(3)*2,WORK,KFREE,LFREE)
+
+      do i=1,N1+N2
+      IF(LBIT(ILSCUB,1)) THEN
+         if (i.le.n1) then
+            write(filename,'(A,I4.4,A)') 'rhoL',orbs(i,1),'g.cube'
+         else
+            write(filename,'(A,I4.4,A)') 'rhoL',orbs(i-N1,2),'u.cube'
+         endif
+         WRITE(LUPRI,'(A)') 
+     &   ' GT3RHO : Gaussian cube file generated for large component.'
+         LUCUBE(1) = 11
+         OPEN(LUCUBE(1),FILE=filename,STATUS='NEW',
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      ENDIF
+      IF (LBIT(ILSCUB,2)) THEN
+         if (i.le.n1) then
+            write(filename,'(A,I4.4,A)') 'rhoS',orbs(i,1),'g.cube'
+         else
+            write(filename,'(A,I4.4,A)') 'rhoS',orbs(i-N1,2),'u.cube'
+         endif
+         WRITE(LUPRI,'(A)')
+     &   ' GT3RHO : Gaussian cube file generated for small component.'
+         LUCUBE(2) = 12
+         OPEN(LUCUBE(2),FILE=filename,STATUS='NEW',
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      ENDIF
+C     Write header for cube file
+      DO IC = 1,2
+        IF(LBIT(ILSCUB,IC)) CALL CUBHED(LUCUBE(IC),CUBE,WORK(KATOM))
+      ENDDO
+
+C     Generate density matrix
+      if (i.gt.n1) then
+         ifrp = 2
+         iorb = i - n1
+      else
+         ifrp = 1
+         iorb = i
+      endif
+C     Be aware: Both density matrices are normed to 1
+      call denorb(work(kdmat),orbs(iorb,ifrp),1,ifrp,work(kcmo),IPRRHO)
+      CALL GT3RH1(LUCUBE,CUBE,WORK(KRHO),
+     &            WORK(KDMAT),WORK(KGAOS),WORK(KBUF),
+     &            WORK,KFREE,LFREE)
+C
+      DO IC = 1,2
+        IF(LBIT(ILSCUB,IC)) CLOSE(LUCUBE(IC),STATUS='KEEP')
+      ENDDO
+      enddo
+C     Coeffients may now be deallocated.....
+      CALL MEMREL('GT3RHO.cmo',WORK,KCMO,KCMO,KFREE,LFREE)
+C     Memory deallocation
+      CALL MEMREL('GT3RHO',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+c    
+c     Stop timer
+c           
+      TIMEND = SECOND()
+      TIME   = TIMEND - TIMSTR
+      CALL TIMTXT('>>> Time used in GT3RHO is',TIME,LUPRI)
+      CALL QEXIT('GT3RHO')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'GT3RHO: Coefficient file not found !'
+      CALL QUIT('GT1RHO: Coefficients not found !')
+C
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Gt3rh1 */
       SUBROUTINE GT3RH1(LUCUBE,CUBE,RHO,DMAT,GAO,BUF,
@@ -2202,7 +2546,7 @@ C
      &                    +(I3-1)*CUBE(3,3)
 C           Get value of SOs at (PX,PY,PZ)
             CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRRHO)
+     &              BUF,NTBAS(0),0,.FALSE.,IPRRHO)
 C           Get density in this point
             DO IC = 1,2
               IF(LBIT(ILSCUB,IC)) THEN
@@ -2245,12 +2589,12 @@ C
 C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -2399,7 +2743,7 @@ C
 C
 C Get overlap matrix 
 C
-      CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE) 
+      CALL GTOVLX(WORK(KSMAT),SSMTRC)
       IF(IPRLOC.GE.6) THEN
          WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
          CALL PRQMAT(WORK(KCMO),NFBAS(IFRP,0),NORB(IFRP),
@@ -2469,7 +2813,7 @@ C     PRJLOC = FALSE localization with Mulliken analysis
      S            WORK(KFREE),LFREE)
       IF(PRJLOC) THEN
 C     PRJLOC = TRUE localization with projection analysis
-         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL GTOVLX(WORK(KSMAT),SSMTRC)
          CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
      S               NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
       ELSE
@@ -2525,7 +2869,7 @@ C     PRJLOC = FALSE localization with Mulliken analysis
      S            WORK(KFREE),LFREE)
       IF(PRJLOC) THEN
 C     PRJLOC = TRUE localization with projection analysis
-         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL GTOVLX(WORK(KSMAT),SSMTRC)
          CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
      S        NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
       ELSE
@@ -2742,7 +3086,7 @@ C      DO IFRP = 1,NFSYM
          NSTR(IFRP,0,I) = 1
          CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)),
      &        NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &        IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &        IFRP,NSTR(IFRP,0,I))
          CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &        NSTR(IFRP,2,I),NSTR(IFRP,1,I))
          NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -3027,7 +3371,7 @@ C
         CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
       ENDIF
 C
-      CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('ORBLP2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3581,9 +3925,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anapr1 */
-      SUBROUTINE ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KBV,
+      SUBROUTINE ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
+C
+C    IOPT carries information on whether this is a regular projection
+C    analysis (IOPT == 6 or 7) or a projection analysis of 
+C    MCSCF natural orbitals (IOPT == 14). S. Knecht - April 2010
+C
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3595,11 +3944,11 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
-     &          KE(2,2),KQ(2,2),KBV(2),GROSS(2,0:2,MAXREF),POL(2),
-     &          WORK(*)
+     &          KE(2,2),KQ(2,2),KI(2,2),KBV(2),GROSS(2,0:2,MAXREF),
+     &          POL(2),WORK(*)
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC)
       IS = KSMAT
       POLT = D0
       DO IFRP = 1,NFSYM
@@ -3626,9 +3975,9 @@ C.......ntot   = nmol + nref
         N2REF = NREF*NREF
         CALL MEMGET('REAL',KPMAT,N2REF,WORK,KFREE,LFREE)
         CALL PRJAN1(IFRP,NMOL,NREF,NTOT,
-     &       KQ,KE,WORK(KAMAT),WORK(KBV(IFRP)),WORK(KPMAT),
+     &       KQ,KE,KI,WORK(KAMAT),WORK(KBV(IFRP)),WORK(KPMAT),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
-     &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),WORK,KFREE,LFREE)
+     &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),IOPT,WORK,KFREE,LFREE)
         POLT = POLT + POL(IFRP)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
@@ -3715,7 +4064,7 @@ C.....Reference + polarization coefficients
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC)
       IS = KSMAT
       IC = 0
       DO IFRP = 1,NFSYM
@@ -3930,3 +4279,181 @@ C=======================================================================
       RETURN
       END
 #endif
+
+      SUBROUTINE GET_AO_ATOM_MAP(IAOATOM)
+C     Return an array with the index of the atom carrying a certain
+C     AO. In case of SO combinations from multiple atoms give the index
+C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
+#include "symmet.h"
+#include "aosotr.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
+      DIMENSION IAOATOM(NTBAS(0))
+      NAORBC = 0
+      JCENTD = 0
+      DO JCENT = 1, NUCIND
+        NDEGJ  = NUCDEG(JCENT)
+        DO JDEG = 1, NDEGJ
+          JCENTD = JCENTD + 1
+          NAORB = 0
+          DO ISHELL = 1,NLRGSH
+            ICENT = NCENT(ISHELL)
+            LVAL  = NHKT(ISHELL)
+            NDEGI  = NUCDEG(ICENT)
+            DO IDEG = 1,NDEGI
+              DO ICOMP = 1,KHK(LVAL)
+                NAORB = NAORB + 1
+                IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
+                   NAORBC = NAORBC + 1
+                   IAOATOM(NAORBC) = JCENT
+c                   print *,naorb,'<->',naorbc
+                endif
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      NAORBL = NAORB
+C
+      JCENTD = 0
+      DO JCENT = 1, NUCIND
+        NDEGJ = NUCDEG(JCENT)
+        DO JDEG = 1, NDEGJ
+          JCENTD = JCENTD + 1
+          NAORB = NAORBL
+          DO ISHELL = NLRGSH+1,KMAX
+            ICENT = NCENT(ISHELL)
+            LVAL  = NHKT(ISHELL)
+            NDEGI  = NUCDEG(ICENT)
+            DO IDEG = 1,NDEGI
+              DO ICOMP = 1,KHK(LVAL)
+                NAORB = NAORB + 1
+                IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
+                   NAORBC = NAORBC + 1
+                   IAOATOM(NAORBC) = JCENT
+                endif
+              ENDDO
+             ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      END
+
+
+c
+C     Calculate a capped density matrix of the atoms
+c     listed in icent.
+c
+      subroutine make_cap_dmat(icent,ncent,cmo,D,thres)
+      implicit none
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      double precision cmo(*), D(norbt,norbt,nz),thres,ovsum
+      integer icent, ncent, i, j, k
+      dimension icent(ncent)
+      print *,'making fragment projector'
+      call make_fragment_projector(icent,ncent,D,cmo)
+c     keep only occupied block of the projector
+      do k=1,nz
+         do i=nish(1)+1,norbt
+            do j=1,norbt
+               D(j,i,k) = 0
+               D(i,j,k) = 0
+            enddo
+         enddo
+      enddo
+c     purify to get orbitals of the cap
+      call purify(D,norbt,nz,thres)
+      call matexport_double3('Dcap',D,norbt,norbt,norbt,norbt,nz)
+      end
+
+      subroutine make_fragment_projector(icent,ncent,P,cmo)
+c     Make a projector on the basis of centers icent(1)
+c     .. icent(ncent) (and their symmetry related centers). The
+c     projector is created in MO basis (given by cmo) -ulfek
+      implicit none
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      integer icent, ncent, aomap, i, j, ifind,lwork, n
+      double precision P, tmp, cmo, work
+      double precision, allocatable :: Pao(:,:), Pso(:,:), vec(:,:),
+     &     val(:)
+      dimension P(norbt,norbt,nz), icent(ncent), aomap(ntbas(0))
+c     Set up projector in AO basis
+      call get_ao_atom_map(aomap)
+      allocate( Pao(ntbas(0),ntbas(0)) )
+      allocate( Pso(ntbas(0),ntbas(0)) )
+      call dzero(Pao(1,1),ntbas(0)**2)
+      n = 0
+      do i=1,ntbas(0)
+         if (ifind(aomap(i),icent,ncent).gt.0) then
+            Pao(i,i) = 1
+            n = n + 1
+         endif
+      enddo
+      print *,'Marking',n,' orbitals as belonging to system A'
+      call dzero(Pso(1,1),ntbas(0)**2)
+c     go to so basis TODO: is irepdmp=0 correct?
+      call mtaoso(Pao,Pso,ntbas(0),0,0)
+      n = 0
+      do i=1,ntbas(0)
+         if (abs(Pso(i,i)).gt.1e-14) then
+            n = n + 1
+         endif
+      enddo
+c     to mo basis
+      call qtrans90('AOMO','S',0.0D0,
+     &     ntbas(0),ntbas(0),norbt,norbt,
+     &     Pso,ntbas(0),ntbas(0),1,ipqtoq(1,0),
+     &     P,norbt,norbt,nz,ipqtoq(1,0),
+     &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),
+     &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),0)
+      deallocate( Pso )
+      deallocate( Pao )
+      call purify(P,norbt,nz,1.0D-8)
+      end
+
+
+      subroutine purify(P,n,mz,thres)
+c     purify quaternion matrix P by setting eigenvalues > thres to 1 and
+c     eigenvalues <= thres to 0.
+      implicit none
+#include "dgroup.h"
+#include "dcbbas.h"
+      double precision P(n,n,mz), thres
+      double precision, allocatable :: val(:), vec(:,:,:)
+      integer ierr, kveg, keig, nvec, n, mz, i, j, k
+      allocate( vec(n,n,mz) )
+      allocate( val(n) )
+      call qdiag90(mz,n,P,n,n,val,1,vec,n,n,ierr)
+      if (ierr.ne.0) then
+         call quit('qdiag failed in purify()')
+      endif
+c     see how many nonzero eigenvalues we have
+      nvec = 0
+      print *,'In purify() - eigenvalues:'
+      do i=1,n
+         print *,val(i)
+         if (val(i).gt.thres) then
+            nvec = nvec + 1
+         endif
+      enddo
+c     P = vec*vec' for vectors n-nvec+1 .. n
+      CALL qgemm(n,n,nvec,1.0D0,
+     &     'N','N',IPQTOQ(1,0),vec(1,n-nvec+1,1),n,n,mz,
+     &     'H','N',IPQTOQ(1,0),vec(1,n-nvec+1,1),n,n,mz,
+     &          0.0D0,IPQTOQ(1,0),P,n,n,mz)
+      deallocate( vec )
+      deallocate( val )
+      end

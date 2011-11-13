@@ -1,5 +1,4 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,9 +15,8 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C /* Deck make_dkh */
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
        SUBROUTINE MAKE_H2C(VMAT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -46,6 +44,7 @@ C    '  Praise the Lord, my soul ! All my beeing,
 C     praise his holy name!'  (Psalm 103,1)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -61,6 +60,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('MAKE_H2C')
 C ... generate 2-component Hamiltonian
+C
 C aspg, timing
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
@@ -74,11 +74,12 @@ C    ... it's using the picture change transformation matrix obtained from the
 C    transformation of the Dirac bare nucleus or of the Fock-Dirac matrix
 C    (when USEDF=.true.)
       IF (DO4C2C.AND..NOT.START2C) THEN
-       IF (IPRHAM.GE.1) THEN
+
+       IF (IPRHAM.GE.0) THEN
         write(LUPRI,'(/2X,A)')
      &  'MAKE_H2C: Going to do the picture change transformations'//
      &  ' of four-component Fock-Dirac AO matrixes'//
-     &  ' (renews files DFFCK1, DFFCK2, get FD1AO_DK)'
+     &  ' (renews files DFFCK1, DFFCK2)'
         IF (USEDF) THEN
 C       ... in this case we block-diagonalize the Fock-Dirac operator
          write(LUPRI,'(4X,A/)')
@@ -86,16 +87,34 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
      &   ' the block-diagonalization of the FOCK-DIRAC operator.'
         ELSE
          write(LUPRI,'(4X,A/)')
-     &   '... the picture change transformation matrix comes from'//
-     &   ' block-diagonalizations of DIRAC operator.'
+     &   '... the picture change transformation matrix comes from the'//
+     &   ' block-diagonalizations of Dirac BARE-NUCLEUS operator.'
         ENDIF
        ENDIF
 
-        ISIZE = NORB(1)
-        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
-        CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
-        CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
-        CALL MEMREL('MAKE_H2C.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
+       ISIZE = NORB(1)
+       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
+       CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
+       CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
+!      CALL MEMCHK('MAKE_H2C.FDTR2C ',WORK,1)
+
+       IF (TRMO4C2C) THEN 
+!mi    ... transform 4c MO coeff -> 2c MO coeff using the picture change tranf.matrix
+CMI        .... consider NFMAT for KBUF array allocation !!!
+          CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+          IF (NFMAT.GT.1) 
+     &       CALL QUIT('TRMO4C2C: open-shell not yet implemented')
+          CALL CMOTR2C(VMAT,WORK(KBUF),WORK(KCMO),WORK(KEIG),
+     &                 WORK(KIBEIG),WORK(KFREE),LFREE)
+!         CALL MEMCHK('MAKE_H2C.CMOTR2C ',WORK,1)
+          CALL MEMREL('MAKE_H2C.CMOTR2C 1',WORK,KWORK,KEIG,KFREE,LFREE) 
+          CALL MEMREL('MAKE_H2C.CMOTR2C 2',WORK,KWORK,KBUF,KFREE,LFREE) 
+          CALL MEMREL('MAKE_H2C.CMOTR2C 3',WORK,KWORK,KCMO,KFREE,LFREE) 
+       ENDIF
+
+       CALL MEMREL('MAKE_H2C.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
 
       ENDIF
 
@@ -105,7 +124,6 @@ C ... store transformed H2c_AO Hamiltonian in pure "LL" form ...
       ENDIF
 
 C ... for calculating properties in pure 2comp. mode do adapt 4comp.operators
-C     IF (TWOCOMPBSS.AND.DOPRP) THEN
       IF (TWOCOMPBSS) THEN
         CALL PROP2BSS(VMAT,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
@@ -113,9 +131,23 @@ C ==============================================================================
 C ... export the Lowdin matrix adapted for 2c calculations,
 C ===============================================================================
       CALL RFBSSMAT('VMAT2C  ',.TRUE.,'MAKE_H2C',
-     &        VMAT,N2BBASX,LUBSS,IPRHAM)
+     &               VMAT,N2BBASX,LUBSS,IPRHAM)
+
 C    ... close the BSSMAT file ...
       CLOSE(LUBSS,STATUS='KEEP')
+
+!     x2c     = .true.
+!     x2c_mod = .true.
+!     IOTC = .false.
+!     BSS = .false.
+!     NOPRTR = .false.
+!     IBSS = 2999
+!     TWOCOMPBSS = .false.
+!     TWOCOMP = .false.
+
+!     call x2c_driver(work(kfree),lfree,.false.,1,.true.)
+!
+!     call quit( '*** stop after x2c_driver run ***' )
 
 C ============================================================
 C  Finally set up number of positronic shells equal to zero
@@ -169,19 +201,21 @@ C
 C On input :   
 C ==========
 C  FOCK - array used inside
-C  I2COFK - determines the integral type
+C  I2COFK - determines the integrals type (ie what kind of 2-comp. transformed Hamiltonian)
+C
 C  Note that it the temporary default, BSS is really run in 4-component
 C  mode, that is the small components are simply set to zero.
+C
 C  True 2-component mode means that the small components are fully absent.
 C
 C * BSS transformation of one-electron problem:
 C    1 - 2c matrix from 4c: h2c from h_D(1)_4C
 C    2 - 2c matrix from 4c: h2c_CSC(+AMFI if present) from hD(1)_4C
+C
 C * BSS transformation after 4c SCF, that is using the mean-field potential:
 C    3 - 2c one-electron matrix 
 C    4 - 2c full Fock matrix
-C    5 - 
-C    6 -
+C    5,6 - 2c h2c+u1_so from 2c full Fock matrix
 C    7 - true 2-component mode
 C
 C  IPRINT - print level
@@ -204,35 +238,41 @@ C
 C     HAM2CL is the label of the two-comp. hamiltonian matrix to read
 C     ==================================================================
 C
-      CALL QENTER('GETH2CAO')
 
-C     Select the label
+C     Select the label according to the I2COFK parameter
       IF      (I2COFK.EQ.1) THEN       
 C.... h2c from h_D(1)_4C ... DEFAULT ...    
-        HAM2CL = 'H1AO_DK '      
+        HAM2CL = 'H1AO_DK ' 
       ELSE IF (I2COFK.EQ.2) THEN      
-C.... h2c_CSC(+AMFI if present) from hD(1)_4C                                     
+C.... h2c_CSC(+AMFI,if present) from hD(1)_4C                                     
         HAM2CL = 'H1AO_DK2'     
 C.... these are post-DC-SCF two-component Hamiltonians ...                         
 C     =============================================================                       
       ELSE IF (I2COFK.EQ.3) THEN 
 C.... h2c(1) from FD4C - one electron terms !                                          
-C.... WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE !                             
-        HAM2CL = 'FD1AO_DK'    
-      ELSE IF (I2COFK.EQ.4) THEN    
-C.... full Fock_2c transformed from FD4C                                               
-        HAM2CL = 'FDAO_DK '   
+C.... WE MAY WISH TO PERFORM ONLY ONE SCF ITERATION HERE
+        HAM2CL = 'FD1AO_DK' 
+      ELSE IF (I2COFK.EQ.4) THEN 
+C.... full Fock_2c transformed from FD4C,ie from previous 4c SCF  
+        HAM2CL = 'FDAO_DK ' 
       ELSE IF (I2COFK.EQ.5.OR.I2COFK.EQ.6) THEN
 C.... f2c(=h1+u1_so, spin-free terms are removed from u1) from FD_4C term              
         HAM2CL = 'FD2C_USO' 
       ELSE IF (I2COFK.EQ.7) THEN    
-C.... it's H1AO_DK or H1AO_DK2 in LL basis
+C.... it's H1AO_DK or H1AO_DK2 in LL basis (ie pure two-component modus)
         HAM2CL = 'H2CAO_LL' 
       ELSE     
-        WRITE(lupri,*) 'H2CAOLL: I2COFK=',I2COFK   
+        WRITE(LUPRI,*) 'H2CAOLL: I2COFK=',I2COFK   
         CALL QUIT(
-     &'ONEFCK: Wrong value of the entering I2COFK!')
-      ENDIF                                  
+     &  'ONEFCK: Wrong value of the entering I2COFK!')
+      ENDIF  
+
+      IF (IPRINT.GE.0) THEN
+       WRITE(LUPRI,'(/,2X,A,I1,A,A)')
+     & 'GETH2CAO: asked for 2c Hamiltonian (param.I2COFK=',I2COFK,'):',
+     & HAM2CL
+      ENDIF
+
 C
 C     Read chosen two-component hamiltonian integrals from file BSSMAT
 C     ==================================================================
@@ -240,7 +280,6 @@ C
       CALL RFBSSMAT(HAM2CL,.FALSE.,'GETH2CAO',
      &      FOCK,N2BBASXQ,LUBSS,IPRINT)
 
-      CALL QEXIT('GETH2CAO')
       RETURN
       END
 
@@ -262,6 +301,10 @@ C Written by Miro Ilias & Hans Jorgen Aa Jensen, Odense, 2002,
 C        deeply reprogrammed by Miro Ilias, Strasburg, 2005.
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!     use x2c_utils, only: 
+!    &    print_x2cmat
+      use common_matvec_op
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
@@ -274,7 +317,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DK2SO1,ONLYSO1,SAVESO1,SF_BEG,FPB,FNDLAB,
-     &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C
+     &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C, LINAD
+      integer is_defining_h1mat
 
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
@@ -282,7 +326,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Print section
 C
-      CALL HEADER('*** Output from MAKE_BSS ***',-1)
+      IF (IPRHAM.GE.1) THEN
+        CALL HEADER('*** Output from MAKE_BSS ***',-1)
+      ENDIF
 C ======================================================================
 C            extract information about the BSS Hamiltonian 
 C ======================================================================
@@ -290,13 +336,14 @@ C ======================================================================
      &     ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,NOPRTR,BLOCKD,
      &     DO4C2C,USEDF,CONT2C,START2C,I2CHAM,DO2C4C,INI2C,I2COFK,
      &     YREQ1,IC_AMFI,GETPCTM,NOAMFI,IPRHAM)
-C  ... do not compare eigenvalues for ONLYSO1 = T
+C  ... do not compare eigenvalues for ONLYSO1 = T, what is testing mode
+C  on BSS-SO1 integrals against AMFI SO1 terms
       CMPEIG = CMPEIG.AND..NOT.ONLYSO1
-C     ... do initiate the important FreeParticleBasis flag!
+C     ... initialize the important FreeParticleBasis flag!
 C     If .false., we use the one-step RKB approach.
       FPB = .NOT.NOPRTR
 
-C get transf. matrix (RKB)
+C  allocate multipurpose arrays 
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
@@ -309,6 +356,7 @@ C get transf. matrix (RKB)
 
 C     ... choose the file number !
       LUBSS = 40
+      ! .. save 4c Lowdin transformation matrix  
       CALL W2BSSMAT(4,.TRUE.,'VMAT4C  ','MAKE_BSS',
      &              VMAT,N2BBASX,LUBSS,IPRHAM)
       IF (IPRHAM.GE.2) THEN
@@ -319,20 +367,27 @@ C     ... choose the file number !
 C ============================================================
 C ... get the RKB transformation matrix into WORK(KTMAT)
 C ============================================================
+!     flag for the adaptation for the linear symmetry
+      LINAD = ( DO4C2C.AND.LINEAR ) 
+!     defining h1 matrix control variable (in the X2C module) - 
+!     set here for consistency to the maximum value (the true value 
+!     needs to be checked though)
+      is_defining_h1mat = 3
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
-     &            WORK(KFREE),LFREE)
+     &            LINAD,is_defining_h1mat,WORK(KFREE),LFREE)
 C.....set variables needed in DFDIAG (N2TMT etc.)
       CALL SET_TMT(IPRHAM)
 C     1. Write transformation matrices to file BSSMAT
       CALL HANDLE_RKB(VMAT,WORK(KTMAT),WORK(KTBUF),
-     &                  .FALSE.,FPB,IPRHAM,WORK(KFREE),LFREE)
+     &            LINAD,FPB,IPRHAM,WORK(KFREE),LFREE)
 
-C      ... allocate memmory 
+C      ... allocate more memmory 
       CALL MEMGET('INTE',KIBEIG,NTBAS(0),WORK,KFREE,LFREE)
+      !CALL IZERO(WORK(KIBEIG),NTBAS(0))
       CALL MEMGET('REAL',KFACKIN,NTBAS(1),WORK,KFREE,LFREE)
 
 C ===============================================================
-C ===       Do prepare the free particle (FP) basis "k"
+C ===       Prepare the free particle (FP) basis "k"
 C ===============================================================
       IF (FPB) THEN
 C generate free particle one-electron matrix in RKB ON basis "theta"
@@ -364,11 +419,12 @@ C        ...entering WORK(KTMAT) contains the transformation matrix in AO
       CALL MKSAOMO_Le(WORK(KTBUF),WORK(KTMAT),VMAT,
      &         WORK(KFACKIN),FPB,IPRHAM,WORK(KFREE),LFREE)
 
-         CALL MEMCHK('MAKE_BSS 1',WORK,1)
+!     CALL MEMCHK('MAKE_BSS 1',WORK,1)
+
 C get H1 (Dirac bare nucleus) Hamiltonian in the ON basis into WORK(KBUF)
 C    ... that is  the RKB  or FP "k" basis; WORK(KTMAT) entering ... !
       CALL GET_H1_ONB(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
-     &                   SF_BEG,FPB,.FALSE.,SAVESO1,WORK(KFREE),LFREE)
+     &                   SF_BEG,FPB,LINAD,SAVESO1,WORK(KFREE),LFREE)
 
 C ===================================================================
 C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
@@ -384,12 +440,12 @@ C        ... we need additional integer array...
          IF (NFSYM.EQ.2) THEN
           IF (ISIZE.LT.NORB(2)) ISIZE=NORB(2)
          ENDIF
-         CALL MEMGET('INTE',KIPIVOT,ISIZE,WORK,KFREE,LFREE)
+
 C        ... both for FPM "k" & RKB 
          CALL GET_HINF_R(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KFACKIN),
-     &                   WORK(KEIG),WORK(KIPIVOT),FPB,YREQ1,
+     &                   WORK(KEIG),WORK(KIBEIG),FPB,YREQ1,
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
-         CALL MEMREL('AFTER_INF_R',WORK,KWORK,KIPIVOT,KFREE,LFREE)
+
         ENDIF
 C =======================================================================
 C       ... second order DKH - only in the free-particle basis
@@ -428,7 +484,8 @@ C   ===============================================================
 C
 C     Prepare Lowdin matrix on 2c form
 C
-      CALL LOWD2C(VMAT,IPRHAM)
+      CALL LOWD2C(VMAT,WORK(KTBUF),WORK(KTMAT),WORK(KEIG),
+     &            WORK(KFREE),LFREE,IPRHAM)
 C
 C transform H2C Hamitonian from FP "k" basis to the SO-AO  basis,
 C prepare the final picture change transformation matrix if wished,
@@ -481,7 +538,7 @@ C  /* Deck set_tmt */
       SUBROUTINE SET_TMT(IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C   Set up variables - needed for DFDIAG routine !
+C  Set up important variables - needed for DFDIAG routine !
 C
 C  Written by Miro Ilias, Prievidza, December 2006
 C
@@ -492,7 +549,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
-      CALL QENTER('SET_TMT')
 
 C      ... NTMO is set up !!!!
 C .... this settings are needed (DFDIAG!!!) for the RKB option !!!
@@ -505,31 +561,30 @@ C .. NZT is in dcbbas.h, and after MODHAM for RKB is equal to NZ !
         NISHMF(IFRP) = NISH(IFRP)
         NOCCMF(IFRP) = NOCC(IFRP)
         I2TMT(IFRP) = N2TMT
-C       N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZ
         I2TMOT(IFRP) = N2TMOTQ
-        N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+        N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
         IORB(IFRP)  = NORBT
-C          ....  Count total number of orbitals...
+C       ...  Count total number of orbitals  ...
         NORBT    = NORBT  + NORB(IFRP)
         I2ORBT(IFRP)= N2ORBT*NZ
         N2ORBT   = N2ORBT + NORB(IFRP)*NORB(IFRP)
       ENDDO
 
       IF (IPRINT.GE.5) THEN
-       WRITE(LUPRI,*) 'SET_TMT: setting variables'
+       WRITE(LUPRI,'(/,6X,A)') '**** SET_TMT: set variables ****'
        DO I = 1, NFSYM
-        write(lupri,*) 'fermion symm:',I,'/',NFSYM
-        write(lupri,*) 'NISHMF(',I,')=',NISHMF(I)
-        write(lupri,*) 'NOCCMF(',I,')=',NOCCMF(I)
-        write(lupri,*) 'I2TMT(',I,')=',I2TMT(I)
-        write(lupri,*) 'IORB(',I,')=',IORB(I)
-        write(lupri,*) 'I2ORBT(',I,')=',I2ORBT(I)
+        write(lupri,'(1X,A,I1,A,I1)') 'fermion symm:',I,'/',NFSYM
+        write(lupri,'(3X,A,I1,A,I4)') 'NISHMF(',I,')=',NISHMF(I)
+        write(lupri,'(3X,A,I1,A,I4)') 'NOCCMF(',I,')=',NOCCMF(I)
+        write(lupri,'(3X,A,I1,A,I4)') 'I2TMT(',I,') =',I2TMT(I)
+        write(lupri,'(3X,A,I1,A,I4)') 'IORB(',I,')  =',IORB(I)
+        write(lupri,'(3X,A,I1,A,I4)') 'I2ORBT(',I,')=',I2ORBT(I)
        ENDDO
-        write(lupri,*) 'SET_TMT: N2TMT=',N2TMT
+       write(lupri,'(4X,A,I3)') 'N2TMT=',N2TMT
       ENDIF
 
-      CALL QEXIT('SET_TMT')
       RETURN
       END
 
@@ -541,7 +596,8 @@ C
 C  After the MODHAM routine take care of matrices
 C
 C  On input:
-C    VMAT - (non-linear) SL resorted RKB AO to MO (FPB = F)
+C ------------
+C    VMAT - (non-linear) SL resorted RKB AO to MO (for FPB = False)
 C    TMAT - Non-linsym RKB transformation matrix 4c AO->MO
 C    TBUF - RKB MO to LINSYM RKB_MO (LINAD = T)
 C
@@ -687,12 +743,16 @@ C       ... dummy vars
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck lowd2c */
-      SUBROUTINE LOWD2C(VMAT,IPRINT)
+      SUBROUTINE LOWD2C(VMAT,TBUF,TMAT,EIG,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Reorder the Lowdin matrix for 2component calculations and write it to the file
+C  Reorder the 4c-Lowdin matrix for 2component calculations and write it to the file
 C
-C  Written by Miro Ilias, December 2006, Prievidza
+C  On input: arrays to be utilized inside, and flags
+C  
+C
+C  Written by Miro Ilias, December 2006, Prievidza,
+C                        2009, Tel Aviv - reaarangement for linear symmetry
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -701,10 +761,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-      DIMENSION VMAT(*)
-      LOGICAL PURLO
+      DIMENSION VMAT(*),TBUF(*),TMAT(*),EIG(*),WORK(LWORK)
+      DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
+      LOGICAL PURLO, WANT_LINEAR
+#include "memint.h"
 
       CALL QENTER('LOWD2C')
+
 C  ===================================================================
 C     ... get AND reorganize the Lowdin transformation matrix VMAT
 C  ===================================================================
@@ -796,12 +859,64 @@ C ==========================================================
      & ' was written into the BSSMAT file, EOFLABEL was renewed.'
       ENDIF
 
+      WANT_LINEAR=.FALSE.
+      IF (LINEAR) THEN 
+!     IF (WANT_LINEAR) THEN 
+C     ... for the linear symmetry DO ADAPT the Lowdin matrix !
+C      ... the proper setting for the 2c mode is needed !
+C   ... when we have Fock-Dirac matrix SCF in linear symmetry, we need
+C      the H2c in LINSYM_MO basis !!!
+      NSYM = 4/NZ     
+      DO I=1,NFSYM     
+       NPSHX(I) = NPSH(I)
+       NPSH(I) = 0    
+       NORB(I) = NESH(I) + NPSH(I)     
+       DO ISYM = 1, NSYM     
+         NBORBX(ISYM,I,2) =  NBORB(ISYM,I,2)     
+         NBORB(ISYM,I,2) = 0      
+         NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
+       ENDDO      
+      ENDDO
+      CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+      CALL DCOPY(N2BBASX,TMAT,1,VMAT,1)
+      DO I=1,NFSYM     
+       NPSH(I) = NPSHX(I)
+       NORB(I) = NESH(I) + NPSH(I)     
+       DO ISYM = 1, NSYM     
+         NBORB(ISYM,I,2) =  NBORBX(ISYM,I,2)     
+         NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)     
+       ENDDO      
+      ENDDO  
+
+      IF (IPRINT.GE.6) THEN 
+        CALL HEADER(
+     &'LOWD2C: Total Lowdin 2c_matrix AFTER LINEAR adaptation',-1)
+        IVMAT=1
+        DO I=1, NFSYM
+         WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',I,'/',NFSYM
+         CALL PRQMAT(VMAT(IVMAT),
+     &        NFBAS(I,0),NFORB(I,0),NFBAS(I,0),NFORB(I,0),
+     &        1,IPQTOQ(1,0),LUPRI)
+          IVMAT = IVMAT + NFBAS(I,0)*NFORB(I,0)
+        ENDDO
+      ENDIF
+C .... write the 2c-adapted lin-sym adapted Lowdin matrix into the file
+      CALL W2BSSMAT(1,.TRUE.,'VMAT2C_L','LOWD2C',
+     &              VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'LOWD2C: 2c LinSym adapted Lowdin matrix, VMAT2C_L,'//
+     &  ' was written to the BSSMAT file, EOFLABEL was renewed.'
+      ENDIF
+
+      ENDIF
+
       CALL QEXIT('LOWD2C')
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck makebncr2c */
       SUBROUTINE MAKEBNCR2C(VMAT,WORK,LWORK)
 C****************************************************************************
 C
@@ -818,6 +933,8 @@ C
 C   Written by Miro ILIAS, March 2006/Strasbourg
 C
 C****************************************************************************
+!     use x2c_utils, only:
+!    &    print_x2cmat
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -838,8 +955,13 @@ C****************************************************************************
 
 CMI   ... get Dirac 1el matrix
       CALL ONEFCK(VMAT,IPRHAM,WORK(KFREE),LFREE)
+!     call print_x2cmat(VMAT,NTBAS(0),NTBAS(0),nz,IPQTOQ(1,0),
+!    &     'bss - 4ch1sbc',6)      
 CMI   ... get screened Dirac bare nucleus
       CALL BNCORR(VMAT,WORK(KFREE),LFREE,IPRHAM)
+C
+!     call print_x2cmat(VMAT,NTBAS(0),NTBAS(0),nz,IPQTOQ(1,0),
+!    &     'bss - 4ch1bnc',6)      
 C
       BSS = BSS_SAVE
       TWOCOMP = TWOCOMP_SAVE
@@ -857,7 +979,7 @@ C     ... array for the picture change transformed operator
 
       CALL DOPCTRA(VMAT,WORK(KPCTM),WORK(KPCTO),ISIZE,.TRUE.,
      &             'BNCR_IOTC       ',1,0,1,'S',
-     &              WORK(KFREE),LFREE,IPRHAM)                 
+     &              WORK(KFREE),LFREE,IPRHAM)
 
       CALL MEMREL('MAKEBNCR2C',WORK,KPCTM,KPCTM,KFREE,LFREE)
       IF(IPRHAM.GE.8) THEN                                          
@@ -893,7 +1015,7 @@ C            LUBSS - file unit number ...
 C
 C  On output: TMAT with record
 C
-C  Written by Miro ILIAS, Strasbourg March, 2006,
+C  Written by Miro ILIAS, Strasbourg, March 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -903,8 +1025,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LBL
       CHARACTER*(*) FROMSUB
       
-      CALL QENTER('RFBSSMAT')
-
       IF (IPRINT.GE.3) THEN
        CALL HEADER('*** Output from the RFBSSMAT routine ***',-1)
        write(lupri,'(2x,a,a)')
@@ -962,7 +1082,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         ENDIF
       ENDIF
 
-      CALL QEXIT('RFBSSMAT')
       RETURN
       END
 
@@ -1193,7 +1312,6 @@ C****************************************************************************
 #include "dgroup.h"
       DIMENSION IBEIG(*)
       LOGICAL FNDLAB
-      CALL QENTER('INI_SF_RKB')
 
 C     ... initialize NORB_SUB(IB,IFRP,0),ID_SUB_BL(IB,IFRP)
       CALL INISUB
@@ -1202,13 +1320,15 @@ C     ... run over fermion symmetries ...
        CALL INIBOS(IBEIG(1+IORB(I)),I,.TRUE.,IPRINT)
       ENDDO
 
-C    ... do write the boson irreps (Trond's approach) into the BSSMAT file !
+C    ... write the boson irreps (Trond's approach) into the BSSMAT file !
       ISIZE = NORB(1)                                 
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)         
       CALL W2BSSMAT(1,.TRUE.,'IBOS_ONB','INI_SF_RKB',
      &              IBEIG,ISIZE,LUBSS,IPRINT)
-
-      CALL QEXIT('INI_SF_RKB')
+      IF (IPRINT.GE.2) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   'INI_SF_RKB: IBEIG (IBOS_ONB) written to BSSMAT'
+      ENDIF
       RETURN
       END
 
@@ -1300,8 +1420,6 @@ C****************************************************************************
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00, THRNULL = 1.00D-09 )
       DIMENSION S(LR,LC,NZX)
       
-      CALL QENTER('TEST_DIAG_MTX')
-
       SUM_DE  = SUM_DIAG_EL(S,N,LR,LC,NZX)
       SUM_DEN = SUM_DE/DFLOAT(N)
       SUM_ODE = SUM_OFFDIAG_EL(S,N,LR,LC,NZX)
@@ -1316,7 +1434,7 @@ C****************************************************************************
         WRITE(LUPRI,'(2X,A)') 
      & 'TEST_DIAG_MTX: WARNING, sum of diagonal elements/N'//
      &' of a unit matrix differs too much from 1!'
-       CALL FLSHFO(LUPRI)
+        CALL FLSHFO(LUPRI)
       ENDIF
 
       IF (DABS(SUM_ODE-D0).GT.THRNULL) THEN 
@@ -1326,8 +1444,6 @@ C****************************************************************************
        CALL FLSHFO(LUPRI)
       ENDIF
 
-
-      CALL QEXIT('TEST_DIAG_MTX')
       RETURN
       END
 
@@ -1495,7 +1611,7 @@ C      ... remove AMFI contribution when .NOAMFI present
 
       ELIM_SF=.FALSE.
       IF (SPINFR.AND.IPY.GE.1) THEN 
-       WRITE(LUPRI,'(A)') '* "SPINFR" option, no spin-orbit terms!' 
+       WRITE(LUPRI,'(2X,A)') '* "SPINFR" option, no spin-orbit terms!' 
 C      ... to secure that no spin-orbit terms appear
        IPY=0
       ENDIF
@@ -1551,19 +1667,18 @@ C     ... by default do not include SO1 addition to spin-free Hamiltonians DK2,B
         SPINFR=.TRUE.
         SF0=.FALSE.
         IF (IPX.GE.1) SF0=.TRUE.
-        WRITE(LUPRI,'(/2X,A)')
+        WRITE(LUPRI,'(/2X,A/)')
      & ' Addition of SO1 terms (extracted from H1_ONB)'//
      & ' to the desired spin-free Hamiltonian !'
         IF (IPZ.EQ.2.AND.SF0) THEN
-          write(lupri,'(5X,A)') 'DK2sfB + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'DK2sfB + SO1 Hamiltonian'
         ELSE IF (IPZ.EQ.2.AND..NOT.SF0) THEN
-          write(lupri,'(5X,A)') 'DK2sfE + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'DK2sfE + SO1 Hamiltonian'
         ELSE IF (IPZ.GT.2.AND.SF0) THEN
-          write(lupri,'(5X,A)') 'BSSsfB + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'BSSsfB + SO1 Hamiltonian'
         ELSE IF (IPZ.GT.2.AND..NOT.SF0) THEN
-          write(lupri,'(5X,A)') 'BSSsfE + SO1 Hamiltonian'
+          write(lupri,'(5X,A/)') 'BSSsfE + SO1 Hamiltonian'
         ENDIF
-         write(lupri,*)
       ENDIF
 
       IF (ELIM_SF) WRITE (LUPRI,'(A)')                                
@@ -1678,12 +1793,16 @@ C     ... pure 2c mode after the DC-SCF ...
        ELSE IF (I2CHAM.EQ.6) THEN
          I2COFK = 6
        ELSE
-         CALL QUIT(
-     &   'EXTR_BSS_INFO: I2CHAM parameter '//
-     &   ' is wrong (not 3/4/5/6) !' )
+        CONTINUE
+!         CALL QUIT(
+!     &   'EXTR_BSS_INFO: I2CHAM parameter '//
+!     &   ' is wrong (not 3/4/5/6) !' )
        ENDIF
       ENDIF
-      WRITE(LUPRI,*)
+
+      WRITE(LUPRI,'(2X,A,I1)')
+     &'* I2COFK parameter for H2c specification set to:',I2COFK
+
       CALL FLSHFO(LUPRI)
       CALL QEXIT('EXTR_BSS_INFO')
       RETURN
@@ -1736,7 +1855,7 @@ C     ... save the IBSS
       ENDIF
 
       IF (IPRINT.GE.3) THEN
-       WRITE (LUPRI,'(/A,I5,A,4I3)')
+       WRITE (LUPRI,'(/,4X,A,I4,A,4I3)')
      &'EXTR_DIG: IBSS=axyz=',IBSS_SAVE,
      &' ...extracted digits  a,x,y,z:',IPA,IPX,IPY,IPZ
       ENDIF
@@ -1798,16 +1917,11 @@ C****************************************************************************
      &  '..eliminating SPIN-FREE TERMS..'
        ENDIF
        WRITE(LUPRI,'(2X,A)')
-     & 'SPF_HK: Entering |k> boson symmetries of index 1:'
+     & 'SPF_HK: Entering RKB/"|k>" ON basis boson symmetries:'
        DO I = 1, NROW
         WRITE(LUPRI,'(5X,A,I3,3X,A,I2)')
-     &  'orbital: ',I,'boson symmetry:',IBS1(I)+1
-       ENDDO
-       WRITE(LUPRI,'(2X,A)')
-     & 'SPH_HK: Entering |k> boson symmetries of index 2:'
-       DO I = 1, NCOL
-        WRITE(LUPRI,'(5X,A,I3,3X,A,I2)')
-     &  'orbital: ',I,'boson symmetry:',IBS2(I)+1
+!     &  'orbital: ',I,'boson symmetry:',IBS1(I)+1
+     &  'orbital: ',I,'boson symmetry:',IBS1(I)
        ENDDO
       ENDIF
 
@@ -1905,7 +2019,6 @@ C****************************************************************************
       ENDIF
 
       CALL MEMGET('REAL',Kxxxx,1,WORK,KFREE,LFREE)
-      CALL MEMCHK('xxx 1',WORK,1)
 C  ... keep only LL blocks of the four-component property operator
       IF (.NOT.MAKEPCTRA) THEN
         CALL ONLY_LL(PRPAO,PROPNAME,IREP,ITIM,IPRINT)
@@ -1924,7 +2037,6 @@ C ...  read (load) the picture change transformation matrix:
         CALL FLSHFO(LUPRI)
       ENDIF
 
-      CALL MEMCHK('DOPCTRA 2',WORK,1)
 CMI... this cleaning is necessary in order to keep PRPAO1 without
 C     waste....
       CALL DZERO(PRPAO1,N2BBASXQ)
@@ -1975,8 +2087,6 @@ C       ... find offsets for picture change transformation matrix
      &     PCTM(IPCTM2),
      &     NFBAS(I2,0),NFBAS(I2,1),NZ,IPQTOQ(1,0),
      &     WORK(KFREE),LFREE,IPRINT)
-
-        CALL MEMCHK('DOPCT-after QTRANS',WORK,1) 
 
 C .... control output
        IF (IPRINT.GE.5) THEN
@@ -2252,16 +2362,14 @@ C      VMAT =  TMAT+ * TBUF * TMAT
       ITMAT = 1
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
-
         IF (IPRHAM.GE.7) THEN
            CALL HEADER(
-     &  'MAKE_FPM: Free particle matrix in SA-AO basis "xhi"'//
-     &  ' (after call FREEMT)',-1)
+     &     'MAKE_FPM: Free particle matrix in SA-AO basis "xhi"'//
+     &     ' (after call FREEMT)',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(TBUF(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                 NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-
            CALL HEADER(
      &     'MAKE_FPM: ENTERING RKB transf. matrix "xhi"->"theta"'//
      &     ' (nonlinear symmetry!), TMAT',-1)
@@ -2269,7 +2377,6 @@ C      VMAT =  TMAT+ * TBUF * TMAT
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NORB(I),
      &                 NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
         ENDIF
 
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -2487,10 +2594,11 @@ C ===============================================================
 C    ... write also boson irreps...
        ISIZE = NORB(1)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
-
        CALL W2BSSMAT(3,.TRUE.,'IBOS_ONB','MAKE_FPM',
      &                IBEIG,ISIZE,LUBSS,IPRHAM)
-
+       IF (IPRHAM.GE.5) THEN
+         CALL PRINT_IBEIG(IBEIG,'MAKE_FPM')
+       ENDIF
        IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_FPM: IBOS_ONB (boson irreps) of the free-particle basis'//
@@ -2508,7 +2616,6 @@ C    ... write also boson irreps...
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
-C  /* Deck get_a_fac */      
       SUBROUTINE GET_A_FAC(FACKIN,EIG,VMAT,TMAT,TBUF,
      &                      FPB,USEDF,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2559,8 +2666,7 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
       CALL RFBSSMAT(LBL,.TRUE.,'GET_A_FAC',TMAT,ISIZE,LUBSS,IPRINT)
 
-C       ... TBUF subst  WORK(KBUF)
-      CALL GTOVLT(TBUF,D0,WORK(KFREE),LFREE)
+      CALL GTOVLT(TBUF,D0)
 
       CVAL2 = CVAL*CVAL
 
@@ -2708,7 +2814,7 @@ C
 #include "memint.h"
 
 C     Get AO_LL overlap matrix , S(LL), WITH SS part ZEROED, into VMAT
-      CALL GTOVLT(VMAT,D0,WORK(KFREE),LFREE)
+      CALL GTOVLT(VMAT,D0)
 
       IOFF = 1
       JOFFESH = 0
@@ -2803,8 +2909,7 @@ C               SAOMO_Le = SAOMO_Le * Ad^-1
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
-C  /* Deck get_h1_fpm */      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
        SUBROUTINE GET_H1_ONB(TBUF,TMAT,VMAT,IBEIG,
      &          SF_BEG,FPB,LINAD,SAVESO1,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2826,7 +2931,7 @@ C   LINAD - flag annoucing additional adaptation due the linear symmetry
 C
 C  On output:
 C ------------
-C     TBUF - H1/FD1 Hamiltonian in the FP ON "k" basis (spin-free,if SF_BEG .true.)                                            
+C     TBUF - H1/FD1 Hamiltonian in the FP ON "k" basis (spin-free,if SF_BEG .true.) 
 C                             in RKB ON basis (when FPB=.false.) 
 C 
 C  Rewritten by Miro ILIAS, Strasburg, Oct. 2005 (after HJJ,MI, Odense,2002)
@@ -2850,7 +2955,7 @@ C ... needed due to the BSS,USEDF
 
 C=============================================================================================
 C
-C    In this case we prepare for the block-diagonalizing
+C    In this case we do the 
 C   transformation of the (converged) four-component Fock-Dirac operator in the RKB_MO basis. This is
 C   the post-DC-SCF approach that gives several new two-component Hamiltonians.
 C
@@ -2944,7 +3049,7 @@ C      ... read TMAT - transformation matrix 4c AO-> 4c MO
 C First get the bare nucleus Dirac Hamiltonian (BNDH) in the SA-AO basis "xhi"
 C into VMAT array
 
-         CALL MEMCHK('GET_H1_ONB:',WORK,1)
+       !CALL MEMCHK('GET_H1_ONB:',WORK,1) ! hurts !
 
        BSS=.FALSE.
        CALL ONEFCK(VMAT,IPRHAM,WORK(KFREE),LFREE) 
@@ -2955,7 +3060,7 @@ C    transform the BNDH from its SO-basis "xhi" to the ON basis "|k>"
 C    (reuse TBUF)
 C  where H is the bare nucleus Hamiltonian in the SO basis "xhi"
 C
-C        TBUF = VMAT+ * TMAT  * VMAT; 
+C        TBUF = TMAT+ * VMAT  * TMAT; 
 C  H1(in |k>) =   U1+ * H0 * U1 (notation in our paper)
 C
 C  if desired, eliminate spin-orbit components from H1 in C1 symmetry
@@ -2986,7 +3091,7 @@ C
 
          CALL HEADER(
      &   'GET_H1_ONB: Read Dirac bare nucleus matrix,'//
-     &   ' TMAT, in 4c SO-AO basis "xhi" ',-1)
+     &   ' VMAT, in 4c SO-AO basis "xhi" ',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &     '*** Fermion corep ',I,'/',NFSYM
          CALL PRQMAT(VMAT(1+I2BASX(I,I)),NFBAS(I,0),NFBAS(I,0),
@@ -3106,8 +3211,6 @@ C .... if spin-free, eliminate spin-orbit dependent terms
      &  ' after elim. spin-orbit dependent terms "BEFORE", TBUF',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &     '*** Fermion corep ',I,'/',NFSYM
-          write(lupri,*) 'boson irreps: ifsym=',I,':',
-     &                   ( (IBEIG(IORB(I)+J)),J=1,NORB(I))
           CALL FLSHFO(LUPRI)
          ENDIF
          IOFT = IOFT + NORB(I)*NORB(I)*NZ
@@ -3115,8 +3218,12 @@ C .... if spin-free, eliminate spin-orbit dependent terms
         ENDDO
       ENDIF
 
-C ... write the TBUF - H1 ON RKB/"k" to the file...
+CMI ... control printout of IBEIG
+      IF (IPRHAM.GE.5) THEN
+        CALL PRINT_IBEIG(IBEIG,'GET_H1_ONB')
+      ENDIF
 
+C ... write the TBUF - H1 ON RKB/"k" to the file...
       ISIZE=NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
       CALL W2BSSMAT(1,.TRUE.,'H1_ONBAS','GET_H1_ONB',
@@ -3133,7 +3240,43 @@ C ... write the TBUF - H1 ON RKB/"k" to the file...
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
-C  /* Deck  */      
+      SUBROUTINE PRINT_IBEIG(IBEIG,CALLED_FROM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Prints out IBEIG - boson info on MO's in this separate routine. It's important.
+C 
+C  Written by Miro Ilias, Sept.2010, Banska Bystrica
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"                                       
+#include "priunit.h"   
+#include "dgroup.h"  
+#include "dcborb.h"   
+      DIMENSION IBEIG(*)
+      CHARACTER*(*) CALLED_FROM
+
+      WRITE(LUPRI,'(/,2X,A,A,A)')
+     & '=====  PRINT_IBEIG called from ',CALLED_FROM,'  ====='
+      DO I=1,NFSYM
+         WRITE(LUPRI,'(2X,A,I2,A,I1,1X,A,I4)')
+     &   '* boson symmetries for fermion corep ',
+     &   I,' /',NFSYM,':  # of orbitals:',NORB(I)
+         WRITE(LUPRI,*) ' ...negative ("positronic") states:'
+         DO J=1,NPSH(I)
+           WRITE(LUPRI,'(8X,I3,A,I2)')
+     &     -(NPSH(I)-J+1),"--->",IBEIG(IORB(I)+J)
+         ENDDO
+         WRITE(LUPRI,*) ' ...positive (electronic) states:'
+         DO J=1,NESH(I)
+           WRITE(LUPRI,'(8X,I3,A,I2)')
+     &     J,"--->",IBEIG(IORB(I)+NPSH(I)+J)
+         ENDDO
+      ENDDO
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
       SUBROUTINE DF2ONB(DFFNAME,TBUF,TMAT,VMAT,
      &                 LINAD,FPB,WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -3141,9 +3284,9 @@ C
 C  Purpose: Read the converged Fock MO matrix from the DFFNAME file,
 C           transform it to the 4c "k"/RKB ON basis to be ready for the block-diagonalization
 C
-C  On input: DFFNAME
-C            LINAD
-C            TMAT  - "k" eigenvectors in "xhi" (when FPB=.true.), or RKB basis
+C  On input: DFFNAME - name of the file
+C            LINAD -  flag annoucing additional adaptation due the linear symmetry 
+C            TMAT  - "k" eigenvectors in "xhi" (when FPB=.true.), or RKB basis (in one-step transformation)
 C
 C  On output: TBUF - resulting 4c matrix in "k"/RKB ON basis
 C
@@ -3182,8 +3325,8 @@ C  ... check the presence of DFFOCK !
        ENDIF
 
 C ...  read converged Fock-Dirac MO (may be LINSYM!) matrix from the DFFOCK file
-        OPEN (LUFOCK, FILE=DFFNAME,FORM='UNFORMATTED',
-     &        ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='OLD')
+       OPEN (LUFOCK, FILE=DFFNAME,FORM='UNFORMATTED',
+     &       ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='OLD')
 C ... RESORT OF RKB_TMAT IS NEEDED FOR THE RKB based transformation !!!
        IREC = -1
        IF(MXDIIS.EQ.0) THEN
@@ -3758,6 +3901,16 @@ C Copy VMAT into TBUF as TBUF is leaving this routine...
       CALL QEXIT('GET_HINF_BD')
       RETURN
       END
+      SUBROUTINE DIAG_h_test(hmat,eigvl,eigvc,ndim,nz,ierr)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"                                       
+#include "priunit.h"   
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       write(6,*) ' DIAG_h_test: call to printaddr'
+       call printaddr(hmat)
+       call qdiag90(nz,ndim,hmat,ndim,ndim,eigvl,1,eigvc,ndim,ndim,ierr)
+       END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_r */      
@@ -3774,6 +3927,7 @@ C
 C    On input:
 C  ------------
 C    TBUF - BNDH in ON RKB / FP "k" basis
+C    IBEIG - only helping array for QCHOLD/QCHOLS, its content is hurt !
 C
 C   On output:
 C  ------------
@@ -3798,9 +3952,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CALL QENTER('GET_HINF_R')
 #include "memint.h"         
 
-
-      USEJACO=.FALSE.
-
       IBUF = 1
       IEIG = 1
       DO I=1,NFSYM
@@ -3815,19 +3966,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),NORB(I),
      &                NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
-
 C  ... diagonalize the H1 in ON RKB/"k" basis
-        IF (USEJACO.AND.NZ.EQ.1) THEN
-C       ... use the Jacobi diagonalization...
-         CALL RSJACO(NORB(I),NORB(I),NORB(I),TBUF(IBUF),
-     &                  EIG(IEIG),1,1,0,TMAT(IBUF),
-     &                  WORK(KFREE),LFREE)
-        ELSE
-         CALL QDIAG(NZ,NORB(I),TBUF(IBUF),NORB(I),NORB(I),
-     &        EIG(IEIG),1,TMAT(IBUF),NORB(I),NORB(I),
-     &        WORK(KFREE),LFREE,IERR)
-        ENDIF
+       CALL QDIAG(NZ,NORB(I),TBUF(IBUF),NORB(I),NORB(I),
+     &            EIG(IEIG),1,TMAT(IBUF),NORB(I),NORB(I),
+     &            WORK(KFREE),LFREE,IERR)
 
+!       call print_x2cmat(TMAT(IBUF),NORB(i),NORB(i),nz,IPQTOQ(1,0),
+!    &                    'bss - h1_4c-evc',LUPRI)
         IF(IPRINT.GE.5) THEN
           CALL HEADER(
      &   'GET_HINF_R (0): Eigenvalues of H1 bare nucl. matrix in '//
@@ -3980,9 +4125,13 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
       ENDIF
       ENDDO
 
+      IF (IPRINT.GE.5) THEN
+        CALL PRINT_IBEIG(IBEIG,'GET_HINF_R (1)')
+      ENDIF
+
 C ... now we have eigenvectors: prepare for solving R equation !
 C        (1-Y-+.Y-+^+) R = Y-+.Y++^+ or
-C        (Y--.Y--^+) R = -Y--.Y+^+
+C        (Y--.Y--^+) R = -Y--.Y+-^+
 
       IEIG = 1
       IBUFE =1
@@ -4035,10 +4184,14 @@ C   ... print the R
       ENDIF
       ENDDO
 
-C ... save the full R, TMAT, into the file BSSMAT !
+      IF (IPRINT.GE.5) THEN
+        CALL PRINT_IBEIG(IBEIG,'GET_HINF_R (2)')
+      ENDIF
+
+C ... save the full matrix R, stored in TMAT, into the BSSMAT file
       ISIZE = NESH(1)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-      CALL W2BSSMAT(1,.TRUE.,'R_MTX   ','GET_HINF_FPM',
+      CALL W2BSSMAT(1,.TRUE.,'R_MTX   ','GET_HINF_R',
      &              TMAT,ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
@@ -4221,7 +4374,7 @@ C ... read R into VMAT
      &  'R matrix (in ON basis) was read from BSSMAT into VMAT.'
        ENDIF
 
-C ... do make VMAT -> TBUF = (1 R)  !
+C ...  make VMAT -> TBUF = (1 R)  !
       IBUFE  = 1
       IBUF2E = 1
       DO I=1, NFSYM
@@ -4306,37 +4459,40 @@ C      and multiply it to form X Omega+ = (1  R)t * Omega+:
       ENDDO
 
 C ... TEST: Do U+.U into TMAT
-      IBUF2E=1
-      IBUFE=1
-      IBUF4E=1
-      DO I=1,NFSYM
-      IF (NORB(I).GT.0) THEN
-        NREF = NESH(I)
-        NREF2 = 2*NESH(I)
+!     IBUF2E=1
+!     IBUFE=1
+!     IBUF4E=1
+!     DO I=1,NFSYM
+!     IF (NORB(I).GT.0) THEN
+!       NREF = NESH(I)
+!       NREF2 = 2*NESH(I)
+!-----------------------------------------------------------------------
+!     U^{+}(M,K)*U(K,N) =  U^+(NREF,2*NREF)*U(2*NREF,NREF)
+!-----------------------------------------------------------------------
+!                 M     N      K
+!      CALL QGEMM(NREF,NREF,2*NREF,D1, 
+!    &    'H','N',IPQTOQ(1,0),
+!    &     VMAT(IBUF2E),2*NREF,NREF,NZ,
+!    &    'N','N',IPQTOQ(1,0),
+!    &     VMAT(IBUF2E),2*NREF,NREF,NZ,
+!    &     D0,IPQTOQ(1,0),TMAT(IBUFE),NREF,NREF,NZ)
 
-       CALL QGEMM(NREF,NREF,2*NREF,D1, 
-     &    'H','N',IPQTOQ(1,0),
-     &     VMAT(IBUF2E),2*NREF,NREF,NZ,
-     &    'N','N',IPQTOQ(1,0),
-     &     VMAT(IBUF2E),2*NREF,NREF,NZ,
-     &     D0,IPQTOQ(1,0),TMAT(IBUFE),NREF,NREF,NZ)
+!      IF (IPRINT.GE.7) THEN
+!        CALL HEADER(
+!    &   'GET_HINF_R : U1+ * U1 multiplied '//
+!    &   'transformation matrix in ON RKB/"k" basis, VMAT',-1)
+!        WRITE(LUPRI,'(3X,A,I1,A,I1)')
+!    &  '*** Fermion corep ',I,'/',NFSYM
+!        CALL PRQMAT(TMAT(IBUFE),NREF,NREF,NREF,NREF,
+!    &             NZ,IPQTOQ(1,0),LUPRI)
+!      ENDIF
 
-       IF (IPRINT.GE.7) THEN
-         CALL HEADER(
-     &   'GET_HINF_R : U1+ * U1 multiplied '//
-     &   'transformation matrix in ON RKB/"k" basis, VMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &  '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TMAT(IBUFE),NREF,NREF,NREF,NREF,
-     &             NZ,IPQTOQ(1,0),LUPRI)
-       ENDIF
+!         IBUFE =  IBUFE + NESH(I)*NESH(I)*NZ
+!        IBUF2E = IBUF2E + 2*NESH(I)*NESH(I)*NZ
+!        IBUF4E = IBUF4E + NREF2*NREF2*NZ
 
-          IBUFE =  IBUFE + NESH(I)*NESH(I)*NZ
-         IBUF2E = IBUF2E + 2*NESH(I)*NESH(I)*NZ
-         IBUF4E = IBUF4E + NREF2*NREF2*NZ
-
-      ENDIF
-      ENDDO
+!     ENDIF
+!     ENDDO
 
 C =================================================================================
 C ... save 4c ON-> 2c ON picture change transformation matrix into the file
@@ -4533,6 +4689,7 @@ C ... save H2c_ON basis into BSSMAT
       ENDIF
 
       CALL QEXIT('GET_HINF_R')
+
       RETURN
       END
 
@@ -4553,6 +4710,7 @@ C   -----------
 C    TBUF -  H2c(ee) in ON MO basis RKB/"k"
 C    WRITEH2C - variable that decides to assign the label of H_DK 1 el.
 C              transformed elements.
+C    IBEIG - array to be refilled with boson info (from BSSMAT)
 C
 C    On output: H2c in SA-AO is written to the file...
 C   ------------
@@ -4573,25 +4731,20 @@ C
       LOGICAL SAVESO1, SPFR,SPFR_BEG, 
      &          WRITEH2C, GETPCTM, TRAFPRKB, FPB
 
-      CALL QENTER('H2CFINAL')
 #include "memint.h"
-
 
 C ... assumes that H2C_ONBA is in FP "k" basis !
       TRAFPRKB = .FALSE.
 C .... NEED TO INTERCHANGE  VARIABLES !!!
       IF (TRAFPRKB.AND.FPB) THEN
-
 C  ... read the transformation matrix "k" -> "theta"
-
       ISIZE = NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
       CALL RFBSSMAT('FPMAT_TH',.TRUE.,'H2CFINAL',
      &               TBUF,ISIZE,LUBSS,IPRINT)
-
       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
-     &  'FPMAT_TH read into TBUF.'
+     &  'H2CFINAL: FPMAT_TH read into TBUF.'
       ENDIF
 
       IVMAT = 1
@@ -4669,6 +4822,21 @@ C            write(lupri,*) 'elem:',ICX,IBUFX+ICX,TBUF(IBUFX+ICX)
 
       ENDIF
       ENDDO 
+      ENDIF ! end of test sequence
+
+      IF (SPFR.OR.SAVESO1.OR.FPB.OR.SPFR_BEG) THEN
+CMI ... take care of IBEIG, because it is used further 
+      ISIZE =  NORB(1)            
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
+      CALL RFBSSMAT('IBOS_ONB',.TRUE.,'H2CFINAL',IBEIG,
+     &                ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(2X,A)')                        
+     &   'H2CFINAL: IBEIG was read from BSSMAT' 
+         IF (IPRINT.GE.5) THEN
+           CALL PRINT_IBEIG(IBEIG,'H2CFINAL')
+         ENDIF
+      ENDIF
       ENDIF
 
 C    ... do add SO1  terms in MO into TBUF !!!
@@ -4681,6 +4849,10 @@ C    ... do add SO1  terms in MO into TBUF !!!
           WRITE(LUPRI,'(/2X,A)')
      &    'H2CFINAL: HSO1_ONB read into TMAT.'
        ENDIF
+      
+       IF (IPRINT.GE.5) THEN
+         CALL PRINT_IBEIG(IBEIG,'H2CFINAL')
+       ENDIF
 
         IMAT = 1
         DO I=1,NFSYM
@@ -4688,20 +4860,21 @@ C    ... do add SO1  terms in MO into TBUF !!!
          N2EQ = NESH(I)*NESH(I)*NZ
          IF (IPRINT.GE.5) THEN
            CALL HEADER(
-     & 'H2CFINAL: H1_SO1 in ON  RKB/"k" basis, TMAT',-1)
+     & 'H2CFINAL: H1_SO1 in ON RKB/"k" basis, TMAT',-1)
            WRITE(LUPRI,'(/3X,A,I2,A,I1/)')
      & '*** Fermion corep ',I,' /',NFSYM
            CALL PRQMAT(TMAT(IMAT),NESH(I),NESH(I),
      &     NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
          ENDIF
-C      ... do eliminate spinèorbit terms !
+
+CMI      ... eliminate spin-orbit terms 
          IF (SPFR.AND..NOT.SPFR_BEG) THEN
 
           IF (IPRINT.GE.5) THEN
            CALL HEADER(
      &     'H2CFINAL: H2c in RKB/|k> - before elimination '//
      &     ' of spin_orbit terms "AFTER"',-1)
-           WRITE(LUPRI,'(/3X,A,I2,A,I1/)')
+           WRITE(LUPRI,'(3X,A,I2,A,I1)')
      &      '*** Fermion corep ',I,' /',NFSYM
             CALL PRQMAT(TBUF(IMAT),NESH(I),NESH(I),NESH(I),NESH(I),
      &                  NZ,IPQTOQ(1,0),LUPRI)
@@ -4753,12 +4926,13 @@ C  ********************************************************************
 
           IF (IPRINT.GE.5) THEN
            CALL HEADER(
-     &     'H2CFINAL: H2c in RKB/|k> - before elimination '//
+     &     'H2CFINAL: H2c in RKB/|k> ON basis - before elimination '//
      &     ' of spin_orbit terms "AFTER"',-1)
-           WRITE(LUPRI,'(/3X,A,I2,A,I1/)')
+           WRITE(LUPRI,'(3X,A,I2,A,I1)')
      &      '*** Fermion corep ',I,' /',NFSYM
             CALL PRQMAT(TBUF(IVMAT),NESH(I),NESH(I),NESH(I),NESH(I),
      &                  NZ,IPQTOQ(1,0),LUPRI)
+
           ENDIF
 
           CALL SPF_HK(TBUF(IVMAT),.TRUE.,IBEIG(IORB(I)+1+NPSH(I)),
@@ -4776,7 +4950,7 @@ C  ********************************************************************
           ENDIF
 
         ENDIF
-
+ 
         IF (IPRINT.GE.4) THEN
           CALL HEADER(
      & 'H2CFINAL: H2c in ON basis',-1)
@@ -4837,7 +5011,6 @@ C ====================================================================
      & ' into the BSSMAT file, EOFLABEL renewed.'
       ENDIF
 
-      CALL QEXIT('H2CFINAL')
       RETURN
       END
 
@@ -4866,6 +5039,8 @@ C
 C    Written:  M.Ilias, Strasbourg 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!     use x2c_utils, only:
+!    &    print_x2cmat 
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
@@ -5097,6 +5272,10 @@ C  ...  construct full picture change transfprmatin matrix, TMAT*VMAT+ = TBUF
      &             NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
+!       debug print
+!       call print_x2cmat(TBUF(IBUF),NFBAS(I,0),NFBAS(I,1),nz,
+!    &                    IPQTOQ(1,0),'bss - pctmat AO l',6)
+
         IBUF =  IBUF + NFBAS(I,0)*NFBAS(I,1)*NZ
        ITMAT = ITMAT + NFBAS(I,0)*NESH(I)*NZ
        IVMAT = IVMAT + NFBAS(I,0)*NESH(I)*NZ
@@ -5122,7 +5301,7 @@ C ************************************************************************
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck cmp_eigval */      
        SUBROUTINE CMP_EIGVAL(VMAT,TMAT,TBUF,EIG,IBEIG,WRITEH2C,SPFR,
      &                       SPFR_BEG,ONLYSO1,SAVESO1,
@@ -5154,8 +5333,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION VMAT(*),TMAT(*),
      &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
       DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
-      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,DOJACOBI,WRITEH2C,
-     &        PURLO,USEDF,DO4C2C,START2C
+      LOGICAL SPFR,SPFR_BEG,ONLYSO1,SAVESO1,WRITEH2C,
+     &        PURLO,USEDF,DO4C2C,START2C,WANT_LINEAR
       CHARACTER*8 LABELH1,LABELH2,LBL
 
       CALL QENTER('CMP_EIGVAL')
@@ -5253,16 +5432,27 @@ C  ======== End of handling Fock-Dirac 2c =========
       ENDIF
 C  ======== End of handling Fock-Dirac 2c =========
 
-C      ... this option does not matter....
-      DOJACOBI = .FALSE.
-      CALL RFBSSMAT('VMAT2C  ',.TRUE.,'CMP_EIGVAL',
-     &        VMAT,N2BBASX,LUBSS,IPRHAM)
+      WANT_LINEAR=.FALSE.
+       IF (LINEAR) THEN
+!     IF (WANT_LINEAR) THEN
+          LABELH1='VMAT2C_L'
+      ELSE
+          LABELH1='VMAT2C  '
+      ENDIF
+      CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
+     &        VMAT,N2BBASX,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A,A)')                  
+     &  'CMP_EIGVAL: Lowdin 2c transf. matrix was read'// 
+     &  ' into VMAT from the BSSMAT file,label=',LABELH1           
+       ENDIF
+
 C ... read H_2c/FD_2c in SA-AO basis into TBUF
       IF (WRITEH2C) THEN
-C      ... transformed 1 electron Dirac Hamiltonian
+C      ... transformed  bare nucleus Dirac Hamiltonian
        LABELH2='H1AO_DK '
       ELSE
-C      ... transformed converged Fock-Dirac Hamiltonian
+C      ... transformed converged Fock-Dirac Hamiltonian (both closed/open-shell)
        LABELH2='FDAO_DK '
       ENDIF
  
@@ -5280,12 +5470,20 @@ C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
       IH1FP = 1
       DO I = 1, NFSYM
       IF (NORB(I).GT.0) THEN
-
        IF (IPRINT.GE.4) THEN
-
 C    ... print out H2c matrix in AO "xhi" basis
         CALL HEADER(
-     &'CMP_EIGVAL: Final H(2c)_LL in "xhi" SA-AO basis ' ,-1)
+     &'CMP_EIGVAL: Final H(2c)_LL in "xhi" SA-AO basis ',-1)
+        IF (WRITEH2C) THEN
+          WRITE(LUPRI,'(3X,A,/)')
+     &    'This is 2c transformed Dirac bare nucleus,'//
+     &    ' H1AO_DK.' 
+        ELSE
+          WRITE(LUPRI,'(3X,A,/)')
+     &    'This is 2c transformed Fock-Dirac Hamiltonian,'//
+     &    ' FDAO_DK.' 
+        ENDIF
+
         WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &        '*** Fermion corep ',I,'/',NFSYM
         CALL PRQMAT(TBUF(1+I2BASX(I,I)),NFBAS(I,1),NFBAS(I,1),
@@ -5315,6 +5513,11 @@ C   ... transform H2c AO through Lowdin matrix into ON MO ee basis
           CALL HEADER(
      &   'CMP_EIGVAL: H2c in (MO_ee) ON Lowdin basis "Theta" to'//
      &   ' be diagonalized, TMAT',-1)
+          IF (.NOT.WRITEH2C) THEN
+            WRITE(LUPRI,'(3X,A,/)')
+     &      'This is FD2C_LMO, FD_2c in Lowdin matrix for subsequent'//
+     &      ' postDHF->BSS SCF step' 
+          ENDIF
           WRITE(LUPRI,'(3X,A,I1,A,I1)')
      & '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(TMAT(IH2MO),NESH(I),NESH(I),
@@ -5329,18 +5532,16 @@ C       ... offset for Lowdin matrix
       ENDDO
 
       IF (.NOT.WRITEH2C) THEN
-
-C ... do save FD_2c in Lowdin MO basis into the BSSMAT !
-C ... it is used at the post-DC-SCF level in DFSOLV !!!!
-
+C ...  save FD_2c in Lowdin MO basis to the BSSMAT file
+C ...  to be used at the post-DC-BSS-SCF level in DFSOLV !
        ISIZE = NESH(1)*NESH(1)*NZ
        IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
        CALL W2BSSMAT(1,.TRUE.,'FD2C_LMO','CMP_EIGVAL',
-     &                TMAT,ISIZE,LUBSS,IPRINT)
+     &               TMAT,ISIZE,LUBSS,IPRINT)
        IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')                  
      &  'CMP_EIGVAL: FD_2c elements in Lowdin MO basis were written'// 
-     &  ' into the BSSMAT file, EOFLABEL renewed.'           
+     &  ' into the BSSMAT file (FD2C_LMO), EOFLABEL renewed.'  
        ENDIF
 
       ENDIF 
@@ -5354,8 +5555,9 @@ C      FOR THE DIAGONALIZATION...REUSE TBUF for eigenvectors
       IF (NORB(I).GT.0) THEN
 
 C      ... diagonalize the H2c in MO(ee) basis !
-       IF (DOJACOBI.AND.NZ.EQ.1) THEN
-         write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
+!       DOJACO is defined in dcbgen.h, only for real matrixes
+       IF (DOJACO.AND.NZ.EQ.1) THEN
+!        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
      &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
      &                  WORK(KFREE),LFREE)
@@ -5430,7 +5632,6 @@ C        ... eliminate spin-free terms utilizing IBEIG(*)...
      &             NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
-
         CALL QDIAG(NZ,NORB(I),TBUF(IH1FP),NORB(I),NORB(I), 
      &             TMAT(IEIG4),0,          
      &             DUMMY,NORB(I),       
@@ -5473,17 +5674,23 @@ C **  the 2-component SCF.
 C **
 C ****************************************************************************
       IF (DO4C2C.AND..NOT.USEDF.AND.WRITEH2C.AND..NOT.START2C) THEN
+
 C      ... do prepare the FD4C_ONB 
 C .... read Lowdin matrix into TMAT
-       LABELH1='VMAT2C  '
+        IF (LINEAR) THEN
+          LABELH1='VMAT2C_L'
+        ELSE
+          LABELH1='VMAT2C  '
+        ENDIF
 
-       CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
+        CALL RFBSSMAT(LABELH1,.TRUE.,'CMP_EIGVAL',
      &               TMAT,N2BBASX,LUBSS,IPRINT)
-       IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/2X,A)')                  
+
+        IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/2X,A,A)')                  
      &  'CMP_EIGVAL: Lowdin 2c transf. matrix was read'// 
-     &  ' into TMAT from the BSSMAT file.'           
-       ENDIF
+     &  ' into TMAT from the BSSMAT file,label=',LABELH1           
+        ENDIF
 
         CALL RFBSSMAT('FDAO_DK ',.TRUE.,'CMP_EIGVAL',
      &                 VMAT,N2BBASXQ,LUBSS,IPRINT)
@@ -6026,24 +6233,23 @@ C         .... accumulate (and skip) L(isym) blocks
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck fdtr2c */
       SUBROUTINE FDTR2C(VMAT,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
 C ----------
-C    Do the BSS transformation of the Fock-Dirac AO matrixes to the
+C    Do the BSS transformation of 4comp Fock-Dirac AO matrixes to the
 C  two-component form.
 C
 C   Fock-Dirac AO matrixes are read from the DFFCK1,
 C  DFFCK2 files and in the latter case (2el.Fock matrixes) are written back.
 C
-C  All other necessary stuff (picture change transformation matrixes etc) 
-C is read from the BSSMAT file and was prepared before.
+C   All other necessary stuff (picture change transformation matrixes etc) 
+C  is read from the BSSMAT file and was prepared before.
 C
-C  On input : only arrays
+C  On input : only arrays (VMAT serves only as an array)
 C
-C  VMAT serves only as an array
+C  Called from MAKE_H2C
 C
 C  Written by Miro Ilias, July, Strasbourg, 2005
 C
@@ -6087,9 +6293,9 @@ C ... print out symmetry blocked picture change transformation matrix
       IPCTM1 = 1
       WRITE(LUPRI,'(/A)')                                          
      &'FDTR2C: SYMMETRY BLOCKED picture change transformation'//
-     &' matrix, VMAT:'
+     &' matrix(4c SA AO-2c SA AO), VMAT:'
       DO I1 = 1, NFSYM                
-        WRITE(LUPRI,'(3X,A,I1,A,I1)')                                 
+        WRITE(LUPRI,'(/,3X,A,I1,A,I1)')                                 
      &  '*** Fermion corep ',I1,'/',NFSYM                         
         CALL PRQMAT(VMAT(IPCTM1),NFBAS(I1,0),NFBAS(I1,1),              
      &     NFBAS(I1,0),NFBAS(I1,1),NZ,IPQTOQ(1,0),LUPRI)              
@@ -6121,7 +6327,7 @@ C ==============================================================================
      &   WORK(KF1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &   VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
      &   VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
-     &   WORK(KFREE),LFREE,IPRINT)
+     &   WORK(KFREE),LFREE,IPRHAM)
 
         IF (IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -6175,7 +6381,7 @@ C         ... do the picture chnage transf; WORK(KFOCK2) -> WORK(KF2C2EL)
      &    WORK(KF1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &    VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
      &    VMAT(IPCTM1),NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),
-     &      WORK(KFREE),LFREE,IPRINT)
+     &    WORK(KFREE),LFREE,IPRHAM)
 
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
@@ -6191,7 +6397,7 @@ C         ... do the picture chnage transf; WORK(KFOCK2) -> WORK(KF2C2EL)
 C       ... offset for pict.change transf.matrix 4c AO "xhi" -> 2c  AO "xhi"
          IPCTM1 = IPCTM1 + NFBAS(I,0)*NFBAS(I,1)*NZ
         ENDDO
-C        ... do copy the picture change transformed matrix back into array...
+C        ... copy the picture change transformed 2el Fock matrix back into array...
          CALL DCOPY(N2BBASXQ,WORK(KF1),1,WORK(IF2),1)
         ENDDO
 C       ... after the picture change transformation write all 2-electron
@@ -6221,13 +6427,10 @@ C     ... read bosonic symmetries on orbitals
      &               ISIZE,LUBSS,IPRHAM)
       IF (IPRHAM.GE.3) THEN
          WRITE(LUPRI,'(/2X,A)')                        
-     &   'FDTR2C: IBEIG was read from BSSMAT:'     
-         DO J=1, NFSYM
-          write(lupri,*) '> ifsym=',J,'/',NFSYM,
-     &     ' Norbs=',NORB(J),
-     &     ' * boson irreps: ',
-     &    (IBEIG(IORB(J)+K),K=1,NORB(J))
-         ENDDO
+     &   'FDTR2C: IBEIG was read from BSSMAT'
+         IF (IRPINT.GE.5) THEN
+           CALL PRINT_IBEIG(IBEIG,'FDTR2C')
+         ENDIF
        ENDIF
 
       ISIZE = NORB(1)*NORB(1)*NZ      
@@ -6284,7 +6487,7 @@ C ==============================================================================
       ENDIF
 
 C ===============================================================
-C     ... do transform 1-el Dirac operator into the "k" basis
+C   ... transform  the 1-el Dirac operator into the "k" basis
 C ===============================================================
        IMAT = 1
       IFDK  = KFDK
@@ -6396,11 +6599,11 @@ C ... add U1_SO to the H1
         ISIZE2 = NORB(1)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NORB(2)*NORB(2)*NZ
         CALL DAXPY(ISIZE2,D1,WORK(KFDK1),1,WORK(KFDK),1)
-C      .. DM1 give surprisingly results for B 3s1p atom ...
+CMI      .. DM1 give surprisingly results for B 3s1p atom ...
       ENDIF
 
 C  =======================================================================
-C  ... do transform F1(=H1+U1_SO) from 4c "k" to 2c SA-AO basis "xhi" ...
+C  ... transform F1(=H1+U1_SO) from 4c "k" to 2c SA-AO basis "xhi" ...
 C  =======================================================================
 C   ... read the picture change transformation matrix 4c "k" -> 2c AO "xhi"
       ISIZE =  NORB(1)*NFBAS(1,1)*NZ                             
@@ -6462,11 +6665,11 @@ C         ... do the picture change transf U^+.F1.U
 
       ENDDO
 
-C      ... do write the F1=H1+U1_SO 2c into the BSSMAT file
+C      ... write the F1=H1+U1_SO 2c into the BSSMAT file
 C      to be used later in ONEFCK
       CALL W2BSSMAT(1,.TRUE.,'FD2C_USO','FDTR2C',
-     &            WORK(KF1),N2BBASXQ,LUBSS,IPRINT)
-      IF (IPRINT.GE.3) THEN
+     &            WORK(KF1),N2BBASXQ,LUBSS,IPRHAM)
+      IF (IPRHAM.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')                         
      &  'FDTR2C: FD2c(h1+u1_SO) SA-AO elements were written '//
      &  ' into the BSSMAT file (FD2C_USO), the EOFLABEL renewed.'
@@ -7426,8 +7629,8 @@ C  ... read full picture change transf. matrix into VMAT
 
 C  ... FINALLY: do transform FD_4C in SA-AO into RKB MO ...
 
-C ... read TMAT from DFTMAT...
-      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','FDTR4C')
+C ... read TMAT from AOMOMAT...
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','FDTR4C')
       CALL READT(LUTMAT,N2TMT,TMAT)
       CLOSE(LUTMAT,STATUS='KEEP')
 C    
@@ -7499,8 +7702,227 @@ C     ... this flag must be deactivated for BSS2DC calculations
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  PURPOSE:
+C  Generate 2c MO from previous converged 4c MO (read from DFCOEF) by using 
+C  the 4c-2c picture change transformation matrix  :
+C
+C           CMO(2c) = U^{+}(4c->2c) * CMO(4c)
+C
+C  Resulting 2c MO's are ....
+C
+C  On entry: VMAT
+C            CMO
+C            TBUF
+C            EIG
+C            IBEIG
+C
+C  Called from:
+C
+C  Written by Miro ILIAS, Prievidza, 2009
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+#include "dcbgen.h" 
+#include "dgroup.h" 
+#include "dcbdhf.h" 
+#include "dcbham.h" 
+#include "dcbbas.h" 
+#include "dcborb.h" 
+
+      DIMENSION VMAT(*),CMO(*),EIG(*),TBUF(*),WORK(LWORK)
+      DIMENSION IBEIG(*)
+      LOGICAL FNDLAB,EX,SET_2C
+      CHARACTER*8 LBL
+#include "memint.h"
+
+      IPRINT = MAX(IPRHAM,IPRSCF)
+
+      IF (IPRINT.GE.5) THEN
+        CALL HEADER('Output from CMOTR2C',-1)
+      ENDIF
+
+C ================================================================
+C         ... get 4c MO from the "DFCOEF" file into CMO
+C ================================================================
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
+      IF(IPRINT.GE.1) THEN
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
+     &              WORK,KFREE,LFREE)
+      ELSE
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &             WORK,KFREE,LFREE)
+      ENDIF
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+C   ... first get the picture change transf.matrix into VMAT
+      ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
+      CALL RFBSSMAT('U_PICTRM',.TRUE.,'CMOTR4C',VMAT,
+     &               ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'CMOTR2C: Picture change transformation'//
+     &  ' matrix was read into VMAT.'
+      ENDIF
+
+      !CALL MEMCHK('CMOTR2C 0.1',WORK,1)
+
+      CALL DZERO(TBUF,N2BBASXQ)
+C .. do own picture change transformation TBUF=VMAT^{+} * CMO
+      IPCTM = 1
+      IMO  = 1
+      IMOe = 1
+      DO I=1,NFSYM
+      IF (NESH(I).GT.0) THEN
+
+       IF (IPRINT.GE.5) THEN
+        CALL HEADER(
+     &  'CMOTR2C: U pict.change transf.matrix 4c AO-> 2c AO,VMAT',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+        CALL PRQMAT(VMAT(IPCTM),NFBAS(I,0),NFBAS(I,1),              
+     &    NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),LUPRI)
+
+        CALL HEADER(
+     &  'CMOTR2C: 4c MO coefficients, CMO(LS,e-p)',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+        CALL PRQMAT(CMO(IMO),NFBAS(I,0),NORB(I),              
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+        CALL HEADER(
+     &  'CMOTR2C: 4c MO coefficients, e-part only, CMO(LS,e)',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+        CALL PRQMAT(CMO(IMO+NFBAS(I,0)*NESH(I)*NZ),NFBAS(I,0),NESH(I),
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+C ===============================================================
+C     ... do the matrix multiplication...VMAT^{+} * CMO = TBUF
+C
+C             [U^+](L,LS) * CMO_4c(LS,p-e) = CMO_2c(L,e)
+C             [U^+](M,K)  * CMO_4c(K ,  N) = CMO_2c(M,N)
+C ===============================================================
+!                      M          N        K
+        CALL QGEMM(NFBAS(I,1),NESH(I),NFBAS(I,0),D1,
+     &  'H','N',IPQTOQ(1,0),VMAT(IPCTM),
+     &   NFBAS(I,0),NFBAS(I,1),NZ,
+     &  'N','N',IPQTOQ(1,0),
+     &   CMO(IMO+(NFBAS(I,0)*NPSH(I)*NZ)),NFBAS(I,0),NORB(I),NZ,
+     &   D0,IPQTOQ(1,0),TBUF(IMOe),
+     &   NFBAS(I,0),NESH(I),NZ)
+
+       IF (IPRINT.GE.5) THEN
+        CALL HEADER(
+     &  'CMOTR2C: MO_2c(L(of LS),e) = [U^+](L,LS).MO_4c(LS,e), TBUF',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM  
+        CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
+     &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+! zero CMO_2c, NZ=1 !!! (fix later)
+!        DO II=1,NESH(I)
+!         CALL DZERO(
+!    &     TBUF(IMOe+((II-1)*NFBAS(I,0))+NFBAS(I,1)),NFBAS(I,2) )
+!        ENDDO
+
+!      IF (IPRINT.GE.5) THEN
+!       CALL HEADER(
+!    &  'CMOTR2C: MO_2c(LS,e) with zeroed S-fu, TBUF',-1)
+!       WRITE(LUPRI,'(A,I1,A,I1)')
+!    &  '* Fermion ircop no.',I,'/',NFSYM                          
+!       CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
+!       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
+!    &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+!    &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+!      ENDIF
+
+
+          IMOe =  IMOe + (NFBAS(I,0)*NESH(I)*NZ)
+          IMO  =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
+       IPCTM  =  IPCTM + (NFBAS(I,0)*NFBAS(I,1)*NZ) 
+
+      ENDIF
+      ENDDO
+
+      !CALL MEMCHK('CMOTR2C 0.11',WORK,1)
+
+C     ... check the orthonormality of generated 2c MO's
+      CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
+
+
+!-------------------------------------------------------------------------------------
+!     We have some '2c' MO, construct the 2c Fock matrix to be diagonalized later
+!--------------------------------------------------------------------------------------
+
+       !SET_2C=.FALSE.
+       SET_2C=.TRUE.
+
+       IF (SET_2C) THEN
+       NORB1_SAVE=NORB(1)
+       NORB2_SAVE=NORB(2)
+       NPSH1_SAVE = NPSH(1)
+       NPSH2_SAVE = NPSH(2)
+
+       NORB(1) = NESH(1)
+       NORB(2) = NESH(2)
+       NPSH(1) = 0
+       NPSH(2) = 0
+
+      NSYM = 4/NZ
+      DO I=1,NFSYM
+       NPSH(I) = 0
+       NORB(I) = NESH(I) + NPSH(I)
+C  ... new variable ....
+       NTMO(I) = NORB(I)
+       DO ISYM = 1, NSYM
+         NBORB(ISYM,I,2) = 0
+         NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
+       ENDDO
+      ENDDO
+C     ... recalculate necessary off-sets
+      CALL SETDC2(0)
+      CALL SETDC1(0)
+      ENDIF
+
+
+
+!       we are now in 2c mode...
+      !CALL MEMCHK('CMOTR2C 0.2',WORK,1)
+!      ... generate 2c density matrix(-es) into CMO (inside)
+      CALL DENMAT(CMO,TBUF,IPRINT)
+
+!     IF (SET_2C) THEN
+!     NORB(1) = NORB1_SAVE
+!     NORB(2) = NORB2_SAVE
+!     NPSH(1) = NPSH1_SAVE
+!     NPSH(2) = NPSH2_SAVE
+!     ENDIF
+
+!     construct Fock matrix
+!        CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
+!    &                WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
+!    &                WORK(KFREE),LFREE)
+
+
+
+
+      !CALL MEMCHK('CMOTR2C',WORK,1)
+!      call quit('.... stop in CMOTR2C ....')
+      WRITE(LUPRI,*) 'Leaving CMOTR2C '    
+
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck cmotr4c */
       SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -7514,7 +7936,7 @@ C  On input : only arrays
 C
 C  On output:  the initial 4c MO are written into BSSMAT
 C
-C  Call from PSIDHF (dirscf.F)
+C  Called from PSIDHF (dirscf.F)
 C
 C  Written by Miro Ilias, Sept 2005, Strasbourg
 C
@@ -7532,16 +7954,19 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION TBUF(*),TMAT(*),CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
       LOGICAL FNDLAB,EX
       CHARACTER*8 LBL
-
-      CALL QENTER('CMOTR4C')
 #include "memint.h"
 
-      IF (INI2C.EQ.3) THEN
+      IPRINT = MAX(IPRHAM,IPRSCF)
+
+      IF (IPRINT.GE.5) THEN
+        CALL HEADER('Output from CMOTR4C',-1)
+      ENDIF
+
+      IF (INI2C.EQ.3) THEN ! restart code INI2C described in dirrdn.F
 C ================================================================
-C               ... get 2c MO into CMO
+C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      IPRINT = MAX(IPRHAM,IPRSCF)
       IF(IPRINT.GE.1) THEN
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
@@ -7552,25 +7977,24 @@ C ================================================================
       CLOSE(LUCOEF,STATUS='KEEP')
 
 CMI .... do the picture change transformation ...
-CMI   ... open LUBSS, get the picture change transf.matrix
+CMI   ... first get the picture change transf.matrix
       ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
       CALL RFBSSMAT('U_PICTRM',.TRUE.,'CMOTR4C',TMAT,
-     &               ISIZE,LUBSS,IPRSCF)
+     &               ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.2) THEN
         WRITE(LUPRI,'(/2X,A)')
      &  'CMOTR4C: Picture change transformation'//
      &  ' matrix was read into TMAT.'
       ENDIF
 
-C   then TMAT . CMO^ = TBUF
+C   then do TBUF := TMAT . CMO^ 
       IPCTM = 1
       IMO = 1
       DO I=1,NFSYM
       IF (NESH(I).GT.0) THEN
 
-       IF (IPRSCF.GE.5) THEN
-
+       IF (IPRINT.GE.5) THEN
         CALL HEADER(
      &  'CMOTR4C: U matrix 4c AO-> 2c AO',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
@@ -7584,7 +8008,6 @@ C   then TMAT . CMO^ = TBUF
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(CMO(IMO),NFBAS(I,0),NESH(I),              
      &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
-
        ENDIF
 
 C     ... do the matrix multiplication...TMAT * CMO = TBUF
@@ -7597,7 +8020,7 @@ C ===============================================================
      &   D0,IPQTOQ(1,0),TBUF(IMO),
      &   NFBAS(I,0),NESH(I),NZ)
 
-       IF (IPRSCF.GE.5) THEN
+       IF (IPRINT.GE.5) THEN
         CALL HEADER(
      &  'CMOTR4C: U.CMO_2C starting MOs(LS,e), TBUF',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
@@ -7612,8 +8035,8 @@ C ===============================================================
       ENDIF
       ENDDO
 
-C     ... check the  orthonormalization of so obtained starting MO's
-      CALL NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRSCF)
+C     ... check the orthonormality of generated starting MO's
+      CALL NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
 C ********************************************************
 C *
@@ -7623,7 +8046,7 @@ C ********************************************************
       ELSE IF (INI2C.EQ.4) THEN
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-       IF(IPRSCF.GE.1) THEN
+       IF(IPRINT.GE.1) THEN
         CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
        ELSE
@@ -7642,22 +8065,29 @@ C =========================================
       ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NESH(2)*NFBAS(2,0)*NZ)
       CALL W2BSSMAT(1,.FALSE.,'CMO_LS_e','CMOTR4C',
-     &               TBUF,ISIZE,LUBSS,IPRSCF)
+     &               TBUF,ISIZE,LUBSS,IPRINT)
 
-      CALL QEXIT('CMOTR4C')
       RETURN
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck cmoini4c */
-      SUBROUTINE NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT)
+      SUBROUTINE NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT,Le)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Purpose: CHECK the normalization of pseudo-4c(LS,e) CMO.
+C  Purpose: CHECK the normalization of pseudo-4c(LS,e)/2c (L,e) CMO.
 C
-C  On input/output: TBUF - normalized MO (LS,e) pseudo-4comp coefficients
+C  On input/output: TBUF - normalized MO (LS,e)/(L,e) pseudo-4comp coefficients
 C
-C Written by Miro ILIAS, February 2007, Tel Aviv
+C  TMAT,CMO - temporary arrays (content modified)
+C
+C   Le 
+C
+C  Called from : CMOTR4C
+C                CMOTR2C
+C
+C  Written by Miro ILIAS, February 2007, Tel Aviv
+C                         Dec. 2009, Prievidza
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -7671,21 +8101,40 @@ C#include "dcbham.h"
 #include "dcborb.h" 
 
       DIMENSION TBUF(*),CMO(*),TMAT(*),WORK(LWORK)
+      LOGICAL Le
 
-      CALL QENTER('NRMSTMO')
 #include "memint.h"
 
-C ... get full S matrix
-      CALL GTOVLT(TMAT,D1,WORK(KFREE),LFREE)
+C ... get full S matrix into TMAT
+      IF (.NOT.Le) THEN
+        CALL GTOVLT(TMAT,D1)
+      ELSE
+        CALL GTOVLT(TMAT,D0)
+      ENDIF
 
-C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e)
-
+C ...  transform S to the MO's          :   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1
+C ...  transform S to the MO's (Le=true):   TBUF^+(e,L) . TMAT(LS,LS) . TBUF(L,e) = CMO(e,e) = 1
       IMAT = 1
+      IMAT_L = 1
       IBUF = 1
+      IBUF_Le = 1
       IMO = 1
-
       DO I = 1, NFSYM
       IF (NESH(I).GT.0) THEN
+
+       IF (Le) THEN
+
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,1),NFBAS(I,1),
+     &       NESH(I),NESH(I),
+     &       TMAT(IMAT),NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),
+     &       CMO(IMO),NESH(I),NESH(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IBUF),
+     &       NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IBUF_Le),
+     &       NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRINT)
+
+       ELSE
 
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &       NESH(I),NESH(I),
@@ -7697,23 +8146,41 @@ C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(
      &       NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),
      &       WORK(KFREE),LFREE,IPRINT)
 
+       ENDIF
+
+       IF (.NOT.Le) THEN
          IF (IPRINT.GE.5) THEN
           CALL HEADER(
-     &    'NRMSTMO: Obtained (GTOVLT) Sovlp(LL+SS) matrix'//
-     &    ' in SO basis "xhi"',-1)
+     &    'NRMSTMO: Full Sovlp(LL+SS) matrix (from GTOVLT)'//
+     &    ' in SA-AO basis "xhi"',-1)
+       ELSE
+          CALL HEADER(
+     &    'NRMSTMO: Full Sovlp(LL,SS=0) matrix (from GTOVLT)'//
+     &    ' in SA-AO basis "xhi"',-1)
+       ENDIF
           WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irp no.',I,'/',NFSYM
           CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NFBAS(I,0),
      &        NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),LUPRI)
 
-          CALL HEADER(
-     &   'NRMSTMO: Normalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &   '* Fermion ircop no.',I,'/',NFSYM                          
-          CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NESH(I),              
-     &      NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+          IF (.NOT.Le) THEN
+            CALL HEADER(
+     &     'NRMSTMO: Normalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',I,'/',NFSYM                          
+            CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NESH(I),              
+     &         NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+          ELSE
+            CALL HEADER(
+     &     'NRMSTMO: Normalized U+.CMO_4C starting MOs(L,e), TBUF',-1)
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',I,'/',NFSYM                          
+            CALL PRQMAT(TBUF(IBUF_Le),NFBAS(I,1),NESH(I),              
+     &           NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
 
           CALL HEADER(
-     &   'NRMSTMO: Sovlp(ee) in pseudo4c MO',-1)
+     &   'NRMSTMO: Resulting Sovlp(ee) in pseudo4c MO -'//
+     &   ' must be unit matrix',-1)
           WRITE(LUPRI,'(A,I1,A,I1)')
      &   '* Fermion ircop no.',I,'/',NFSYM                          
           CALL PRQMAT(CMO(IMO),NESH(I),NESH(I),              
@@ -7721,19 +8188,20 @@ C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(
          ENDIF
 
 CMI    ... check the unit matrix !!!
-      WRITE(LUPRI,'(/2X,A)')
+        WRITE(LUPRI,'(/2X,A)')
      &  'Check of the unit matrix, C+.S.C, C(LS,e) - new 2c4c MOs'
-      CALL TEST_UNIT_MTX(CMO(IMO),NESH(I),NESH(I),NESH(I),NZ)
+        CALL TEST_UNIT_MTX(CMO(IMO),NESH(I),NESH(I),NESH(I),NZ)
 
       ENDIF
 
        IMAT = IMAT + NFBAS(I,0)*NFBAS(I,0)
+       IMAT_L = IMAT_L + NFBAS(I,1)*NFBAS(I,1)
        IBUF = IBUF + (NFBAS(I,0)*NESH(I)*NZ)
+       IBUF_Le = IBUF_Le + (NFBAS(I,1)*NESH(I)*NZ)
        IMO = IMO + NESH(I)*NESH(I)*NZ
 
       ENDDO
 
-      CALL QEXIT('NRMSTMO')
       RETURN
       END
 
@@ -7970,6 +8438,12 @@ CMI    ... hoping it will work ...
         CALL W2BSSMAT(1,.TRUE.,'BNCR2C_2','H2CTOLL',WORK(KBSSLL),
      &                NDIM,LUBSS,IPRINT)
        ENDIF
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER(
+     & 'H2CAO_LL: h1bnc in LL block, total matrix in AO',-1)
+       CALL PRQMAT(WORK(KBSSLL),NTBAS(1),NTBAS(1),NTBAS(1),NTBAS(1),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+      ENDIF
       IF (IPRINT.GE.3) THEN
        IF (DOSPHE) THEN
         write(lupri,*)
@@ -8559,6 +9033,11 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
+#ifdef MOD_AMFI
+       CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+     &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
+
+#endif 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
 
@@ -8574,7 +9053,7 @@ C  ... allocate memmory for this AMFI center
       CALL MEMGET('REAL',KSOY,length3,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSOZ,length3,WORK,KFREE,LFREE)
 
-      CALL MEMCHK('after AMFI 2',WORK,1)
+!     CALL MEMCHK('after AMFI 2',WORK,1)
 
       if (IPRINT.GE.3) WRITE(LUPRI,'(/,2X,A)')
      & 'AMFI order of (centre specific) basis function: '
@@ -8653,7 +9132,7 @@ C     if (dirbss_verbose) write(lupri,*)
       READ(LUMNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
       READ(LUMNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
 
-      CALL MEMCHK('after AMFI2',WORK,1)
+!     CALL MEMCHK('after AMFI2',WORK,1)
 C ************************************************************************
 C     ... do comparison of SO1 integrals if wished (ONLYSO1=.true.)
 C       or add AMFI contributions into H2CAO
@@ -8877,18 +9356,20 @@ CMI  ... called from AMFI/contandmult
 #include "priunit.h"
       DIMENSION IL(*),IML(*)
 
-       IX = I
-        J = 0
-      LX = IL(I)
-      MLX=IML(I)
+      IX  =  I
+       J  =  0
+      LX  =  IL(I)
+      MLX =  IML(I)
 
- 20   CONTINUE
-      IF (LX.EQ.IL(IX) .AND. MLX.EQ.IML(IX) .AND. IX.GT.0) THEN
-         IX = IX - 1
-         J = J + 1
-         GOTO 20
+      IF (IX.GT.0) THEN
+ 20     CONTINUE
+        IF (LX.EQ.IL(IX) .AND. MLX.EQ.IML(IX)) THEN
+          IX = IX - 1
+           J = J + 1
+          IF (IX.GT.0) GOTO 20
+        ENDIF
       ENDIF
-     
+
       INDX_LML = J 
 
       RETURN
@@ -9136,7 +9617,7 @@ C ... find out total number of L-component spherical functions
       CALL MEMGET('INTE',KHINLM,NSPH,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPTYPAO,NSPH,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPNUC,NSPH,WORK,KFREE,LFREE)
-      CALL MEMCHK('XXX',WORK,1)
+!     CALL MEMCHK('XXX',WORK,1)
       CALL SPHLAB(MXQN-1,LABINT)
 
 C     ...allocations for AMFI integrals: typ and index
@@ -9150,9 +9631,18 @@ C     ...allocations for AMFI integrals: typ and index
 C      .... charges per nucleis
        CALL MEMGET('REAL',KCHPNUC,NUCDEP,WORK,KFREE,LFREE)
 
-       CALL MEMCHK('before AMFI2',WORK,1)
+!      CALL MEMCHK('before AMFI2',WORK,1)
 
-      CALL MEMCHK('before S->C',WORK,1)
+#ifdef MOD_AMFI
+       CVAL_AMFI = CVAL
+
+       CALL AMFIIN(WORK(KBUF2),NB,WORK(KIPTYPAO),WORK(KHINLM),
+     &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
+     &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
+     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
+     &  CVAL_AMFI,IPRINT,WORK(KFREE),LFREE)
+#endif
+!     CALL MEMCHK('before S->C',WORK,1)
 
       IF (IPRINT.GE.4) THEN
         CALL HEADER(
@@ -9231,7 +9721,6 @@ C  SAVE THE CSC TRANSFORMED INTEGRALS
       ENDIF
 
       CALL QEXIT('AMFI_STUFF')
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck sph_iotc */
@@ -9373,3 +9862,258 @@ C
       RETURN
       END
 
+#ifdef MOD_AMFI
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck amfi_relscf_inp */
+      SUBROUTINE AMFI_RELSCF_INP(WORD,RESET)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C   Input reading for AMFI/RELSCF module.
+C
+C   Called from HAMINP.
+C
+C   Written by Miro ILIAS, Prievidza, 2008
+C   Last modifications: MI, Odense, June 2008
+C                       S. Knecht, Duesseldorf, Jan 2009
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbham.h"
+#include "amfi_if.h"
+#include "nuclei.h"
+      PARAMETER (NTABLE = 20)
+      PARAMETER (D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
+     &           DTHRS=1.0D-13, DP5 = 0.50D00)
+C
+      LOGICAL SET, NEWDEF,RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+C
+      SAVE SET
+      DATA TABLE /'.PRNT_A','.PRNT_S','.MXITER','.AMFICH',
+     &            '.NOAMFC','.ONLSCF','.AMFLVL','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+
+C     CALL TITLER('AMFI/RELSCF input reading','*',127)
+
+C
+C        *** Initialize the default values ***
+C
+        IPR_AMFI = 0
+      IPR_RELSCF = 0
+
+!    ... maximum number of iterations
+      MXXTRP_INP     = 50
+
+!    ... default overall mean-field charge
+      IMFCH=0
+!    ... all atomic centers are included for the AMFI contribution
+      ALLAMFA  = .TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
+      ONRELSCF = .FALSE. ! ONRELSCF = [ON]ly RELSCF, i.e. stop after RELSCF run
+!     order of Amfi contributions 
+      ISORDER_AMFI_in = -1
+C
+C     Process input for AMFI/RELSCF
+C     ==================================
+C
+      NEWDEF = (WORD .EQ. '*AMFI  ')
+
+      ICHANG = 0
+      IF (NEWDEF) THEN
+
+         CALL TITLER('AMFI/RELSCF input reading','*',127)
+
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GOTO ( 1, 2, 3, 4,
+     &                      5, 6, 7), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in AMFI_RELSCF_INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in AMFI_RELSCF_INP.')
+ 1             CONTINUE
+C&&&  .PRNT_A:  print variable for AMFI
+               READ(LUCMD,*) IPR_AMFI
+               GO TO 100
+ 2             CONTINUE
+C&&&  .PRNT_S:  print variable for RELSCF
+                 READ(LUCMD,*) IPR_RELSCF
+               GO TO 100
+ 3             CONTINUE
+C&&&  .MXITER:  read maximum number of iterations for RELSCF
+                 READ(LUCMD,*) MXXTRP_INP
+                 GO TO 100
+ 4               CONTINUE
+C&&&  .AMFICH:    Get the artificial charge of the molecule 
+!        for mean-field summations of each atom in the system
+!     ...  read integer number
+                 READ(LUCMD,*) IMFCH
+                 GO TO 100
+ 5               CONTINUE
+C&&& .NOAMFC: specify centers for AMFI which only are to be added to the BSS+AMFI Hamiltonian
+                 ALLAMFA = .FALSE.
+                 READ(LUCMD,*) NAMFA
+                 READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
+                 GO TO 100
+ 6               CONTINUE
+C&&& .ONLSCF: stop after RELSCF run - orbital coefficients are saved to
+C                file RELSCF_COEF
+                 ONRELSCF = .TRUE.
+                 GO TO 100
+ 7               CONTINUE
+C&&& .AMFLVL: set up order of AMFI contributions
+                 READ(LUCMD,*) ISORDER_AMFI_in
+                 if(ISORDER_AMFI_in .lt. 2 .or. 
+     &              ISORDER_AMFI_in .gt. 3)then
+                   call quit('*** error in AMFI_RELSCF_INP: illegal 
+     & value wrt order of AMFI contributions: range: 2 <= x <= 3. ***')
+                 end if
+                 GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     &            '" not recognized .'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in ....')
+            END IF
+      END IF
+
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(4X,A)')
+     & 'Set-up for AMFI/RELSCF calculations'
+      CALL PRSYMB(LUPRI,'=',75,0)
+
+      IF (.NOT.NEWDEF) THEN
+        WRITE(LUPRI,'(2x,a)')
+     &  '...no reading under *AMFI, thus default settings'
+      ENDIF
+
+      WRITE(LUPRI,'(1X,A,I5)') '  *AMFI code print level: ',IPR_AMFI
+      WRITE(LUPRI,'(1X,A,I5)') '*RELSCF code print level: ',IPR_RELSCF
+C
+      WRITE(LUPRI,'(1X,A,I5)')
+     &  '* RELSCF maximum number of iterations:',MXXTRP_INP
+
+      IF (IMFCH.NE.0) THEN
+        WRITE(LUPRI,'(1X,A,I4)')
+     &  '* AMFI mean-field summations on individual atoms'//
+     &  ' are modified due to the artificial charge of the system:',
+     &  IMFCH
+      ELSE
+        WRITE(LUPRI,'(1X,A)')
+     &  '* All AMFI mean-field summations are on neutral'//
+     &  ' individual atoms.'
+      ENDIF
+      IF( ONRELSCF ) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &  '* AMFI will stop after RELSCF run ...'
+      END IF
+      if(x2c)then
+        if(isorder_amfi_in > 1) isorder_amfi_x2c = isorder_amfi_in
+        write(lupri,'(1x,a,i3)')
+     &  '* order of AMFI contributions to the X2C Hamiltonian:',
+     &  isorder_amfi_x2c
+        if(isorder_amfi_x2c .eq. 2)then
+          write(lupri,'(1x,a)')
+     &  ' --> adding spin-same orbit MFSSO2 terms.'
+        else if(isorder_amfi_x2c .eq. 3)then
+          write(lupri,'(1x,a)')
+     &  ' --> adding spin-same + spin-other orbit MFSSO2 terms.'
+        end if
+      end if
+
+C ... take care of AMFI centers if specified in the input
+      IF (.NOT.ALLAMFA) THEN 
+          WRITE(LUPRI,'(1X,A,I2,A,$)')
+     &' * AMFI contributions NOT calculated for',NAMFA,' centers:'
+          WRITE(LUPRI,*) ( IAMFA(I), I = 1, NAMFA )
+          WRITE(LUPRI,'(4X,A)')
+     &   'List of all nuclei (see "Cartesian Coordinates" above):'
+          IX = 0
+          DO I=1,NUCIND
+          DO J=1,NUCDEG(I)
+           IX = IX + 1
+           write(lupri,'(5X,I2,A,I4,$)')
+     &     IX,'. nuclei, charge:',NINT(CHARGE(I))
+           IZX = 0
+           DO K = 1, NAMFA
+             IF (IAMFA(K).EQ.IX) THEN 
+              write(lupri,'(A)')
+     &        ' ... no AMFI contribution from this nuclei '
+              IZX=1
+             ENDIF
+           ENDDO
+           IF (IZX.EQ.0) write(lupri,*)
+          ENDDO
+          ENDDO
+C          ... do some check of entering values of NAMFA,IAMFA
+          IF (NAMFA.GT.IX) THEN 
+           write(lupri,*) ': NAMFA=',NAMFA,
+     &     ' is greater than total number of nuclei=',IX
+           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
+          ENDIF
+          DO K=1,NAMFA
+           IF (IAMFA(K).GT.IX) THEN
+             write(lupri,*)
+     &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
+     &       ' greater than total number of nuclei=',IX
+           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
+           ENDIF
+          ENDDO
+          IF (NAMFA.GE.2) THEN
+C           ... check on identical nucleus numbers ....
+            DO K=1,NAMFA-1
+              DO L=K+1,NAMFA
+               IF (IAMFA(K).EQ.IAMFA(L)) THEN
+                write(lupri,*) K,'. and ',L,
+     &          '. AMFI-banned nuclei have identical numbers ! =',
+     &           IAMFA(K),IAMFA(L)
+                 CALL QUIT(': Found 2 identical values'//
+     &                     ' of IAMFA(K) !!!')
+               ENDIF
+              ENDDO
+            ENDDO
+          ENDIF
+      ENDIF
+
+C
+  999 CONTINUE
+C
+      RETURN
+      END
+#endif /* MOD_AMFI */

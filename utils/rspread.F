@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,10 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
       PROGRAM RSPREAD
 C
 C Written by Trond Saue July 4 2001
@@ -28,6 +24,8 @@ C based on program LABREAD
 C
 #include "implicit.h"
 #include "priunit.h"
+!gosia#include "../include/implicit.h"
+!gosia#include "../include/priunit.h"
       PARAMETER (LUINP = 1)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16
       INTEGER   NARG,IARG,JARG
@@ -71,6 +69,7 @@ C
          WRITE(LUPRI,'(I3,A,A2,A,F12.6,A,E10.2,A,I10)')
      &     IVEC, ' Type : ',TYP1,' Freq.: ',FREQ1,
      &     ' Rnorm: ',RNORM,' Length:', LEN
+         READ(LUINP,END=3,ERR=2)
          READ(LUINP,END=3,ERR=2)
          IREC = IREC + 1
          GO TO 1

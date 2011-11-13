@@ -1,5 +1,4 @@
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -16,8 +15,8 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
       PROGRAM VIBCAL
 C********************************************************************
 C
@@ -27,9 +26,9 @@ C     vibrational states
 C
 C     Written by T. Saue Feb 13 2007
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
       CHARACTER POTFIL*30,PRPFIL*30,REPLY*1
 C      PARAMETER(V2=4.6822365486E-01,V3=-1.1951834335E+00,U=9.703)
 C      PARAMETER(V4=6.2052157257E+00)
@@ -37,11 +36,12 @@ C      PARAMETER(V4=6.2052157257E+00)
       DIMENSION B(0:4),H(0:4)
       CALL TITLER('VIBCAL for properties : Written by T. Saue ','*',110)
       WRITE(LUPRI,'(A)') 
-     &    'Name input file (A30) with reduced mass ',
-     &    'and force constants V2,V3,V4'
+     &    'Name input file (A30) with reduced mass (in Daltons)',
+     &    'and force constants V2,V3,V4 (in au)'
       READ(LUCMD,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 
-     &    'Name input file (A30) with property derivatives P0,P1,P2'
+     & 'Name input file (A30) with property derivatives ',
+     & 'P0,P1,P2 (in au)'
       READ(LUCMD,'(A)') PRPFIL
       IPOT = 1
       OPEN(IPOT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
@@ -57,7 +57,7 @@ C      PARAMETER(V4=6.2052157257E+00)
      &     ACCESS='SEQUENTIAL')
 C
       READ(IPOT,*,ERR=30,END=30) U,V2,V3,V4
-      WRITE(ILOGG,*) 'Reduced mass: ',U
+      WRITE(ILOGG,*) 'Reduced mass in Daltons: ',U
       WRITE(ILOGG,*) '2nd potential derivative: ', V2
       WRITE(ILOGG,*) '3rd potential derivative: ', V3
       WRITE(ILOGG,*) '4th potential derivative: ', V4
@@ -90,13 +90,13 @@ C
       DIF2 = DIF*XTHZ*1000.0D0
       WRITE(ILOGG,'(A,E16.8,A,F10.1,A)') 'Difference :',DIF, ' au = ',
      &     DIF2, ' mHz'
-      WRITE(ILOGG,'(A,F10.1,A)') 'PV shift:',2.0D0*DIF2,' mHz'
+      WRITE(ILOGG,'(A,F12.3,A)') 'PV shift:',2.0D0*DIF2,' mHz'
       WRITE(ILOGG,'(A)') 'Harmonic model:'
       DIF = H(1)-H(0)
       DIF2 = DIF*XTHZ*1000.0D0
       WRITE(ILOGG,'(A,E16.8,A,F10.1,A)') 'Difference :',DIF, ' au = ',
      &     DIF2, ' mHz'
-      WRITE(ILOGG,'(A,F10.1,A)') 'PV shift:',2.0D0*DIF2,' mHz'
+      WRITE(ILOGG,'(A,F12.3,A)') 'PV shift:',2.0D0*DIF2,' mHz'
       GOTO 100
  20   STOP 'Error opening POTFIL '
  30   STOP 'Error reading POTFIL '

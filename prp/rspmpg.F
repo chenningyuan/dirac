@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpxlr_mpg */
       SUBROUTINE PRPXLR_MPG(DMO,XMO,WORK,KFREE,LFREE)
@@ -90,12 +87,15 @@ C
       BFREQ(1)  = 0.D0
       ALLCMB    = .FALSE.       !generate all operator combinations
       XLR_SKIPEP= .FALSE.       !do include e-p orbital rotations
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj)
+     &  XLR_SKIPEP = .TRUE.
       XLR_SKIPEE= .FALSE.       !do include e-e orbital rotations
 c     qedrun    = .TRUE.        !not implemented
       XLR_LSFG(1) = .TRUE.        !Generate G-matrix in MO basis
       XLR_LSFG(2) = .TRUE.        !Generate G-matrix in MO basis
-      XLRNRM    = .TRUE.        !normalize solutionvector
-      XLRDIH    = .TRUE.        !pre-conditioning of trail vectors
+      XLRNRM    = .TRUE.        !normalize solution vector
+      XLRDIH    = .TRUE.        !pre-conditioning of trial vectors
 C                                
       ORBDEF(1) = .TRUE.
       ORBDEF(2) = .TRUE.
@@ -126,7 +126,7 @@ C
          xlr_indstr(1,I)='1..'//tmp(1)
          xlr_indstr(2,I)='0'
 CMI      if(levyle)then
-         if(levyle.or.bss) then
+         if(levyle.or.bss.or.x2c) then
             xlr_indstr(3,I)=tmp(3)//'..'//tmp(4)
          else
             xlr_indstr(3,I)='-'//tmp(2)//'..-1,'//tmp(3)//'..'//tmp(4)
@@ -173,10 +173,7 @@ C
       call memget('REAL',kcnv,nrspf,work,kfree,lfree)
 C
 C
-CMI
       CALL MEMCHK('prpxlr_mpg 1.00',WORK,1)
-
-      CALL FLSHFO(LUPRI)
 C
       call prpxl1_mpg(work(klrf),work(kcnv),DMO,XMO,
      &                work,kfree,lfree)
@@ -716,7 +713,8 @@ C
          call memget('REAL',kxvec,nzxopeq*nfreq,work,kfree,lfree)
          call memget('REAL',kbbuf,      nzxopeq,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,        NESIM,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
+CMI      call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
+         call getlr1(ablrf,jbendx,evecr,evalr,RCNV,
      &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
      &               work(kcmo),work(kibrp),iorbcl,work(kzxope),
@@ -775,7 +773,8 @@ C
          call memget('REAL',kgvec,nzxoppq      ,work,kfree,lfree)
          call memget('REAL',kbbuf,nzxoppq      ,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
+CMI      call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
+         call getlr1(ablrf,jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
      &               work(kcmo),work(kibrp),iorbcl,work(kzxopp),
      &               WORK(KIVEC),IDUM,IDUM,IDUM,IDUM,IDUM,DUM,DUM,

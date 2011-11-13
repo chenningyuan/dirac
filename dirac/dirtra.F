@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirtra.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -197,7 +192,7 @@ C
         WRITE(LUPRI,'(3X,A,I5)') '* Small components:',NPLAB(2)
         WRITE(LUPRI,'(6(3X,I3,2X,A12))')
      &      (I,PLABEL(I,2),I=1+IOFF,NPLAB(0))
-         IF(IPRINT.GE.7) THEN
+        IF(IPRINT.GE.7) THEN
            CALL PRIVEC('IPLAB ',IPLAB(1,2),NAORB)
         ENDIF
       ENDIF
@@ -296,6 +291,11 @@ C       TYP = D:  (e_K1*)(e_IM)(e_K2)   as density matrix
 C
 C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
+C
+C     radovan: in case you ask yourself where the difference is
+C              between q2phase and q2bphase
+C              q2phase  (this routine) is for Hermit sorted matrices
+C              q2bphase (next routine) is for DIRAC  sorted matrices
 C
 C***********************************************************************
 #include "implicit.h"
@@ -725,9 +725,9 @@ CTOND               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT: Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -830,9 +830,9 @@ CMI        ... control print-out to track the AO-SO matrix construction
 
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT(MTAOSO):  Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT(MTAOSO): Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 
       CALL QEXIT('MTAOSO')
@@ -921,9 +921,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT:Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1012,9 +1012,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT:Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1094,9 +1094,9 @@ C      CALL DZERO(ASO,NBAST*NBAST)
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1128,7 +1128,6 @@ C***********************************************************************
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       ISTRA = 1
       CALL DZERO(AAO,NBAST*NVEC)
       DO 100 IREPA = 0, MAXREP
@@ -1155,9 +1154,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1197,7 +1196,6 @@ C
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       CALL DZERO(AAO,NTBAS(0)*NVEC)
       DO 100 IREPA = 0, MAXREP
         DO IC = 1,2
@@ -1230,9 +1228,9 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in SO basis',-1)
          CALL OUTPUT(ASO,1,NFBAS(IFRP,0),1,NVEC,
-     &               NFBAS(IFRP,0),NVEC,1,LUPRI)
+     &               NFBAS(IFRP,0),NVEC,-1,LUPRI)
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NTBAS(0),1,NVEC,NTBAS(0),NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NTBAS(0),1,NVEC,NTBAS(0),NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1257,7 +1255,6 @@ C***********************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-      DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
@@ -1267,7 +1264,6 @@ C***********************************************************************
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       ISTRA = 1
       CALL DZERO(ASO,NBAST*NVEC)
       DO 100 IREPA = 0, MAXREP
@@ -1294,9 +1290,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
          CALL HEADER('OUTPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1320,7 +1316,6 @@ C***********************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-      DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
@@ -1330,7 +1325,6 @@ C***********************************************************************
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       ISTRA = 1
       CALL DZERO(ASO,NBAST*NVEC)
       DO 100 IREPA = 0, MAXREP
@@ -1358,9 +1352,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
          CALL HEADER('OUTPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1477,6 +1471,126 @@ C
       ENDDO
 C
       CALL MEMREL('BUTOBS',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT ('BUTOBS')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bstobu */
+      SUBROUTINE BSTOBU_no_work(AMAT,MZ)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C     to symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C
+C     Written by T.Saue Mar 2 1995
+C     Last revision : May 6 1996 - tsaue
+C
+C***********************************************************************
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), allocatable :: buf(:)
+      CALL QENTER('BSTOBU')
+C
+C     Memory allocation
+C
+      call alloc(buf, mz*n2bbasx)
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,BUF,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  IF(NBBAS(IREP,IC).GT.0)
+     &              CALL DCOPY(NBBAS(IREP,IC),buf(1+ISOFF),1,
+     &                                        AMAT(IUOFF+1)   ,1)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
+C     Memory deallocation
+C
+      call dealloc(buf)
+      CALL QEXIT ('BSTOBU')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck butobs */
+      SUBROUTINE BUTOBS_no_work(AMAT,MZ)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C
+C     Written by T.Saue Mar 2 1995
+C     Last revision : May 6 1996 - tsaue
+C
+C***********************************************************************
+
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), allocatable :: buf(:)
+      CALL QENTER('BUTOBS')
+C
+
+      call alloc(buf, mz*n2bbasx)
+      CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  IF(NBBAS(IREP,IC).GT.0) 
+     &              CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
+     &                                        AMAT(ISOFF+1)   ,1)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
+      call dealloc(buf)
       CALL QEXIT ('BUTOBS')
       RETURN
 C
@@ -1763,7 +1877,7 @@ C        ... do the multiplication CSP*SPC = WORK(KSCCS)
             WRITE (LUPRI,'(/1X,A,I5)')
      &      'CSP*SPC matrix for L=',L-1
             WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
-            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,-1,LUPRI)
           ENDIF
 C        ... do the matrix inverse, WORK(KSCCS)
           CALL MATRIX_INVERSION(WORK(KSCCS),NLM,WORK(KIPIV),
@@ -1772,7 +1886,7 @@ C        ... do the matrix inverse, WORK(KSCCS)
             WRITE (LUPRI,'(1X,A,I5)')
      &      'CSP*SPC inversion matrix for L=',L-1
             WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
-            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,-1,LUPRI)
           ENDIF
 C        ... do the matrix multiplication, WORK(KSCCS)*CSP = CSP
            NLX = NLM*NXYZ
@@ -1783,7 +1897,7 @@ C        ... do the matrix multiplication, WORK(KSCCS)*CSP = CSP
             WRITE (LUPRI,'(1X,A,I5)')
      &      'inv(CSP*SPC)*CSP for L=',L-1
             WRITE (LUPRI,'(1X,A,2I5)') ' size NLM, NXYZ:',NLM,NXYZ
-            CALL OUTPUT(CSP(IOFF),1,NLM,1,NXYZ,NLM,NXYZ,1,LUPRI)
+            CALL OUTPUT(CSP(IOFF),1,NLM,1,NXYZ,NLM,NXYZ,-1,LUPRI)
           ENDIF
         ENDDO
       ENDIF
@@ -1799,7 +1913,7 @@ C
           NXYZ           = (LVAL+1)*(LVAL+2)/2
           WRITE (LUPRI,'(1X,A,I5)')
      &     ' Coefficients for angular quantum number ',LVAL
-          CALL OUTPUT(CSP(ISPADR(L)),1,NLM,1,NXYZ,NLM,NXYZ,1,LUPRI)
+          CALL OUTPUT(CSP(ISPADR(L)),1,NLM,1,NXYZ,NLM,NXYZ,-1,LUPRI)
         ENDDO
         CALL HEADER('SPHGEN: Spherical transformation matrix:',-1)
         DO L = 1,MXQN
@@ -1808,14 +1922,12 @@ C
           NXYZ           = (LVAL+1)*(LVAL+2)/2
           WRITE (LUPRI,'(1X,A,I5)')
      &     ' Coefficients for angular quantum number ',LVAL
-          CALL OUTPUT(SPC(ISPADR(L)),1,NXYZ,1,NLM,NXYZ,NLM,1,LUPRI)
+          CALL OUTPUT(SPC(ISPADR(L)),1,NXYZ,1,NLM,NXYZ,NLM,-1,LUPRI)
         ENDDO
       ENDIF
       CALL MEMREL('SPHGEN.SPHGE1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('SPHGEN')
-      RETURN
-C
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1858,7 +1970,7 @@ C    NUCLEI: NLARGE,NSMALL,NBASIS
       IF(IPRINT.GE.5) THEN
         CALL HEADER('VTAOCS: Input vectors:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,NVEC
-        CALL OUTPUT(AOV,1,LDA,1,NVEC,LDA,NVEC,1,LUPRI)
+        CALL OUTPUT(AOV,1,LDA,1,NVEC,LDA,NVEC,-1,LUPRI)
       ENDIF
 C
 C     Set limits
@@ -1902,11 +2014,11 @@ C     Print section
 C
       IF(IPRINT.GE.5) THEN
 CMI     CALL HEADER('VTAOCS: Transformed vectors(full size):',-1)
-CMI     CALL OUTPUT(CSV,1,LDC,1,NVEC,LDC,NVEC,1,LUPRI)
+CMI     CALL OUTPUT(CSV,1,LDC,1,NVEC,LDC,NVEC,-1,LUPRI)
 
         CALL HEADER('VTAOCS: Transformed vectors:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NSPH,NVEC
-        CALL OUTPUT(CSV,1,NSPH,1,NVEC,LDC,NVEC,1,LUPRI)
+        CALL OUTPUT(CSV,1,NSPH,1,NVEC,LDC,NVEC,-1,LUPRI)
       ENDIF
 C
       RETURN
@@ -1942,7 +2054,7 @@ C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('MTAOCS: Input AO (C) matrix:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,LDA
-        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,-1,LUPRI)
       ENDIF
 C
 C     Set limits
@@ -1975,7 +2087,7 @@ C
       IF(IPRINT.GE.6) THEN
         CALL HEADER('MTAOCS: Half-transformed matrix:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NVEC:',NSPH,NVEC
-        CALL OUTPUT(WORK(KW1),1,NSPH,1,NVEC,NSPH,NVEC,1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NSPH,1,NVEC,NSPH,NVEC,-1,LUPRI)
       ENDIF
 C
 C     Transpose and transform columns
@@ -1995,7 +2107,7 @@ C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('MTAOCS: Transformed (S) matrix:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NSPH:',NSPH,NSPH
-        CALL OUTPUT(CSM,1,NSPH,1,NSPH,LDC,NSPH,1,LUPRI)
+        CALL OUTPUT(CSM,1,NSPH,1,NSPH,LDC,NSPH,-1,LUPRI)
       ENDIF
       CALL QEXIT ('MTAOCS')
       RETURN
@@ -2060,7 +2172,7 @@ C       Small components
         WRITE(LUPRI,'(2X,A,2I4,A,2I4)')
      &   'desired:  (S) NSPH,NSPH:',NSPH,NSPH,
      &   ' -> (C) NVEC,NVEC:',NVEC,NVEC
-        CALL OUTPUT(CSM,1,LDC,1,LDC,LDC,LDC,1,LUPRI)
+        CALL OUTPUT(CSM,1,LDC,1,LDC,LDC,LDC,-1,LUPRI)
       ENDIF
 
 CMI   NVEC >= NSPH !!
@@ -2091,8 +2203,8 @@ CMI   ... we get WORK(KW1) ... NVECxNSPH
       IF(IPRINT.GE.6) THEN
         CALL HEADER('MTAOSC: Half-transformed matrix, WORK(KW1):',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NSPH:',NVEC,NSPH
-C       CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NSPH,1,LUPRI)
-        CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NVEC,1,LUPRI)
+C       CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NSPH,-1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NVEC,-1,LUPRI)
       ENDIF
 
 C      WORK(KW1),NVECxNSPH -> WORK(KW2),NSPHxNVEC
@@ -2108,7 +2220,7 @@ C1    CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,WORK(KW2),NVEC)
         CALL HEADER(
      &    'MTAOSC: Half-transformed transposed matrix, WORK(KW2):',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NSPH, NVEC:',NSPH,NVEC
-        CALL OUTPUT(WORK(KW2),1,NSPH,1,NVEC,NVEC,NVEC,1,LUPRI)
+        CALL OUTPUT(WORK(KW2),1,NSPH,1,NVEC,NVEC,NVEC,-1,LUPRI)
       ENDIF
 
 
@@ -2121,7 +2233,7 @@ C     CALL VTCSAO(WORK(KW2),NVEC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
         CALL HEADER(
      &    'MTAOSC: Transformed transposed matrix, WORK(KW1):',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NVEC:',NVEC,NVEC
-        CALL OUTPUT(WORK(KW1),1,NVEC,1,NVEC,NVEC,NVEC,1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NVEC,NVEC,NVEC,-1,LUPRI)
       ENDIF
 
 C
@@ -2141,7 +2253,7 @@ C     Print section
 C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('MTAOSC: Final transformed matrix in C AO:',-1)
-        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,-1,LUPRI)
       ENDIF
 
       CALL QEXIT ('MTAOSC')
@@ -2225,7 +2337,7 @@ C
         NDIM = IOFF-1
         CALL HEADER('VTCSAO: Transformed vectors:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NDIM,NVEC
-        CALL OUTPUT(AOV,1,NDIM,1,NVEC,LDA,NVEC,1,LUPRI)
+        CALL OUTPUT(AOV,1,NDIM,1,NVEC,LDA,NVEC,-1,LUPRI)
       ENDIF
 C
       RETURN
@@ -2354,7 +2466,7 @@ C
       ENDDO
       CALL HEADER('SPHTS1: Test matrix',-1)
       CALL OUTPUT(AMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
-     &            1,LUPRI)
+     &            -1,LUPRI)
       CALL VTAOCS(AMAT,NTBAS(0),BMAT,NSPH,NTBAS(0),0,IPRINT)
       CALL VTCSAO(BMAT,NSPH,AMAT,NTBAS(0),NTBAS(0),0,IPRINT)
       RETURN
@@ -2442,9 +2554,9 @@ C                  END IF
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT: Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -2553,7 +2665,7 @@ C
       IF (IPRINT.GE.5) THEN
        WRITE(LUPRI,'(A,I6)') '* DELSPH: NSPH',NSPH
        WRITE(LUPRI,'(A)') '* DELSPH: Entering AMAT matrix '
-       CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,1,LUPRI)
+       CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,-1,LUPRI)
       ENDIF
 C     Allocate buffers
       CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
@@ -2761,7 +2873,7 @@ C
         ENDDO
         WRITE(LUPRI,'(A)') 
      &    '* Eigenvectors of minimal overlap matrix'
-        CALL OUTPUT(COEF,1,NXYZ,1,NXYZ,NXYZ,NXYZ,1,LUPRI)
+        CALL OUTPUT(COEF,1,NXYZ,1,NXYZ,NXYZ,NXYZ,-1,LUPRI)
       
       ENDIF
       RETURN
@@ -2944,7 +3056,7 @@ C
 C     Get AO overlap matrix
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSAO),SSMTRC)
 C
       IOFF = 1
       DO I = 1,NFSYM
@@ -3043,9 +3155,6 @@ C
         ELSE
           NREF = NTMO(I)
         ENDIF
-CMI     ... it uses NZT now !
-CMI     ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
-CMI     ISIZE = ISIZE + NZT*NFBAS(I,0)*NTMO(I)
         ISIZE = ISIZE + NZT*NFBAS(I,0)*NREF
         IF (IPRINT.GE.5) THEN
           write(lupri,'(2X,A,I1,A,I1,A,I3)')
@@ -3062,7 +3171,7 @@ C
 C     Get AO overlap matrix
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSAO),SSMTRC)
 C
       IOFF = 1
       ITMAT = 0
@@ -3111,8 +3220,6 @@ C
               CALL FLSHFO(LUPRI)
             END IF
          END IF
-CMI      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
-CMI      IOFF = IOFF + NZT*NFBAS(I,0)*NTMO(I)
          IOFF = IOFF + NZT*NFBAS(I,0)*NREF
          IF (TWOC) ITMAT = ITMAT + (NFBAS(I,0)*NREF*NZT)
       END DO
@@ -3570,10 +3677,10 @@ C...             ...transform this block (only real part)
           ENDIF
 C
         ENDIF
-C        IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('QBTRANS: AO-to-MO-transformed Fock matrix',-1)
+          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+        ENDIF
 C
 C     *******************************************************
 C     *****  MO - to - AO -transformation : F' = CF(C+) *****
@@ -3629,10 +3736,10 @@ C
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
         ENDIF
-C       IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
+       IF(IPRINT.GE.5) THEN
+          CALL HEADER('QBTRANS: MO-to-AO-transformed Fock matrix',-1)
+          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+        ENDIF
       ELSE
         CALL QUIT('QBTRANS: Unknown keyword TYP '//TYP)
       ENDIF

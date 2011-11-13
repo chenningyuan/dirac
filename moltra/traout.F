@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,23 +15,23 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : traout.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
-      SUBROUTINE MDINTI(NSTR,IKRA,IKRB,IPRINT)
+      SUBROUTINE MDINTI(NSTR,IPRINT)
 C
 C     Initialize MDINT file
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ 
+      Use moltra_labeling
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -41,7 +39,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "infpar.h"
-      DIMENSION NSTR(2),IKRA(*),IKRB(*)
+      DIMENSION NSTR(2)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
 C
@@ -59,23 +57,20 @@ C
       CALL GETDAT (CDATE,TIMEX)
       DATEX = ' '//CDATE//' '
 C
-      II = 0
-      JJ = 0
-      DO IFSYM = 1, NFSYM
-         DO I = 1, NSTR(IFSYM)
-            II = II + 1
-            JJ = JJ + 1
-            IKRA(II) = JJ
-            IKRB(II) = JJ + NSTR(IFSYM)
-         ENDDO
-         JJ = JJ + NSTR(IFSYM)
-      ENDDO
-C           
       OPEN (LUMLF2,FILE=FNODE,FORM='UNFORMATTED')
-      WRITE (LUMLF2) DATEX,TIMEX,II,(IKRA(I),IKRB(I),I=1,II)
+      WRITE (LUMLF2) DATEX,TIMEX,
+     & moltra_nkr,(moltra_isp(i),moltra_isp(-i),i=1,moltra_nkr)
       NTKL = 0
       N2EFIL = 0
 C
+      IF (TRA_ASCII) THEN
+         IF (MYTID.EQ.0) THEN
+            WRITE (LUASCII,*) "*** 2-electron integrals ***"
+         ELSE
+            CALL QUIT ('ASCII output not possible in parallel runs')
+         END IF
+      END IF
+        
       IF (IPRINT.GE.5) WRITE (LUPRI,'(//3X,A)') 'Integrals written :'
 C
       RETURN
@@ -95,12 +90,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "infpar.h"
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
+      IF (TRA_ASCII) THEN
+         WRITE (LUASCII,*) '*** End of File ***'
+         CLOSE (LUASCII,STATUS='KEEP')
+      ENDIF
 C
       IF (MYTID.EQ.0) THEN
          WRITE (LUPRI,1000)
+         IF (TRA_ASCII) WRITE (LUPRI,1001)
       END IF
       CALL FLSHFO(LUPRI)
- 1000 FORMAT (' - MOLFDIR file MDCINT was written.')
+ 1000 FORMAT (' - Binary  file MDCINT was written.')
+ 1001 FORMAT (' - ASCII   file MO_integrals.txt was written.')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -157,6 +158,9 @@ C
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      Use moltra_labeling
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -265,8 +269,27 @@ C     ... write the integral batch to the file
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
      &               (RKL(INZ),INZ=1,NZKL*RCW)
 
+C     Write out integrals in ASCII format
+
+      IF (TRA_ASCII) THEN
+        i = Kramer_to_SpinorIndex(ikr1)
+        j = Kramer_to_SpinorIndex(jkr1)
+        do inz = 1, nzkl
+          k = Kramer_to_SpinorIndex(indk(inz))
+          l = Kramer_to_SpinorIndex(indl(inz))
+          IF (NZ.EQ.1) THEN
+          write (LUASCII,'(E30.16,4I6)') 
+     &          (RKL(RCW*(INZ-1)+IW),IW=1,RCW),
+     &          i,j,k,l
+          ELSE
+          write (LUASCII,'(2E30.16,4I6)') 
+     &          (RKL(RCW*(INZ-1)+IW),IW=1,RCW),
+     &          i,j,k,l
+          ENDIF
+        end do
+      END IF
 C
-C     We should send in the print flag here, and make this an option.
+C     Write out integrals to output if desired. 
 C   ------------------------------------------------------------------
       IF (IPRTRA.GE.5) THEN
          WRITE(LUPRI,'(2x,a,3i4)')
@@ -321,15 +344,18 @@ C
          ELSE
             MKL = - IREPKLB(1,I) - IREPKLB(2,I)
          ENDIF
+!        write(lupri,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
+!        IF (MIJ+MKL.NE.0)
+!    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
+!    &   '(linzero): removed integral(',i,')',FMAT(I)
          IF (MIJ+MKL.NE.0) FMAT(I) = 0.D0
       ENDDO
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
       SUBROUTINE SYMFINT(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
-     &                   NSTR3,NSTR4,NKL,FMAT,WORK,KFREE,LFREE)
+     &           NSTR3,NSTR4,NKL,FMAT,WORK,KFREE,LFREE)
 C
 C     Symmetrize the final integrals and write them to file
 C
@@ -349,7 +375,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Set parameter to indicate whether the integrals are complex or real.
 C
-      IF (SPINFR.OR.LEVYLE.OR.NZ.EQ.1) THEN
+      IF (SPINFR.OR.NZ.EQ.1) THEN
          RCW = 1
       ELSE
          RCW = 2
@@ -360,7 +386,7 @@ C
       CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRKL,RCW*NKL,WORK,KFREE,LFREE)
 C
-      IF (SPINFR.OR.LEVYLE) THEN
+      IF (SPINFR) THEN
 C
 C     Special code that takes out the quaternion phase factors
 C     The resulting integrals have full 8-fold permutational
@@ -392,6 +418,7 @@ C
                    FMAT(I,1,1,IREPABR) = 
      &             FMAT(I,1,1,IREPABR) *
      &             IREPIJB(2)*IREPKLB(2,I)
+                   
                ENDIF
             ENDDO
             FACTR = 1.D0
@@ -451,9 +478,9 @@ C
      &   CALL LINZERO (ICLASS,IREPIJB,IREPKLB,NKL,WORK(KFTMAT))
 
          CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &                           WORK(KFTMAT),NKL,
-     &                           WORK(KINDK),WORK(KINDL),
-     &                           WORK(KRKL))
+     &               WORK(KFTMAT),NKL,
+     &                         WORK(KINDK),WORK(KINDL),
+     &                         WORK(KRKL))
       ENDDO
 C
 C     Quaternion classes

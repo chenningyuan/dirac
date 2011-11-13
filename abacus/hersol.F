@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,12 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C  /* Deck ireplm */
       FUNCTION IREPLM(L,M)
 C
@@ -1585,7 +1579,7 @@ C
 #include "orgcom.h"
 #include "mgsolt.h"
 #include "inforb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
 C
@@ -1788,7 +1782,7 @@ C
 #include "mgsolt.h"
 #include "orgcom.h"
 #include "inforb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
 #include "chrnos.h"

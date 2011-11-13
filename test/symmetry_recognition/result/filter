@@ -1,0 +1,7 @@
+$ERROR 0.000000001
+Nlines 8:Electronic energy
+
+$ERROR 1.E-5
+From:Eigenvalues
+ToRE:Occupation in fermion
+

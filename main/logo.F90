@@ -1,4 +1,21 @@
-
+!      Copyright (c) 2010 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.vu.nl
 
 subroutine printlogo
   print *, '%}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:'
@@ -77,44 +94,48 @@ end
 subroutine printsubtitle
 print *, '******************************************************************************'
 print *, '*                                                                            *'
-print *, '*         =======================================================            *'
+print *, '*         =========================================================          *'
 print *, '*                     Program for Atomic and Molecular                       *'
-print *, '*          Direct Iterative Relativistic Allelectron Calculations            *'
-print *, '*         =======================================================            *'
+print *, '*          Direct Iterative Relativistic All-electron Calculations           *'
+print *, '*         =========================================================          *'
 print *, '*                                                                            *'
-print *, '*                        VERSION 08.00  17 September 2008                    *'
+print *, '*                      VERSION 10.00  10 October 2010                        *'
 print *, '*                                                                            *'
 print *, '******************************************************************************'
 print *, '*                                                                            *'
 print *, '*    Written by:                                                             *'
 print *, '*                                                                            *'
+print *, '*    Trond Saue               Université P. Sabatier, Toulouse  France       *'
 print *, '*    Lucas Visscher           VU University Amsterdam           Netherlands  *'
-print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *'
-print *, '*    Trond Saue               CNRS/ULP Strasbourg               France       *'
+print *, '*    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *'
 print *, '*                                                                            *'
-print *, '*    with new contributions to DIRAC08 from:                                 *'
+print *, '*    with new contributions since the DIRAC08 release from:                  *'
 print *, '*                                                                            *'
-print *, '*    Radovan Bast             University of Tromsoe             Norway       *'
-print *, '*    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *'
+print *, '*    Radovan Bast             University of Tromsø              Norway       *'
 print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *'
-print *, '*    Ulf Ekstrom              VU University Amsterdam           Netherlands  *'
+print *, '*    Ulf Ekström              VU University Amsterdam           Netherlands  *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel       *'
-print *, '*    Timo Fleig               University of Duesseldorf         Germany      *'
-print *, '*    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *'
-print *, '*    Trygve U. Helgaker       University of Oslo                Norway       *'
-print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
-print *, '*    Miroslav Ilias           University of Zilina              Slovakia     *'
-print *, '*    Christoph R. Jacob       ETH Zurich                        Switzerland  *'
-print *, '*    Stefan Knecht            University of Duesseldorf         Germany      *'
-print *, '*    Patrick Norman           Linkoeping University             Sweden       *'
+print *, '*    Thomas Enevoldsen        University of Southern Denmark    Denmark      *'
+print *, '*    Timo Fleig               Université P. Sabatier, Toulouse  France       *'
+print *, '*    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *'
+print *, '*    Johan Henriksson         Linkôping University              Sweden       *'
+print *, '*    Miroslav Ilias           Matej Bel University              Slovakia     *'
+print *, '*    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *'
+print *, '*    Stefan Knecht            CNRS/Université de Strasbourg     France       *'
+print *, '*    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *'
+print *, '*    Patrick Norman           Linköping University              Sweden       *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark      *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany      *'
-print *, '*    Kenneth Ruud             University of Tromsoe             Norway       *'
-print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden       *'
+print *, '*    Kenneth Ruud             University of Tromsø              Norway       *'
+print *, '*    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *'
 print *, '*    Jetze Sikkema            VU University Amsterdam           Netherlands  *'
+print *, '*    Andreas Thorvaldsen      University of Tromsø              Norway       *'
+print *, '*    Jørn Thyssen             University of Southern Denmark    Denmark      *'
+print *, '*    Sebastien Villaume       Linköping University              Sweden       *'
+print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan        *'
 print *, '*                                                                            *'
 print *, '*    For the complete list of contributors to the DIRAC code see our         *'
-print *, '*    website http://dirac.chem.sdu.dk                                        *'
+print *, '*    website http://dirac.chem.vu.nl                                         *'
 print *, '*                                                                            *'
 print *, '*    This is an experimental code. The authors accept no responsibility      *'
 print *, '*    for the performance of the code or for the correctness of the results.  *'
@@ -127,13 +148,41 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                          *'
 print *, '*                                                                            *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,           *'
-print *, '*    Release DIRAC08 (2008),                                                 *'
-print *, '*    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *'
-print *, '*    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *'
-print *, '*    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *'
-print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *'
-print *, '*    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *'
-print *, '*    (see http://dirac.chem.sdu.dk).                                         *'
+print *, '*    Release DIRAC10 (2010),                                                 *'
+print *, '*    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *'
+print *, '*    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *'
+print *, '*    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *'
+print *, '*    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *'
+print *, '*    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *'
+print *, '*    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *'
+print *, '*    (see http://dirac.chem.vu.nl).                                          *'
 print *, '*                                                                            *'
 print *, '******************************************************************************'
+end
+
+
+subroutine print_static_alloc
+!
+! extracts  the size of all static allocations in dirac.x executable
+!
+! miro: when dirac.x is compiled with profiling flag, call system(...)
+! hangs the run on ! Therefore I prefer to deactivate this routine.
+!
+!
+character(len=10) :: dirac_exec
+character(len=150) :: system_commands_string
+call getarg(0, dirac_exec)
+
+!write(*,*) dirac_exec
+
+system_commands_string="size "//dirac_exec//" 2> /dev/null | grep "//dirac_exec  & 
+            //" | awk '{printf $3/(1024*1024)} '; echo ' MB' || echo 'can not be determined'"
+
+!write(*,*)  system_commands_string
+
+write(*,"(A,$)") "Static allocations in DIRAC : "
+
+!call system("size dirac.x 2> /dev/null | grep dirac.x | awk '{print $3/(1024*1024) } ' || echo 'can not be determined'")
+call system(system_commands_string)
+
 end

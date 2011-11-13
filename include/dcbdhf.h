@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 5900 $
-! DATE    : $Date: 2007-07-02 12:10:17 +0200 (Mon, 02 Jul 2007) $
+! VERSION : $Revision: 8501 $
+! DATE    : $Date: 2009-02-24 12:17:14 +0100 (Tue, 24 Feb 2009) $
 ! FILE    : dcbdhf.h
 !
 !*** Dirac-Fock calculations ***
@@ -8,7 +8,8 @@
 !     PROJEC     - any projection, defined by a set of coefficients
 !     ... (descriptions are to be added)
 !
-!     ERGCNV2, EVCCNV2, FCKCNV2, MAXITR2 - related to the preliminary
+!     ERGCNV2, EVCCNV2, FCKCNV2, MAXITR2 - related to the preliminary SCF method before turning to 4c mode
+!
 !     BSS-SCF (...MI/sept05 - can be extended by more SCF control flags )
 !
 
@@ -45,21 +46,20 @@
 
       INTEGER NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS, NELMBM,     &
      &        INTDEF, INTDEF_SAVE, INTFLG,                              &
-     &                        INTBUF, ITRINT(2), IPREIG, NEVEC(2),      &
-     &        N2EVECQ(2), I2EVECTQ(2), N2EVECTQ, NSMOTQ, ISMOQ(2),      &
+     &        INTBUF, ITRINT(2), IPREIG,NSMOTQ, ISMOQ(2),               &
      &        ITRSCF(0:15), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),        &
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NFRAG,   &
-     &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),NESHMF(2),         &
+     &        NTMO(2), I2TMOT(2), N2TMO(2),N2TMOTQ, NISHMF(2),NESHMF(2),&
      &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPSHMF(2),        &
      &        NPRJNUC(MFRAG),MAXITR2, NMOFREEZE(2),                     &
      &        IMOFREEZE(MXMOFREEZE)       
 
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
      &                NELMBM, INTDEF, INTDEF_SAVE, INTFLG, INTBUF,      &
-     &                ITRINT, IPREIG, NEVEC, N2EVECQ, I2EVECTQ,         &
-     &                N2EVECTQ, NSMOTQ, ISMOQ, ITRSCF, NFMAT, ISYMOP,   &
-     &                IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, MAXBCK, &
-     &                NFRAG, NTMO, I2TMOT, N2TMOTQ, NISHMF, NACSHMF,    &
+     &                ITRINT, IPREIG, NSMOTQ, ISMOQ, ITRSCF, NFMAT,     &
+     &                ISYMOP, IFCKOP, IHRMOP, NEWOCC, MXMACRO, MXMICRO, &
+     &                MAXBCK, NFRAG, NTMO, I2TMOT, N2TMO,N2TMOTQ,       &
+     &                NISHMF, NACSHMF,                                  &
      &                NASHMFT, NOCCMF, NESHMF,NPSHMF,NPRJNUC, MAXITR2,  &
      &                NMOFREEZE, IMOFREEZE                                         
 

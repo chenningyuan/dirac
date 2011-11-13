@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,9 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rorbgrd */
       SUBROUTINE RORBGRD(LORBTRI,DV,FC,FCX,FVX,FQX,GORB,JXOP,NXOP,
@@ -43,7 +40,7 @@ C        JXOP    - orbital rotations
 C        FPV     - scratch memory used for F_{pv}
 C        DFAC    - factors used in grad. expression
 C        IPQ     - index array
-C        ORBTRI  - true for an orbital trial vector
+C        LORBTRI - true for an orbital trial vector
 C
 C     Output:
 C        GORB    - the gradient
@@ -60,7 +57,7 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ),  FC(NORBT,NORBT,NZ)

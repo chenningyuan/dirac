@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,10 +15,8 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C 
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
       PROGRAM MX2FIT
 C***********************************************************************
 C
@@ -99,7 +95,7 @@ C
         WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
         GOTO 10
       ENDIF
-      WRITE(ILOGG,'(A)') '* MASSES:'
+      WRITE(ILOGG,'(A/)') '* MASSES:'
       WRITE(ILOGG,'(3X,A,F8.4)') 'Atom M      :',AM
       WRITE(ILOGG,'(3X,A,F8.4)') 'Atom O      :',BM
 C**********************************************************************
@@ -114,11 +110,11 @@ C**********************************************************************
      &  '4. Quit....'
       READ(LUCMD,*) I
       IF    (I.EQ.1) THEN
-        CALL SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,REQ,IBUF)
+        CALL SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
       ELSEIF(I.EQ.2) THEN
-        CALL ASMSTR(A,B,C,D,X,Y,YB,XB,MORDER,MP,MITER,AM,BM,REQ,IBUF)
+        CALL ASMSTR(A,B,C,D,X,Y,YB,XB,MORDER,MP,MITER,AM,BM,IBUF)
       ELSEIF(I.EQ.3) THEN
-        CALL ANGDEF(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,REQ,IBUF)
+        CALL ANGDEF(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
       ELSEIF(I.EQ.4) THEN      
         GOTO 30
       ELSE
@@ -129,19 +125,13 @@ C**********************************************************************
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,REQ,IBUF)
+      SUBROUTINE SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
-      PARAMETER(AUEV = 27.2113957D0,
-     &          EVJ  = 1.60217733D-19,
-     &          AUJ  = 4.35974812D-18,
-     &          PLANCK = 6.6260755D-34,
-     &          HZCM = 3.33564095D-11,
-     &          FAC   = AUJ/ANGM)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -183,22 +173,18 @@ C
 C     Polynomial fit
 C     ==============
 C
-      WRITE(ILOGG,'(A)') 
-     &   '* Symmetric stretch  <-- M -->'
+      WRITE(ILOGG,'(/A/)') 
+     &   '* SYMMETRIC STRETCH  <-- M -->'
       WRITE(ILOGG,'(3X,A,F8.4)') 'Reduced mass:',UM
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(F7.4,4X,F20.10)') (X(I),Y(I),I=1,NP)
-CTROND      DO I = 1,NP
-CTROND       X(I) = X(I)/XTANG
-CTROND      ENDDO
 C
-C     Generate symmetry coordinate
+C     Generate symmetry coordinate and convert to atomic units
 C
-      FCC = SQRT(D2)
-      DO I = 1,NP
-        X(I) = FCC*X(I)
-      ENDDO
+      UM = XFAMU*UM
+      FAC = SQRT(D2)/XTANG
+      CALL DSCAL(NP,FAC,X,1)
  60   CONTINUE
       WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
       READ(LUCMD,*) NORDER
@@ -251,7 +237,7 @@ C* for Newton-Raphsons method
         STOP 'Did not find minimum. Newtons method failed...'
       ELSE
         YOPT = POLVAL(NORDER,C,XOPT)
-        REQ = XOPT/FCC
+        REQ = XOPT/FAC
         WRITE(LUPRI,'(A,F18.5,A)') 
      &    '* Local minimum   :',REQ,' Angstroms'
         WRITE(ILOGG,'(A,F18.5,A)') 
@@ -268,29 +254,20 @@ C
       WRITE(LUPRI,'(A)') '* Do you want harmonic constant ?(y/n)'
       READ(LUCMD,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
-      WRITE(LUPRI,'(A,F7.4,A)') 
-     &     '* Do you want to use current req = ',REQ,' (y/n)?'
-      READ(LUCMD,'(A1)') REPLY
-      IF(REPLY.NE.'y') THEN
-        WRITE(LUPRI,'(A)') '* Give your value of req:'
-        READ(LUCMD,*) REQ
-        XOPT = REQ*FCC
-      ENDIF
       V2  = POL2DER(NORDER,C,XOPT)
-      FORCE = V2*AUJ/ANGM/ANGM
-      FREQ  = SQRT(FORCE/UM)/(SQRT(AMUKG)*D2PI)
-CTROND
+      FORCE = V2*XTJ/XTM/XTM
+      FREQ  = SQRT(V2/UM)
       WRITE(LUPRI,*) V2,FORCE,FREQ
-      WRITE(LUPRI,'(A,2(F14.4,A))') '* Force constant:',FORCE, 'N/m = ',
+      WRITE(LUPRI,'(A,2(F14.4,A))') '* Force constant:',FORCE,' N/m = ',
      &    FORCE*DMC, ' mDyne/A'
-      WRITE(LUPRI,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ,
-     &    'Hz --> ', FREQ*HZCM,'cm-1'
+      WRITE(LUPRI,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ*XTHZ,
+     &    'Hz --> ', FREQ*XTCM,'cm-1'
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,F7.4)') '* Req = ',REQ
-      WRITE(ILOGG,'(A,2(F14.4,A))') '* Force constant:',FORCE,'N/m = ',
+      WRITE(ILOGG,'(A,2(F14.4,A))') '* Force constant:',FORCE,' N/m = ',
      &    FORCE*DMC, ' mDyne/A'
-      WRITE(ILOGG,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ,
-     &    'Hz --> ', FREQ*HZCM,'cm-1'
+      WRITE(ILOGG,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ*XTHZ,
+     &    'Hz --> ', FREQ*XTCM,'cm-1'
 C
 C     Derivatives of curve
 C     ====================
@@ -313,19 +290,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ASMSTR(A,B,C,D,X,Y,YB,XB,MORDER,MP,MITER,
-     &                  AM,BM,REQ,IBUF)
+     &                  AM,BM,IBUF)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
-      PARAMETER(AUEV = 27.2113957D0,
-     &          EVJ  = 1.60217733D-19,
-     &          AUJ  = 4.35974812D-18,
-     &          PLANCK = 6.6260755D-34,
-     &          HZCM = 3.33564095D-11,
-     &          FAC   = AUJ/ANGM)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -342,7 +313,7 @@ C
 C     Read points
 C     ===========
 C
-      WRITE(LUPRI,'(A,F12.4)') 
+      WRITE(LUPRI,'(/A,F12.4)') 
      &   '* Asymmetric stretch  <-- M <--. Reduced mass:',UM
       WRITE(LUPRI,'(A)') 'Symmetry coordinate: [1/SQRT(2)](r12-r32)'
  10   CONTINUE
@@ -365,21 +336,18 @@ C
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
       NP2 = NP+NP
       IF(NP2.GT.MP) STOP 'Too many points..'
-C
-C     Polynomial fit
-C     ==============
-C
-      WRITE(ILOGG,'(A)') 
-     &   '* Asymmetric stretch  <-- M <--'
+      WRITE(ILOGG,'(/A/)') 
+     &   '* ASYMMETRIC STRETCH  <-- M <--'
       WRITE(ILOGG,'(3X,A,F8.4)') 'Reduced mass:',UM
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(2F7.4,4X,F20.10)') 
      &     (X(I),XB(I),Y(I),I=1,NP)
 C
-C     Generate symmetry coordinate
+C     Generate symmetry coordinate and convert to atomic units
 C
-      FCC = D1/SQRT(D2)
+      UM = XFAMU*UM
+      FCC = D1/SQRT(D2)/XTANG
       J = 0
       DO I = 1,NP
         X(I) = FCC*(X(I)-XB(I))
@@ -390,7 +358,12 @@ C
         ENDIF
       ENDDO
       NP2 = NP + J
+C
+C     Polynomial fit
+C     ==============
+C
  60   CONTINUE
+      WRITE(LUPRI,'(A,I5)') 'Total number of points :',NP2
       WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
       READ(LUCMD,*) NORDER
       IF(NP2.LE.NORDER) THEN
@@ -403,14 +376,14 @@ C
         GOTO 666
       ENDIF
       NDIM = NORDER + 1
-      CALL POLSVD(NDIM,NP,A,B,X,Y,C,D,CHISQ,ISKIP)
+      CALL POLSVD(NDIM,NP2,A,B,X,Y,C,D,CHISQ,ISKIP)
 C* Estimate fit:
       WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(LUPRI,'(3X,A)') '* Coefficients:'
       WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
       WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP2
       WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
 C
       WRITE(ILOGG,'(72A1)') ('=',I=1,72)
@@ -423,36 +396,8 @@ CTROND        YP = (POLVAL(NORDER,C,X(I))-Y(I))/Y(I)
 CTROND        WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') XTANG*X(I),YP
 CTROND      ENDDO
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP2
       WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
-C
-C     Find minimum
-C     ============
-C
-      WRITE(LUPRI,'(A)') '* Do you want to find a minimum ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
-      IF(REPLY.NE.'y') GOTO 100
-C* Find smallest y-value and take corresponding x-value as start value
-C* for Newton-Raphsons method   
-      IYOPT = IDMIN(NP,Y,1)
-      XOPT = X(IYOPT)
-      CALL NEWRAP(NORDER,DTOL,C,XOPT,NITER,IERR)
-      IF(IERR.EQ.1) THEN
-        WRITE(ILOGG,'(A)') 'Newtons method failed'
-        STOP 'Did not find minimum. Newtons method failed...'
-      ELSE
-        YOPT = POLVAL(NORDER,C,XOPT)
-CTROND        REQ = XOPT/FCC
-        REQ = XOPT
-        WRITE(LUPRI,'(A,F18.5,A)') 
-     &    '* Local minimum   :',REQ,' Angstroms'
-        WRITE(ILOGG,'(A,F18.5,A)') 
-     &    '* Local minimum   :',REQ,' Angstroms'
-        WRITE(LUPRI,'(A,1P,E18.10,A)') 
-     &    '* Expected energy :',YOPT,' Hartrees'
-        WRITE(ILOGG,'(A,1P,E18.10,A)') 
-     &    '* Expected energy :',YOPT,' Hartrees'
-      ENDIF
 C
 C     Harmonic constant
 C     ==================
@@ -460,27 +405,20 @@ C
       WRITE(LUPRI,'(A)') '* Do you want harmonic constant ?(y/n)'
       READ(LUCMD,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
-      WRITE(LUPRI,'(A,F7.4,A)') 
-     &     '* Do you want to use current req = ',REQ,' (y/n)?'
-      READ(LUCMD,'(A1)') REPLY
-      IF(REPLY.NE.'y') THEN
-        WRITE(LUPRI,'(A)') '* Give your value of req:'
-        READ(LUCMD,*) REQ
-        XOPT = REQ*FCC
-      ENDIF
+      XOPT = D0
       V2  = POL2DER(NORDER,C,XOPT)
-      FORCE = V2*AUJ/ANGM/ANGM
-      FREQ  = SQRT(FORCE/UM)/(SQRT(AMUKG)*D2PI)
-      WRITE(LUPRI,'(A,2(F14.4,A))') '* Force constant:',FORCE, 'N/m = ',
+      FORCE = V2*XTJ/XTM/XTM
+      FREQ  = SQRT(V2/UM)
+      WRITE(LUPRI,'(A,2(F14.4,A))') '* Force constant:',FORCE,' N/m = ',
      &    FORCE*DMC, ' mDyne/A'
-      WRITE(LUPRI,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ,
-     &    'Hz --> ', FREQ*HZCM,'cm-1'
+      WRITE(LUPRI,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ*XTHZ,
+     &    'Hz --> ', FREQ*XTCM,'cm-1'
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,F7.4)') '* Req = ',REQ
       WRITE(ILOGG,'(A,2(F14.4,A))') '* Force constant:',FORCE,'N/m = ',
      &    FORCE*DMC, ' mDyne/A'
-      WRITE(ILOGG,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ,
-     &    'Hz --> ', FREQ*HZCM,'cm-1'
+      WRITE(ILOGG,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ*XTHZ,
+     &    'Hz --> ', FREQ*XTCM,'cm-1'
 C
 C     Derivatives of curve
 C     ====================
@@ -491,7 +429,7 @@ C
       IF(REPLY.NE.'y') GOTO 666
       WRITE(LUPRI,'(A)') 'Derivatives to what order(max.6) ?'
       READ(LUCMD,*) NDER
-      DO J = 1,NP
+      DO J = 1,NP2
         WRITE(ILOGG,'(F6.3,3X,1P,6E14.6)')
      &   X(J),(POLNDER(NORDER,B,X(J),I),I = 1,NDER)
       ENDDO
@@ -502,19 +440,13 @@ C
       IF(REPLY.EQ.'y') GOTO 60
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ANGDEF(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,REQ,IBUF)
+      SUBROUTINE ANGDEF(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
-      PARAMETER(AUEV = 27.2113957D0,
-     &          EVJ  = 1.60217733D-19,
-     &          AUJ  = 4.35974812D-18,
-     &          PLANCK = 6.6260755D-34,
-     &          HZCM = 3.33564095D-11,
-     &          FAC   = AUJ/ANGM)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI,CNV = PI/360.0D0)
@@ -532,7 +464,7 @@ C     Read points
 C     ===========
 C
       WRITE(LUPRI,'(A,F12.4)') 
-     &   '* Angular deformation. Reduced mass:',UM
+     &   '* Bending mode. Reduced mass:',UM
       WRITE(LUPRI,'(A)') '  Symmetry coordinate: SQRT(2)*req*cos[phi/2]'
  10   CONTINUE
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A6)'
@@ -558,24 +490,20 @@ C
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
       NP2 = NP+NP
       IF(NP2.GT.MP) STOP 'Too many points..'
-C
-C     Polynomial fit
-C     ==============
-C
-      WRITE(ILOGG,'(A)') 
-     &   '* Angular deformation'
+      WRITE(ILOGG,'(/A/)') '* BENDING:'
       WRITE(ILOGG,'(3X,A,F8.4)') 'Reduced mass:',UM
       WRITE(ILOGG,'(A,F6.3)') '*Using req: ',REQ
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(F8.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
 C
-C     Generate symmetry coordinate
+C     Generate symmetry coordinate and convert to atomic units
 C
-      FCC = SQRT(D2)
+      UM = XFAMU*UM
+      FAC = SQRT(D2)/XTANG
       J  = 0
       DO I = 1,NP
-        X(I) = FCC*REQ*COS(CNV*X(I))
+        X(I) = FAC*REQ*COS(CNV*X(I))
         IF(ABS(X(I)).GT.DTOL) THEN
           J = J + 1
           X(J+NP) = -X(I)
@@ -583,7 +511,12 @@ C
         ENDIF
       ENDDO
       NP2 = NP + J
+C
+C     Polynomial fit
+C     ==============
+C
  60   CONTINUE
+      WRITE(LUPRI,'(A,I5)') 'Total number of points :',NP2
       WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
       READ(LUCMD,*) NORDER
       IF(NP2.LE.NORDER) THEN
@@ -596,14 +529,14 @@ C
         GOTO 666
       ENDIF
       NDIM = NORDER + 1
-      CALL POLSVD(NDIM,NP,A,B,X,Y,C,D,CHISQ,ISKIP)
+      CALL POLSVD(NDIM,NP2,A,B,X,Y,C,D,CHISQ,ISKIP)
 C* Estimate fit:
       WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(LUPRI,'(3X,A)') '* Coefficients:'
       WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
       WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP2
       WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
 C
       WRITE(ILOGG,'(72A1)') ('=',I=1,72)
@@ -616,7 +549,7 @@ CTROND        YP = (POLVAL(NORDER,C,X(I))-Y(I))/Y(I)
 CTROND        WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') XTANG*X(I),YP
 CTROND      ENDDO
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP2
       WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
 C
 C     Find minimum
@@ -633,7 +566,7 @@ C
         STOP 'Did not find minimum. Newtons method failed...'
       ELSE
         YOPT = POLVAL(NORDER,C,XOPT)
-        RPHI = ACOS(XOPT/(FCC*REQ))/CNV
+        RPHI = ACOS(XOPT/(FAC*REQ))/CNV
         WRITE(LUPRI,'(A,F17.10,A,F17.10,A)') '* Local minimum:  (',
      &        RPHI,',',YOPT,')'
         WRITE(ILOGG,'(72A1)') ('-',I=1,72)
@@ -647,28 +580,22 @@ C
       WRITE(LUPRI,'(A)') '* Do you want harmonic constant ?(y/n)'
       READ(LUCMD,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
-      WRITE(LUPRI,'(A,F10.4,A)') 
-     &     '* Do you want to use current phieq = ',RPHI,' (y/n)?'
-      READ(LUCMD,'(A1)') REPLY
-      IF(REPLY.NE.'y') THEN
-        WRITE(LUPRI,'(A)') '* Give your value of phieq:'
-        READ(LUCMD,*) RPHI
-        X(I) = FCC*REQ*COS(CNV*RPHI)
-      ENDIF
-      V2  = POL2DER(NORDER,B,XOPT)
-      FORCE = V2*AUJ/ANGM/ANGM
-      FREQ  = SQRT(FORCE/UM)/(SQRT(AMUKG)*D2PI)
+      V2  = POL2DER(NORDER,C,XOPT)
+CTROND
+      WRITE(6,*) 'test..',XOPT,V2      
+      FORCE = V2*XTJ/XTM/XTM
+      FREQ  = SQRT(V2/UM)
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,F7.2)') '* phieq = ',RPHI
       WRITE(LUPRI,'(A,2(F14.4,A))') '* Force constant:',FORCE, 'N/m = ',
      &    FORCE*DMC, ' mDyne/A'
-      WRITE(LUPRI,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ,
-     &    'Hz --> ', FREQ*HZCM,'cm-1'
+      WRITE(LUPRI,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ*XTHZ,
+     &    'Hz --> ', FREQ*XTCM,'cm-1'
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       WRITE(ILOGG,'(A,2(F14.4,A))') '* Force constant:',FORCE,'N/m = ',
      &    FORCE*DMC, ' mDyne/A'
-      WRITE(ILOGG,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ,
-     &    'Hz --> ', FREQ*HZCM,'cm-1'
+      WRITE(ILOGG,'(A,E10.3,A,3X,F14.4,A)') '* Frequency:',FREQ*XTHZ,
+     &    'Hz --> ', FREQ*XTCM,'cm-1'
 C
 C     Derivatives of curve
 C     ====================

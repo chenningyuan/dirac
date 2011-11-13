@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,13 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : pamgrd.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -205,6 +200,9 @@ C     MI,HJAaJ(&TEC), march 2003: added new routine calling
 C     that gets the total property gradient dH(B)/dB|B=0 when using
 C     London atomic orbitals
 C
+C     S. Knecht, Jan 2010: added read-in of coefficients from a 
+C                          previous MCSCF run.
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -217,24 +215,56 @@ C
 #include "dcbham.h"
 #include "mxcent.h"
 #include "dcbprp.h"
+#ifdef MOD_KRMC
+#include "dcbpsi.h"
+#endif
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
+      LOGICAL TOBEK
 C
       CALL QENTER('GRDOR1')
+C
+      TOBEK =.FALSE.
 C
 C     Read coefficients
 C     =================
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-      IF(SPINFR) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
-     &              WORK,KFREE,LFREE)
+#ifdef MOD_KRMC
+C
+C     check for coefficients from the current KRMCSCF run
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+C
+      IF(TOBEK.and.DOKRMC)THEN
+C
+        IF(SPINFR) THEN
+          WRITE(LUPRI,'(A)') ' *** ERROR in GRDOR1: reading'//
+     &                       ' of MCSCF coefficients in a spinfree'//
+     &                       ' calculation. ***'
+          CALL QUIT('Spinfree MCSCF calculations are not possible.')
+        END IF
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','GRDOR1')
+        JRDMO = -1
+        CALL RREADMO(CMO,JRDMO,1,LUKRMC)
+C       CLOSE (LUKRM5,STATUS='KEEP')
+C       ... set to zero
+        TOTERG = 0.0D0
       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
-     &              WORK,KFREE,LFREE)
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
+#endif /* MOD_KRMC */
+C
+C       read HF coefficients 
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
+        IF(SPINFR) THEN
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
+     &                WORK,KFREE,LFREE)
+        ELSE
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
+     &                WORK,KFREE,LFREE)
+        ENDIF
+        CLOSE(LUCOEF,STATUS='KEEP')
+#ifdef MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
@@ -250,6 +280,11 @@ CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
+#ifdef MOD_LONDON
+        IB = 7 ! 0111 = full H(B) prop. gradient
+        CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
+     &                    WORK,KFREE,LFREE,IPRINT)
+#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &              WORK,KFREE,LFREE,IPRINT)
@@ -273,7 +308,7 @@ C
       KFRSAV = KFREE
       IF (NASHT .GT. 0) THEN
          CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
-         CALL GETMAT('DVMO',WORK(KDV),IPRINT,.FALSE.,WORK(KFREE),LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRINT,TOBEK,WORK(KFREE),LFREE)
       ELSE
          CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
       END IF
@@ -499,6 +534,9 @@ C
 #include "dcborb.h"
 #include "dcbxpr.h"
 #include "dummy.h"
+!gosia: temporarily i need it
+#include "dcbprl.h"
+#include "dcbqal.h"
 C
       LOGICAL FIRST(*),QBTR, IS_SQUARE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
@@ -556,6 +594,44 @@ CMI   ENDIF
         CALL QUIT('PRPMA1: wrong parameters ! ')
       ENDIF
 
+!gosia: 
+! temporarily i need this info for visual+london
+        open(11, file='property_info', status = 'unknown',
+     &       form   = 'formatted', access = 'append')
+        write(11, *) prpnam(indxpr)
+        write(11, *) iprptyp(indxpr)
+        write(11, *) iprpsym(indxpr)
+        write(11, *) iprptim(indxpr)
+!      
+        write(11, *) nz
+        do i = 1, nz
+         write(11,*) ihqmat(ipqtoq(i,iprpsym(indxpr)-1),iprptim(indxpr))
+        end do
+!
+!       how many 'components' (1:3):
+        write(11, *) mcmp(iprptyp(indxpr))
+        do i = 1, mcmp(iprptyp(indxpr))
+          write(11, *) facprp(i, indxpr)
+          write(11, *) iprplbl(i, indxpr)
+          write(11, *) pdoint(iprplbl(i, indxpr))(1:4)
+          write(11, *) iprlrep(iprplbl(i, indxpr))
+          write(11, *) iprltyp(iprplbl(i, indxpr))
+          write(11, *) jm4(i, iprptyp(indxpr))
+          write(11, *) jm4pos(jm4(i, iprptyp(indxpr)))
+!repeated... but i need it
+          if (pdoint(iprplbl(i, indxpr))(2:3) .eq. '00') then
+            ic = 1
+          else if ((pdoint(iprplbl(i, indxpr))(1:1) .eq. '0') .and.
+     &             (pdoint(iprplbl(i, indxpr))(4:4) .eq. '0')) then
+            ic = 2
+          end if
+          i1 = jqbas(iprlrep(iprplbl(i, indxpr)), ic)
+          i2 = jm4pos(jm4(i, iprptyp(indxpr)))
+          write(11, *) iqmult(1, i1, i2) 
+          write(11, *) iqtopq(iqmult(1, i1, i2), iprpsym(indxpr) - 1)
+        end do
+        close(11)
+! 
 C
 C
 C     Get property matrix in AO-basis
@@ -574,13 +650,16 @@ C     ===============================
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.7) THEN
+!gosia        if ((prpnam(indxpr)(1:5) == 'dS/dB') .or. 
+!gosia     &      (prpnam(indxpr)(1:7) == 'd|S>/dB')) then
         WRITE(LUPRI,'(/A,A16)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
+!gosia        endif
       ENDIF
-
+!
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
@@ -619,6 +698,8 @@ C
          ENDIF
 
          IF (IPRINT.GE.7) THEN
+        if ((prpnam(indxpr) == 'dS/dBX') .or. 
+     &      (prpnam(indxpr) == 'd|S>/dBX')) then
           CALL HEADER('PRPMA1: Symm.blocked AO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
@@ -631,8 +712,9 @@ C
           CALL PRQMAT(PRPMO(J2PMOX(I1,I2),1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)
+          endif
          ENDIF
-
+!
          IF (IPRINT.GE.10) THEN
           CALL HEADER(
      &    'PRPMA1: Symm.blocked MO-coefficients',-1)
@@ -823,6 +905,11 @@ C
      &         FILE='AOPROPER')
 #endif
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
+#ifdef MOD_LONDON
+        IB = 7 ! 111
+        CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
+     &                    WORK,KFREE,LFREE,IPRINT)
+#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)
@@ -871,8 +958,8 @@ C        JXOP    - list of orbital rotations
 C        QMAT    - one-electron property matrix
 C        UDV     - active density matrix (symmetry packed)
 C        IH      - hermicity
-C           IH = 1: g(k,l) = sum_m Dlq Qkq - ( sum_m Dmk Qml )^*
-C           IH = 2: g(k,l) = sum_m Dlq Qkq + ( sum_m Dmk Qml )^*
+C           IH = 1: g(k,l) = sum_m Dlm Qkm - ( sum_m Dmk Qml )^*
+C           IH = 2: g(k,l) = sum_m Dlm Qkm + ( sum_m Dmk Qml )^*
 C
 C     Written by J. Thyssen May 7 1999
 C     Last revision 
@@ -885,7 +972,7 @@ C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
 C
 #include "dcborb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),
@@ -896,7 +983,7 @@ C
 C
       IF (IH .EQ. 1) THEN
          DS = D1
-      ELSE IF (IH. EQ. 2) THEN
+      ELSE IF (IH .EQ. 2) THEN
          DS = DM1
       END IF
 C

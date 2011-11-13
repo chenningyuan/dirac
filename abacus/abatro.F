@@ -1,6 +1,4 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -17,14 +15,10 @@ C
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C
-C VERSION : $Revision: 7732 $
-C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
+!      DIRAC program, see: http://dirac.chem.vu.nl
+
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : abatro.F
 C
 C  /* Deck troinp */
@@ -138,7 +132,7 @@ C
 #include "mxcent.h"
 #include "abainf.h"
 #include "cbitro.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 C
       IPRINT = IPRDEF
@@ -188,7 +182,7 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "infdim.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 #include "exeinf.h"
 #include "trkoor.h"
@@ -1695,7 +1689,7 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "dorps.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
 #include "inftap.h"

@@ -1,0 +1,2145 @@
+DIRAC launched (pam script) by ilias@miro at Thu May 20 14:55:48 CEST 2010
+in : /home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/test/38.london.magn_prop
+===========================================================================================
+Size of all static allocations (pam script) : 103.079 MB
+DIRAC serial allocating 64000000 words (488 MB) of memory
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =======================================================            *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic Allelectron Calculations            *
+ *         =======================================================            *
+ *                                                                            *
+ *                        VERSION 08.00  17 September 2008                    *
+ *                                                                            *
+ ******************************************************************************
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *                                                                            *
+ *    with new contributions to DIRAC08 from:                                 *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsoe             Norway       *
+ *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
+ *    Trygve U. Helgaker       University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           University of Zilina              Slovakia     *
+ *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
+ *    Stefan Knecht            University of Duesseldorf         Germany      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.sdu.dk                                        *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC08 (2008),                                                 *
+ *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
+ *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
+ *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
+ *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
+ *    (see http://dirac.chem.sdu.dk).                                         *
+ *                                                                            *
+ ******************************************************************************
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : miro
+ Operating system  : Linux 2.6.30-1-amd64
+ Machine           : x86_64
+ Run               : Sequential
+ Last compilation  : 14:26:15 May 20 2010 (by ilias@miro.utcpd.sk:/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -fdefault-integer-8 -Iinclude -Jmodules -DINT_STAR8 -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=444 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /usr/bin/X11/gcc -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DINT_STAR8 -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries:  
+ Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
+ ILP data model    : ILP64 
+ SVN URL:          : 'http://ilias@dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
+ SVN Changeset     : '10847' 
+
+ 
+     Date and time (Linux)  : Thu May 20 14:55:48 2010 
+     Host name              :                                         
+
+
+ *******************************************************************************
+ ************************** Input read from DIRAC.INP **************************
+ *******************************************************************************
+
+**DIRAC
+.TITLE
+  LiH
+.WAVE F ! Activate integral and wave functions modules
+.PROPERTIES ! Activate property module (dipole moment; polarizability...)
+**GENERAL
+! Direct evaluation of two-electron integrals
+.DIRECT
+1 1 1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*TWOINT
+#.SOFOCK
+**HAMILTONIAN
+!.SPINFREE
+!.LEVY-LEBLOND
+.URKBAL
+.PRINT
+1
+**WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
+.DHF
+#.MP2
+*DHFCAL ! DHF specifications...
+.CLOSED SHELL
+4 0
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0E-10  1.0D-7
+#.CNVINT
+#1.0D-4 1.0D-15
+###########################################################
+#
+# Set up properties
+#
+############################################################
+**PROPERTIES ! Calculating of properties...
+.PRINT
+1
+.SHIELDING
+#.NSTDIA
+*NMR
+.INTFLG
+1 1 0
+.LONDON
+#.NOORTH
+#.NOONEI
+#.NOTWO
+#.SYMCON
+#.NOEPRN
+#.NOLOND
+#.GAUGEO
+#0.0  0.0  0.0
+*LINEAR RESPONSE
+#.SKIPEP
+.MAXITR
+100
+.INTFLG
+1 1 0
+.THRESH
+1.0D-9
+.PRINT
+1
+*EXPECTATION VALUE
+.PRINT
+1
+*END OF
+
+
+
+    *************************************************************************
+    *********************************   LiH *********************************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+   * If crash, end with the segment.fault. Worth for debugging.
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in the four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+ Extra output for the following shells:  0  0  0  0
+ * Direct calculation of Fock matrices in SO-basis.
+ * Default screening threshold in direct Fock matrix construction: 1.00E-12
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  LiH molecule; r_exp=1.595710 A (NIST web-diatomic constants)            
+  Li[4s2p] H[2s] (STO-2G basis set exponents)                             
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Nuclear Gaussian exponent for atom of charge   3.000 :    8.9266848806D+08
+
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+    3         0.00000000     0.00000000     3.01808161       1
+    1         0.00000000     0.00000000     0.00000000       1
+
+ Symmetry class found: C(oo,v)
+
+ Centered and Rotated                    
+ --------------------                    
+    3         0.00000000     0.00000000     0.37908307       1
+    1         0.00000000     0.00000000    -2.63899854       1
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  C(oo,v)        
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1  x E1  : A1  + A2  + B1  + B2 
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A1 (1)  A2 (2)  |
+      Sa  |  A2 (1)  A1 (2)  |
+      Lb  |  B1 (3)  B2 (4)  |
+      Sb  |  B2 (3)  B1 (4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A1   1
+    B1   j
+    B2   k
+    A2   i
+
+  QM-QM nuclear repulsion energy :    0.994008906706
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.994008906706
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Li          1       3      10      10      L  - [4s2p|4s2p]                                                    
+                             26      26      S  - [2s4p2d|2s4p2d]                                                
+  H           1       1       2       2      L  - [2s|2s]                                                        
+                              6       6      S  - [2p|2p]                                                        
+  ----------------------------------------------------------------------
+                             12      12      L  - large components
+                             32      32      S  - small components
+  ----------------------------------------------------------------------
+  total:      2       4      44      44
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+  Basis set typed explicitly in input file                                        
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   Li       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.3790830684
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z     -2.6389985400
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   2  2  2  0
+
+
+  Symmetry 1
+
+   1   Li    z    3
+   2   H     z    6
+
+
+  Symmetry 2
+
+   3   Li    x    1
+   4   H     x    4
+
+
+  Symmetry 3
+
+   5   Li    y    2
+   6   H     y    5
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            Li          H   
+
+   Li      0.000000
+   H       1.597100    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          Li                             1.597100
+
+
+  Nuclear repulsion energy :    0.994008906706
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    5
+     1  L Li    s        2  L Li    px       3  L Li    py       4  L Li    pz       5  L H     s   
+   * Small components:   13
+     6  S Li    s        7  S Li    px       8  S Li    py       9  S Li    pz      10  S Li    dxx     11  S Li    dxy 
+    12  S Li    dxz     13  S Li    dyy     14  S Li    dyz     15  S Li    dzz     16  S H     px      17  S H     py  
+    18  S H     pz  
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:    5
+     1  L A1 Li s        2  L A1 Li pz       3  L A1 H  s        4  L B1 Li px       5  L B2 Li py  
+   * Small components:   13
+     6  S A1 Li s        7  S A1 Li pz       8  S A1 Li dxx      9  S A1 Li dyy     10  S A1 Li dzz     11  S A1 H  pz  
+    12  S B1 Li px      13  S B1 Li dxz     14  S B1 H  px      15  S B2 Li py      16  S B2 Li dyz     17  S B2 H  py  
+    18  S A2 Li dxy 
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           22    10    10     2
+  Number of large orbitals in each symmetry:      8     2     2     0
+  Number of small orbitals in each symmetry:     14     8     8     2
+
+* Large component functions
+
+  Symmetry  A1 ( 1)
+
+        4 functions:    Li s   
+        2 functions:    Li pz  
+        2 functions:    H  s   
+
+  Symmetry  B1 ( 2)
+
+        2 functions:    Li px  
+
+  Symmetry  B2 ( 3)
+
+        2 functions:    Li py  
+
+* Small component functions
+
+  Symmetry  A1 ( 1)
+
+        2 functions:    Li s   
+        4 functions:    Li pz  
+        2 functions:    Li dxx 
+        2 functions:    Li dyy 
+        2 functions:    Li dzz 
+        2 functions:    H  pz  
+
+  Symmetry  B1 ( 2)
+
+        4 functions:    Li px  
+        2 functions:    Li dxz 
+        2 functions:    H  px  
+
+  Symmetry  B2 ( 3)
+
+        4 functions:    Li py  
+        2 functions:    Li dyz 
+        2 functions:    H  py  
+
+  Symmetry  A2 ( 4)
+
+        2 functions:    Li dxy 
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    1
+ * Dirac-Coulomb Hamiltonian
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     1
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the unrestricted kinetic balance scheme:
+ * RKB pre-projection in scalar basis
+  without removing unphysical solutions for no external field
+  This gives extended kinetic balance and is  only recommended for CONTRACTED LC basis sets
+
+
+ *******************************************************************************
+ ************************** Memory required by HERMIT **************************
+ *******************************************************************************
+
+===========================================================================
+ Maximum memory load for two-electron integral processing:
+===========================================================================
+ * LL-integrals:
+   2(Li   Lp)   2(Li   Lp)   2(Li   Lp)   1(Li   Ls)                6011
+ * SL-integrals:
+   6(Li   Sd)   5(Li   Sp)   2(Li   Lp)   2(Li   Lp)               19819
+ * SS-integrals:
+   6(Li   Sd)   5(Li   Sp)   6(Li   Sd)   5(Li   Sp)               80279
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Hartree-Fock calculation
+===========================================================================
+ DHFINP: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    4 electrons in
+       2 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-10
+   Allowed convergence:1.000D-07
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:  1
+ * Input label:**PROPE
+ * Properties calculated for the following wave functions: 
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * do NOT perform the picture change transformation of the four-component property operators
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           Li          7.016005
+                           H           1.007825
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+ * Center of mass used for the gauge & dipole origin (a.u.) :    0.000000    0.000000    0.000000
+
+ : Reorthonormalization terms over both positronic and electronic shells  (recommended as the default for URKBAL)! 
+ : Natural connection used for LAO-PDBS.
+ : Include London magnet.prop.grad.contributions from the following two-electron integrals:
+      - LL-integrals
+      - SL-integrals
+===========================================================================
+ XLRINP: Electronic linear reponse properties
+===========================================================================
+ * Print level                 :    1
+ * e-e rotations are allowed in the linear response function.
+ * e-p rotations are allowed in the linear response function.
+ * Maximum number of iterations:  100
+ * Threshold for convergence   :1.000000D-09
+ * Max. size of reduced matrix :  200
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals from iteration    1
+ * Initial trial vectors will be preconditioned.
+ * Linear response functions evaluated at the following REAL frequencies:
+       0.00000D+00 a.u.
+===========================================================================
+ EXPINP: Expectation values
+===========================================================================
+ * The following expectation values will be calculated:
+---------------------------------------------------------------------------
+    1  RNSTLi  001X         A2      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 001RNSTZ 0++0    -137.03599980944 (complex)  
+                               001RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    2  RNSTLi  001Y         A1      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 001RNSTX 0++0    -137.03599980944 (complex)  
+                               001RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    3  RNSTLi  001Z         B2      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 001RNSTY 0++0    -137.03599980944 (complex)  
+                               001RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    4  RNSTH   002X         A2      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 002RNSTZ 0++0    -137.03599980944 (complex)  
+                               002RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    5  RNSTH   002Y         A1      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 002RNSTX 0++0    -137.03599980944 (complex)  
+                               002RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    6  RNSTH   002Z         B2      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 002RNSTY 0++0    -137.03599980944 (complex)  
+                               002RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    7  RNSTLi  003X         A1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 003RNSTZ 0++0    -137.03599980944 (complex)  
+                               003RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    8  RNSTLi  003Y         A2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 003RNSTX 0++0    -137.03599980944 (complex)  
+                               003RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    9  RNSTLi  003Z         B1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 003RNSTY 0++0    -137.03599980944 (complex)  
+                               003RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   10  RNSTH   004X         A1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 004RNSTZ 0++0    -137.03599980944 (complex)  
+                               004RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   11  RNSTH   004Y         A2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 004RNSTX 0++0    -137.03599980944 (complex)  
+                               004RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   12  RNSTH   004Z         B1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 004RNSTY 0++0    -137.03599980944 (complex)  
+                               004RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   13  RNSTLi  005X         B1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 005RNSTZ 0++0    -137.03599980944 (complex)  
+                               005RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   14  RNSTLi  005Y         B2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 005RNSTX 0++0    -137.03599980944 (complex)  
+                               005RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   15  RNSTLi  005Z         A1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 005RNSTY 0++0    -137.03599980944 (complex)  
+                               005RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   16  RNSTH   006X         B1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 006RNSTZ 0++0    -137.03599980944 (complex)  
+                               006RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   17  RNSTH   006Y         B2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 006RNSTX 0++0    -137.03599980944 (complex)  
+                               006RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   18  RNSTH   006Z         A1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 006RNSTY 0++0    -137.03599980944 (complex)  
+                               006RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+
+
+               DEF_D1HBLOND: Operators for NMR shieldings with LAO!
+               ----------------------------------------------------
+
+===========================================================================
+ NMR shieldings:
+===========================================================================
+ Shieldings printed for atoms with abundance greater than   1.0000 %
+---------------------------------------------------------------------------
+ ** A operators for shielding **
+---------------------------------------------------------------------------
+    1  NUCSP001Li  B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 003  0++0    -137.03599980944 (real)     
+                               NEF 001  0++0    -137.03599980944 (real)     
+...........................................................................
+    2  NUCSP002H   B1 Y     B1      T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 004  0++0    -137.03599980944 (real)     
+                               NEF 002  0++0    -137.03599980944 (real)     
+...........................................................................
+    3  NUCSP003Li  B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 001  0++0    -137.03599980944 (real)     
+                               NEF 005  0++0    -137.03599980944 (real)     
+...........................................................................
+    4  NUCSP004H   B2 X     B2      T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 002  0++0    -137.03599980944 (real)     
+                               NEF 006  0++0    -137.03599980944 (real)     
+...........................................................................
+    5  NUCSP005Li  A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 005  0++0    -137.03599980944 (real)     
+                               NEF 003  0++0    -137.03599980944 (real)     
+...........................................................................
+    6  NUCSP006H   A2 Z     A2      T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 006  0++0    -137.03599980944 (real)     
+                               NEF 004  0++0    -137.03599980944 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+ ** B operators for shielding or ESR **
+---------------------------------------------------------------------------
+    1  LAO-XRM1H1           B2      T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBX   000+    -37557.730487547 (imaginary)
+...........................................................................
+    2  LAO-YRM1H1           B1      T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBY   000+    -37557.730487547 (imaginary)
+...........................................................................
+    3  LAO-ZRM1H1           A2      T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+...........................................................................
+---------------------------------------------------------------------------
+ ** NMR shieldings expectation values (London) **
+---------------------------------------------------------------------------
+    1  RNSTLi  001X         A2      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 001RNSTZ 0++0    -137.03599980944 (complex)  
+                               001RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    2  RNSTLi  001Y         A1      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 001RNSTX 0++0    -137.03599980944 (complex)  
+                               001RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    3  RNSTLi  001Z         B2      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 001RNSTY 0++0    -137.03599980944 (complex)  
+                               001RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    4  RNSTH   002X         A2      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 002RNSTZ 0++0    -137.03599980944 (complex)  
+                               002RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    5  RNSTH   002Y         A1      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 002RNSTX 0++0    -137.03599980944 (complex)  
+                               002RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    6  RNSTH   002Z         B2      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 002RNSTY 0++0    -137.03599980944 (complex)  
+                               002RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    7  RNSTLi  003X         A1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 003RNSTZ 0++0    -137.03599980944 (complex)  
+                               003RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    8  RNSTLi  003Y         A2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 003RNSTX 0++0    -137.03599980944 (complex)  
+                               003RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    9  RNSTLi  003Z         B1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 003RNSTY 0++0    -137.03599980944 (complex)  
+                               003RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   10  RNSTH   004X         A1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 004RNSTZ 0++0    -137.03599980944 (complex)  
+                               004RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   11  RNSTH   004Y         A2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 004RNSTX 0++0    -137.03599980944 (complex)  
+                               004RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   12  RNSTH   004Z         B1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 004RNSTY 0++0    -137.03599980944 (complex)  
+                               004RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   13  RNSTLi  005X         B1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 005RNSTZ 0++0    -137.03599980944 (complex)  
+                               005RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   14  RNSTLi  005Y         B2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 005RNSTX 0++0    -137.03599980944 (complex)  
+                               005RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   15  RNSTLi  005Z         A1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 005RNSTY 0++0    -137.03599980944 (complex)  
+                               005RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   16  RNSTH   006X         B1      T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 006RNSTZ 0++0    -137.03599980944 (complex)  
+                               006RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   17  RNSTH   006Y         B2      T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 006RNSTX 0++0    -137.03599980944 (complex)  
+                               006RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   18  RNSTH   006Z         A1      T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 006RNSTY 0++0    -137.03599980944 (complex)  
+                               006RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A1    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A1    * Deleted:          2(Proj:          2, Lindep:          0)
+   S   B1    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+ WARNING : linear symmetry is not implemented for unrestricted kinetic balance yet
+           continue calculation in lower symmetry
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    12
+No. of negative energy orbitals (NPSH):    30
+Total no. of orbitals           (NORB):    42
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Thu May 20 14:55:48 2010
+
+It.   1    -2.489676310811      1.00D+20  0.00D+00  0.00D+00               0.00800002s   Scr. nuclei    Thu May 20
+
+########## START ITERATION NO.   2##########   Thu May 20 14:55:48 2010
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.10%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    0.03%    0.00%    0.00%   0.00400001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01600099s
+
+########## END ITERATION NO.   2 ##########   Thu May 20 14:55:48 2010
+
+It.   2    -7.640613552607      5.15D+00  6.10D-01  1.31D-01               0.01600099s   LL SL          Thu May 20
+
+########## START ITERATION NO.   3##########   Thu May 20 14:55:48 2010
+
+    3 *** Differential density matrix. DCOVLP     = 0.9707
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.10%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    0.06%    0.00%    0.00%   0.00400096s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200098s
+
+########## END ITERATION NO.   3 ##########   Thu May 20 14:55:48 2010
+
+It.   3    -7.645985382934      5.37D-03  4.00D-02  1.73D-02   DIIS   2    0.01200098s   LL SL          Thu May 20
+
+########## START ITERATION NO.   4##########   Thu May 20 14:55:48 2010
+
+    4 *** Differential density matrix. DCOVLP     = 0.9958
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.21%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.00D-12    0.00%    0.50%    0.00%    0.00%   0.00400001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200002s
+
+########## END ITERATION NO.   4 ##########   Thu May 20 14:55:48 2010
+
+It.   4    -7.646131006668      1.46D-04  4.51D-03  3.02D-03   DIIS   3    0.01200002s   LL SL          Thu May 20
+
+########## START ITERATION NO.   5##########   Thu May 20 14:55:48 2010
+
+    5 *** Differential density matrix. DCOVLP     = 0.9983
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.21%    0.00%    0.00%   0.00400096s
+SOfock:SL  1.00D-12    0.00%    0.52%    0.00%    0.00%   0.00400001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200098s
+
+########## END ITERATION NO.   5 ##########   Thu May 20 14:55:48 2010
+
+It.   5    -7.646148219796      1.72D-05  5.63D-04  1.13D-03   DIIS   4    0.01200098s   LL SL          Thu May 20
+
+########## START ITERATION NO.   6##########   Thu May 20 14:55:48 2010
+
+    6 *** Differential density matrix. DCOVLP     = 0.9988
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.31%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.00D-12    0.00%    0.60%    0.00%    0.00%   0.00400102s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200098s
+
+########## END ITERATION NO.   6 ##########   Thu May 20 14:55:48 2010
+
+It.   6    -7.646151736106      3.52D-06  3.94D-04  7.05D-05   DIIS   5    0.01200098s   LL SL          Thu May 20
+
+########## START ITERATION NO.   7##########   Thu May 20 14:55:48 2010
+
+    7 *** Differential density matrix. DCOVLP     = 0.9999
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.34%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    2.34%    0.00%    0.00%   0.00799996s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200104s
+
+########## END ITERATION NO.   7 ##########   Thu May 20 14:55:48 2010
+
+It.   7    -7.646151747476      1.14D-08  2.42D-05  4.13D-06   DIIS   6    0.01200104s   LL SL          Thu May 20
+
+########## START ITERATION NO.   8##########   Thu May 20 14:55:48 2010
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    4.33%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    4.17%    0.00%    0.00%   0.00800002s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01199996s
+
+########## END ITERATION NO.   8 ##########   Thu May 20 14:55:48 2010
+
+It.   8    -7.646151747491      1.59D-11 -1.62D-06  4.74D-07   DIIS   7    0.01199996s   LL SL          Thu May 20
+
+########## START ITERATION NO.   9##########   Thu May 20 14:55:48 2010
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    4.95%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    5.33%    0.00%    0.00%   0.00800103s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200104s
+
+########## END ITERATION NO.   9 ##########   Thu May 20 14:55:48 2010
+
+It.   9    -7.646151747492      1.90D-13 -8.87D-08  2.68D-08   DIIS   8    0.01200104s   LL SL          Thu May 20
+
+########## START ITERATION NO.  10##########   Thu May 20 14:55:48 2010
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    6.81%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   13.65%    0.00%   26.44%   0.00400001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200199s
+
+########## END ITERATION NO.  10 ##########   Thu May 20 14:55:48 2010
+
+It.  10    -7.646151747491     -2.40D-13  6.04D-09  1.51D-09   DIIS   2    0.01200199s   LL SL          Thu May 20
+
+########## START ITERATION NO.  11##########   Thu May 20 14:55:48 2010
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   28.48%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   45.91%    0.00%   50.92%   0.00400001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00800002s
+
+########## END ITERATION NO.  11 ##########   Thu May 20 14:55:48 2010
+
+It.  11    -7.646151747492      6.93D-13 -2.11D-10  3.50D-10   DAMP0.25    0.00800002s   LL SL          Thu May 20
+
+########## START ITERATION NO.  12##########   Thu May 20 14:55:48 2010
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   35.60%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.00D-12    0.00%   57.14%    0.00%   39.72%   0.00400096s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.01200098s
+
+########## END ITERATION NO.  12 ##########   Thu May 20 14:55:48 2010
+
+It.  12    -7.646151747494      1.53D-12 -4.56D-11  1.45D-10   DAMP0.25    0.01200098s   LL SL          Thu May 20
+
+########## START ITERATION NO.  13##########   Thu May 20 14:55:48 2010
+
+   13 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   47.47%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   68.52%    0.00%   31.48%   0.00800002s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00799996s
+
+########## END ITERATION NO.  13 ##########   Thu May 20 14:55:48 2010
+
+It.  13    -7.646151747494      4.19D-13 -3.37D-11  9.15D-11   DAMP0.25    0.00799996s   LL SL          Thu May 20
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-10
+  Allowed convergence:1.000D-07
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -2.489676310811      1.00D+20  0.00D+00  0.00D+00               0.00800002s   Scr. nuclei    Thu May 20
+It.   2    -7.640613552607      5.15D+00  6.10D-01  1.31D-01               0.01600099s   LL SL          Thu May 20
+It.   3    -7.645985382934      5.37D-03  4.00D-02  1.73D-02   DIIS   2    0.01200098s   LL SL          Thu May 20
+It.   4    -7.646131006668      1.46D-04  4.51D-03  3.02D-03   DIIS   3    0.01200002s   LL SL          Thu May 20
+It.   5    -7.646148219796      1.72D-05  5.63D-04  1.13D-03   DIIS   4    0.01200098s   LL SL          Thu May 20
+It.   6    -7.646151736106      3.52D-06  3.94D-04  7.05D-05   DIIS   5    0.01200098s   LL SL          Thu May 20
+It.   7    -7.646151747476      1.14D-08  2.42D-05  4.13D-06   DIIS   6    0.01200104s   LL SL          Thu May 20
+It.   8    -7.646151747491      1.59D-11 -1.62D-06  4.74D-07   DIIS   7    0.01199996s   LL SL          Thu May 20
+It.   9    -7.646151747492      1.90D-13 -8.87D-08  2.68D-08   DIIS   8    0.01200104s   LL SL          Thu May 20
+It.  10    -7.646151747491     -2.40D-13  6.04D-09  1.51D-09   DIIS   2    0.01200199s   LL SL          Thu May 20
+It.  11    -7.646151747492      6.93D-13 -2.11D-10  3.50D-10   DAMP0.25    0.00800002s   LL SL          Thu May 20
+It.  12    -7.646151747494      1.53D-12 -4.56D-11  1.45D-10   DAMP0.25    0.01200098s   LL SL          Thu May 20
+It.  13    -7.646151747494      4.19D-13 -3.37D-11  9.15D-11   DAMP0.25    0.00799996s   LL SL          Thu May 20
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   13 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL SL        :    0.00000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -8.6401606541999278
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :     0.9940089067059045
+
+   Sum of all contributions to the energy
+   Total energy                             :    -7.6461517474940237
+
+
+                               WARNING from EIGCHK
+                               -------------------
+
+       3 positron states intruding
+         30   -37557.70368205        0.02680549
+         29   -37557.71016721        0.02032034
+         28   -37557.72154789        0.00893965
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+-2.327598409339863  ( 2)   -0.294694891128755  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+ 0.036959241231533  ( 2)    0.095201915730959  ( 4)    0.352199781071147  ( 2)    0.493866512189939  ( 2)    0.493873255833568  ( 2)
+ 0.540560113025020  ( 2)    0.705126477419093  ( 2)    3.657506795661023  ( 2)    6.310211091038497  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.03695924 au (symmetry E1 )
+  - E(HOMO) :    -0.29469489 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.33165413 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+   Trond Saue
+
+   First-order ESR properties
+   Hans Joergen Aa. Jensen and Anette Noerager
+
+   MP2 first order properties:
+   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+   Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+   Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+   Joern Thyssen
+
+   Additional contributions from:
+   Thomas Enevoldsen
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+                                                   s0 t0
+----------------------------------------------------------------------------
+    RNSTLi  001X     :     0.00000000D+00 a.u.      T   F
+    RNSTLi  001Y     :    -0.43830267D-01 a.u.      F   F
+    RNSTLi  001Z     :     0.00000000D+00 a.u.      T   F
+    RNSTH   002X     :     0.00000000D+00 a.u.      T   F
+    RNSTH   002Y     :    -0.44037751D-01 a.u.      F   F
+    RNSTH   002Z     :     0.00000000D+00 a.u.      T   F
+    RNSTLi  003X     :    -0.43830267D-01 a.u.      F   F
+    RNSTLi  003Y     :     0.00000000D+00 a.u.      T   F
+    RNSTLi  003Z     :     0.00000000D+00 a.u.      T   F
+    RNSTH   004X     :    -0.44037751D-01 a.u.      F   F
+    RNSTH   004Y     :     0.00000000D+00 a.u.      T   F
+    RNSTH   004Z     :     0.00000000D+00 a.u.      T   F
+    RNSTLi  005X     :     0.00000000D+00 a.u.      T   F
+    RNSTLi  005Y     :     0.00000000D+00 a.u.      T   F
+    RNSTLi  005Z     :     0.00000000D+00 a.u.      F   F
+    RNSTH   006X     :     0.00000000D+00 a.u.      T   F
+    RNSTH   006Y     :     0.00000000D+00 a.u.      T   F
+    RNSTH   006Z     :     0.00000000D+00 a.u.      F   F
+----------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     2                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :    -30..-1,     3..    12                               
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -7.64615174749360449
+* Heading :  LiH                                             Thu May 20 14:55:48 2010
+
+Cpu time:       0.0280 Wall time:       1.0000 used in call to TWOINT(in TWOLO1).
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    2.17%    0.00%   32.61%   0.00000000s
+SOfock:SL  1.00D-12    0.00%    0.55%    0.00%   33.15%   0.00400102s
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK2                                                      
+* Heading :  LiH                                             Thu May 20 14:55:48 2010
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :  LiH                                             Thu May 20 14:55:48 2010
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-YRM1H1       - Symmetry: B1   T-
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.81D-12
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.62D+02
+* Screening threshold in LR solver scaled with norm of property vector:  3.6532D+02
+  and changed to:  1.3928D-09
+
+########## START MICROITERATION NO.   1 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    0.72%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    0.03%    0.00%    0.00%   0.00800002s
+* Trial vectors in this micro iteration:  E-:  0  P-:  1
+
+<<B;B>> at iteration:    1
+--------------------------------------------
+   Freq.:     0.00000000         -3.55346937
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  4.86E-03  0.00E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  6.37E-01  6.37E-01  2.07E-03
+
+* End of microiteration no.    1 after  0.00800002s
+
+########## START MICROITERATION NO.   2 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    2.99%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    4.07%    0.00%    0.00%   0.00800097s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    2
+--------------------------------------------
+   Freq.:     0.00000000         -1.70829586
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.55E+00  1.55E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.55E-01  1.55E-01  1.99E-03
+
+* End of microiteration no.    2 after  0.00800097s
+
+########## START MICROITERATION NO.   3 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    3.30%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    3.74%    0.00%    0.00%   0.00800002s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    3
+--------------------------------------------
+   Freq.:     0.00000000         -1.69756908
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  5.11E-03  5.10E-03  9.11E-05
+
+* End of microiteration no.    3 after  0.00800002s
+
+########## START MICROITERATION NO.   4 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    4.85%    0.00%    5.99%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    6.61%    0.00%    1.84%   0.00400096s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    4
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.42E-05  4.42E-05  7.35E-07
+
+* End of microiteration no.    4 after  0.01200098s
+
+########## START MICROITERATION NO.   5 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    7.74%    0.00%   43.29%   0.00000000s
+SOfock:SL  1.39D-09    0.00%   16.76%    0.00%   26.42%   0.00800002s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    5
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.70E-06  2.70E-06  3.39E-08
+
+* End of microiteration no.    5 after  0.00800002s
+
+########## START MICROITERATION NO.   6 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%   21.36%    0.00%    0.00%   0.00400102s
+SOfock:SL  1.39D-09   87.55%    0.89%    0.00%    8.12%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    6
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  7.56E-07  7.53E-07  7.09E-08
+
+* End of microiteration no.    6 after  0.00400102s
+
+########## START MICROITERATION NO.   7 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%   34.47%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    7
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.99E-07  2.89E-07  7.83E-08
+
+* End of microiteration no.    7 after  0.00400001s
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  7 microiterations
+
+            Freq.(au)   Total norm    E- norm   P- norm 
+========================================================
+* It.  1   0.00800002s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   6.37D-01 |   6.37D-01  2.07D-03
+========================================================
+* It.  2   0.00800097s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.55D-01 |   1.55D-01  1.99D-03
+========================================================
+* It.  3   0.00800002s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   5.10D-03 |   5.10D-03  9.11D-05
+========================================================
+* It.  4   0.01200098s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.42D-05 |   4.42D-05  7.35D-07
+========================================================
+* It.  5   0.00800002s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.70D-06 |   2.70D-06  3.39D-08
+========================================================
+* It.  6   0.00400102s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   7.56D-07 |   7.53D-07  7.09D-08
+========================================================
+* It.  7   0.00400001s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   2.99D-07 |   2.89D-07  7.83D-08
+========================================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-XRM1H1       - Symmetry: B2   T-
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.81D-12
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.62D+02
+* Screening threshold in LR solver scaled with norm of property vector:  3.6532D+02
+  and changed to:  1.3928D-09
+
+########## START MICROITERATION NO.   1 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    0.72%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    0.03%    0.00%    0.00%   0.00800103s
+* Trial vectors in this micro iteration:  E-:  0  P-:  1
+
+<<B;B>> at iteration:    1
+--------------------------------------------
+   Freq.:     0.00000000         -3.55346937
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  4.86E-03  0.00E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  6.37E-01  6.37E-01  2.07E-03
+
+* End of microiteration no.    1 after  0.00800103s
+
+########## START MICROITERATION NO.   2 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    2.99%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    4.07%    0.00%    0.00%   0.00800002s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    2
+--------------------------------------------
+   Freq.:     0.00000000         -1.70829586
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.55E+00  1.55E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.55E-01  1.55E-01  1.99E-03
+
+* End of microiteration no.    2 after  0.00800002s
+
+########## START MICROITERATION NO.   3 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    3.30%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    3.74%    0.00%    0.00%   0.00400001s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    3
+--------------------------------------------
+   Freq.:     0.00000000         -1.69756908
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  5.11E-03  5.10E-03  9.11E-05
+
+* End of microiteration no.    3 after  0.00800097s
+
+########## START MICROITERATION NO.   4 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    4.85%    0.00%    5.99%   0.00000000s
+SOfock:SL  1.39D-09    0.00%    6.61%    0.00%    1.84%   0.00400001s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    4
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.42E-05  4.42E-05  7.35E-07
+
+* End of microiteration no.    4 after  0.01200098s
+
+########## START MICROITERATION NO.   5 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%    7.74%    0.00%   43.29%   0.00000000s
+SOfock:SL  1.39D-09    0.00%   16.76%    0.00%   26.42%   0.00800002s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    5
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.70E-06  2.70E-06  3.39E-08
+
+* End of microiteration no.    5 after  0.00800002s
+
+########## START MICROITERATION NO.   6 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%   21.36%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.39D-09   87.55%    0.89%    0.00%    8.12%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    6
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  7.56E-07  7.53E-07  7.09E-08
+
+* End of microiteration no.    6 after  0.00400001s
+
+########## START MICROITERATION NO.   7 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.39D-09    0.00%   34.47%    0.00%    0.00%   0.00400102s
+SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00000000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    7
+--------------------------------------------
+   Freq.:     0.00000000         -1.69755718
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  1.57E+00  1.57E+00  4.86E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.99E-07  2.89E-07  7.83E-08
+
+* End of microiteration no.    7 after  0.00400102s
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  7 microiterations
+
+            Freq.(au)   Total norm    E- norm   P- norm 
+========================================================
+* It.  1   0.00800103s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   6.37D-01 |   6.37D-01  2.07D-03
+========================================================
+* It.  2   0.00800002s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.55D-01 |   1.55D-01  1.99D-03
+========================================================
+* It.  3   0.00800097s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   5.10D-03 |   5.10D-03  9.11D-05
+========================================================
+* It.  4   0.01200098s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.42D-05 |   4.42D-05  7.35D-07
+========================================================
+* It.  5   0.00800002s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.70D-06 |   2.70D-06  3.39D-08
+========================================================
+* It.  6   0.00400001s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   7.56D-07 |   7.53D-07  7.09D-08
+========================================================
+* It.  7   0.00400102s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   2.99D-07 |   2.89D-07  7.83D-08
+========================================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-ZRM1H1       - Symmetry: A2   T-
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.81D-12
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.62D+02
+* Screening threshold in LR solver scaled with norm of property vector:  2.9312D+02
+  and changed to:  1.1175D-09
+
+########## START MICROITERATION NO.   1 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%    0.52%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.12D-09    0.00%    0.03%    0.00%    0.00%   0.00800103s
+* Trial vectors in this micro iteration:  E-:  0  P-:  1
+
+<<B;B>> at iteration:    1
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765066
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  0.00E+00  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.98E-03  1.93E-04  1.97E-03
+
+* End of microiteration no.    1 after  0.00800103s
+
+########## START MICROITERATION NO.   2 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%    5.57%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.12D-09    0.00%    5.13%    0.00%    7.46%   0.00400001s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    2
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765065
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  3.07E-05  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.80E-05  1.80E-05  2.69E-07
+
+* End of microiteration no.    2 after  0.00800002s
+
+########## START MICROITERATION NO.   3 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%    8.05%    0.00%   43.14%   0.00000000s
+SOfock:SL  1.12D-09    0.00%   18.80%    0.00%   22.00%   0.00400102s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    3
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765065
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  4.50E-05  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.52E-05  1.52E-05  4.06E-08
+
+* End of microiteration no.    3 after  0.01200098s
+
+########## START MICROITERATION NO.   4 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%   10.73%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.12D-09    0.69%   21.62%    0.00%   24.18%   0.00400001s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    4
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765065
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  5.71E-05  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.59E-06  4.59E-06  7.93E-08
+
+* End of microiteration no.    4 after  0.00800002s
+
+########## START MICROITERATION NO.   5 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%   17.96%    0.00%   41.02%   0.00000000s
+SOfock:SL  1.12D-09   15.67%   23.66%    0.00%   40.53%   0.00400096s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+
+<<B;B>> at iteration:    5
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765065
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  6.00E-05  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.36E-06  1.36E-06  2.69E-08
+
+* End of microiteration no.    5 after  0.00800097s
+
+########## START MICROITERATION NO.   6 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%   28.07%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.12D-09   77.83%    4.90%    0.00%   15.89%   0.00400001s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    6
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765065
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  6.02E-05  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.58E-07  3.56E-07  2.88E-08
+
+* End of microiteration no.    6 after  0.00400001s
+
+########## START MICROITERATION NO.   7 ##########   Thu May 20 14:55:49 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.12D-09    0.00%   38.80%    0.00%    0.00%   0.00000000s
+SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.00400001s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+
+<<B;B>> at iteration:    7
+--------------------------------------------
+   Freq.:     0.00000000         -2.28765065
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.90E-03  6.01E-05  3.90E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.37E-07  1.34E-07  2.81E-08
+
+* End of microiteration no.    7 after  0.00400001s
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  7 microiterations
+
+            Freq.(au)   Total norm    E- norm   P- norm 
+========================================================
+* It.  1   0.00800103s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.98D-03 |   1.93D-04  1.97D-03
+========================================================
+* It.  2   0.00800002s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.80D-05 |   1.80D-05  2.69D-07
+========================================================
+* It.  3   0.01200098s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.52D-05 |   1.52D-05  4.06D-08
+========================================================
+* It.  4   0.00800002s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   4.59D-06 |   4.59D-06  7.93D-08
+========================================================
+* It.  5   0.00800097s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.36D-06 |   1.36D-06  2.69D-08
+========================================================
+* It.  6   0.00400001s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.57D-07 |   3.56D-07  2.88D-08
+========================================================
+* It.  7   0.00400001s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.37D-07 |   1.34D-07  2.81D-08
+========================================================
+
+
+                          Linear response; final output
+                          -----------------------------
+
+
+<<A( 1),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP001Li  B1 Y     B1   T-
+   B - LAO-YRM1H1           B1   T-
+-----------------------------------------------------------------------------------------------
+   -1.533471411654 a.u. at frequency      0.00000000 a.u.    8.20E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP002H   B1 Y     B1   T-
+   B - LAO-YRM1H1           B1   T-
+-----------------------------------------------------------------------------------------------
+   -0.391963385538 a.u. at frequency      0.00000000 a.u.    8.20E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP003Li  B2 X     B2   T-
+   B - LAO-XRM1H1           B2   T-
+-----------------------------------------------------------------------------------------------
+   -1.533471411653 a.u. at frequency      0.00000000 a.u.    8.20E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 4),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP004H   B2 X     B2   T-
+   B - LAO-XRM1H1           B2   T-
+-----------------------------------------------------------------------------------------------
+   -0.391963385538 a.u. at frequency      0.00000000 a.u.    8.20E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 5),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP005Li  A2 Z     A2   T-
+   B - LAO-ZRM1H1           A2   T-
+-----------------------------------------------------------------------------------------------
+   -1.754000113373 a.u. at frequency      0.00000000 a.u.    4.68E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 6),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP006H   A2 Z     A2   T-
+   B - LAO-ZRM1H1           A2   T-
+-----------------------------------------------------------------------------------------------
+   -0.521387956112 a.u. at frequency      0.00000000 a.u.    4.68E-10   (converged)
+-----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------
+
+
+            *********************************************************
+            **************** DIRAC  - NMR SHIELDINGS ****************
+            *********************************************************
+
+  ------------------------------------------------------------------------
+
+
+  Chemical shielding for Li    :
+  ==============================
+
+
+  Shielding constant:     84.9466 ppm
+  Anisotropy:             12.6844 ppm
+  Span:                   12.6844 ppm
+  Asymmetry:               0.0000    
+  Skew:                    1.0000    
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                  Bx             By             Bz
+
+  Li  x     80.71845453    -0.00000000     0.00000000
+  Li  y      0.00000000    80.71845453     0.00000000
+  Li  z     -0.00000000     0.00000000    93.40288088
+
+
+  e-p "diamagnetic" and e-e "paramagnetic" contributions (ppm):
+  -------------------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  Li  x     97.7579     0.0000     0.0000       -16.0984    -0.0000    -0.0000
+  Li  y      0.0000    97.7579     0.0000        -0.0000   -16.0984    -0.0000
+  Li  z      0.0000     0.0000    93.3314         0.0000     0.0000     0.0715
+
+ e-p "diamagnetic" contribution:     96.282375         e-e "paramagnetic":     -10.708463
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  Li  x      0.0000    -0.0000     0.0000        80.7185     0.0000    -0.0000
+  Li  y      0.0000     0.0000    -0.0000         0.0000    80.7185     0.0000
+  Li  z     -0.0000     0.0000     0.0000        -0.0000     0.0000    93.4029
+
+
+  Principal values and axes:
+  --------------------------
+
+  Li    1    165.665051  =   84.95  +  80.72:     1.000000  0.000000  0.000000
+  Li    2    165.665051  =   84.95  +  80.72:     0.000000  1.000000  0.000000
+  Li    3    178.349478  =   84.95  +  93.40:     0.000000  0.000000  1.000000
+
+
+  Chemical shielding for H     :
+  ==============================
+
+
+  Shielding constant:     24.4973 ppm
+  Anisotropy:              4.9010 ppm
+  Span:                    4.9010 ppm
+  Asymmetry:               0.0000    
+  Skew:                    1.0000    
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                  Bx             By             Bz
+
+  H   x     22.86362423    -0.00000000     0.00000000
+  H   y     -0.00000000    22.86362423     0.00000000
+  H   z      0.00000000    -0.00000000    27.76461460
+
+
+  e-p "diamagnetic" and e-e "paramagnetic" contributions (ppm):
+  -------------------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  H   x     21.2138     0.0000     0.0000        -0.3412    -0.0000    -0.0000
+  H   y      0.0000    21.2138     0.0000        -0.0000    -0.3412    -0.0000
+  H   z      0.0000     0.0000    27.7564         0.0000     0.0000     0.0082
+
+ e-p "diamagnetic" contribution:     23.394657         e-e "paramagnetic":      -0.224731
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  H   x      0.0000    -0.0000    -0.0000        22.8636    -0.0000     0.0000
+  H   y      0.0000     0.0000     0.0000        -0.0000    22.8636    -0.0000
+  H   z      0.0000    -0.0000     0.0000         0.0000    -0.0000    27.7646
+
+
+  Principal values and axes:
+  --------------------------
+
+  H     1     47.360912  =   24.50  +  22.86:     1.000000  0.000000  0.000000
+  H     2     47.360912  =   24.50  +  22.86:     0.000000  1.000000  0.000000
+  H     3     52.261902  =   24.50  +  27.76:     0.000000  0.000000  1.000000
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+ Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+
+@            isotropic shielding
+@        ----------------------------
+@atom       total       dia      para      skew      span      anis      asym
+@----------------------------------------------------------------------------
+@Li       84.9466   -0.6273   85.5739    1.0000   12.6844   12.6844    0.0000
+@H        24.4973    1.3274   23.1699    1.0000    4.9010    4.9010    0.0000
+@----------------------------------------------------------------------------
+
+
+ 
+     Date and time (Linux)  : Thu May 20 14:55:49 2010 
+     Host name              :                                         
+>>>> Node 0, utime: 0, stime: 0, minflt: 126704, majflt: 0, nvcsw: 0, nivcsw: 18, maxrss: 0
+>>>> Total WALL time used in DIRAC: 1s
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
