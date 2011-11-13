@@ -1,7 +1,7 @@
 /*
  *
- * VERSION : $Revision: 1.2.12.1 $
- * DATE    : $Date: 2004/08/31 12:57:26 $
+ * VERSION : $Revision: 7613 $
+ * DATE    : $Date: 2008-09-08 22:32:16 +0200 (Mon, 08 Sep 2008) $
  * FILE    : patchlevel.h
  *
  */
@@ -9,8 +9,8 @@
 #define __PATCHLEVEL_H_
 
 #define VER_STR "Dirac"
-#define MAJOR_REV 4
-#define MINOR_REV 0
+#define MAJOR_REV  8
+#define MINOR_REV  0
 #define PATCHLEVEL 0
 
 #endif /*  __PATCHLEVEL_H_ */

@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.10.12.1 $
-C DATE    : $Date: 2004/09/01 08:10:58 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : mempkg.F
 C
 C
@@ -76,7 +64,7 @@ C  /* Deck membkd */
       DATA LUWMEM,LUEMEM /6,6/
       END
 C  /* Deck memget */
-      SUBROUTINE MEMGET(TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
+      SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
 C
 C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
@@ -88,7 +76,7 @@ C
 C     Memory allocation
 C
 #include "implicit.h"
-      CHARACTER*(*) TYPE
+      CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
 C
 #include "iratdef.h"
@@ -104,26 +92,26 @@ C
       DATA          MEMID(1) /1234567890/
 C
 Chj1  CALL QENTER('MEMGET  ')
-      IF (TYPE(1:4) .EQ. 'REAL') THEN
+      IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
          LREAL = LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
          LREAL = (LENGTH-1)/IRAT2 + 1
-      ELSE IF (TYPE(1:4) .EQ. 'WORK') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
          LREAL  = LENGTH
       ELSE
          CALL QENTER('MEMGET  ')
          WRITE (LUWMEM,'(/2A)')
-     *      ' MEMGET ERROR, illegal type :',TYPE
+     *      ' MEMGET ERROR, illegal type :',DATA_TYPE
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,'(/2A)')
-     *         ' MEMGET ERROR, illegal type :',TYPE
+     *         ' MEMGET ERROR, illegal type :',DATA_TYPE
             CALL QTRACE(LUEMEM)
          END IF
          CALL QUIT('MEMGET ERROR, illegal type')
@@ -413,7 +401,7 @@ C     end of MEMCHK
 C
       END
 C  /* Deck memopt */
-      SUBROUTINE MEMOPT(TYPE,KBASE,LENGTH,WORK,KFREE,LFREE,ALLOC)
+      SUBROUTINE MEMOPT(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE,ALLOC)
 C
 C     Almost indentical to MEMGET. Luuk Visscher 21-10-1997.
 C     Updated to optimized version. J. Thyssen Aug 25 1998
@@ -421,7 +409,7 @@ C
 C     Memory allocation
 C
 #include "implicit.h"
-      CHARACTER*(*) TYPE
+      CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
@@ -437,26 +425,26 @@ C
       SAVE          MEMID
       DATA          MEMID(1) /1234567890/
 C
-      IF (TYPE(1:4) .EQ. 'REAL') THEN
+      IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
          LREAL = LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
          LREAL = (LENGTH-1)/IRAT2 + 1
-      ELSE IF (TYPE(1:4) .EQ. 'WORK') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
          LREAL  = LENGTH
       ELSE
          CALL QENTER('MEMOPT  ')
          WRITE (LUWMEM,'(/2A)')
-     *      ' MEMOPT ERROR, illegal type :',TYPE
+     *      ' MEMOPT ERROR, illegal type :',DATA_TYPE
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,'(/2A)')
-     *         ' MEMOPT ERROR, illegal type :',TYPE
+     *         ' MEMOPT ERROR, illegal type :',DATA_TYPE
             CALL QTRACE(LUEMEM)
          END IF
          CALL QUIT('MEMOPT ERROR, illegal type')

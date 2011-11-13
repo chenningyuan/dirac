@@ -6,7 +6,7 @@
 !       IPRLTYP - symmetry of scalar operator under matrix transpose (-1,0,1)
 !
       INTEGER MAXPRPLBL
-      PARAMETER (MAXPRPLBL = 200)
+      PARAMETER (MAXPRPLBL = 400)
 
       CHARACTER*8 PRPLBL(MAXPRPLBL)
       CHARACTER*4 PDOINT(MAXPRPLBL)

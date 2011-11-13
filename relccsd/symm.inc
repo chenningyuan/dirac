@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision: 1.16 $
-C DATE    : $Date: 2003/08/25 14:54:04 $
+C VERSION : $Revision: 6132 $
+C DATE    : $Date: 2007-08-29 11:53:01 +0200 (Wed, 29 Aug 2007) $
 C FILE    : symm.inc
 C
 C     The essential double group symmetry information.
@@ -10,6 +10,11 @@ C     subgroup. It is doubled at some places (MULTB) where we need
 C     both kind of irreps at the same time. Usually loops run
 C     only over either fermion or boson irreps at a time.
 C
+!
+!     NAOPI,NAVPI - orbitals per Abelian symmetry assigned for the IH-FSCC Pi space
+!         MXREP is from symm.inc
+!
+
       PARAMETER (MXREP=32)
       COMMON /SYMI/ NZ,NSYMRP,NREP,MULTB(MXREP*2,MXREP*2,2)
       COMMON /SYMC/ REPN(16),REPNA(MXREP*2) 
@@ -35,6 +40,7 @@ C     Pointers for symmetry packed arrays.
      &               IVO(MXREP+1),IVV(MXREP+1),JVOXX(MXREP+1),
      & JOOOO(MXREP+1),JVOOO(MXREP+1),JVVOO(MXREP+1),JVOVO(MXREP+1),
      & J2VOVO(MXREP+1),J2VOOO(MXREP+1),
+     & J2VOVV(MXREP+1),J2OOOO(MXREP+1),J2VVOO(MXREP+1),J2VVVO(MXREP+1),
      & IOOOOTT(MXREP+1),IVOOOT(MXREP+1),IVVOOTT(MXREP+1),IVOVO(MXREP+1),
      & IVVOO(MXREP+1),IVVOOT(MXREP+1),
      & KVVOOT(MXREP+1),KOOOVT(MXREP+1),KVOOV(MXREP+1),KVOOO(MXREP+1),
@@ -48,17 +54,20 @@ C     Pointers for symmetry packed arrays.
      & KKOOOT(MXREP,MXREP),KKVVOT(MXREP,MXREP),
      & KKVOO(MXREP,MXREP),KKOOVT(MXREP,MXREP),
      & LLOOOT(MXREP,MXREP),LLVOOT(MXREP,MXREP),LLOVO(MXREP,MXREP),
+     & LOOVVT(MXREP+1),LVOVVT(MXREP+1),
      & LLOVVT(MXREP,MXREP),LLVVVT(MXREP,MXREP),
      & IVVVT(MXREP+1,MXREP),JVVVT(MXREP+1,MXREP),IVVVTMX,
      & NT3VVT(MXREP),NT3VVVT(MXREP),LLT3VVVT(MXREP,MXREP)
 C     For Fock space : we now have 4 classes of spinors
       COMMON /SYMFSD/ NIO(MXREP),NIV(MXREP),NAO(MXREP),NAV(MXREP),
      &                NSO(MXREP),NSV(MXREP),
+     &                NAOPI(MXREP),NAVPI(MXREP), 
      & NIVIO(MXREP),NAVAO(MXREP),NAVSO(MXREP),NSOAV(MXREP),NAOV(MXREP),
      & MAOAV(MXREP),
      & NIOIOT(MXREP),NAOAOT(MXREP),NAVAVT(MXREP),NIVIVT(MXREP),
      & NIVIVIOT(MXREP),NIOIOIVT(MXREP),NSVSVT(MXREP),NSOSOT(MXREP),
-     & NSVSVOT(MXREP),NVSOSOT(MXREP),NAOSOSOT(MXREP),NSVSVAVT(MXREP)
+     & NSVSVOT(MXREP),NVSOSOT(MXREP),NAOSOSOT(MXREP),NSVSVAVT(MXREP),
+     & LTSHFS
       COMMON /SYMFSP/ IAVAV(MXREP+1),IAOAO(MXREP+1),IAVSO(MXREP+1),
      & KIVIVIOAVT(MXREP+1),KIOIOIVAOT(MXREP+1),KVVOAVT(MXREP+1),
      & KSVSVAVAVT(MXREP+1),LAOAOSOSOT(MXREP+1),
@@ -67,4 +76,5 @@ C     For Fock space : we now have 4 classes of spinors
      & JJAOAV(MXREP,MXREP),
      & KKIOIOIVT(MXREP,MXREP),KKSVSVOT(MXREP,MXREP),
      & KKSVSVAVT(MXREP,MXREP),
-     & LLVSOSOT(MXREP,MXREP),LLAOSOSOT(MXREP,MXREP)
+     & LLVSOSOT(MXREP,MXREP),LLAOSOSOT(MXREP,MXREP),
+     & NFS_HE(MXREP,6),IFS_HE(MXREP+1,6),IFS_HE2(MXREP+1,6)

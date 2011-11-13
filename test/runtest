@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
+#
+BIN_DIR=/home/ulfek/work/preprelease
 #
 #
-# VERSION : $Revision: 1.27.2.3 $
-# DATE    : $Date: 2004/09/01 09:46:18 $
+# VERSION : $Revision: 7753 $
+# DATE    : $Date: 2008-09-17 15:03:43 +0200 (Wed, 17 Sep 2008) $
 # FILE    : runtest
 #
 # (c) 1998 J. Thyssen
@@ -11,12 +13,25 @@
 #
 # predefined restricted test sequences:
 # note that the variable RUNTYPE (with values short, medium and long) is also used to 
-# distinguish between different runs residing in one directory. The present definition is coarse grain and serves to
+# distinguish between different runs residing in one directory.
+# The present definition is coarse grain and serves to
 # exclude directories without a short run
 #
-short_test="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 30.linear 31.symmetry_recognition"
-medium_test="$short_test 2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 25.qrpa 32.prjana 33.frozen 36.mp2_properties"
-long_test="$medium_test 24.lucita_large 34.rhonuc"
+# Some tests do not work in parallel (yet); the "*_partest" are the short, medum
+# and long tests for parallel runs.
+#
+short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short 25.qrpa 30.linear 37.bss.energies 38.london.magn_prop 39.gaunt 40.dft_ac 49.xyzinput"
+short_test="$short_partest"
+
+medium_partest="2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 31.symmetry_recognition 32.prjana 33.frozen 36.mp2_properties"
+medium_test="$short_test $medium_partest 27.krmc_luciarel 54.stex"
+# 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
+medium_partest="$short_partest $medium_partest"
+
+long_partest="24.lucita_large 26.krmc_gosci 34.rhonuc 41.pv_nmr 46.dft_response"
+long_test="$medium_test $long_partest"
+long_partest="$medium_partest $long_partest"
+
 benchmark_test="29.benchmark_cc"
 # all_test takes all directories (and will fail if filters or output are absent !)
 all_test=
@@ -53,23 +68,31 @@ usage () {
    $echo '\tPrint version of runtest'
    $echo '--tests="tests to run"'
    $echo '\tChoose which tests to run (default: short)'
+   $echo '--runtype="type of tests to run"'
+   $echo '\tWhen tests are specified with number,
+        choose the type (short,medium...) '
    $echo '--pampath="path to pam script"'
    $echo '\tSet path to pam script'
    $echo '--dirac="executable"'
    $echo '\tSpecify which dirac.x should be used'
    $echo '--run="tag"'
-   $echo '\tLabel the output (default: out)'
+   $echo '\tLabel the output (default: runtest)'
    $echo '--mpi="number of slaves"'
    $echo '\tRun test in parallell under MPI'
+   $echo '--nice'
+   $echo '\texecute Dirac with nice/npri'
    $echo
 }
 
 # next line defines default test series
+#
 arg_tests=short
-arg_pampath=
-arg_dirac=
+arg_pampath=$BIN_DIR
+arg_dirac=$BIN_DIR/dirac.x
 arg_tag=runtest
 arg_mpi=
+arg_nice=
+RUNTYPE=undefined
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -98,8 +121,8 @@ while [ $# != 0 ]; do
          ;;
       "version")
          echo $0
-         echo '$Revision: 1.27.2.3 $'
-         echo '$Date: 2004/09/01 09:46:18 $'
+         echo '$Revision: 7753 $'
+         echo '$Date: 2008-09-17 15:03:43 +0200 (Wed, 17 Sep 2008) $'
          exit
          ;;
       "tests")
@@ -109,6 +132,14 @@ while [ $# != 0 ]; do
             exit 1
          fi
          arg_tests="$val"
+         ;;
+      "runtype")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         RUNTYPE="$val" ; export RUNTYPE
          ;;
       "mpi")
          if [ "${valomitted}" = "yes" ]; then
@@ -133,6 +164,9 @@ while [ $# != 0 ]; do
             exit 1
          fi
          arg_tag="$val"
+         ;;
+      "nice")
+         arg_nice="-nice"
          ;;
       "pampath")
          if [ "${valomitted}" = "yes" ]; then
@@ -165,31 +199,51 @@ echo
 if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
       "short")
-         tests=$short_test;
-         RUNTYPE="short"; export RUNTYPE
+         if [ -n "$arg_mpi" ]; then
+            echo "Running <<short>> parallel tests ..."
+            tests=$short_partest;
+         else
+            echo "Running <<short>> sequential tests ..."
+            tests=$short_test;
+         fi
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="short" ; export RUNTYPE; fi
          ;;
       "medium")
          tests=$medium_test;
-         RUNTYPE="medium"; export RUNTYPE
+         if [ -n "$arg_mpi" ]; then
+            echo "Running <<medium>> parallel tests ..."
+            tests=$medium_partest;
+         else
+            echo "Running <<medium>> sequential tests ..."
+            tests=$medium_test;
+         fi
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="medium" ; export RUNTYPE; fi
          ;;
       "long")
          tests=$long_test;
-         RUNTYPE="long"; export RUNTYPE
+         if [ -n "$arg_mpi" ]; then
+            echo "Running <<long>> parallel tests ..."
+            tests=$long_partest;
+         else
+            echo "Running <<long>> sequential tests ..."
+            tests=$long_test;
+         fi
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="long" ; export RUNTYPE; fi
          ;;
       "benchmark")
          tests=$benchmark_test;
-         RUNTYPE="benchmark"; export RUNTYPE
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="benchmark" ; export RUNTYPE; fi
          ;;
       "small_benchmark")
          tests=$benchmark_test;
-         RUNTYPE="small_benchmark"; export RUNTYPE
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="small_benchmark" ; export RUNTYPE; fi
          ;;
       "large_benchmark")
          tests=$benchmark_test;
-         RUNTYPE="large_benchmark"; export RUNTYPE
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="large_benchmark" ; export RUNTYPE; fi
          ;;
       "all")
-         tests=$all_test
+         tests=$all_test;
          ;;
       *)
 #        hjaaj: extract and test users list of tests
@@ -214,8 +268,21 @@ if [ ! -z "$arg_tests" ]; then
          ;;
    esac
 else
-   tests=$short_test
+   if [ -n "$arg_mpi" ]; then
+      echo "Running default: <<short>> parallel tests ..."
+      tests=$short_partest;
+   else
+      echo "Running default: <<short>> sequential tests ..."
+      tests=$short_test;
+   fi
 #  tests=$all_test
+fi
+#
+# default to RUNTYPE="short" /hjaaj 070111
+#
+if [ $RUNTYPE = "undefined" ]; then
+   RUNTYPE="short" ; export RUNTYPE
+   echo "RUNTYPE defaults to short"
 fi
 
 echo
@@ -252,10 +319,10 @@ export HOSTS
 echo 
 echo "Running tests on host : $HOSTS ..."
 echo
-$echo " Using tests: $tests \c"
+$echo "Using tests: $tests \c"
 echo
 
-if [ -f logs/${arg_tag}_dif.txt ]; then
+if [ -e logs/${arg_tag}_dif.txt ]; then
    rm logs/${arg_tag}_dif.txt
 fi
 
@@ -265,7 +332,7 @@ for tt in $tests; do
       exit 1
    fi
    echo
-   echo 'Running test '$tt
+   echo '*****> Running test '$tt
    echo
    if [ -r $tt/README ]; then
       cat $tt/README
@@ -276,6 +343,7 @@ for tt in $tests; do
      MPIARG=$arg_mpi; export MPIARG; \
      DIRAC=$arg_dirac; export DIRAC; \
      TAG=$arg_tag; export TAG; \
+     NICE=$arg_nice; export NICE; \
      ./run.sh; \
      cd .. )  
 done

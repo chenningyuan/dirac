@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.8.12.1 $
-C DATE    : $Date: 2004/09/01 08:10:58 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : qpack.F
 C
 C
@@ -119,9 +107,10 @@ C
 #include "priunit.h"
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8  QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+#include "qnames.h"
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8  QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
 C
 Chj1  CHARACTER*8  IDENT8, BLANK8
 Chj1  PARAMETER (BLANK8 = '        ')
@@ -144,7 +133,9 @@ C
 Chj1  IDENT8 = IDENT//BLANK8
 Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
 Cjth: check only first 8 letters in IDENT
-      ICHECK = MIN(8,LEN(IDENT))
+CMI   ICHECK = MIN(8,LEN(IDENT))
+CMI ... keep this length in "qnames.h" as well
+      ICHECK = MIN(30,LEN(IDENT))
       IF (QNAMES(LEVELQ) .EQ. IDENT(1:ICHECK)) THEN
          LEVELQ = LEVELQ - 1
       ELSE
@@ -172,9 +163,10 @@ C
 C  /* Deck qbdinit */
       BLOCK DATA QBDINIT
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8  QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8  QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
+#include "qnames.h"
 C
       DATA LEVELQ, LQTREE /0, 0/
       DATA QNAMES /MXQLVL*'-noname-'/
@@ -183,9 +175,10 @@ C  /* Deck qdump */
       SUBROUTINE QDUMP(LUPRI)
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8   QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+CMI   PARAMETER (MXQLVL = 100)
+CMI   CHARACTER*8   QNAMES(MXQLVL)
+CMI   COMMON /QSTACC/ QNAMES
+#include "qnames.h"
 C
       IF (LEVELQ .GT. 0) THEN
          WRITE (LUPRI,'(//A)')
@@ -201,27 +194,33 @@ C  1-Mar-1989 Hans Joergen Aa. Jensen
 C
 C  Printe traceback from Q stack
 C
+      CHARACTER BLA*1
       COMMON /QSTACK/ LEVELQ, LQTREE
-      PARAMETER (MXQLVL = 100)
-      CHARACTER*8   QNAMES(MXQLVL)
-      COMMON /QSTACC/ QNAMES
+#include "qnames.h"
 C
+#if defined (SYS_LINUX)
+C aspg, replacing trace with os-provided traceback facilities. linux support for now  
+C 3 = pretty print traceback to stdout...
+      CALL GET_TRACEBACK_INFO (3,BLA,1)
+#else
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
-     *   ' ====================',
-     *   '      level    module',
-     *   ' ===================='
+     *   ' =============================================',
+     *   ' level    module',
+     *   ' ============================================='
       DO 100 I = LEVELQ,1,-1
          IF (I .LE. MXQLVL) THEN
-            WRITE (LUPRI,'(I11,4X,A)') I,QNAMES(I)
+            WRITE (LUPRI,'(I3,4X,A)') I,QNAMES(I)
          ELSE
-            WRITE (LUPRI,'(I11,4X,A)') I,'not recorded'
+            WRITE (LUPRI,'(I3,4X,A)') I,'not recorded'
          END IF
   100 CONTINUE
-      WRITE (LUPRI,'(A/)') ' ===================='
+      WRITE (LUPRI,'(A/)')
+     & ' ==============================================='
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL TRACE
+#endif /* SYS_LINUX */
  9000 CONTINUE
       RETURN
       END

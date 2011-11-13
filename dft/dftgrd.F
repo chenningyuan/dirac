@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT,TEST)
+      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
@@ -51,10 +39,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftcom.h"
 #include "symmet.h"
 #include "ccom.h"
-      PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
-      LOGICAL TEST
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 #include "dftwrk.h"
 
@@ -71,33 +56,20 @@ C     ********************************
 C     ***** Set up common blocks *****
 C     ********************************
 C
-C     INFOA
+C     INFOA has been replaced
 C     =====
-      NAT = 0
-      NUM = NBASIS
-      DO ICENT = 1, NUCIND
-         MULCNT = ISTBNU(ICENT)
-         ZCNT   = CHARGE(ICENT)
-         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-           DO ISYMOP = 0, MAXOPR         
-           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-             NAT = NAT + 1
-             ZAN(NAT) = ZCNT
-             C(1,NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-             C(2,NAT) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-             C(3,NAT) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-           ENDIF
-           ENDDO
-         ENDIF
-      ENDDO
+
+      CALL MEMGET('REAL',KZAN,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KC  ,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL SET_GRID_INFO(NAT,NUM,WORK(KZAN),WORK(KC))
 C
 C     DFTWRK
 C     ======
 C
-      RNDMAX = 20.0D0
-      RADERR = RADINT
+      RNDMAX  = 20.0D0
+      RADERR  = RADINT
       NSCHEME = ANGINT
-      LEBMIN = ANGMIN
+      LEBMIN  = ANGMIN
 
 C
 C     *******************************************
@@ -105,10 +77,10 @@ C     ***** Prepare arguments for CONSTRUCT *****
 C     *******************************************
 C
 CTROND      IBIG  = 100000
-      IBIG  = 1000000
-      IVECL = 100
-      NNAT  = NAT*(NAT-1)/2
-      N2AT = NAT*NAT 
+      IBIG    = 1000000
+      IVECL   = 100
+      NNAT    = NAT*(NAT-1)/2
+      N2AT    = NAT*NAT 
 
       CALL MEMGET('REAL',KSP   ,4*NUM    ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KX8   ,IBIG     ,WORK,KFREE,LFREE)
@@ -135,11 +107,33 @@ C
 C     Open unit LUQUAD
 C     ================
 C
-CTROND      LUQUAD = 29
       LUQUAD = 44
-      OPEN(LUQUAD,FORM='UNFORMATTED',STATUS='UNKNOWN',
-     &     ACCESS='SEQUENTIAL',FILE='DIRAC.QUAD')
+      IF(import_grid) THEN
+        OPEN(LUQUAD,
+     &       FORM   = 'FORMATTED',
+     &       STATUS = 'UNKNOWN',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FILE   =  GRIDFILE)
+      ELSE
+        OPEN(LUQUAD,
+     &       FORM   = 'UNFORMATTED',
+     &       STATUS = 'UNKNOWN',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FILE   = 'DIRAC.QUAD')
+      ENDIF
       REWIND LUQUAD
+
+      if (import_grid) go to 999
+
+      if (export_grid) then
+        OPEN(LUQUAD+1,
+     &       FORM   = 'FORMATTED',
+     &       STATUS = 'UNKNOWN',
+     &       ACCESS = 'SEQUENTIAL',
+     &       FILE   =  GRIDFILE)
+        rewind luquad+1
+      end if
+
 C
 C     Calculate abscissas and weights
 C     ===============================
@@ -149,16 +143,20 @@ C
      &              WORK(KXMUJN),WORK(KXMUJ2),
      &              WORK(KRIJ),WORK(KAIJ),IVECL,IBIG,
      &              WORK(KRBC),WORK(KRVEC),
-     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),LUQUAD,
+     &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),
+     &              NAT,NUM,WORK(KZAN),WORK(KC),LUQUAD,
      &              IPRINT,WORK(KFREE),LFREE)
-
-      IF (TEST) CALL DFTEST(WORK,LWORK,IBIG,LUQUAD,IPRINT)
 C
 C     Close unit LUQUAD
 C     =================
 C
 C     CLOSE(LUQUAD,STATUS='KEEP')
 C
+
+
+
+
+
 
 C
 C     Check accuracy of numerical integration
@@ -173,6 +171,10 @@ C
       CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
       WRITE (LUPRI,'(1X)')
 
+C call to memrel here?
+
+ 999  CONTINUE
+
       RETURN
       END
 
@@ -181,7 +183,8 @@ C                                                                      C
 C  /* Deck construc */
       SUBROUTINE CONSTRUC(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
      &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
-     &                    NUCORB,AA,DMAT,CHIMT,LUQUAD,IPRINT,WORK,LWORK)
+     &                    NUCORB,AA,DMAT,CHIMT,
+     &                    NAT,NUM,ZAN,C,LUQUAD,IPRINT,WORK,LWORK)
 C                                                                      C
 C      Creates a quadrature grid and writes it to disk                 C
 C      Original version by C.W.Murray. Rewritten by                    C
@@ -200,12 +203,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL SWITCH
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
-      PARAMETER (MAXCEN=100)
       CHARACTER SPDCAR*1
 
 #include "dftwrk.h"
 
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
+      DIMENSION ZAN(*), C(*)
 
 #include "dummy.h"
 #include "maxaqn.h"
@@ -254,7 +256,8 @@ C     exist.
 C
       IF(ATSIZE) THEN
          CALL TITLER('Density based atomic size estimates','*',122)
-         CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+C        CALL GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+         CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
          CALL HEADER('Density based relative atomic sizes',-1)
          CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
          WRITE(LUPRI,*)
@@ -295,9 +298,15 @@ C
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
-          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
-     &                             +(C(2,INA)-C(2,JNA))**2
-     &                             +(C(3,INA)-C(3,JNA))**2))
+          istride1 = ina 
+          jstride1 = jna 
+          istride2 = ina + nat
+          jstride2 = jna + nat
+          istride3 = ina + 2*nat
+          jstride3 = jna + 2*nat
+          RIJ(ITEMP) = 1.0D0/(DSQRT((C(istride1)-C(jstride1))**2
+     &                             +(C(istride2)-C(jstride2))**2
+     &                             +(C(istride3)-C(jstride3))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
           RBC(JNA,INA) = 1.0D0/RIJ(ITEMP)
           CHI = CHIMT(INA,JNA)
@@ -421,9 +430,9 @@ C
             DO 30 IQ = 1, NANG
                IPT   = IPT + 1
                INDEX = INDEX + 1
-               X8(INDEX)  = XANG(IQ)*RNODE+C(1,NATOM)
-               Y8(INDEX)  = YANG(IQ)*RNODE+C(2,NATOM)
-               Z8(INDEX)  = ZANG(IQ)*RNODE+C(3,NATOM)
+               X8(INDEX)  = XANG(IQ)*RNODE+C(NATOM)
+               Y8(INDEX)  = YANG(IQ)*RNODE+C(NATOM+nat)
+               Z8(INDEX)  = ZANG(IQ)*RNODE+C(NATOM+2*nat)
                WT8(INDEX) = RWT*ANGWT(IQ)
 C
 C              Becke partitioning
@@ -432,6 +441,7 @@ C
                IF (IPT.EQ.IVECL) THEN
                   CALL BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,
      &                       X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),
+     &                       NAT,NUC,ZAN,C,
      &                       ACCUM,XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,
      &                       NATOM)
                   NDEX   = NDEX  + IPT
@@ -449,7 +459,8 @@ C
          IF (IPT.NE.0) THEN
             JPT = IPT
             CALL BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,
-     &                 X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),ACCUM,
+     &                 X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),
+     &                 NAT,NUC,ZAN,C,ACCUM,
      &                 XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,NATOM)
             NDEX   = NDEX   + IPT
 CVT         NTOTAL = NTOTAL + IPT
@@ -463,11 +474,21 @@ C          Scale weights with multiplicity of center
            CALL DSCAL(NTHIS,FAC,WT8,1)
          ENDIF
          NTHAT = NTHIS
+
+
+!        drop points that are redundant and rescale
+         IF(ZIPGRID) CALL ZIP_GRID(IATOM,X8,Y8,Z8,WT8,NTHIS)
+
+
 C
 C        Write to file LUQUAD
 C        ====================
 C
          CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NTHIS)
+         if (export_grid) then
+           call export_dft_grid(x8, y8, z8, wt8, luquad+1, nthis)
+         end if
+
          NTOTAL = NTOTAL + NTHIS
          NALL = NALL + NTHAT
          NATOM = NATOM + NDEG
@@ -479,6 +500,9 @@ C
 
       NLAST = -1
       CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NLAST)
+      if (export_grid) then
+        call export_dft_grid(x8, y8, z8, wt8, luquad+1, nlast)
+      end if
 
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
      &     ' Number of grid points in quadrature:',NTOTAL,
@@ -549,7 +573,54 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine export_dft_grid(x, y, z, w, lunit, nr_points)
+!=======================================================================
+!     export dft grid
+!-----------------------------------------------------------------------
+!                                              radovan bast
+!                                              last revision: 2008-08-26
+!=======================================================================
 
+#include "implicit.h"
+#include "priunit.h"
+
+      dimension x(nr_points),
+     &          y(nr_points),
+     &          z(nr_points),
+     &          w(nr_points)
+
+      write(lunit, *) nr_points
+
+      if (nr_points .gt. 0) then
+        do i = 1, nr_points
+          write(lunit, '(4d20.12)') x(i), y(i), z(i), w(i)
+        enddo
+      end if
+
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine import_dft_grid(x, y, z, w, lunit, nr_points)
+!=======================================================================
+!     import dft grid
+!-----------------------------------------------------------------------
+!                                              radovan bast
+!                                              last revision: 2008-08-26
+!=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      dimension x(nr_points),
+     &          y(nr_points),
+     &          z(nr_points),
+     &          w(nr_points)
+
+      do i = 1, nr_points
+        read(lunit, *) x(i), y(i), z(i), w(i)
+      enddo
+
+      end
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck nleb */                                                     C
@@ -781,6 +852,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck bweght */                                                   C
       SUBROUTINE BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,X,Y,Z,WT,
+     &                 NAT,NUC,ZAN,C,
      &                 ACCUM,XMUIJN,XMUIJ2,IVECL,IPT,NTRANS,NATOM)
 C                                                                      C
 C      Written by C. W. Murray                                         C
@@ -791,24 +863,22 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
 
-      PARAMETER (MAXBFN=1000)
-      PARAMETER (MAXCEN=100)
       DIMENSION RJ(IVECL,NAT),
      &          PSMU(IVECL,NAT),
      &          RIJ(NAT*(NAT-1)/2),
      &          AIJ(NAT*(NAT-1)/2),
      &          X(IVECL),Y(IVECL),Z(IVECL),WT(IVECL),
-     &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20)
+     &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20),
+     &          ZAN(*),C(*)
 
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 C
 C     WORK OUT THE WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
-         RJ(M,INA)=DSQRT((C(1,INA)-X(M))**2
-     &                  +(C(2,INA)-Y(M))**2
-     &                  +(C(3,INA)-Z(M))**2)
+         RJ(M,INA)=DSQRT((C(INA)-X(M))**2
+     &                  +(C(INA+nat)-Y(M))**2
+     &                  +(C(INA+2*nat)-Z(M))**2)
          PSMU(M,INA)=1.0D0
   100 CONTINUE
 
@@ -1052,7 +1122,7 @@ C     Newton-Raphson search
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1wt  */
-      SUBROUTINE GETCHI(DMAT,CHIMT,IPRINT,WORK,LWORK)
+      SUBROUTINE GETCHI(DMAT,CHIMT,NAT,C,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Get relative atomic size estimates by analyzing atomic
@@ -1065,11 +1135,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION DMAT(*),WORK(LWORK)
-C
-      PARAMETER(MAXCEN = 100)
-C
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-C
+      DIMENSION C(*)
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -1108,7 +1174,7 @@ C
 C
 C     Get atomic size estimates
 C
-      CALL CHI1(CHIMT,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
+      CALL CHI1(CHIMT,NAT,C,WORK(KDMTAO),WORK(KGAO),WORK(KSMAT),
      &     WORK(KASMAT),WORK(KICLAB),WORK(KCOOR),IPRINT,WORK,KFREE,
      &     LFREE)
 C
@@ -1126,8 +1192,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1rh1 */
-      SUBROUTINE CHI1(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,IPRINT,
-     &     WORK,KFREE,LFREE)
+      SUBROUTINE CHI1(CHIMT,NAT,C,DMAT,GAO,SMAT,ASMAT,ICLAB,COORD,
+     &     IPRINT,WORK,KFREE,LFREE)
 C
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1147,9 +1213,7 @@ C***********************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-C
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-C
+      DIMENSION C(*)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
@@ -1176,12 +1240,12 @@ C
       DO 10 I = 1,NAT
          DO 20 J = 1,I-1
             CHIMT(I,J) = 1.0D0
-            COORD(1,1) = C(1,I)
-            COORD(2,1) = C(2,I)
-            COORD(3,1) = C(3,I)
-            COORD(1,2) = C(1,J)
-            COORD(2,2) = C(2,J)
-            COORD(3,2) = C(3,J)
+            COORD(1,1) = C(I)
+            COORD(2,1) = C(I+nat)
+            COORD(3,1) = C(I+nat*2)
+            COORD(1,2) = C(J)
+            COORD(2,2) = C(J+nat)
+            COORD(3,2) = C(J+nat*2)
             CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
      &              IPRINT,WORK(KFREE),LFREE)
  20      END DO
@@ -1203,14 +1267,12 @@ C***********************************************************************
 #include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
-      PARAMETER(MAXCEN = 100)
 
 #include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 C
-      COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
@@ -1511,5 +1573,119 @@ C
       ELSE
         BRAGG = RAD(NCHARGE)
       ENDIF
+      RETURN
+      END
+
+
+      SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "symmet.h"
+#include "ccom.h"
+      DIMENSION ZAN(*), C(*)
+#include "ibtfun.h"
+      NAT = 0
+      NUM = NBASIS
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         ZCNT   = CHARGE(ICENT)
+         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
+           DO ISYMOP = 0, MAXOPR
+           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+             NAT = NAT + 1
+             ZAN(NAT) = ZCNT
+             C(NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+             C(NAT+nucdep)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+            C(NAT+nucdep*2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+           ENDIF
+           ENDDO
+         ENDIF
+      ENDDO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* ZIP_GRID */
+      SUBROUTINE ZIP_GRID(IATOM,X,Y,Z,W,NR_POINTS)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: february 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+#include "dftcom.h"
+#include "nuclei.h"
+
+      DIMENSION X(*),
+     &          Y(*),
+     &          Z(*),
+     &          W(*)
+
+      IF(ZIPGRID_TEXT(1:1) .EQ. 'X') THEN
+        IF(CORD(1,IATOM) .EQ. D0) THEN
+          CALL ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
+        ENDIF
+      ENDIF
+      IF(ZIPGRID_TEXT(2:2) .EQ. 'Y') THEN
+        IF(CORD(2,IATOM) .EQ. D0) THEN
+          CALL ZIP_GRID_SUB(Y,Z,X,W,NR_POINTS)
+        ENDIF
+      ENDIF
+      IF(ZIPGRID_TEXT(3:3) .EQ. 'Z') THEN
+        IF(CORD(3,IATOM) .EQ. D0) THEN
+          CALL ZIP_GRID_SUB(Z,X,Y,W,NR_POINTS)
+        ENDIF
+      ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* ZIP_GRID_SUB */
+      SUBROUTINE ZIP_GRID_SUB(X,Y,Z,W,NR_POINTS)
+C=======================================================================
+C                                                           radovan bast
+C                                           last revision: february 2007
+C=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+
+      DIMENSION X(*),
+     &          Y(*),
+     &          Z(*),
+     &          W(*)
+
+      IWRITE = 1
+      DO IREAD = 1,NR_POINTS
+        IF(X(IREAD) .GT. D0) THEN
+          X(IWRITE) = X(IREAD)
+          Y(IWRITE) = Y(IREAD)
+          Z(IWRITE) = Z(IREAD)
+          W(IWRITE) = W(IREAD)
+          IWRITE    = IWRITE + 1
+        ELSEIF(X(IREAD) .LT. D0) THEN
+!         drop these points
+        ELSE
+          X(IWRITE) = X(IREAD)
+          Y(IWRITE) = Y(IREAD)
+          Z(IWRITE) = Z(IREAD)
+          W(IWRITE) = W(IREAD)/D2
+          IWRITE    = IWRITE + 1
+        ENDIF
+      ENDDO
+      NR_POINTS = IWRITE - 1
+
+      CALL DSCAL(NR_POINTS,D2,W,1)
+
       RETURN
       END

@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.83.2.2 $
-C DATE    : $Date: 2004/09/01 08:14:31 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : trapam.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -46,6 +34,8 @@ C
 C     Driver routine for 4-index transformation
 C
 C     Written by T.Saue, J.Laerdahl and L.Visscher Jan 1997
+C
+C     Called from main/dirac.F if DOTRA=.true.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -61,7 +51,7 @@ C
 #include "dcbgen.h"
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
-      LOGICAL TOBE,TRASAM,ACTIVE
+      LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -69,7 +59,6 @@ C
       CALL QENTER('PAMTRA')
 #include "memint.h"
       KFRSAV = KFREE
-      DUM = DUMMY
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
@@ -197,17 +186,17 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &     'PAMTRA ERROR: MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(/A)')
+     &        'PAMTRA ERROR: MO coefficient file not present'
+            CALL QUIT('PAMTRA: No MO coefficient file !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+            CLOSE(LUCOEF,STATUS='KEEP')
+         END IF
 C
 C     Select the set that we need
 C
@@ -323,7 +312,7 @@ C
       WRITE(LUPRI,'(/A)')
      &     '* Core orbital ranges for 2-index transformation:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,5)),DUM,DUM,DUM,NSPC)
+         CALL TRAPRI(1,I,WORK(KVEC(I,5)),0,0,0,NSPC)
       ENDDO
 C
 C     Calculate dimensions of the coefficient array
@@ -348,15 +337,15 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
-      ENDIF
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+            CALL QUIT('PAMTRA: No MO coefficient file !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+         ENDIF
 C
 C     Select the set that we need
 C
@@ -387,7 +376,7 @@ C     --------------------------------------
 C
       IF (.NOT.NO4IND)
      &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
@@ -416,9 +405,10 @@ C
       CALL GTINFO(DAYTID)
       WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
 C
-      CALL QEXIT('PAMTRA')
       CALL FLSHFO(LUPRI)
-C
+
+
+      CALL QEXIT('PAMTRA')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -753,7 +743,6 @@ C
       CALL QENTER('LAGTAU')
 #include "memint.h"
       KFRSAV = KFREE
-      DUM = DUMMY
 C     
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,5)
@@ -1240,6 +1229,19 @@ C     In all cases we transform in mulliken notation
 C
       CALL QENTER('PAMTR1')
 C
+C
+C     Prepare for screening
+C
+      IF(SCRTRA.GT.D0) THEN
+        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
+     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
+     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
+      ELSE
+        KDRIJ = KFREE
+        KGAB  = KFREE
+      ENDIF
+C
       IF (ANTIS) THEN
          CALL QUIT('PAMTR1: .ANTIS is not implemented!')
       ENDIF
@@ -1269,7 +1271,15 @@ C
      &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 4')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
-          CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+          CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+      ELSEIF (ISTRAT.EQ.5) THEN
+          CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
+      ELSEIF (ISTRAT.EQ.6) THEN
+c..not yet activated
+          CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &                WORK(KGAB),WORK(KDRIJ),NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
@@ -1414,7 +1424,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbtra.h"
       CHARACTER*24 DAYTID
-      LOGICAL TOBE
+      LOGICAL TOBE,TOBEK
 C
 C     Now say hi and give orbital information
 C
@@ -1452,16 +1462,19 @@ C
       ENDIF
 C
       IF (IMODUL .NE. 4 ) THEN
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-            CALL QUIT('TRAHI: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
-     &                  DUM,IDUM,IDUM)
-            CLOSE(LUCOEF,STATUS='KEEP')
-         ENDIF
+         INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+         IF (.NOT.TOBEK) THEN
+            INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+            IF (.NOT.TOBE) THEN
+               WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+               CALL QUIT('TRAHI: No MO coefficient file !')
+            ELSE
+               CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
+               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
+     &                     DUM,IDUM,IDUM)
+               CLOSE(LUCOEF,STATUS='KEEP')
+            ENDIF
+         END IF
       END IF
 C
       CALL FLSHFO(LUPRI)
@@ -1487,8 +1500,8 @@ C     - ICL          Last class of integrals
 C     - TRIAN        Store the transformed integrals as a lower triangle
 C     - NSTR1        Number of active spinors for index 1
 C     - NSTR2        Number of active spinors for index 2
-C     - NFPCK12        Number of spinor pairs for each compound symmetry
-C     - IFPCK12        Pointers to spinor pairs
+C     - NFPCK12      Number of spinor pairs for each compound symmetry
+C     - IFPCK12      Pointers to spinor pairs
 C     - NDMOQR       Dimensions of the coefficient array
 C     - ICMOQR       Pointers to coefficients
 C     - IJPAIRS      Number of blocks for each boson symmetry
@@ -2131,8 +2144,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ndistrn */
-      FUNCTION NDISTRN(I2TYP,IPRINT,MKINAB,MKIJPA,ABSPOI,INDX,
-     &                 INDXAB,IJPAIRS,NWDS,IJPASS)
+      FUNCTION NDISTRN(I2TYP,IPRINT,MKINAB,MKIJPA,MKIAB,ABSPOI,INDX,
+     &                 INDXAB,IJPAIRS,IABIND,NWDS,IJPASS)
 C
 C     Calculate number of distributions in a shell pair
 C     Set up pointer array INDXAB
@@ -2148,6 +2161,7 @@ C     - MKINAB : .TRUE.   Make pointer array
 C                .FALSE.  Only calculate number of distributions
 C     - MKIJPA : .TRUE.   Make pointer array for each pass
 C                .FALSE.  Only calculate number of passes
+C     - MKIAB  : .TRUE.   Make another pointer array from distribution to pair indices
 C     - ABSPOI : .TRUE.   Absolute pointers in INDXAB(,,4)
 C                .FALSE.  Pointers within pass in INDXAB(,,4)
 C     - INDX   : Pointer from complete list to position in the shell
@@ -2167,9 +2181,10 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
-      LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,DIAGAB1,ABSPOI
+      LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IJPAIRS(0:7)
       DIMENSION IJPASS(0:7,*)
+      DIMENSION IABIND(*)
       DIMENSION IND(2)
 #include "twocom.h"
 #include "dgroup.h"
@@ -2305,6 +2320,9 @@ C
                                  ENDIF
                                  INDXAB(INDAR,INDBR,5) = NPASS
                               ENDIF
+C
+                              IF (MKIAB) IABIND(IJ) = INDAB
+C
                               IOFF = IOFF + NSPCK(IREPAB,IC)
                             ENDDO
                         ENDDO
@@ -2649,9 +2667,22 @@ C
         ENDDO
       ENDDO
 C
+C     Symmetrize the density screening matrix (to allow for use
+C     of permutation symmetry in the integral generation step)
+C
+      DO IREPIJ = 1, NFSYM
+         DO JR = 1, NSYMBL
+            DO IR = 1, JR-1
+               A = MAX(DRIJ(IR,JR,IREPIJ),DRIJ(JR,IR,IREPIJ))
+               DRIJ(IR,JR,IREPIJ) = A
+               DRIJ(JR,IR,IREPIJ) = A
+            ENDDO
+         ENDDO
+      ENDDO
+C
 C     Print section
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.5) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: Screening matrix ',FREP(I)
           CALL OUTPUT(DRIJ(1,1,I),1,NSYMBL,1,NSYMBL,
@@ -2778,7 +2809,7 @@ C
           WORK(I) = WORK(I)*WORK(I)
         ENDDO
         DO I = 1,3
-          IOFF = KCAO + NCAO
+          IOFF = KCAO + NCAO * I
           CALL DAXPY(NCAO,D1,WORK(IOFF),1,WORK(KCAO),1)
         ENDDO
         KEND = KCAO + NCAO - 1
@@ -2880,7 +2911,7 @@ C
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
 C      CALL DZERO(DINTSKP,8)
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.5) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: GAB-matrix ',FREP(I)
           CALL OUTPUT(GABAO,1,NSYMBL,1,NSYMBL,
@@ -3197,7 +3228,6 @@ C
       CALL GTVFCK(FMO,NFMO,IFMO,INTDHF,CMO,FAO,
      &            WORK(KQ(1)),NDMOQR,ICMOQR,WORK(KQ(1)),NDMOQR,ICMOQR,
      &            IPRINT,WORK,KFREE,LFREE)
-      call memchk ('na gtvfck',work,1)
 C
 C     Diagonalize Fock-matrix
 C     =======================
@@ -3222,7 +3252,6 @@ C
            CALL MEMREL('VIRCA1',WORK,KIBEIG2,KIBEIG2,KFREE,LFREE)
         ENDIF
    30 CONTINUE
-      call memchk ('na diago',work,1)
 C
 C     Backtransform coefficients
 C     ==========================
@@ -3374,7 +3403,7 @@ C
 #include "dcbham.h"
 #include "cbihr2.h"
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
-      LOGICAL TOBE,BF1,BF2,BF3
+      LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
      &          WORK(*)
@@ -3394,19 +3423,16 @@ C
       ELSE
         WRITE(LUPRI,'(A)')
      &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
-        NPOS = 0
-        IF(PARCAL) THEN
-          BF1  = FIRST1
-          BF2  = FIRST2
-          BF3  = FIRST3
-          FIRST1 = .TRUE.
-          FIRST2 = .TRUE.
-          FIRST3 = .TRUE.
-          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-          NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        ENDIF
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+
+        call SaveTaskDistribFlags(saveflags)
+       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+        call SetIntTaskArrayDimension(NPOS,PARCAL)
+        if (NPOS.GT.0) THEN
+           CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+        else
+           KPOS = KFREE
+        endif
+
 C
 C       Closed shell Hartree - Fock
 C       ===========================
@@ -3428,13 +3454,10 @@ C       Hermitian operator
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
      &       WORK(KPOS),INTDHF,IPRINT,WORK(KFREE),LFREE)
-        IF(PARCAL) THEN
-          FIRST1 = BF1
-          FIRST2 = BF2
-          FIRST3 = BF3
-        ENDIF
+
+        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+
       ENDIF
-      call memchk ('na cmo',work,1)
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -3458,7 +3481,6 @@ C
      &    '*** WARNING *** GETFCK: No 1-Fock found. Regenerating.'
         CALL ONEFCK(FAO,IPRINT,WORK(KFREE),LFREE)
       ENDIF
-      call memchk ('na fao',work,1)
 C
 C     4. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
@@ -3526,10 +3548,13 @@ C
 #include "dgroup.h"
 #include "dcbres.h"
 #include "dcbgen.h"
+#include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
       DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
+CTROND: to fix !
+      DIMENSION MINE(16),MAXE(16),NGASO(256)
 C
       CALL QENTER('RESOLV')
 #include "memint.h"
@@ -3543,6 +3568,20 @@ C
      &   '*WARNING: No open-shell electrons, no states to resolve!'
          GOTO 9999
       END IF
+      IND = 1
+      NGAS_DC = NOPEN
+      NSYMRP = 2*NFSYM
+      DO IOPEN = 1,NOPEN
+        ITEMP = 0
+        DO IFRP = 1,NFSYM
+          NGASO(IND) = NACSH(IFRP,IOPEN)
+          NGASO(IND+1) = NGASO(IND)
+          IND = IND + 2
+          ITEMP = ITEMP + NACSH(IFRP,IOPEN)      
+        ENDDO
+        MINE(IOPEN) = ITEMP
+        MAXE(IOPEN) = MINE(IOPEN)
+      ENDDO
 C
 C     Check for necessary files:
 C       MRCONEE - one-electron integrals and other information
@@ -3646,11 +3685,11 @@ C
       WRITE(LUPRI,'(A,I5)') '- Number of active electrons:',NAELEC
       WRITE(LUPRI,'(A)')    '- Active orbitals:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,1)),IDUM,IDUM,IDUM,NSTR)
+         CALL TRAPRI(1,I,WORK(KVEC(I,1)),0,0,0,NSTR)
       ENDDO
       WRITE(LUPRI,'(A)')    '- Core orbitals:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,2)),IDUM,IDUM,IDUM,NSPC)
+         CALL TRAPRI(1,I,WORK(KVEC(I,2)),0,0,0,NSPC)
       ENDDO
 C
 C     Allocate buffer spaced for coefficients AND core Fock matrix
@@ -3751,7 +3790,7 @@ C       Call driver for 4-index transformation
 C       --------------------------------------
 C
         CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
-     &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &              .TRUE.,.FALSE.,INTRES)
 C
 C        Print timing information
@@ -3785,7 +3824,8 @@ C
       IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
 #endif
       OPEN (5,FILE='DIRAC.INP')
-      CALL PAMGOS(WORK(KFREE),LFREE,NAELEC)
+      CALL GOSRES(WORK(KFREE),LFREE)
+      CLOSE(5,STATUS='KEEP')
 C
 C     Restore DCBTRA information
 C
@@ -3869,7 +3909,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C/* Deck TRAPARI*/
       SUBROUTINE TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &                   KINDX,KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &                   KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher (based on HERNOD) August 1997
@@ -3899,6 +3939,7 @@ C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),
      &          WORK(*)
+      DIMENSION DRIJ(*),GABRAO(*)
       LOGICAL NODV,NOPV,NOCONT,RETUR,NEWGEO,FINISH
 C
       CALL QENTER('TRAPARI')
@@ -3945,7 +3986,7 @@ C
 C        I2TYP will defined at each node
          CALL SDINIT(DUMMY,NDMAT,IDUMMY,IDUMMY,ITYPE,MAXDIF,IDUMMY,
      &               NODV,NOPV,NOCONT,TKTIME,RTNTWO,IDUMMY,
-     &               IDUMMY,SCRTRA,WORK(KGABAO),WORK(KDRIJ),DUMMY)
+     &               IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY)
 C
       ELSE
 C
@@ -3956,7 +3997,7 @@ C
          CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &               IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &               TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCRTRA,
-     &               KFMAT,KDMAT,KIFC,KIRD,KDRIJ,KGABAO,KDMRSO)
+     &               KFMAT,KDMAT,KIFC,KIRD,GABRAO,DRIJ,KDMRSO)
       ENDIF
 C
 C        *****************************************************
@@ -3964,11 +4005,14 @@ C        ***** Send or receive DIRAC initialization data *****
 C        *****************************************************
 C
       CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
-     &            KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &            GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     Do not call MEMREL since the variable size arrays are represented
 C     as pointers when the routine is called from a slave
 C
+#if defined (VAR_PFS)
+      CALL GLOBAL_FILE_OPEN_WRITE
+#endif
       CALL QEXIT('TRAPARI')
       RETURN
       END
@@ -3976,7 +4020,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck traprd */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRAPRD (WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
-     &                   KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &                   GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     Communicate DIRAC common blocks for parallel 4-index transform.
 C     Communicate arguments received from main program
@@ -4013,6 +4057,7 @@ C
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
+      DIMENSION DRIJ(*),GABRAO(*)
       DIMENSION WORK(*)
 C
 C
@@ -4035,35 +4080,31 @@ C
 C     dcborb.h
 C     --------
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_DCBORB,NUMELM,MPI_INTEGER,MPARID,
+      NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
+      CALL MPI_BCAST(I1_DCBORB,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbbas.h
 C     --------
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_DCBBAS,NUMELM,MPI_INTEGER,MPARID,
+      NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
+      CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbham.h
 C     --------
 C
       NUMELM = NDCLHAM
-      CALL MPI_BCAST(ONESYS,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(ONESYS,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dgroup.h
 C     --------
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+      NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
+      CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_DGROUP,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(LINEAR,1,MPI_LOGICAL,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbtra.h
@@ -4072,7 +4113,7 @@ C
 C     integers...
 C
       NUMELM = NDCBTRI
-      CALL MPI_BCAST(IPRTRA,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(IPRTRA,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     reals...
@@ -4091,7 +4132,7 @@ C     comdis.h
 C     --------
 C
       NUMELM = NCOMDIS
-      CALL MPI_BCAST(NSPCK,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NSPCK,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     symmet.h
@@ -4099,10 +4140,8 @@ C     --------
 C
 C     integers...
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_SYMMTI,NUMELM,MPI_INTEGER,MPARID,
+      NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
+      CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     reals...
@@ -4136,7 +4175,7 @@ C
       CALL MPI_BCAST(TPRI44,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 1
-      CALL MPI_BCAST(INTFLG,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(INTFLG,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 1
       CALL MPI_BCAST(ANTIS,NUMELM,MPI_LOGICAL,MPARID,
@@ -4145,13 +4184,13 @@ C
       CALL MPI_BCAST(LMP2,NUMELM,MPI_LOGICAL,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 24
-      CALL MPI_BCAST(NSTR,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NSTR,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 16
-      CALL MPI_BCAST(NDMOQR,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NDMOQR,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       NUMELM = 8
-      CALL MPI_BCAST(ICMOQR,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(ICMOQR,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C
@@ -4159,7 +4198,7 @@ C
 C     HERMIT memory estimates
 C     -----------------------
 C
-      CALL MPI_BCAST(MXHERMEM,4,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(MXHERMEM,4,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C
@@ -4170,7 +4209,7 @@ C     ****** MASTER send ******
 C     *************************
 C
 C       Symmetry packing information
-        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,my_MPI_INTEGER,MPARID,
      &                 MPI_COMM_WORLD,IERR)
 C       Coefficients; use sameness relations to compress
         DO I = 1,4
@@ -4202,7 +4241,7 @@ C       Send orbital energies
 C       Send orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
-            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),MPI_INTEGER,
+            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),my_MPI_INTEGER,
      &                     MPARID,MPI_COMM_WORLD,IERR)
           ENDDO
         ENDDO
@@ -4210,9 +4249,9 @@ C       If screening send GAB-matrix and screening matrix
         IF(SCRTRA.GT.D0) THEN
           N2GAB   = NSYMBL*NSYMBL
           NDRIJ   = N2GAB*NFSYM*2
-          CALL MPI_BCAST(WORK(KGABAO),N2GAB,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(GABRAO,N2GAB,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
-          CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(DRIJ,NDRIJ,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
         ENDIF
       ELSE
@@ -4223,7 +4262,7 @@ C     **************************
 C
 C       Symmetry packing information
         CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KINDX),NTBAS(0)*3,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
 C       Coefficients; use sameness relations to compress
         DO I = 1,4
@@ -4263,7 +4302,7 @@ C       Receive orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET('REAL',KIBE(J,I),NSTR(J,0,I),WORK,KFREE,LFREE)
-            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),MPI_INTEGER,
+            CALL MPI_BCAST(WORK(KIBE(J,I)),NSTR(J,0,I),my_MPI_INTEGER,
      &                     MPARID,MPI_COMM_WORLD,IERR)
           ENDDO
         ENDDO
@@ -4271,16 +4310,10 @@ C       If screening receive GAB-matrix and screening matrix
         IF(SCRTRA.GT.D0) THEN
           N2GAB   = NSYMBL*NSYMBL
           NDRIJ   = N2GAB*NFSYM*2
-          CALL MEMGET('REAL',KGABAO,N2GAB,WORK,KFREE,LFREE)
-          CALL MPI_BCAST(WORK(KGABAO),N2GAB,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(GABRAO,N2GAB,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
-          CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
-          CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
+          CALL MPI_BCAST(DRIJ,NDRIJ,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
-        ELSE
-C         to not get e.g. WORK(nan) in calls in TRANOD
-          CALL MEMGET('REAL',KGABAO,0,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KDRIJ,0,WORK,KFREE,LFREE)
         ENDIF
       ENDIF
 C
@@ -4306,6 +4339,9 @@ C
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "blocks.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION WORK(*),DINTSKP(8),TIM1(7)
@@ -4314,11 +4350,19 @@ C
 #include "memint.h"
       KFRSAV = KFREE
 C
+C     Get memory for screening matrices
+C
+      N2GAB   = NSYMBL*NSYMBL
+      NDRIJ   = N2GAB*NFSYM*2
+      CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
+C
 C     Initialize the common blocks.
 C
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &             KINDX,WORK(KGAB),WORK(KDRIJ),
+     &             INTFLG,NSTR,ANTIS,LMP2)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')
@@ -4340,8 +4384,16 @@ C
          CALL QUIT('TRANOD: No parallel strategy 3 (yet)!')
       ELSEIF (ISTRAT.EQ.4) THEN
           CALL TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
+     &             KINDX,WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,
      &             LMP2,EMP2,DINTSKP)
+      ELSEIF (ISTRAT.EQ.5) THEN
+         WRITE(LUPRI,'(A)')
+     &     'TRANOD: Strategy 5 not implemented in parallel.'
+         CALL QUIT('TRANOD: No parallel strategy 5 (yet)!')
+      ELSEIF (ISTRAT.EQ.6) THEN
+          CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
          WRITE(LUPRI,'(A,I10,A)')
      &     'TRANOD: Strategy ',ISTRAT,' not implemented'
@@ -4351,8 +4403,18 @@ C
 C     We check whether all the work is done and return to the
 C     main slave menu.
 C
-      CALL MPI_BCAST(NTEST,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NTEST,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF (NTEST.NE.-1) CALL QUIT('TRANOD: Received wrong NTEST message')
+C
+#if defined (VAR_PFS)
+      IF( ISTRAT .ne. 6 )THEN
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+C
+      END IF
+#endif
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRANOD')
@@ -4409,14 +4471,14 @@ C       signal the slave to stop computing & transforming integrals.
 #if defined (MPE)
           CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
-          CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+          CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
 #if defined (MPE)
           CALL MPE_LOG_EVENT(4, 0, "end wait")
 #endif
           IF (ITEST .NE. 0) THEN
-C         ... this node not finished yet, is asking to get or release file lock
-             CALL QUIT('TRARES: file lock not implemented yet')
+C         ... this node sends the wrong message, abort
+             CALL QUIT('TRARES: wrong code sent by slave')
              GO TO 100
           END IF
           NWHO = ISTAT(MPI_SOURCE)
@@ -4428,7 +4490,7 @@ C         ... this node not finished yet, is asking to get or release file lock
      &           '- Process ',NWHO,
      &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
-          CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
+          CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)
           CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
      &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
@@ -4523,5 +4585,114 @@ Cluuk   not yet implemented use value for SS
          CALL QUIT('MXHERMEM: unknown I2TYP')
       END IF
       MXMEMHER = MWHER
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck GOSRES */
+      SUBROUTINE GOSRES(WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine setting up correctly
+C     the resolution of electronic states within 
+C     open-shell manifold
+C
+C     Written on a rainy day in Nagoya 2006....
+C     Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (NORDER=16)
+      CHARACTER*4 REPA(4*NORDER)
+#include "dcbtra.h"
+#include "dcbdhf.h"
+      DIMENSION WORK(LWORK)
+#include "memint.h"
+C
+      CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
+      READ(LUMLF1) NORB
+C.....Skip symmetry information for parent group
+      READ(LUMLF1) 
+C.....Read symmetry information for Abelian subgroup
+      READ(LUMLF1) NREP,(REPA(IRP),IRP=1,2*NREP)
+      CLOSE(LUMLF1,STATUS='KEEP')
+
+C.....Allocate memory for orbital symmetry information
+      NDIM = NREP*NOPEN
+      CALL MEMGET('INTE',KGASO,NDIM, WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIELC,NOPEN,WORK,KFREE,LFREE)
+C      
+      CALL MEMGET('INTE',KIRPA,NORB,WORK,KFREE,LFREE)
+      CALL GOSRE1(REPA,NREP,WORK(KIRPA),
+     &            WORK(KGASO),WORK(KIELC),WORK(KFREE),LFREE)
+      CALL MEMREL('GOSRES',WORK,1,KIRPA,KFREE,LFREE)
+C.....Call GOSCIP module
+      CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
+      CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
+     &            WORK(KIELC),WORK(KIELC),WORK(KGASO))
+      CALL MEMREL('GOSRES',WORK,1,KFREE,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*   Deck GOSRE1 */
+      SUBROUTINE GOSRE1(REPA,NREP,IRPAMO,NGASO,IELC,WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine setting up correctly
+C     the resolution of electronic states within 
+C     open-shell manifold
+C
+C     Written on a rainy day in Nagoya 2006....
+C     Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D2=2.0D0)
+      CHARACTER*4 REPA(*)
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+      DIMENSION IRPAMO(*),NGASO(NREP,*),IELC(*),WORK(LWORK)
+C
+      CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
+      READ (LUMLF1) NORB
+      READ (LUMLF1) 
+      READ (LUMLF1) NREP,(REPA(IRP),IRP=1,2*NREP)
+      READ (LUMLF1) 
+      READ (LUMLF1) (IDUM,IRPAMO(IMO),DUM,IMO=1,NORB)
+      CLOSE(LUMLF1,STATUS='KEEP')
+C
+      NDIM = NREP*NOPEN
+      CALL IZERO(NGASO,NDIM)
+      CALL IZERO(IELC,NOPEN)
+      IORB = 0
+      DO IFRP = 1,NFSYM
+        DO IOPEN = 1,NOPEN
+          IELC(IOPEN) = IELC(IOPEN) + NACSH(IFRP,IOPEN)
+          DO I = 1,NACSH(IFRP,IOPEN)
+            IORB = IORB + 1
+C...........Add orbital to GAS
+            IREP = IRPAMO(IORB)
+            NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
+C...........Add Kramers partner to GAS
+            IREP = IRPAMO(IORB+NASH_DHF(IFRP))
+            NGASO(IREP,IOPEN) = NGASO(IREP,IOPEN) + 1
+          ENDDO
+        ENDDO
+        IORB = IORB + NASH_DHF(IFRP)
+      ENDDO
+C
+      DO IOPEN = 1,NOPEN
+        IELC(IOPEN) = NINT(DF(IOPEN)*D2*IELC(IOPEN))
+      ENDDO   
+C
+      WRITE(LUPRI,'(A)') 'GASRES: Set up the following information:'
+      WRITE(LUPRI,'(5X,32(1X,A4))') (REPA(I),I=1,NREP)
+      DO IOPEN = 1,NOPEN
+        WRITE(LUPRI,'(32I5)') 
+     &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
+      ENDDO
       RETURN
       END

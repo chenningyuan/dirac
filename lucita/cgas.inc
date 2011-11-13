@@ -1,4 +1,4 @@
-*comdeck cgas.inc $Revision: 1.2 $ 
+*comdeck cgas.inc $Revision: 2268 $ 
       COMMON/CGAS/IDOGAS,NGAS,NGSSH(MXPIRR,MXPNGAS),
      &            NGSOB(MXPOBS,MXPNGAS),
      &            NGSOBT(MXPNGAS),IGSOCC(MXPNGAS,2),IGSINA,IGSDEL,

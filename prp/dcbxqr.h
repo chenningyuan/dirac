@@ -1,3 +1,4 @@
+C dcbxqr.h - control common block for pamxqr.h and pamtpa.h
 C **************************************************************
 C ***********    Quadratic response  <<A;B,C>>    **************
 C **************************************************************
@@ -41,21 +42,31 @@ C NQRHYP  - number of nontrivial QR functions to be computed
 C LQRHYP  - list of A/B/C operator pointers
 C QRFRHYP - list of A/B/C frequencies
 C
-C Used in TPA calculations
-C-------------------------
+C Used in TPA calculations (EXCIT is also used by EXCPRP)
+C--------------------------------------------------------
 C IEXCOFF - offset when creating direct access labels for excitations
 C TPACNV  - number of states per irrep
 C TPASIM  - 
 C TPASTV  - 
-C EXCIT   - list of excitations in each irrep
+C EXCIT   - list of excitation frequencies in each irrep
 C
-      PARAMETER ( MAXLQR=10, MAXFQR=10, MAXQR=60 )
-      PARAMETER ( IEXCOFF=90 )
-      PARAMETER ( LUQRINFO = 40, LUQREE = 41, LUQREP = 42 )
+C Used in EXCPRP calculations
+C ---------------------------
+C LSTATE - list of left excited states
+C RSTATE - list of right excited states
+C
+      INTEGER MAXLQR,MAXFQR,MAXQR,IEXCOFF,LUQRINFO,LUQREE,LUQREP
+C
+      PARAMETER ( MAXLQR=10,MAXFQR=15,MAXQR=70,IEXCOFF=90 )
+      PARAMETER ( LUQRINFO=40,LUQREE=41,LUQREP=42 )
 C
       LOGICAL XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP,XQR_ALLCMB,
      &     XQR_LEVICI
-      INTEGER TPACNV,TPASIM,TPASTV
+      INTEGER IPRXQR,ITRXQR,NBQRFR,NCQRFR,NQROP,MAXQRM,
+     &     LAQROP,NAQROP,LBQROP,NBQROP,
+     &     LCQROP,NCQROP,LQROP,LQRHYP,NQRHYP,INTXQR,ITRIQR,
+     &     MZYEE,MZYEP,TPACNV,TPASIM,TPASTV,LSTATE,RSTATE
+      REAL*8 THCQR,BQRFR,CQRFR,QRFREQ,QRFRHYP,CNVXQR,RESXQR,EXCIT
       CHARACTER XQR_INDSTR*72
 C
       COMMON /XCBLQR/ XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP,XQR_ALLCMB,
@@ -67,7 +78,7 @@ C
      &     LAQROP(MAXLQR),NAQROP,LBQROP(MAXLQR),NBQROP,
      &     LCQROP(MAXLQR),NCQROP,LQROP(3*MAXLQR,2),
      &     LQRHYP(MAXQR,3),NQRHYP,INTXQR,ITRIQR(2),MZYEE,MZYEP,
-     &     TPACNV(8),TPASIM(8),TPASTV(8)
+     &     TPACNV(8),TPASIM(8),TPASTV(8),LSTATE(8),RSTATE(8)
       COMMON /XCBCQR/XQR_INDSTR(3,2)
 C
 C End of dcbxqr.h

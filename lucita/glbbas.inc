@@ -1,4 +1,4 @@
-*comdeck glbbas.inc $Revision: 1.2 $ 
+*comdeck glbbas.inc $Revision: 2268 $ 
       COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
      &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,
      &              KSBIA,KSBIB,KVEC3,KPNIJ,KIJKK,KFI,KINH1,

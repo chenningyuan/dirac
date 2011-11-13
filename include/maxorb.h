@@ -13,5 +13,11 @@
 !     and then rebuild the program using the command "make".
 !
       INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MXBSETS
-      PARAMETER (MXSHEL = 750, MXPRIM = 2000, MXCORB = 5000,            &
+!cmi   PARAMETER (MXSHEL = 750, MXPRIM = 2000, MXCORB = 5000,            &
+#if ! defined (LARGE_MOLECULES)
+      PARAMETER (MXSHEL = 950, MXPRIM = 2000, MXCORB = 5000,            &
      &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)
+#else
+      PARAMETER (MXSHEL = 8000,MXPRIM = 32000, MXCORB = 16000,          &
+     &           MXORBT = MXCORB*(MXCORB+1)/2, MXBSETS = 4)
+#endif

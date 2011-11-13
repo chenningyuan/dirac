@@ -1,0 +1,22 @@
+!
+! Calculation of molecular oxygen using the (0,2) sector of Fock space
+!
+**DIRAC
+.TITLE
+Moelcular oxygen. Ground and excited states (X, a, b).
+.WAVE F
+**HAMILTONIAN
+.LVCORR
+**WAVE FUNCTIONS
+.DHF
+.RELCCSD
+*DHFCAL
+.CLOSED SHELL
+ 6 8
+.EVCCNV
+1.E-10
+*END OF
+
+ &RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END
+ &CCFSPC MAXIT=100, DOEA2=T, NACTP=2,2,0,0 &END
+

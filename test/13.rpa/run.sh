@@ -2,8 +2,26 @@
 #
 # Set up calculation
 #
-MENU=rpa;
 MOL=H2O;
-export MENU;
 export MOL;
+#######################
+echo "Dirac-Coulomb Hamiltonian"
+MENU=rpa;
+export MENU;
 ../run.sh
+#######################
+#echo "BSS+MFSSO  Hamiltonian"
+#MENU=H2O.bss+mfsso.rpa;
+#export MENU;
+#../run.sh
+#######################
+#echo "BSS_rkb+MFSSO  Hamiltonian"
+#MENU=H2O.bss_rkb+mfsso.rpa;
+#export MENU;
+#../run.sh
+#######################
+echo "BSS  Hamiltonian"
+MENU=H2O.bss.rpa;
+export MENU;
+../run.sh
+#######################

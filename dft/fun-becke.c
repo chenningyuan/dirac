@@ -1,37 +1,26 @@
 /*
-       Copyright (c) 2004 by the authors of Dirac (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       Dirac, a relativistic ab initio electronic structure program,
-       release DIRAC04.0 (2004),
-       written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-       with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-       O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-       P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-       P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-       (http://dirac.chem.sdu.dk).
-    
-       For a suitable BibTEX entry, see:
-          http://dirac.chem.sdu.dk/doc/reference.shtml
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dirac,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dirac-admin@dirac.chem.sdu.dk
-    
-       For information on how to get a licence see:
-          http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 */
+/*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-becke.c:
    implementation of Becke(88) functional and its derivatives.
    or exactly: Becke GGA correction to the functional. (total Becke(88)
@@ -43,52 +32,40 @@
    when implementing multiple functionals depending on different parameters.
 */
 
+/* strictly conform to XOPEN ANSI C standard */
+#if !defined(SYS_DEC)
+/* XOPEN compliance is missing on old Tru64 4.0E Alphas */
+#define _XOPEN_SOURCE          500
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
+
 #include <math.h>
 #include <stddef.h>
 
 #define __CVERSION__
 
 #include "functionals.h"
-#include "dcbham.h"
 
 /* INTERFACE PART */
+static int  becke_isgga(void) { return 1; }
 static int  becke_read(const char* conf_line);
-static real becke_energy(DftDensProp* dp);
-static void becke_first(FirstFuncDrv *ds, real factor, DftDensProp* dp);
-static void becke_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
-static void becke_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp);
+static real becke_energy(const FunDensProp* dens_prop);
+static void becke_first(FunFirstFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
+static void becke_second(FunSecondFuncDrv *ds, real factor,
+                         const FunDensProp* dens_prop);
+static void becke_third(FunThirdFuncDrv *ds, real factor,
+                        const FunDensProp* dens_prop);
 
-static real b88corr_energy(DftDensProp* dp);
-static void b88corr_first(FirstFuncDrv *ds, real factor, DftDensProp* dp);
-static void b88corr_second(SecondFuncDrv *ds, real factor,DftDensProp* dp);
-static void b88corr_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp);
-
-/* B88CorrFunctional is a GGA correction to Becke88 functional.
-   Becke(88) functional consists of Dirac rho-dependent part and GGA
-   correction.
-   NOTE: Dirac is so simple that one might contemplate inserting its
-   expressions in-line in Becke functional.
-*/
 Functional BeckeFunctional = {
-  "Becke",      /* name */
-  fun_true,  /* gga-corrected */
-  becke_read,   /* set bloody common blocks */
-  NULL,         /* reporter */
-  becke_energy, 
-  becke_first,
-  becke_second,
-  becke_third
-};
-
-Functional B88CorrFunctional = {
-  "B88Corr",      /* name */
-  fun_true,  /* gga-corrected */
-  becke_read,   /* set bloody common blocks */
-  NULL,         /* reporter */
-  b88corr_energy, 
-  b88corr_first,
-  b88corr_second,
-  b88corr_third
+    "Becke",      /* name */
+    becke_isgga,  /* gga-corrected */
+    becke_read,   /* set bloody common blocks */
+    NULL,         /* reporter */
+    becke_energy, 
+    becke_first,
+    becke_second,
+    becke_third
 };
 
 /* IMPLEMENTATION PART */
@@ -96,43 +73,22 @@ Functional B88CorrFunctional = {
 static int
 becke_read(const char* conf_line)
 {
-    dft_set_hf_weight(0.0);
-  return 1;
+    fun_set_hf_weight(0.0);
+    return 1;
 }
 
-static real
-becke_energy(DftDensProp* dp)
-{
-  return SlaterFunctional.func(dp) + B88CorrFunctional.func(dp);
-}
-
-static void
-becke_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
-{
-  SlaterFunctional.first (ds,factor,dp);
-  B88CorrFunctional.first(ds,factor,dp);
-}
-static void
-becke_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
-{
-  SlaterFunctional.second (ds,factor,dp);
-  B88CorrFunctional.second(ds,factor,dp);
-}
-static void
-becke_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
-{
-  SlaterFunctional.third (ds,factor, dp);
-  B88CorrFunctional.third(ds,factor, dp);
-}
-
-static const real BECKE_THRESHOLD = 1e-14;
-static const real BETA = 0.0042;
-/* b88corr_energy:
+/* becke_energy:
    note that in reality E_BCK = E_BCK,alpha + E_BCK,beta
    i.e the is linear in alpha and beta densities.
+
+   Becke threshold is needed to avoid numerical problems on 0/0
+   divisions.  The problems are small but it is better to be on the
+   safe side.
 */
+static const real BECKE_THRESHOLD = 1e-14;
+static const real BETA = 0.0042;
 static real
-b88corr_energy(DftDensProp* dp)
+becke_energy(const FunDensProp* dp)
 {
    real ea,eb;
    if (dp->rhob<BECKE_THRESHOLD)
@@ -154,8 +110,10 @@ b88corr_energy(DftDensProp* dp)
    return -BETA*(ea+eb);
 }
 
+
+
 static void
-b88corr_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+becke_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real alpha, aa2, asha, sq1aa2;
     real alphb, ab2, ashb, sq1ab2;
@@ -197,7 +155,7 @@ b88corr_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-b88corr_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+becke_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real BETA2 = BETA*BETA;
     real alpha, a2, a3, a4, asha, asha2, sq1a2;
@@ -272,7 +230,7 @@ b88corr_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
     }  
 }
 
-/* b88corr_third:
+/* becke_third:
    Becke functional derivatives.
    Input: rho, rhogrd.
    Output:
@@ -311,7 +269,7 @@ b88corr_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
    restricted case.
 */
 static void
-b88corr_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+becke_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real BETA2 = BETA*BETA;
     real alpha, a2, a3, a4, a5, asha, asha2, sq1a2;

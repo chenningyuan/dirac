@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 
 ***********************************************************************
@@ -184,14 +172,14 @@ C    &          NOCTPA,NOCTPB,IDC,WORK(KVIOOSE),WORK(KVNOOSE),NSCMBE,1)
       CALL MEMMAN(KLVIBT ,8*NTTS,'ADDL  ',1,'VIBT  ')
 *
 C     CALL PART_CIV(IDC,WORK(KLVBLTP),WORK(KVNOOSE),WORK(KVNOOS),
-C    &              NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLVIOIO),
+C    &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLVIOIO),
 C    &              ISMOST(1,ISM),
 C    &              NSBATCH,WORK(KLVLBT),WORK(KLVLEBT),
 C    &              WORK(KLVI1BT), WORK(KLVIBT),1)
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLVBLTP),WORK(KNSTSO(IATP)),
      &               WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,
-     &               NSMST,LSCR1,WORK(KLVIOIO),ISMOST(1,ISM),
+     &               NSMST,LBLOCK,WORK(KLVIOIO),ISMOST(1,ISM),
      &               NSBATCH,WORK(KLVLBT),WORK(KLVLEBT),
      &               WORK(KLVI1BT),WORK(KLVIBT),1,ITTSS_ORD)
 C    PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
@@ -1036,13 +1024,14 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASDIAS(NAEL,IASTR,NBEL,IBSTR,
      &           NORB,DIAG,NSMST,H,XA,XB,SCR,RJ,RK,
      &           NSSOA,NSSOB,LUDIA,ECORE,
      &           PLSIGN,PSSIGN,IPRNT,NTOOB,ICISTR,RJKAA,I12,
-     &           IBLTP,NBLOCK,IBLKFO)
+     &           IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *
 * Calculate determinant diagonal
 * Turbo-ras version
@@ -1058,7 +1047,17 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * I12 = 1 => only one-body part
 *     = 2 =>      one+two-body part
 *
+* Parallel adaption in January 2007, Stefan Knecht
+* last parallel revision: March 2008
+*
       IMPLICIT REAL*8           (A-H,O-Z)
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+#endif
+#include "parluci.h"
 C     REAL * 8  INPROD
 *.General input
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -1069,7 +1068,7 @@ C     REAL * 8  INPROD
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
       DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
-      DIMENSION RJKAA(*)
+      DIMENSION RJKAA(*), NPARBLOCK(*)
 *. Output
       DIMENSION DIAG(*)
 *
@@ -1080,22 +1079,24 @@ C     REAL * 8  INPROD
       ELSE
          XADD = 0.0D0
       END IF
+      IDIA_OFFSET = 0
+*     proper offset
+      IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF
 *
-
       IF( NTEST .GE. 20 ) THEN
-        WRITE(6,*) ' Diagonal one electron integrals'
-        CALL WRTMAT(H,1,NORB,1,NORB)
-        WRITE(6,*) ' Core energy ', ECORE
+        WRITE(LUWRT,*) ' Diagonal one electron integrals'
+        CALL WRTMATMN(H,1,NORB,1,NORB,LUWRT)
+        WRITE(LUWRT,*) ' Core energy ', ECORE
         IF(I12.EQ.2) THEN
-          WRITE(6,*) ' Coulomb and exchange integrals '
-          CALL WRTMAT(RJ,NORB,NORB,NTOOB,NTOOB)
-          WRITE(6,*)
-          CALL WRTMAT(RK,NORB,NORB,NTOOB,NTOOB)
+          WRITE(LUWRT,*) ' Coulomb and exchange integrals '
+          CALL WRTMATMN(RJ,NORB,NORB,NTOOB,NTOOB,LUWRT)
+          WRITE(LUWRT,*)
+          CALL WRTMATMN(RK,NORB,NORB,NTOOB,NTOOB,LUWRT)
         END IF
 *
-        WRITE(6,*) ' TTSS for Blocks '
+        WRITE(LUWRT,*) ' TTSS for Blocks '
         DO IBLOCK = 1, NBLOCK
-          WRITE(6,'(10X,4I3,2I8)') (IBLKFO(II,IBLOCK),II=1,4)
+          WRITE(LUWRT,'(10X,4I3,2I8)') (IBLKFO(II,IBLOCK),II=1,4)
         END DO
 *
         WRITE(6,*) ' I12 = ',I12
@@ -1114,9 +1115,12 @@ C     REAL * 8  INPROD
      &CALL VECSUM(RK,RK,RJ,-1.0D0,+1.0D0,NTOOB **2)
       IDET = 0
       ITDET = 0
-      IF(LUDIA.NE.0) CALL REWINO(LUDIA)
+      IF(LUDIA.NE.0) CALL REWINE(LUDIA,-1)
 *
       DO IBLK = 1, NBLOCK
+#if defined (VAR_MPI2)
+         IF( NPARBLOCK( IBLK ) .ne. MYPROC ) GOTO 2425
+#endif
 *
         IATP = IBLKFO(1,IBLK)
         IBTP = IBLKFO(2,IBLK)
@@ -1162,7 +1166,7 @@ C     REAL * 8  INPROD
 *
           HB = 0.0D0
           RJBB = 0.0D0
-          CALL SETVEC(XB,0.0D0,NORB)
+          CALL DZERO(XB,NORB)
 *
           DO IEL = 1, NBEL
             IBEL = IBSTR(IEL,IB)
@@ -1206,19 +1210,27 @@ C     REAL * 8  INPROD
             write(6,*) ' number of diagonal elements to disc ',IDET
             CALL WRTMAT(DIAG,1,IDET,1,IDET)
           END IF
+#if defined (VAR_MPI2)
+          CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                           MPI_REAL8,ISTAT,IERR)
+C         new offset
+          IDIA_OFFSET = IDIA_OFFSET + IDET
+#else
           CALL ITODS(IDET,1,-1,LUDIA)
           CALL TODSC(DIAG,IDET,-1,LUDIA)
+#endif
           IDET = 0
         END IF
+2425    CONTINUE
       END DO
-*        ^ End of loop over blocks
+*     ^ End of loop over blocks
 
-      IF(NTEST.GE.5) WRITE(6,*)
+      IF(NTEST.GE.5) WRITE(LUWRT,*)
      &' Number of diagonal elements generated ',ITDET
 *
       IF(NTEST .GE.100 .AND.ICISTR.LE.1 ) THEN
-        WRITE(6,*) ' CIDIAGONAL '
-        CALL WRTMAT(DIAG(1),1,IDET,1,IDET)
+        WRITE(LUWRT,*) ' CIDIAGONAL '
+        CALL WRTMATMN(DIAG(1),1,IDET,1,IDET,LUWRT)
       END IF
 *
       IF ( ICISTR.GE.2 ) CALL ITODS(-1,1,-1,LUDIA)
@@ -1228,12 +1240,11 @@ C     REAL * 8  INPROD
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-C     GASDIAT(WORK(KVEC1),LUDIA,ECOREP,ICISTR,I12,
-C    &        WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
       SUBROUTINE GASDIAT(DIAG,LUDIA,ECORE,ICISTR,I12,
-     &                   IBLTP,NBLOCK,IBLKFO)
+     &                   IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -1241,6 +1252,8 @@ C    &        WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
 * GAS version, Winter of 95
 *
 * Driven by table of TTS blocks, May97
+*
+* parallel adaption by S. Knecht - March 2008
 *
       IMPLICIT REAL*8(A-H,O-Z)
 * =====
@@ -1261,9 +1274,17 @@ C    &        WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
+C
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
+
 *
       DIMENSION IBLTP(*)
-      DIMENSION IBLKFO(8,NBLOCK)
+      DIMENSION IBLKFO(8,NBLOCK), NPARBLOCK(*)
 *
 * ======
 *.Output
@@ -1335,19 +1356,18 @@ C    &            NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
 *
       CALL GT1DIA(WORK(KLH1D))
       CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
-      IF( LUDIA .GT. 0 ) CALL REWINO(LUDIA)
+      IF( LUDIA .GT. 0 ) CALL REWINE(LUDIA,-1)
       CALL GASDIAS(NAEL,WORK(KLASTR),NBEL,WORK(KLBSTR),
      &     NACOB,DIAG,NSMST,WORK(KLH1D),
      &     WORK(KLXA),WORK(KLXB),WORK(KLSCR),WORK(KLJ),
      &     WORK(KLK),WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
      &     LUDIA,ECORE,PLSIGN,PSSIGN,IPRDIA,NTOOB,ICISTR,
-     &     WORK(KLRJKA),I12,IBLTP,NBLOCK,IBLKFO)
+     &     WORK(KLRJKA),I12,IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
 *.Flush local memory
       CALL MEMMAN(IDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
       CALL QEXIT('CIDIA')
 *
 C?    Call Abend2( ' Jeppe forced me to stop after GASDIA ' )
-      RETURN
       END
 ***********************************************************************
 *                                                                     *

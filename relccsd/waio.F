@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C WAIO : Word addressable I/O package, written by Luuk Visscher
@@ -44,7 +32,11 @@ C     This variable gives the number of records that has been written.
 C
 #include "waio.h"
 C
+#if defined (VAR_WAIO_C)
+      WRITE (IW,1000) "      C",NWORDS_ON_RECORD*4/1024
+#else
       WRITE (IW,1000) "FORTRAN",NWORDS_ON_RECORD*4/1024
+#endif
       DO ITAPE = 1, MAX_WAIO_FILES-1
          IWRIT_WAIO(ITAPE) = -1
       ENDDO
@@ -140,11 +132,17 @@ C
          WRITE (DN(ITAPE),'(A2,I2,A6)') 'ft',ITAPE,IDENT
       ENDIF
 C
+#if defined (VAR_WAIO_C)
+      STATUS = 1
+      SIZE = 0
+      CALL OPENC(ITAPE,DN(ITAPE),SIZE,STATUS)
+#else
       NINTE = NWORDS_ON_RECORD
       NREAL = 0
       NLOGI = 0
       LENREC = IRECLEN (NREAL,NINTE,NLOGI)
       OPEN (ITAPE,FILE=DN(ITAPE),ACCESS='DIRECT',RECL=LENREC)
+#endif
 C
       RETURN
       END
@@ -170,12 +168,23 @@ C
 C
       IF(ITAPE.EQ.6) CALL QUIT(' YOU CANNOT CLOSE A FILE ON UNIT 6')
 C
+#if defined (VAR_WAIO_C)
+      CALL CLOSEC(ITAPE)
+      IF (JCODE.EQ.4) THEN
+         STAT = UNLINK(DN(ITAPE))
+         IF(STAT.NE.0) THEN
+           WRITE(6,*) '  Cannot delete file ',ITAPE,'  STAT = ',STAT
+           WRITE(6,*) ' DN = ',DN(ITAPE)
+         END IF
+      ENDIF
+#else
       IF (JCODE.EQ.3) THEN
           CLOSE(ITAPE,STATUS='KEEP')
       ELSEIF (JCODE.EQ.4) THEN
           CLOSE(ITAPE,STATUS='DELETE')
           IWRIT_WAIO(ITAPE) = -1
       ENDIF
+#endif
 C
       RETURN
       END
@@ -228,6 +237,13 @@ C     Initialize timer
 C
       CALL GETTIM(CPU1,WALL1)
 C
+#if defined (VAR_WAIO_C)
+      IF (DO_READ) THEN
+         CALL RDABSF(ITAPE,ARRAY,NLEN,OFFSET)
+      ELSE
+         CALL WRABSF(ITAPE,ARRAY,NLEN,OFFSET)
+      ENDIF
+#else
       INIT_WAIO = 12345678
 C
 C     Since the amount of words and the offset is usually not
@@ -245,7 +261,7 @@ C
       OFF = 1
       IREC = OFFSET / NWORDS_ON_RECORD + 1
 C
-      OFFB =  MOD(OFFSET,NWORDS_ON_RECORD)
+      OFFB =  MOD(OFFSET,NWORDS_ON_RECORD8)
       IF (OFFB.NE.0) THEN
 C
 C        Read the first partial record  
@@ -329,6 +345,7 @@ cdbg        print*,"last record",irec_last,1,nwords,'-->',off
       END IF
 C     Update the information about the highest record that is written
       IWRIT_WAIO(ITAPE) = MAX0(IWRIT_WAIO(ITAPE),IREC_LAST)
+#endif
 C
 C     Take statistics
 C

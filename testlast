@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+#. /etc/profile  # profile is not executed by cron (uncomment this line if you use testlast with cron)
 #
 # Test latest version of DIRAC by updating the working copy and
 # running the standard testset.
@@ -6,12 +7,23 @@
 # Written by Luuk Visscher - May 15 2002
 #
 # Set defaults
-pampath=`pwd`
-dirac=`pwd`/dirac.x
+testlastpath=`pwd`
+# --------------------------------------
+# Use pam and dirac.x defined in $testdir/runtest.
+pampath=' '
+diracexe=' '
+# You can override this by uncommeting the next two lines and modify them appropriately.
+#pampath="--pampath=`pwd`"
+#diracexe="--dirac=`pwd`/dirac.x"
+# --------------------------------------
 testdir=`pwd`/test
+RUNTYPE="undefined"
+cvs="no"
 mpi=" "
+parallel=" "
 nodes=1
 queue="none"
+time="4:00:00"
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -29,6 +41,27 @@ fi
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
+# Define backup function /hjaaj
+#
+backup () {
+  if [ "$1" = "-v" ]; then ekko=1; shift
+  else ekko=0;
+  fi
+  for i in $* ; do
+     if [ -f "${i}" ]; then
+        for j in 6 5 4 3 2 1 0 ; do
+           let jp=$j+1
+           if [ -f "${i}.${j}" ]; then 
+              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+              mv -f "${i}.${j}" "${i}.${jp}"
+           fi
+        done
+        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+        mv -f "${i}" "${i}.0"
+     fi
+  done
+}
+#
 #
 # CHECK OPTIONS
 #
@@ -38,12 +71,18 @@ usage='Usage: '$0'\n'\
 '\tPrint this\n'\
 '\tA common error is to forget the = character, e.g. -q long instead of the correct -q=long\n'\
 '--tests=TESTS\n'\
-'\tThe tests that should be run (default: short) \n'\
-'\tKnown tests: "short", "medium", "long", "all", or the numbers of some specific tests\n'\
+'\tThe tests that should be run (default: --tests=short)\n'\
+'\tKnown tests: "short", "medium", "long", "all", or the number(s) of some specific tests\n'\
+'--runtype=RUNTYPE\n'\
+'\tshort, medium, etc. (default: undefined)\n'\
 '--testdir=TESTDIR\n'\
-'\tDirectory in which the tests should be run (default: -testdir=test)\n'\
+'\tDirectory in which the tests should be run (default: --testdir=test)\n'\
+'--cvs=yes/no\n'\
+'\tRun cvs prior to compilation (default: --cvs=no)\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
+'--time=TIME\n'\
+"\tRuntime (for the queueing system) (default: $time)\n"\
 '--q=QUEUE\n'\
 '\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
 
@@ -61,6 +100,8 @@ while [ $# != 0 ]; do
          valomitted=yes
          ;;
       *)
+         $echo "Invalid argument: ${arg}"
+         $echo "NOTE: $0 does not accept any arguments!"
          $echo $usage
          exit 
    esac
@@ -81,10 +122,21 @@ while [ $# != 0 ]; do
             tests="$val"
          fi
          ;;
+      "runtype")
+         if [ "${valomitted}" = "no" ]; then
+            RUNTYPE="$val"
+         fi
+         ;;
+      "cvs")
+         if [ "${valomitted}" = "no" ]; then
+            cvs="$val"
+         fi
+         ;;
       "mpi")
          if [ "${valomitted}" = "no" ]; then
             nodes=$val
             mpi="--mpi=$nodes"
+            parallel="-pe mpich $nodes"
          fi
          ;;
       "q")
@@ -95,6 +147,11 @@ while [ $# != 0 ]; do
       "queue")
          if [ "${valomitted}" = "no" ]; then
             queue="$val"
+         fi
+         ;;
+      "time")
+         if [ "${valomitted}" = "no" ]; then
+            time="$val"
          fi
          ;;
       *)
@@ -109,11 +166,12 @@ done
 #
 errfile=${testdir}/logs/lastrun
 if [ -f $errfile ]; then
-   rm $errfile
+   backup -v $errfile
 fi
 if [  -z "$tests" ]; then
    run=default_test;
    tests=short;
+   echo ' Will do default tests : ' $tests ;
 else
    case "${tests}" in
       "short")
@@ -133,7 +191,10 @@ else
       ;;
    esac
 fi
+
 #
+
+cvslog=cvs_log;
 makelog=make_log;
 runlog=${run}_run.log;
 txtlog=${run}_dif.txt;
@@ -146,28 +207,59 @@ if [ ! -d "${testdir}/logs" ]; then
    mkdir ${testdir}/logs;
 fi
 cd ${testdir}/logs;
-for i in $makelog $runlog $txtlog $htmlog ; do
-    if [ -f "${i}" ]; then
-        if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
-        if [ -f "${i}.5" ]; then mv -f "${i}.5" "${i}.6"; fi
-        if [ -f "${i}.4" ]; then mv -f "${i}.4" "${i}.5"; fi
-        if [ -f "${i}.3" ]; then mv -f "${i}.3" "${i}.4"; fi
-        if [ -f "${i}.2" ]; then mv -f "${i}.2" "${i}.3"; fi
-        if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
-        if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
-        if [ -f "${i}" ]; then mv -f "${i}" "${i}.0" ; fi
-    fi
-done
-cd ${pampath};
+backup $makelog
+backup $cvslog
+backup $runlog
+backup $txtlog
+backup $htmlog
+
+# >>-*-*-*-*> do cvs update and make if $cvs is yes
+
+cd ${testlastpath};
 #
+if [ "${cvs}" = "yes" ]; then
+  echo ' Starting CVS Update ... ' ;
+  cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
+  { echo " CVS update failed" ; \
+    echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
+    cat ${testdir}/logs/$cvslog ; \
+    exit 1 ;\
+  }
+#
+#
+  echo ' Making the Makefiles (running pamadm) ...'
+  ./pamadm -adm  > ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Pamadm failed" ; \
+    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
+    cat ${testdir}/logs/$makelog ; \
+    exit 1 ;\
+  }
+  echo ' Checking dependencies ... '
+  make depend >> ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Make depend failed" ; \
+    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
+    cat ${testdir}/logs/$makelog ; \
+    exit 1 ;\
+  }
+  echo ' Recompiling ... '
+  make >> ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Make failed" ; \
+    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
+    cat ${testdir}/logs/$makelog ; \
+    exit 1 ;\
+  }
+fi
+
+# >>-*-*-*-*> Create job script "job_testlast.sh"
+
 cat <<EOF >job_testlast.sh
-#!/bin/sh
+#!/bin/bash
 #
 # This file is a test job script created by the 'testlast' script
 #
 echo " Starting test at \`date\`"
 cd ${testdir};
-./runtest --tests="$tests" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ./logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -186,23 +278,31 @@ else
     cat logs/$runlog
 fi
 EOF
+
+# >>-*-*-*-*> Run job script interactively or batch, depending on $queue
+
 if [ "${queue}" = "none" ]; then
-# The tests are default run interactively.
-echo ' Starting test calculations interactively ... '
-chmod u+x job_testlast.sh
-./job_testlast.sh
+  # The tests are default run interactively on the same machine as the cvs and make command is run.
+  echo ' Starting test calculations interactively ... '
+  chmod u+x job_testlast.sh
+  ./job_testlast.sh
 else
-echo " Submitting test calculations to queue $queue ... "
-echo " When they are done please check the results in the directory ${testdir}/logs. "
-#
-# This is a script that works with the pbs (qsub) batch environment
-#
-qsub -j oe -o $errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
-#
-# Other queue systems used in Amsterdam. Add you own as new comment line if you like
-#
-#pbs:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
-#bsub: bsub <job_testlast.sh
+  echo " Submitting test calculations to queue $queue ... "
+  echo " When they are done please check the results in the directory ${testdir}/logs. "
+  #
+  # This is a script that works with the pbs (qsub) batch environment
+  #
+  # qsub -j oe -o $errfile -l walltime=$time,nodes=$nodes -q ${queue} -V job_testlast.sh
+  #
+  # Other queue systems used in Amsterdam. Add you own as new comment line if you like
+  #
+  #tc: tcsub wrapper from tctools module
+   chmod a+x job_testlast.sh; tcsub -a generic -n 1 -q $queue -p mpich job_testlast.sh $time
+  #oldtc: qsub -e $errfile -o $errfile -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
+  #das:  /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+  #solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
+  #teras: bsub <job_testlast.sh
 fi
-rm job_testlast.sh
+
+#rm job_testlast.sh
 #

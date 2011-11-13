@@ -1,36 +1,24 @@
 /*
-       Copyright (c) 2004 by the authors of Dirac (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       Dirac, a relativistic ab initio electronic structure program,
-       release DIRAC04.0 (2004),
-       written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-       with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-       O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-       P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-       P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-       (http://dirac.chem.sdu.dk).
-    
-       For a suitable BibTEX entry, see:
-          http://dirac.chem.sdu.dk/doc/reference.shtml
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dirac,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dirac-admin@dirac.chem.sdu.dk
-    
-       For information on how to get a licence see:
-          http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 */
 /* Automatically generated functional code: kin_vw
    Maxima input:
@@ -59,13 +47,13 @@
 
 /* INTERFACE PART */
 static int kin_vw_read(const char* conf_line);
-static real kin_vw_energy(DftDensProp* dp);
-static void kin_vw_first(FirstFuncDrv *ds, real factor, 
-                       DftDensProp* dp);
-static void kin_vw_second(SecondFuncDrv *ds, real factor,
-                        DftDensProp* dp);
-static void kin_vw_third(ThirdFuncDrv *ds, real factor,
-                       DftDensProp* dp);
+static real kin_vw_energy(const FunDensProp* dp);
+static void kin_vw_first(FunFirstFuncDrv *ds, real factor, 
+                         const FunDensProp* dp);
+static void kin_vw_second(FunSecondFuncDrv *ds, real factor,
+                        const FunDensProp* dp);
+static void kin_vw_third(FunThirdFuncDrv *ds, real factor,
+                       const FunDensProp* dp);
 
 Functional VW_KinFunctional = {
   "kin_vw",
@@ -82,19 +70,15 @@ Functional VW_KinFunctional = {
 static int
 kin_vw_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 
 
 static real
-kin_vw_energy(DftDensProp* dp)
+kin_vw_energy(const FunDensProp* dp)
 {
     real t1;
-
-    real grada = dp->grada;
-    real gradb = dp->gradb;
-    real gradab = dp->gradab;
 
     t1 = dp->rhob + dp->rhoa;
     return 2.871234000188191 * pow(t1, 5.0/3.0) + 
@@ -103,7 +87,7 @@ kin_vw_energy(DftDensProp* dp)
 }
 
 static void
-kin_vw_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+kin_vw_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t1, t2, t3;
 
@@ -120,7 +104,7 @@ kin_vw_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-kin_vw_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+kin_vw_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[11];
     real dfdra, dfdrb, dfdga, dfdgb, dfdab;
@@ -178,7 +162,7 @@ kin_vw_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 }
 
 static void
-kin_vw_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+kin_vw_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[16];
     real dfdra, dfdrb, dfdga, dfdgb, dfdab;

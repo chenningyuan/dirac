@@ -1,7 +1,8 @@
 C
-C VERSION : $Revision: 1.2.46.1 $
-C DATE    : $Date: 2004/09/01 10:35:37 $
-C FILE    : dirrci/iterat.inc
+C VERSION : $Revision: 240 $
+C DATE    : $Date: 1998-02-17 15:23:21 +0100 (Tue, 17 Feb 1998) $
+C FILE    : iterat.inc
+C SOURCE  : $Source$
 C
       COMMON/DAVIDC/DCORR(N8)
       COMMON/EIVALS/EIGEN(N2),EIGEN1(N8),EIGEN2(N8),CONV(N8),

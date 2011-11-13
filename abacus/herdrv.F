@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.21.4.1 $
-C DATE    : $Date: 2004/09/01 08:04:07 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : herdrv.F
 C
 C
@@ -62,7 +50,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "efield.h"
-      PARAMETER (NDIR = 7, NTABLE = 80)
+      PARAMETER (NDIR = 9, NTABLE = 82)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -74,6 +62,9 @@ C
 #include "gnrinf.h"
 #endif
 #include "cbiher.h"
+C#ifdef MOD_ERI
+#include "cbieri.h"
+C#endif
 #include "cbihr1.h"
 #include "cbisol.h"
 #include "nuclei.h"
@@ -81,9 +72,13 @@ C
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
+C#ifdef MOD_DNF
+#include "densfit.h"
+C#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
-     &             '*SUPINT', '*ER2INT', '*JENGIN'/
+     &             '*SUPINT', '*ER2INT', '*JENGIN', '*DENSFI',
+     &             '*XXXXXX'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
@@ -103,7 +98,8 @@ C
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.XXXXXX'/
+     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.RUNERI',
+     &             '.LINK  ', '.DENSFI'/
 C
 C     Check if input has been processed earlier.
 C
@@ -113,7 +109,6 @@ C
 C
 C     Initialize /CBIHER/
 C
-CTSAUE
       IF(RELCAL) THEN
         HAMILT = .FALSE.
         ONEPRP = .FALSE.
@@ -127,6 +122,12 @@ CTSAUE
         DIRAC  = .FALSE.
         SUPMAT = .NOT. DIRCAL
       ENDIF
+
+C#ifdef MOD_ERI
+      RUNERI = .FALSE.
+      DOLINK = .FALSE.
+      DOFCK3 = .FALSE.
+C#endif
       SKIP   = .FALSE.
       TSTINP = .FALSE.
       DIPLEN = .FALSE.
@@ -240,6 +241,9 @@ C         if reading input from a terminal
          GOTO 1
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
+#ifdef MOD_ERI
+         CALL ER2INI
+#endif
          WORD = '*END OF'
          GOTO 1
   930 CONTINUE
@@ -261,7 +265,8 @@ C
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
      &                161,162,163,164,165,166,167,168,169,170,
-     &                171,172,173,174,175,176,177,178,179,180), I
+     &                171,172,173,174,175,176,177,178,179,180,
+     &                181,182,183), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -633,12 +638,27 @@ C&&& MAGCOR - print magnetic coordinates
             GO TO 100
  179     CONTINUE
 C&&& JENGIN - activate J-engine
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
             DOFCK3=.TRUE.
 #endif
             GO TO 100
  180     CONTINUE
+C&&& RUNERI - activates ERI code
+#ifdef MOD_ERI
+            RUNERI=.TRUE.
+#endif
             GO TO 100
+ 181     CONTINUE
+#ifdef MOD_ERI
+CC&&&& DOLINK - activates the fast exchange code
+            DOLINK = .TRUE. 
+            GO TO 100
+#endif 
+ 182     CONTINUE
+#ifdef MOD_ERI
+#endif
+ 183     CONTINUE
+
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
       ELSE
@@ -650,6 +670,21 @@ C&&& JENGIN - activate J-engine
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
+#ifdef MOD_ERI
+      IF (RUNERI) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     ' Integrals are calculated using ERI '//
+     &     'instead of HERMIT (where possible)'
+      ENDIF
+      IF (DOFCK3) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     'J-engine (FCK3) used for Coulomb'
+      ENDIF
+      IF (DOLINK) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     'LinK scheme for exchange'
+      ENDIF
+#endif
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
      &    'Gaussian charge distribution.'
@@ -906,6 +941,9 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
+#ifdef MOD_ERI
+      CALL ER2INI
+#endif
  201  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -913,7 +951,7 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 1
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7), I
+               GO TO (1,2,3,4,5,6,7,8,9), I
             END IF
   210    CONTINUE
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
@@ -942,18 +980,20 @@ C
       CALL QUIT('No ERI 2-el. integrals in parallel code')
 #else
     6   CONTINUE
-#if defined (MOD_ERI)
-CTROND        CALL ER2INP(WORD)
+#ifdef MOD_ERI
+        CALL ER2INP(WORD)
 #endif
       GO TO 201
 #endif
     7    CONTINUE
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 C&&& JENGINE: Read input for J-engine for Coulom contribution
         CALL FCK3INP(WORD)
-        STOP 'End of test'
       GO TO 201
 #endif
+    8    CONTINUE
+    9    CONTINUE
+      GO TO 201
 C
     1 CONTINUE
 C
@@ -963,11 +1003,8 @@ C
       CALL HRSINP(WORD)
 #endif /* ifndef PRG_DIRAC */
 #ifdef MOD_ERI
-CTROND      CALL ER2INP(WORD)
-CTROND
-      WRITE(0,*) 'Calling FCK3INP..'
+      CALL ER2INP(WORD)
       CALL FCK3INP(WORD)
-      STOP 'End of test II'
 #endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
@@ -1259,7 +1296,7 @@ C&&&& in direct SCF
                   READ (LUCMD,*) ICDIFF,IEDIFF
                GO TO 100
     8          CONTINUE
-C&&&& Screening threshold in direct construction of Fock matrices
+C&&&& SCREEN: Screening threshold in direct construction of Fock matrices
                   READ (LUCMD,*) SCRFCK
                   USRSCR = .TRUE.
                GO TO 100
@@ -1323,9 +1360,11 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
      &    '* Separate density screening of Coulomb integral batches'
                 IF(IEDIFF.EQ.1) WRITE(LUPRI,'(1X,A)')
      &    '* Separate density screening of exchange integral batches'
+                CALL FLSHFO(LUPRI)
               ELSE
                  WRITE(LUPRI,'(4X,A)') 
-     &           '---> WARNING : Screening turned off !'
+     &           '---> WARNING : Integral screening turned off !'
+                 CALL FLSHFO(LUPRI)
               ENDIF
             ENDIF
             IF(RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN
@@ -2223,11 +2262,13 @@ C     ********************************
 C     ***** New integral program *****
 C     ********************************
 C
+#ifdef MOD_ERI
       IF (RUNERI) THEN
+#endif
 #if defined (VAR_MPI)
       CALL QUIT('No ERI 2-el. integrals in parallel version')
 #else
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
          IF (IPRDEF .GT. 0) CALL TITLER('Output from ER2INT','*',126)
 C
 C        ********************************************

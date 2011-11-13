@@ -1,70 +1,29 @@
 /*
-       Copyright (c) 2004 by the authors of Dirac (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       Dirac, a relativistic ab initio electronic structure program,
-       release DIRAC04.0 (2004),
-       written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-       with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-       O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-       P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-       P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-       (http://dirac.chem.sdu.dk).
-    
-       For a suitable BibTEX entry, see:
-          http://dirac.chem.sdu.dk/doc/reference.shtml
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dirac,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dirac-admin@dirac.chem.sdu.dk
-    
-       For information on how to get a licence see:
-          http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 */
- /*
-  *
-  *...   Copyright (c) 1998 by the authors of Dirac (see below).
-  *...   All Rights Reserved.
-  *...
-  *...   The source code in this file is part of 
-  *...   "Dirac, a relativistic ab initio electronic structure program, 
-  *...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-  *...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
-  *...
-  *...   This source code is provided under a written licence and may be 
-  *...   used, copied, transmitted, or stored only in accord with that
-  *...   written licence.
-  *...
-  *...   In particular, no part of the source code or compiled modules may 
-  *...   be distributed outside the research group of the licence holder. 
-  *...   This means also that persons (e.g. post-docs) leaving the research
-  *...   group of the licence holder may not take any part of Dirac,
-  *...   including modified files, with him/her, unless that person has
-  *...   obtained his/her own licence. 
-  *...
-  *...   For questions concerning this copyright write to:
-  *...      dirac-admin@dirac.chem.ou.dk
-  *...
-  *...   For information on how to get a licence see:
-  *...      http://dirac.chem.ou.dk/Dirac
-  *
-  *
-  */
 /*
  *
- * VERSION : $Revision: 1.9.2.1 $
- * DATE    : $Date: 2004/09/01 08:10:54 $
+ * VERSION : $Revision: 7750 $
+ * DATE    : $Date: 2008-09-17 13:58:49 +0200 (Wed, 17 Sep 2008) $
  * FILE    : gpc.c
  *
  * frac2i:
@@ -83,32 +42,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/utsname.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include "patchlevel.h"
 #include "compinfo.h"
 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-#include <fortran.h>
-#define frac2i FRAC2I
-#define creadreorder CREADREORDER
-#elif defined (SYS_HPUX)
-/* nothing */
-#elif defined (SYS_AIX)
-#define frac2i frac2i
-#define creadreorder creadreorder
-#else
-#define frac2i frac2i_
-#define creadreorder creadreorder_
-#define compoff compoff_
-#endif /*CRAY*/
 
-void c_frac2i();
-void frac2i();
-/* void sysinf(); */
-void sysinf(int );
-/* void creadreorder(); */
-void creadreorder(char *, int *, int *, int *);
-/* void distribute_env(); */
-void distribute_env(const char*, int);
+#ifndef  NO_C99
+#include <stdint.h>
+typedef int64_t int_star_8_t;
+#else
+typedef long int_star_8_t; /* This should be long long on many machines. */
+#endif
+
 
 /*
  * Take string of tokens and return new ordering
@@ -122,16 +68,10 @@ void creadreorder(char *string, int *ireord, int imoord[], int *mxreord)
 
    *ireord = 0;
    
-   /*
-   printf("string: %s\n",string);
-    */
    token = strtok(string,",");
 
    while ( token != NULL )
    {
-      /*
-      printf("Token %2i: %s\n",*ireord,token);
-       */
       itemp = atoi(token);
       if ( itemp <= 0 ) return;
       if ( (*ireord = *ireord + 1) > (*mxreord) ) 
@@ -144,66 +84,59 @@ void creadreorder(char *string, int *ireord, int imoord[], int *mxreord)
    }
 }
 
-/* 
- * Take string s and return the fraction n/d
- */
-
-void c_frac2i(s,f) 
-char *s;
-double *f;
-
+static void print_time(time_t secs, FILE *dst)
 {
-   char *s1;
-   int d,n;
-
-   s1 = strstr(s,"/");
-   /*
-    * If no '/' present in string then it is a float
-    * else it is a 'n/d'
-    */
-   if ( s1 == (char *) NULL ) 
-   {
-      *f = atof(s);
-   }
-   else
-   {
-      s1++;
-      d = atoi(s1);
-      n = atoi(s);
-      *f = ((double) n) / ((double) d);
-   }
+    if (secs > 60*60*24)
+    {
+	int days = secs / (60*60*24);
+	fprintf(dst,"%idays",days);
+	secs -= days*60*60*24;
+    }
+    if (secs > 60*60)
+    {
+	int hrs = secs / (60*60);
+	fprintf(dst,"%ih",hrs);
+	secs -= hrs*60*60;
+    }
+    if (secs > 60)
+    {
+	int mins = secs / (60);
+	fprintf(dst,"%imin",mins);
+	secs -= mins*60;
+    }
+    fprintf(dst,"%is",(int)secs);
 }
 
-void
-#if defined(SYS_CRAY) || defined (SYS_T3D)
-frac2i(f,fcd)
-double *f;
-_fcd fcd;
-#else
-frac2i(f,s,l)
-double *f;
-char *s;
-int l;
-#endif
-
+/* Start timers, or stop and print cpu and wall time*/
+void stopwatch_(int *start, int *node_nr)
 {
-   char *temp;
-#if defined(SYS_CRAY) || defined (SYS_T3D)
-   int l;
-   char *s;
-
-   l = _fcdlen(fcd);
-   s = _fcdtocp(fcd);
-#endif
-   temp = (char *) malloc(l+1);
-   strncpy(temp, s, l);
-   temp[l] = '\0';
-   c_frac2i(temp,f);
-   free(temp);
+    static struct timeval start_wall;
+    if (*start)
+    {
+	gettimeofday(&start_wall, NULL);
+    }
+    else
+    {
+	struct rusage rusage;
+	if (getrusage(RUSAGE_SELF,&rusage) == 0)
+	{
+	    /* These are the fields supported by linux, we may add others on other systems. See the man page of getrusage*/
+	    printf(">>>> Node %i, utime: %lld, stime: %lld, minflt: %ld, majflt: %ld, nvcsw: %ld, nivcsw: %ld\n",
+		   *node_nr, (long long int)(rusage.ru_utime.tv_sec), (long long int)(rusage.ru_stime.tv_sec), 
+		   rusage.ru_minflt, rusage.ru_majflt, rusage.ru_nvcsw, rusage.ru_nivcsw, rusage.ru_maxrss);
+	}
+	if (*node_nr == 0) /* print wall time only on the master */
+	{
+	    struct timeval end_wall;
+	    gettimeofday(&end_wall, NULL);
+	    printf(">>>> Total WALL time used in DIRAC: ");
+	    print_time(end_wall.tv_sec - start_wall.tv_sec,stdout);
+	    printf("\n");
+	}
+    }
 }
 
-
-void sysinf(int parcal)
+void sysinf_(int *parcal)
 
 {
    struct utsname *un;
@@ -223,7 +156,7 @@ void sysinf(int parcal)
       printf( " Operating system  : %s %s\n" , un->sysname, un->release);
       printf( " Machine           : %s\n" , un->machine);
    }
-   if ( ! parcal )
+   if ( ! *parcal )
       printf( " Run               : Sequential\n");
    else
       printf( " Run               : Parallel\n");
@@ -233,24 +166,41 @@ void sysinf(int parcal)
    printf(" Last compilation  : %s %s (by %s@%s)\n", 
       __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED);
 
+   printf(" FORTRAN compiler  : %s \n", FCOMP);
+   printf(" C compiler        : %s \n", CCOMP);
+   printf(" Changeset         : %s \n", VERSION);
+   fflush(stdout);
    free(un);
 }
 
-#if defined (IA64)
-void compoff_(double *wrk,double *work, long *kbase) {
-  *kbase = (long) (wrk-work+1);
+#define quit        quit_
+    /* NOTE: if this does not link with the FORTRAN subroutine QUIT,
+     * then try quit without the underscore */
+extern void quit(const char* str, int len);
+
+void compoff_(double *wrk, double *work, int_star_8_t *k_offset) {
+  *k_offset = wrk-work+1;
+/* Aug 2008: compoff_ shall always return k_offset as a FORTRAN INTEGER*8
+ * so that we don't get nonsense if address difference is bigger than 31
+ * bit. /HJAaJ
+ *
+*/
+  if ( sizeof(*k_offset) != 8 )
+  {
+    printf( "ERROR in COMPOFF in gpc.c: long is not I*8");
+    printf( "compoff: wrk=%p work=%p diff=%d\n", wrk, work, wrk-work+1);
+    printf( "k_offset=%d\n", *k_offset );
+    printf( "int %d long %d short int %d int_star_8_t %d\n", sizeof(int), sizeof(long), sizeof(short int),sizeof(int_star_8_t));
+    quit( "ERROR in COMPOFF in gpc.c: long is not I*8",42);
+    exit(1);
+  }
 /*
  *printf( "compoff: wrk=%p work=%p diff=%p\n", wrk, work, wrk-work+1);
- *printf( "kbase=%d\n", *kbase );
+ *printf( "k_offset=%d\n", *k_offset );
  *printf( "int %d long %d short int %d\n", sizeof(int), sizeof(long),
  *sizeof(short int));
 */
 }
-#else
-void compoff_(double *wrk,double *work, int *kbase) {
-  *kbase = (int) (wrk-work+1);
-}
-#endif
 
 void distribute_env(const char* name, int mytid)
 {
@@ -302,6 +252,23 @@ int icommsize_(const int *istart, const int *iend)
 }
 
 
+/*
+  Workaround for buggy fortran SYSTEM() on some
+  platforms (intel fortran 8.x-9.x)
+*/
+int csystem_(const char *cmd, int cmdlen)
+{
+  int i;
+  char *s;
+  s = malloc(cmdlen+1);
+  for (i=0;i<cmdlen;i++)
+    s[i] = cmd[i];
+  s[cmdlen] = 0;
+  i = system(cmd);
+  free(s);
+  return i;
+}
+
 #ifdef VAR_IFC
  /* extra routines needed by intel's ifc compiler which does not
  * provide them itself.
@@ -330,25 +297,26 @@ void getenv_(const char* str, char* val, int strl, int vall)
   int i;
 
   if(strl>sizeof(name)-1) {
-    printf("oops\n");
+    printf("gpc.c:getenv(): input string too long (I suck!)\n");
     return;
   }
   strncpy(name, str, strl);
   name[strl] = '\0';
 
-  /*printf("getenv(%s) called with strl=%d, vall=%d '%s'\n",
-    name, strl, vall, getenv(name));*/
   if( (envv=getenv(name)) != NULL)
     strncpy(val, envv, vall);
   else val[0] = '\0';
-  /*printf("getenv(%s) returned '%s' (%d, %d)\n", name, val, strl, vall);*/
+
   for(i=strlen(val); i< vall; i++)
     val[i] = ' ';
 }
 
-void system_(char* str, int strlen)
-{
-  printf("Bloody crayio. I ignore your commands.\n");
+void system_(char* str, int len)
+{    
+    char *buf = alloca(len+1);
+    buf[len] = 0;
+    strncpy(buf,str,len);
+    printf("VAR_IFC defined. Ignoring call system(%s)\n",buf);
 }
 
 void flush_(int* lu)
@@ -393,4 +361,4 @@ double* malloc_(int cnt)
 {
   return malloc(cnt);
 }
-#endif
+#endif /* VAR_IFC */

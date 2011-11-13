@@ -1,0 +1,15 @@
+$ERROR 1.E-12
+Nlines 8:Electronic energy
+
+$ERROR 1.E-5
+From:Eigenvalues
+ToRE:HOMO - LUMO
+
+$ERROR 1.E-5
+From:* Dipole moment
+To:1 a.u =   2.54177000 Debye
+
+
+$ERROR 1.E-5
+From:                     ! Electric dipole polarizability !
+To:----------------------------------------------

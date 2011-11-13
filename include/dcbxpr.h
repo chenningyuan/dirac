@@ -23,6 +23,7 @@
 !        16. [betaalp_x]p  * x-component of beta alpha times scalar operator
 !        17. [betaalp_y]p  * y-component of beta alpha times scalar operator
 !        18. [betaalp_z]p  * z-component of beta alpha times scalar operator 
+!        20. S.P           * dot-product of sigma and vector operator
 !
 !       IPRPLBL - pointers to property labels
 !       IPRPSYM - boson symmetry of operator  (1 - 8)
@@ -30,7 +31,7 @@
 !       PRPNAM  - user specified name of operator
 !
       INTEGER MAXPRPS
-      PARAMETER (MAXPRPS = 200)
+      PARAMETER (MAXPRPS = 400)
 
       CHARACTER*16 PRPNAM(MAXPRPS)
       REAL*8 FACPRP(3, MAXPRPS)

@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -91,8 +79,8 @@ C
 *. Zero to avoid problems with elements that will not
 *. be initialized
       ZERO = 0.0D0
-      CALL SETVEC(WORK(KINT1),ZERO,NTOOB**2)
-      CALL SETVEC(WORK(KINT1O),ZERO,NTOOB**2)
+      CALL DZERO(WORK(KINT1),NTOOB**2)
+      CALL DZERO(WORK(KINT1O),NTOOB**2)
 *.1.1 : Inactive fock matrix
       CALL MEMMAN(KFI  ,NTOOB ** 2,'ADDS  ',2,'FI    ')
       CALL MEMMAN(KFIO ,NTOOB ** 2,'ADDS  ',2,'FIO   ')
@@ -119,10 +107,6 @@ C
       LRHO2 = NTOOB**2*(NTOOB**2+1)/2
       IF(IDENSI.EQ.2)
      &CALL MEMMAN(KRHO2,LRHO2     ,'ADDS  ',2,'RHO2  ')
-*.4. Integrals (ij!kk) -(ik!kj), pointer and space
-CJO   CALL MEMMAN(KPNIJ,NTOOB ** 2,'ADDS  ',1,'KPNIJ ')
-CJO   CALL MEMMAN(KIJKK,NTOOB**2 *(NTOOB+1) / 2, 'ADDS  '
-CJO  &            ,2,'KIJKK ')
       KPNIJ = 1
       KIJKK = 1
       IF(MXP1+MXP2+MXQ. NE. 0 .OR. IPROCC.NE.0 ) THEN
@@ -228,6 +212,7 @@ CADDE
 *         = FREE  : Return first Free word in KBASE
 *         = MARK  : Set a mark at current free adress
 *         = FLUSM : Flush local memory to previous mark
+*         = SFREEM: Return the free memory currently available in real*8 words
 * IR    : 1 => integer , 2 => real,
 *         ratio between integer and real is IRAT
 * IDENT : identifier of memory slice,Character*6
@@ -255,6 +240,8 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *. Info from matml7
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
+CSK      write(6,*)'IRAT',IRAT,'for IR',IR
+CSK      write(6,*)'TASK  ',TASK,'KADD',KADD,'and IDENT  ', IDENT
       ISTOP = 0
       ITSOK  = 1
       IPRNTMP = 0
@@ -266,9 +253,14 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         NS = 0
         NL = 0
         NSNLI = 0
-        NM = 0
         KFREES = KBASE
         KFREEL = KBASE
+*
+        NM = 1
+        MARKC(NM) = '-INI--'
+        IMARK(NM) = KFREEL
+        MARKL(NM) = NL
+        MARKS(NM) = NS
 *       NWORD = MXPWRD
 *
 *       Compute pointer to end element
@@ -407,6 +399,10 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         CALL GFLUSH(LU6)
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
         NSNLI = NS+ NL
+      ELSE IF( TASK(1:6) .EQ. 'SFREEM') THEN
+*. compute current free memory
+        KBASE = NWORD - KFREEL - 1
+        NSNLI = NS+ NL
       ELSE
           WRITE(6,*) ' MEMMAN : Unknown task parameter ',TASK
           WRITE(6,*) ' Too confused to continue  '
@@ -436,35 +432,36 @@ C     COMMON/BIGGY/WORK(MXPWRD)
                IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
                IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
                IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
                ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                WRITE(6,'(4X,A,I20,4X,A)')
      &          IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                  WRITE(6,'(1H ,4X,A,I10,4X,A)')
+                  WRITE(6,'(4X,A,I20,4X,A)')
      &            IIDENT(IL),IBASE(IL),'     -       OKAY '
                ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       -    '
+                 WRITE(6,'(4X,A,I20,4X,A)')
+     &            IIDENT(IL),IBASE(IL),'     -       -    '
                END IF
             END IF
           END DO
   100   CONTINUE
+CSK        iprntmp = 1
       END IF
  1001 CONTINUE
 *
         IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
-          WRITE(6,'(A,A)') ' Current task : ', TASK
+          WRITE(6,'(A,A,1X,A)') ' Current task : ', TASK, IDENT
           WRITE(6,*) ' NS, NL, NSNLI',NS,NL,NSNLI
           IF(ITSOK.EQ.0)
      &    WRITE(6,*) '  Sorry to say it , but memory is CORRUPTED '
           WRITE(6,*) '  Memory map : '
-          WRITE(6,*) '  Identifier   Offset    Pad1 okay Pad2 okay '
-          WRITE(6,*) '  ========== ==========  ========= ========= '
+          WRITE(6,*) '  Identifier    Offset     Pad1 okay Pad2 okay '
+          WRITE(6,*) '  ========== ============  ========= ========= '
           DO 200 IL = 1, NSNLI
             JBASE = IBASE(IL)
             IF(IL.NE.NSNLI) THEN
@@ -480,21 +477,23 @@ C     COMMON/BIGGY/WORK(MXPWRD)
             DO 50 IPAD = 1, NPAD
               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
    50       CONTINUE
+C           find local off-set to WORK for print
+            IBASE_L = IBASE(IL) - IMARK(1)
             IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'    OKAY     OKAY '
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'    OKAY       -  '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'    OKAY       -  '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       OKAY '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-               WRITE(6,'(1H ,4X,A,I10,4X,A)')
-     &         IIDENT(IL),IBASE(IL),'     -       -    '
+               WRITE(6,'(4X,A,I12,4X,A)')
+     &         IIDENT(IL),IBASE_L,'     -       -    '
             END IF
   200     CONTINUE
 *
@@ -509,7 +508,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
           WRITE(6,*) ' Identifier  Start of free memory '
           WRITE(6,*) ' ================================='
           DO JMARK = 1, NM
-            WRITE(6,'(3X,A6,10X,I10)') MARKC(JMARK),IMARK(JMARK)
+            WRITE(6,'(3X,A6,10X,I18)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
         IF (ITSOK.EQ.0)

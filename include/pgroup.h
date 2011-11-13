@@ -1,5 +1,6 @@
+!  --- FILE: pgroup.h ---
 !
-!TSAUE: Added GROUPS
+!  Point group information
 !
 !     SYMOP - Symmetry operations
 !     ===========================
@@ -14,5 +15,14 @@
 !     6   110   C2x  rotation about the x-axis
 !     7   111    i   inversion centre
 !
-      CHARACTER*3 GROUP, SYMOP(0:7), REP(0:7), GROUPS(0:7)
-      COMMON /PGROUP/ GROUP, SYMOP, REP, GROUPS
+      CHARACTER*3 GROUP, REP(0:7)
+      COMMON /PGROUP/ GROUP, REP
+!
+      CHARACTER*3 SYMOP(0:7), GROUPS(0:7)
+      SAVE SYMOP, GROUPS
+      DATA SYMOP / ' E ','Oyz','Oxz','C2z',
+     &             'Oxy','C2y','C2x',' i '/
+      DATA GROUPS/ 'C1 ','C2 ','Cs ','Ci ',
+     &             'D2 ','C2v','C2h','D2h'/
+!
+!  --- end of pgroup.h ---

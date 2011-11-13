@@ -2,7 +2,7 @@
 #
 # Set up calculation
 #
-MOL=U.dyall.2p;
+MOL=U.dyall.2p.mol;
 export MOL;
 MENU=1el.dirac;
 export MENU;

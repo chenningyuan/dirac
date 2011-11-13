@@ -1,71 +1,82 @@
-Master : DIRAC allocating 50000000 words of memory
+Master : DIRAC allocating 127000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
 *                                   from                                     *
 *                                                                            *
-*           @@@@@    @@   @@@@@     @@@@     @@@@@    @@@      @@            *
-*           @@  @@        @@  @@   @@  @@   @@       @   @    @ @            *
-*           @@  @@   @@   @@@@@    @@@@@@   @@       @   @   @@@@@           *
-*           @@  @@   @@   @@ @@    @@  @@   @@       @   @      @            *
-*           @@@@@    @@   @@  @@   @@  @@    @@@@@    @@@       @            *
+*                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+*                   @@  @@        @@  @@   @@  @@   @@                       *
+*                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+*                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+*                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
 *                                                                            *
 *                                                                            *
-%}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
-$?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
-(%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
-$S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
-SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
-SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::':/://:/::-::
-?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
-S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
-(?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
-$S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:'::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
-S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
-c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
-S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
-$SZ?MMMMMMMMMMMMMMMMMH?.                                        "&((/?//?|::::
-$%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
-($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
-Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/??/!:/:|:
-(??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
-SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
-$%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
-%$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
-$$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
-4$($S$M//::S?ZHMMMMMH/:.':::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|::
-)[$S$S($|_i:#>::*H&?/::.::/:"://:?>>':&HMHSMMMM$:'-   MMHMMMMHHT .)i/?////:::/
-$$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.'   `H?$T*" `  /%?>%:)://ii|
-$&=&/ZS}$RF<:?/-.|%r/:::/:/:'.-.-..|::S//!`"``          >??:    `SS<S:)!/////|
-Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. '-.'  `                         ,>%%%:>/>/!|:/
-$$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
-&$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
-=[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
-$&>1MHHMMMM6M9MMMM$Z$}$S%/:::.'.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
-MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&''     ../>%;/?>??:<::>
-MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
-MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..'.  .|//1d/`://?*/*/"` '     .:/(SS$%(S%)):%~
-MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.':;&&b/D/$p=qpv//b/~'   :/~~%%??$=$)Z$S+;
-MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:`'???bD&{b<<-'     .,:/)|SS(}Z/$$?/<S
-MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::'  `` .             SS?SS?Z/]1$/&$c/$S
-MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
-MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/??/''"    _MMHk/7S/]dq&1S<&&></
-MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// '         ,MMMMMMM&/Z6H]DkH]1$&&
-MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
-MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
-MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
-MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
-MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#':MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
-MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR' dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
-MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM' .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
-MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
-MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
-MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
-MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
-MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
-MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
-MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
-MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+MMMMMMMMMMMMMMMMMMMMMMMMMMP!<<~"<<<<<!<<<<!!!!!<~"!****MMHMMMMMMMMX?HMXMMX9M?H
+MMMMMMMMMMMMMMMMMMMMMMMM!M!<<<<<<:<<<<<<<<<<~<<< <<~~~<!!MMMMMMMMMMH%XX%!XMMXX
+MMMMMMMMMMMMMMMMMMMMMMM!<!!!<<<<<<<<<<<<<<< <~<~~~~    ~<~!!??MSMMMM!tXX!9HtSM
+MMMMMMMMMMMMMMMMMMMMMMM!:!<<<<!!!<<<<<<~<`<~~~     `     <<<~!*MMHM9XXMMHSHMMM
+MMMMMMMMMMMMMMMMMMMMMMM%?<<<<<<<<<<~~<~'~<~'             `<<<!~!MMMMMMMXMMMMMM
+MMMMMMMMMMMMMMMMMMMMMM!!!X<<<<<<<<<~     ~                 `<<<<!?MMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMX<<!!<!<<<~~<<<                       `~<<<~?MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMM?M:<<<<<<<~ <<<<      :                  `<<<!MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMM!!!!<<<<<<<~ <<~ '<::<<<<<<:                `<<MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMX<<<<<<<<<<<:<<  <`<<<<<:nnnhnn:              ~<!MMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMXxnnnnxnxi:<<<<<<<<<<<<xHMMMMMMnx:              `"??MMMMMMM
+MMMMMMMMMMMMMMMMMMX8NN888MMMMXXx:::xxHMMMMMMMMMMMMMMH::              <!!?MMMMM
+MMMMMMMMMMMMMMMM?9$$$$$$$NM8MMMMMMMMMMMMMMMMMMMMMMMMMMH:            '!!!!MMMMM
+MMMMMMMMMMMMMMMXt$$$$$$$$$$$N8MMMMMNNMMMMMMMMMMMMMMMMMMh<            <<<!?MMMM
+MMMMMMMMMMMMMMXN$$$$$$$$$$$$$$$NN$$$$NN8N9MMMMMMMMMMMMMX<~            `~<<!MSM
+MMMMMMMMMMMM!~t$$$$$$$$$$$$$$$$$$$$$$$BMMMMMMMMMMMMMMMMM>               `<XMMM
+MMMMMMMMMMMMXX$$$$$$$$$$$$$$$$$$$$$$R$RMMMMMMMMMMMMMMMMM%<               <XMSt
+MMMMMMMMMMMMXN$$$$$$$$$$$$$$$$$$$$MMMMMMMMMMMMMMMMMMMMMMf<<  :          :<?MMH
+MMMMMMMMMMMMX$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMMMMMMMMM!<<<            `<MMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$RMMMMMB8MMMMMMMMMMMMMMMMMMMM!<<<            <!HXSt
+MMMMMMMMMMMM9$$$$$$$$$$$$N$8MMM8NN$$8NNMMMMMMMMMMMMMMMM!<<<<            <!MMMX
+MMMMMMMMMMMM$$$$$$$$$$$$$$NN8N$$$$$$$$$MMMMMMMMMMMMMMMMX<<<<            <XXMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMx<<<            <XMXMX
+MMMMMMMMMMMMM$$$$$$$$$$$$$$$RR$RRRRM*!"""!*MMMMMMMMMMMMMH><~           ::MMMHM
+MMMMMMMMMMMMMRRRRR$$$RM$$RRMMMM*!"!~<<<<<::X??MMMMMMMMMMMf~        :xnx:?MMMHM
+MMMMMMMMMMMMMM*!"""?*MMMMMMMM!!    <<<<<!*MMMMMMMMMMMMMMMf:       <HM!<<!XMMX!
+MMMMMMMMMMMMMMi<<<~~<"!MMMMMM<<<<<<  ~~<<~"!MMMMMMMMMMMMM!<<:~   <HMHx:<!M!t?!
+MMMMMMMMMMMMMMf<<~~ `~~!M8MMHi<<<<<::: :<:<<!H9MMMMMMMMMMk:<~ ::nHMMMMX<<X!?XX
+MMMMMMMMMMMMMMh<::< <x<<M$$MMM::<<<!h:::HMMMMMMMMMMMMMMMMMMhixMMMf?*MMXM!MX!?!
+MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!|!!
+MMMMMMMMMMMMMM9NMMMMMHM8$$MMMMMMHnHnHHHHMMMMMMMMMMMMMMMMMMMMMMMMMMh:<?M!M!!!!!
+MMMMMMMMMMMMMM9$BMMMMMN$$RMMMMMMMN88MMMMMMMMMMMMMMMMMMMMMM%!MMMMMMM!<HHH!!!!~!
+MMMMMMMMMMMMMM9$$B888N$$$MMMMMMMMM$$$N8MMMMMMMMMMMMMMMMMMX!HMMMMMMMH!?!!!<!<<!
+MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM|MMMMMMMMXH!!!~<~!!
+MMMMMMMMMMMMMMM$$$$$$$$$MMMMMMMMMMR$$$$NMMMMMMMMMMMMMMMM!!!!?MHHMMMM!!<~~~<!!<
+MMMMMMMMMMMMMMM9$$$$$$$$RMMRMMMMMMMMMMRMMMMMMMMMMMMMMMMM!!!!!!*MM*!!~<<<<~::!!
+MMMMMMMMMMMMMMM9$$$$RRRMM****MMMMMMMMMMMMMMMMMMMMMMMMMMHH!!!!<`!!<<< ~~<<<!!?!
+MMMMMMMMMMMMMMMM$$$$MMS!"<<:<<~9MMMMMMMMMMMMMMMMMMMMMMMMX!<!!<<<<<<<    ~~<<!~
+MMMMMMMMMMMMMMMM$$$B$$Mi!<~!<!!?MMMMMMMMMMMMMMMMMMMMMMMMM!<<<::<<::<         `
+MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2|*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
+MMMMMMMMMMMMMMMMM$$RMMMHn:::xxHMMMHx:<?MMMMMMMMMMMMMMMM!!<<<!!!X?Xf           
+MMMM?M%?X9MMMMMMMM$$MM*!!M*!""?""?"!"!!MMMMMMMMMMMMMM!!!<<<<<!!XXH!           
+MMMSX?!H??MMMMMMMM$$MHsi:!%+!+!!+!<::xXMMMMMMMMMMMMM?!<<<<<<<!!MMM~           
+MM|?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
+?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM|!!!<<<<<<<<<!XMMM            
+X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M            
+!!!:!<<<<<~!!!!!"!<<?MMRMHnixxHMMMMMMMMMMMMM?!!<<<<<<<<<<<<<!!X9$f            
+!!!!!<<<<<<<!!!<<<<<~tMMMN$$MMMMMMMMMMMMMM!"!<<<<<<<<<<<<<<<<X9$R!            
+<<<<<<<<<<<<!<<~     ~?MMRRMMMMMMMMMMMM!"!<<~      <<<<<<<<<<H$$f             
+<<<<<<<<<<<<<<~       ~MMMMMMMMMMM**M?"<<~         <<<<<<<<:HM$R"             
+<<<<<<<<<<<<<~         `***!"?"!!!<<<<~           :<<<<<<<HMMMRP              
+<<<<<<<<<<<<<             `~ ` ~~    :            ~<<<<<xHMMMMM"              
+<<<<<<<<<<<<~                       <<:            ~ <<:HMMMMMf               
+<<<<<<<<<<<<                        `Hn:             <xMMMMMMM"               
+<<<<<<<<<<<                          !MMi          <xXMMMMMMM!                
+<<<<<<<<<<<                           !MM:        :!MMMMMMMMM~                
+<<<<<<<<<<:                            "MMr::  :xnHMMMMMMMMM!                 
+<<<<<<<<<<                              `"  `~~~?MMMMMMMMM?!                  
+<<<<<<<<<<                                      `"*MP*?XMM!~                  
+<<<<<<<<<<                                        `"!<!MMf~                   
+<<<<<<<<<~                                          `~!!?!                    
+<<<<<<<<<                                            `<~!~                    
+<<<<<<<<<                                          <:<<`~                     
+<<<<<<<<<~                                         ::<<                      :
+<<<<<<<<<<                                        'MHk<                      <
+:<<<<<<<<<                                        `MMH:                   < <<
 ******************************************************************************
 *                                                                            *
 *         =======================================================            *
@@ -73,37 +84,23 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *          Direct Iterative Relativistic Allelectron Calculations            *
 *         =======================================================            *
 *                                                                            *
-*                        VERSION 04.0    SEPTEMBER 2004                      *
+*                        VERSION 3.2     OCTOBER 2000                        *
 *                                                                            *
 ******************************************************************************
 *                                                                            *
-*    Written by:                                                             *
+* Written by:                                                                *
+*    Trond Saue,              University of Tromsoe,            Norway       *
+*    Vebjoern Bakken,         University of Oslo,               Norway       *
+*    Thomas Enevoldsen,       SDU, Odense University,           Denmark      *
+*    Trygve Helgaker,         University of Oslo,               Norway       *
+*    Hans Joergen Aa. Jensen, SDU, Odense University,           Denmark      *
+*    Jon K. Laerdahl,         University of Oslo,               Norway       *
+*    Kenneth Ruud,            University of Tromsoe,            Norway       *
+*    Joern Thyssen,           SDU, Odense University,           Denmark      *
+*    Luuk Visscher,           Vrije Universiteit Amsterdam,     Netherlands  *
 *                                                                            *
-*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
-*    Trond Saue,              CNRS/ULP Strasbourg               France       *
-*    Lucas Visscher,          Vrije Universiteit Amsterdam      Netherlands  *
 *                                                                            *
-*    with contributions from:                                                *
-*                                                                            *
-*    Vebjoern Bakken          University of Oslo                Norway       *
-*    Ephraim Eliav            University of Tel Aviv            Israel       *
-*    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
-*    Timo Fleig               University of Duesseldorf         Germany      *
-*    Olav Fossgaard           University of Tromsoe             Norway       *
-*    Trygve Helgaker          University of Oslo                Norway       *
-*    Jon K. Laerdahl          University of Oslo                Norway       *
-*    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
-*    Patrick Norman           Linkoeping University             Sweden       *
-*    Jeppe Olsen              Aarhus University                 Denmark      *
-*    Markus Pernpointner      Vrije Universiteit Amsterdam      Netherlands  *
-*    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
-*    Kenneth Ruud             University of Tromsoe             Norway       *
-*    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
-*    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands  *
-*    Joern Thyssen            University of Southern Denmark    Denmark      *
-*    Olivier Visser           University of Groningen           Netherlands  *
-*    Toke Winther             University of Southern Denmark    Denmark      *
-*                                                                            *
+* Note:                                                                      *
 *    This is an experimental code. The authors accept no responsibility      *
 *    for the performance of the code or for the correctness of the results.  *
 *                                                                            *
@@ -114,26 +111,23 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *    If results obtained with this code are published, an                    *
 *    appropriate citation would be:                                          *
 *                                                                            *
-*    "Dirac, a relativistic ab initio electronic structure program",         *
-*    release DIRAC04.0 (2004),                                               *
-*    written by H. J. Aa. Jensen, T. Saue, and L. Visscher                   *
-*    with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,   *
-*    O. Fossgaard, T. Helgaker, J. K. Laerdahl, C. V. Larsen, P. Norman,     *
-*    J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud, P. Salek,           *
-*    J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther.            *
+*    T. Saue, V. Bakken, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen,       *
+*    J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher:                      *
+*    "Dirac, a relativistic ab initio electronic structure program,          *
+*    Release 3.2 (2000)"                                                     *
 *    (for a suitable BibTEX entry, see                                       *
 *    <URL:"http://dirac.chem.sdu.dk/doc/reference.shtml">)                   *
 *                                                                            *
 ******************************************************************************
- Version           : Dirac 4.0 (patchlevel 0) 
- Hostname          : radon.chem.vu.nl
- Operating system  : Darwin 7.5.0
- Machine           : Power Macintosh
+ Version           : Dirac 3.2 (patchlevel 1) 
+ Hostname          : chem015
+ Operating system  : Linux 2.4.9-13.smp
+ Machine           : i686
  Run               : Sequential
- Last compilation  : 19:16:12 Aug 31 2004 (by visscher@radon.chem.vu.nl)
- Basis set dir.    : /Users/visscher/sources/Dirac04/test/12.zora/:/Users/visscher/sources/Dirac04/basis/:/Users/visscher/sources/Dirac04/basis_dalton/
+ Last compilation  : 00:01:08 Feb  3 2003 (by visscher@fs0.das2.cs.vu.nl)
+ Basis set dir.    : /home4/visscher/sources/Dirac.latest/test/12.zora/:/home4/visscher/sources/Dirac.latest/basis/
 
- Date and time (IBM-AIX): Tue Aug 31 20:02:15 2004
+ Date and time (Linux) : Mon Feb  3 00:56:26 2003
 
 
  *************************************************************************
@@ -153,6 +147,11 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
    - LL-integrals
    - SL-integrals
    - SS-integrals
+ * Default integral flags passed to all modules
+   - LL-integrals: T
+   - LS-integrals: T
+   - SS-integrals: T
+   - GT-integrals: F
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
@@ -167,8 +166,11 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ****************** Output from HERMIT input processing ******************
  *************************************************************************
 
+
+
  Default print level:        1
- Nuclear model: Point charge.
+
+ * Nuclear model: Point charge.
 
  Two-electron integrals not calculated.
 
@@ -300,8 +302,8 @@ Point group: D2h
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  U           1      92     121     121      L  - [1s40p|1s40p]                                      
-                            283     283      S  - [40s1p40d|40s1p40d]                                
+  U           1      92     121     121      L - [1s40p|1s40p]                                      
+                            283     283      S - [40s1p40d|40s1p40d]                                
   ----------------------------------------------------------------------
                             121     121   L - large components
                             283     283   S - small components
@@ -312,22 +314,15 @@ Point group: D2h
   Threshold for integrals:  1.00D-15
 
 
-  References for the basis sets
-  -----------------------------
-
-  Atom type   1
-  Basis set typed explicitly in input file                                        
-
-
   Cartesian Coordinates
   ---------------------
 
   Total number of coordinates:  3
 
 
-   1   U        x       .0000000000
-   2            y       .0000000000
-   3            z       .0000000000
+   1   U        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
 
 
 
@@ -350,7 +345,7 @@ Point group: D2h
   Symmetry 5
 
    3   U     z    3
-  Nuclear repulsion energy :     .000000000000
+  Nuclear repulsion energy :    0.000000000000
 
 
                             GETLAB: AO-labels
@@ -437,33 +432,20 @@ Point group: D2h
  ***************************************************************************
 
  * Print level :    0
- * Dirac-Coulomb Hamiltonian
-   with the following modifications:
-   - Spin-orbit interactions neglected
- * Default integral flags passed to all modules
-   - LL-integrals: T
-   - LS-integrals: T
-   - SS-integrals: T
-   - GT-integrals: F
  * Basis set:
    - uncontracted large component basis set
    - uncontracted small component basis set
-
-
- Information about the restricted kinetic balance scheme:
+ * Restricted kinetic balance
  * Default RKB projection:
-   1: Pre-projection in scalar basis
-   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+   1: Pre-projection on scalar basis
+   2: Removing unphysical solutions for no external field
+ * Dirac-Coulomb Hamiltonian
+   with the following modifications:
+   - Spin-orbit terms zeroed out (NB : ONLY in the DHF calculation !!)
    - Two-electron part ignored (one-electron system)
    - ZORA approximation using approximate density
-
-
- *********************************************************************************
- *************************** Memory required by HERMIT ***************************
- *********************************************************************************
-
 ===========================================================================
- Maximum memory load for two-electron integral processing:
+ Maximum memory load for two-integral processing in HERMIT:
 ===========================================================================
  * LL-integrals:
    3(U    Lp)   2(U    Lp)   3(U    Lp)   2(U    Lp)               84246
@@ -477,8 +459,8 @@ Point group: D2h
  ************************** Wave function module **************************
  **************************************************************************
 
- Jobs in this run (in execution order):
- * Hartree-Fock calculation
+ Jobs in this run:
+ * Dirac-Hartree-Fock calculation
 ===========================================================================
  DHFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
@@ -490,6 +472,7 @@ Point group: D2h
  ***** TRIAL FUNCTION *****
  * Trial vectors read from file DFCOEF
  ***** CONVERGENCE CRITERIA *****
+ * Maximum number of iterations:   50
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-07
    Allowed convergence:1.000D-06
@@ -497,23 +480,16 @@ Point group: D2h
  ***** CONVERGENCE CONTROL *****
  * Fock matrix constructed using differential density matrix
     with optimal parameter.
- * DIIS (in MO basis)
+ * DIIS (dirac-like)
  * DIIS will be activated when convergence reaches : 1.00D+20
    - Maximum size of B-matrix:   10
  * Damping of Fock matrix when DIIS is not activated. 
-   Weight of old matrix    :  .250
- * Maximum number of SCF iterations  :   50
+   Weight of old matrix    : 0.250
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
    SL-integrals from iteration    1
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
-
-
- ********************************************************************************
- *************************** Input consistency checks ***************************
- ********************************************************************************
-
 
 
  *************************************************************************
@@ -544,9 +520,8 @@ Point group: D2h
 * Applied strict kinetic balance !
 
 
-  **********************************************************************
-  ************************* Orbital dimensions *************************
-  **********************************************************************
+                            Output from GMOTRA
+                            ------------------
 
                                    Irrep 1 Irrep 2   Sum
 No. of electronic orbitals (NESH):     1     120     121
@@ -558,7 +533,7 @@ Total no. of orbitals      (NORB):     2     240     242
  ************************* Dirac-Hartree-Fock calculation *************************
  **********************************************************************************
 
-* Total time for one-electron system:  .00000000s
+* Total time for one-electron system: 1.00000000s
 
 
                                Eigenvalues
@@ -569,8 +544,41 @@ Total no. of orbitals      (NORB):     2     240     242
   * Closed shell, f = 1.0000
        -4.64106396  ( 2)
 
+* Boson symmetry B3u
+  * Virtual eigenvalues, f = 0.0000
+    -1172.39772546  ( 2)        -510.26976618  ( 2)        -282.58897509  ( 2)        -178.88467080  ( 2)        -123.23878228  ( 2)
+      -89.99694218  ( 2)         -68.56471052  ( 2)         -53.84410501  ( 2)         -42.89703602  ( 2)         -34.00873280  ( 2)
+      -26.59217002  ( 2)         -20.53594835  ( 2)         -16.07999030  ( 2)         -14.51154465  ( 2)         -11.16256317  ( 2)
+      137.70582586  ( 2)         541.44876426  ( 2)        1402.20276324  ( 2)        3078.93316012  ( 2)        6181.75018643  ( 2)
+    11732.39038379  ( 2)       21407.69420252  ( 2)       37898.61624149  ( 2)       65407.16310759  ( 2)      110334.25039659  ( 2)
+   182090.50012646  ( 2)      294323.12242725  ( 2)      465752.27579162  ( 2)      723240.80141241  ( 2)     1099678.43407703  ( 2)
+  1648261.73384433  ( 2)     2414043.57887721  ( 2)     3522233.34820178  ( 2)     4970088.53768547  ( 2)     7170981.65519024  ( 2)
+  9678657.22962318  ( 2)    14278721.24770231  ( 2)    18092507.65346161  ( 2)    29454039.97907876  ( 2)    34483134.88561831  ( 2)
+
+* Boson symmetry B2u
+  * Virtual eigenvalues, f = 0.0000
+    -1172.39772546  ( 2)        -510.26976618  ( 2)        -282.58897509  ( 2)        -178.88467080  ( 2)        -123.23878228  ( 2)
+      -89.99694218  ( 2)         -68.56471052  ( 2)         -53.84410501  ( 2)         -42.89703602  ( 2)         -34.00873280  ( 2)
+      -26.59217002  ( 2)         -20.53594835  ( 2)         -16.07999030  ( 2)         -14.51154464  ( 2)         -11.16256317  ( 2)
+      137.70582586  ( 2)         541.44876426  ( 2)        1402.20276324  ( 2)        3078.93316013  ( 2)        6181.75018644  ( 2)
+    11732.39038380  ( 2)       21407.69420252  ( 2)       37898.61624149  ( 2)       65407.16310759  ( 2)      110334.25039661  ( 2)
+   182090.50012646  ( 2)      294323.12242727  ( 2)      465752.27579165  ( 2)      723240.80141237  ( 2)     1099678.43407728  ( 2)
+  1648261.73384415  ( 2)     2414043.57887675  ( 2)     3522233.34820106  ( 2)     4970088.53768612  ( 2)     7170981.65519059  ( 2)
+  9678657.22962436  ( 2)    14278721.24770382  ( 2)    18092507.65346508  ( 2)    29454039.97908731  ( 2)    34483134.88561657  ( 2)
+
 * Boson symmetry B1g
   * No eigenvalues.
+
+* Boson symmetry B1u
+  * Virtual eigenvalues, f = 0.0000
+    -1172.39772546  ( 2)        -510.26976618  ( 2)        -282.58897509  ( 2)        -178.88467080  ( 2)        -123.23878228  ( 2)
+      -89.99694218  ( 2)         -68.56471052  ( 2)         -53.84410501  ( 2)         -42.89703602  ( 2)         -34.00873280  ( 2)
+      -26.59217002  ( 2)         -20.53594835  ( 2)         -16.07999030  ( 2)         -14.51154465  ( 2)         -11.16256317  ( 2)
+      137.70582586  ( 2)         541.44876426  ( 2)        1402.20276324  ( 2)        3078.93316012  ( 2)        6181.75018644  ( 2)
+    11732.39038379  ( 2)       21407.69420252  ( 2)       37898.61624149  ( 2)       65407.16310759  ( 2)      110334.25039663  ( 2)
+   182090.50012651  ( 2)      294323.12242741  ( 2)      465752.27579163  ( 2)      723240.80141275  ( 2)     1099678.43407721  ( 2)
+  1648261.73384444  ( 2)     2414043.57887716  ( 2)     3522233.34820146  ( 2)     4970088.53768506  ( 2)     7170981.65518925  ( 2)
+  9678657.22962515  ( 2)    14278721.24770602  ( 2)    18092507.65346649  ( 2)    29454039.97908535  ( 2)    34483134.88561808  ( 2)
 
 * Boson symmetry B2g
   * No eigenvalues.
@@ -578,69 +586,34 @@ Total no. of orbitals      (NORB):     2     240     242
 * Boson symmetry B3g
   * No eigenvalues.
 
-* Boson symmetry B3u
-  * Virtual eigenvalues, f =  .0000
-    -1172.39772546  ( 2)        -510.26976618  ( 2)        -282.58897509  ( 2)        -178.88467080  ( 2)        -123.23878228  ( 2)
-      -89.99694218  ( 2)         -68.56471052  ( 2)         -53.84410501  ( 2)         -42.89703602  ( 2)         -34.00873280  ( 2)
-      -26.59217002  ( 2)         -20.53594835  ( 2)         -16.07999031  ( 2)         -14.51154465  ( 2)         -11.16256317  ( 2)
-      137.70582585  ( 2)         541.44876426  ( 2)        1402.20276324  ( 2)        3078.93316012  ( 2)        6181.75018644  ( 2)
-    11732.39038379  ( 2)       21407.69420249  ( 2)       37898.61624142  ( 2)       65407.16310748  ( 2)      110334.25039657  ( 2)
-   182090.50012653  ( 2)      294323.12242775  ( 2)      465752.27579260  ( 2)      723240.80141471  ( 2)     1099678.43408043  ( 2)
-  1648261.73384902  ( 2)     2414043.57888183  ( 2)     3522233.34820513  ( 2)     4970088.53768484  ( 2)     7170981.65518055  ( 2)
-  9678657.22960760  ( 2)    14278721.24767021  ( 2)    18092507.65345814  ( 2)    29454039.97907691  ( 2)    34483134.88563500  ( 2)
-
-* Boson symmetry B2u
-  * Virtual eigenvalues, f =  .0000
-    -1172.39772546  ( 2)        -510.26976618  ( 2)        -282.58897509  ( 2)        -178.88467080  ( 2)        -123.23878228  ( 2)
-      -89.99694218  ( 2)         -68.56471052  ( 2)         -53.84410501  ( 2)         -42.89703603  ( 2)         -34.00873280  ( 2)
-      -26.59217002  ( 2)         -20.53594835  ( 2)         -16.07999031  ( 2)         -14.51154465  ( 2)         -11.16256317  ( 2)
-      137.70582586  ( 2)         541.44876426  ( 2)        1402.20276324  ( 2)        3078.93316013  ( 2)        6181.75018645  ( 2)
-    11732.39038380  ( 2)       21407.69420250  ( 2)       37898.61624142  ( 2)       65407.16310749  ( 2)      110334.25039659  ( 2)
-   182090.50012652  ( 2)      294323.12242780  ( 2)      465752.27579266  ( 2)      723240.80141451  ( 2)     1099678.43408056  ( 2)
-  1648261.73384914  ( 2)     2414043.57888235  ( 2)     3522233.34820601  ( 2)     4970088.53768673  ( 2)     7170981.65518254  ( 2)
-  9678657.22960900  ( 2)    14278721.24767500  ( 2)    18092507.65345883  ( 2)    29454039.97908113  ( 2)    34483134.88563699  ( 2)
-
-* Boson symmetry B1u
-  * Virtual eigenvalues, f =  .0000
-    -1172.39772546  ( 2)        -510.26976618  ( 2)        -282.58897509  ( 2)        -178.88467080  ( 2)        -123.23878228  ( 2)
-      -89.99694218  ( 2)         -68.56471052  ( 2)         -53.84410501  ( 2)         -42.89703603  ( 2)         -34.00873280  ( 2)
-      -26.59217002  ( 2)         -20.53594835  ( 2)         -16.07999030  ( 2)         -14.51154465  ( 2)         -11.16256317  ( 2)
-      137.70582586  ( 2)         541.44876426  ( 2)        1402.20276324  ( 2)        3078.93316013  ( 2)        6181.75018645  ( 2)
-    11732.39038380  ( 2)       21407.69420251  ( 2)       37898.61624145  ( 2)       65407.16310750  ( 2)      110334.25039657  ( 2)
-   182090.50012643  ( 2)      294323.12242766  ( 2)      465752.27579228  ( 2)      723240.80141423  ( 2)     1099678.43407982  ( 2)
-  1648261.73384824  ( 2)     2414043.57888132  ( 2)     3522233.34820588  ( 2)     4970088.53768799  ( 2)     7170981.65518492  ( 2)
-  9678657.22961036  ( 2)    14278721.24767359  ( 2)    18092507.65344553  ( 2)    29454039.97906667  ( 2)    34483134.88562919  ( 2)
-
 * Boson symmetry Au 
   * No eigenvalues.
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
-    Ag  
+     Ag 
 
 * Occupation in fermion symmetry E1u
   * Virtual orbitals
-    B1u B3u B2u B2u B3u B1u B2u B3u B1u B3u B1u B2u B3u B1u B2u B3u B1u B2u 
-    B1u B2u B3u B2u B3u B1u B2u B1u B3u B1u B2u B3u B3u B2u B1u B3u B2u B1u 
-    B3u B2u B1u B2u B3u B1u B1u B2u B3u B3u B2u B1u B2u B1u B3u B3u B2u B1u 
-    B3u B1u B2u B3u B2u B1u B3u B2u B1u B3u B2u B1u B3u B2u B1u B3u B2u B1u 
-    B3u B1u B2u B1u B2u B3u B1u B3u B2u B1u B3u B2u B1u B2u B3u B1u B3u B2u 
-    B1u B3u B2u B1u B3u B2u B3u B1u B2u B3u B2u B1u B3u B2u B1u B3u B2u B1u 
-    B3u B1u B2u B1u B3u B2u B1u B3u B2u B1u B3u B2u 
+     B3u B2u B1u B3u B2u B1u B3u B2u B1u B3u B1u B2u B2u B3u B1u B1u B2u B3u
+     B2u B1u B3u B2u B3u B1u B1u B3u B2u B1u B2u B3u B2u B1u B3u B2u B1u B3u
+     B1u B2u B3u B1u B3u B2u B1u B2u B3u B1u B2u B3u B2u B3u B1u B3u B2u B1u
+     B3u B1u B2u B3u B1u B2u B3u B1u B2u B1u B3u B2u B1u B3u B2u B1u B2u B3u
+     B3u B2u B1u B2u B3u B1u B3u B2u B1u B3u B1u B2u B2u B3u B1u B3u B1u B2u
+     B2u B3u B1u B2u B1u B3u B2u B1u B3u B1u B3u B2u B1u B3u B2u B3u B2u B1u
+     B3u B2u B1u B3u B2u B1u B3u B1u B2u B2u B1u B3u
 
 
 * HOMO - LUMO gap:
 
-    E(LUMO) : -1172.39772546 au (symmetry B1u)
+    E(LUMO) : -1172.39772546 au (symmetry B3u)
   - E(HOMO) :    -4.64106396 au (symmetry Ag )
   ------------------------------------------
     gap     : -1167.75666149 au
 
 
 * INFO: E(LUMO) - E(HOMO) small or negative.
-
- Date and time (IBM-AIX): Tue Aug 31 20:02:16 2004
 *****************************************************
->>>> Total CPU  time used in DIRAC:  1.14999997s
->>>> Total WALL time used in DIRAC:  2.00000000s
+>>>> Total CPU  time used in DIRAC:  8.44999981s
+>>>> Total WALL time used in DIRAC: 10.00000000s
 ********** E N D   of   D I R A C  output  **********

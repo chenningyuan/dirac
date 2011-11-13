@@ -1,9 +1,9 @@
 !
-! VERSION : $Revision: 1.4 $
-! DATE    : $Date: 2004/05/26 13:06:56 $
+! VERSION : $Revision: 6936 $
+! DATE    : $Date: 2008-05-19 20:27:23 +0200 (Mon, 19 May 2008) $
 ! FILE    : maxash.h
 !
 !     MAXASH = maximum number of active orbitals in KR-MCSCF
 !
       INTEGER MAXASH
-      PARAMETER (MAXASH = 100)
+      PARAMETER (MAXASH = 200)

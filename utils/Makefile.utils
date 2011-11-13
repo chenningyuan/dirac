@@ -1,0 +1,7 @@
+# This file gets included from the main makefile, and
+# make has to be run from the top level directory.
+
+utils: $(INSTALL_DIR)/labread
+
+$(INSTALL_DIR)/labread: utils/labread.o
+	$(LD) -o $@ utils/labread.o

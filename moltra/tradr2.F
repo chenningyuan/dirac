@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.32.4.1 $
-C DATE    : $Date: 2004/09/01 08:14:24 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : tradr2.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -158,7 +146,7 @@ C
          CALL DZERO(WORK(KTIM),NTIM)
          KDRIJ = KFREE
          CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &        KINDX,WORK(KGAB),KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Divide index transformation in tasks with different batches
 C     of spinors. First find number of tasks.
@@ -171,7 +159,7 @@ C
 #if defined (MPE)
             CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
-            CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+            CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &           MPI_COMM_WORLD,ISTAT,IERR)
 #if defined (MPE)
             CALL MPE_LOG_EVENT(4, 0, "end wait")
@@ -185,9 +173,9 @@ C     .. ITEST .eq. 0: code for "send me new task"
 #if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
-            CALL MPI_SEND(IJTSK,1,MPI_INTEGER,NODE,30,
+            CALL MPI_SEND(IJTSK,1,my_MPI_INTEGER,NODE,30,
      &           MPI_COMM_WORLD,IERR)
-            CALL MPI_SEND(LENTSK,1,MPI_INTEGER,NODE,30,
+            CALL MPI_SEND(LENTSK,1,my_MPI_INTEGER,NODE,30,
      &           MPI_COMM_WORLD,IERR)
 #if defined (MPE)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
@@ -209,6 +197,12 @@ C     Release the slaves...
 C     (ITASK = -1)
 C     
          CALL DIRAC_PARCTL( -1 )
+#if defined (VAR_PFS)
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+#endif
       ELSE
 #endif
 C
@@ -468,8 +462,8 @@ C              subtract max mem needed in Hermit and 10%/1Mw for anything else
                ENDIF
             ENDIF
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
 C     If several passes are needed, memory requirements
 C     must be reconsidered
@@ -478,8 +472,8 @@ C
                NGBTMP = (IRAT*NSIZG)/((1+IRAT)*NPASS)
                MEMSV2 = 2*NGBTMP
                NSIZG = LFREE - MAX(MEMSV1,MEMSV2)
-               NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &              .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+               NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &              .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
             END IF
 C
             LDXAB = 5*NINSHA*NINSHB
@@ -488,8 +482,8 @@ C
 C
 C           Set INDXAB and INDPASS
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.TRUE.,
+     &              INDX,WORK(KDXAB),IJP12,IDUM,NSIZG,WORK(KIJPASS))
 C
             NSIZH = 0
             DO IREPAB = 0, NBSYM-1
@@ -503,7 +497,7 @@ C
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
-     &              '(//,1X,A,2I10/,2(1X,A,I10/),2(1X,A,I10,F10.3/))')
+     &              '(//,1X,A,2I16/,2(1X,A,I16/),2(1X,A,I16,F10.3/))')
      &         ' Calculation of integral distribution set:',
      &              ISHLA,ISHLB,
      &         ' Number of distributions in this set:     ',NUMDIS,
@@ -1133,7 +1127,7 @@ C     IBSMAX = ISHLA, making use of RS-symmetry
                   NSIZG = MAXSCL
                ENDIF
                ITOTDS = ITOTDS + NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &              .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+     &              .FALSE.,.TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
             END DO
             IDSLST(6,ISHLA) = ITOTDS
          END DO
@@ -1277,7 +1271,7 @@ C
 C     Determine number of passes based on available memory
 C
          NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &        .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+     &        .FALSE.,.TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
 C     If several passes are needed, memory requirements
 C     must be reconsidered
@@ -1287,7 +1281,7 @@ C
             MEMSV2 = 2*NGBTMP
             NSIZG = LFREE - MAX(MEMSV1,MEMSV2)
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+     &           .FALSE.,.TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
          END IF
 C
          LDXAB = 5*NINSHA*NINSHB
@@ -1296,8 +1290,8 @@ C
 C
 C     Set INDXAB and INDPASS
 C
-         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
-     &        INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.TRUE.,
+     &        INDX,WORK(KDXAB),IJP12,IDUM,NSIZG,WORK(KIJPASS))
          NSIZH = 0
          DO IREPAB = 0, NBSYM-1
             IHM(IREPAB) = NSIZH
@@ -2636,7 +2630,7 @@ C
       TMMP2 = 0.D0
       CALL MKNSTT(NSTR,NSTRT)
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &     KINDX,KGAB,KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
+     &     KINDX,WORK(KGAB),KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Task set-up
 C        Set up tasks with different batches of spinors if requested.
@@ -2675,7 +2669,8 @@ C
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
          IBTNFO(1) = IJBTCH
          IBTNFO(2) = LENTSK
-         CALL MPI_BCAST(IBTNFO,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IBTNFO,2,my_MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
          IF (CMMNFO) WRITE(LUPRI,'(/A,I4,/A,I4)')
      &      ' <COMMINFO> Master broadcasted batch number: ', IBTNFO(1),
      &      ' <COMMINFO>             and length of batch: ', IBTNFO(2)
@@ -2698,11 +2693,11 @@ C
          CALL FLSHFO(LUPRI)
 #if defined (MPE)
          CALL MPE_LOG_EVENT(3, 0, "start wait")
-         CALL MPI_RECV(NODINT,1,MPI_INTEGER,MPI_ANY_SOURCE,90,
+         CALL MPI_RECV(NODINT,1,my_MPI_INTEGER,MPI_ANY_SOURCE,90,
      &        MPI_COMM_WORLD,ISTAT,IERR)
          CALL MPE_LOG_EVENT(4, 0, "end wait")
 #else
-         CALL MPI_RECV(NODINT,1,MPI_INTEGER,MPI_ANY_SOURCE,90,
+         CALL MPI_RECV(NODINT,1,my_MPI_INTEGER,MPI_ANY_SOURCE,90,
      &        MPI_COMM_WORLD,ISTAT,IERR)
 #endif
          NODE = ISTAT(MPI_SOURCE)
@@ -2720,11 +2715,11 @@ C
             END DO
 #if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
-            CALL MPI_SEND(IDSNFO,6,MPI_INTEGER,NODE,92,
+            CALL MPI_SEND(IDSNFO,6,my_MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #else
-            CALL MPI_SEND(IDSNFO,6,MPI_INTEGER,NODE,92,
+            CALL MPI_SEND(IDSNFO,6,my_MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
 #endif
             IF (CMMNFO) WRITE(LUPRI,*) '<COMMINFO> Master sent task ',
@@ -2734,7 +2729,7 @@ C     Slave is idle but there are no more tasks available:
 C        Release slave by sending negative shell number
 C
          ELSE IF ((NODINT .EQ. 0) .AND. (ITSKSD .GE. NDSLST)) THEN
-            CALL MPI_SEND(IRELEA,6,MPI_INTEGER,NODE,92,
+            CALL MPI_SEND(IRELEA,6,my_MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
             IF (CMMNFO) WRITE(LUPRI,'(A,I4)')
      &           ' <COMMINFO> Master released node #', NODE
@@ -2877,6 +2872,12 @@ C
      &        'timing information from node #', INOD
       END DO
       CALL DIRAC_PARCTL( -1 )
+#if defined (VAR_PFS)
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+#endif
 C
 C     Print timing info
 C
@@ -2949,7 +2950,7 @@ C     There's an outer loop over batches of occupied spinors,
 C     and an inner loop over tasks (shells) for a given IJ-batch
 C ======================================================================
  100  CONTINUE
-      CALL MPI_BCAST(IBTNFO,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IBTNFO,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IJBTCH = IBTNFO(1)
       LENTSK = IBTNFO(2)
       IF (CMMNFO) WRITE(LUPRI,'(3(A,I4),A)')
@@ -2971,11 +2972,11 @@ C
 C
 C     Get screening matrices
 C
-      IF (SCRTRA .GT. 0) THEN
+      IF (SCRTRA .GT. D0) THEN
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
@@ -3005,16 +3006,16 @@ C
      &     ' <COMMINFO> Sending 0 from node #', MYTID
 #if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
-      CALL MPI_SEND(0,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(0,1,my_MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
 C
       CALL MPE_LOG_EVENT(5, 0, "start rcvtsk")
-      CALL MPI_RECV(IDSNFO,6,MPI_INTEGER,MPARID,92,
+      CALL MPI_RECV(IDSNFO,6,my_MPI_INTEGER,MPARID,92,
      &     MPI_COMM_WORLD,ISTAT,IERR)
       CALL MPE_LOG_EVENT(6, 0, "end rcvtsk")
 #else
-      CALL MPI_SEND(0,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
-      CALL MPI_RECV(IDSNFO,6,MPI_INTEGER,MPARID,92,
+      CALL MPI_SEND(0,1,my_MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_RECV(IDSNFO,6,my_MPI_INTEGER,MPARID,92,
      &     MPI_COMM_WORLD,ISTAT,IERR)
 #endif
 C
@@ -3081,7 +3082,8 @@ C
      &     INTGTH, ' from node #', MYTID
 #if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
-      CALL MPI_SEND(INTGTH,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(INTGTH,1,my_MPI_INTEGER,
+     &     MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
 C
       CALL MPE_LOG_EVENT(7, 0, "start sndint")
@@ -3089,7 +3091,8 @@ C
      &     MPARID,94,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(8, 0, "end sndint")
 #else
-      CALL MPI_SEND(INTGTH,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(INTGTH,1,my_MPI_INTEGER,
+     &     MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPI_SEND(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
      &     MPARID,94,MPI_COMM_WORLD,IERR)
 #endif
@@ -3173,19 +3176,19 @@ C     Wait for tasks until we receive the end message
 C
   100 CONTINUE
          ITEST = 0
-         CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
+         CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
 C        ITEST .eq. 0: code for "send me new task"
 #if defined (MPE)
          CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
-         CALL MPI_RECV(IJTSK,1,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(IJTSK,1,my_MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 #if defined (MPE)
          CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #endif
          IF (IJTSK.EQ.-1) GOTO 200
-         CALL MPI_RECV(LENTSK,1,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(LENTSK,1,my_MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          CALL UNPKIJ(IJTSK,ISPNR,JSPNR)
          CALL TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,

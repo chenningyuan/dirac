@@ -1,46 +1,34 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.38.2.1 $
-C DATE    : $Date: 2004/09/01 08:14:27 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : tradr4.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
-      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -95,8 +83,8 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
-      LOGICAL ANTIS,LMP2,TRIAN(2)
-      DIMENSION NSTR(2,0:2,4),
+      LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
+      DIMENSION NSTR(2,0:2,4),DRIJ(*),GABRAO(*),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
       CHARACTER*7 CIC(3)
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
@@ -111,18 +99,6 @@ C
       TRIAN(1) = ISAME(1).EQ.ISAME(2)
       TRIAN(2) = .FALSE.
       CALL PCK2IN(NSTR,TRIAN,IPRINT)
-C
-C     Prepare for screening
-C
-      IF(SCRTRA.GT.D0) THEN
-        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
-     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
-      ELSE
-        KDRIJ = KFREE
-        KGAB  = KFREE
-      ENDIF
 C
 C     *****************************************
 C     ****** P A R A L L E L    C O D E  ******
@@ -139,7 +115,7 @@ C
 C       Initialize
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
@@ -172,7 +148,9 @@ C
         END IF
 C
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 3, 1, -1
+        DO IC = 2, 1, -1
+CLV:Gaunt DO IC = 3, 1, -1
+        IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            IBUFMPI(1) = IC
@@ -199,7 +177,7 @@ C
               IBUFMPI(5) = IBEND
 C
               CALL XTIME(2,1,' Slave requesting task from master')
-              CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+              CALL MPI_RECV(ITEST,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               CALL XTIME(2,2,' Slave requesting task from master')
               NWHO = ISTAT(MPI_SOURCE)
@@ -214,7 +192,7 @@ C             ... slave wants new set of A,B shells
                  CALL FLSHFO(LUPRI)
               END IF
               CALL XTIME(3,1,' Master and slave negotiating task')
-              CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
+              CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL XTIME(3,2,' Master and slave negotiating task')
               ELSE IF (ABS(ITEST) .LE. 2) THEN
@@ -225,6 +203,7 @@ C             ... slave wants to lock or free file
               END IF
            ENDDO
            ENDDO
+        ENDIF
         ENDDO
 C
 C       Get the slaves out of the transformation loop
@@ -247,31 +226,34 @@ C
 C
         CALL XTIME(5,1,' Computing+transform. integrals')
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 1, 3
+        DO IC = 1, 2
+CLV:Gaunt  DO IC = 1, 3
+        IF(LBIT(INTFLG,IC)) THEN
            WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
               IF (IC.LE.2) THEN
                  IBEND = ISHLA
-                 WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
-     &              '- Beginning with task',ISHLA,' of',IASMAX,
-     &              ' after',WALLST-WALLBEF,' seconds',
-     &              'and after',CPUST-CPUBEF,' CPU-seconds'
+                 WRITE(LUPRI,'(3X,2(A,I4),A,F8.0,A,F8.0,A)') 
+     &              '- Beginning task',ISHLA,' of',IASMAX,
+     &              ' after',WALLST-WALLBEF,' seconds and',
+     &              CPUST-CPUBEF,' CPU-seconds'
               ELSE
                  IBEND = IBSMAX
-                 WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
-     &              '- Beginning with Gaunt task',ISHLA-IASTRT+1,
+                 WRITE(LUPRI,'(3X,2(A,I4),A,F8.0,A,F8.0,A)') 
+     &              '- Beginning Gaunt task',ISHLA-IASTRT+1,
      &              ' of',IASMAX-IASTRT+1,
-     &              ' after',WALLST-WALLBEF,' seconds',
-     &              'and after',CPUST-CPUBEF,' CPU-seconds'
+     &              ' after',WALLST-WALLBEF,' seconds and',
+     &              CPUST-CPUBEF,' CPU-seconds'
               ENDIF
               CALL FLSHFO(LUPRI)
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
+     &                   GABRAO,DRIJ,DINTSKP)
            ENDDO
+        ENDIF
         ENDDO
         CALL XTIME(5,2,' Computing+transform. integrals')
 #if defined (VAR_MPI)
@@ -293,7 +275,7 @@ C
          CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
          CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
       ELSE
-         CALL INIMDINFO
+         CALL INI4INDINFO
       END IF
 C
 C     Complete the integrals to the desired classes
@@ -311,8 +293,8 @@ C
 C
       CALL GETTIM(CPUST,WALLST)
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')
-      WRITE(LUPRI,'(1X,A,F14.2,A)') 
-     & '- Starting symmetrization after ',
+      WRITE(LUPRI,'(A,F14.2,A)') 
+     & ' - Starting symmetrization after ',
      &  WALLST-WALLBEF,' seconds'
       CALL FLSHFO(LUPRI)
 C
@@ -334,27 +316,27 @@ C
 C        
       CALL XTIME(4,2,' Symmetrizing MO integrals    ')
       CALL GETTIM(CPUST,WALLST)
-      WRITE(LUPRI,'(1X,A,F14.2,A)') 
-     &     '- Finished symmetrization after ',
+      WRITE(LUPRI,'(A,F14.2,A)') 
+     &     ' - Finished symmetrization after ',
      &     WALLST-WALLBEF,' seconds'
       CALL FLSHFO(LUPRI)
 C
       IF (.NOT. NOMDCINT) THEN
 C        
-C        Close MOLFDIR integral file
+C        Close MOLFDIR integral file and
+C        delete scratch file(s) (only opened on slaves, if parcal)
 C        
          CALL MDINTF
+         IF (.NOT.PARCAL) CALL MDSCRF
 C
       ELSE
 C
-C        Write pointers etc. to MDINFO file.
+C        Write pointers etc. for 4IND*XXXX0 files to 4INDINFO file.
 C
 C        Number of IJ indices for each fermion symmetry
-         WRITE(LUMLF2) NFPCK12,NFPCK12T
 C        Number of KL indices for each fermion symmetry
-         WRITE(LUMLF2) NFPCK34,NFPCK34T
 C        Offsets
-         WRITE(LUMLF2) NSTR
+         WRITE(LUMLF2) NFPCK12,NFPCK12T,NFPCK34,NFPCK34T,NSTR
 C        I and J indices
          CALL WRITI(LUMLF2,NFPCK12T*2,WORK(KDXKR12))
 C        Boson irrep for IJ indices
@@ -368,12 +350,12 @@ C        Boson irreps for each index
             END DO
          END DO
 C
-C        Close MDINFO file.
+C        Close 4INDINFO and the direct access 4IND*XXXX0 files.
 C
          CLOSE (LUMLF2, STATUS='KEEP')
+         CALL MDSCRF
 C
       END IF
-      CALL MDSCRF
 C
 C     Print timing report
 C
@@ -383,6 +365,14 @@ C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+C
+#if defined (VAR_PFS)
+C
+C       close global file (opened in TRAPARI)
+C
+        CALL GLOBAL_FILE_CLOSE_READ
+#endif
+C
       CALL MEMREL('TRDR4T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR4T')
 C
@@ -393,7 +383,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV4 */
       SUBROUTINE TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,INDX,TRIAN,KQ,KE,KIBE,
-     &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,DINTSKP)
+     &                  IC,I2TYP,IBSTRT,IBEND,GABRAO,DRIJ,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
@@ -404,6 +394,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+C
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -411,13 +404,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcborb.h"
 #include "dgroup.h"
 #include "twosta.h"
+#include "blocks.h"
+#include "nuclei.h"
+C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
+      PARAMETER (MXGBFSZ=4096)
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
+      CHARACTER SPDCAR*1,COMP(2)*1
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IHTM(0:7),MHTM(2),NHTM(2), IOFFB(0:7)
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
       DIMENSION WORK(*),GABRAO(*),DRIJ(*),DINTSKP(*)
+C
+      DATA COMP/'L','S'/
 C
       CALL QENTER('TRDRV4')
       KFRSAV = KFREE
@@ -636,8 +636,19 @@ C
          KFRSAV3 = KFREE
          NINSHA  = NINSH(ISHLA,-1,INDX,IPRINT)
          NINSHB  = NINSH(ISHLB,-1,INDX,IPRINT)
-         IF (IPRINT .GE. 3) WRITE(LUPRI,'(/A,2I3)')
-     &      '    ---> TRDRV4 : integrals for shell A/B',ISHLA,ISHLB
+         IF (IPRINT .GE. 3) THEN
+            NCENTA = NCNTSH(ISHLA)   
+            NCENTB = NCNTSH(ISHLB)   
+            ICA    = LCLASH(ISHLA)
+            ICB    = LCLASH(ISHLB)
+
+            WRITE(LUPRI,'(/A,2(I4,A1,A4,1X,3A1))')
+     &      '    ---> TRDRV4 : integrals for shell A/B:',
+     &        ISHLA,'(',NAMN(NCENTA),COMP(ICA),
+     &        SPDCAR(NHKTSH(ISHLA)-1),')',
+     &        ISHLB,'(',NAMN(NCENTB),COMP(ICB),
+     &        SPDCAR(NHKTSH(ISHLB)-1),')'
+         ENDIF
 C
          LDXAB = 5*NINSHA*NINSHB
          CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
@@ -679,8 +690,8 @@ C
 C           Calculate NUMDIS and NSIZG
 C           --------------------------
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                       .FALSE.,INDX,WORK(KFREE),IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &              .FALSE.,INDX,WORK(KFREE),IJP12,IDUM,NSIZG,IDUM)
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 C           CRAYfix:
 C           Opening a direct access file with too long records 
@@ -694,8 +705,9 @@ C           ---------------------
 C
             CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.FALSE.,
+     &                       INDX,WORK(KDXAB),IJP12,IDUM,
+     &                       NSIZG,WORK(KIJPASS))
 C
 C           Calculate MWHMAT:
 C           -----------------
@@ -708,7 +720,7 @@ C           Check that we fit in memory
 C           ---------------------------
 C
             IF (IPRINT .GE. 3) THEN
-               WRITE(LUPRI,'(A,I3,A/4(A,I9))')
+               WRITE(LUPRI,'(A,I3,A/4(A,I16))')
      &         '       - TRDRV4 memory estimate iteration no. ',IT,' :',
      &         '         Free: ',MFREE,', Hermit: ',MWHER,
      &         ', HMAT ',MWHMAT,', GMAT ',NSIZG
@@ -725,13 +737,14 @@ C        Final calculation of INDXAB & IJPASS
 C
          CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
 C
-         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &                    INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.FALSE.,
+     &                    INDX,WORK(KDXAB),IJP12,IDUM,
+     &                    NSIZG,WORK(KIJPASS))
 C
          IF (IPRINT .GE. 3) THEN
             WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
      &      ' Calculation of integral distribution set:',ISHLA,ISHLB
-            WRITE (LUPRI,'(//,4(1X,A,I8,/))')
+            WRITE (LUPRI,'(//,4(1X,A,I16,/))')
      &      ' Number of distributions in this set:     ',NUMDIS,
      &      ' Maximum size of scalar integral batch:   ',NSIZG,
      &      ' Number of passes :                       ',NPASS
@@ -744,6 +757,12 @@ C           Use the space reserved for GMAT now as buffer storage
 C
             LGFIL = LUTRA2
             NGBFSZ = (IRAT*NSIZG)/((1+IRAT)*NPASS)
+C
+C           The buffer size may give rise to too large record lengths, restrict it to
+C           a size that gives an acceptable performance. Be ware that this is machine
+C           dependent and may be used to tune I/O performance.
+C
+            NGBFSZ = MIN(NGBFSZ,MXGBFSZ)
 C
 C           Allocate the buffer arrays in WORK and set KGMAT to the
 C           start of this allocation section. We now only need to
@@ -1091,7 +1110,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Tr4par */
       SUBROUTINE TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
+     &             KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,
      &             LMP2,EMP2,DINTSKP)
 C***********************************************************************
 C
@@ -1118,6 +1137,7 @@ C
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
+      DIMENSION DRIJ(*),GABRAO(*)
       DIMENSION DINTSKP(*),WORK(*), IBUFMPI(5)
 C
 C     Define the packing of the 2-index transformed integrals
@@ -1139,9 +1159,9 @@ C
          ITEST = 0
 C        ... ask for new set of A,B shells
          CALL XTIME(2,1,' Slave requesting task from master')
-         CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
+         CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_RECV(IBUFMPI,5,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(IBUFMPI,5,my_MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          IC     = IBUFMPI(1)
          I2TYP  = IBUFMPI(2)
@@ -1158,7 +1178,7 @@ C
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),ANTIS,LMP2,WORK(KINDX),TRIAN,
      &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
-     &               WORK(KDRIJ),WORK(KGAB),DINTSKP)
+     &               GABRAO,DRIJ,DINTSKP)
          CALL XTIME(5,2,' Computing+transform. integrals')
          GOTO 100
   200 CONTINUE

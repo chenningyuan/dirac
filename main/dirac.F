@@ -1,40 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
-C VERSION : $Revision: 1.43.2.4 $
-C DATE    : $Date: 2004/09/01 08:13:50 $
+C
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirac.F
 C
 C***********************************************************************
@@ -45,25 +34,25 @@ C
 #include "dcbgen.h"
 C
 #include "infpar.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(LWORK)
 C
+C     Set up basic information for parallel execution, to be stored in the
+C     common block infpar
 C
       PARCAL = (IPARCAL .NE. 0)
-C
-C     Transfer variables to common blocks
-C
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
-      NUMNOD = INUMNOD - 1
+C     NUMNOD = INUMNOD - 1
+C     SK - Sep 08: subtraction has already been done in mpixinit.
+      NUMNOD = INUMNOD
       MYTID  = IMYTID
-C
+C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
-C
-C     Let the slaves sleep for now (where implemented) ...
-C        ( ITASK = 0 )
-C
-      IF (PARCAL) CALL DIRAC_PARCTL( 0 )
+C Test the communication by sending an empty task
+      ITASK = 0
+      IF (PARCAL) CALL DIRAC_PARCTL( ITASK )
 C
 C     Set basis set directory
 C
@@ -71,14 +60,14 @@ C
 C
 C     Execute Dirac
 C
-      CALL TIMDAT
+      CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL(WORK,LWORK)
 C
 C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
 C
-      CALL TIMDAT
+      CALL TSTAMP(' ',LUPRI)
       CALL FLSHFO(LUPRI)
       RETURN
       END
@@ -101,6 +90,11 @@ C
       CALL PAMINP(WORK,LWORK)
 C
       IF ( INPTES ) RETURN
+C
+C***********************************************************************
+C*****  E C P  I N T E G R A L  M O D U L E  ***************************
+C***********************************************************************
+C
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
@@ -151,6 +145,7 @@ C*****  G E T    W A V E    F U N C T I O N   **************************
 C***********************************************************************
 C
       IF(DOPIN) CALL PCMOIN(WORK,LWORK)
+      IF(DOACIN) CALL ACMOIN(WORK,LWORK)
       IF(DOPSI .OR. DOTRA) CALL PAMPSI(WORK,LWORK)
       IF(DOACUT) CALL ACMOUT(WORK,LWORK)
       IF(DOPUT) CALL PCMOUT(WORK,LWORK)
@@ -168,6 +163,12 @@ C*****  R E S P O N S E    M O D U L E  ********************************
 C***********************************************************************
 C
       IF(DOPRP) CALL PAMPRP(WORK,LWORK)
+C
+C***********************************************************************
+C***** H E I N Z *******************************************************
+C***********************************************************************
+C
+      IF(DOHEINZ) CALL HEINZ(WORK,LWORK)
 C
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -203,6 +204,9 @@ C (DHF or DFT), not for other wave functions.
 C It ought to be implemented for other wave function types as well.
 C TF, Nov. 2003:  Done for KRMC. 
 C
+C     Reorder/rotate orbitals prior to SCF-calculations
+      IF(L1ORBM) CALL PREORB(WORK,LWORK)
+C
 C***********************************************************************
 C***** D I R A C - H A R T R E E - F O C K *****************************
 C***** o r   D I R A C - K O H N - S H A M *****************************
@@ -222,7 +226,7 @@ C        *************************************************
 C        *** Call PSIDHF for Roothaan/DIIS iterations  ***
 C        *************************************************
 C
-         IF (MAXITR.GT.0) THEN
+         IF (MAXITR.GT.0.OR.MAXIT2.GT.0) THEN
             CALL PSIDHF(WFCONV,WORK,LWORK)
          END IF
 C
@@ -232,14 +236,14 @@ C        *************************************************
 C
          IF ( .NOT. NOQCDHF .AND. .NOT. DODFT .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
-#ifdef MOD_KRMC
-            CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
-#else
 c           CALL QUIT(
 c    &   'Second order SCF optimization not included in this version')
 c        ... let it stop below ... /hjaaj Feb 2004
-#endif
          END IF
+C........Export mean-field integrals
+CTROND         IF(DOMFI) CALL PAMFI(WORK,LWORK)
+CTROND         IF(.TRUE.) CALL PAMFI(WORK,LWORK)
+C
          IF(DOANA) CALL PAMANA(WORK,LWORK)
          IF(.NOT.WFCONV) THEN
 C        ... DHF not converged;
@@ -248,6 +252,8 @@ C        ... DHF not converged;
             CALL QUIT('SCF not converged')
          END IF
       END IF
+C     Post orbital modifications
+      IF(L2ORBM) CALL PSTORB(WORK,LWORK)
 C
 C***********************************************************************
 C***** R E S O L V E    O P E N - S H E L L  S T A T E S ***************
@@ -283,30 +289,20 @@ C
       IF(DOMVO.AND.DOPSI) CALL MVOGEN(WORK,LWORK)
 C
 C***********************************************************************
+C***** M P 2   N A T U R A L   O R B I T A L S *************************
+C***********************************************************************
+C
+      IF(DOMP2NO.AND.DOPSI) CALL MP2NOGEN(WORK,LWORK)
+C
+C***********************************************************************
 C***** K R - M C S C F *************************************************
 C***********************************************************************
 C      Do MCSCF before CC and CI because user may want
 C      to do an MR-CC or MR-CI /hjaaj aug 03
 C
       IF(DOKRMC.AND.DOPSI) THEN
-#ifdef MOD_KRMC
-C
-C        Transfer DHF info to common block DCBORB
-C        and recalculate DCBORB.
-C
-         CALL TKRMCORB
-         CALL SETDC2(0)
-C
-C        *************************************************
-C        *** Call PSIOPT for KR-MCSCF wave function ******
-C        *************************************************
-C
-         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
-         IF(DOANA) CALL PAMANA(WORK,LWORK)
-#else
             CALL QUIT(
      &  'Second order KMCSCF optimization not included in this version')
-#endif
       END IF
 C
 C***********************************************************************
@@ -333,22 +329,48 @@ C***********************************************************************
 C
       IF(DOLUCT.AND.DOPSI) CALL PAMLUCITA(WORK,LWORK)
 C
+C***********************************************************************
+C***** R E L A D C  M O D U L E ****************************************
+C***********************************************************************
 C
-#if defined (UNDEF)
+      IF(DOADC.AND.DOPSI) CALL PAMADC(WORK,LWORK)
+C
+C***********************************************************************
+C***** C O S C I        stand-alone version of RESOLVE   ***************
+C*****                  some routines in krmc are merged ***************
+C*****                  to get efficiency and make it    ***************
+C*****                  possible to calculate density
+C*****                  matrix.                          ***************
+C*****                  added by sya,2007.01.23,ulp      ***************
+C***********************************************************************
+C
+      IF(DOCOSCI.AND.DOPSI) THEN
+!@d      IF (.NOT.DOSCF) THEN
+C           ... Transfer DHF info to common block DCBORB
+C           ... and recalculate DCBORB.
+!@d         CALL TDHFORB
+!@d         CALL SETDC2(0)
+!@d      END IF
+CMI  ... this routine is not defined !
+CMI      CALL SY_COSCI(WORK,LWORK)
+      END IF
 C
 C***********************************************************************
 C***** C I *************************************************************
 C***********************************************************************
 C
-      IF(DOCI.AND.DOPSI) THEN
-C
-C        *************************************************
-C        *** Call PSICI for CI wave function *************
-C        *************************************************
-C
-         CALL PSICI(WORK,LWORK)
+      IF(DOKRCI.AND.DOPSI) THEN
+            CALL QUIT(
+     &  ' KR-CI module not included in this version')
       END IF
-#endif
+C
+C***********************************************************************
+C***** C C *************************************************************
+C***********************************************************************
+C
+!     IF(DOKRCC.AND.DOPSI) THEN
+!        CALL KRCC_CALC('KR-CC',WFCONV,WORK,LWORK)
+!     END IF
 C
       CALL QEXIT('PAMPSI')
       RETURN
@@ -375,6 +397,7 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbgosci.h"
 C
       CALL QENTER('TDHFORB')
 C
@@ -397,14 +420,14 @@ C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GOSCI) /July 2002 hjaaj
 C
       NAELEC = NAELEC_DHF
-      NGAS   = NOPEN
+      NGAS_DC= NOPEN
       MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
       MINMK2 = NAELEC-2*MIN(NAELEC,NASHT)
       MK2REF = 0
       MK2DEL = MAXMK2
 
       CALL IZERO(NGSHT,MXMCGAS)
-      DO J = 1, NGAS
+      DO J = 1, NGAS_DC
          DO I = 1,NFSYM
             NGSH(I,J) = NACSH(I,J)
             NGSHT(J)  = NGSHT(J) + NGSH(I,J)
@@ -415,7 +438,7 @@ C     initialize min and max accumlated no. of electrons
 C     in each gas space
 C
       XELEC = D0
-      DO J = 1, NGAS
+      DO J = 1, NGAS_DC
          XELEC = XELEC + D2*DF(J)*NGSHT(J)
          NGSP(1,J) = NINT(XELEC)
          NGSP(2,J) = NINT(XELEC)
@@ -433,6 +456,7 @@ C
       MOPT_MXMACRO   = MXMACRO
       MOPT_MAXBCK    = MAXBCK
       IOPT_ISTATE    = 1
+      JKRRUNTYPE     = 0
 C
 C     Set common block DCROPT
 C
@@ -459,6 +483,9 @@ C
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = ' '
       END DO
+      DO I = 1, NFSYM
+         OPT_DELSTR(I) = ' '
+      END DO
 C
 C
       CALL QEXIT('TDHFORB')
@@ -484,11 +511,12 @@ C
 #include "dcborb.h"
 #include "dcbkrmc.h"
 #include "dcbopt.h"
+#include "dcbgosci.h"
 C
       CALL QENTER('TKRMCORB')
 C
 C
-      NGAS   = NKRMCGAS
+      NGAS_DC= NKRMCGAS
       MK2REF = NKRMC_MK2REF
       MK2DEL = NKRMC_MK2DEL
       MINMK2 = NKRMC_MINMK2
@@ -497,7 +525,7 @@ C
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
-         DO J = 1, NGAS
+         DO J = 1, NGAS_DC
             NGSH(I,J) = NKRMCGSH(I,J)
             NGSHT(J) = NGSHT(J) + NGSH(I,J)
          END DO
@@ -509,7 +537,7 @@ c         NPSH(I) = NKRMCPSH(I)
       END DO
       NAELEC = NKRMCAELEC
 C     min and max electrons in each gas space:
-      DO J = 1, NGAS
+      DO J = 1, NGAS_DC
          NGSP(1,J) = NKRMCGSP(1,J)
          NGSP(2,J) = NKRMCGSP(2,J)
       END DO
@@ -528,6 +556,8 @@ C
       MOPT_MAXBCK    = MKRMC_MAXBCK
       IOPT_ISTATE    = IKRMC_ISTATE
       IOPT_SYMMETRY  = IKRMC_SYMMETRY
+      IMEMFAC        = IKRMC_MEMFAC
+      JKRRUNTYPE     = 1
 C
 C     Set common block DCROPT
 C
@@ -554,11 +584,141 @@ C
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = KRMC_FRZSTR(I)
       END DO
+      DO I = 1, NFSYM
+         OPT_DELSTR(I) = KRMC_DELSTR(I)
+      END DO
 C
+C     Set "constant" CI internal variables 
+C
+      NCIROOT     =    1
+      ISHMEM_TYPE =  - 1
+      CSHMEMO     = .FALSE.
+      CINT_REORD  = .FALSE.
+      CINT_SPLIT  = .FALSE.
 C
       CALL QEXIT('TKRMCORB')
-      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck tkrciorb */
+      SUBROUTINE TKRCIORB
+C***********************************************************************
 C
+C     Transfer information from common block DCOCI to 
+C     common block DCBORB and set common block DCxOPT
+C
+C     Based on TKRMCORB.
+C
+C     Written by S. Knecht - Aug 2008
+C     Last revision: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbkrci.h"
+#include "dcbopt.h"
+#include "dcbgosci.h"
+C
+      CALL QENTER('TKRCIORB')
+C
+C
+      NGAS_DC= NKRCIGAS
+      MK2REF = NKRCI_MK2REF
+      MK2DEL = NKRCI_MK2DEL
+      MINMK2 = NKRCI_MINMK2
+      MAXMK2 = NKRCI_MAXMK2
+C     ... do not change MXMCGAS to MXCIGAS; not necessary...
+      CALL IZERO(NGSHT,MXMCGAS)
+      DO I = 1,NFSYM
+         NISH(I) = NKRCIISH(I)
+         NASH(I) = NKRCIASH(I)
+         DO J = 1, NGAS_DC
+            NGSH(I,J) = NKRCIGSH(I,J)
+            NGSHT(J) = NGSHT(J) + NGSH(I,J)
+         END DO
+         NOCC(I) = NISH(I) + NASH(I)
+         NSSH(I) = NKRCISSH(I)
+         NFRO(I) = NKRCIFRO(I)
+      END DO
+      NAELEC = NKRCIAELEC
+C     min and max electrons in each gas space:
+      DO J = 1, NGAS_DC
+         NGSP(1,J) = NKRCIGSP(1,J)
+         NGSP(2,J) = NKRCIGSP(2,J)
+      END DO
+C
+C
+C     Set common block DCIOPT
+C
+      IPROPT = IPRKRCI
+      IOPT_ITRINT(1) = IKRCI_ITRINT(1)
+      IOPT_ITRINT(2) = IKRCI_ITRINT(2)
+      IOPT_INTDEF    = IKRCI_INTDEF
+      IOPT_INTFLG    = IKRCI_INTFLG
+      IOPT_INTBUF    = IKRCI_INTBUF
+      MOPT_MXMICRO   =  0
+      MOPT_MXMACRO   = -1
+      MOPT_MAXBCK    =  0
+      IOPT_ISTATE    =  1
+      IOPT_SYMMETRY  = -1
+      IMEMFAC        = IKRCI_MEMFAC
+      JKRRUNTYPE     = 2
+C
+C     Set common block DCROPT
+C
+      OPT_CNVINT(1)  = DKRCI_CNVINT(1)
+      OPT_CNVINT(2)  = DKRCI_CNVINT(2)
+      OPT_THRGRD     = 1.0D99
+      THRPCI         = DKRCI_THRPCI
+C
+C     Set common block DCLOPT
+C
+      OPT_SKIPEE     = .FALSE.
+      OPT_SKIPEP     = .FALSE.
+      OPT_NOCI       = .FALSE.
+      OPT_UCIBOS     = KRCI_UCIBOS
+      OPT_MKCNST     = KRCI_MKCNST
+C
+      DO I = 1, NOPTFLAGS
+         FLAG(I) = .FALSE.
+      END DO
+C
+C     Set common block DCCOPT
+C
+      OPT_CIPROGRAM  = KRCI_CIPROGRAM
+      DO I = 1, NFSYM
+         OPT_FRZSTR(I) = ' '
+      END DO
+      DO I = 1, NFSYM
+         OPT_DELSTR(I) = ' '
+      END DO
+C
+      MAXCIT      = MAXCIT_KRCI
+      KTRLVL      = KTRLVL_KRCI
+      IANACI      = IANACI_KRCI
+      NCIROOT     = -1
+      MXCIV       = MXCIV_KRCI
+      IRESTRK     = IRESTRK_KRCI
+      IDOPARIO    = IDOPARIO_KRCI
+      IOPTST      = 1531
+      IKRMCCNO    =  - 3
+      OPT_NOPFQ   = .FALSE.
+      OPT_NOFQX   = .FALSE.
+      NATONL      = .FALSE.
+      FOCKON      = .FALSE.
+      COMPROT     = .FALSE.
+      GENFOCK     = .FALSE.
+      NATOLCR     = NATOLCR_KRCI
+      CRDFO_MAT   = CRDFO_MAT_KRCI
+      CWRTFO_MAT  = CWRTFO_MAT_KRCI
+      CSHMEMO     = CSHMEMO_KRCI
+      CINT_REORD  = CINT_REORD_KRCI
+      CINT_SPLIT  = CINT_SPLIT_KRCI
+      COMPFAC     = 0.01D00
+C
+      CALL QEXIT('TKRCIORB')
       END
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -579,10 +739,10 @@ C***********************************************************************
 #include "priunit.h"
 C
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 C
-#include "infpar.h"
 C
       DIMENSION WORK(MWORK)
 C
@@ -590,12 +750,13 @@ C
       LWORK = MWORK
 #include "memint.h"
 C
-C
 C     Transfer variables to common blocks
 C
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
-      NUMNOD = INUMNOD - 1
+C     NUMNOD = INUMNOD - 1
+C     SK - Sep 08: subtraction has already been done in mpixinit.
+      NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
 C
@@ -606,30 +767,24 @@ C
 C
  100  CONTINUE
 C
-      CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+Csk      write(6,*) 'node will recieve itask',MYTID
+      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
+Csk      write(6,*) 'node has recieved itask',MYTID,itask
 C
-C     The code below may be useful for some architectures but 
-C     fixes a MPI implementation problem and has as side effect
-C     a slowdown om massively parallel calculations on small
-C     systems with many tasks.  I therefore disabled it.
-C     LV 6-8-2004
+C     check for proper LUCITA / LUCIAREL installation
 C
-C     Check whether there is a new task waiting : if not
-C     the slave may sleep for one second. This is useful on
-C     shared memory architectures where MPI_RECV is implemented
-C     using an idle loop that consumes unnecessary CPU when
-C     waiting in a serial part of the code.
+      ICHECK_MPI2 = - 1 
+#if defined (VAR_MPI2)
+      ICHECK_MPI2 =   0
+#endif
 C
-C     CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
-C    &                NEWTASK,ISTAT,IERR)
-C     IF (NEWTASK) THEN
-C        CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
-C    &                 MPI_COMM_WORLD,ISTAT,IERR)
-C     ELSE
-C        CALL SLEEP(1)
-C        GO TO 100
-C     END IF
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+     & LUCIAREL run; you do not have a MPI-2 library installed'
+       CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
+      END IF
 C
 C     Start timing.
 C
@@ -669,6 +824,21 @@ C
 C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
+#if defined (VAR_MPI2)
+      ELSE IF (ITASK .EQ. 5) THEN
+C
+C        Enter the LUCITA module
+C
+         CALL LUCINOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 6) THEN
+            CALL QUIT(
+     &  'KRMC-LUCIAREL module not included in this version')
+
+      ELSE IF (ITASK .EQ. 7) THEN
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+
+#endif /* VAR_MPI2 */
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -701,10 +871,10 @@ C***********************************************************************
 #include "priunit.h"
 C
       INCLUDE 'mpif.h'
-      INTEGER ISTAT(MPI_STATUS_SIZE)
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 C
-#include "infpar.h"
 C
       DIMENSION WORK(MWORK)
 C
@@ -714,8 +884,23 @@ C
 C
  100  CONTINUE
 C
-      CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+      CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPARID,27,
      &              MPI_COMM_WORLD,ISTAT,IERR)
+C
+C     check for proper LUCITA / LUCIAREL installation
+C
+      ICHECK_MPI2 = - 1 
+#if defined (VAR_MPI2)
+      ICHECK_MPI2 =   0
+#endif
+C
+      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or. 
+     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+        WRITE(6,*) ' fatal error in starting a parallel LUCITA / 
+     & LUCIAREL run; you do not have a MPI-2 library installed'
+       CALL Abend2('error in DIRNOD2: missing MPI-2 library functions')
+      END IF
+C
 C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
@@ -751,6 +936,21 @@ C
 C        Enter the DFT module
 C
          CALL DFTNOD(WORK,LWORK)
+#if defined (VAR_MPI2)
+      ELSE IF (ITASK .EQ. 5) THEN
+C
+C        Enter the LUCITA module
+C
+         CALL LUCINOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 6) THEN
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+
+      ELSE IF (ITASK .EQ. 7) THEN
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+
+#endif /* VAR_MPI2 */
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -768,61 +968,6 @@ C
  999  CALL QEXIT('DIRNOD2')
       END
 #endif /* VAR_MPI */
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-#ifdef SYS_SX
-C
-C     Small dummy program that calls the main c-routine, because
-C     some linkers are worthless (eg. NEC SX).
-C     If you call the linker through the fortran compiler the 'main'
-C     program has one name, and if you call the linker through the C
-C     compiler it has another name. Marvellous work!
-C
-      PROGRAM SXMAIN
-      CALL C_MAIN
-      STOP
-      END
-#endif
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirctl */
-      SUBROUTINE GETBASDIR()
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "infpar.h"
-#include "dcbgen.h"
-C
-C     Check environment variable BASDIR
-C
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
-      CALL GETENV ('BASDIR',BASDIR)
-#endif
-      LENBAS = LBASDIR
- 10   CONTINUE
-      IF ( LENBAS .GT. 0 ) THEN
-         IF ( BASDIR(LENBAS:LENBAS) .EQ. ' ' ) THEN
-            LENBAS = LENBAS - 1
-            GOTO 10
-         END IF
-      END IF
-C
-C     If string is empty add current directory 
-C
-      IF ( LENBAS .EQ. 0 ) THEN
-C
-         BASDIR(1:1) = '.'
-         LENBAS = 1
-C
-      END IF
-C
-      IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(2A)')
-     $     ' Basis set dir.    : ',BASDIR(1:LENBAS)
-C 
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirac_parctl */
       SUBROUTINE DIRAC_PARCTL(ITASK)
@@ -847,12 +992,13 @@ C
 C
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(ITASK,1,my_MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
       ELSE
 C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
-            CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
-     &                 MPI_COMM_WORLD,IERR)
+            CALL MPI_SEND(ITASK,1,my_MPI_INTEGER,NODE,27,
+     &           MPI_COMM_WORLD,IERR)
          END DO
       END IF
 
@@ -861,6 +1007,33 @@ C        slave should be in main menu, ready to receive task
       CALL QUIT('DIRAC_PARCTL called '//
      &   'but this is a sequential Dirac version !')
 
+#endif /* VAR_MPI */
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck getbasdir */
+      SUBROUTINE GETBASDIR()
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infpar.h"
+#include "dcbgen.h"
+C
+C     Check environment variable BASDIR
+C
+#if defined (VAR_MPI)
+      IF (PARCAL) THEN
+        CALL DIST_ENV(0) 
+      ELSE
+#endif /* VAR_MPI */
+#if defined (SYS_T3D) || defined (SYS_T90)
+        CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
+#else
+        CALL GETENV ('BASDIR',BASDIR)
+#endif
+#if defined (VAR_MPI)
+      ENDIF
 #endif /* VAR_MPI */
       RETURN
       END

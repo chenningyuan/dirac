@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -456,14 +444,15 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
       DIMENSION L(*),R(*)
 *.Output
       DIMENSION RHO1(*),RHO2(*)
-*. Before I forget it :
+      IF( I12 .eq. 0 ) RETURN
+*     before I forget it :
       CALL QENTER('DENSI')
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'DENSI ')
       ZERO = 0.0D0
-      CALL SETVEC(RHO1,ZERO ,NACOB ** 2 )
+      CALL DZERO(RHO1,NACOB ** 2 )
       IF(I12.EQ.2)
-     &CALL SETVEC(RHO2,ZERO ,NACOB ** 2 *(NACOB**2+1)/2)
+     &CALL DZERO(RHO2,NACOB ** 2 *(NACOB**2+1)/2)
 *
 C?     WRITE(6,*) ' ISSPC ICSPC in DENSI2 ',ISSPC,ICSPC
 *
@@ -553,16 +542,10 @@ CTF
 *.Local scratch arrays for blocks of C and sigma
       IF (IPRDEN.GE.10) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
      &       MXSB,MXTSOB_L,MXSOOB
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      LSCR1 = MAX(LSCR1,LCSBLK)
-      IF (IPRDEN.GE.10) WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
+      IF (IPRDEN.GE.10) WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
       IF(ICISTR.EQ.1) THEN
-        CALL MEMMAN(KCB,LSCR1,'ADDL  ',2,'KCB   ')
-        CALL MEMMAN(KSB,LSCR1,'ADDL  ',2,'KSB   ')
+        CALL MEMMAN(KCB,LBLOCK,'ADDL  ',2,'KCB   ')
+        CALL MEMMAN(KSB,LBLOCK,'ADDL  ',2,'KSB   ')
       END IF
 *.SCRATCH space for block of two-electron density matrix
 * A 4 index block with four indeces belonging OS class
@@ -596,7 +579,7 @@ CTF
       LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
       IF (IPRDEN.GE.10)
      &    WRITE(6,*) ' Space for resolution matrices ',LSCR2
-      LSCR12 = MAX(LSCR1,2*LSCR2)
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
 *. It is assumed that the third block already has been allocated, so
       KC2 = KVEC3
       IF(IPRCIX.GE.2)
@@ -660,7 +643,7 @@ CTF
       CALL MEMMAN(KLSCLFCL,NTTS, 'ADDL  ',2,'SCLF_L')
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
+     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
      &     WORK(KSIOIO),ISMOST(1,ISSM),
      &     NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),
      &     WORK(KLI1BTL),WORK(KLIBTL),0,ITTSS_ORD)
@@ -676,7 +659,7 @@ CTF
       CALL MEMMAN(KLSCLFCR,NTTS, 'ADDL  ',2,'SCLF_R')
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
+     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
      &     WORK(KCIOIO),ISMOST(1,ICSM),
      &     NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),
      &     WORK(KLI1BTR),WORK(KLIBTR),0,ITTSS_ORD)
@@ -698,7 +681,7 @@ C?      WRITE(6,*) ' DENSI2T :NBLOCKR =',NBLOCKR
      &       WORK(KNSTSO(IBTP)),WORK(KISTSO(IBTP)),
      &       NAEL,IATP,NBEL,IBTP,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &       NSMST,NSMOB,NSMSX,NSMDX,MXPNGAS,NOBPTS,IOBPTS,
-     &       MAXK,MAXI,LSCR1,LSCR1,WORK(KCSCR),WORK(KSSCR),
+     &       MAXK,MAXI,LBLOCK,LBLOCK,WORK(KCSCR),WORK(KSSCR),
      &       SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
      &       ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
      &       WORK(KI1),WORK(KXI1S),WORK(KI2),WORK(KXI2S),
@@ -891,7 +874,7 @@ C     WRITE(6,*) ' Leaving DENSI '
         END IF
       END IF
 * Loop over batches over L blocks
-      IF(LUL.NE.0) CALL REWINO(LUL)
+      IF(LUL.NE.0) CALL REWINE(LUL,-1)
       DO 10001 IBATCHL = 1, NBATCHL
 *. Obtain L blocks
         NBLKL = LBATL(IBATCHL)
@@ -914,7 +897,7 @@ C     WRITE(6,*) ' Leaving DENSI '
      &                PSL,LUL,C2,NSMST,ISCALE,SCLFAC_L(IL))
         END DO
 *. Loop over batches  of R vector
-        IF(LUR.NE.0) CALL REWINO(LUR)
+        IF(LUR.NE.0) CALL REWINE(LUR,-1)
         DO 9001 IBATCHR = 1, NBATCHR
 *. Read R blocks into core
         NBLKR = LBATR(IBATCHR)
@@ -2430,7 +2413,7 @@ CTOBE   IF(L.LE.NMINL) THEN
              CALL COPVCD(LU0,LUSC1,VEC1,1,LBLK)
           ELSE
              CALL SKPVCD(LUN,L-1,VEC1,1,LBLK)
-             CALL REWINO(LUSC1)
+             CALL REWINE(LUSC1,-1)
              CALL COPVCD(LUN,LUSC1,VEC1,0,LBLK)
           END IF
 *
@@ -2438,7 +2421,7 @@ CTOBE   IF(L.LE.NMINL) THEN
              CALL COPVCD(LU0,LUSC2,VEC1,1,LBLK)
           ELSE
              CALL SKPVCD(LUN,NMINL-1,VEC1,1,LBLK)
-             CALL REWINO(LUSC2)
+             CALL REWINE(LUSC2,-1)
              CALL COPVCD(LUN,LUSC2,VEC1,0,LBLK)
           END IF
 C?      write(6,*) ' next pair of vectors loaded '
@@ -2724,17 +2707,11 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *.Local scratch arrays for blocks of C and sigma
       IF(IPRDEN.GE.2) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
      &       MXSB,MXTSOB_L,MXSOOB
-      IF(ICISTR.LE.2) THEN
-        LSCR1 = MXSB
-      ELSE IF(ICISTR.EQ.3) THEN
-        LSCR1 = MXSOOB
-      END IF
-      LSCR1 = MAX(LSCR1,LCSBLK)
       IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
+     &WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
       IF(ICISTR.EQ.1) THEN
-        CALL MEMMAN(KCB,LSCR1,'ADDL  ',2,'KCB   ')
-        CALL MEMMAN(KSB,LSCR1,'ADDL  ',2,'KSB   ')
+        CALL MEMMAN(KCB,LBLOCK,'ADDL  ',2,'KCB   ')
+        CALL MEMMAN(KSB,LBLOCK,'ADDL  ',2,'KSB   ')
       END IF
 *.SCRATCH space for block of two-electron density matrix
 * A 4 index block with four indeces belonging OS class
@@ -2769,9 +2746,9 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       IF(IPRDEN.GE.2)
      &WRITE(6,*) ' Space for resolution matrices ',LSCR2
 *. Allocation of blocks of vector
-      CALL MEMMAN(KLL,LSCR1,'ADDL  ',2,'KLL   ')
-      CALL MEMMAN(KLR,LSCR1,'ADDL  ',2,'KLR   ')
-      LSCR12 = MAX(LSCR1,2*LSCR2)
+      CALL MEMMAN(KLL,LBLOCK,'ADDL  ',2,'KLL   ')
+      CALL MEMMAN(KLR,LBLOCK,'ADDL  ',2,'KLR   ')
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
       KC2 = KVEC3
       CALL MEMMAN(KC2,LSCR12,'ADDL  ',2,'KC2   ')
       IF(IPRCIX.GE.2)
@@ -2841,7 +2818,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       CALL MEMMAN(KLSCLFCL,NTTS, 'ADDL  ',2,'SCLF_L')
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
+     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
      &     WORK(KSIOIO),ISMOST(1,ISSM),
      &     NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),
      &     WORK(KLI1BTL),WORK(KLIBTL),0,ITTSS_ORD)
@@ -2857,7 +2834,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       CALL MEMMAN(KLSCLFCR,NTTS, 'ADDL  ',2,'SCLF_R')
       ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
+     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
      &     WORK(KCIOIO),ISMOST(1,ICSM),
      &     NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),
      &     WORK(KLI1BTR),WORK(KLIBTR),0,ITTSS_ORD)
@@ -2870,7 +2847,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       WRITE(6,*) ' LUL LUR = ',LUL,LUR
       WRITE(6,*) ' LUSC1 LUSC2 ',LUSC1,LUSC2
-      CALL REWINO(LUL)
+      CALL REWINE(LUL,-1)
       LENRHO1 = NTOOB ** 2
       ITRADEN = 0
       DO IL = 1, NL
@@ -2878,17 +2855,17 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
           LULEFF = LUL
         ELSE
           LULEFF = LUSC1
-          CALL REWINO(LULEFF)
+          CALL REWINE(LULEFF,-1)
           CALL COPVCD(LUL,LULEFF,WORK(KLL),0,LBLK)
         END IF
-        CALL REWINO(LUR)
+        CALL REWINE(LUR,-1)
         DO IR = 1, NR
           ITRADEN = ITRADEN + 1
           IF(IR.EQ.1) THEN
             LUREFF = LUR
           ELSE
             LUREFF = LUSC2
-            CALL REWINO(LUREFF)
+            CALL REWINE(LUREFF,-1)
             CALL COPVCD(LUR,LUREFF,WORK(KLL),0,LBLK)
           END IF
 *
@@ -2910,7 +2887,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
      &       WORK(KNSTSO(IBTP)),WORK(KISTSO(IBTP)),
      &       NAEL,IATP,NBEL,IBTP,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &       NSMST,NSMOB,NSMSX,NSMDX,MXPNGAS,NOBPTS,IOBPTS,
-     &       MAXK,MAXI,LSCR1,LSCR1,WORK(KCSCR),WORK(KSSCR),
+     &       MAXK,MAXI,LBLOCK,LBLOCK,WORK(KCSCR),WORK(KSSCR),
      &       SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
      &       ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
      &       WORK(KI1),WORK(KXI1S),WORK(KI2),WORK(KXI2S),

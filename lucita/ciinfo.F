@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -579,7 +567,10 @@ C?    DIMENSION SCRTEST(10000)
       COMMON/MOLOBS/
      & IOList(64),iToc(64),nBas(8),nOrb(8),nFro(8),nDel(8),
      & Nsym
-      NTEST = 1
+
+      ifinmo = 0
+
+      NTEST = 000
       IF(NTEST.GE.1) THEN
         WRITE(6,*)
         WRITE(6,*) ' ================'
@@ -612,6 +603,7 @@ C?    DIMENSION SCRTEST(10000)
       IF(IFINMO.EQ.1.OR.IFINMO.EQ.3.OR.IFINMO.EQ.5) THEN
 *. Symmetry order density matrix
         CALL TYPE_TO_SYM_REO_MAT(WORK(KRHO1),WORK(KMAT2))
+        print*,' After TYPE_TO_SYM_REO_MAT '
 *. Pack to triangular form
         DO ISYM = 1, NSMOB
           IF(ISYM.EQ.1) THEN
@@ -637,6 +629,7 @@ C              TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 C         CALL APRBLM2(CMOAO,NBAS,NBAS,NSYM,0)
           CALL APRBLM2(WORK(KMAT1),NACOBS,NACOBS,NSMOB,1)
         END IF
+        print*,' After APRBLM2 '
       END IF
       IF(IFINMO.EQ.3.OR.IFINMO.EQ.4.OR.IFINMO.EQ.5) THEN
 *. Diagonalize symmetry-type blocks
@@ -672,17 +665,20 @@ C?   &                         scrtest(1+nint1),scrtest(1+2*nint1))
 *
 *. Second transformation matrix is now in WORK(KMAT5)
 *. Obtain total transformation matrix
-C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
+C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,
+C    &                LBROW,LBCOL,ITRNSP)
         CALL MULT_BLOC_MAT(WORK(KMAT4),WORK(KMAT2),WORK(KMAT5),NSMOB,
      &                     NACOBS,NACOBS,NACOBS,NACOBS,NACOBS,NACOBS,0)
         CALL COPVEC(WORK(KMAT4),WORK(KMAT2),NTOOB**2)
       END IF
       CALL COPVEC(WORK(KMAT2),WORK(KMOMO),LMOMO)
 *     ^ MOMO transformation saved in WORK(KMOMO)
+CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 *
       IF(NOMOFL.EQ.0) THEN
 *
-*. MAX Length of MA-AO transformation matrix ( no frozen or deleted orbitals)
+*. MAX Length of MO-AO transformation matrix 
+*  (no frozen or deleted orbitals)
 *
         LMOAO = 0
         DO ISYM = 1, NSMOB
@@ -953,15 +949,6 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
         WRITE(6,*) ' Space for resolution matrices ',LSCR2
       END IF
 *
-      IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) ' ICISTR = 0 not in action ANYMORE'
-        Call Abend2( ' ICISTR = 0 not in action ANYMORE' )
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
 *. For Passive/active division
       LSCR12 = MAX(LBLOCK,4*LSCR2)
 C     LSCR12 = MAX(LBLOCK,2*LSCR2)
@@ -1346,6 +1333,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * ====================
 *
 #include "cicisp.inc"
+#include "parluci.h"
       CALL QENTER('LCISP')
 *
 *
@@ -1409,36 +1397,39 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
-      WRITE(6,*)
-      WRITE(6,*)
-      WRITE(6,*)
+      IF(MYPROC.EQ.MASTER) THEN
+        WRITE(6,*)
+        WRITE(6,*)
+        WRITE(6,*)
      &' Number of internal combinations per symmetry '
-      WRITE(6,*)
+        WRITE(6,*)
      & ' =========================================== '
 *
-      DO 200 ICI = 1, NCMBSPC
-          WRITE(6,*) ' CI space ', ICI
-          WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
-C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
-  200 CONTINUE
-      if (NTEST.ge.1) then
-        WRITE(6,*)
-        WRITE(6,*) ' Largest symmetry block           ',MXSB
-        WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
-        WRITE(6,*)
-      end if
+        DO 200 ICI = 1, NCMBSPC
+            WRITE(6,*) ' CI space ', ICI
+            WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
+C           CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
+  200   CONTINUE
+       if (NTEST.ge.1) then
+          WRITE(6,*)
+          WRITE(6,*) ' Largest symmetry block           ',MXSB
+          WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
+          WRITE(6,*)
+       end if
 *
-      IF(NTEST.GE.5) THEN
-        WRITE(6,*)
+       IF(NTEST.GE.5) THEN
+          WRITE(6,*)
      &  ' Number of TTS subblocks per CI expansion '
-        WRITE(6,*)
+          WRITE(6,*)
      &   ' ======================================== '
 *
-        DO  ICI = 1,  NCMBSPC
-            WRITE(6,*) ' Internal CI space ', ICI
-            CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
-        END DO
+          DO  ICI = 1,  NCMBSPC
+              WRITE(6,*) ' Internal CI space ', ICI
+              CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
+          END DO
+        END IF
       END IF
+*.   /\ Master is writing
 *. Largest number of BLOCKS in a CI expansion
       MXNTTS = 0
       DO ICI = 1,NCMBSPC
@@ -1447,22 +1438,25 @@ C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
        END DO
       END DO
 *
-      if (NTEST.ge.1) then
-        WRITE(6,*) ' Largest number of blocks in CI expansion',
-     &               MXNTTS
-      end if
+      IF(MYPROC.EQ.MASTER) THEN
+        if (NTEST.ge.1) then
+          WRITE(6,*) ' Largest number of blocks in CI expansion',
+     &                 MXNTTS
+        end if
 *
-      IF(NTEST.GE.5) THEN
-      WRITE(6,*)
+        IF(NTEST.GE.5) THEN
+        WRITE(6,*)
      &' Number of columns per CI expansion '
-      WRITE(6,*)
+        WRITE(6,*)
      & ' =================================== '
 *
-      DO  ICI = 1,  NCMBSPC
-          WRITE(6,*) ' Internal CI space ', ICI
-          CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
-      END DO
+        DO  ICI = 1,  NCMBSPC
+            WRITE(6,*) ' Internal CI space ', ICI
+            CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
+        END DO
+        END IF
       END IF
+*.   /\ Master is writing
 *
       CALL QEXIT('LCISP')
 *
@@ -1710,6 +1704,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
       DIMENSION RHO1SM(*),OCCNUM(*),XNAT(*)
 *. Scratch ( Largest symmetry block )
       DIMENSION SCR(*)
+#include "parluci.h"
 *
       NTESTL = 0
       NTEST = MAX(NTESTL,IPRDEN)
@@ -1738,11 +1733,11 @@ C        ISM = (IPARI-1)*NML + MNML - 1
         END DO
 *
         IF (NTEST.GE.2) THEN
-          WRITE(6,*)
-          WRITE(6,*) ' Density matrix for symmetry  = ', ISMOB
-          WRITE(6,*) ' ======================================='
-          WRITE(6,*)
-          CALL WRTMAT(RHO1SM(IMTOFF),LOB,LOB,LOB,LOB)
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,*) ' Density matrix for symmetry  = ', ISMOB
+          WRITE(LUWRT,*) ' ======================================='
+          WRITE(LUWRT,*)
+          CALL WRTMATMN(RHO1SM(IMTOFF),LOB,LOB,LOB,LOB,LUWRT)
         END IF
 *. Pack and diagonalize
         SIGN = 1.0D0
@@ -1772,30 +1767,35 @@ C        ISM = (IPARI-1)*NML + MNML - 1
               SS = OCCNUM(IOBOFF-1+IOB-1)
               OCCNUM(IOBOFF-1+IOB-1) = OCCNUM(IOBOFF-1+IOB)
               OCCNUM(IOBOFF-1+IOB)   = SS
-              write(6,*) ' Orbitals interchanged ',
+              write(LUWRT,*) ' Orbitals interchanged ',
      &        IOBOFF-1+IOB,IOBOFF-2+IOB
             END IF
           END IF
         END DO
 *
         IF (NTEST.GE.1) THEN
-          WRITE(6,*)
-          WRITE(6,*)
+          WRITE(LUWRT,*) ' '
+          WRITE(LUWRT,'(2X ,A,I3)')
      &    ' Natural occupation numbers for symmetry = ', ISMOB
-          WRITE(6,*)
-     &    ' ==================================================='
-          WRITE(6,*)
-          CALL WRTMAT(OCCNUM(IOBOFF),1,LOB,1,LOB)
+          WRITE(LUWRT,'(2X ,A)')
+     &    ' __________________________________________________'
+          OCCSUM = DSUM(LOB,OCCNUM(IOBOFF),1)
+          WRITE(LUWRT,9002) (OCCNUM(IOBOFF+J-1),J=1,LOB)
+          WRITE(LUWRT,9003) OCCSUM
+csk       CALL WRTMAT(OCCNUM(IOBOFF),1,LOB,1,LOB)
           IF (NTEST.GE.2) THEN
-            WRITE(6,*)
-            WRITE(6,*) ' Corresponding Eigenvectors '
-            WRITE(6,*)
-            CALL WRTMAT(XNAT(IMTOFF),LOB,LOB,LOB,LOB)
+            WRITE(LUWRT,*)
+            WRITE(LUWRT,*) ' Corresponding Eigenvectors '
+            WRITE(LUWRT,*)
+            CALL WRTMATMN(XNAT(IMTOFF),LOB,LOB,LOB,LOB,LUWRT)
           END IF
         END IF
       END DO
 *. ( End of loop over orbital symmetries )
 *
+ 9002 FORMAT(/,(5F14.9))
+ 9003 FORMAT(/'   Sum =',T15,F14.9)
+C
       RETURN
       END
 ***********************************************************************
@@ -1978,6 +1978,13 @@ C       END DO
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*),NELFGP(*)
 *. block types
       DIMENSION IBLTP(*)
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
+            
 *
       CALL QENTER('NGASD')
       NTEST = 000
@@ -2020,6 +2027,7 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              MXBTP = NOCTPB
            END IF
            LTSSA = NSSOA(IASM,IATP)
+CSK           IF(MYPROC.EQ.MASTER) write(6,*)'LTSSA',LTSSA
            XLTSSA = FLOAT(LTSSA)
            DO 100 IBTP = 1, MXBTP
 *
@@ -2032,12 +2040,15 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              IF(IOCOC(IATP,IBTP).EQ.1) THEN
 *. Size of unpacked block
                LTTSUP =  LTSSA*NSSOB(IBSM,IBTP)
+CSK               IF(MYPROC.EQ.MASTER) write(6,*)'LTTSUP',LTTSUP
 *. Size of packed block
                IF(ISYM.EQ.0.OR.IATP.NE.IBTP) THEN
                  LTTSBL = LTSSA*NSSOB(IBSM,IBTP)
+CSK                 IF(MYPROC.EQ.MASTER) write(6,*)'LTTSBL',LTTSBL
                  XNCOMB = XNCOMB + XLTSSA*FLOAT(NSSOB(IBSM,IBTP))
                ELSE
                  LTTSBL = LTSSA *(LTSSA +1)/2
+CSK                 IF(MYPROC.EQ.MASTER) write(6,*)'LTTSBL 2',LTTSBL
                  XNCOMB = XNCOMB + XLTSSA*(XLTSSA+1.0D0)*0.5
                END IF
                NCOMB = NCOMB + LTTSBL
@@ -2217,7 +2228,8 @@ C     INTEGER IACOC(MXPNGAS)
       DO JOCCLS = 1, NOCCLS
 
 *
-        INCLUDE = 0
+CMI     INCLUDE = 0
+        INCLUD = 0
         DO JJCMBSPC = 1, LCMBSPC(ICISPC)
           JCMBSPC = ICMBSPC(JJCMBSPC,ICISPC)
           I_AM_OK = 1
@@ -2230,10 +2242,12 @@ C     INTEGER IACOC(MXPNGAS)
             IF(IEL.LT.IGSOCCX(IGAS,1,JCMBSPC).OR.
      &      IEL.GT.IGSOCCX(IGAS,2,JCMBSPC)) I_AM_OK = 0
           END DO
-          IF(I_AM_OK .EQ. 1 ) INCLUDE = 1
+CMI       IF(I_AM_OK .EQ. 1 ) INCLUDE = 1
+          IF(I_AM_OK .EQ. 1 ) INCLUD = 1
         END DO
 *
-        IF(INCLUDE.EQ.1) THEN
+CMI     IF(INCLUDE.EQ.1) THEN
+        IF(INCLUD.EQ.1) THEN
           NINCCLS = NINCCLS + 1
           INCCLS(JOCCLS) = 1
         ELSE
@@ -3830,18 +3844,9 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
          KSVST = 1
       END IF
       CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP),WORK(KSVST))
-*. Allowed length of each batch
-      IF(ICISTR.EQ.1) THEN
-*. assumes determinants
-        LBLOCK =  XISPSM(ISM,ISPC)
-      ELSE IF (ICISTR.EQ.2) THEN
-        LBLOCK = MXSB
-      ELSE IF (ICISTR.EQ.3) THEN
-        LBLOCK = MXSOOB
-      END IF
-      LBLOCK = MAX(LBLOCK,LCSBLK)
 *
       IF(NTEST.GE.10) THEN
+*. Allowed length of each batch
         WRITE(6,*) ' LBLOCK = ', LBLOCK
       END IF
 *

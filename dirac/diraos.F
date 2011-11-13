@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck getrho */
@@ -57,8 +45,6 @@ C
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
 #endif
       RHO = D0
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO IC = 1,MC
          CALL GETRH1(RHO,IC,IREPOP,GAO,DMAT,BUF)      
       ENDDO
@@ -137,8 +123,6 @@ C
 C      
 #include "ibtfun.h"
 C      
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO IAX = 1,3
         RHG(IAX) = D0
       ENDDO
@@ -199,8 +183,6 @@ C
       RYZ = D0
       RZZ = D0
 C
-      MC = 2
-      IF(LEVYLE) MC = 1      
       NBRP = 4/NZ
       DO IFRP = 1,NFSYM
         DO IC = 1,MC
@@ -312,11 +294,13 @@ C
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), WORK(LWORK), NCNT(NBAST)
 C
+#include "dcbham.h"
 #include "onecom.h"
 #include "lmns.h"
 #include "nuclei.h"
 #include "shells.h"
 #include "symmet.h"
+C
 C
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -325,7 +309,15 @@ C
       IF (NDER.GT.0) CALL DZERO(GAO1,3*NBAST)
       IF (NDER.GT.1) CALL DZERO(GAO2,6*NBAST)
       IADR = 1
-      DO 100 ISHELA = 1,KMAX
+Caspg+rb, 2006-09-21
+         ISHBEGIN=1
+         ISHEND  =KMAX
+
+!     if Levy-Leblond or IOTC
+!     don't work on small component shells
+      IF (MC .EQ. 1) ISHEND = NLRGSH
+
+      DO 100 ISHELA = ISHBEGIN,ISHEND
          NHKTA = NHKT(ISHELA)
          KHKTA = KHKT(ISHELA)
          KCKTA = KCKT(ISHELA)
@@ -768,3 +760,97 @@ C
   100 CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine get_gradient_nh_sub(component,
+     &                               gaol,
+     &                               gaor,
+     &                               irepop,
+     &                               dmat,
+     &                               buf)
+C***********************************************************************
+C
+C     quick adaptation of GETRH1 for the release ... (radovan)
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION gaol(NBAST),gaor(NBAST),DMAT(NBAST,NBAST),BUF(*)
+#else
+      DIMENSION gaol(NTBAS(0)),gaor(NTBAS(0)),
+     &          DMAT(NTBAS(0),NTBAS(0)),BUF(*)
+#endif
+C
+#include "ibtfun.h"
+C      
+      do ic = 1, mc
+      DO 10 IRP1 = 0,NBSYM-1
+        NB1 = NBBAS(IRP1,IC)
+        IF(NB1.EQ.0) GOTO 10
+        JB1 = IBBAS(IRP1,IC)+1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        NB2 = NBBAS(IRP2,IC)
+        IF(NB2.EQ.0) GOTO 10
+        JB2 = IBBAS(IRP2,IC)+1
+        CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+     &             DMAT(JB1,JB2),NTBAS(0),gaor(JB2),1,D0,BUF,1)
+        component = component + DDOT(NBBAS(IRP1,IC),gaol(JB1),1,BUF,1)
+   10 CONTINUE
+      end do
+C
+      END
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine get_gradient_nh(gradient,
+     &                           irepop,
+     &                           gao,
+     &                           gao1,
+     &                           dmat,
+     &                           buf)
+c=======================================================================
+c                                                           radovan bast
+c                                               last revision: july 2007
+c=======================================================================
+
+#include "implicit.h"
+#include "priunit.h"
+
+      dimension gradient(3),
+     &          gao(*),
+     &          gao1(*),
+     &          dmat(*),
+     &          buf(*)
+
+#include "dcbbas.h"
+
+#if defined (VAR_G77) || defined (SYS_SX)
+      equivalence (nbast, ntbas(0))
+      joff = nbast
+#else
+      joff = ntbas(0)
+#endif
+
+      call dzero(gradient, 3)
+
+      do ixyz = 1,3
+
+        call get_gradient_nh_sub(gradient(ixyz),
+     &                           gao,
+     &                           gao1(1+joff*(ixyz-1)),
+     &                           irepop,
+     &                           dmat,
+     &                           buf)
+        call get_gradient_nh_sub(gradient(ixyz),
+     &                           gao1(1+joff*(ixyz-1)),
+     &                           gao,
+     &                           irepop,
+     &                           dmat,
+     &                           buf)
+      enddo
+
+      end

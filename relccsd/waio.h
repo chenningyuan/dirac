@@ -2,6 +2,8 @@ C
 C     Define common blocks and other data for word-addressable I/O
 C
 C     The length of records, measured in integer words.
+      INTEGER*8 NWORDS_ON_RECORD8
+      PARAMETER (NWORDS_ON_RECORD8=4096)
       PARAMETER (NWORDS_ON_RECORD=4096)
 C
 C     The maximum number fo files that can be opened.

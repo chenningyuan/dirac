@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.41.2.2 $
-C DATE    : $Date: 2004/09/01 08:16:13 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -360,6 +348,7 @@ C
       CALL QENTER('SETXEP')
 C
       NXOPP = 0
+      INDI  = 0 
       DO 10 ISYM = 1,NFSYM
         JSYM  = MOD(ISYM+IOPSY,2) + 1
 C
@@ -482,7 +471,7 @@ C
             CALL MEMGET('REAL',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)      
          END IF
          CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-         IF(SPINFR.OR.LEVYLE) THEN
+         IF(SPINFR) THEN
            CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
          ELSE
            KBEIG = KFREE
@@ -540,8 +529,11 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "cbihr2.h"
+#ifdef MOD_DFT
+#include "dftcom.h"
+#endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
-      LOGICAL TOBE,BF1,BF2,BF3
+      LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
 C
 #include "ibtfun.h"
@@ -555,7 +547,7 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         IOPT = 10
       ELSE
         IOPT = 2
@@ -591,23 +583,21 @@ C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
         ILLINT = IBTAND(INTFLG,1)
         ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/4,1)
-        WRITE(LUPRI,'(/A,3I2)')
+        ISSINT = IBTAND(INTFLG/3,1)
+        IGTINT = IBTAND(INTFLG/4,1)
+        WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
-     &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT
-        NPOS = 0
-        IF(PARCAL) THEN
-          BF1  = FIRST1
-          BF2  = FIRST2
-          BF3  = FIRST3
-          FIRST1 = .TRUE.
-          FIRST2 = .TRUE.
-          FIRST3 = .TRUE.
-          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-          NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-          NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        ENDIF
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+     &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
+
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      if (NPOS.GT.0) THEN
+         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      else
+         KPOS = KFREE
+      endif
+
 C
 C       Closed shell Hartree - Fock or open shell Hartree-Fock
 C       ======================================================
@@ -627,19 +617,26 @@ C          Hermitian operator
           CALL READNS(LUBUF,FAO)
           CLOSE(LUBUF,STATUS='KEEP')
         ELSE
-c         CALL DENSTY(FAO,CMO,IPRINT)        
           CALL GENDEN(FAO,CMO,1,IPRINT)
           IF (NASHT .GT. 0) 
      &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
      &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
-        IF(PARCAL) THEN
-          FIRST1 = BF1
-          FIRST2 = BF2
-          FIRST3 = BF3
-        ENDIF
+
+        IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
+#ifdef MOD_DFT
+C
+C     Construct Kohn-Sham contribution
+C     ================================
+      IF(DFTADD) THEN
+         CALL GENDEN(FAO,CMO,1,IPRINT)
+C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+         IOPTS = 1
+         CALL DFTEXC(FAO,DUM,FMO,1,1,1,IOPTS,WORK(KFREE),LFREE,IPRINT)
+      ENDIF
+#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -710,6 +707,10 @@ C
       END DO
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GETFC1:Fock (FCmo) matrix in MO-basis',-1)
+        IF (SPINFR) THEN 
+         WRITE(LUPRI,'(4X,A/)') 
+     &   'Applied boson symmetry based AO_to_MO transformation !'
+        ENDIF                       
         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &    IPQTOQ(1,0),LUPRI)
         IF (NASHT .GT. 0) THEN
@@ -833,8 +834,10 @@ C     Configurational part
 C     ====================
 C
       IF(NZCONF.GT.0) THEN
-        WRITE(LUPRI,'(A)') '* REDPAR: No configurational code.'
-        CALL QUIT('REDPAR: No conf.code')
+        WRITE(LUPRI,'(A)') '* REDPAR: No configurational code,',
+     &                     '          thus no reduction in conf vector.'
+C hjaaj sep 05: continue with just reduction in orb vector(s)
+C       CALL QUIT('REDPAR: No conf.code')
       ENDIF
 C
 C     e-e orbital rotations
@@ -931,13 +934,13 @@ C
       ENDIF      
 C
       NZXOPT   = NZXOPE + NZXOPP
-      NZXOPTQ  = NZXOPT *NZ
+      NZXOPTQ  = NZXOPT * NZ
 C
 C     Total number of parameters
 C     ==========================
 C
-      NZVAR    = NZCONF + NZXOPT
-      NZVARQ   = NZVAR*NZ
+      NZVAR    = NZCONF  + NZXOPT
+      NZVARQ   = NZCONFQ + NZXOPTQ
       RETURN
       END
       
@@ -1112,7 +1115,7 @@ C     IGAS point from active orbital to which GAS space it belongs.
 C
       II = 0
       DO ISYM = 1, NFSYM
-         DO I = 1, NGAS
+         DO I = 1, NGAS_DC
             DO J = 1, NGSH(ISYM,I)
                II = II + 1
                IGAS(II) = I
@@ -1132,7 +1135,7 @@ C
 C
 C     Determine whether a GAS space is a CAS space:
 C
-      DO I = 1, NGAS
+      DO I = 1, NGAS_DC
 C
 C        Number of orbitals in this GAS shell
 C
@@ -1144,9 +1147,9 @@ C
 C        Minimum number of electrons in this GAS space:
 C
          MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I)) 
-         IF (I.EQ.NGAS.AND.NGAS.GT.1) THEN
+         IF (I.EQ.NGAS_DC.AND.NGAS_DC.GT.1) THEN
            MINCAS = NAELEC - NGSP(2,I-1)
-         ELSE IF (I.EQ.NGAS.AND.NGAS.EQ.1) then
+         ELSE IF (I.EQ.NGAS_DC.AND.NGAS_DC.EQ.1) then
            MINCAS = NAELEC
          END IF
 c        print*,'GAS ',I,' MINCAS,MAXCAS ',MINCAS,MAXCAS
@@ -1162,7 +1165,7 @@ C        than MAXCAS:
 C
          IF ( (NGSP(1,I) .LE. MINCAS .AND.
      &        (NGSP(2,I) - NGSP(1,I)) .GE. MAXCAS) .OR.
-     &        I .EQ. NGAS ) THEN
+     &        I .EQ. NGAS_DC ) THEN
             GASCAS(I) = .TRUE.
          ELSE
             GASCAS(I) = .FALSE.
@@ -1171,7 +1174,7 @@ C
       IF (IPRINT .GE. 10) THEN
          WRITE(LUPRI,'(1X,A)')
      &        'GAS space is a CAS space?'
-         DO I = 1, NGAS
+         DO I = 1, NGAS_DC
             WRITE(LUPRI,'(5X,A,I3,A,L1)')
      &           'GAS space ',I,' : ',GASCAS(I)
          END DO
@@ -1289,8 +1292,9 @@ C
       IF (.NOT. ORBDEF(1)) THEN
          DO I = 1,NFSYM
             INDSTR(1,I) = ' '
-            IF (NISH(I).GT.0) THEN
-CMI            WRITE(INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+            IF (NISH(I).EQ.1) THEN
+               WRITE(INDSTR(1,I),'(I1)') 1
+            ELSEIF (NISH(I).GT.1) THEN
                WRITE(INDSTR(1,I),'(I6,A2,I6)') 1,'..',NISH(I)
             ENDIF
          ENDDO
@@ -1301,8 +1305,9 @@ C
       IF (.NOT. ORBDEF(2)) THEN
          DO I = 1,NFSYM
             INDSTR(2,I) = ' '
-            IF (NASH(I).GT.0) THEN
-CMI            WRITE(INDSTR(2,I),'(I4,A2,I4)')
+            IF (NASH(I).EQ.1) THEN
+               WRITE(INDSTR(2,I),'(I6)') NISH(I)+1
+            ELSEIF (NASH(I).GT.1) THEN
                WRITE(INDSTR(2,I),'(I6,A2,I6)')
      &               NISH(I)+1,'..',NISH(I)+NASH(I)
             ENDIF
@@ -1312,48 +1317,32 @@ C
 C     Secondary orbitals...
 C
       IF (.NOT. ORBDEF(3)) THEN
-         IF (SKIPEP.AND.SKIPEE) THEN
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-            ENDDO
-         ELSEIF (SKIPEP) THEN
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-               IF (NSSH(I).GT.0) THEN
-CMI               WRITE(INDSTR(3,I),'(I4,A2,I4)')
-                  WRITE(INDSTR(3,I),'(I6,A2,I6)')
-     &                  NOCC(I)+1,'..',NESH(I)
-               ENDIF
-            ENDDO
-         ELSEIF (SKIPEE) THEN
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-CMI            WRITE(INDSTR(3,I),'(I4,A2,I4)')
-               WRITE(INDSTR(3,I),'(I6,A2,I6)')
-     &             -NPSH(I),'..',-1
-            ENDDO
-         ELSE
-            DO I = 1,NFSYM
-               INDSTR(3,I) = ' '
-               IF (NSSH(I).GT.0) THEN
-                  IF (NPSH(I) .GT. 0) THEN
-CMI                  WRITE(INDSTR(3,I),'(I4,A5,I4,A2,I4)')
-                     WRITE(INDSTR(3,I),'(I6,A5,I6,A2,I6)')
-     &                   -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
-                  ELSE
-CMI                  WRITE(INDSTR(3,I),'(I4,A2,I4)')MI
-                     WRITE(INDSTR(3,I),'(I6,A2,I6)')
-     &                     NOCC(I)+1,'..',NESH(I)
-                  END IF
-               ELSE
-                  IF (NPSH(I) .GT. 0) THEN
-CMI                  WRITE(INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
-                     WRITE(INDSTR(3,I),'(I6,A2)') -NPSH(I),'..-1'
-                  END IF
-               END IF
-            ENDDO
-         ENDIF
-      END IF
+        DO I = 1,NFSYM
+          INDSTR(3,I) = ' '
+          IT=1
+          IF(.NOT.SKIPEP) THEN
+            IF (NPSH(I) .EQ. 1) THEN
+              WRITE(INDSTR(3,I),'(I2)') -1
+              IT=3
+            ELSEIF (NPSH(I) .GT. 1) THEN
+              WRITE(INDSTR(3,I),'(I6,A4)') -NPSH(I),'..-1'
+              IT=11
+            ENDIF
+          ENDIF
+          IF(.NOT.SKIPEE) THEN
+            IF((.NOT.SKIPEP).AND.NSSH(I).GT.0) THEN
+              WRITE(INDSTR(3,I)(IT:IT),'(A1)') ','
+              IT=IT+1
+            ENDIF
+            IF(NSSH(I).EQ.1) THEN
+              WRITE(INDSTR(3,I)(IT:IT),'(I1)') 1
+            ELSEIF(NSSH(I).GT.1) THEN
+              WRITE(INDSTR(3,I)(IT:IT+14),'(I6,A2,I6)')
+     &             NOCC(I)+1,'..',NESH(I)
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDIF
 C
 C
 C

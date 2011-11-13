@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.24.4.2 $
-C DATE    : $Date: 2004/09/01 08:17:54 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : ccmain.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -52,6 +40,9 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
+C              minor modifications for use of RELCCSD-MP2 for 
+C              MP2-NO generation module. S. Knecht - June 2008
+C
 C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
@@ -61,6 +52,8 @@ C
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbpsi.h"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #include "mpif.h"
@@ -76,21 +69,25 @@ C
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
-
 C
 C---------------Executable code--------------------------------------
 C
       CALL CPUUSED(SEC0)
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(LUCMD,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       IN = LUCMD
       IW = LUPRI
-      INTFCE = 'DIRAC     '
+C aspg 20080903
+C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+c     INTFCE = 'DIRAC     '
+      INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+      MP2_DENRUN = .FALSE.
+      IF( DOMP2NO )THEN
+        IF( RUN_CCMOD ) MP2_DENRUN = .TRUE.
+      END IF
       CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
+CMI   ... if CAP is on, switch to complex algebra
+      IF (CAP) CA = .TRUE.
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
@@ -112,6 +109,22 @@ C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+C
+C     if MP2-NO is enabled, tell the slaves about the correct interface
+C
+      IF( MP2_DENRUN )THEN
+        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
 C
@@ -177,10 +190,10 @@ C
       NTEST = -1
 #if defined (VAR_MPI)
       DO I = 1,NUMNOD
-         CALL MPI_IRECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
          CALL MPI_WAIT(IREQ,ISTAT,IERR)
-         CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
+         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
       ENDDO
 #endif
@@ -202,6 +215,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
+#include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -211,7 +225,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
 #include "ccpar.inc"
 #include "files.inc"
-      CHARACTER*10 INTFCE
+      CHARACTER*10 INTFCE, MP2NOF
       LOGICAL CA,CCEND
 C
       DIMENSION CC(MAXCOR)
@@ -230,13 +244,31 @@ C     Add the master node
       NMPROC = 1
 #endif
 
-      INTFCE = 'DIRAC     '
+C aspg 20080903
+C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+c     INTFCE = 'DIRAC     '
+      INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+      MP2_DENRUN = .FALSE.
 C
 C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MP2_DENRUN,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+      IF( MP2_DENRUN )THEN
+        CALL MPI_BCAST(IAOMOSCHEME,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+        CALL MPI_BCAST(INFO_STRING(1),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(2),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(INFO_STRING(3),62,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
 C
@@ -245,24 +277,45 @@ C     shared file systems. Otherwise all the output gets mingled in one
 C     file
 C
       CCBASF="RELCCSD.OUT"
+      MP2NOF="MP2_NO.INP"
       
 #if defined (VAR_MPI)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (CCFILN,'(A11,A1,I1)') CCBASF,'.',MYPROC
-         LCCFIL=13
+         WRITE (MP2NOFN,'(A10,A1,I1)') MP2NOF,'.',MYPROC
+         LCCFIL    = 13
+         MP2NOFN_L = 12
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (CCFILN,'(A11,A1,I2)') CCBASF,'.',MYPROC
-         LCCFIL=14
+         WRITE (MP2NOFN,'(A10,A1,I2)') MP2NOF,'.',MYPROC
+         LCCFIL    = 14
+         MP2NOFN_L = 13
       ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (CCFILN,'(A11,A1,I3)') CCBASF,'.',MYPROC
-         LCCFIL=15
+         WRITE (MP2NOFN,'(A10,A1,I3)') MP2NOF,'.',MYPROC
+         LCCFIL    = 15
+         MP2NOFN_L = 14
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND CCNOD.F MODULE")
       ENDIF
 #else
-      CCFILN=CCBASF
-      LCCFIL=11
+      CCFILN    = CCBASF
+      LCCFIL    = 11
+      MP2NOFN   = MP2NOF
+      MP2NOFN_L = 10
 #endif
+C
+C     write RELCCSD MP2-NO input
+C
+      IF( MP2_DENRUN )THEN
+        LMP2_DEN_INP = 99
+        OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
+     &       FORM='FORMATTED',ACCESS='SEQUENTIAL')
+        REWIND(LMP2_DEN_INP)
+        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1)
+        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2)
+        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3)
+      END IF
 C
 C     open the local input file and the node specific output file.
 C     The associated file handle MSLVOUT is transferred to CCMAIN.
@@ -274,12 +327,15 @@ C
       CALL CCMAIN(CC,MAXCOR,LUCMD,MSLVOUT,CA,INTFCE)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
+      IF( MP2_DENRUN )THEN
+        CLOSE (LMP2_DEN_INP,STATUS='KEEP')
+      END IF
 C
 C     The slave is finished, wait for the master
 C
       CCEND = .FALSE.
 #if defined (VAR_MPI)
-      CALL MPI_ISEND(MYTID,1,MPI_INTEGER,MPARID,20,
+      CALL MPI_ISEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
 C
     1    CONTINUE
@@ -287,7 +343,7 @@ C
          CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,CCEND,ISTAT,IERR)
          IF (.NOT.CCEND) GOTO 1
 C
-      CALL MPI_RECV(NTEST,1,MPI_INTEGER,MPARID,30,
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
 #endif
 C

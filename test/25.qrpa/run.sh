@@ -2,8 +2,12 @@
 #
 # Set up calculation
 #
-MENU=qrpa1;
-MOL=LiH;
-export MENU;
-export MOL;
+export MENU=qrpa1
+export MOL=LiH
+../run.sh
+export MENU=tpa1
+export MOL=He
+../run.sh
+export MENU=excprp1
+export MOL=LiH
 ../run.sh

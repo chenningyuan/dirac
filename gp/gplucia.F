@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *
@@ -854,6 +842,28 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE CHECK_CPLX( I_VAR_IN, I_VAR_OUT)
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+C
+C
+      IONE = 1
+      ITWO = 2
+C
+CSK      WRITE(6,*) 'I_VAR_IN',I_VAR_IN
+CSK      WRITE(6,*) 'I_VAR_OUT',I_VAR_OUT
+      IF( I_VAR_IN .eq. IONE ) I_VAR_OUT = IONE
+      IF( I_VAR_IN .eq. ITWO ) I_VAR_OUT = ITWO
+CSK      WRITE(6,*) 'I_VAR_OUT',I_VAR_OUT
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE CLASS_PROD3(VEC1,VEC2,IBLOCK_OFF,NBLOCK,IBLOCK,
@@ -882,7 +892,7 @@ C
         JBTP = IBLOCK(2,JBLOCK)
         NELMNT = IBLOCK(8,JBLOCK)
         JCLS = IBLTOCLS(JBLOCK)
-        XTERM = INPROD(VEC1(IOFF),VEC2(IOFF),NELMNT)
+        XTERM = DDOT(NELMNT,VEC1(IOFF),1,VEC2(IOFF),1)
 C?      WRITE(6,*)
 C?   &  ' CLASS_PROD : CLASS and XTERM = ', JCLS,XTERM
           CLSVEC(JCLS) = CLSVEC(JCLS) + XTERM
@@ -1007,153 +1017,6 @@ COLD    END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
-C
-C COPY VECTOR ON FILE LUIN TO FILE LUOUT
-C
-C
-C LBLK DEFINES STRUCTURE OF FILE
-*
-* Structure of output file is inherited by output file,
-* if input file is packed, so is output file
-*
-*
-C Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION SEGMNT(*)
-C
-      IF( IREW .NE. 0 ) THEN
-        CALL REWINE( LUIN ,LBLK)
-        CALL REWINE( LUOUT ,LBLK)
-      END IF
-C
-C LOOP OVER BLOCKS
-C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
- 1000 CONTINUE
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-          WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-          CALL ITODS (LBL,1,-1,LUOUT)
-        END IF
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          NO_ZEROING = 1
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-          IF(IAMPACK.NE.0) THEN
-C?          WRITE(6,*) ' COPVCD, IAMPACK,FILE = ', IAMPACK,LUIN
-          END IF
-          IF(IMZERO.EQ.0) THEN
-            IF(IAMPACK.EQ.0) THEN
-              CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
-            ELSE
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-            END IF
-          ELSE
-            CALL ZERORC(LBL,LUOUT,IAMPACK)
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCDP(LUIN,LUOUT,SEGMNT,IREW,LBLK)
-C
-C COPY VECTOR ON FILE LUIN TO FILE LUOUT
-*
-* Packed version 
-C
-C
-C LBLK DEFINES STRUCTURE OF FILE
-C Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION SEGMNT(*)
-C
-      IF( IREW .NE. 0 ) THEN
-        CALL REWINE( LUIN ,LBLK)
-        CALL REWINE( LUOUT ,LBLK)
-      END IF
- 
-C
-C LOOP OVER BLOCKS
-C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
- 1000 CONTINUE
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-          WRITE(LUOUT) LBL
-C?        write(6,*) ' COPVCD LBL : ', LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-          CALL ITODS (LBL,1,-1,LUOUT)
-        END IF
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
-          CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine daclos
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine dafile
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine daname
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 *
 * VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
@@ -1184,188 +1047,6 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DMTVCD(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,LBLK)
-C
-C  IF( INV .NE. 0 ) THEN
-C    V3(I) = (V1(I)+FAC)-1 * V2(I)
-C    LU3      LU1            LU2
-C  IF( INV .EQ. 0 ) THEN
-C    V3(I) = (V1(I)+FAC) * V2(I)
-C    LU3         LU1        LU2
-C WHERE V1 AND V2 ARE VECTORS ON FILES LU1 AND LU2,
-C AND LU3 IS WRITTEN ON FILE LU3
-C
-C LBLK DEFINES STRUCTURE OF FILES
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION  VEC1(*),VEC2(*)
-C
-      IF ( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LU1
-          REWIND LU2
-          REWIND LU3
-        ELSE
-          CALL REWINE(LU1,LBLK)
-          CALL REWINE(LU2,LBLK)
-          CALL REWINE(LU3,LBLK)
-         END IF
-      END IF
-C
-C LOOP OVER BLOCKS
-C
- 1000 CONTINUE
-        IF (LBLK .GT. 0 ) THEN
-          LBL1 = LBLK
-          LBL2 = LBLK
-        ELSE IF( LBLK .EQ. 0 ) THEN
-          READ(LU1) LBL1
-          READ(LU2) LBL2
-          WRITE(LU3) LBL1
-        ELSE IF (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL1,1,-1,LU1)
-          CALL IFRMDS(LBL2,1,-1,LU2)
-          CALL ITODS (LBL1,1,-1,LU3)
-        END IF
-        IF(LBL1 .NE. LBL2 ) THEN
-          WRITE(6,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVCD : '
-     &                     , LBL1,LBL2
-          Call Abend2( ' DIFFERENT BLOCKSIZES IN DMTVCD ' )
-        END IF
-        IF(LBL1 .GE. 0 ) THEN
-          IF(      LBLK .GE.0 ) THEN
-            KBLK = LBL1
-          ELSE
-            KBLK = -1
-          END IF
-          CALL FRMDSC(VEC1,LBL1,KBLK,LU1,IMZERO,IAMPACK)
-          CALL FRMDSC(VEC2,LBL1,KBLK,LU2,IMZERO,IAMPACK)
-          IF( LBL1 .GT. 0 )THEN
-            IF(INV .NE. 0 ) THEN
-             CALL DIAVC2(VEC2,VEC2,VEC1,FAC,LBL1)
-            ELSE
-             CALL VVTOV(VEC1,VEC2,VEC1,LBL1)
-             CALL VECSUM(VEC2,VEC1,VEC2,1.0D0,FAC,LBL1)
-           END IF
-C          CALL TODSC(VEC2,LBL1,KBLK,LU3)
-         END IF
-         CALL TODSC(VEC2,LBL1,KBLK,LU3)
-      END IF
-C
-      IF( LBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DMTVDS(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,
-     &                  ISCAT,XSCAT,NSCAT,LBLK,XINOUT)
-*
-* Multiply/divide elements of two vectors residing on disc
-* Elements corresponding to absolute adresses in ISCAT
-* are set to the elements of XSCAT
-*
-* For elements not in ISCAT the operation is thus :
-*
-* For INV.NE. 0 :
-*
-*    V3(I) = (V1(I)+FAC)-1 * V2(I)
-*    LU3      LU1            LU2
-*
-* For INV.NE. 0 :
-*
-*    V3(I) = (V1(I)+FAC) * V2(I)
-*    LU3         LU1        LU2
-*
-* LBLK defines structure of files
-*
-* Overlap between input and output vector is also calculated
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION  VEC1(*),VEC2(*)
-      DIMENSION  XSCAT(NSCAT),ISCAT(NSCAT)
-*
-      REAL*8 INPROD
-*
-      XINOUT = 0.0D0
-*
-      IF ( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LU1
-          REWIND LU2
-          REWIND LU3
-        ELSE
-          CALL REWINE( LU1,LBLK)
-          CALL REWINE( LU2,LBLK)
-          CALL REWINE( LU3,LBLK)
-         END IF
-      END IF
-*
-* Loop over blocks
-*
-        IOFF = 1
- 1000 CONTINUE
-        IF (LBLK .GT. 0 ) THEN
-          LBL1 = LBLK
-          LBL2 = LBLK
-        ELSE IF( LBLK .EQ. 0 ) THEN
-          READ(LU1) LBL1
-          READ(LU2) LBL2
-          WRITE(LU3) LBL1
-        ELSE IF (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL1,1,-1,LU1)
-          CALL IFRMDS(LBL2,1,-1,LU2)
-          CALL ITODS (LBL1,1,-1,LU3)
-        END IF
-        IF(LBL1 .NE. LBL2 ) THEN
-          WRITE(6,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVSD : '
-     &                     , LBL1,LBL2
-          Call Abend2( ' DIFFERENT BLOCKSIZES IN DMTVSD ' )
-        END IF
-        IF(LBL1 .GE. 0 ) THEN
-          IF(      LBLK .GE.0 ) THEN
-            KBLK = LBL1
-          ELSE
-            KBLK = -1
-          END IF
-          LENGTH = LBL1
-          CALL FRMDSC(VEC1,LENGTH,KBLK,LU1,IMZERO,IAMPACK)
-          CALL FRMDSC(VEC2,LENGTH,KBLK,LU2,IMZERO,IAMPACK)
-          IF( LBL1 .GT. 0 )THEN
-            IF(INV .NE. 0 ) THEN
-              CALL DIAVC2(VEC1,VEC2,VEC1,FAC,LENGTH)
-            ELSE
-              CALL VVTOV(VEC1,VEC2,VEC1,LBL1)
-              CALL VECSUM(VEC1,VEC1,VEC2,1.0D0,FAC,LENGTH)
-            END IF
-          END IF
-*
-          IF(NSCAT.NE.0) THEN
-            IFIRST = IOFF
-            ILAST = IOFF + LENGTH - 1
-            DO 100 I = 1, NSCAT
-              IF(IFIRST .LE. ISCAT(I) .AND. ISCAT(I) .LE. ILAST )
-     &        VEC1(ISCAT(I)-IOFF+1) = XSCAT(I)
-  100       CONTINUE
-          END IF
-*
-          XINOUT = XINOUT + INPROD(VEC1,VEC2,LENGTH)
-          CALL TODSC(VEC1,LENGTH,KBLK,LU3)
-          IOFF = IOFF + LENGTH
-        END IF
-*
-      IF( LBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DXTYP_GAS(NDXTP,ITP,JTP,KTP,LTP,NOBTP,IL,IR)
@@ -1773,131 +1454,24 @@ C
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE FIND_ACTIVE_BLOCKS(LUIN,LBLK,BLK_A,SEGMNT)
+      subroutine findlow(IARRAY,LENGTH,MVALUE,MPOS)
 *
-*. Find the active (nonvanishing blocks) on LUIN
-*. Non vanishing block is flagged by a 1.0 ( note : real)
-*  in BLK_A
+*  Find lowest integer on IARRAY
+*  Positive integers assumed, smaller than 1 million
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Output
-      DIMENSION BLK_A(*)
-*. Scratch
-      DIMENSION SEGMNT(*)
+      implicit real*8(A-H,O-Z)
 *
-      CALL REWINE(LUIN,LBLK)
+      dimension IARRAY(LENGTH)
 *
-      IBLK = 0
-      NBLK_A = 0
-*. Loop over blocks
- 1000 CONTINUE
-        IBLK = IBLK + 1
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-        END IF
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-          NO_ZEROING = 1
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IMZERO.EQ.0) THEN
-           NBLK_A = NBLK_A + 1
-           BLK_A(IBLK) = 1.0D0
-          ELSE
-           BLK_A(IBLK) = 0.0D0
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-      NBLK =  IBLK-1
-*
-      NTEST = 0
-      IF(NTEST.GE.1) THEN
-        WRITE(6,'(A,I8,I8)')
-     &  ' FIND_A.... Number of total and active Blocks',NBLK,NBLK_A
-      END IF
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Active blocks '
-        CALL WRTMAT(BLK_A,1,NBLK,1,NBLK)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FIND_ACTIVE_CLASSES
-     &           (LUIN,LBLK,I_BLK_TO_CLS,ICLS_A,NCLS,SEGMNT)
-*
-*. Find the active (nonvanishing classes ) on LUIN)
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION I_BLK_TO_CLS(*)
-*. Output
-      DIMENSION ICLS_A(*)
-*. Scratch
-      DIMENSION SEGMNT(*)
-*
-      CALL REWINE(LUIN  ,LBLK)
-      IZERO = 0
-      CALL ISETVC(ICLS_A,IZERO,NCLS)
-*
-      IBLK = 0
-      NCLS_A = 0
-*. Loop over blocks
-C?      write(6,*) ' ZAP_BLOCK_VEC :  LBLK = ', LBLK
- 1000 CONTINUE
-        IBLK = IBLK + 1
-        IF(LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-        ELSE IF  (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-        END IF
-        IF( LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-          NO_ZEROING = 1
-          CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IMZERO.EQ.0) THEN  
-           IF(ICLS_A(I_BLK_TO_CLS(IBLK)).EQ.0) THEN
-             NCLS_A = NCLS_A + 1
-           END IF
-           ICLS_A(I_BLK_TO_CLS(IBLK)) = 1
-C          write(6,*) ' Active block and class ',IBLK,
-C    &     I_BLK_TO_CLS(IBLK)
-          END IF
-        END IF
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-*
-      NTEST = 0
-      IF(NTEST.GE.1) THEN
-        WRITE(6,*) ' FIND_A.... Number of active classes ',NCLS_A
-      END IF
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Active classes '
-        CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
-      END IF
-*
-      RETURN
-      END
+      MVALUE = 1000000
+      do I=LENGTH,1,-1
+         if (IARRAY(I).lt.MVALUE) THEN
+           MVALUE = IARRAY(I)
+           MPOS = I
+         end if
+      end do
+      return
+      end
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
@@ -1921,130 +1495,6 @@ C    &     I_BLK_TO_CLS(IBLK)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
-     &                  SCR,ISCAT,SUBVAL,NTESTG)
-*
-* FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
-* LU. ENSURE THAT NO DEGENERENCIES ARE SPLIT
-*
-*
-* INPUT
-*======
-* LU : FILE WHERE VECTOR OF INTEREST IS RESIDING, REWOUND
-* LBLK : DEFINES FILE STRUCTURE ON FILE LU
-* NSUBMX: LARGEST ALLOWED NUMBER OF SORTED ELEMENTS
-*
-*OUTPUT
-*======
-* NSUB : ACTUAL NUMBER OF ELEMENTS OBTAINED. CAN BE SMALLER
-*       THAN NSUBMX IF THE LATST ELEMENT BELONGS TO A DEGENERATE
-*       SET
-*ISCAT: SCATTERING ARRAY , ISCAT(I) GIVED FULL ADRESS OF SORTED
-*       ELEMENT I
-*       SUBVAL : VALUE OF SORTED ELEMENTS
-
-      IMPLICIT REAL*8           ( A-H,O-Z)
-      DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
-*
-      CALL REWINE(LU,-1)
-*
-*.LOOP OVER BLOCKS
-*
-C     write(6,*) ' FNDMND NSUBMX = ', NSUBMX
-*
-      NTESTL = 0000
-      NTEST = MAX(NTESTG,NTESTL)
-*
-      IBLK = 0
-      IBASE = 1
-      LSUB = 0
- 1000 CONTINUE
-        IF ( LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE
-          CALL IFRMDS(LBL,1,-1,LU)
-        END IF
-        IBLK = IBLK + 1
-        IF(NTEST.GE.10) THEN
-          WRITE(6,*) ' Info about block ',IBLK
-          WRITE(6,*) ' Number of elements ', LBL
-        END IF
-        IF(LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-           CALL FRMDSC(SEGMNT,LBL ,-1,LU,IMZERO,IAMPACK)
-           IF(NTEST.GE.100) THEN
-             WRITE(6,*) ' Elements read in '
-             CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
-           END IF
-           IF(LBL .GE. 0 ) THEN
-*. LOWEST ELEMENTS IN SEGMNT  ( ADD TO PREVIOUS LIST )
-             MSUBMX = MIN(NSUBMX,LBL)
-C     SUBROUTINE SORLOW(WRK,STVAL,ISTART,KZVAR,KEXSTV,JEXSTV,IPRT)
-             IF(LBL.GE.1) THEN
-               CALL SORLOW(SEGMNT,SCR(1+LSUB),ISCR(1+LSUB),LBL,
-     &                     MSUBMX,MSUB,NTEST)
-C              WRITE(6,*)
-C    &       ' After SORLOW 1 , Scatter array for combined list '
-C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
-             ELSE
-              MSUB = 0
-             END IF
-             DO 10 I = 1, MSUB
-   10        ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
-C            Write(6,*)
-C    &       ' After 10 , Scatter array for combined list '
-C            call iwrtma(ISCR,1,LSUB+MSUB,1,LSUP+MSUP)
-* SORT COMBINED LIST
-             MSUBMX = MIN(NSUBMX,LSUB+MSUB)
-             IF(MSUBMX.GT.0) THEN
-             CALL SORLOW(SCR,SUBVAL,ISCAT,LSUB+MSUB,MSUBMX,LLSUB,
-     &         NTEST)
-C              WRITE(6,*)
-C    &       ' After SORLOW 2 , Scatter array for combined list '
-C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
-             ELSE
-               LLSUB = 0
-             END IF
-             LSUB = LLSUB
-             DO 20 I = 1, LSUB
-               ISCR(I+2*NSUBMX) = ISCR(ISCAT(I))
-   20        CONTINUE
-*
-             CALL ICOPVE(ISCR(1+2*NSUBMX),ISCR(1),LSUB)
-             CALL COPVEC(SUBVAL,SCR,LSUB)
-             IBASE = IBASE + LBL
-             IF(NTEST .GE. 20 ) THEN
-               WRITE(6,*) ' Lowest elements and their original place '
-               WRITE(6,*) ' Number of elements obtained ', LSUB
-               CALL WRTMAT(SUBVAL,1,LSUB,1,LSUB)
-               CALL IWRTMA(ISCR,1,LSUB,1,LSUB)
-             END IF
-          END IF
-*
-        END IF
-*
-      IF( LBL.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-*
-      NSUB = LSUB
-      CALL ICOPVE(ISCR,ISCAT,NSUB)
-      IF(NTEST .GE. 10) THEN
-        WRITE(6,*) ' Lowest elements and their original place '
-        WRITE(6,*) ' Number of elements obtained ', NSUB
-       CALL WRTMAT(SUBVAL,1,NSUB,1,NSUB)
-       CALL IWRTMA(ISCAT,1,NSUB,1,NSUB)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
 *  Fold square matrix to lower triangle form
@@ -2084,315 +1534,6 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
 *
       return
       end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FRMDSC(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED)
-C
-C     TRANSFER ARRAY FROM DISC FILE IFILE
-C
-*. Version allowing zero and packed blocks 
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION ARRAY(*)
-*
-      DIMENSION ISCR(2)
-      PARAMETER(LPBLK=50000)
-      INTEGER IPAK(LPBLK)
-      DIMENSION XPAK(LPBLK)
- 
-C
-      IPACK = 1
-      IF(IPACK.NE.0) THEN
-*. Read if ARRAY is zero
-        MMBLOCK = MBLOCK
-C       IF(MMBLOCK.GE.2) MMBLOCK = 2
-C       CALL IFRMDS(ISCR,2,MMBLOCK,IFILE)
-        CALL IFRMDS(ISCR,2,2,IFILE)
-        IMZERO=ISCR(1)
-        I_AM_PACKED=ISCR(2)
-        IF(I_AM_PACKED.NE.0) THEN
-C       WRITE(6,*) ' File is packed, file number = ', IFILE
-        END IF
-        IF(IMZERO.EQ.1) THEN
-          ZERO = 0.0D0
-C?        write(6,*) ' frmdsc, length of zero block',NDIM
-          CALL SETVEC(ARRAY,ZERO,NDIM)
-          GOTO 1001
-        END IF
-      END IF
-*
-      ICRAY = 1
-      IF(I_AM_PACKED.EQ.1) THEN
-        ZERO = 0.0D0
-        CALL SETVEC(ARRAY,ZERO,NDIM)
-*. Loop over packed records of dimension LPBLK
-      NBATCH = 0
-C1000 CONTINUE
-*. The next LPBLK elements 
-  999   CONTINUE
-          NBATCH = NBATCH + 1
-          IF(NBATCH.NE.1) THEN
-            LBATCHP = LBATCH
-          END IF
-*. Read next batch
-          READ(IFILE) LBATCH
-          IF(LBATCH.GT.0) THEN
-            READ(IFILE) (IPAK(I),I=1, LBATCH)
-            READ(IFILE) (XPAK(I),I=1, LBATCH)
-          END IF
-          READ(IFILE) ISTOP
-          DO IELMNT = 1, LBATCH
-            IF(IPAK(IELMNT).LE.0.OR.IPAK(IELMNT).GT.NDIM) THEN
-              WRITE(6,*) ' FRMDSC : Problemo IELMNT = ',IELMNT 
-              WRITE(6,*) ' IPAK(IELMNT) = ',IPAK(IELMNT )
-              WRITE(6,*) ' LBATCH IFILE  = ',LBATCH,IFILE    
-              IF(NBATCH.EQ.1) THEN
-               WRITE(6,*) ' NBATCH = 1 '
-              ELSE
-               WRITE(6,*) ' NBATCH, LBATCHP', NBATCH,LBATCHP
-              END IF
-              WRITE(6,*) ' NDIM,IMZERO = ', NDIM,IMZERO
-              Call Abend2(' problem in FRMDSC ')
-            END IF
-            ARRAY(IPAK(IELMNT)) = XPAK(IELMNT)
-          END DO
-        IF(ISTOP.EQ.0) GOTO 999
-*. End of loop over records of truncated elements
-      ELSE IF ( I_AM_PACKED.EQ.0) THEN
-        IF( MBLOCK .GE. 0 .OR.ICRAY.EQ.1) THEN
-        NBLOCK = MBLOCK
-        IF ( MBLOCK .LE. 0 ) NBLOCK = NDIM
-        IREST=NDIM
-        IBASE=0
-  100   CONTINUE
-         IF(IREST.GT.NBLOCK) THEN
-          READ(IFILE) (ARRAY(IBASE+I),I=1,NBLOCK)
-          IBASE=IBASE+NBLOCK
-          IREST=IREST-NBLOCK
-         ELSE
-          READ(IFILE) (ARRAY(IBASE+I),I=1,IREST)
-          IREST=0
-         END IF
-        IF( IREST .GT. 0 ) GOTO 100
-        END IF
-C
-        IF( MBLOCK.LT.0.AND.NDIM.GT.0.AND.ICRAY.EQ.0 ) THEN
-         CALL SQFILE(IFILE,2,ARRAY,2*NDIM)
-        END IF
-      END IF
-*
- 1001 CONTINUE
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FRMDSC2(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED,
-     &                   NO_ZEROING)
-C
-C     TRANSFER ARRAY FROM DISC FILE IFILE
-C
-*. Version allowing zero and packed blocks 
-*
-* If NO_ZEROING = 1, the elements of zero blocks
-*    are not set to zero, the routine just returns with 
-*    IMZERO = 1
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION ARRAY(*)
-*
-      DIMENSION ISCR(2)
-      PARAMETER(LPBLK=50000)
-      INTEGER IPAK(LPBLK)
-      DIMENSION XPAK(LPBLK)
- 
-      IMZERO = 0
-C
-      IPACK = 1
-      IF(IPACK.NE.0) THEN
-*. Read if ARRAY is zero
-        MMBLOCK = MBLOCK
-C       IF(MMBLOCK.GE.2) MMBLOCK = 2
-C       CALL IFRMDS(ISCR,2,MMBLOCK,IFILE)
-        CALL IFRMDS(ISCR,2,2,IFILE)
-        IMZERO=ISCR(1)
-        I_AM_PACKED=ISCR(2)
-        IF(IMZERO.EQ.1) THEN
-          IF(NO_ZEROING.EQ.0) THEN
-            ZERO = 0.0D0
-            CALL SETVEC(ARRAY,ZERO,NDIM)
-          END IF
-          GOTO 1001
-        END IF
-      END IF
-*
-      ICRAY = 1
-      IF(I_AM_PACKED.EQ.1) THEN
-        ZERO = 0.0D0
-        CALL SETVEC(ARRAY,ZERO,NDIM)
-*. Loop over packed records of dimension LPBLK
-      NBATCH = 0
-C1000 CONTINUE
-*. The next LPBLK elements 
-  999   CONTINUE
-          NBATCH = NBATCH + 1
-          IF(NBATCH.NE.1) THEN
-            LBATCHP = LBATCH
-          END IF
-*. Read next batch
-          READ(IFILE) LBATCH
-          IF(LBATCH.GT.0) THEN
-            READ(IFILE) (IPAK(I),I=1, LBATCH)
-            READ(IFILE) (XPAK(I),I=1, LBATCH)
-          END IF
-          READ(IFILE) ISTOP
-          DO IELMNT = 1, LBATCH
-            IF(IPAK(IELMNT).LE.0.OR.IPAK(IELMNT).GT.NDIM) THEN
-              WRITE(6,*) ' FRMDSC : Problemo IELMNT = ',IELMNT 
-              WRITE(6,*) ' IPAK(IELMNT) = ',IPAK(IELMNT )
-              WRITE(6,*) ' LBATCH IFILE  = ',LBATCH,IFILE    
-              IF(NBATCH.EQ.1) THEN
-               WRITE(6,*) ' NBATCH = 1 '
-              ELSE
-               WRITE(6,*) ' NBATCH, LBATCHP', NBATCH,LBATCHP
-              END IF
-              WRITE(6,*) ' NDIM,IMZERO = ', NDIM,IMZERO
-              Call Abend2(' problem in FRMDSC ')
-            END IF
-            ARRAY(IPAK(IELMNT)) = XPAK(IELMNT)
-          END DO
-        IF(ISTOP.EQ.0) GOTO 999
-*. End of loop over records of truncated elements
-      ELSE IF ( I_AM_PACKED.EQ.0) THEN
-        IF( MBLOCK .GE. 0 .OR.ICRAY.EQ.1) THEN
-        NBLOCK = MBLOCK
-        IF ( MBLOCK .LE. 0 ) NBLOCK = NDIM
-        IREST=NDIM
-        IBASE=0
-  100   CONTINUE
-         IF(IREST.GT.NBLOCK) THEN
-          READ(IFILE) (ARRAY(IBASE+I),I=1,NBLOCK)
-          IBASE=IBASE+NBLOCK
-          IREST=IREST-NBLOCK
-         ELSE
-          READ(IFILE) (ARRAY(IBASE+I),I=1,IREST)
-          IREST=0
-         END IF
-        IF( IREST .GT. 0 ) GOTO 100
-        END IF
-C
-        IF( MBLOCK.LT.0.AND.NDIM.GT.0.AND.ICRAY.EQ.0 ) THEN
-         CALL SQFILE(IFILE,2,ARRAY,2*NDIM)
-        END IF
-      END IF
-*
- 1001 CONTINUE
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FRMDSCN3(VEC,NREC,LBLK,LU,NO_ZEROING,I_AM_ZERO,
-     &                    LBLOCK)
-*
-* Read  VEC as multiple record file, NREC records read
-* If NO_ZEROING.EQ.0 then zero blocks are not
-* set to zero;  a 1 is instead flagged in the relevant block
-* of I_AM_ZERO
-*
-* IF LBLOCK(IBLK) is less than zero, then no space for this
-* block is made
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION LBLOCK(*)
-*. Output
-      DIMENSION VEC(*),I_AM_ZERO(*)
-*
-      IOFF = 1
-C?    write(6,*) ' FRMDSCN3: Number of records to be read', NREC
-      DO IREC = 1, NREC
-        CALL IFRMDS(LREC,1,LBLK,LU)
-        IF(LBLOCK(IREC).GE.0) THEN
-          CALL FRMDSC2(VEC(IOFF),LREC,LBLK,LU,IMZERO,IAMPACK,
-     &                 NO_ZEROING)
-          I_AM_ZERO(IREC) = IMZERO
-          IOFF = IOFF + LREC
-        ELSE
-          I_AM_ZERO(IREC) = 1
-          CALL SKPRCD2(LBLK,-1,LU)
-        END IF
-
-      END DO
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-*
-      SUBROUTINE GATVCD(LU,LBLK,NGAT,IGAT,XGAT,SEGMNT,IPRT)
-*
-* Gather elements from a file LU
-*
-* XGAT(I) = Vector(IGAT(I))
-*
-* Jeppe Olsen, September 1993
-*
-      IMPLICIT REAL*8           (A-H,O-Z)
-*. Input
-      INTEGER IGAT(NGAT)
-*. Output
-      DIMENSION XGAT(NGAT)
-*. Scratch
-      DIMENSION SEGMNT(*)
-*
-      CALL REWINE(LU,-1)
-*
-      IBASE = 1
-      IBLOCK = 0
-*
-*. Loop over blocks of file
-*
- 1000 CONTINUE
-        IBLOCK = IBLOCK + 1
-        CALL NEXREC(LU,LBLK,SEGMNT,IEND,LENGTH)
-        IF(IPRT.GE.10)
-     &  WRITE(6,*) LENGTH, ' elements in block ',IBLOCK
-        IF(IEND.EQ.0) THEN
-          IFIRST = IBASE
-          ILAST = IBASE + LENGTH - 1
-          DO 100 I = 1, NGAT
-            IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST )
-     &      XGAT(I) = SEGMNT(IGAT(I)-IFIRST+1)
-C?          IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST )
-C?   &      write(6,*) ' Catch I IGAT(I) XGAT(I) ',
-C?   &                         I,IGAT(I),XGAT(I)
-  100     CONTINUE
-          IBASE = IBASE + LENGTH
-      IF(LBLK.LT.0) GOTO 1000
-        END IF
-*
-      NTEST = 0
-      NTEST = MAX(IPRT,NTEST)
-      IF(NTEST.GE.5) THEN
-       WRITE(6,*) ' Gathered vector from GATVCD '
-       CALL WRTMAT(XGAT,1,NGAT,1,NGAT)
-      END IF
-*
-      RETURN
-      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -2474,136 +1615,6 @@ C             END DO
         END IF
 *       ^ End of test ICEND,ICOFF
       END DO
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE GET_TTS_BATCHN(CTTS,NBLOCK,IBLOCK,NBLOCKC,IBLOCKC,
-     &                  NOCTPA,NOCTPB,NSMST,NSASO,NSBSO,
-     &                  IDC,LUC,IREW,ISCALE)
-*
-* Read in a batch of C blocks from file LUC.
-*
-* The complete file is defined by NBLOCKC,IBLOCKC,
-* and the blocks of the actual batch is defined by NBLOCK,IBLOCK.
-* Vector packing is defined by IDC
-*
-* Should be initialized with rewind on LUC i.e. IREW = 1
-*
-*. Feb 96 : Modified to accomodate packed files
-*. March 97 : Shaved, assumes IBLOCK and IBLOCKC have identical ordering
-*
-*
-      IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION CTTS(*),NSASO(NSMST,*),NSBSO(NSMST,*)
-      DIMENSION IBLOCKC(8,NBLOCKC),IBLOCK(8,NBLOCK)
-*
-      COMMON/HIDLUC/IBLK,IATP,IBTP,IASM,IBSM
-*
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Welcome to GET_TTS_BATCH '
-        WRITE(6,*) ' ========================='
-        WRITE(6,*) ' Number of blocks in batch ', NBLOCK
-        WRITE(6,*)
-        WRITE(6,*) ' IATP  IBTP  IASM  IBSM '
-        WRITE(6,*) ' ====================== '
-        DO JBLOCK = 1, NBLOCK
-          WRITE(6,'(4I4)') (IBLOCK(II,JBLOCK),II = 1, 4 )
-        END DO
-      END IF
-*
-      IF(IREW.EQ.1) THEN
-        REWIND (LUC)
-        IBLK = 1
-      END IF
-*
-      IAMPACK = 1
-      IMZERO= 0
-*. Ready to loop over blocks
-*
-*. Loop over blocks to be read
-      DO JBLOCK = 1, NBLOCK
-          IF(IBLOCK(1,JBLOCK).GT.0) THEN
-            ISKIP = 0
-          ELSE
-            ISKIP = 1
-          END IF
-*
-          IF(IBLK.GT.NBLOCKC) THEN
-            REWIND LUC
-            WRITE(6,*) ' Notice : LUC rewinded in GET_TTS'
-            WRITE(6,*) ' Less than optimal programming ? '
-            IBLK = 1
-          END IF
-*. Loop over blocks on file
-  999   CONTINUE
-*. is this block identical to next block on disc
-          IF(ABS(IBLOCK(1,JBLOCK)).EQ.ABS(IBLOCKC(1,IBLK)) .AND.
-     &       IBLOCK(2,JBLOCK).EQ.IBLOCKC(2,IBLK) .AND.
-     &       IBLOCK(3,JBLOCK).EQ.IBLOCKC(3,IBLK) .AND.
-     &       IBLOCK(4,JBLOCK).EQ.IBLOCKC(4,IBLK) ) THEN
-             IF(ISKIP.EQ.0) THEN
-*. Read me !
-              CALL IFRMDS(LBL,1,-1,LUC)
-              IOFFO   = IBLOCK(6,JBLOCK)
-              CALL FRMDSC(CTTS(IOFFO),LBL,-1,LUC,IMZERO,IAMPACK)
-              IBLK = IBLK + 1
-            ELSE
-*. Skip me, you are not interested in me at all
-              CALL IFRMDS(LBL,1,-1,LUC)
-              CALL SKPRCD2(LBL,-1,LUC)
-              IBLK = IBLK + 1
-            END IF
-          ELSE
-*. Skip me
-            CALL IFRMDS(LBL,1,-1,LUC)
-            CALL SKPRCD2(LBL,-1,LUC)
-            IBLK = IBLK + 1
-            GOTO 999
-          END IF
-C     END IF
-*. End of loop over blocks on file
-      END DO
-*
-*. Rescale from combination form to determinant
-*
-      IF(IDC.EQ.2.AND.ISCALE.NE.0) THEN
-        CALL SCDTTS(CTTS,IBLOCK,NBLOCK,
-     &  NSMST,NOCTPA,NOCTPB,NSASO,NSBSO,
-     &  IDC,2,NTEST)
-C     SCDTTS(BLOCKS,IBLOCK,NBLOCK,
-C    &                  NSMST,NOCTPA,NOCTPB,
-C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
-      END IF
-*
-      IF(NTEST.GE.1000) THEN
-         WRITE(6,*) ' Batch of blocks read in '
-         WRITE(6,*) ' ========================'
-         WRITE(6,*)
-         CALL WRTTTS(CTTS,IBLOCK,NBLOCK,NSMST,NOCTPA,NOCTPB,
-     &               NSASO,NSBSO,IDC)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE GFLUSH(LU)
-*
-*. Outer routine for flushing UNITS !
-*
-*. RISC/6000
-C      CALL FLUSH_(LU)
-*. CRAY.
-C      CALL FLUSH(LU)
 *
       RETURN
       END
@@ -2817,6 +1828,8 @@ C?      write(6,*) ' LBL = ', LBL
           NAST = NSASO(IASM,IATP)
           NBST = NSBSO(IBSM,IBTP)
           IF(LBL.NE.0) THEN
+            isgvst = 0
+C           ... not used, just to silence ftnchek warning /Aug 2004
             CALL SDCMRF(CTT,SCR,2,IATP,IBTP,IASM,IBSM,NAST,NBST,
      &           IDC,PSSIGN,PLSIGN,ISGVST,LDET,LCOMB,ISCALE,SCLFAC)
           ELSE
@@ -3050,20 +2063,22 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 *.Output
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *
-      NTEST = 00
+      NTEST = 00000
       NTEST = MAX(NTEST,IPRNT)
 *
-      IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' IAIBCM_GAS entered '
-        WRITE(6,*) ' ==================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
-        WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
-        WRITE(6,*)
-        IF(NTEST.GE.40) THEN
-          WRITE(6,*) ' IOCA and IOCB '
-          CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NOCTPA)
-          CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NOCTPB)
+      IF(NTEST.GE.100) THEN
+        IF(MYPROC.EQ.MASTER) THEN
+          WRITE(6,*) ' IAIBCM_GAS entered '
+          WRITE(6,*) ' ==================='
+          WRITE(6,*)
+          WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
+          WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
+          WRITE(6,*)
+          IF(NTEST.GE.400) THEN
+            WRITE(6,*) ' IOCA and IOCB '
+            CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NOCTPA)
+            CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NOCTPB)
+          END IF
         END IF
       END IF
 *
@@ -3071,7 +2086,8 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
       DO 100 IATP = 1, NOCTPA
          DO 90 IBTP = 1, NOCTPB
 *. is this combination allowed in any of the GAS spaces included
-           INCLUDE = 0
+CMI        INCLUDE = 0
+           INCLUD = 0
            DO JJCMBSPC = 1, LCMBSPC
              JCMBSPC = ICMBSPC(JJCMBSPC)
              IEL = 0
@@ -3083,20 +2099,22 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
      &            IEL.GT.MNMXOC(IGAS,2,JCMBSPC))
      &         IAMOKAY = 0
              END DO
-             IF(IAMOKAY.EQ.1) INCLUDE = 1
+CMI          IF(IAMOKAY.EQ.1) INCLUDE = 1
+             IF(IAMOKAY.EQ.1) INCLUD = 1
            END DO
-           IF(INCLUDE .EQ.1) THEN
+CMI        IF(INCLUDE .EQ.1) THEN
+           IF(INCLUD .EQ.1) THEN
 *. Congratulations , you are allowed
               IOCOC(IATP,IBTP) = 1
           END IF
    90   CONTINUE
   100 CONTINUE
 *
-      IF ( NTEST .GE. 30 ) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' Matrix giving allowed combinations of types '
-        WRITE(6,*)
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+      IF ( NTEST .GE. 300 ) THEN
+          WRITE(6,*)
+          WRITE(6,*) ' Matrix giving allowed combinations of types '
+          WRITE(6,*)
+          CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
       END IF
 *
       RETURN
@@ -3195,6 +2213,22 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
+      INTEGER FUNCTION IGIVE_I_B(X_IN)
+#include "implicit.h"
+*
+* return integer value of real*8 element
+*
+*
+      I_OUT = INT( X_IN )
+      IGIVE_I_B = I_OUT
+*
+      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
       FUNCTION IFREQ(IVEC,IVAL,NDIM)
 *
 * Number of times IVAL occurs in IVEC
@@ -3213,118 +2247,25 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE IFRMDS(IARRAY,NDIM,MBLOCK,IFILE)
+      SUBROUTINE INI_BLOCKL(IBLOCKI,NDIM,IBATS)
 C
-C     TRANSFER INTEGER ARRAY FROM DISC FILE IFILE
+C     initialize vector containing block length
 C
-C NBLOCK .LT. 0 INDICATES USE OF FASTIO
-C
-C If nblock .eq. 0 NBLOCK = NDIM
       IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION IARRAY(*)
+      DIMENSION IBLOCKI(NDIM), IBATS(8,*)
 C
-      ICRAY = 1
-      NBLOCK = MBLOCK
-
-      IF( ICRAY.EQ.1.OR.NBLOCK .GE. 0 ) THEN
-C       DO NOT USE FASTIO
-        IF(NBLOCK .LE. 0 ) NBLOCK = NDIM
-        IREST=NDIM
-        IBASE=0
-  100   CONTINUE
-          IF(IREST.GT.NBLOCK) THEN
-            READ(IFILE) (IARRAY(IBASE+I),I=1,NBLOCK)
-            IBASE=IBASE+NBLOCK
-            IREST=IREST-NBLOCK
-          ELSE
-            READ(IFILE) (IARRAY(IBASE+I),I=1,IREST)
-            IREST=0
-          END IF
-        IF( IREST .GT. 0 ) GOTO 100
-      ELSE
-C       USE FAST IO
-        CALL SQFILE(IFILE,2,IARRAY,NDIM)
-      END IF
-      RETURN
+      DO ISBLK = 1, NDIM
+        IBLOCKI( ISBLK ) = IBATS(8,ISBLK)
+      END DO
+C
       END
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      REAL*8 FUNCTION INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
-C
-C DISC VERSION OF INPROD
-C
-C LBLK DEFINES STRUCTURE OF FILE
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 INPROD
-      DIMENSION VEC1(*),VEC2(*)
-      LOGICAL DIFVEC
-C
-      X = 0.0D0
-      IF( LU1 .NE. LU2 ) THEN
-        DIFVEC = .TRUE.
-      ELSE
-        DIFVEC =  .FALSE.
-      END IF
-C
-      IF( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LU1
-          IF(DIFVEC) REWIND LU2
-         ELSE
-          CALL REWINE( LU1,LBLK)
-          IF( DIFVEC ) CALL REWINE( LU2,LBLK)
-         END IF
-      END IF
-C
-C LOOP OVER BLOCKS OF VECTORS
-C
- 1000 CONTINUE
-C
-        IF( LBLK .GT. 0 ) THEN
-          NBL1 = LBLK
-          NBL2 = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LU1) NBL1
-          IF( DIFVEC) READ(LU2) NBL2
-        ELSE IF ( LBLK .LT. 0 ) THEN
-          CALL IFRMDS(NBL1,1,-1,LU1)
-          IF( DIFVEC)CALL IFRMDS(NBL2,1,-1,LU2)
-        END IF
-C
-        IF(NBL1 .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = NBL1
-          ELSE
-            KBLK = -1
-          END IF
-          CALL FRMDSC(VEC1,NBL1,KBLK,LU1,IMZERO,IAMPACK)
-          IF( DIFVEC) THEN
-            CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
-            IF(NBL1 .GT. 0 )
-     &      X = X + INPROD(VEC1,VEC2,NBL1)
-C?          write(6,*) ' vec1 and vec2 in INPRDD '
-C?         CALL WRTMAT(VEC1,1,NBL1,1,NBL1)
-C?         CALL WRTMAT(VEC2,1,NBL1,1,NBL1)
-          ELSE
-          IF(NBL1 .GT. 0 )
-     &    X = X + INPROD(VEC1,VEC1,NBL1)
-        END IF
-      END IF
-      IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-C
-      INPRDD = X
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       REAL*8 FUNCTION INPRODB(VEC1,VEC2,NBLK,LBLK,I0BLK)
@@ -3347,7 +2288,7 @@ C
         LLBLK = LBLK(IBLK)
 C?      WRITE(6,*) ' INPRODB IBLK LLBLK IOFF ',IBLK,LLBLK,IOFF
         IF(I0BLK(IBLK).EQ.0.AND.LLBLK.GT.0) THEN
-          X = X + INPROD(VEC1(IOFF),VEC2(IOFF),LLBLK)
+          X = X + DDOT(LLBLK,VEC1(IOFF),1,VEC2(IOFF),1)
 C?        WRITE(6,*) ' Vec1 and Vec2 blocks '
 C?        CALL WRTMAT(VEC1(IOFF),1,LLBLK,1,LLBLK)
 C?        CALL WRTMAT(VEC2(IOFF),1,LLBLK,1,LLBLK)
@@ -3363,6 +2304,7 @@ C?        write(6,*) ' Updated x', X
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE INVMAT(A,B,MATDIM,NDIM)
@@ -3406,6 +2348,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IVCSUM(IA,IB,IC,IFACB,IFACC,NDIM)
@@ -3425,6 +2368,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION ISTRNM(IOCC,NORB,NEL,Z,NEWORD,IREORD)
@@ -3462,47 +2406,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE ITODS(IA,NDIM,MBLOCK,IFIL)
-C TRANSFER ARRAY INTEGER IA(LENGTH NDIM) TO DISCFIL IFIL IN
-C RECORDS WITH LENGTH NBLOCK.
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION IA(*)
-      INTEGER START,STOP
-*
-      ICRAY = 1
-      NBLOCK = MBLOCK
-      IF( NBLOCK .GE.0.OR.ICRAY.EQ.1 ) THEN
-C
-      IF(NBLOCK .LE. 0 ) NBLOCK = NDIM
-      STOP=0
-      NBACK=NDIM
-C LOOP OVER RECORDS
-  100 CONTINUE
-       IF(NBACK.LE.NBLOCK) THEN
-         NTRANS=NBACK
-         NLABEL=-NTRANS
-       ELSE
-         NTRANS=NBLOCK
-         NLABEL=NTRANS
-       END IF
-       START=STOP+1
-       STOP=START+NBLOCK-1
-       NBACK=NBACK-NTRANS
-       WRITE(IFIL) (IA(I),I=START,STOP),NLABEL
-      IF(NBACK.NE.0) GOTO 100
-      END IF
-C
-      IF(ICRAY.EQ.0.AND. NBLOCK .LT. 0 ) THEN
-       CALL SQFILE(IFIL,1,IA,NDIM)
-      END IF
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE IWRTMA10(IMAT,NROW,NCOL,MAXROW,MAXCOL)
@@ -3518,7 +2422,39 @@ C
       END
 ***********************************************************************
 *                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      CHARACTER*10 FUNCTION LFNAM_LUCIPAR(FILNAM)
+C
+C     Add the node identification to the file name for shared disk
+C     systems
+C     original written by Luuk Visscher, February 1998
+C     adaption for parallel run of LUCIAREL by Stefan Knecht, June 2007
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include "implicit.h"
+#include "dcbgen.h"
+#include "infpar.h"
+      CHARACTER*5  FILNAM
+      CHARACTER*10 LFILNAM
+      NODE = 0
+ 1000 FORMAT (A5,I5)
+C
+      WRITE (LFILNAM,1000) FILNAM,NODE
+      DO I = 6, 10
+         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
+      ENDDO
+C
+      LFNAM_LUCIPAR = LFILNAM
+C
+      END
+***********************************************************************
+*                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE LFTPOS(CARD,LENGTH)
@@ -3553,6 +2489,7 @@ C     WRITE(6,'(1H ,A)') CARD
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATCAS(CIN,COUT,NROWI,NROWO,IROWO1,NGCOL,ISCA,SCASGN)
@@ -3590,6 +2527,7 @@ C     WRITE(6,'(1H ,A)') CARD
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATCG(CIN,COUT,NROWI,NROWO,IROWI1,NGCOL,IGAT,GATSGN)
@@ -3632,10 +2570,91 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATML7(C,A,B,NCROW,NCCOL,NAROW,NACOL,
      &                  NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
+C
+C MULTIPLY A AND B TO GIVE C
+C
+C     C =  FACTORC*C + FACTORAB* A * B             FOR ITRNSP = 0
+C
+C     C =  FACTORC*C + FACTORAB* A(TRANSPOSED) * B FOR ITRNSP = 1
+C
+C     C =  FACTORC*C + FACTORAB* A * B(TRANSPOSED) FOR ITRNSP = 2
+C
+C... JEPPE OLSEN,
+C
+*. Notice : If the summation index has dimension zero nothing
+*           is performed
+      IMPLICIT REAL*8           (A-H,O-Z)
+      DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
+      DIMENSION C(NCROW,NCCOL)
+      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
+*
+      NTEST = 00
+      IF ( NTEST .NE. 0 ) THEN
+      WRITE(6,*)
+      WRITE(6,*) ' A, B and C MATRIX FROM MATML7 ' 
+      WRITE(6,*)
+      CALL WRTMAT(A,NAROW,NACOL,NAROW,NACOL)
+      CALL WRTMAT(B,NBROW,NBCOL,NBROW,NBCOL)
+      CALL WRTMAT(C,NCROW,NCCOL,NCROW,NCCOL)
+      WRITE(6,*)      ' NCROW NCCOL NAROW NACOL NBROW NBCOL ' 
+      WRITE(6,'(6I6)')  NCROW,NCCOL,NAROW,NACOL,NBROW,NBCOL
+      WRITE(6,*) ' ITRNSP : ', ITRNSP
+      END IF
+*. Statistics
+      XNCALL = XNCALL + 1
+      XLCROW = XLCROW + NCROW
+      XLCCOL = XLCCOL + NCCOL
+      XLCROWCOL = XLCROWCOL + NCROW*NCCOL
+      T_INI = Second()
+*
+      IF(ITRNSP.EQ.1) THEN
+        XNFLOP = XNFLOP + 2*NCROW*NCCOL*NAROW
+      ELSE
+        XNFLOP = XNFLOP + 2*NCROW*NCCOL*NACOL
+      END IF
+C
+C     do matrix-matrix multiplication using DGEMM
+C
+C     input
+      LDA = MAX(1,NAROW)
+      LDB = MAX(1,NBROW)
+C     output
+      LDC = MAX(1,NCROW)
+      IF(ITRNSP.EQ.0) THEN
+        CALL DGEMM('N','N',NAROW,NBCOL,NACOL,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+      ELSE IF (ITRNSP.EQ.1) THEN
+        CALL DGEMM('T','N',NACOL,NBCOL,NAROW,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+      ELSE IF(ITRNSP.EQ.2) THEN
+        CALL DGEMM('N','T',NAROW,NBROW,NACOL,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+      END IF
+C
+      IF ( NTEST .NE. 0 ) THEN
+      WRITE(6,*)
+      WRITE(6,*) ' C MATRIX FROM MATML7 ' 
+      WRITE(6,*)
+      CALL WRTMAT(C,NCROW,NCCOL,NCROW,NCCOL)
+      END IF
+C
+      T_END = Second()
+      TMULT = TMULT + T_END - T_INI 
+C
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE MATML7_SAVE(C,A,B,NCROW,NCCOL,NAROW,NACOL,
+     &                       NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 C
 C MULTIPLY A AND B TO GIVE C
 C
@@ -3687,9 +2706,7 @@ c     CALL QENTER('MATML')
         IZERO = 0
       END IF
 
-      IESSL = 1
-      ICONVEX = 0
-      IF ((ICONVEX.EQ.1 .OR.IESSL.EQ.1).AND. IZERO.EQ.0 ) THEN
+      IF (IZERO.EQ.0 ) THEN
 *. DGEMM from CONVEX/ESSL  lib
         LDA = MAX(1,NAROW)
         LDB = MAX(1,NBROW)
@@ -3787,6 +2804,7 @@ C     CALL QEXIT('MATML')
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
@@ -3822,6 +2840,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MATVCC(A,VIN,VOUT,NROW,NCOL,ITRNS)
@@ -3857,6 +2876,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION IOFF_SYM_DIST(ISYM,NGASL,IOFF,MAXVAL,MINVAL)
@@ -3905,6 +2925,7 @@ C       write(6,*) ' igas i imult ',igas,i,imult
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MXMNOC_SPGP(MINEL,MAXEL,NORBTP,NORBFTP,NELFTP,
@@ -3970,100 +2991,7 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
-C
-C ADD VECTORS ON FILE LUIN TIMES FACTOR AND STORE ON LUOUT
-C
-C LUOUT AND LUSCR ARE INITIALLY REWOUND
-C
-      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
-      DIMENSION VEC1(1),VEC2(1)
-      DIMENSION FAC(NVEC)
-C
-      IF( MOD(NVEC,2) .EQ. 0 ) THEN
-        LLUOUT = LUSCR
-        LLUSCR = LUOUT
-      ELSE
-        LLUOUT = LUOUT
-        LLUSCR = LUSCR
-      END IF
-C
-      IF(IREW .NE. 0 ) CALL REWINE(LUIN,LBLK)
-C
-      DO 100 IVEC = 1, NVEC
-        CALL REWINE(LLUSCR,LBLK)
-        CALL REWINE(LLUOUT,LBLK)
-        IF( IVEC .EQ. 1 ) THEN
-          CALL SCLVCD(LUIN,LLUOUT,FAC(IVEC),VEC1,0,LBLK)
-        ELSE
-          CALL VECSMD(VEC1,VEC2,FAC(IVEC),1.0D0,LUIN,LLUSCR,LLUOUT,
-     &                0,LBLK)
-        END IF
-C
-        LBUF = LLUOUT
-        LLUOUT = LLUSCR
-        LLUSCR = LBUF
-  100 CONTINUE
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MVCSMD2(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
-     &                   VEC1,VEC2,NVEC,IREW,LBLK)
-*
-* LUOUT = Factor * LUOUT + sum(I=1,nvec)fac(I) LUIN(I)
-*
-* LUOUT and LUSCR are rewinded and input data 
-* on these files are lost.
-*
-* MVCSMD2 is identical MVCSMD, except that
-* the input vector on LUOUT can be included
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION VEC1(1),VEC2(1)
-      DIMENSION FAC(1)
-*
-      IF(IREW .NE. 0 ) CALL REWINE(LUIN,LBLK)
-*
-      LLUOUT = LUOUT
-      LLUSCR = LUSCR
-      DO IVEC = 1, NVEC
-        CALL REWINE(LLUSCR,LBLK)
-        CALL REWINE(LLUOUT,LBLK)
-        IF( IVEC .EQ. 1 ) THEN
-          IF(FACLUOUT.NE.0.0D0) THEN
-            CALL VECSMD(VEC1,VEC2,FAC(1),FACLUOUT,LUIN,
-     &                  LUOUT,LUSCR,0,LBLK)
-          ELSE
-            CALL SCLVCD(LUIN,LUSCR,FAC(1),VEC1,0,LBLK)
-          END IF
-        ELSE
-          ONE = 1.0D0
-          CALL VECSMD(VEC1,VEC2,FAC(IVEC),ONE,LUIN,LLUOUT,LLUSCR,
-     &                0,LBLK)
-        END IF
-*
-        LBUF = LLUOUT
-        LLUOUT = LLUSCR
-        LLUSCR = LBUF
-      END DO
-*
-      IF(LLUOUT.NE.LUOUT) THEN
-C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
-        CALL COPVCD(LLUOUT,LUOUT,VEC1,1,LBLK)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION NDXFSM(NSMOB,NSMSX,MXPOBS,NO1PS,NO2PS,NO3PS,NO4PS,
@@ -4141,6 +3069,7 @@ C 100     CONTINUE
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NEWTYPS(INSPGP,IACOP,ITPOP,NOP,
@@ -4190,37 +3119,8 @@ C         CALL IWRTMA(ITPOP,1,NOP,1,NOP)
       END
 ***********************************************************************
 *                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE NEXREC(LU,LBLK,REC,IEND,LENGTH)
-*
-* OBTAIN NEXT RECORD ON FILE LU, IF
-* AN END OF FILE IS ISSUED THE RECORD IS EMPTY
-* AND IEND IS SET TO 1
-*
-      IMPLICIT REAL*8           (A-H,O-Z)
-      DIMENSION REC(*)
-*
-      IF(LBLK .GT. 0 ) THEN
-        IEND = 0
-        LENGTH = LBLK
-        CALL FRMDSC(REC,LENGTH,-1,LU,IMZERO,IAMPACK)
-      ELSE
-        CALL IFRMDS(LENGTH,1,LBLK,LU)
-        IF(LENGTH.GE.0) THEN
-          IEND = 0
-          CALL FRMDSC(REC,LENGTH,LBLK,LU,IMZERO,IAMPACK)
-        ELSE
-          IEND = 1
-        END IF
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       FUNCTION NSXFSM(NSMOB,MXPOBS,NO1PS,NO2PS,ISXSM,ADSXA,
@@ -4263,6 +3163,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Output
@@ -4298,6 +3199,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
@@ -4356,6 +3258,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTNUM3(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
@@ -4414,6 +3317,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 * Find next alpha/beta occupation type and symmetry.
@@ -4464,7 +3368,43 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
       END
 ***********************************************************************
 *                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+*     Find back to the first TT-1 block to start next batch from.
+*     Stefan Knecht, July 02, 2007.
+*
+      subroutine bck_tts(IORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,NBLOCK,
+     &                   LENGTH,LENGTHP,NBATCH,LUWRT)
+*
+#include "implicit.h"
+      dimension LBATCH(*), LEBATCH(*), IBATCH(8,*)
+*
+      IF( IORD .eq. 2 ) THEN
+*
+ 100    CONTINUE
+*
+        IF( ISM .gt. 1 ) THEN
+          ISM = ISM - 1 
+          LBATCH(NBATCH)  = LBATCH(NBATCH) - 1
+          LEBATCH(NBATCH) = LEBATCH(NBATCH) - IBATCH(8,IBLOCK)
+          IBLOCK = IBLOCK - 1
+          NBLOCK = NBLOCK - 1
+          GOTO 100 
+        ELSE
+*
+CSK        WRITE(LUWRT,*) ' reset was successful'
+CSK        WRITE(LUWRT,*) ' IBLOCK, NBLOCK are now',IBLOCK,NBLOCK
+*
+        END IF
+      END IF
+*
+      END
+***********************************************************************
+*                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTBLK(IATP,IBTP,IASM,NOCTPA,NOCTPB,NSMST,IBLTP,IDC,
@@ -4509,6 +3449,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NXTORD(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
@@ -4565,6 +3506,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
        SUBROUTINE ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
@@ -4638,6 +3580,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRMBLK(IDC,ISGV,IASM,IBSM,IATP,IBTP,PS,PL,
@@ -4675,6 +3618,9 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
       DIMENSION ISGV(*)
 *.Output
       DIMENSION JATP(4),JBTP(4),JASM(4),JBSM(4),ISGN(4),ITRP(4)
+*
+      SAVE LSIGN, LTRP
+      DATA LSIGN, LTRP/0,0/
 *
       NPERM = 0
       DO 100 IPERM = 1, 4
@@ -4789,6 +3735,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRTITL(LINES)
@@ -4814,6 +3761,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRTSTR(ISTR,NEL,NSTR)
@@ -4833,42 +3781,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE REWINE( LU ,LBLK )
-* 
-* LBLK .LT. 0 :  REWIND SEQ FILE LU WITH FASTIO ROUTINES
-* LBLK .GE. 0 :  rewinf seq file LU with normal REWIND
-      ICRAY = 1
-      IF ( ICRAY.EQ.0.AND.LBLK .LT. 0 ) THEN
-        IDUM = 1
-        CALL SQFILE(LU,5,IDUM,IDUM)
-      ELSE 
-        REWIND LU
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE REWINO( LU )
-C
-C REWIND SEQ FILE LU WITH FASTIO ROUTINES
-C
-C?    WRITE(6,*) ' TO REWIND FILE ',LU
-      IDUM = 1
-C     CALL SQFILE(LU,5,IDUM,IDUM)
-      REWIND (LU)
-C?    WRITE(6,*) ' FILE REWOUND '
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE RFTTS(BLOCKSI,BLOCKSO,IBLOCK,NBLOCK,
@@ -4985,61 +3898,7 @@ C TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SCLVCD(LUIN,LUOUT,SCALE,SEGMNT,IREW,LBLK)
-C
-C SCALE VECTOR ON FILE LUIN WITH FACTOR SCALE AND STORE ON LUOUT
-C
-C
-C LBLK DEFINES STRUCTURE OF FILES
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION SEGMNT(*)
-C
-      IF( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LUIN
-          REWIND LUOUT
-        ELSE
-          CALL REWINE( LUIN ,LBLK)
-          CALL REWINE( LUOUT,LBLK)
-        END IF
-      END IF
-C
-C LOOP OVER BLOCKS
-C
- 1000 CONTINUE
-        IF ( LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF (LBLK .EQ. 0 ) THEN
-          READ(LUIN) LBL
-          WRITE(LUOUT) LBL
-        ELSE IF (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-          CALL ITODS (LBL,1,-1,LUOUT)
-        END IF
-C
-        IF ( LBL .GE. 0 ) THEN
-          IF(      LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-C
-          CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(LBL .GT. 0 )
-     &    CALL SCALVE(SEGMNT,SCALE,LBL)
-          CALL TODSC(SEGMNT,LBL,KBLK,LUOUT)
-        END IF
-C
-      IF( LBL .GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SCDTTS(BLOCKS,IBLOCK,NBLOCK,
@@ -5134,120 +3993,7 @@ C    &                  NSASO,NSBSO,ISC,IPRNT)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SKPRCD2(NDIM,MBLOCK,IFILE)
-C
-C     Skip record in file IFILE
-C
-*. Version allowing zero and packed blocks
-*
-* Dos not work with FASTIO - I expect
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*
-      DIMENSION ISCR(2)
-      PARAMETER(LPBLK=50000)
-
-C
-      IPACK = 1
-      IF(IPACK.NE.0) THEN
-*. Read if ARRAY is zero
-        CALL IFRMDS(ISCR,2,2,IFILE)
-        IMZERO=ISCR(1)
-        I_AM_PACKED=ISCR(2)
-        IF(IMZERO.EQ.1) THEN
-          GOTO 1001
-        END IF
-      END IF
-*
-      ICRAY = 1
-      IF(I_AM_PACKED.EQ.1) THEN
-*. Loop over packed records of dimension LPBLK
-*. The next LPBLK elements
-  999   CONTINUE
-*. Read next batch
-          READ(IFILE) LBATCH
-          IF(LBATCH.GT.0) THEN
-            READ(IFILE)
-            READ(IFILE)
-          END IF
-          READ(IFILE) ISTOP
-        IF(ISTOP.EQ.0) GOTO 999
-      ELSE IF ( I_AM_PACKED.EQ.0) THEN
-        IF( MBLOCK .GE. 0 .OR.ICRAY.EQ.1) THEN
-        NBLOCK = MBLOCK
-        IF ( MBLOCK .LE. 0 ) NBLOCK = NDIM
-        IREST=NDIM
-        IBASE=0
-  100   CONTINUE
-         IF(IREST.GT.NBLOCK) THEN
-          READ(IFILE)
-          IBASE=IBASE+NBLOCK
-          IREST=IREST-NBLOCK
-         ELSE
-          READ(IFILE)
-          IREST=0
-         END IF
-        IF( IREST .GT. 0 ) GOTO 100
-        END IF
-C
-C       IF( MBLOCK.LT.0.AND.NDIM.GT.0.AND.ICRAY.EQ.0 ) THEN
-C        CALL SQFILE(IFILE,2,ARRAY,2*NDIM)
-C       END IF
-      END IF
-*
- 1001 CONTINUE
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
-C
-C SKIP OVER NVEC VECTORS ON FILE LUIN
-C
-C LBLK DEFINES STRUCTURE OF FILE
-C (see note on structure of files )
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION SEGMNT(*)
-C
-      IF( IREW .NE. 0 ) THEN
-        CALL REWINE(LU ,LBLK)
-      END IF
-      DO 1001 IVEC = 1, NVEC
-C
-C LOOP OVER BLOCKS OF GIVEN VECTOR
-C
- 1000   CONTINUE
-C
-          IF( LBLK .GT. 0 ) THEN
-            LBL = LBLK
-          ELSE IF (LBLK .EQ. 0 ) THEN
-            READ(LU) LBL
-          ELSE IF (LBLK .LT. 0 ) THEN
-            CALL IFRMDS(LBL,1,-1,LU)
-          END IF
-C
-          IF( LBL .GE. 0 ) THEN
-            IF(LBLK .GE.0 ) THEN
-              KBLK = LBLK
-            ELSE
-              KBLK = -1
-            END IF
-            CALL FRMDSC(SEGMNT,LBL,KBLK,LU,IMZERO,IAMPACK)
-          END IF
-        IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
- 1001 CONTINUE
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SCLDIA(A,FACTOR,NDIM,IPACK)
@@ -5279,6 +4025,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SDCMRF(CSD,CCM,IWAY,IATP,IBTP,IASM,IBSM,NA,NB,
@@ -5345,13 +4092,13 @@ C
           CALL TRIPK3(CSD,CCM,1,NA,NA,SIGN_T)
 C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN_T)
         ELSE
-          CALL COPVEC(CSD,CCM,NA*NB)
+          CALL DCOPY(NA*NB,CSD,1,CCM,1)
         END IF
 *. Scale
         IF(FACTOR.NE.1.0D0) THEN
           IF(ISCALE.EQ.1) THEN
             SCLFAC = 1.0D0
-            CALL SCALVE(CCM,FACTOR,LCOMB)
+            CALL DSCAL(LCOMB,FACTOR,CCM,1)
           ELSE
             SCLFAC = FACTOR
           END IF
@@ -5368,13 +4115,13 @@ C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN_T)
 *. Unpack from triangular form
           CALL TRIPK3(CSD,CCM,2,NA,NA,SIGN_T)
         ELSE
-           CALL COPVEC(CCM,CSD,NA*NB)
+          CALL DCOPY(NA*NB,CCM,1,CSD,1)
         END IF
 *. Scale
         IF(FACTOR.NE.1.0D0) THEN
           IF(ISCALE.EQ.1) THEN
             SCLFAC = 1.0D0
-            CALL SCALVE(CSD,FACTOR,LDET)
+            CALL DSCAL(LDET,FACTOR,CSD,1)
           ELSE
             SCLFAC = FACTOR
           END IF
@@ -5411,6 +4158,7 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SORLOW(WRK,STVAL,ISTART,KZVAR,KEXST2,JEXSTV,IPRT)
@@ -5426,7 +4174,7 @@ C          NO DEGENERACIES OCCUR AMONG THE HIGHEST ELEMENTS
 * KZVAR : LENGTH OG WRK
 * OUTPUT
 *=======
-* STVAL  : STVAL(I) IS VALUES OF SORTED ELEMENT I
+* STVAL  : STVAL(I) IS VALUE OF SORTED ELEMENT I
 * ISTART : SCATTER POINTER ISTART(I) IS ADRESS IN FULL LIST OF
 *          SORTED ELEMENT I
 * KZVAR : LENGTH OG WRK
@@ -5526,6 +4274,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
 *
@@ -5620,6 +4369,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,
@@ -5697,17 +4447,8 @@ C
       END
 ***********************************************************************
 *                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine sqfile
-      return
-      end
-***********************************************************************
-*                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SXTYP2_GAS(NSXTYP,ITP,JTP,NGAS,ILTP,IRTP,IPHGAS)
@@ -5783,25 +4524,23 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SWAPVE(VEC1,VEC2,NDIM)
 C
-C      SWAP ELEMENTS OF VECTORS VEC1 AND VEC2
+C     SWAP ELEMENTS OF VECTORS VEC1 AND VEC2
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION VEC1(*),VEC2(*)
-      DO 100 I=1,NDIM
-       BUF=VEC1(I)
-       VEC1(I)=VEC2(I)
-       VEC2(I)=BUF
-  100 CONTINUE
 C
-      RETURN
+      CALL DSWAP(NDIM,VEC1,1,VEC2,1)
+C
       END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SYMCM1(ITASK,IOBJ,I1,I2,I12)
@@ -5837,6 +4576,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SYMCM2(IDUM1,IDUM2,IDUM3,IDUM4,IDUM5)
@@ -5846,197 +4586,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TODSC(A,NDIM,MBLOCK,IFIL)
-C TRANSFER ARRAY DOUBLE PRECISION  A(LENGTH NDIM) TO DISCFIL IFIL IN
-C RECORDS WITH LENGTH NBLOCK.
-      IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION A(*)
-      INTEGER START,STOP
-      REAL*8 INPROD
-      INTEGER ISCR(2)
-*
-      IPACK = 1
-      IF(IPACK.NE.0) THEN
-*. Check norm of A before writing
-        XNORM = INPROD(A,A,NDIM)
-        IF(XNORM.EQ.0.0D0) THEN
-          IMZERO = 1
-        ELSE
-          IMZERO = 0
-        END IF
-        MMBLOCK = MBLOCK
-        IF(MMBLOCK.GT.2) MMBLOCK = 2
-*
-        ISCR(1) = IMZERO
-*. No packing 
-         ISCR(2) = 0
-C       CALL ITODS(ISCR,2,MMBLOCK,IFIL)
-        CALL ITODS(ISCR,2,2,IFIL)
-        IF(IMZERO.EQ.1) GOTO 1001
-      END IF
-*
-      ICRAY = 1
-      IF( MBLOCK .GE.0 .OR.ICRAY .EQ. 1 ) THEN
-C
-      NBLOCK = MBLOCK
-      IF ( MBLOCK .LE. 0 ) NBLOCK = NDIM
-      STOP=0
-      NBACK=NDIM
-C LOOP OVER RECORDS
-  100 CONTINUE
-       IF(NBACK.LE.NBLOCK) THEN
-         NTRANS=NBACK
-         NLABEL=-NTRANS
-       ELSE
-         NTRANS=NBLOCK
-         NLABEL=NTRANS
-       END IF
-       START=STOP+1
-       STOP=START+NBLOCK-1
-       NBACK=NBACK-NTRANS
-       WRITE(IFIL) (A(I),I=START,STOP),NLABEL
-      IF(NBACK.NE.0) GOTO 100
-      END IF
-*
- 1001 CONTINUE
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TODSCP(A,NDIM,MBLOCK,IFIL)
-*
-C TRANSFER ARRAY DOUBLE PRECISION  A(LENGTH NDIM) TO DISCFIL IFIL IN
-C RECORDS WITH LENGTH NBLOCK.
-*
-* Packed version : Store only nonzero elements
-*. Small elements should be xeroed outside
-      IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION A(1)
-      INTEGER START,STOP
-      REAL*8 INPROD
-      INTEGER ISCR(2)
-* 
-      PARAMETER(LPBLK=50000)
-      INTEGER IPAK(LPBLK)
-      DIMENSION XPAK(LPBLK)
-*
-*
-C?    write(6,*) ' entering TODSCP, file = ', IFIL
-C?    CALL XFLUSH(6)
-      IPACK = 1
-      IF(IPACK.NE.0) THEN
-*. Check norm of A before writing
-        XNORM = INPROD(A,A,NDIM)
-        IF(XNORM.EQ.0.0D0) THEN
-          IMZERO = 1
-        ELSE
-          IMZERO = 0
-        END IF
-        MMBLOCK = MBLOCK
-        IF(MMBLOCK.GT.2) MMBLOCK = 2
-*
-        ISCR(1) = IMZERO
-*. Packing 
-        ISCR(2) = 1
-C       CALL ITODS(ISCR,2,MMBLOCK,IFIL)
-        CALL ITODS(ISCR,2,2,IFIL)
-        IF(IMZERO.EQ.1) GOTO 1001
-      END IF
-*
-      ICRAY = 1
-      IF( MBLOCK .GE.0 .OR.ICRAY .EQ. 1 ) THEN
-C
-      NBLOCK = MBLOCK
-      IF ( MBLOCK .LE. 0 ) NBLOCK = NDIM
-*. Loop over packed records of dimension LPBLK
-      IELMNT = 0
- 1000 CONTINUE
-*. The next LPBLK elements 
-      LBATCH = 0
-*. Obtain next batch of elemnts
-  999 CONTINUE
-       IF(NDIM.GE.1) THEN
-       IELMNT = IELMNT+1
-       IF(A(IELMNT).NE.0.0D0) THEN
-         LBATCH=LBATCH+1
-         IPAK(LBATCH) = IELMNT
-         XPAK(LBATCH) = A(IELMNT)
-       END IF
-       END IF
-       IF(LBATCH.EQ.LPBLK.OR.IELMNT.EQ.NDIM) goto 998
-       GOTO 999
-*. Send to DISC
- 998   CONTINUE   
-       WRITE(IFIL) LBATCH
-       IF(LBATCH.GT.0) THEN 
-         WRITE(IFIL) (IPAK(I),I=1, LBATCH)
-         WRITE(IFIL) (XPAK(I),I=1, LBATCH)
-       END IF
-       IF(IELMNT.EQ.NDIM) THEN
-         WRITE(IFIL) -1
-       ELSE
-         WRITE(IFIL) 0
-         GOTO 1000
-       END IF
-*. End of loop over records of truncated elements
-      END IF
- 1001 CONTINUE
-*
-C?    CALL XFLUSH(6)
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TRAVCD(VEC1,VEC2,X,NVECIN,NVECOUT,LUIN,LUOUT,
-     &                  ICOPY,LBLK,LUSCR1,LUSCR2)
-*
-* NVECIN vectors reside on LU1, Transform these vectors,
-*  using LUSCR1 and  LUSCR2  as
-* scratch files,  with matrix X to produce output file LUOUT.
-*
-* Since LUIN is accessed several times it is always
-* REWOUND. LUOUT is written to from current start.
-*
-* I ICOPY .ne. 0 the transformed vectors are written back to LUIN
-*
-* Jeppe Olsen, April 1997
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION X(NVECIN,NVECOUT)
-*. Scratch
-      DIMENSION VEC1(*),VEC2(*)
-*
-C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
-      DO IVECOUT = 1, NVECOUT
-         CALL MVCSMD(LUIN,X(1,IVECOUT), LUSCR1,LUSCR2,VEC1,VEC2,
-     &               NVECIN,1,LBLK)
-         CALL REWINO(LUSCR1)
-         CALL COPVCD(LUSCR1,LUOUT,VEC1,0,LBLK)
-      END DO
-*
-      IF(ICOPY.EQ.1) THEN
-        CALL REWINO(LUIN)
-        CALL REWINO(LUOUT)
-        DO IVECOUT = 1, NVECOUT
-          CALL COPVCD(LUOUT,LUIN,VEC1,0,LBLK)
-        END DO
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
@@ -6088,6 +4638,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
@@ -6187,6 +4738,7 @@ C       LBLK = 40
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRPAD3(MAT,FACTOR,NDIM)
@@ -6289,6 +4841,7 @@ C?      write(6,*) 'NBLK ',nblk
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRPMT3(XIN,NROW,NCOL,XOUT)
@@ -6351,6 +4904,7 @@ C?      write(6,*) 'NBLK ',nblk
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE UPPCAS(LINE,LENGTH)
@@ -6395,130 +4949,7 @@ C?      write(6,*) 'NBLK ',nblk
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      FUNCTION VCSMDN(VEC1,VEC2,FAC1,FAC2,LU1,LU2,IREW,LBLK)
-*
-* Norm of sum of two vectors residing on disc
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION VEC1(*),VEC2(*)
-      REAL*8 INPROD
-*
-      XNORM = 0.0D0
-      IF(IREW .NE. 0 ) THEN
-        CALL REWINE( LU1,LBLK)
-        CALL REWINE( LU2,LBLK)
-      END IF
-*
-* LOOP OVER BLOCKS OF VECTOR
-*
- 1000 CONTINUE
-C
-        IF( LBLK .GT. 0 ) THEN
-          NBL1 = LBLK
-          NBL2 = LBLK
-        ELSE IF(LBLK .EQ. 0 ) THEN
-          READ(LU1) NBL1
-          READ(LU2) NBL2
-        ELSE IF (LBLK .LT. 0 ) THEN
-          CALL IFRMDS( NBL1,1,-1,LU1)
-          CALL IFRMDS( NBL2,1,-1,LU2)
-        END IF
-        IF( NBL1 .NE. NBL2 ) THEN
-        WRITE(6,'(A,2I5)') 'DIFFERENT BLOCKSIZES IN VECSMD ',
-     &  NBL1,NBL2
-        Call Abend2( ' INCOMPATIBLE BLOCKSIZES IN VECSMF ' )
-      END IF
-C
-      IF(NBL1 .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = NBL1
-          ELSE
-            KBLK = -1
-          END IF
-        CALL FRMDSC(VEC1,NBL1,KBLK,LU1,IMZERO,IAMPACK)
-        CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
-        IF( NBL1 .GT. 0 ) THEN
-          CALL VECSUM(VEC1,VEC1,VEC2,FAC1,FAC2,NBL1)
-          XNORM = XNORM + INPROD(VEC1,VEC1,NBL1)
-        END IF
-      END IF
-*
-      IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-*
-      VCSMDN = XNORM
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE VECSMD(VEC1,VEC2,FAC1,FAC2,LU1,LU2,LU3,IREW,LBLK)
-C
-C DISC VERSION OF VECSUM :
-C
-C      ADD BLOCKED VECTORS ON FILES LU1 AND LU2
-C      AND STORE ON LU3
-C
-C LBLK DEFINES STRUCTURE OF FILE
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION VEC1(*),VEC2(*)
-C
-      IF(IREW .NE. 0 ) THEN
-        CALL REWINE( LU1,LBLK)
-        CALL REWINE( LU2,LBLK)
-        CALL REWINE( LU3,LBLK)
-      END IF
-C
-C LOOP OVER BLOCKS OF VECTOR
-C
- 1000 CONTINUE
-C
-        IF (LBLK .GT. 0) THEN
-          NBL1 = LBLK
-          NBL2 = LBLK
-        ELSE IF (LBLK .EQ. 0) THEN
-          READ(LU1) NBL1
-          READ(LU2) NBL2
-          WRITE(LU3) NBL1
-        ELSE IF (LBLK .LT. 0) THEN
-          CALL IFRMDS(NBL1,1,-1,LU1)
-          CALL IFRMDS(NBL2,1,-1,LU2)
-          CALL ITODS (NBL1,1,-1,LU3)
-        END IF
-        IF( NBL1 .NE. NBL2 ) THEN
-          WRITE(6,'(A,2I5)') 'DIFFERENT BLOCKSIZES IN VECSMD ',
-     &    NBL1,NBL2
-          Call Abend2( ' INCOMPATIBLE BLOCKSIZES IN VECSMF ' )
-        END IF
-C
-        IF(NBL1 .GE. 0 ) THEN
-            IF(LBLK .GE.0 ) THEN
-              KBLK = NBL1
-            ELSE
-              KBLK = -1
-            END IF
-          CALL FRMDSC(VEC1,NBL1,KBLK,LU1,IMZERO,IAMPACK)
-          CALL FRMDSC(VEC2,NBL1,KBLK,LU2,IMZERO,IAMPACK)
-          IF( NBL1 .GT. 0 )
-     &    CALL VECSUM(VEC1,VEC1,VEC2,FAC1,FAC2,NBL1)
-          IF(IAMPACK.EQ.0) THEN
-            CALL TODSC(VEC1,NBL1,KBLK,LU3)
-          ELSE
-            CALL TODSCP(VEC1,NBL1,KBLK,LU3)
-          END IF
-        END IF
-C
-      IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WEIGHT_SPGP(Z,NORBTP,NELFTP,NORBFTP,
@@ -6566,6 +4997,7 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WRTMAT(A,NROW,NCOL,NMROW,NMCOL)
@@ -6582,6 +5014,151 @@ C
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE WRTMATMN(A,NROW,NCOL,NMROW,NMCOL,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(NMROW,NMCOL)
+C
+      XXX = 0.0D0
+      XXX = DDOT(NMCOL,A,1,A,1)
+      IF( XXX .eq. 0.0D0 ) GOTO 200
+C
+      DO 100 I=1,NROW
+      WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+  100 CONTINUE
+  200 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE WRTMATMN8(A,NROW8,NCOL8,NMROW8,NMCOL8,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER*8 NROW8, NCOL8
+      DIMENSION A(NMROW8,NMCOL8)
+C
+      DO 100 I=1,NROW8
+      WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL8)
+ 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMA8(MAT,NROW,NCOL,NMROW,NMCOL)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION MAT(NMROW,NMCOL)
+C
+      DO 100 I=1,NROW
+      WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,I18),/,(1H ,5X,4(1X,I18)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          * 
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMAMN(MAT,NROW,NCOL,NMROW,NMCOL,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION MAT(NMROW,NMCOL)
+C
+      DO 100 I=1,NROW
+      WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          * 
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMAMN8(MAT,NROW8,NCOL8,NMROW8,NMCOL8,LUWRT)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER*8 NROW8, NCOL8
+      DIMENSION MAT(NMROW8,NMCOL8)
+C
+      DO 100 I=1,NROW8
+      WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL8)
+ 1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
+  100 CONTINUE
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE IWRTMAS(MAT,NROW,NCOL,NMROW,NMCOL)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION MAT(NMROW,NMCOL)
+      INTEGER ITEST,INACTIVE
+      INACTIVE = 0
+C
+      DO 100 I=1,NROW
+         ITEST = 0
+        DO II = 1, NCOL
+         ITEST = ITEST + MAT(I,II) 
+        ENDDO
+      IF(ITEST.EQ.0) INACTIVE = INACTIVE + 1
+      IF(ITEST.EQ.0) GOTO 100
+      WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
+ 1010 FORMAT(1X,I4,2X,60(1X,I1),/,(1H ,6X,60(1X,I1)))
+  100 CONTINUE
+      WRITE(6,*)'  ' 
+      WRITE(6,'(1X,A,1X,I3)')'TOTAL    NUMBER:',NCOL
+      WRITE(6,'(1X,A,1X,I3)')'ACTIVE   BLOCKS:',NCOL-INACTIVE
+      WRITE(6,'(1X,A,1X,I3)')'INACTIVE BLOCKS:',INACTIVE 
+      WRITE(6,*)'  ' 
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GET_BLOCK_LENGTH(IBLOCKL,N_BLK,ILEN)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IBLOCKL(*)
+C
+      ILEN = IBLOCKL(N_BLK)
+C      WRITE(6,*) 'found block length',ILEN,N_BLK
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE GET_BLOCK_PROC(IBLOCKD,N_BLK,IPROC)
+C
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IBLOCKD(*)
+C
+      IPROC = IBLOCKD(N_BLK)
+C      WRITE(6*) 'found proc <--> block ',IPROC,N_BLK
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE WRTTTS(BLOCKS,IBLOCK,NBLOCK,
@@ -6662,80 +5239,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE WRTVCD(SEGMNT,LU,IREW,LBLK)
-C
-C PRINT VECTOR ON FILE LU
-C
-C LBLK DEFINES STRUCTURE OF FILES :
-C
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION SEGMNT(*)
-C
-      IF( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LU
-        ELSE
-          CALL REWINE(LU,LBLK)
-        END IF
-      END IF
-C LOOP OVER BLOCKS
-C
-      IBLK = 0
- 1000 CONTINUE
-        IF ( LBLK .GT. 0 ) THEN
-          LBL = LBLK
-        ELSE IF ( LBLK .EQ. 0 ) THEN
-          READ(LU) LBL
-        ELSE
-          CALL IFRMDS(LBL,1,-1,LU)
-        END IF
-        IBLK = IBLK + 1
-        IF(LBL .GE. 0 ) THEN
-          IF(LBLK .GE.0 ) THEN
-            KBLK = LBL
-          ELSE
-            KBLK = -1
-          END IF
-           CALL FRMDSC(SEGMNT,LBL ,KBLK,LU,IMZERO,IAMPACK)
-           IF(LBL .GT. 0 ) THEN
-             WRITE(6,'(A,I3,A,I6)')
-     &       ' Number of elements in segment ',IBLK,' IS ',LBL
-             CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
-           END IF
-        END IF
-C
-      IF( LBL.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE ZERORC(MBLOCK,IFIL,IAMPACKED)
-*
-* A record was known to be identical zero
-*
-* Write corresponding info to file IFIL
-*
-* IAMPACKED added Oct. 98 / Jeppe Olsen
-      IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER ISCR(2)
-* Zero record 
-      ISCR(1) = 1
-*. Packed form
-      ISCR(2) = IAMPACKED
-*
-      CALL ITODS(ISCR,2,2,IFIL)
-*
-      RETURN 
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ZOOS(ISMOST,IBLTP,MAXSYM,IOCOC,NSSOA,NSSOB,
@@ -6852,6 +5356,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ZSPGPIB(NSTSO,ISTSO,NSPGP,NSMST)
@@ -6887,6 +5392,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
@@ -7047,5 +5553,218 @@ C?      WRITE(6,*) '====================='
         END DO
       END IF
 *
-      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*           parallelization by Stefan Knecht                          *
+*                                                                     *
+***********************************************************************
+      SUBROUTINE PART_CIV2_SPC(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
+     &                         NSMST,MXLNG,IOCOC,ISMOST,
+     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                         ICOMP,ITTSS_ORD)
+*
+* Partition a CI vector into batches of blocks.
+* The length of a batch must be atmost MXLNG
+*
+* IF ICOMP. eq. 1 the complete CI vector is constructed
+*
+*
+* Compared to PART_CIV, the NOOS arrays have been eliminated.
+* They are becoming the size defining arrays - atleast at
+* the laptop
+*. Output
+* NBATCH : Number of batches
+* LBATCH : Number of blocks in a given batch
+* LEBATCH : Number of elements in a given batch ( packed ) !
+* I1BATCH : Number of first block in a given batch
+* IBATCH : TTS blocks in Start of a given TTS block with respect to start
+*          of batch
+*   IBATCH(1,*) : Alpha type
+*   IBATCH(2,*) : Beta sym
+*   IBATCH(3,*) : Sym of alpha
+*   IBATCH(4,*) : Sym of beta
+*   IBATCH(5,*) : Offset of block with respect to start of block in
+*                 expanded form
+*   IBATCH(6,*) : Offset of block with respect to start of block in
+*                 packed form
+*   IBATCH(7,*) : Length of block, expandend form
+*   IBATCH(8,*) : Length of block, packed form
+*
+*
+*
+* Jeppe Olsen, August 1995
+*
+*
+* IMPORTANT change compared to PART_CIV2:
+*
+* MXLNG is no longer assumed to be equals to the total number
+* of dets. Therefore we have to partition the CI vector being aware
+* of putting symmetry blocks of same TT into different batches.
+*
+*
+* REASON: SIGMA-vector / DENSITY matrix calculation is done wrt loops
+* over NSMST!
+*
+* S. Knecht - July 02 2007
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+*.Input
+C     INTEGER NOOS(NOCTPA,NOCTPB,NSMST)
+C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
+      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
+      INTEGER IOCOC(NOCTPA,NOCTPB)
+      INTEGER IBLTP(*)
+      INTEGER ISMOST(*)
+*.Output
+      INTEGER LBATCH(*)
+      INTEGER LEBATCH(*)
+      INTEGER I1BATCH(*)
+      INTEGER IBATCH(8,*)
+*
+      I_SAVE_IBLOCK = 0
+      N_TRY = 0
+*
+      NTEST = 0000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' =================='
+        WRITE(6,*) '   PART_CIV2_SPC   '
+        WRITE(6,*) ' =================='
+        WRITE(6,*) ' IDC = ', IDC
+        WRITE(6,*)
+        WRITE(6,*) ' IOCOC Array '
+        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+        if (NTEST.ge.500) then
+          WRITE(6,*) ' NSSOA array ( input ) '
+          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
+          WRITE(6,*) ' NSSOB array ( input ) '
+          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
+          write(6,*) ' IBLTP array: '
+          call iwrtma(IBLTP,1,NSMST,1,NSMST)
+        end if
+      END IF
+*
+*. block zero
+*
+      IB = 1
+      IA = 1
+      ISM = 1
+      IFRST = 1
+      NBATCH = 0
+      IBLOCK = 0
+      IFINI = 0
+*. Loop over batches of blocks
+ 2000 CONTINUE
+      NBATCH = NBATCH + 1
+      LBATCH(NBATCH) = 0
+      I1BATCH(NBATCH) = IBLOCK  + 1
+      LENGTH = 0
+      LENGTHP= 0
+      NBLOCK = 0
+      IFRST = 1
+*. Loop over blocks in batch
+ 1000 CONTINUE
+      IF(IFRST.EQ.0) THEN
+        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+      END IF
+      IFRST = 0
+      IF (IFINI.EQ.1) GOTO 2002
+*. Should this block be included
+      IF(IBLTP(ISM).EQ.0) GOTO 1000
+      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
+*. can this block be included
+      IBSM = ISMOST(ISM)
+      NSTA = NSSOA(ISM,IA)
+      NSTB = NSSOB(IBSM,IB)
+      LBLOCK= NSTA*NSTB
+      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+        LBLOCKP = NSTA*NSTB
+      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+        LBLOCKP = NSTA*(NSTA+1)/2
+      END IF
+C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
+        NBLOCK = NBLOCK + 1
+        IBLOCK = IBLOCK + 1
+        LBATCH(NBATCH) = LBATCH(NBATCH)+1
+        IBATCH(1,IBLOCK) = IA
+        IBATCH(2,IBLOCK) = IB
+        IBATCH(3,IBLOCK) = ISM
+        IBATCH(4,IBLOCK) = IBSM
+        IBATCH(5,IBLOCK) = LENGTH+1
+        IBATCH(6,IBLOCK) = LENGTHP+1
+        IBATCH(7,IBLOCK) = LBLOCK
+        IBATCH(8,IBLOCK) = LBLOCKP
+        LENGTH = LENGTH + LBLOCK
+        LENGTHP= LENGTHP+ LBLOCKP
+        LEBATCH(NBATCH) = LENGTHP
+        GOTO 1000
+      ELSE IF(ICOMP.EQ.0.AND.
+     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
+        WRITE(6,*) ' Not enough scratch space to include a single Block'
+        WRITE(6,*) ' Since I cannot procede I will stop '
+        WRITE(6,*) ' Insufficient buffer detected in PART_CIV2_SPC'
+        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        call quit( ' Insufficient buffer space in PART_CIV2_SPC. ' )
+      ELSE
+*
+*     this batch is finished, goto next batch
+*
+*       is this the TT-1 block?
+        IF( ISM .ne. 1 )THEN
+*
+*         go back to ISM == 1 since we loop over NSMST in GNSIDE_REL
+*
+          N_TRY = N_TRY + 1
+*
+          IF( N_TRY .gt. 1 .and. I_SAVE_IBLOCK .eq. IBLOCK ) THEN
+            WRITE(6,*) ' Not enough scratch space to include a '//
+     &                     ' single Block'
+            WRITE(6,*) ' Since I cannot procede I will stop '
+            WRITE(6,*) ' Insufficient buffer detected in '//
+     &                     ' PART_CIV2_SPC'
+            WRITE(6,*) '  LENGTH, LBLOCK ',LENGTH
+            WRITE(6,*) ' Alter GAS space of raise Buffer from',MXLNG
+            call abend2(' In PART_CIV2_SPC because of N_TRY .ge. 1. ')
+          END IF
+*
+          I_SAVE_IBLOCK = IBLOCK
+*         set batch back to first available TT-1 block
+          call bck_tts(ITTSS_ORD,ISM,LBATCH,LEBATCH,IBATCH,IBLOCK,
+     &                 NBLOCK,LENGTH,LENGTHP,NBATCH,6)
+*
+          GOTO 2000
+*
+        ELSE
+          N_TRY = 0
+          I_SAVE_IBLOCK = 0
+          GOTO 2000
+        END IF
+*       ^ ISM check
+      END IF
+*     ^ length of batch < MXLNG?
+ 2002 CONTINUE
+*
+      IF(NTEST.NE.0) THEN
+C?      WRITE(6,*) 'Output from PART_CIV'
+C?      WRITE(6,*) '====================='
+        WRITE(6,*)
+        WRITE(6,*) ' Number of batches ', NBATCH
+        DO JBATCH = 1, NBATCH
+          WRITE(6,*)
+          WRITE(6,*) ' Info on batch ', JBATCH
+          WRITE(6,*) ' *********************** '
+          WRITE(6,*)
+          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
+          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+          END DO
+        END DO
+      END IF
+*
       END

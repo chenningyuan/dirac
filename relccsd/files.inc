@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision: 1.7 $
-C DATE    : $Date: 2003/08/29 16:23:29 $
+C VERSION : $Revision: 6642 $
+C DATE    : $Date: 2008-03-20 08:59:00 +0100 (Thu, 20 Mar 2008) $
 C FILE    : files.inc
 C
 C     Files to be used in RELCCSD
@@ -11,12 +11,14 @@ C     Define the unit numbers
       PARAMETER (MDINT   = 14) ! Two-electron integrals
       PARAMETER (MDPROP  = 15) ! Property integrals
       PARAMETER (MCCRES  = 16) ! Restart information
+      PARAMETER (MCCDENS = 17) ! Effective 1-electron density matrix
       PARAMETER (ITAMPL  = 26) ! T1 and T2 amplitudes (used in DIIS only)
       PARAMETER (ITAMPD  = 27) ! Error vector for T1 and T2 amplitudes
       PARAMETER (IOAMPL  = 28) ! Orbital gradients
       PARAMETER (IOAMPS  = 29) ! Sigma vector for orbital gradients
       PARAMETER (ITAPT   = 40) ! Sorted integral files
       PARAMETER (ITAPL   = 50) ! DZ intermediate for Lambda equations
+      PARAMETER (ITAPADC = 60) ! Base for ADC-files
 C     The standard input and output units may be redefined in the code
       COMMON /FILES/ IN,IW
 C     Length of the records (integer words) on the restart file

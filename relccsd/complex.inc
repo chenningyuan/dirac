@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision: 1.4 $
-C DATE    : $Date: 2003/02/06 09:16:54 $
+C VERSION : $Revision: 2691 $
+C DATE    : $Date: 2003-02-06 10:16:55 +0100 (Thu, 06 Feb 2003) $
 C FILE    : complex.inc
 C
       COMMON /COMPL/ CARITH

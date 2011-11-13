@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck tr5ini */
@@ -53,6 +41,9 @@ C
 C
       CALL LAGTAU(XMO,TMATRX1,TMATRX2,WORK,LWORK)
 C
+CMI   ... memm check works...
+      CALL MEMCHK('TR5INI 1',WORK,1)
+ 
       CALL QEXIT('TR5INI')
       RETURN
       END
@@ -164,10 +155,10 @@ C
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)')
-     &           '- Beginning with task',ISHLA,' of',IASMAX,
-     &           ' after',WALLST-WALLBEF,' seconds',
-     &        'and after',CPUST-CPUBEF,' CPU-seconds'
+              WRITE(LUPRI,'(3X,2(A,I4),A,F8.0,A,F8.0,A)')
+     &           '- Beginning task',ISHLA,' of',IASMAX,
+     &           ' after',WALLST-WALLBEF,' seconds and',
+     &           CPUST-CPUBEF,' CPU-seconds'
               CALL FLSHFO(LUPRI)
               CALL TRDRV5(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,WORK(KINDX),TRIAN,
@@ -315,8 +306,8 @@ C
                NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
 C              subtract max mem needed in Hermit and 10%/1Mw for anything else
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET('INTE',KDXAB,LDXAB,WORK,KFREE,LFREE)
@@ -324,8 +315,9 @@ C
 C
 C           Set INDXAB and INDPASS
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.TRUE.,
+     &                       INDX,WORK(KDXAB),IJP12,IDUM,
+     &                       NSIZG,WORK(KIJPASS))
 C
             NSIZH = 0
             DO IREPAB = 0, NBSYM-1
@@ -339,7 +331,7 @@ C
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
-     &              '(//,1X,A,2I8/,2(1X,A,I8/),2(1X,A,I8,F10.3/))')
+     &              '(//,1X,A,2I16/,2(1X,A,I16/),2(1X,A,I16,F10.3/))')
      &         ' Calculation of integral distribution set:',
      &              ISHLA,ISHLB,
      &         ' Number of distributions in this set:     ',NUMDIS,
@@ -1594,6 +1586,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "mp1stpr.h"
 C
       DIMENSION TMATRX1(*), TMATRX2(*)
+
+CMI   CALL MEMCHK('SRTT1T2 1.00',TMATRX1,1)
 C
 C     initialize the 2nd T matrix
 C

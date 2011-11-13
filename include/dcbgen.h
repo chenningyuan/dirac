@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 1.20.2.1 $
-! DATE    : $Date: 2004/08/31 10:00:25 $
+! VERSION : $Revision: 7531 $
+! DATE    : $Date: 2008-09-04 12:39:48 +0200 (Thu, 04 Sep 2008) $
 ! FILE    : dcbgen.h
 !
 !*** General information in DIRAC ***
@@ -16,6 +16,8 @@
 !  BNCRON - Improved screening of nucleus for bare nucleus starting 
 !           guess
 !
+!  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode
+!
 !  These flags should be passed on to every module
 !
 !
@@ -26,29 +28,36 @@
       COMMON /CBCPAM/ TITLE
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
-     &        DOANA, DOPRP, DOHRM, DOJACO, DOPIN, DOPUT,                &
+     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO, DOPIN, DOPUT,       &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
-     &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT
+     &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
+     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
+     &        DOACIN, CBKRINI
+
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
-     &                NOTRA, DOPRP, DOANA, DOHRM, DOJACO,               &
+     &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
      &                DOFCK3, DOPIN, DOPUT, OPTIMI, HRINPC, RDINPC,     &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
-     &                BNCRON, DOACUT, MP2ORG, DENSFIT
+     &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
+     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
+     &                DOACIN, CBKRINI
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
-     &        ILLDIR, ISLDIR, ISSDIR
+     &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
       COMMON /GNIPAM/ IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG,   &
-     &                INTGEN, ILLDIR, ISLDIR, ISSDIR, DIRSET
+     &                INTGEN, ILLDIR, ISLDIR, ISSDIR, IGTDIR, DIRSET,   &
+     &                LENDND
 
       REAL*8 CVAL, STOL(2), PANAS
       COMMON /GNRPAM/ CVAL, STOL, PANAS
 
       INTEGER LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC, LUKRM1,   &
-     &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO
+     &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO, LUBSS
       COMMON /PAMIOU/ LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC,   &
-     &                LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO
+     &                LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO,   &
+     &                LUBSS
 
-      CHARACTER*(LBASDIR) BASDIR
-      COMMON /GNCPAM/ BASDIR
+      CHARACTER*(LBASDIR) BASDIR, CDIRNOD
+      COMMON /GNCPAM/ BASDIR, CDIRNOD

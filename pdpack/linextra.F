@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.9.12.2 $
-C DATE    : $Date: 2004/09/01 08:15:26 $
+C VERSION : $Revision: 7734 $
+C DATE    : $Date: 2008-09-16 22:56:42 +0200 (Tue, 16 Sep 2008) $
 C FILE    : linextra.F
 C
 C
@@ -331,7 +319,7 @@ C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
 C
 C Purpose: Transform from SI format to SP format, that is:
-C          copy upper triangle of symmetric matrix ASI
+C          copy UPPER triangle of symmetric matrix ASI
 C          to symmetric, packed matrix ASP.
 C
 #include <implicit.h>
@@ -347,6 +335,30 @@ C
 C
       RETURN
       END
+
+C  /* Deck dsltsp */
+      SUBROUTINE DSLTSP(N,ASI,ASP)
+C
+C  8-Feb-1987 Hans Joergen Aa. Jensen
+C
+C Purpose: Transform from SI format to SP format, that is:
+C          copy LOWER triangle of symmetric matrix ASI
+C          to symmetric, packed matrix ASP.
+C
+#include "implicit.h"
+      DIMENSION ASI(N,*), ASP(*)
+C
+#include "nosync.h"
+      DO 200 J = 1,N
+         JOFF = (J*J-J)/2
+         DO 100 I = 1,J
+            ASP(JOFF+I) = ASI(J,I)
+  100    CONTINUE
+  200 CONTINUE
+C
+      RETURN
+      END
+
 C  /* Deck dsifsp */
       SUBROUTINE DSIFSP(N,ASI,ASP)
 C
@@ -371,6 +383,7 @@ C
 C
       RETURN
       END
+#if defined (OLD_DGETRS)
 C  /* Deck dgetrs */
       SUBROUTINE DGETRS(AGE,NROWA,NRDIMA)
 C
@@ -398,6 +411,7 @@ C
   400 CONTINUE
       RETURN
       END
+#endif /* OLD_DGETRS */
 C
 C     HP-UX (and possible other machines) declines to link if
 C     there are any duplicates, and DSUM, IDMIN, IDAMIN, ICOPY, ISCAL

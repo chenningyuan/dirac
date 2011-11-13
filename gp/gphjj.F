@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.28.2.1 $
-C DATE    : $Date: 2004/09/01 08:10:54 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : gphjj.F
 C
 C
@@ -57,25 +45,12 @@ C up to the moment of the last call while the program continues
 C executing (provided the computer allows shared access).
 C This subroutine may be a dummy routine.
 C
-#if defined (SYS_VAX)
-C The implementation below is for VAX/VMS, the main
-C function of the close is that it empties the output buffer.
-      CLOSE (UNIT=IUNIT,ERR=100)
-  100 CONTINUE
-      OPEN (UNIT=IUNIT,FORM='FORMATTED',STATUS='UNKNOWN',
-     X      INITIALSIZE=24,EXTENDSIZE=24,
-     X      ACCESS='APPEND',SHARED,CARRIAGECONTROL='FORTRAN')
-#endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX)
-C
 C     Force transfer of all buffered output to the file or device
 C     associated with logical unit IUNIT.
 C
+C 21-02-2007  LV : Removed outdated machines, after 24 years (!) the
+C                  whole routine can now probably be deleted (we always call FLUSH)
       CALL FLUSH(IUNIT)
-#endif
-#if defined (SYS_PARAGON)
-      CALL FORFLUSH(IUNIT)
-#endif
       RETURN
       END
 C  /* Deck getdat */
@@ -86,12 +61,12 @@ C
 C     Return date and time as character*8, for labels.
 C
       CHARACTER*(8) CDATE, CTIME
-#if defined (SYS_VAX)
-      CHARACTER CCDATE*9
-      CALL DATE(CCDATE)
-      CALL TIME(CTIME)
-      CDATE = CCDATE(1:2)//CCDATE(4:6)//CCDATE(8:9)//' '
-#else
+C
+C     The fortran90 variables
+C
+      character*8 date_f90,time_f90*10,zone_f90*5
+      integer values(8)
+CLV : Kept the old code, we may consider calling always the f90 implementation...
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       INTEGER IDATE, ITIME, DATE, CLOCK
       IDATE = DATE()
@@ -113,9 +88,11 @@ C
       CALL DATE(DAOFWK,CDATE)
       CALL TIME(CTIME)
 #else
-      CDATE = ' -date- '
-      CTIME = ' -time- '
-#endif
+C
+C     LV : Use fortran90 implementation
+      CALL DATE_AND_TIME(date_f90,time_f90,zone_f90,values)
+      CDATE = DATE_F90(1:8)
+      CTIME = TIME_F90(1:2)//':'//TIME_F90(3:4)//':'//TIME_F90(5:6)
 #endif
 #endif
 #endif
@@ -130,21 +107,6 @@ C Return elapsed CPU time and elapsed real time.
 C
 #include "implicit.h"
 C
-#if defined (SYS_VAX)
-      REAL*4 WALL0,S0,SECNDS
-      PARAMETER (S0 = 0.0E0)
-      LOGICAL FIRST
-      SAVE WALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         WALL0 = SECNDS(S0)
-      ENDIF
-C
-      TIMCPU = SECOND()
-      TIMWAL = SECNDS(WALL0)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 C...  Cray unicos timing code
       REAL    TCPU0, TWALL0
@@ -206,6 +168,13 @@ C      TIMWAL = itimwl
 C      write(mydebugfile,*) 'TIMWAL : ', TIMWAL
 C      close(mydebugfile)
 C
+#ifdef VAR_EKO
+      IF (FIRST) THEN
+         FIRST = .FALSE.
+      END IF
+      TIMCPU = ETIME(TARRAY)
+      TIMWAL = 0D0
+#else
       IF (FIRST) THEN
          FIRST = .FALSE.
          IWALL0 = TIME()
@@ -214,51 +183,6 @@ C
       ITIMWL = TIME() - IWALL0
       TIMWAL = ITIMWL
 #endif
-#if defined (SYS_CONVEX)
-C...  CONVEX code
-      integer stime
-      real*4  etime, tarray(2)
-      logical first
-      save    first,iwall0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         iwall0 = stime()
-      end if
-      TIMCPU = etime(tarray)
-      itimwl = stime() - iwall0
-      TIMWAL = itimwl
-#endif
-#ifdef UNDEF
-C
-C     The SGI code above should work on Linux machines as well./jth-980704
-C
-#if defined (SYS_LINUX)
-C...  Linux code
-      integer stime
-      real*4  etime, tarray(2)
-C
-      TIMCPU = etime(tarray)
-      TIMWAL = 0.
-#endif
-#endif
-#if defined (SYS_ALLIANT)
-C...  Alliant FX/FORTRAN
-      real*4 etime, tarray(2)
-      REAL*4 WALL0,S0,SECNDS
-      LOGICAL FIRST
-      PARAMETER (S0 = 0.0E0)
-      SAVE WALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         WALL0 = SECNDS(S0)
-      ENDIF
-C
-      TIMCPU = etime(tarray)
-      TIMWAL = SECNDS(WALL0)
 #endif
 #if defined (SYS_IBM)
       LOGICAL FIRST
@@ -274,23 +198,6 @@ C
          TIMCPU = CPUA
          TIMWAL = TIOA
       END IF
-#endif
-#if defined (SYS_PARAGON)
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj: and for Intel PARAGON
-C 010309-lv : modified because AIX times gives uptime of the machine
-      integer*4 itime(4),times,iwall,IWALL0
-      LOGICAL FIRST
-      SAVE IWALL0, FIRST
-      DATA FIRST /.TRUE./
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         IWALL0 = TIMES(ITIME)
-      ENDIF
-      iwall = times(itime) - IWALL0
-C     iwall = elapsed time, itime(1:2) = system and user time
-      TIMWAL = dfloat (iwall) * 0.01d0
-      TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
 #if !defined (SYS_VAX)    && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) \
  && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
@@ -342,46 +249,6 @@ C
       END
 #endif
 #if !defined (VAR_MOTECC) && !defined (SYS_IBM)
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX)
-      SUBROUTINE SETTIM
-C
-C  Alliant and Convex timing routines emulating Lund IBM timing routines
-C  5-Dec-1988 hjaaj
-C
-      REAL*4 ECPU, ESYST, ETCPU
-      REAL*4 SCPU, SSYST, STCPU
-      REAL*4 PCPU, PSYST, PTCPU
-      REAL*4 ETIME,SECNDS,TARRAY(2)
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      SAVE   SCPU, SSYST, STCPU
-      SAVE   PCPU, PSYST, PTCPU
-C
-C     STIME  = SECNDS()
-      STCPU  = ETIME(TARRAY)
-      SCPU   = TARRAY(1)
-      SSYST  = TARRAY(2)
-      PCPU   = SCPU
-      PSYST  = SSYST
-      PTCPU  = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-C     ETIME  = SECNDS()
-      ETCPU  = ETIME(TARRAY)
-      ECPU   = TARRAY(1)
-      ESYST  = TARRAY(2)
-      CPUA   = ECPU - SCPU
-      CPUE   = ECPU - PCPU
-      PCPU   = ECPU
-      TIOA   = ESYST - SSYST
-      TIOE   = ESYST - PSYST
-      PSYST  = ESYST
-C
-      RETURN
-      END
-#else
       SUBROUTINE SETTIM()
 #include "implicit.h"
       PARAMETER ( D0 = 0.0D0 )
@@ -395,7 +262,6 @@ C
       PRINT *,'DUMMY TIMING called'
       RETURN
       END
-#endif
 #endif
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
@@ -452,9 +318,6 @@ C
 #include "implicit.h"
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_VAX)
-      CHARACTER CDATE*9,CTIME*8
-#endif
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
@@ -469,12 +332,6 @@ C
       ELSE
          WRITE (LUPRIN,'()')
       END IF
-#if defined (SYS_VAX)
-      CALL DATE(CDATE)
-      CALL TIME(CTIME)
-      WRITE (LUPRIN,'(T6,A,A9,1X,A8)')
-     *   'Date and time (VAX) : ',CDATE,CTIME
-#endif
 #if defined (SYS_IBM)
       CALL DATE(DAOFWK,CDATE)
       CALL TIME(CTIME)
@@ -486,12 +343,6 @@ C
       CTIME = CLOCK()
       WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
      *   'Date and time (CRAY) : ',CDATE,CTIME
-#endif
-#if defined (SYS_ALLIANT)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Alliant): ',FDATE()
-#endif
-#if defined (SYS_CONVEX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Convex) : ',FDATE()
 #endif
 #if 0 && defined (SYS_HPUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
@@ -505,18 +356,17 @@ C
 #if defined (SYS_SUN)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
-#if defined (SYS_PARAGON)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Paragon): ',FDATE()
-#endif
-#if defined (SYS_SX)
-      WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
-#endif
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
-      CALL HOSTNM(HSTNAM)
+#ifndef VAR_EKO
+C
+C     CALL HOSTNM(HSTNAM)
+C
+      CALL GETENV('HOST',HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
+#endif
 #endif
 #if defined (SYS_AIX)
 C 930414-hjaaj: apparent error IBM's xlf library routines:
@@ -679,90 +529,18 @@ C  /* Deck trace */
 C
 C Written 4-Dec-1983 hjaaj
 C
-#if !defined (SYS_VAX) && !defined (VAR_SECSEC)\
-&& !defined (SYS_CRAY) && !defined (SYS_IBM)\
-&& !defined (SYS_ALLIANT) && !defined (SYS_CONVEX)\
-&& !defined (SYS_AIX) && !defined (SYS_IRIX)\
-&& !defined (SYS_PARAGON) && !defined (SYS_T3D)\
-&& !defined (SYS_LINUX) && !defined (SYS_SUN)\
-&& !defined (SYS_HPUX) && !defined(SYS_DEC)\
-&& !defined (SYS_SX)
-      INTEGER A,B,C
-      SAVE    A,B,C
-      DATA    A/1/,B/0/,C/0/
-      C = C + A/B
-#endif
-#if defined (SYS_ALLIANT)
-      CALL QTRACE(6)
-      WRITE(*,*) 'Alliant does not provide a system traceback facility.'
-#endif
-#if defined (SYS_IRIX)
-      CALL QTRACE(6)
+C Major clean-up LV (feb. 2007)
 C
-C     jth 980716:
-C     For some machines you can compile with -ltrace and use
-C     the function below.
-C
-C     call trace_back_stack_and_print()
-C
-      WRITE(*,*) 'IRIX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_SUN)
-      CALL QTRACE(6)
-      WRITE(*,*) 'SUN has no obvious system traceback facility.'
-#endif
-#if defined (SYS_PARAGON)
-      CALL QTRACE(6)
-      WRITE (*,*) 'PARAGON has no obvious system traceback facility.'
-#endif
-#if defined (SYS_LINUX)
-      CALL QTRACE(6)
-      WRITE(*,*) 'Linux has no obvious system traceback facility.'
-#endif
-#if defined (SYS_HPUX)
-      CALL QTRACE(6)
-      WRITE(*,*) 'HP_UX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_SX)
-      CALL QTRACE(6)
-      WRITE(*,*) 'SX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_CONVEX)
-      CALL QTRACE(6)
-      CALL TRACEBACK
-#endif
-#if defined (VAR_SECSEC)
-      CALL QTRACE(6)
-      CALL STRACE
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL QTRACE(6)
       CALL TRBK()
-#endif
-#if defined (SYS_VAX)
-C Revised 12-Jan-1984 hjaaj (use LIB$SIGNAL for VAX,
-C                            traceback without exit)
-      CALL QTRACE(6)
-      CALL LIB$SIGNAL(%VAL(0))
 #endif
 #if defined (SYS_IBM)
       CALL QTRACE(6)
       CALL ERRTRA
 #endif
-#if defined (SYS_AIX)
-C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
-C  Note: integer divide by zero is the only error which
-C        always will cause an exception
-C  941013-hjaaj: also for PARAGON
-C
-      include 'fexcp.h'
-      save i,j
-      data i,j /1,0/
-C
       CALL QTRACE(6)
-      call SIGNAL(SIGTRAP,xl__trce)
-      i = i/j
-#endif
+      WRITE(*,*) 'This OS has no obvious system traceback facility.'
       RETURN
       END
 C  /* Deck canon */
@@ -829,6 +607,24 @@ C
 C
       RETURN
       END
+C  /* Deck dzero8 */
+      SUBROUTINE DZERO8(DX,LENGTH8)
+#include "implicit.h"
+C   Last revision 23-Nov-2007 by S. Knecht
+C
+C   Subroutine DZERO8 sets a real array of length *LENGTH8*
+C   to zero.
+C...................................................................
+      INTEGER*8 LENGTH8
+      DIMENSION DX(LENGTH8)
+C
+      IF (LENGTH8.LE.0) RETURN
+C
+      DO 100 I = 1,LENGTH8
+  100    DX(I) = 0.0D00
+C
+      RETURN
+      END
 C  /* Deck isum */
       FUNCTION ISUM(N,IA,INCA)
 C
@@ -878,22 +674,78 @@ C
       RETURN
       END
 C  /* Deck izero */
-      SUBROUTINE IZERO(INT,LENGTH)
+      SUBROUTINE IZERO(INTI,LENGTH)
 C...................................................................
 C Written 5-May-1984 by Hans Jorgen Aa. Jensen
 C
 C   Subroutine IZERO sets an integer array of length *LENGTH*
 C   to zero.
 C...................................................................
-      INTEGER INT(*)
+      INTEGER INTI(*),LENGTH
 C
       IF (LENGTH.LE.0) RETURN
 C
       DO 100 I=1,LENGTH
-  100    INT(I) = 0
+  100    INTI(I) = 0
 C
       RETURN
       END
+C  /* Deck izero8 */
+      SUBROUTINE IZERO8(INTI8,LENGTH8)
+C...................................................................
+C   modified routine IZERO - S. Knecht - 19-Feb-2008
+C
+C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
+C   to zero.
+C...................................................................
+      INTEGER*8 INTI8(*),LENGTH8
+C
+      IF (LENGTH8.LE.0) RETURN
+C
+      DO 100 I=1,LENGTH8
+  100    INTI8(I) = 0
+C
+      RETURN
+      END
+C  /* Deck imino8 */
+      SUBROUTINE IMINO8(INTI8,LENGTH8)
+C...................................................................
+C   modified routine IZERO - S. Knecht - 19-Feb-2008
+C
+C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
+C   to zero.
+C...................................................................
+      INTEGER*8 INTI8(*),LENGTH8, IMIN1
+C
+      IF (LENGTH8.LE.0) RETURN
+      IMIN1 = - 1
+C
+      DO 100 I=1,LENGTH8
+  100    INTI8(I) = IMIN1
+C
+      RETURN
+      END
+C  /* Deck lzero */
+      SUBROUTINE LZERO(LOGI,LENGTH)
+C...................................................................
+C
+C   Subroutine LZERO sets all members of logical array of length *LENGTH*
+C   to .FALSE.
+C
+C   Wriiten by Miro Ilias, Tel Aviv, April 2007
+C...................................................................
+      LOGICAL LOGI(LENGTH)
+      INTEGER LENGTH
+C
+      IF (LENGTH.LE.0) RETURN
+C
+      DO 100 I=1,LENGTH
+  100    LOGI(I) = .FALSE.
+C
+      RETURN
+      END
+
+
 C  /* Deck jaco */
       SUBROUTINE JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
 C
@@ -907,8 +759,8 @@ C                     basis, e.g. less mo's than ao's)
 C  23-Feb-1989 hjaaj  Note that if NROWV = 0 then only
 C                     eigenvalues will be calculated,
 C                     V matrix will not be referenced.
-C  27-Jul-1990 hjaaj  Changed -CX,+SX transformation to +CX,-SX
-C                     transformation; probably the -CX,+SX
+C  27-Jul-1990 hjaaj  Changed -CX,+SSX transformation to +CX,-SSX
+C                     transformation; probably the -CX,+SSX
 C                     transformation was responsible for that
 C                     the eigenvectors easily changed sign.
 C                     Changed initial test on NB. Changed SD.
@@ -992,31 +844,31 @@ C
          IBB=IB*(IB-1)/2
          DIF=F(IAA+IA)-F(IBB+IB)
          IF( ABS(DIF) .GT. C3) GO TO 271
-            SX=ROOT2
+            SSX=ROOT2
             CX=ROOT2
          GO TO 270
   271       T2X2 =BIG(IB)/DIF
             T2X25=T2X2*T2X2
          IF(T2X25 .GT. C4) GO TO 240
             CX=1.D 00
-            SX=T2X2
+            SSX=T2X2
          GO TO 270
   240    IF(T2X25 .GT. C5) GO TO 250
-            SX=T2X2*(D1 - D1P5*T2X25)
+            SSX=T2X2*(D1 - D1P5*T2X25)
             CX=D1 - DP5*T2X25
          GO TO 270
   250    IF(T2X25 . GT . C6) GO TO 260
             CX=D1+T2X25*(T2X25*D1P375 - DP5 )
-            SX= T2X2*(D1 + T2X25*(T2X25*D3P875 - D1P5))
+            SSX= T2X2*(D1 + T2X25*(T2X25*D3P875 - D1P5))
          GO TO 270
   260       T = DP25  / SQRT(DP25   + T2X25)
             CX= SQRT(DP5   + T)
-            SX= SIGN( SQRT(DP5 - T),T2X2)
+            SSX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
 #include "ivdep.h"
          DO 275 IR=1,IA
-            T        = F(IAA+IR)*SX
-            F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
+            T        = F(IAA+IR)*SSX
+            F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SSX
             F(IBB+IR)=-T           +F(IBB+IR)*CX
   275    CONTINUE
          IEAA=IAA+IA
@@ -1043,17 +895,17 @@ C              ... we have checked above that JBIG(IA) .ne. 0
 C              IF(JBIG(IR)) 360,380,360
             END IF
 #endif
-            T      = F(IEAR)*SX
-            F(IEAR)= F(IEAR)*CX+F(IEBR)*SX
+            T      = F(IEAR)*SSX
+            F(IEAR)= F(IEAR)*CX+F(IEBR)*SSX
             F(IEBR)=-T         +F(IEBR)*CX
             T   =F(IEAR)
             IT  =IA
             IF(IR-IB) 340,310,320
-  310          F(IEAA)=F(IEAA)*CX+F(IEAB)*SX
+  310          F(IEAA)=F(IEAA)*CX+F(IEAB)*SSX
 C              921030+hjaaj: zero f(ab) to avoid round-off errors
-C              F(IEAB)=     TT*CX+F(IEBR)*SX
+C              F(IEAB)=     TT*CX+F(IEBR)*SSX
                F(IEAB)=     D0
-               F(IEBR)=    -TT*SX+F(IEBR)*CX
+               F(IEBR)=    -TT*SSX+F(IEBR)*CX
             GO TO 360
   320       IF(ABS(T) .GE.  ABS(F(IEBR))) GO TO 340
                T   =F(IEBR)
@@ -1093,8 +945,8 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SX
          JBB=(IB-1)*NROWV
 #include "ivdep.h"
          DO 400 I=1,NROWV
-            T=V(JBB+I)*SX
-            V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
+            T=V(JBB+I)*SSX
+            V(JBB+I)=-V(JAA+I)*SSX + V(JBB+I)*CX
   400       V(JAA+I)= V(JAA+I)*CX + T
       GO TO 410
   420 RETURN
@@ -1178,6 +1030,40 @@ C
    20 CONTINUE
       RETURN
       END
+
+C  /* Deck mpapv */
+      SUBROUTINE MPAPV(N,AP,VIN,VOUT)
+C
+C  28-Apr-1985 hjaaj
+C
+C  VOUT = AP * VIN
+C
+C  where VOUT and VIN are N vectors
+C  and AP is a packed, symmetric N by N matrix.
+C
+CMI ... copied from pdpack/arhpack.F due to linking problems 
+CMI    with DIRAC gp/ routines 
+CMI    in ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
+C
+#include <implicit.h>
+      DIMENSION AP(*),VIN(*),VOUT(*)
+      PARAMETER (D0 = 0.0D0)
+C
+      KI = 0
+      DO 300 I = 1,N
+         VINI = VIN(I)
+         SUM = D0
+         DO 100 J = 1,I-1
+            SUM = SUM + AP(KI+J) * VIN(J)
+            VOUT(J) = VOUT(J) + AP(KI+J) * VINI
+  100    CONTINUE
+         KI = KI + I
+         VOUT(I) = SUM + AP(KI) * VINI
+  300 CONTINUE
+C
+      RETURN
+      END
+
 C  /* Deck defopn */
       SUBROUTINE DEFOPN(LU)
 C
@@ -1226,9 +1112,6 @@ C  /* Deck readdi */
 #if !defined (VAR_FASTIO)
       READ(IT,REC=IU) IX
 #endif
-#if defined (VAR_FASTIO)
-      CALL DAFILE(IT,2,IX,N,IU)
-#endif
       RETURN
       END
 C  /* Deck readt */
@@ -1239,10 +1122,10 @@ C  /* Deck readt */
       READ (IT,END=10,ERR=20) X
       RETURN
  10   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: END reading file  ',IT
+      WRITE (STRING,'(A25,I5)') 'READT: END reading file, unit ',IT
       CALL QUIT(STRING)
  20   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: Error reading file',IT
+      WRITE (STRING,'(A25,I5)') 'READT: Error reading file, unit ',IT
       CALL QUIT(STRING)
       END
 C  /* Deck writi */
@@ -1274,9 +1157,6 @@ C  /* Deck writdi */
 #if !defined (VAR_FASTIO)
       WRITE(IT,REC=IU) IX
 #endif
-#if defined (VAR_FASTIO)
-      CALL DAFILE(IT,1,IX,N,IU)
-#endif
       RETURN
       END
 C  /* Deck writt */
@@ -1286,58 +1166,6 @@ C  /* Deck writt */
       WRITE (IT) X
       RETURN
 C
-      END
-C  /* Deck search */
-      SUBROUTINE SEARCH(A,LU,LUERR)
-C
-C Revision
-C  26-May-1985 hjaaj (error return if LUERR .lt. 0 on input,
-C                     otherwise stop on error as previously)
-C
-#include "implicit.h"
-      DIMENSION B(4)
-      DATA C/8H********/
-    1 READ(LU,END=3,ERR=6)B
-      IF (B(1).NE.C) GO TO 1
-      IF (B(4).NE.A) GO TO 1
-      IF (LUERR.LT.0) LUERR = 0
-      RETURN
-C
-    3 IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
-C 880916-hjaaj -- attempt to fix an IBM problem
-C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
-C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
-         BACKSPACE LU
-#endif
-         LUERR = -1
-         RETURN
-      ELSE
-         WRITE(LUERR,4)A,LU
-         CALL QTRACE(LUERR)
-         CALL QUIT('ERROR (SEARCH) MOLECULE label not found on file')
-      END IF
-    4 FORMAT(/' *** ERROR (SEARCH), MOLECULE label ',A8,
-     *        ' not found on unit',I4)
-C
-    6 IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
-         CLOSE(LU,ERR=8)
-    8    CONTINUE
-#endif
-         LUERR = -2
-         RETURN
-      ELSE
-         WRITE (LUERR,7) LU,A
-         CALL QTRACE(LUERR)
-         CALL QUIT('ERROR (SEARCH) error reading file')
-      END IF
-    7 FORMAT(/' *** ERROR (SEARCH), error reading unit',I4,
-     *       /T22,'when searching for label ',A8)
       END
 C  /* Deck mollab */
       SUBROUTINE MOLLAB(A,LU,LUERR)
@@ -1676,15 +1504,6 @@ D 503 FORMAT(' ',Z10/' ',4Z10/' ',I12/(6I12))
       IF( ISTAT.NE.1 .OR. ILEN.NE.4 ) CALL QUIT('SECOND: CPUTIM ERROR')
       SECOND=IBUF(1)/100.0
 #endif
-#if defined (SYS_PARAGON)
-#include "implicit.h"
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj and for Intel Paragon
-      integer*4 itime(4),times,idum
-      idum = times(itime)
-C     idum = elapsed time, itime(1:2) = system and user time
-      second = dfloat (itime(1) + itime(2)) * 0.01d0
-#endif
 #if defined (SYS_IBM)
 #include "implicit.h"
       LOGICAL FIRST
@@ -1699,7 +1518,10 @@ C     idum = elapsed time, itime(1:2) = system and user time
          SECOND = CPUA
       END IF
 #endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
+      || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) \
+      || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) \
+      || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_DARWIN)
 #include "implicit.h"
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)
@@ -1935,5 +1757,312 @@ C
  15   CONTINUE
       REWIND (LU)
 #endif
+      RETURN
+      END
+
+C  /* Deck rdonel */
+      SUBROUTINE RDONEL(KEY,FOUND,A,NA)
+C
+C 31-Jul-1987 hjaaj
+C
+C     Purpose : Read LUONEL
+C
+C     Note: if FOUND true, it must not be updated.
+C
+C
+#include "implicit.h"
+#include "priunit.h"
+C     Global array
+      DIMENSION A(NA,*)
+      CHARACTER KEY*(*)
+      LOGICAL   FOUND, RDBUF
+C
+C Used from common blocks:
+C   INFINP : TITMOL(12,2), POTNUC, CENT(*), TYPE(*)
+C   INFORB : NBAS(8), NSYM, NBAST, NNBAST
+C
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "r12int.h"
+C     Local arrays
+      PARAMETER ( LBUF = 600 )
+      DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
+      DIMENSION ITMPMO(2*MXCORB)
+      EQUIVALENCE (BUF,DBUF,QBUF,ITMPMO)
+      LOGICAL   OPEND, FEXIST, ERRSTP
+C
+      CALL QENTER('RDONEL')
+      ERRSTP = FOUND
+      IF (.NOT.FOUND) FOUND  = .TRUE.
+C     Note: if FOUND true, it must not be updated.
+      RDBUF  = .FALSE.
+C
+      CALL GPINQ(FNONEL,'OPENED',OPEND)
+      IF (.NOT.OPEND) THEN
+         CALL GPINQ(FNONEL,'EXIST',FEXIST)
+       IF (FEXIST) THEN
+         CALL GPOPEN(LUONEL,FNONEL,'OLD',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         OPEND = .TRUE.
+         IF (LBONEL .LT. 0) LBONEL = LBUF
+       ELSE
+         WRITE (LUPRI,'(/3A)')
+     *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
+         WRITE (LUERR ,'(/3A)')
+     *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
+         IF (ERRSTP) THEN
+            CALL QUIT('RDONEL ERROR: AOONEINT file DOES NOT EXIST')
+         ELSE
+            FOUND = .FALSE.
+            GO TO 9999
+         END IF
+       END IF
+      END IF
+C
+      IF     (KEY.EQ.'OPEN    ') THEN
+C        ... file is opened automatically first time RDONEL is called.
+      ELSE IF(KEY.EQ.'CLOSE   ') THEN
+         CALL GPCLOSE(LUONEL,'KEEP')
+      ELSE IF(KEY.EQ.'MLCLINFO') THEN
+         REWIND LUONEL
+         READ (LUONEL) ((TITMOL(I,J),I=1,12),J=1,2),
+     *                 NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
+         NBAST  = 0
+         NNBAST = 0
+         DO 110 I = 1,NSYM
+            NBAST  = NBAST  + NBAS(I)
+            NNBAST = NNBAST + NBAS(I)*(NBAS(I)+1)/2
+  110    CONTINUE
+         DO 120 I = NSYM+1,8
+            NBAS(I) = 0
+  120    CONTINUE
+         CALL MOLLAB('SYMINPUT',LUONEL,LUPRI)
+         READ (LUONEL) NBT,(ITMPMO(I),I=1,2*NBT)
+C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
+         IF (NBT .NE. NBAST) THEN
+            WRITE (LUPRI,'(//A,2(/A,I5))')
+     *      ' >>> RDONEL ERROR',
+     *      '     NBAST from first record on AOONEINT :',NBAST,
+     *      '     NBAST from "SYMINPUT"   on AOONEINT :',NBT
+            CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
+         END IF
+         REWIND LUONEL
+         DO 130 I=1,NBAST
+            WRITE(CENT(I),'(A4)') ITMPMO(I)
+            WRITE(TYPE(I),'(A4)') ITMPMO(NBAST+I)
+  130    CONTINUE
+      ELSE IF(KEY.EQ.'OVERLAP ') THEN
+C        Read overlap, in symmetry blocked triangular form
+         REWIND LUONEL
+         CALL MOLLAB('OVERLAP ',LUONEL,LUPRI)
+         RDBUF = .TRUE.
+      ELSE IF(KEY.EQ.'ONEHAMIL') THEN
+C        Read one electron part, in symmetry blocked triangular form
+         REWIND LUONEL
+         CALL MOLLAB('ONEHAMIL',LUONEL,LUPRI)
+         RDBUF = .TRUE.
+      ELSE IF(KEY.EQ.'KINETINT') THEN
+         REWIND LUONEL
+         CALL MOLLAB('KINETINT',LUONEL,LUPRI)
+         RDBUF = .TRUE.
+      ELSE IF(KEY.EQ.'DIPOLMOM') THEN
+         REWIND LUONEL
+         CALL MOLLAB('DIPOLMOM',LUONEL,LUPRI)
+         IF (LBONEL .NE. LBUF) THEN
+            WRITE(LUPRI,'(/A,2(/A,I8))')
+     *         ' ERROR RDONEL, LBONEL .ne. local LBUF for DIPOLMOM',
+     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
+            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key DIPOLMOM')
+         END IF
+  501    READ (LUONEL) DBUF,IBUF,NUT
+         IF (NUT.EQ.0)   GO TO 501
+         IF (NUT.LT.0)   GO TO 502
+         IF (NOAUXB) THEN
+            DO I=1,NUT
+               CALL INOAUX(IBUF(I),IR12)
+               IF (IR12 .GT. 0) THEN
+                  A(IR12,1) = DBUF(I,1)
+                  A(IR12,2) = DBUF(I,2)
+                  A(IR12,3) = DBUF(I,3)
+               END IF
+            END DO 
+         ELSE
+            DO I=1,NUT
+               J = IBUF(I)
+               A(J,1) = DBUF(I,1)
+               A(J,2) = DBUF(I,2)
+               A(J,3) = DBUF(I,3)
+            END DO 
+         END IF
+         GO TO 501
+  502    CONTINUE
+      ELSE IF(KEY.EQ.'QUADRP  ') THEN
+         REWIND LUONEL
+         CALL MOLLAB('QUADRP  ',LUONEL,LUPRI)
+         IF (LBONEL .NE. LBUF) THEN
+            WRITE(LUPRI,'(/A,2(/A,I8))')
+     *         ' ERROR RDONEL, LBONEL .ne. local LBUF for QUADRP  ',
+     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
+            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key QUADRP')
+         END IF
+  601    READ (LUONEL) QBUF,IBUF,NUT
+         IF (NUT.EQ.0)   GO TO 601
+         IF (NUT.LT.0)   GO TO 602
+         IF (NOAUXB) THEN
+            DO I=1,NUT
+               CALL INOAUX(IBUF(I),IR12)
+               IF (IR12 .GT. 0) THEN
+                  DO ICOMP = 1,6
+                     A(IR12,ICOMP) = QBUF(I,ICOMP)
+                  END DO
+               END IF
+            END DO
+         ELSE
+            DO I=1,NUT
+               J = IBUF(I)
+               DO ICOMP = 1,6
+                  A(J,ICOMP) = QBUF(I,ICOMP)
+               END DO
+            END DO
+         END IF
+         GO TO 601
+  602    CONTINUE
+      ELSE IF(KEY.EQ.'ISORDK  ') THEN
+         WRITE(LUPRI,'(2A)') KEY, ' IS NOT IMPLEMENTED YET IN RDONEL'
+         IF (ERRSTP) THEN
+            CALL QUIT('RDONEL ERROR, KEY ISORDK NOT IMPLEMENTED YET.')
+         ELSE
+            FOUND = .FALSE.
+         END IF
+      ELSE IF(KEY.EQ.'SCFINP  ') THEN
+         WRITE(LUPRI,'(2A)') KEY, ' IS NOT IMPLEMENTED YET IN RDONEL'
+         IF (ERRSTP) THEN
+            CALL QUIT('RDONEL ERROR, KEY SCFINP NOT IMPLEMENTED YET.')
+         ELSE
+            FOUND = .FALSE.
+         END IF
+      ELSE
+         WRITE(LUPRI,'(2A)') KEY, ' IS AN INVALID KEY TO RDONEL'
+         IF (ERRSTP) THEN
+            CALL QUIT('ERROR RDONEL, INVALID KEY')
+         ELSE
+            FOUND = .FALSE.
+         END IF
+      END IF
+      IF (RDBUF) THEN
+         IF (LBONEL .GT. LBUF) THEN
+            WRITE(LUPRI,'(/A,2(/A,I8))')
+     *         ' ERROR RDONEL, LBONEL .GT. local LBUF',
+     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
+            CALL QUIT('ERROR RDONEL, LBONEL .gt. LBUF')
+         END IF
+         CALL DZERO(A,NNBAST)
+ 2100    READ (LUONEL) (BUF(I),I=1,LBONEL),(IBUF(I),I=1,LBONEL),LENGTH
+         IF (NOAUXB) THEN
+            DO I = 1, LENGTH
+               CALL INOAUX(IBUF(I),IR12)
+               IF (IR12 .GT. 0) A( IR12 , 1 ) = BUF(I)
+            END DO
+         ELSE
+            DO I = 1, LENGTH
+               A( IBUF(I) , 1 ) = BUF(I)
+            END DO
+         END IF
+         IF (LENGTH .GE. 0) GO TO 2100
+         REWIND LUONEL
+      END IF
+      CALL GPCLOSE(LUONEL,'KEEP')
+C
+ 9999 CALL QEXIT('RDONEL')
+      RETURN
+      END
+C  /* Deck gpinq */
+      SUBROUTINE GPINQ(FILENM,TASK,VALUE)
+C
+C     Generalized routine for checking the existence of a file.
+C     Needed for parallel I/O calculations, where the name of the file
+C     may have been altered with a processor-specific appendage.
+C     The routine is only needed when searching on a filename
+C
+C     K.Ruud, San Diego Aug 2000
+C
+#include "implicit.h"
+      CHARACTER*(*) FILENM, TASK
+      CHARACTER FILTMP*80
+      INTEGER FILELN
+      LOGICAL VALUE
+#include "chrnos.h"
+c maxorb for infpar.h
+#include "maxorb.h"
+#include "infpar.h"
+C
+      FILELN = LEN(FILENM)
+      IF (MYNUM .GT. 0) THEN
+         FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
+     &                        '#'//CHRNOS(MYNUM/100)//
+     &                        CHRNOS(MOD(MYNUM,100)/10)//
+     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
+         FILELN = FILELN + 4
+      ELSE
+         FILTMP(1:FILELN) = FILENM(1:FILELN)
+      END IF
+      IF (TASK(1:5) .EQ. 'EXIST') THEN
+         INQUIRE(FILE=FILTMP(1:FILELN),EXIST=VALUE)
+      ELSE IF (TASK(1:5) .EQ. 'OPENE') THEN
+         INQUIRE(FILE=FILTMP(1:FILELN),OPENED=VALUE)
+      ELSE
+         CALL QUIT('Unknown inquire status requested')
+      END IF
+      RETURN
+      END
+C  /* Deck inoaux */
+      SUBROUTINE INOAUX(II,JJ)
+#include "implicit.h"
+#include "priunit.h"
+      INTEGER MAXFRO
+      INTEGER NSYM,NSYMFR,MULD2H,NLAMDS,N2BAST,
+     *        NRHF,NVIR,NORB,NRHFT,NVIRT,NORBT,
+     *        NRHFS,NVIRS,NORBS,NRHFTS,NVIRTS,NORBTS,
+     *        NBAS,NBAST,NNBASX,N2BASX,IORB,IBAS,
+     *        NRHFFR,NVIRFR,
+     *        KFRRHF,KFRVIR,NFC,NFV
+      PARAMETER (MAXFRO = 60)
+      LOGICAL LGLO
+      COMMON /CCORB/ NSYM,NSYMFR,MULD2H(8,8),NLAMDS,N2BAST,
+     *               NRHF(8),NVIR(8),NORB(8),NRHFT,NVIRT,NORBT,
+     *               NRHFS(8),NVIRS(8),NORBS(8),NRHFTS,NVIRTS,NORBTS,
+     *               NBAS(8),NBAST,NNBASX,N2BASX,IORB(8),IBAS(8),
+     *               NRHFFR(8),NVIRFR(8),
+     *               KFRRHF(MAXFRO,8),KFRVIR(MAXFRO,8),
+     *               NFC,NFV,LGLO
+C ... only used in RDONEL when called from cc/ routines,
+C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
+#include "maxorb.h"
+#include "r12int.h"
+      LOGICAL FIRST
+      DATA FIRST /.TRUE./
+      DIMENSION IJ(MXORBT)
+      SAVE IJ
+      IF (FIRST) THEN
+         KL = 0
+         MN = 0
+         DO ISYM = 1, NSYM
+            DO I = 1, MBAS1(ISYM) + MBAS2(ISYM)
+               DO J = 1, I
+                  KL = KL + 1
+                  IF (I. LE. MBAS1(ISYM) .AND. J .LE. MBAS1(ISYM)) THEN
+                     MN = MN + 1
+                     IJ(KL) = MN
+                  ELSE
+                     IJ(KL) = -1
+                  END IF
+               END DO
+            END DO
+         END DO
+         FIRST = .FALSE.
+      END IF
+      JJ = IJ(II)
       RETURN
       END

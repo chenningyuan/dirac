@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision: 1.5 $
-C DATE    : $Date: 2003/02/06 09:16:55 $
+C VERSION : $Revision: 2691 $
+C DATE    : $Date: 2003-02-06 10:16:55 +0100 (Thu, 06 Feb 2003) $
 C FILE    : freeze.inc
 C
       PARAMETER (MAXFROZ=100)

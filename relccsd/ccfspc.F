@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,
@@ -75,7 +63,6 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL TEQ
-      real*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
@@ -273,12 +260,22 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+      SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
+     &                 HEFF,EIGENVALUES,EIGENVECTORS)
+
 C
       implicit real*8 (a-h,o-z)
+C---------------Description--------------------------------------------
+C
+C     Extract the Hamiltonian dressing terms from the S1 and S2 arrays
+C     and add the zeroth order (CI matrix) terms. Then find the eigen
+C     values and eigenvectors by solving a generalized eigenvalue 
+C     problem. Finish by analyzing the eigenvectors and computing the
+C     transition moments.
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 S1(*),FVO(*),H(*)
+      REAL*8 HEFF(*),EIGENVALUES(0:*),EIGENVECTORS(*)
+      REAL*8 S1(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       CHARACTER*40 TIT
       INTEGER ICURFSS
@@ -292,15 +289,18 @@ C
 #include "files.inc"
 C
 C---------------Local variables -----------------------------------
-      PARAMETER (NDIMH=300,NDIMH2=NDIMH*NDIMH)
-      REAL*8 EV(NDIMH),EVI(NDIMH),HR(NDIMH2),HI(NDIMH2)
-      REAL*8 SCR(3*NDIMH),VEC(NDIMH2),VECI(NDIMH2)
-      REAL*8 EV_ALL(NDIMH*MXREP)
+      PARAMETER (NDIMH=600,NDIMH2=NDIMH*NDIMH)
       DIMENSION INDX_ALL(NDIMH*MXREP),IRPS_ALL(NDIMH*MXREP)
-      DIMENSION NDT_ALL(MXREP),IND(MXREP)
-      REAL*8 FNOR,E_OFF
-      INTEGER INDX(NDIMH)
+      DIMENSION IND(MXREP),NDT_ALL(MXREP)
+      REAL*8 E_OFF
 C---------------Executable code--------------------------------------
+      IF (ICURFSS.EQ.1) THEN
+C-------------------------------------------
+C (0,0)  Sector
+C
+C  Nothing to be done (only one eigenvalue)
+C
+         RETURN
 C-------------------------------------------
 C (0,1)  Sector
 C
@@ -308,14 +308,14 @@ C  1-electron diagram
 C
 C  H01 = FVO(E,F) + S1(E,F) (a=1; i=3)
 C-------------------------------------------
-      IF (ICURFSS.EQ.1) then
+      ELSEIF (ICURFSS.EQ.2) THEN
         TIT = '(0h,1p) space, electron affinities    '
-        CALL XCOPY (IAVAV(NREP+1),A0,0,H,1)
-C       Extract the Hamiltonian
-        CALL EXTRT1 (S1,H,1,1,3,3,LFA)
+        CALL XCOPY (IAVAV(NREP+1),A0,0,HEFF,1)
+C       Extract the Hamiltonian from S1
+        CALL EXTRT1 (S1,HEFF,1,1,3,3,LFA)
 C       Extract and add the Fock matrix elements
         CALL EXTRT1 (FVO,BUF1,1,1,3,3,LFA)
-        CALL XAXPY (IAVAV(NREP+1),A1,BUF1,1,H,1)
+        CALL XAXPY (IAVAV(NREP+1),A1,BUF1,1,HEFF,1)
 C-------------------------------------------
 C (1,0) Sector
 C
@@ -323,15 +323,42 @@ C  1-electron diagram
 C
 C  H10 = - FVO(M,N) - S1(M,N) (a=3; i=2)
 C-------------------------------------------
-      ELSEIF(ICURFSS.EQ.10) then
+      ELSEIF(ICURFSS.EQ.3) then
         TIT = '(1h,0p) space, ionization energies    '
-        CALL XCOPY (IAOAO(NREP+1),A0,0,H,1)
+        CALL XCOPY (IAOAO(NREP+1),A0,0,HEFF,1)
 C       Extract the Hamiltonian
-        CALL EXTRT1 (S1,H,3,3,2,2,LFA)
+        CALL EXTRT1 (S1,HEFF,3,3,2,2,LFA)
 C       Extract and add the Fock matrix elements
         CALL EXTRT1 (FVO,BUF1,3,3,2,2,LFA)
-        CALL XAXPY (IAOAO(NREP+1),A1,BUF1,1,H,1)
-        CALL XSCAL (IAOAO(NREP+1),-A1,H,1)
+        CALL XAXPY (IAOAO(NREP+1),A1,BUF1,1,HEFF,1)
+        CALL XSCAL (IAOAO(NREP+1),-A1,HEFF,1)
+C-------------------------------------------
+C (1,1) Sector
+C
+C  Slater rules for 2-e determinants !
+C
+C  General formula
+C  H11(MF,OH) = H01(F,H)*DELTA(M,O) - H10(M,O)*DELTA(F,H)
+C             - S2(MF,OH)
+C
+C  We need to extract the (a=3, b=1; i=2, j=3) part
+C
+C-------------------------------------------
+      ELSEIF(ICURFSS.EQ.4) THEN
+        TIT = '(1h,1p) space, excitation energies    '
+C       Make the one electron Hamiltonian parts
+        CALL XCOPY (NDIMT1,S1,1,BUF1,1)
+        CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
+        CALL SCALE_S1 (BUF1)
+C       Make the effective Hamiltonian in the full array.
+        CALL XCOPY (NDIMT2,S2,1,BUF2,1)
+        CALL XSCAL (NDIMT2,-A1,BUF2,1)
+        CALL GETTAU2 (BUF1,BUF3,BUF2)
+C       Extract the Hamiltonian
+        CALL EXTRT2S(BUF2,BUF3,3,3,1,1,2,2,3,3,LFA)
+C       Sort the matrix to ordering 4 to diagonalize it.
+        CALL SRT16 (NREP,MULTB,LFA,LFA,NAO,NAV,NAO,NAV,MAOAV,
+     &              JAOAVAOAV,JJAOAV,JJAOAV,BUF3,HEFF)
 C-------------------------------------------
 C (0,2) Sector
 C
@@ -345,7 +372,7 @@ C
 C  We need to extract the (a=1, b=1; i=3, j=3) part
 C
 C-------------------------------------------
-      ELSEIF(ICURFSS.EQ.2) then
+      ELSEIF(ICURFSS.EQ.5) THEN
         TIT = '(0h,2p) space                         '
 C       Add the one electron contributions
         CALL XCOPY (NDIMT1,S1,1,BUF1,1)
@@ -354,7 +381,7 @@ C       Make the effective Hamiltonian in the full array.
         CALL XCOPY (NDIMT2,S2,1,BUF2,1)
         CALL GETTAU2 (BUF1,BUF3,BUF2)
 C       Extract the Hamiltonian
-        CALL EXTRT2T(BUF2,H,1,1,3,3,LFA)
+        CALL EXTRT2T(BUF2,HEFF,1,1,3,3,LFA)
 C-------------------------------------------
 C (2,0) Sector
 C
@@ -368,7 +395,7 @@ C
 C  We need to extract the (a=3, b=3; i=2, j=2) part
 C
 C-------------------------------------------
-      ELSEIF(ICURFSS.EQ.20) THEN
+      ELSEIF(ICURFSS.EQ.6) THEN
         TIT = '(2h,0p) space'
 C       Add the one electron contributions
         CALL XCOPY (NDIMT1,S1,1,BUF1,1)
@@ -378,130 +405,251 @@ C       Make the effective Hamiltonian in the full array.
         CALL XCOPY (NDIMT2,S2,1,BUF2,1)
         CALL GETTAU2 (BUF1,BUF3,BUF2)
 C       Extract the Hamiltonian
-        CALL EXTRT2T(BUF2,H,3,3,2,2,LFA)
-C-------------------------------------------
-C (1,1) Sector
-C
-C  Slater rules for 2-e determinants !
-C
-C  General formula
-C  H11(MF,OH) = H01(F,H)*DELTA(M,O) - H10(M,O)*DELTA(F,H)
-C             - S2(MF,OH)
-C
-C  We need to extract the (a=3, b=1; i=2, j=3) part
-C
-C-------------------------------------------
-      ELSEIF(ICURFSS.EQ.11) THEN
-        TIT = '(1h,1p) space WARNING: MAYBE INCORRECT'
-C       Make the one electron Hamiltonian parts
-        CALL XCOPY (NDIMT1,S1,1,BUF1,1)
-        CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
-        CALL SCALE_S1 (BUF1)
-C       Make the effective Hamiltonian in the full array.
-        CALL XCOPY (NDIMT2,S2,1,BUF2,1)
-        CALL XSCAL (NDIMT2,-A1,BUF2,1)
-        CALL GETTAU2 (BUF1,BUF3,BUF2)
-C       Extract the Hamiltonian
-        CALL EXTRT2S(BUF2,BUF3,3,3,1,1,2,2,3,3,LFA)
-C       Sort the matrix to ordering 4 to diagonalize it.
-        CALL SRT16 (NREP,MULTB,LFA,LFA,NAO,NAV,NAO,NAV,MAOAV,
-     &              JAOAVAOAV,JJAOAV,JJAOAV,BUF3,H)
+        CALL EXTRT2T(BUF2,HEFF,3,3,2,2,LFA)
       ENDIF
-C   
-      NDT_TOT = 0
-      IOFF = 1
+
+C
+C.... Diagonalize the effective Hamiltonian (blocked by symmetry).
+C
       DO 100 IRP=1,NREP
-         IF (ICURFSS.EQ.1) THEN
-          NDT = NAV(IRP)
-         ELSEIF (ICURFSS.EQ.10) THEN
-          NDT = NAO(IRP)
-         ELSEIF (ICURFSS.EQ.2) THEN
-          NDT = NAVAVT(IRP)
-         ELSEIF (ICURFSS.EQ.20) THEN
-          NDT = NAOAOT(IRP)
-         ELSEIF (ICURFSS.EQ.11) THEN
-          NDT = MAOAV(IRP)
-         ELSE
-          NDT = 0
-         ENDIF
-         NDT_ALL(IRP) = NDT
-         IF (NDT.EQ.0) GOTO 100
+         IF (NFS_HE(IRP,ICURFSS).EQ.0) GOTO 100
+         CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
+     &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
+     &                  EIGENVECTORS(IFS_HE2(IRP,ICURFSS)*RCW+1),
+CMI  &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)+1))
+     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+1))
+100   CONTINUE
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SOLVE_CG (NDT,H,EVEC,EV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Find eigenvalues and eigenvectors of a complex or real general matrix
+C     NDT : Dimension of the matrix
+C     H   : Matrix (complex or real, square)
+C     EV  : Eigenvalues (real part, if carith=T also imaginary)
+C     EVEC: Eigenvectors (complex)
+C
+C---------------Routines called----------------------------------------
+C
+C      CG or RG (from EISPACK) if complex or real case, respectively
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C            Miro Ilias - complex eingenenergies carried in EV, more output
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "inpt.inc"
+C
+C---------------Calling variables--------------------------------------
+
+CMI   REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(NDT)
+      REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(RCW,NDT)
+C---------------Local variables -----------------------------------
+      REAL*8, ALLOCATABLE :: EVR(:),EVI(:)
+      REAL*8, ALLOCATABLE :: HR(:,:),HI(:,:)
+      REAL*8, ALLOCATABLE :: VECR(:,:),VECI(:,:)
+      REAL*8, ALLOCATABLE :: SCR(:,:)
+      INTEGER , ALLOCATABLE :: INDX(:)
+      REAL*8 FNOR(RCW),E_OFF
+C---------------Executable code--------------------------------------
+
+
+CMI    ... control print out
+
+C
+C....... Allocate memory for the diagonalization routine
+C
+      ALLOCATE (EVR(NDT))
+      ALLOCATE (EVI(NDT))
+      ALLOCATE (VECR(NDT,NDT))
+      ALLOCATE (SCR(NDT,3))
+      ALLOCATE (INDX(NDT))
+
 C
 C....... Diagonalize effective Hamiltonian.
 C
-         IF (NDT.GT.NDIMH) CALL QUIT ('Increase NDIMH in HEFF1')
+      IF  (CARITH) THEN
+C        The diagonalization routine expects separate real and imaginary blocks,
+C        make a local copy
          NDT2=NDT*NDT
-         IF  (CARITH) THEN
-            CALL DCOPY (NDT2,H(IOFF),2,HR,1)
-            CALL DCOPY (NDT2,H(IOFF+1),2,HI,1)
-            CALL CG(NDT,NDT,HR,HI,EV,EVI,1,VEC,VECI,
-     &               SCR,SCR(NDT+1),SCR(2*NDT+1),IERR)
+         ALLOCATE (HR(NDT,NDT))
+         ALLOCATE (HI(NDT,NDT))
+         ALLOCATE (VECI(NDT,NDT))
+         CALL DCOPY (NDT2,H,2,HR,1)
+         CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
+
+         IF (IPRNT.GE.10) THEN
+CMI    ... control print out
+           WRITE(IW,'(2X,A)')
+     &'Output from SOLVE_CG - complex matrix (RCW=2) to be diagonalized'
+           CALL OUTPUT(HR,1,NDT,1,NDT,NDT,NDT,1,IW)
+           WRITE(IW,'(/2X,A)') 'Imaginary part'
+           CALL OUTPUT(HI,1,NDT,1,NDT,NDT,NDT,1,IW)
+         ENDIF
+
+         CALL CG(NDT,NDT,HR,HI,EVR,EVI,1,VECR,VECI,
+     &           SCR,SCR(1,2),SCR(1,3),IERR)
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
 Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
-         ELSE
-Cluuk       uncomment when debugging, gives huge output
-Cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
-            CALL RG(NDT,NDT,H(IOFF),EV,EVI,1,VEC,SCR,SCR(NDT+1),IERR)
-         ENDIF
-C
-C........Check for errors
-C
-         IF (IERR.NE.0) THEN                
-            WRITE (IW,'('' RG IERR='',I4)') IERR
-            CALL QUIT('Error in diagonalization of eff. Hamiltonian')
-         ENDIF
-C
-C........Sort eigenvalues 
-C
-         CALL INDEXX (NDT,EV,INDX)
-C
-         IF (IPR.GT.0) WRITE (IW,8300) TIT,IRP,(EV(INDX(I)),I=1,NDT)
-C
-C........Write  eigenvalues & vectors if desired.
-C
-         DO I = 1, NDT
-C          Calculate pointer to start of vector
-           IVEC = (INDX(I)-1)*NDT + 1
-C          Normalize
-           FNOR = DDOT (NDT,VEC(IVEC),1,VEC(IVEC),1)
-           IF (CARITH) FNOR = FNOR + DDOT(NDT,VECI(IVEC),1,VECI(IVEC),1)
-           FNOR = A1 / DSQRT(FNOR)
-           CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
-           IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
-           IF (IPR.GT.1) 
-     &         WRITE (IW,8400) I,EV(INDX(I)),(VEC(IVEC+J-1),J=1,NDT)
-           IF (CARITH.AND.IPR.GT.1) 
-     &         WRITE (IW,8401) I,EVI(INDX(I)),(VECI(IVEC+J-1),J=1,NDT)
-         ENDDO
-         IOFF=IOFF+NDT2*RCW
-C
-C........Store the eigenvalues for later processing by PRT_EV
-C
-         CALL DCOPY (NDT,EV,1,EV_ALL(NDT_TOT+1),1)
-         NDT_TOT = NDT_TOT + NDT
- 100  CONTINUE
-C
-C     Print an ordered list of eigenvalues to which the ccsd energy is
-C     added.
-C
-      E_OFF = ESCF + ECCSD
-      e_off = 0.d0
-      IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.10) THEN
-         CALL PRT_EV (IW,NREP,NDT_ALL,REPNA,E_OFF,EV_ALL,
-     &                INDX_ALL,IRPS_ALL,IND)
+         DEALLOCATE (HR)
+         DEALLOCATE (HI)
       ELSE
-         CALL PRT_EV (IW,NREP,NDT_ALL,REPNA(NREP+1),E_OFF,EV_ALL,
-     &                INDX_ALL,IRPS_ALL,IND)
+Cluuk       uncomment when debugging, gives huge output
+Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
+            IF (IPRNT.GE.10) THEN
+CMI    ... control print out
+           WRITE(IW,'(2X,A)')
+     &'Output from SOLVE_CG - real matrix to be diagonalized'
+             CALL OUTPUT(H,1,NDT,1,NDT,NDT,NDT,1,IW)
+            ENDIF
+            CALL RG(NDT,NDT,H,EVR,EVI,1,VECR,SCR,SCR(1,2),IERR)
       ENDIF
 C
-8300  FORMAT (//1x,'Diagonalization of ',A40,' irrep =',I2/
-     &' Energies in atomic units:'
-     &/(5F16.12))
-8400  FORMAT (/1x,' Energy',i3,1h:,F20.12,' Real Vector:',/(1x,6f12.7))
-8401  FORMAT (' Imaginary energy',i3,1h:,F20.12,' Imag Vector:',
-     & (1x,6F12.7))
+C.....Check for errors
 C
+      IF (IERR.NE.0) THEN
+         WRITE (IW,'('' CG/RG IERR='',I4)') IERR
+         CALL QUIT('Error in diagonalization of matrix')
+      ENDIF
+C
+C.....Sort eigenvalues
+C
+      CALL INDEXX (NDT,EVR,INDX)
+C
+C.....Store the eigenvalues 
+CMI/July07 both real and imaginary
+      DO I = 1, NDT
+CMI    EV(I) = EVR(INDX(I))
+       EV(1,I) = EVR(INDX(I))
+       IF (CARITH) EV(2,I) = EVI(INDX(I))
+CMI    ... temporary print out
+       IF (CARITH) THEN
+C       write(IW,*) I,'.  re:',EVR(I),' im:',EVI(I)
+C       write(IW,*) I,'.> re:',EV(1,I),'> im:',EV(2,I)
+       ELSE
+C       write(IW,*) I,'.  re:',EVR(I)
+C       write(IW,*) I,'.> re:',EV(1,I)
+       ENDIF
+C      write(IW,*) I,'.  re:',EVR(I)
+C      write(IW,*) I,'.> re:',EV(1,I)
+C      write(IW,*) I,'+  re:',EVR(INDX(I))
+C      write(IW,*) I,'+> re:',EV(1,INDX(I))
+      ENDDO
+C
+C.....Store the eigenvectors in EVEC
+C
+      DO I = 1, NDT
+         DO J = 1, NDT
+            EVEC(1,J,I) = VECR(J,INDX(I))
+            IF (CARITH) EVEC(2,J,I) = VECI(J,INDX(I))
+         ENDDO
+      ENDDO
+C
+C.....Normalize the eigenvectors
+C
+      DO I = 1, NDT
+         CALL XDOTC(FNOR,NDT,EVEC(1,1,I),1,EVEC(1,1,I),1)
+         FNOR(1) = SQRT(1.D0 / FNOR(1))
+         IF (CARITH) FNOR(2) = 0.D0
+         CALL XSCAL(NDT,FNOR,EVEC(1,1,I),1)
+      ENDDO
+
+C
+C.....Release the memory
+C
+
+      DEALLOCATE (EVR)
+      DEALLOCATE (EVI)
+      DEALLOCATE (VECR)
+      IF (CARITH) DEALLOCATE (VECI)
+      DEALLOCATE (SCR)
+      DEALLOCATE (INDX)
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS)
+C
+      implicit real*8 (a-h,o-z)
+C---------------Description--------------------------------------------
+C
+C     Analyse the eigenvectors of the effective Hamiltonian and
+C     compute oscilator strengths.
+C
+CMI/July07 EIGENVALUES contains imaginary parts in the case of carith=T
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 EPS(*),EIGENVALUES(0:*),EIGENVECTORS(*)
+      INTEGER ICURFSS
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "inpt.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "results.inc"
+#include "ccpar.inc"
+#include "files.inc"
+C
+C---------------Local variables -----------------------------------
+      INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
+      DIMENSION IND(MXREP)
+      REAL*8 E_OFF
+C---------------Executable code--------------------------------------
+
+      ALLOCATE (INDX_ALL(IFS_HE(NREP+1,ICURFSS)))
+      ALLOCATE (IRPS_ALL(IFS_HE(NREP+1,ICURFSS)))
+
+C     Initialize the reference energy
+
+      E_OFF = ESCF + ECCSD
+
+C
+C     Print an ordered list of eigenvalues
+C
+      IF (ICURFSS.EQ.2.OR.ICURFSS.EQ.3) THEN
+C        Odd electron case : fermion irreps
+         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
+     &                E_OFF,ECCSDIM,RCW,
+     &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
+     &                INDX_ALL,IRPS_ALL,IND)
+      ELSE IF (ICURFSS.EQ.4) THEN
+C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
+C        This makes the routine print excitation energies
+         EIGENVALUES(0) = 0.D0
+         NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) + 1
+C        Even electron case : boson irreps
+         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
+     &                E_OFF,ECCSDIM,RCW,
+     &                EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)),
+     &                INDX_ALL,IRPS_ALL,IND)
+C        One should not forget this line : the real dimension of the first irrep should be retained !
+         NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
+      ELSE
+C        Even electron case : boson irreps
+         CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
+     &                E_OFF,ECCSDIM,RCW,
+     &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
+     &                INDX_ALL,IRPS_ALL,IND)
+      ENDIF
+
+C     Detailed print-out including oscillator strengths
+      CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
+     &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
+      DEALLOCATE (INDX_ALL)
+      DEALLOCATE (IRPS_ALL)
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -514,13 +662,16 @@ C
 C     Option 1) :
 C     Divide parts of T1 and T2 that correspond to WF by denominators
 C     Parts that correspond to the effective Hamiltonian are untouched.
+C     In the intermediate Hamiltonian IH-2 formalism we zero out Pi->Q
+C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
 C
 C     Option 2) :
 C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
 C
 C     Option 3) :
-C     In the intermediate Hamiltonian formalism we zero out Pi->Q
+C     In the intermediate Hamiltonian (IH-2) formalism we zero out Pi->Q
 C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
+C     NO division of the T1 and T2 by dets!
 C
 C---------------Routines called----------------------------------------
 C
@@ -547,11 +698,12 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE
+      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,FACIH
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(3,2)
       LOGICAL DENO,ZERO,Z1,Z2,Z3,Z4,IHZERO
+      LOGICAL DOIHDN
 C
 C---------------Executable code--------------------------------------
 C
@@ -590,9 +742,7 @@ c
          Z1 = .FALSE.
          II = II + 1
          FAC1 = EPS(II)
-         IF (DOIH.AND.IPIORB(II).EQ.1) THEN
-             IF (ICO.EQ.3) Z1=.TRUE.
-         ENDIF
+         ISECTP=0
          AOFF = IO(NREP+1) + IV(IRP)
 c
          IVA(0)=0
@@ -632,34 +782,65 @@ C
              Z2 = .FALSE.
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
-             IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
-                IF (ACV.EQ.3) Z2=.TRUE.
-             ENDIF
+             FACIH = FAC
+             ISECTH=0
              AI = AI + 1
+             DOIHDN=.FALSE.
+             IHZERO=.FALSE.
+             DOIHDN = (Z1.OR.Z2).AND.IHSCHEME.EQ.1
+             IHZERO = (Z1.OR.Z2).AND.IHSCHEME.EQ.2
              IF (DENO) THEN
+               IF (DOIHDN) THEN
+                IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) FACIH=FAC+SHIFT_IH(1,1)
+                IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) FACIH=FAC+SHIFT_IH(1,2)
+               ENDIF
                 IF (CARITH) THEN
-                       CT1(AI) = CT1(AI)/FAC
+                    IF (IHZERO) CT1(AI) = A0
+                    IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                CT1(AI)=CT1(AI)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                CT1(AI)=CT1(AI)*
+     x                  (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x                  (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                CT1(AI)=CT1(AI)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                    ELSE
+                    CT1(AI) = CT1(AI)/FAC
+                    ENDIF
                  ELSE
-                       T1(AI) = T1(AI)/FAC
+                    IF (IHZERO) T1(AI) = A0
+                    IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                T1(AI)=T1(AI)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                T1(AI)=T1(AI)*
+     x                  (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x                  (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                T1(AI)=T1(AI)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                     ELSE
+                    T1(AI) = T1(AI)/FAC
+                    ENDIF
                 ENDIF
              ENDIF
 C
-             IHZERO = (Z1.OR.Z2).AND.OPTION.EQ.3
-             IF (DOIH.AND.IHZERO) THEN
-                IF (CARITH) THEN
-                       CT1(AI) = A0
-                 ELSE
-                       T1(AI) = A0
-                ENDIF
-             ENDIF
 C
-             IF (ZERO) THEN
+             IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
                 IF (CARITH) THEN
                    CT1(AI) = A0
                 ELSE
                    T1(AI) = A0
                 ENDIF
              ENDIF
+          ISECTP=0
+          ISECTH=0
          ENDDO
          enddo
       ENDDO
@@ -694,8 +875,10 @@ c
             Z1 = .FALSE.
             JJ = JJ + 1
             FAC1 = EPS(JJ)
-            IF (DOIH.AND.IPIORB(JJ).EQ.1) THEN
-               IF (JCO.EQ.3) Z1 = .TRUE.
+            ISECTP1=0
+            IF (DOIH.AND.JCO.EQ.3) THEN
+                 ISECTP1=1
+                 IF (IPIORB(JJ).EQ.1) Z1 = .TRUE.
             ENDIF
             icomin=1
             IF (IRP.EQ.JRP) icoMIN = jco
@@ -706,8 +889,10 @@ c
                Z2 = .FALSE.
                II = IOFF + I
                FAC2 = EPS(II) + FAC1
-               IF (DOIH.AND.IPIORB(II).EQ.1) THEN
-                  IF (ICO.EQ.3) Z2 = .TRUE.
+               ISECTP2=0
+               IF (DOIH.AND.ICO.EQ.3) THEN
+                  ISECTP2=1
+                  IF (IPIORB(II).EQ.1) Z2 = .TRUE.
                ENDIF
 c
              DO 20 BRP = 1, NREP
@@ -732,8 +917,10 @@ c
                      Z3 = .FALSE.
                      BB = BB + 1
                      FAC3 = FAC2 - EPS(BB)
-                     IF (DOIH.AND.IPIORB(BB).EQ.1) THEN
-                       IF (BCV.EQ.3) Z3 = .TRUE.
+                     ISECTH1=0
+                     IF (DOIH.AND.BCV.EQ.3) THEN
+                       ISECTH1=1
+                       IF (IPIORB(BB).EQ.1) Z3 = .TRUE.
                      ENDIF
                      acvMIN=1
                      IF (ARP.EQ.BRP) acvMIN = Bcv
@@ -747,7 +934,11 @@ C                    leave Hamiltonian matrix elements untouched.
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)
-     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))
+ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))
+     &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
      &                  THEN
                             DENO = .FALSE.
                         ELSE
@@ -765,7 +956,11 @@ C                    This will zero out Hamiltonian elements
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,GP) (1,1) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)      ! H2 (MF,OH) (1,1) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,OH) (1,1) sector
-     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H2 (MN,GH)  ?
+ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H2 (MN,GH)  ?
+     &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
      &                  THEN
                             ZERO = .TRUE.
                         ELSE
@@ -780,25 +975,83 @@ C                    This will zero out Hamiltonian elements
                            Z4 = .FALSE.
                            AA = AOFF + A
                            FAC = FAC3 - EPS(AA)
-                           IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
-                              IF (ACV.EQ.3) Z4 = .TRUE.
+                           FACIH = FAC
+                           ISECTH2=0
+                           IF (DOIH.AND.ACV.EQ.3) THEN
+                            ISECTH2=1
+                            IF (IPIORB(AA).EQ.1) Z4 = .TRUE.
                            ENDIF
                            ABIJ = ABIJ + 1
-                           IF (DENO) THEN
+                           DOIHDN = .FALSE.
+                           IHZERO = .FALSE.
+                           DOIHDN = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.IHSCHEME.EQ.1
+                           IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.IHSCHEME.EQ.2
+              ISECTP=ISECTP1+ISECTP2
+              ISECTH=ISECTH1+ISECTH2
+              IF (DENO) THEN
+               IF (DOIHDN) THEN
+                IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                    FACIH=FAC+SHIFT_IH(2,1)
+                ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                    FACIH=FAC+SHIFT_IH(2,2)
+                ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                   FACIH=FAC+SHIFT_IH(2,5)
+                   IF (Z1.AND.Z2) FACIH=FACIH+SHIFT_IH(2,5)
+                ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                   FACIH=FAC+SHIFT_IH(2,6)
+                   IF (Z3.AND.Z4) FACIH=FACIH+SHIFT_IH(2,6)
+                ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                   FACIH=FAC+SHIFT_IH(2,4)
+                   IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     x                 (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
+     x             FACIH=FACIH+SHIFT_IH(2,4)
+                ENDIF
+               ENDIF
 C                            Check for zero denominators
-                             IF (ABS(FAC).LT.1.D-12) THEN
-                                WRITE (IW,1000) IRP,JRP,ARP,BRP,
-     &                          I,J,A,B,
-     &                          CLASS(ICO,1),CLASS(JCO,1),
-     &                          CLASS(ACV,2),CLASS(BCV,2),
-     &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC
-                                CALL QUIT('Zero denominator in DENOMF')
+                             IF (DABS(FACIH).LT.1.D-9) THEN
+                               WRITE (IW,1000) IRP,JRP,ARP,BRP,
+     &                         I,J,A,B,
+     &                         CLASS(ICO,1),CLASS(JCO,1),
+     &                         CLASS(ACV,2),CLASS(BCV,2),
+     &                         EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC,FACIH
+                               CALL QUIT('Zero denominator in DENOMF')
                              ENDIF
-                             IF (CARITH) THEN
-                                   CT2(ABIJ) = CT2(ABIJ)/FAC
-                              ELSE
-                                   T2(ABIJ) = T2(ABIJ)/FAC
-                             ENDIF
+               IF (CARITH) THEN
+                IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                CT2(ABIJ)=CT2(ABIJ)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                CT2(ABIJ)=CT2(ABIJ)*
+     x           (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                CT2(ABIJ)=CT2(ABIJ)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                 ELSE
+                  CT2(ABIJ) = CT2(ABIJ)/FAC
+                 ENDIF
+                ELSE
+                 IF (IHZERO) T2(ABIJ) = A0
+                 IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                 T2(ABIJ)=T2(ABIJ)/FACIH
+                      IF (DABS(AIH).GT.1.D-9) THEN
+                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                 T2(ABIJ)=T2(ABIJ)*
+     x           (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                 T2(ABIJ)=T2(ABIJ)/
+     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                      ENDIF
+                      ENDIF
+                  ELSE
+                   T2(ABIJ) = T2(ABIJ)/FAC
+                 ENDIF
+                ENDIF
 C-----------------------------------------------------------------------
 CThis may cause large output : activate when debugging..
 C                            Check for large amplitudes
@@ -815,19 +1068,10 @@ C    &                          CLASS(ACV,2),CLASS(BCV,2),
 C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
 C                            ENDIF
 C-----------------------------------------------------------------------
-                           ENDIF
+              ENDIF
 C
-                           IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
-     &                              .AND.OPTION.EQ.3
-                           IF (DOIH.AND.IHZERO) THEN
-                             IF (CARITH) THEN
-                                CT2(ABIJ) = A0
-                             ELSE
-                                T2(ABIJ) = A0
-                             ENDIF
-                           ENDIF
 C
-                           IF (ZERO) THEN
+                           IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
                              IF (CARITH) THEN
                                 CT2(ABIJ) = A0
                              ELSE
@@ -855,7 +1099,7 @@ C
      &/' Indices     : ',4I15,
      &/' Classes     : ',4(13X,A2),
      &/' Energies    : ',4F15.5,
-     &/' Denominator : ',E15.5,
+     &/' Denominators: ',2E15.5,
      &//' Please choose a better model space ! We will stop now.')
  1001 FORMAT (//' Large amplitude in DENOMF',
      &/T30,'I',14X,'J',14x,'A',14X,'B',
@@ -865,7 +1109,6 @@ C
      &/' Energies    : ',4F15.5,
      &/' Absolute value ',E15.5)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C
@@ -902,7 +1145,7 @@ C
 C---------------Executable code--------------------------------------
 c
 c
-c The Fock Space blocks constraction:
+c The Fock Space blocks construction:
 c
 c
 c      #       O         V
@@ -1299,7 +1542,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*)
       COMPLEX*16 CT1(*),CT2(*)
-      REAL*8 TRES
+      REAL*8 TRES,ABS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1363,12 +1606,12 @@ c
          DO A = IVA(acv-1)+1, IVA(acv)
              AA = AOFF + A
              AI = AI + 1
-             IF (CARITH.AND.ABS(CT1(AI)).GT.TRES) THEN
+             IF (CARITH.AND.ABS(CT1(AI)).GE.TRES) THEN
                WRITE (IW,1001) IRP,
      &                         A,I,
      &                         CLASS(ACV+2),
      &                         CLASS(ICO),CT1(AI)
-             ELSEIF (.NOT.CARITH.AND.ABS(T1(AI)).GT.TRES) THEN
+             ELSEIF (.NOT.CARITH.AND.ABS(T1(AI)).GE.TRES) THEN
                WRITE (IW,1001) IRP,
      &                         A,I,
      &                         CLASS(ACV+2),
@@ -1476,8 +1719,8 @@ C
       RETURN
  1000 FORMAT (//' Debug output : The amplitudes stored in the ',A2,
      &' array'/' Notation : irreps,indices,classes,value')
- 1001 FORMAT (3I5,2(1X,A2),2F20.16)
- 1002 FORMAT (8I5,4(1X,A2),2F20.16)
+ 1001 FORMAT (3I5,2(1X,A2),2G20.8)
+ 1002 FORMAT (8I5,4(1X,A2),2G20.8)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2T(T2,FT2,ABCVMIN,ABCVMAX,IJCOMIN,IJCOMAX,DOINV)
@@ -1910,4 +2153,388 @@ C     Make T2TAU
       CALL GETTAU2(BUF1,BUF3,BUF2)
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,EV_ALL,H)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Analyze the excited states and calculate transition moments
+C
+C     On input ICURFSS : currently active sector
+C                  EPS : orbital energies
+C                  IPR : print level
+C              NDT_TOT : dimension of the CI matrix
+C                E_OFF : CCSD energy to be added to eigenvalue
+C               EV_ALL : eigenvalues for all irreps
+C                    H : CI coefficients for all irreps (packed)
+C   output   INTENSITY : intensity of the transition
+C         TRANS_DIPOLE : transition dipoles (x,y,z)
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY, FS_COMPUTE_INTENSITY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+CMI/July 2007 works only with real ECCSD
+C
+C---------------Calling variables--------------------------------------
+C
+#include "complex.inc"
+      REAL*8 TRES, EPS(*), E_OFF
+      REAL*8 EV_ALL(RCW,NDT_TOT),H(*)
+      REAL*8 INTENSITY(NDT_TOT),TRANS_DIPOLE(3,NDT_TOT)
+      INTEGER ICURFSS, IPR
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "files.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      PARAMETER (NDIMH=5000)
+      INTEGER I_EIGENVALUE , J_EIGENVALUE, I_COEFF
+      CHARACTER*50 LABEL(NDIMH)
+C---------------Executable code--------------------------------------
+ 
+C     Initialize and gets label for the excited state coefficiens
+      IF (IPR.LE.0) THEN
+         TRES = 0.1
+      ELSEIF (IPR.LE.2) THEN
+         TRES = 0.001
+      ELSE
+         TRES = 0.0
+      END IF
+
+      I_EIGENVALUE = 0
+      I_COEFF = 0
+      IJ = 0
+
+      CALL GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
+
+      WRITE (IW,1000) TRES
+
+      DO IRP=1,NREP
+ 
+C     Get the dimension of the space
+ 
+         NDT = NFS_HE(IRP,ICURFSS)
+         IF (NDT.EQ.0) CYCLE
+
+C     Add an offset for irrep names for bosonic irreps
+
+         IF (ICURFSS.LE.3) THEN
+          IRPOFF = 0
+         ELSE
+          IRPOFF = NREP
+         ENDIF
+
+C        Loop over the eigenvalues
+ 
+         DO J_EIGENVALUE = 1, NDT
+            I_EIGENVALUE = I_EIGENVALUE + 1
+C           intensity not yet implemented
+c           WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
+c    &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE),
+c    &            INTENSITY(I_EIGENVALUE),
+c    &           (TRANS_DIPOLE(IX,I_EIGENVALUE),IX=1,3)
+            WRITE (IW,1010) REPNA(IRPOFF+IRP),J_EIGENVALUE,
+CMI  &            EV_ALL(I_EIGENVALUE),E_OFF+EV_ALL(I_EIGENVALUE) 
+     &            EV_ALL(1,I_EIGENVALUE),E_OFF+EV_ALL(1,I_EIGENVALUE) 
+C           Loop over the coefficients and print the interesting ones
+            DO J_COEFF = 1, NDT
+               K_COEFF = I_COEFF + J_COEFF
+               IJ = IJ + 1
+               IF (ABS(H(IJ)).GT.TRES) 
+     &             WRITE (IW,'(F15.5,3X,A50)') H(IJ),LABEL(K_COEFF)
+            END DO
+         END DO
+         I_COEFF = I_COEFF + NDT
+      END DO
+
+C      write(IW,*) 'in FS_ANALYSIS...4'
+C      call FLSHFO(IW)
+
+ 1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
+C    intensity not yet implemented
+c    &/' First line  : Energy, Intensity, Transition dipole vector'
+     &/' First line  : Eigenvalue, Energy'
+     &/' other lines : Coefficients of contributing determinants',
+     & ' (above a treshold of ',E6.1,')')
+ 1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8,4F10.5)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Read dipole moment in MO basis and contract with CI vectors
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "param.inc"
+C
+C---------------Variables-----------------------------------------------
+C
+c
+c LV, 9-5-2007 : Still to do is the following
+c
+c 1) read in dipole matrices (make sure they are available on MDPROP)
+c 2) extract part that we need
+c    av, av for (0,1) and (0,2) sectors
+c    ao, ao for (1,0) and (2,0) sectors
+c    av, ao for (1,1) sector
+c 3) apply Slater rules, trivial for (0,1) and (1,0), analogous
+c    to construction of Heff for the (0,2) and (2,0) sectors
+c    this will in the first step give a matrix with as right dimension
+c    the original one (# of states in a give symmetry), but on the left
+c    hand side the # states in the product symmetry (e.g. irrep(dipole_z) x irrep(solution vector)
+c    this matrix can be contracted once more with the solution vectors to provide the transition dipoles
+c    for all possible transitions
+c 4) select the interesting ones and print them
+c    one may save some memory by already in step 3) contracting only over the interesting ones. will make the
+c    code a bit more complicated, though
+c
+c    NB: note that this scheme is treating a H-eff as were it a Hermitian CI matrix, a probably better approach
+c        is to use the left and righthand side eigenvectors, but this needs to be worked out more carefully.
+c
+      INTEGER ICURFSS,I,IREP,JREP
+      REAL*8 H(*),INTENSITY(*),TRANS_DIPOLE(3,*)
+      INTEGER NFS_PRP(MXREP)
+      REAL*8 DIPOLE(600),D_TERMS_C(600)
+      
+      CALL DZERO (INTENSITY,600)
+      CALL DZERO (TRANS_DIPOLE,3*600)
+
+C     Contract the solution vectors with the x-dipole matrices
+C     Calculate product irreps after multiplication with x
+      DO JREP = 1, NREP
+c        IREP = MULTB(PRP_REP(1)+NREP,JREP)
+         irep = jrep ! test with totally symmetric operators
+         NFS_PRP(IREP) = NFS_HE(IREP,ICURFSS)
+      ENDDO
+
+      IF (ICURFSS.LE.3) THEN
+C        Make Dipole * Vec
+         CALL CNTRCT ('N','N',NFS_PRP,NFS_HE(1,ICURFSS),
+     &                        NFS_HE(1,ICURFSS),A1,DIPOLE,H,A0,
+     &                        D_TERMS_C,NREP)
+C        Make Vec * Dipole * Vec (all possible transition dipoles)
+         CALL CNTRCT ('C','N',NFS_PRP,NFS_HE(1,ICURFSS),
+     &                        NFS_PRP,A1,H,D_TERMS_C,A0,
+     &                        TRANS_DIPOLE,NREP)
+      ENDIF
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Define the labels of the model space vector
+C
+C     Author : Luuk Visscher
+C
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "files.inc"
+C
+C---------------Variables-----------------------------------------------
+C
+      CHARACTER*50 LABEL(NDIMH),NOT_DEFINED
+      INTEGER ICURFSS,I
+      REAL*8 EPS(*)
+      DIMENSION IAO(MXREP),IAV(MXREP)
+
+C     Determine offsets for start of orbital energies
+
+C      write(IW,*) 'in GET_FSLABEL  1'
+C      call FLSHFO(IW)
+ 
+      IAO(1) = NIO(1)
+      IAV(1) = NIO(1) + NAO(1)
+      DO IREP = 1, NREP-1
+         IAO(IREP+1) = IAO(IREP) + NAO(IREP) + NAV(IREP)   + NIO(IREP+1)
+         IAV(IREP+1) = IAV(IREP) + NAV(IREP) + NIO(IREP+1) + NAO(IREP+1)
+      END DO
+
+C     write(IW,*) 'in GET_FSLABEL  1.1...ICURFSS=',ICURFSS
+C     call FLSHFO(IW)
+      
+      II = 0
+C     II counts the active orbitals
+      IF (ICURFSS .EQ. 2) THEN
+         DO IREP = 1, NREP
+            DO I = 1, NAV(IREP)
+               II = II + 1
+               JJ = JJ + 1
+
+C      write(IW,*) 'in GET_FSLABEL  1.1.1'
+C      call FLSHFO(IW)
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+               WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAV(IREP)+I)
+            END DO
+         END DO
+
+C      write(IW,*) 'in GET_FSLABEL  1.2'
+C      call FLSHFO(IW)
+      
+      ELSEIF (ICURFSS .EQ. 3) THEN
+         DO IREP = 1, NREP
+            DO I = 1, NAO(IREP)
+               II = II + 1
+
+C      write(IW,*) 'in GET_FSLABEL  1.2.1'
+C      call FLSHFO(IW)
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+               WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAO(IREP)+I)
+            END DO
+         END DO
+
+C      write(IW,*) 'in GET_FSLABEL  1.3'
+C      call FLSHFO(IW)
+
+C     II counts single excitations
+      ELSEIF (ICURFSS .EQ. 4) THEN
+         DO IJREP =1, NREP
+            DO JREP = 1, NREP
+               IREP = MULTB(JREP,IJREP+NREP,1)
+               DO J = 1, NAV(JREP)
+                  DO I = 1, NAO(IREP)
+                     II = II + 1
+
+C      write(IW,*) 'in GET_FSLABEL  1.3.1'
+C      call FLSHFO(IW)
+
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+                     WRITE(LABEL(II),1011) 
+     &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
+                  END DO
+               END DO
+            END DO
+         END DO
+
+C      write(IW,*) 'in GET_FSLABEL  1.4'
+C      call FLSHFO(IW)
+
+C     II counts the double creations
+      ELSEIF (ICURFSS .EQ. 5) THEN
+         DO IJREP =1, NREP
+            DO JREP = 1, NREP
+               IREP = MULTB(JREP,IJREP+NREP,2)
+               IF (IREP.EQ.JREP) THEN
+                  DO J = 1, NAV(JREP)
+                     DO I = J+1, NAV(IREP)
+                       II = II + 1
+
+C      write(IW,*)
+C    & 'in GET_FSLABEL  1.4.1, IREP,JREP,MXREP,EPS indexes:',
+C    &          IREP,JREP,MXREP,IAV(IREP)+I,IAV(JREP)+J
+       call FLSHFO(IW)
+
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
+                     END DO
+                  END DO
+
+               ELSEIF (IREP.GT.JREP) THEN
+                  DO J = 1, NAV(JREP)
+                     DO I = 1, NAV(IREP)
+                       II = II + 1
+
+C       write(IW,*) 'IREP=',IREP,' JREP=',JREP,' MXREP=',MXREP
+C       write(IW,*) 'I=',I,' J=',J,' II=',II,' LABEL(II)=',LABEL(II)
+C       call FLSHFO(IW)
+
+C      write(IW,*)
+C    &     'in GET_FSLABEL  1.4.2, EPS indexes:',
+C    &      IAV(IREP)+I,IAV(JREP)+J
+C      call FLSHFO(IW)
+
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
+                       call FLSHFO(IW)
+                     END DO
+                  END DO
+               END IF
+            END DO
+         END DO
+C      write(IW,*) 'in GET_FSLABEL  1.5'
+       call FLSHFO(IW)
+C     II counts the double annihilations
+      ELSEIF (ICURFSS .EQ. 6) THEN
+         DO IJREP =1, NREP
+            DO JREP = 1, NREP
+               IREP = MULTB(JREP,IJREP+NREP,2)
+               IF (IREP.EQ.JREP) THEN
+                  DO J = 1, NAO(JREP)
+                     DO I = J+1, NAO(IREP)
+                       II = II + 1
+C      write(IW,*) 'in GET_FSLABEL  1.5.1'
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
+                     END DO
+                  END DO
+               ELSEIF (IREP.GT.JREP) THEN
+                  DO J = 1, NAO(JREP)
+                     DO I = 1, NAO(IREP)
+                       II = II + 1
+C      write(IW,*) 'in GET_FSLABEL  1.5.'
+       call FLSHFO(IW)
+               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
+                       WRITE(LABEL(II),1002) 
+     &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
+                     END DO
+                  END DO
+               END IF
+            END DO
+         END DO
+C      write(IW,*) 'in GET_FSLABEL  1.6'
+C      call FLSHFO(IW)
+      END IF
+
+C      write(IW,*) 'in GET_FSLABEL  2 ... end'
+       call FLSHFO(IW)
+
+ 1001 FORMAT ('| ',A4,' #',I4,' (',F8.3,') |',25X)
+ 1002 FORMAT ('| ',A4,' #',I4,' (',F8.3,'), ',
+     &             A4,' #',I4,' (',F8.3,') |')
+ 1011 FORMAT (1X,A4,' #',I4,' (',F8.3,') -> ',
+     &             A4,' #',I4,' (',F8.3,')  ')
+      END
+
+      SUBROUTINE CHECK_LABEL_DIMENSION(II,NDIMH)
+#include "files.inc"
+      INTEGER II,NDIMH
+       IF (II.GT.NDIMH) THEN
+       call FLSHFO(IW)
+        write(IW,*) 'GET_FSLABEL: II=',II,' dimension=',NDIMH
+        write(IW,*) 'Increase NDIMH!!!'
+       call FLSHFO(IW)
+        call QUIT('GET_FSLABEL: increase dimension for LABEL array !!!')
+       ENDIF
       END

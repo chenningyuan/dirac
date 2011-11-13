@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 1.5 $
-! DATE    : $Date: 2004/05/26 13:06:53 $
+! VERSION : $Revision: 3426 $
+! DATE    : $Date: 2004-05-26 15:06:58 +0200 (Wed, 26 May 2004) $
 ! FILE    : consts.h
 !
 !     Collection of frequently used constants.

@@ -1,53 +1,57 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.21.2.1 $
-C DATE    : $Date: 2004/09/01 08:08:50 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : diropen.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK */
-      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SAOMO,DTEMP1,DTEMP2,
+      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,TDINV,DTEMP1,DTEMP2,
      &                  WORK,LWORK)
 C****************************************************************************
+C
 C     PURPOSE:
+C  =============
 C        Construct MO Fock matrix from Fock matrices in AO-basis
+C
+C     On input:
+C  FAO(*,1)       - FD-matrix, that is FD = h + {sum(S) Q_s}, see (3.41)
+C                   of the thesis of J. Thyssen
+C  FAO(*,1+IOPEN) - FV-matrix, two-electron Fock matrix constructed from
+C                   the normalized density matrix of open shell IOPEN
+C  TMAT
+C  DMAT
+C  CMO
+C  TDINV
+C
+C     On output:
+C  FMO
 C
 C        Written by J. Thyssen
 C        Last revision: Dec 30 1997
+C          Nov.2005 - MI - only print-out info
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -62,7 +66,7 @@ C*****************************************************************************
 #include "dgroup.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
-     &          DMAT(N2BBASXQ,NFMAT),SAOMO(*),WORK(*)
+     &          DMAT(N2BBASXQ,NFMAT),TDINV(*),WORK(*)
       CHARACTER CTMP*3
 C
 #include "memint.h"
@@ -74,7 +78,7 @@ C     -------------------------------------------
 C
 C     Note: t stands for hermitian conjungation
 C     Fmo = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
-C         = FDmo + Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
+C         = FDmo + Ct Sao [DVao FVao (beta DCao + gamma DSao)t] Sao C + H.C
 C     where beta  = alpha*f
 C     and   gamma = a-1
 C
@@ -85,10 +89,10 @@ C
 C     Open shells that do couple:
 C     ---------------------------
 C
-C     See paper by J. Thyssen
-C     (reference: manuscript)
+C     See thesis of J. Thyssen
 C
-C        Transform FD to MO-basis
+C     Transform FD to MO-basis
+C     ========================
 C
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
@@ -103,12 +107,28 @@ C
      &            TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRSCF)
         ENDIF
+
         IF(IPRSCF.GE.10) THEN
-           WRITE(CTMP,'(I1)') I
-           CALL HEADER('MKMOFK: D Fock matrix in MO-basis'//
-     &                 ', corep '//CTMP,-1)
-           CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
-     &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER(
+     &    'MKMOFK: Entering Fock AO matrix - closed shell part',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(FAO(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
+     &          NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER(
+     &   'MKMOFK: Entering AO2MO transformation matrix,TMAT(NZT)',-1)
+         WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(TMAT(1+I2TMT(I)),NFBAS(I,0),NTMO(I),
+     &           NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),LUPRI)
+
+         CALL HEADER(
+     &    'MKMOFK: D Fock matrix transformed into MO-basis',-1)
+          WRITE(LUPRI,'(A,I1,A,I1)')
+     &    '* Fermion ircop no.',I,'/',NFSYM                          
+         CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &          NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
         END IF
       END IF
       END DO
@@ -124,40 +144,55 @@ C
          GOTO 30
       END IF
 C
-C
 C     Construct coupling operator L
+C     =============================
 C
+      IF(.NOT.AOC) GOTO 30
 C
       DO 10 IOPEN = 1,NOPEN
 C
          BETA  = DALPHA(IOPEN)*DF(IOPEN)
          GAMMA = DA(IOPEN)-D1
-         IF (IPRSCF.GE.5) THEN
-            WRITE(LUPRI,'(A,I1,A,F10.6)') 
+         IF (IPRSCF.GE.8) THEN
+           WRITE(LUPRI,'(A,I1,A,F10.6)') 
      &         'MKMOFK: BETA  factor, open shell ',IOPEN,' : ',BETA
-            WRITE(LUPRI,'(A,I1,A,F10.6)') 
+           WRITE(LUPRI,'(A,I1,A,F10.6)') 
      &         'MKMOFK: GAMMA factor, open shell ',IOPEN,' : ',GAMMA
          END IF
 C
-C
 C        Get secondary density matrices as projection operator
-C           in AO-basis
+C        in AO-basis
+C        IFLAG = 4 + 8 = 12
+C          4 - 000100: Secondary electron density matrix
+C          8 - 001000: Secondary positron density matrix
 C
-         CALL GENDEN(DTEMP1,CMO,12,IPRSCF)
-C
-C        Construct total secondary density matrix DSao
-C
-         CALL DAXPY(N2BBASXQ,D1,DTEMP1(1,2),1,DTEMP1(1,1),1)
+         IF(VACPOL) THEN
+C..........negative energy solutions are occupied
+           IFLAG = 4
+         ELSE
+           IFLAG = 12
+         ENDIF
+         CALL GENDEN(DTEMP1,CMO,IFLAG,IPRSCF)
 C
 C        Construct the projection operator:
 C         BETA DCao + GAMMA DSao
 C           = alpha*f DCao + (a_o-1)*DSao
 C
          CALL DSCAL(N2BBASXQ,GAMMA,DTEMP1(1,1),1)
-         CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
+         IF(VACPOL) THEN
+C..........negative energy solutions are occupied
+           IFLAG = 9
+           CALL GENDEN(DTEMP1(1,2),CMO,IFLAG,IPRSCF)
+           CALL DAXPY(N2BBASXQ,BETA,DTEMP1(1,2),1,DTEMP1(1,1),1)
+         ELSE
+           CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
+         ENDIF
+C........also include contribution to active-active block !
+C........add factor half since this is a diagonal block
+         FAC = GAMMA*DP5
+         CALL DAXPY(N2BBASXQ,FAC,DMAT(1,1+IOPEN),1,DTEMP1(1,1),1)
 C
-C
-         IOFFSAOMO = 1
+         IOFFTDINV = 1
          DO 20 I = 1,NFSYM
 C
             IF (NACSH(I,IOPEN).GT.0) THEN
@@ -290,15 +325,15 @@ C
      &               NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
                END IF
 C
-C              Transform with halftransformed Saomo from left and right
+C              Transform with inverse T from left and right
 C              Store the result in DTEMP1(1,1)
 C
                CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &           DTEMP2(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &           DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &           SAOMO(IOFFSAOMO),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
-     &           SAOMO(IOFFSAOMO),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           TDINV(IOFFTDINV),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           TDINV(IOFFTDINV),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRSCF)
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
@@ -327,15 +362,18 @@ C
      &            IPQTOQ(1,0),NZ,
      &            FMO(1+I2ORBT(I)),N2ORB(I),1,
      &            IPQTOQ(1,0),NZ)
-               IF ( IPRSCF .GE. 10 ) THEN
-                  WRITE(CTMP,'(I1)') I
-                  CALL HEADER('MKMOFK: Total Fock matrix in MO-basis'//
-     &               ', corep '//CTMP,-1)
+
+               IF ( IPRSCF .GE. 7 ) THEN
+                  CALL HEADER(
+     &            'MKMOFK: Total Fock matrix (output) in MO-basis',-1)
+                   WRITE(LUPRI,'(A,I1,A,I1)')
+     &             '* Fermion ircop no.',I,'/',NFSYM 
                   CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
             END IF
-            IOFFSAOMO = IOFFSAOMO + NZ*NORB(I)*NFBAS(I,0)
+CMI         IOFFTDINV = IOFFTDINV + NZ*NORB(I)*NFBAS(I,0)
+            IOFFTDINV = IOFFTDINV + NZT*NORB(I)*NFBAS(I,0)
  20      CONTINUE
  10   CONTINUE
 C

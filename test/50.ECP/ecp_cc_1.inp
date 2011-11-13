@@ -1,0 +1,46 @@
+!
+! This test calculates the CCSD(T) energy of
+! Sr atom in an external electric field of 0.001 a.u.,
+! employing valence-only Hamitonian
+! for effective-core-potentials.
+! Note the keyword .ECP in **GENERAL.
+!
+**DIRAC
+.TITLE
+Sr for ECP
+.WAVE F
+**GENERAL
+.ECP
+.DIRECT
+1 1 1
+**INTEGRALS
+*TWOINT
+.SOFOCK
+.SCREEN
+ 1.0D-12
+**HAMILTONIAN
+.OPERAT
+ ZDIPLEN
+ COMFACTOR
+ 0.001
+**WAVE FUNCTIONS
+.DHF
+.RELCCSD
+*DHFCAL
+.CLOSED SHELL
+10
+.INTFLG
+1 1 1
+.MAXITR
+70
+.EVCCNV
+1.0E-8
+.CNVINT
+0.01 0.0001
+**MOLTRA
+.ACTIVE
+ all
+*END OF DIRAC
+
+ &RELCCSD TIMING=T, DOENER=T &END
+ &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=T &EN

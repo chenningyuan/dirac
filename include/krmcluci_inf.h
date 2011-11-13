@@ -8,12 +8,12 @@
 !     in LUCIAREL (preliminary implementation)
 !  4) Some auxiliary variables
 !
-!  Max. number of type-type-symmetry-symmetry blocks allowed:
-!  (dynamically allocated in LUCIAREL)
+!     Max. number of type-type-symmetry-symmetry blocks allowed:
+!     (dynamically allocated in LUCIAREL)
       INTEGER MXNTTS_MC
-      PARAMETER (MXNTTS_MC = 10000)
+      PARAMETER (MXNTTS_MC = 500 000)
 
-!  Max. no. of MK projection values allowed (same in LUCIAREL).
+!     Max. no. of MK projection values allowed (same in LUCIAREL).
       INTEGER MXMKSTA
       PARAMETER (MXMKSTA = 100)
 

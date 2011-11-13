@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
       SUBROUTINE XQRINP(WORD,RESET,WORK,LWRK)
 C*****************************************************************************
@@ -57,7 +45,7 @@ C
 #include "dcbxpr.h"
 C
       PARAMETER ( D1=1.0D0, D0=0.0D0 )
-      PARAMETER ( NTABLE=28, DMIL=1.0D3 )
+      PARAMETER ( NTABLE=29, DMIL=1.0D3 )
 C
       LOGICAL SET,NEWDEF,RESET
       CHARACTER PROMPT*1,WORD*7,TABLE(NTABLE)*7,WORD1*7,PNAME*16
@@ -71,7 +59,8 @@ C
      &     '.XXXXXX','.XXXXXX','.INTFLG','.NOPREC',
      &     '.DIPLEN','.OCCUPI','.VIRTUA','.ACTIVE',
      &     '.ITRINT','.CNVINT','.XXXXXX','.XXXXXX',
-     &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE'/
+     &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE',
+     &     '.EXCPRP'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -105,8 +94,6 @@ C
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
-      IF (IGTINT .NE. 0) CALL QUIT('ABORT reading *QUADRA input: '//
-     &   ' Gaunt integrals not implemented in QR yet')
 C
 C ------------------------------------------------------------------------
 C     Initialize dcbxqr.h
@@ -114,7 +101,7 @@ C ------------------------------------------------------------------------
 C     Quadratic response calc may also be specified under **PROPERTIES
 C     in which case we should NOT re-initialize some variables
 C
-      IF (.NOT.(DOXQR.OR.DOTPA.OR.DOVER)) THEN
+      IF (.NOT.(DOXQR.OR.DOTPA.OR.DOVER.OR.DOEXCPRP)) THEN
          NAQROP = 0
          NBQROP = 0
          NCQROP = 0
@@ -131,22 +118,14 @@ C
       CNVXQR(2) = DUMMY
       MAXQRM = 400
       ITRXQR = 30
-      INTXQR = ILLINT + 2*ISLINT + 4*ISSINT
+      INTXQR = ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
       ITRIQR(1) = 1
       ITRIQR(2) = 1
       XQRNRM = .FALSE.
       XQRDIH = .TRUE.
       XQR_ALLCMB = .FALSE.
       XQR_SKIPEE = .FALSE.
-      IF (LEVYLE) THEN
-         INTXQR = ILLINT
-         XQR_SKIPEP = .TRUE.
-      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
-C     No positron orbitals ("no-pair")
-         XQR_SKIPEP = .TRUE.
-      ELSE
-         XQR_SKIPEP = .FALSE.
-      END IF
+      XQR_SKIPEP = .FALSE.
       DO I = 1,NFSYM
          XQR_INDSTR(1,I) = ' '
          XQR_INDSTR(2,I) = ' '
@@ -173,7 +152,7 @@ C
                IF (TABLE(I) .EQ. WORD) THEN
                   GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                  11,12,13,14,15,16,17,18,19,20,
-     &                  21,22,23,24,25,26,27,28), I
+     &                  21,22,23,24,25,26,27,28,29), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -277,8 +256,13 @@ C
             GOTO 100
 C     Specify what two-electron integrals to include
  15         CONTINUE
-            READ(LUCMD,*) ILLINT,ISLINT,ISSINT
-            INTXQR = ILLINT + 2*ISLINT + 4*ISSINT
+            IF (GAUNT) THEN
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
+               INTXQR = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+            ELSE
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+               INTXQR = ILLINT+2*ISLINT+4*ISSINT
+            ENDIF
             GOTO 100
  16         CONTINUE
 C     No preconditioning of initial trial vectors
@@ -344,6 +328,10 @@ C
 C     .SKIPEE Skip all e-e rotations
             XQR_SKIPEE = .TRUE.
             GO TO 100
+ 29         CONTINUE
+C     .EXCPRP compute excited state properties (or matrix elements)
+            CALL EXCPRPINP(2,DOEXCPRP,EXCPRPTYP,WORK(KFREE),LFREE)
+            GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GO TO 300
          ELSE
@@ -357,14 +345,32 @@ C     .SKIPEE Skip all e-e rotations
 C
 C     Process section
 C
+      IF (LEVYLE.OR.BSS) THEN
+C        INTXQR = ILLINT
+         INTXQR = 1
+         XQR_SKIPEP = .TRUE.
+      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
+C     No positron orbitals ("no-pair")
+         XQR_SKIPEP = .TRUE.
+!
+!     radovan: the ELSE below ignores the .SKIPEP keyword!!!
+!     ELSE
+!        XQR_SKIPEP = .FALSE.
+      END IF
+
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1
       IF (CNVXQR(2).LT.DUMMY) ITRIQR(2) = 1
+C
+C     Check that the specification of the EXCPRP calculation 
+C     is complete and consistent
+C
+      CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK(KFREE),LFREE)
 C
 C     Do not set DOXQR if DOTPA is already set.
 C
       DOXQR = (NAQROP.GT.0.AND.NBQROP.GT.0.AND.NCQROP.GT.0).AND.
-     &        (.NOT.DOTPA)
-      IF ( .NOT.(DOXQR.OR.DOTPA) ) GOTO 999
+     &        (.NOT.DOTPA) .AND. (.NOT.DOEXCPRP)
+      IF ( .NOT.(DOXQR.OR.DOTPA.OR.DOEXCPRP) ) GOTO 999
 
 C     Don't do Verdet "optimization" if all combinations are
 C     requested.
@@ -400,6 +406,7 @@ C
       IF (ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
       IF (ISLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LS-integrals'
       IF (ISSINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
+      IF (IGTINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       IF (XQRNRM) WRITE(LUPRI,'(A)')
      &     ' * Trial vectors will be normalized.'
       IF (XQRDIH) THEN
@@ -480,7 +487,7 @@ C     Get the MO coefficients
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPXQR')
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &              TOTERG,11,WORK,KFREE,LFREE)
@@ -744,6 +751,11 @@ C
       LQROP(NQROP,2)=1
       QRFREQ(1,NQROP)=FREQ
 C
+      IF (IPRXQR.GE.2) THEN
+         WRITE(LUPRI,'(/A/,2(A,I5))') 'INDQR: New operator added.',
+     &        '       NQRROP = ', NQROP, 'IPOINT = ', IPOINT
+      END IF
+C
  100  CONTINUE
 C
       CALL QEXIT('INDQR')
@@ -769,7 +781,8 @@ C
 C
       SAVE IOP,FRQ,N,ISYM
 C
-      DATA N/0/
+      DATA N/0/, FRQ(1,1)/0.0D0/, IOP(1,1)/0/, ISYM(1,1)/0/
+C     (FRQ, IOP, ISYM initialized to avoid messages from ftnchek /Aug 2004)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -797,14 +810,14 @@ C
             IF (L.NE.K .AND. L.NE.J) THEN
 C
                IF (IAOP.EQ.IOP(I,J) .AND.
-     &              IBOP.EQ.IOP(I,K) .AND.
-     &              ICOP.EQ.IOP(I,L) .AND.
-     &              ISYMA.EQ.ISYM(I,J) .AND.
-     &              ISYMB.EQ.ISYM(I,K) .AND.
-     &              ISYMC.EQ.ISYM(I,L) .AND.
-     &              ABS(ABS(AFR)-ABS(FRQ(I,J))).LT.THD .AND.
-     &              ABS(ABS(BFR)-ABS(FRQ(I,K))).LT.THD .AND.
-     &              ABS(ABS(CFR)-ABS(FRQ(I,L))).LT.THD ) THEN
+     &             IBOP.EQ.IOP(I,K) .AND.
+     &             ICOP.EQ.IOP(I,L) .AND.
+     &             ISYMA.EQ.ISYM(I,J) .AND.
+     &             ISYMB.EQ.ISYM(I,K) .AND.
+     &             ISYMC.EQ.ISYM(I,L) .AND.
+     &             ABS(ABS(AFR)-ABS(FRQ(I,J))).LT.THD .AND.
+     &             ABS(ABS(BFR)-ABS(FRQ(I,K))).LT.THD .AND.
+     &             ABS(ABS(CFR)-ABS(FRQ(I,L))).LT.THD ) THEN
                   DOHYP = .FALSE.
                END IF
 C
@@ -1004,6 +1017,7 @@ C
 C     Transfer information from XCBXQR to other common blocks 
 C     to be used in solving the linear response equations.
 C
+      CALL SETRSP
       LINEQ = .TRUE.
       FKRMC = .FALSE.
 C     ... not KRMC wave function optimization
@@ -1326,7 +1340,7 @@ C     calculations are not of interest since they are just dummies
 C     and thus are given an offset IEXCOFF.
 C         
          IF (IBPT.GE.IEXCOFF) THEN
-            IF (DOTPA) THEN
+            IF (DOTPA .OR. DOEXCPRP) THEN
                ISYMB = IBPT - IEXCOFF
                BLAB = 'EXCLABL '
             ELSE
@@ -1686,7 +1700,7 @@ C
 C     Print
 C
       IF (IPRXQR.GE.10) THEN
-         IF (FREQ.LT.D0) WRITE(LUPRI,'(/A,A12,I5,2(/A)))') 
+         IF (FREQ.LT.D0) WRITE(LUPRI,'(/A,A12,I5,2(/A))') 
      &     ' HYPINIT: Note that response vector (label/time-symmetry):',
      &     LAB,ITIM,
      &     ' has negative frequency, so solution vector is swapped and',
@@ -1915,7 +1929,7 @@ C
       JSYMOP = ISYM
       JOPSY  = JBTOF(JSYMOP-1,1)
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &            WORK,KFREE,LFREE,IPRXQR)
+     &            WORK,KFREE,LFREE,IPRINT)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('GTZYMT: Inconsistent orbital rotations')
 C
@@ -2091,6 +2105,11 @@ C
 C
 C     Print section
 C
+      IF(IPRINT.GE.2) THEN
+         CALL QMATNORM('Untransformed matrix',A,NORBT,NORBT,NZ)
+         CALL QMATNORM('Unpacked response vector',W,NORBT,NORBT,NZ)
+         CALL QMATNORM('Transformed matrix',C,NORBT,NORBT,NZ)
+      END IF
       IF(IPRINT.GE.10) THEN
          WRITE(LUPRI,'(A)') 
      &        'One-index transformed matrix in OITMAT'
@@ -2137,7 +2156,7 @@ C
       JSYMOP = ISYMGR
       JOPSY  = JBTOF(JSYMOP-1,1)
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &            WORK,KFREE,LFREE,IPRXQR)
+     &            WORK,KFREE,LFREE,IPRINT)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('RSP1GR: Inconsistent orbital rotations')
 C
@@ -2148,6 +2167,10 @@ C
 C
 C     Print section
 C
+      IF (IPRINT.GE.2) THEN
+         CALL QMATNORM('Gradient (e-e) vector',GEE,NZYEE,1,NZ)
+         CALL QMATNORM('Gradient (e-p) vector',GEP,NZYEE,1,NZ)
+      ENDIF
       IF (IPRINT.GE.12) THEN
          WRITE(LUPRI,'(/A)') 'Gradient (e-e) in RSP1GR: Z- and Y-parts'
          CALL PRQMAT(GEE,NZEE,2,NZEE,2,NZ,IPQTOQ(1,ISYMGR-1),LUPRI)
@@ -2275,6 +2298,10 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
+#ifdef MOD_DFT
+#include "dftcom.h"
+#endif
+C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
       DIMENSION VECAEE(NZYAEE,NZ),VECBEE(NZYBEE,NZ),VECCEE(NZYCEE,NZ),
@@ -2327,12 +2354,60 @@ C
 C
 C     Construct the Fock matrices in AO basis. 
 C
+C     Check for static time-symmetric or anti-symmetric poperties
+C     to use symmetries and not general matrices.
+C
       CALL E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYMB,ISYMC,ISYMA,
-     &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA)
+     &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA,NPOS)
+      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
-     &     IDUM,INTFLG,IPRXQR,WORK(KFREE),LFREE)
-C
+     &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
+
+
+#ifdef MOD_DFT
+
+
+!     construct XC contribution
+!     =========================
+
+      if (dftadd) then
+
+!       get unperturbed density matrix
+        call memget('REAL', kdmat, n2bbasxq, work, kfree, lfree)
+        call genden(work(kdmat), cmo, 1, iprxqr)
+
+!       radovan:
+!       this is necessary iff
+!       (hybrid functional .and. gradient dependence .and. nonzero frequency)
+!       otherwise the symmetrization inside dftexc messes up the KS matrix
+!       we could check here whether we have this situation and not allocate
+!       otherwise but now we just play it safe and simply allocate it
+        call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
+        call dzero(work(kxc), 3*n2bbasxq)
+
+        call dftexc(work(kdmat),
+     &              work(kd1ao),
+     &              work(kxc),
+     &              3,
+     &              isymop,
+     &              ihrmop,
+     &              8,
+     &              work(kfree),
+     &              lfree,
+     &              iprxqr)
+
+!       add the (symmetrized) XC contribution on top of work(kf1ao)
+        call daxpy(3*n2bbasxq, 1.0d0, work(kxc), 1, work(kf1ao), 1)
+
+!       deallocate
+        call memrel('e3drv.dft', work, 1, kxc,   kfree, lfree)
+        call memrel('e3drv.dft', work, 1, kdmat, kfree, lfree)
+
+      end if
+#endif
+
+
 C     Scale all Fock matrices with a factor 4 to agree with
 C     convention used in TWOFCK as of Aug 2004.
 C
@@ -2368,16 +2443,22 @@ C
       CALL MEMGET('REAL',KF3MO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF2MO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF1MO,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFMO,N2ORBXQ,WORK,KFREE,LFREE)
+
+!     radovan: this is because GETFCK assumes the dimension N2BBASXQ
+!     CALL MEMGET('REAL',KFMO,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFMO,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Read in the Fock matrix in MO basis from file, and transform the 
 C     modified Fock matrices constructed above from AO to MO basis
 C
       CALL GETFCK(WORK(KFMO),IPRXQR,WORK,KFREE,LFREE)
+C.....Gb aka F1
       CALL QRFAOMO(WORK(KF1MO),WORK(KF1AO),ISYMB,ITIMB,IFERB,
      &     IPRXQR,CMO,WORK(KFREE),LFREE)
+C.....Gc aka F2
       CALL QRFAOMO(WORK(KF2MO),WORK(KF2AO),ISYMC,ITIMC,IFERC,
      &     IPRXQR,CMO,WORK(KFREE),LFREE)
+C.....Gbc aka F3
       CALL QRFAOMO(WORK(KF3MO),WORK(KF3AO),ISYMA,ITIMB*ITIMC,IFERA,
      &     IPRXQR,CMO,WORK(KFREE),LFREE)
 
@@ -2387,16 +2468,16 @@ C
       CALL DSCAL(N2ORBXQ,D2,WORK(KB),1)
       CALL DSCAL(N2ORBXQ,D2,WORK(KC),1)
 C
-C     [Wb,F] ---> F1
-C     [Wc,F] ---> F2
+C     F1: Gb = Gb + [Wb,F] 
+C     F2: Gc = Gc + [Wc,F] 
 C
       CALL OITMAT(WORK(KFMO),1,1,WORK(KB),ISYMB,IFERB,
      &     WORK(KF1MO),ISYMB,IFERB,IPRXQR)
       CALL OITMAT(WORK(KFMO),1,1,WORK(KC),ISYMC,IFERC,
      &     WORK(KF2MO),ISYMC,IFERC,IPRXQR)
 C
-C     [Wc, F1+[Wb,F]] ---> F3
-C     [Wb, F2+[Wc,F]] ---> F3
+C     [Wc, Gb+[Wb,F]] ---> F3
+C     [Wb, Gc+[Wc,F]] ---> F3
 C
       CALL OITMAT(WORK(KF1MO),ISYMB,IFERB,WORK(KC),ISYMC,IFERC,
      &     WORK(KF3MO),ISYMA,IFERA,IPRXQR)
@@ -2835,7 +2916,7 @@ C
       RETURN
       END
       SUBROUTINE E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYM1,ISYM2,ISYM3,
-     &     ITIM1,ITIM2,ITIM3,IFER1,IFER2,IFER3)
+     &     ITIM1,ITIM2,ITIM3,IFER1,IFER2,IFER3,NPOS)
 C*****************************************************************************
 C
 C     Set up the integer arrays that are used by TWOFCK in the 
@@ -2848,6 +2929,12 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
+#include "dcbgen.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "blocks.h"
+#include "dcbfir.h"
+#include "dftcom.h"
 C
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 C
@@ -2861,6 +2948,14 @@ C
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
+#ifdef MOD_DFT
+cjohhe changed 0 to 1 to get anything at all out of DFT static QR
+!     IF(DFTADD) THEN
+!     IHRMOP(1) = 1
+!     IHRMOP(2) = 1
+!     IHRMOP(3) = 1
+!     END IF
+#endif
 C     IFOCKOP:  1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1
       IFCKOP(2)=1
@@ -2876,6 +2971,11 @@ C
          WRITE(LUPRI,'(2(/A),/)') ' *** WARNING ****',
      &        ' No integrals included in Fock matrix construction'
       END IF
+C
+C Settings for parallel calculation
+C
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
 C
 C Print
 C
@@ -2920,9 +3020,6 @@ C
 C
       KFREE = 1 
       LFREE = LWRK
-C
-c      T(1)='S'
-c      T(-1)='A'
 C
       CALL DZERO(FMO,N2ORBXQ)
 C
@@ -3051,6 +3148,10 @@ C
 C     Print
 C
       IF (IPRINT.GE.2) THEN
+         CALL QMATNORM('Response (e-e) vector',VECAEE,NZYEE,1,NZ)
+         CALL QMATNORM('Response (e-p) vector',VECAEP,NZYEP,1,NZ)
+         CALL QMATNORM('Gradient (e-e) vector',VECBEE,NZYEE,1,NZ)
+         CALL QMATNORM('Gradient (e-p) vector',VECBEP,NZYEP,1,NZ)
          WRITE(LUPRI,'(/A16,A22,3F16.8,2(/A38,3F16.8))')
      &        TEXT,'contribution (T,Z,Y):',(TEMP(1,I),I=1,3),
      &        'electronic (T,Z,Y):',(TEMP(2,I),I=1,3),
@@ -3281,7 +3382,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
-      PARAMETER ( D1 = 1.0D0, D0 = 0.0D0 )
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       CHARACTER PNAME*16
       DIMENSION WORK(LWRK),PNAME(3)
 C
@@ -3344,8 +3445,8 @@ C     for static fields
 C
       NBQRFR = 1
       NCQRFR = 1
-      BQRFR(1) = 0.0656
-      CQRFR(1) = 0.0000
+      BQRFR(1) = 0.0656D0
+      CQRFR(1) = 0.0000D0
 C     Enter the A and B operators 
       PNAME(1) = 'XDIPLEN'
       PNAME(2) = 'YDIPLEN'
@@ -3456,7 +3557,7 @@ C
             L = 0
             DO J=1,NQRHYP
 C
-C     Collect response terms with frequency nr I.
+C     Collect response terms with frequency no. I.
 C     This is not so rubust to changes in the code above
 C
                IF (BQRFR(I) .EQ. QRFRHYP(J,2)) THEN
@@ -3475,7 +3576,7 @@ C     Take into account that some response functions are calculated due
 C     to permutational symmetry.
 C     !!!TODO: probably not correct.!!!
 C
-            V = V * 6.0 / L
+            V = V * 6.0D0 / L
 C
 C     Unit conversion for Verdet calculations
 C     from au to (umin/G cm at STP)

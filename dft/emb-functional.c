@@ -1,36 +1,24 @@
 /*
-       Copyright (c) 2004 by the authors of Dirac (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       Dirac, a relativistic ab initio electronic structure program,
-       release DIRAC04.0 (2004),
-       written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-       with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-       O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-       P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-       P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-       (http://dirac.chem.sdu.dk).
-    
-       For a suitable BibTEX entry, see:
-          http://dirac.chem.sdu.dk/doc/reference.shtml
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dirac,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dirac-admin@dirac.chem.sdu.dk
-    
-       For information on how to get a licence see:
-          http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 */
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
@@ -42,12 +30,15 @@
  */
 
 
-/* FIXME: portability issues with the str... functions */
+/* FIXME: portability issues with the str... functions. Some libc
+   provide them only for BSD compatibility */
+#define _BSD_SOURCE 1
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 #define __CVERSION__
+#include "general.h"
 #include "functionals.h"
 
 /* 
@@ -99,7 +90,7 @@
  * As for the embedding, I havent thougt about the second and third 
  * order terms yet.
  */
-
+extern void quit_(const char* str);
 static Functional   *embedding_xc_functional = &LDAFunctional;          /* the XC-functional  */
 static Functional   *embedding_kin_functional = &TF_KinFunctional;      /* the kinetic energy functional */
 
@@ -133,7 +124,7 @@ static int
 emb_read (const char *conf_line)
 {
 	char *line;                                 /* a copy of the conf_line */
-	char *kin_line, *xc_line;                   /* the KIN=... and XC=... lines, without prefix */
+	char *kin_line = NULL, *xc_line = NULL;     /* the KIN=... and XC=... lines, without prefix */
 	const char *kin_pos, *xc_pos;               /* pointers to "KIN=" and "XC=" */
 
 	char *pos;
@@ -252,7 +243,7 @@ emb_report (void)
 }
 
 static real
-emb_energy (DftDensProp *dp)
+emb_energy (const FunDensProp *dp)
 {
 	/* the total density is frozen, so we know it and the corresponding KS-orbitals 
 	   The total energy is just the DFT-energy of rho_total, we dont need any embedding here! */
@@ -261,7 +252,7 @@ emb_energy (DftDensProp *dp)
 }
 
 static void
-emb_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
+emb_first (FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	if (!dp->subsystem[0]) {
 		fort_print ("emb_first called but dp->subsystem[0] not initialized\n");
@@ -282,13 +273,13 @@ emb_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
 }
 
 static void
-emb_second (SecondFuncDrv *ds, real factor, DftDensProp *dp)
+emb_second (FunSecondFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	quit_ ("Second functional derivatives for embedding are not implemented yet\n");
 }
 
 static void
-emb_third (ThirdFuncDrv *ds, real factor, DftDensProp *dp)
+emb_third (FunThirdFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	quit_ ("Third functional derivatives for embedding are not implemented yet\n");
 }
@@ -330,7 +321,7 @@ embint_report (void)
 }
 
 static real
-embint_energy (DftDensProp *dp)
+embint_energy (const FunDensProp *dp)
 {
 	real energy = 0;
 
@@ -362,7 +353,7 @@ embint_energy (DftDensProp *dp)
 }
 
 static void
-embint_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
+embint_first (FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 	if (!dp->subsystem[0] || !dp->subsystem[1]) {
 		fort_print ("embint_first called but dp->subsystem_dp not initialized\n");
@@ -385,15 +376,17 @@ embint_first (FirstFuncDrv *ds, real factor, DftDensProp *dp)
 }
 
 static void
-embint_second (SecondFuncDrv *ds, real factor, DftDensProp *dp)
+embint_second (FunSecondFuncDrv *ds, real factor, const FunDensProp *dp)
 {
-	quit_ ("Second functional derivatives for embedding are not implemented yet\n");
+	quit_ ("Second functional derivatives for embedding "
+               "are not implemented yet\n");
 }
 
 static void
-embint_third (ThirdFuncDrv *ds, real factor, DftDensProp *dp)
+embint_third (FunThirdFuncDrv *ds, real factor, const FunDensProp *dp)
 {
-	quit_ ("Third functional derivatives for embedding are not implemented yet\n");
+	quit_ ("Third functional derivatives for embedding "
+               "are not implemented yet\n");
 }
 
 Functional EmbInteractionFunctional = {

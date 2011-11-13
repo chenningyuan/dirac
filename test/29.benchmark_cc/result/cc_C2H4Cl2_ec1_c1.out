@@ -1747,3 +1747,8 @@ SOfock:SL  0.00E+00    0.59%   57.14%    0.13%    6.19%   9.80957031s
     EFG: XX061       :     0.358193023767 a.u.      F   F
     EFG: XY061       :    -0.564457861695 a.u.      F   F
 
+  Master node : --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---         
+
+ Date and time (Linux) : Fri Oct  3 09:40:54 2003
+ READT: END reading file
+prun: m539 ./dirac.290903_g77.x process 0 (pid 3944) killed by signal 6

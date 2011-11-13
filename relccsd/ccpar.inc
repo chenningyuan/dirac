@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision: 1.7 $
-C DATE    : $Date: 2003/02/06 09:16:54 $
+C VERSION : $Revision: 5599 $
+C DATE    : $Date: 2007-03-06 15:22:35 +0100 (Tue, 06 Mar 2007) $
 C FILE    : inpt.inc
 C
 C MPI information for RELCCSD
@@ -24,3 +24,12 @@ C     Third index : irrep
 C
       INTEGER*8 NV6PAR,NV5PAR,IDIST
       COMMON/CCPARV/ NV6PAR,NV5PAR,IDIST(6,10,32)
+C
+C DIRAC-specific preprocessor statement to solve 32/64 bit compatibility problems 
+C
+#if defined (INT_STAR8)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+

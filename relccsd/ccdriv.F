@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.75.2.3 $
-C DATE    : $Date: 2004/09/01 08:17:48 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : ccdriv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -67,19 +55,17 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE (IW,1000) "2.3 ","September 2002"
+      WRITE (IW,1000)
       WRITE (IW,1002)
       CALL DAYTIME (DATEX,TIMEX)
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
-     &/" Version number ",A
-     &/" Version date ",A
      &//" Written by :",/" Lucas (Luuk) Visscher"/
      &/" NASA Ames Research Center    (1994)"
      &/" Rijks Universiteit Groningen (1995)"
      &/" Odense Universitet           (1996-1997)" 
-     &/" Vrije Universiteit Amsterdam (1998-2002)")
+     &/" Vrije Universiteit Amsterdam (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
      &/"  - Initial implementation :",T30,
@@ -94,6 +80,8 @@ C
 C
       RETURN
 C---------------Record of modifications made in the code-------------
+C     modifications after 2000 are documented in the cvs system
+C--------------------------------------------------------------------
 C     July 1999: Implemented Fock space Coupled Cluster
 C                Parallelized (part of) the program using MPI
 C--------------------------------------------------------------------
@@ -164,26 +152,34 @@ C
 #include "inpt.inc"
 #include "ihm.inc"
 #include "complex.inc"
+#include "symm.inc"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbmp2no.h"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL REWINP,DOEA,DOIE,DOEA2,DOIE2,DOEXC
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
+      REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
       NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
-      NAMELIST/CCSORT/ USEOE,NORECMP
+      NAMELIST/CCSORT/ USEOE,NORECMP,ADD_FINITE_FIELD,LOWMEM,
+     &                 FF_PROP_NAMES,FF_PROP_STRENGTHS
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
-     &                 MAXIT,MAXDIM,NTOL
+     &                 MAXIT,MAXDIM,NTOL,NOZG,DONATORB
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
-      NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,DOIH
-      NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX
+CMI   ... add sector selectives MAXITxy's
+      NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
+     &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
+     &                 MAXIT,MAXDIM,NTOL,TSHOLD,
+     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -191,6 +187,13 @@ C
       DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
+C
+C     if running MP2-NO module use special input
+C
+      IF( MP2_DENRUN )THEN
+        IN_SAVE = IN
+        IN      = LMP2_DEN_INP
+      END IF
 C
 C     Read number of occupied spinors from input
 C
@@ -206,10 +209,10 @@ C
       DOFOPR  = .FALSE.
       DOSOPR  = .FALSE.
       DOFSPC  = .FALSE.
-      DOIH  = .FALSE.
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
+C
       READ (IN,RELCCSD,END=2,ERR=1)
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
@@ -242,6 +245,8 @@ C
       DOMP2GOLD = .FALSE.
       DOCCSDG   = .FALSE.
       DOCCSDTG  = .FALSE.
+      NOZG      = .FALSE.
+      DONATORB  = .FALSE.
       NEOPER = 1
       NAMEE(1) = 'ZDIPLEN '
       MAXDIM = 8
@@ -252,6 +257,23 @@ C
       GOTO 6
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
+C     Switch on evaluation of property output if necessary
+      IF (DOMP2G) THEN
+          DOEXP = .TRUE.
+          IPRPWF = 0
+          DO I = 1, NPRPWF
+             IF (PRPWF(NPRPWF).EQ.'MP2 ') IPRPWF = I
+          END DO
+          IF (IPRPWF.EQ.0) THEN
+             IF (NPRPWF .GE. MXPRPWF) THEN
+                IPRPWF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRPWF = NPRPWF + 1
+                IPRPWF = NPRPWF
+             END IF
+             PRPWF(IPRPWF) = 'MP2 '
+          END IF
+      END IF
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
       NTOLGR = NTOL
@@ -303,6 +325,7 @@ C
       MAXDIM = 8
       MAXIT = 30
       NTOL = 12
+      TSHOLD = 0
       DO I = 1, 16
          NACTH(I) = 0
          NACTP(I) = 0
@@ -316,6 +339,14 @@ C
       DO ISECT = 2, 6
          FSSECT(ISECT) = 0
       ENDDO
+CMI   ...provide with default values
+      MAXIT02=-1
+      MAXIT01=-1
+      MAXIT00=-1
+      MAXIT10=-1
+      MAXIT11=-1
+      MAXIT20=-1
+CMI   ... read input namelist
       REWIND (IN)
       READ (IN,CCFSPC,END=12,ERR=11)
       GOTO 12
@@ -323,11 +354,23 @@ C
    12 CONTINUE
       MXDIMFS = MAXDIM
       MXITFS = MAXIT
-      NTOLFS = NTOL
-      DO I = 1, 16
-         NINACT(I) = NELEC(I) - NACTH(I)
-         NACT(I) = NACTH(I) + NACTP(I)
+      DO ISECT = 1, 6
+CMI     ...default maximum number iterations per sector
+        MAXIT_SECT(ISECT) = MAXIT
       ENDDO
+      NTOLFS = NTOL
+      LTSHFS = TSHOLD
+      DO I = 1, 16
+        NINACT(I) = NELEC(I) - NACTH(I)
+        NACT(I) = NACTH(I) + NACTP(I)
+      ENDDO
+CMI   ... translate MAXITxy easy input to MAXIT_SECT type input ...
+      IF (MAXIT02.NE.-1) MAXIT_SECT(5) = MAXIT02
+      IF (MAXIT01.NE.-1) MAXIT_SECT(2) = MAXIT01
+      IF (MAXIT10.NE.-1) MAXIT_SECT(3) = MAXIT10
+      IF (MAXIT00.NE.-1) MAXIT_SECT(1) = MAXIT00
+      IF (MAXIT11.NE.-1) MAXIT_SECT(4) = MAXIT11
+      IF (MAXIT20.NE.-1) MAXIT_SECT(6) = MAXIT20
 C
 C     Translate easy input to FSSECT type input
 C
@@ -359,31 +402,15 @@ C
          FSSECT(3) = 1
          FSSECT(6) = 1
       ENDIF
-C
-C     Input for IH procedure
-C
-      EHMIN=1000.D0
-      EHMAX=100.D0
-      EPMIN=-1.D0
-      EPMAX=-1000.D0
-      DO I = 1, 16
-         NACTHI(I) = 0
-         NACTPI(I) = 0
-      ENDDO
-      REWIND (IN)
-      READ (IN,CCIH,END=22,ERR=21)
-      GOTO 22
-   21 CALL QUIT('Error exit while reading namelist CCIH')
-   22 CONTINUE
-      ER_IH(1,1) = EHMIN
-      ER_IH(2,1) = EHMAX
-      ER_IH(1,2) = EPMIN
-      ER_IH(2,2) = EPMAX
-C
-C     Input for the sorting routine.
-C
-      USEOE = .TRUE.
+      LOWMEM  = .FALSE.
+      USEOE   = .TRUE.
       NORECMP = .FALSE.
+      ADD_FINITE_FIELD = .FALSE.
+      DO IOPER = 1, MAXOP
+         FF_PROP_NAMES(IOPER) = '        '
+         FF_PROP_STRENGTHS(1,IOPER) = 0.D0
+         FF_PROP_STRENGTHS(2,IOPER) = 0.D0
+      ENDDO
       REWIND (IN)
       READ (IN,CCSORT,END=14,ERR=13)
       GOTO 14
@@ -404,6 +431,10 @@ C
 C     Some consistency and other checks
 C
       IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
+C
+      IF( MP2_DENRUN )THEN
+        IN = IN_SAVE
+      END IF
 C
       RETURN
       END
@@ -438,7 +469,9 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #include "waio.h"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
+CSK#include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -450,12 +483,8 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
 #if defined (CC_ALONE)
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_DEC)
-      POINTER (ICC,CC(1))
-      REAL*8 CC
-#else
-      check dynamic memory allocation
-#endif
+      This construction works for most systems
+      REAL*8, ALLOCATABLE:: CC(:)
 #else
       REAL*8 CC(MAXCORE)
 #endif
@@ -473,6 +502,9 @@ C---------------Executable code--------------------------------------
 C
 C     Set the input and output units
 C
+#if defined (CC_ALONE)
+      MP2_DENRUN = .FALSE.
+#endif
       INTERFACE = INTFCE
       CARITH = CA
       IN = IUNIN
@@ -552,13 +584,9 @@ C
 C
 C     In case of dynamic allocation :
 C     Allow for overhead : subtract 800 kWord
-C     Allow for file buffers (Cray only) : NCCFIL files with 20 blocks each
 C
 #if defined (CC_ALONE)
          MAXCOR = MAXCOR - 800 * 1024
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-         MAXCOR = MAXCOR - NCCFIL * 20 * 512
-#endif
 #endif
 C
 C     Report memory in megaBytes
@@ -595,15 +623,19 @@ C
       LFREE = MAXCOR
 C 
       MXCORR1 = 0
-      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSP,IREPSPI)
-      IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
-C     WRITE(IW,1015) 'CCSETI',MXCORR1,MXCORR
+
+      if (lowmem) then
+         call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
+      else
+         CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
+     &                NSP,IREPSP,IREPSPI)
+      endif
+
+      IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
       CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
       IF (DOENER) MXCORR = MAX(MXCORR,MXCORR1)
-C     WRITE(IW,1015) 'CCENER',MXCORR1,MXCORR
 C
       MXCORR1 = 0
       CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
@@ -612,18 +644,6 @@ C
       MXCORR1 = 0
       CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOSOPR) MXCORR = MAX(MXCORR,MXCORR1)
-C
-C     ------------------------------------------------------------------
-C     MXCORR1 = 0
-C     CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
-C     IF (DOEXC) MXCORR = MAX(MXCORR,MXCORR1)
-C     CCEXC is obsolete since we can now get RPA excitation energies
-C     via the RPA module and CC excitation energies via the FS module
-C     Keep the call for a while, I may change my mind and use this
-C     to debug something. (LV, 15-9-2003)
-C     Btw : Note that I now use the variable DOEXC for use in the
-C     Fock space module !!!
-C     ------------------------------------------------------------------
 C
       MXCORR1 = 0
       CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
@@ -637,9 +657,6 @@ C node. ===> if any subroutine would need more core memory we quit.
       IF (MXCORR.GT.MAXCOR) THEN
 #if defined (CC_ALONE)
          MXCORR = MXCORR+800*1024
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-         MXCORR = MXCORR+NCCFIL*20*512
-#endif
 #endif
          MWORD = MXCORR / (1024 * 1024)
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
@@ -651,23 +668,7 @@ C
 C  Allocate the memory and check if it is a standalone version
 C
 #if defined (CC_ALONE)
-      IERR = 0
-      IABORT = 0
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL HPALLOC (ICC,MXCORR,IERR,IABORT)
-#endif
-#if defined (SYS_AIX)
-      ICC =  MALLOC (%VAL(MXCORR*8))
-      IF (ICC.EQ.0) IERR = 1
-#endif
-#if defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_DEC)
-      ICC =  MALLOC (MXCORR*8)
-      IF (ICC.EQ.0) IERR = 1
-#endif
-      IF (IERR.NE.0) THEN
-          PRINT*, " Problems allocating ",MXCORR," words"
-          CALL QUIT("MEMORY PROBLEMS")
-      ENDIF
+      ALLOCATE (CC(MXCORR))
 #endif
 C
       WRITE (IW,1001) MXCORR
@@ -688,8 +689,14 @@ C
       LFREE = MXCORR
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
-      IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
+      IF (DOSORT) THEN
+         if (lowmem) then
+            call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
+         else
+            CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
+         endif
+      endif
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)
       CPUS = CPUS + CPU2 - CPU1
@@ -723,11 +730,6 @@ C
       WALLSO = WALLSO + CPU2 - CPU1
       WALL1 = WALL2
       CALL FLSHFO (IW)
-C
-CLuuk : See comment regarding CCEXC above
-C     IF (DOEXC ) CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-C    &                        NSP,IREPSPI)
-C     CALL FLSHFO (IW)
 C
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                         NSP,IREPSP,IREPSPI)
@@ -775,6 +777,25 @@ C     Print I/O statistics
 C
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
+C
+C     Let us synchronize all processes! 
+C
+C SK-- 21-08-07: jobs on my x86-64 platform finish now properly when
+C introducing the following synchronization. 
+C
+#if defined (VAR_MPI)
+      TIME_SYNC     = 0.0D0
+      TIME_SYNC_TOT = 0.0D0
+      DO 8888 I = 1, 2
+        CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+        TIME_SYNC = MPI_Wtime()
+        WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
+        CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+        TIME_SYNC_TOT = MPI_Wtime() - TIME_SYNC
+ 8888  CONTINUE
+C
+       WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
+#endif
 C
       RETURN
 C
@@ -861,6 +882,8 @@ C
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
       LOGICAL ASSREP
+      INTEGER IOI(0:3), IVA(0:3)
+
 C
 C---------------Executable code--------------------------------------
 C
@@ -1137,12 +1160,14 @@ C
       ENDIF
 C
       IF (REPORT.AND.(.NOT.FOCKSP)) THEN
+!        NSYMRP - DIRAC initial symmetry (from RECC input)
             WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
             WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
             WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
          IF (NREP.GT.8) THEN
 C           Write only active irreps (NO or NV > 0)
             NACT_REP = 0
+!           NREP - number of irreps in abelian subgroup
             DO I = 1, NREP
                IF (NO(I)+NV(I).GT.0) THEN
                   NACT_REP = NACT_REP + 1
@@ -1184,11 +1209,14 @@ C
      &                   (NINACT(I)+NACT(I)-NELEC(I),I=1,NSYMRP)
          WRITE (IW,1002) 'inactive virtual ',(NELEC(I)+NVIRT(I)-
      &                    NINACT(I)-NACT(I),I=1,NSYMRP)
+
+!        ... write out reprezentations in Abelian subgroup ...
          IF (NREP.GT.8) THEN
 C           Write only active irreps (NO or NV > 0)
             NACT_REP = 0
             DO I = 1, NREP
                IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
+                !... move nonzero values to new arrays ...
                   NACT_REP = NACT_REP + 1
                   NIO_ACT(NACT_REP) = NIO(I)
                   NAO_ACT(NACT_REP) = NAO(I)
@@ -1362,6 +1390,17 @@ C
       JVOVO(1) = 0
       JVVVO(1) = 0
       J2VOVO(1) = 0
+C
+C ** additional RELADC arrays
+C
+      J2OOOO(1) = 0
+      J2VOOO(1) = 0
+      J2VVOO(1) = 0
+      J2VOVV(1) = 0
+      J2VVVO(1) = 0
+C
+C filling
+C
       DO IREP = 1, NREP
          JVOXX(IREP+1) = JVOXX(IREP) + MVO(IREP)
          JOOOO(IREP+1) = JOOOO(IREP) + MOO(IREP)*MOO(IREP)
@@ -1371,6 +1410,12 @@ C
          JVVVO(IREP+1) = JVVVO(IREP) + MVV(IREP)*MVO(IREP)
          JREP = MULTB(IREP+NREP,1+NREP,2)
          J2VOVO(IREP+1) = J2VOVO(IREP) + MVO(IREP)*MVO(JREP)
+
+         J2OOOO(IREP+1) = J2OOOO(IREP) + MOO(IREP)*MOO(JREP)
+         J2VOOO(IREP+1) = J2VOOO(IREP) + MVO(IREP)*MOO(JREP)
+         J2VVOO(IREP+1) = J2VVOO(IREP) + MVV(IREP)*MOO(JREP)
+         J2VOVV(IREP+1) = J2VOVV(IREP) + MVO(IREP)*MVV(JREP)
+         J2VVVO(IREP+1) = J2VVVO(IREP) + MVV(IREP)*MVO(JREP)
       ENDDO
       NDIMX = JVOXX(NREP+1)
 C
@@ -1400,6 +1445,10 @@ C
       LOVOOT(1) = 0
       LVOOOT(1) = 0
       LOVVOT(1) = 0
+C ** additional RELADC arrays
+      LOOVVT(1) = 0
+      LVOVVT(1) = 0
+
       DO IREP = 1, NREP
          LOOVO  (IREP+1) = LOOVO  (IREP) + NO(IREP)*NOVO (IREP)
          LVOVO  (IREP+1) = LVOVO  (IREP) + NV(IREP)*NOVO (IREP)
@@ -1408,6 +1457,9 @@ C
          LOVOOT (IREP+1) = LOVOOT (IREP) + NO(IREP)*NVOOT(IREP)
          LVOOOT (IREP+1) = LVOOOT (IREP) + NV(IREP)*NOOOT(IREP)
          LOVVOT (IREP+1) = LOVVOT (IREP) + NO(IREP)*NVVOT(IREP)
+
+         LOOVVT (IREP+1) = LOOVVT (IREP) + NO(IREP)*NOVVT(IREP)
+         LVOVVT (IREP+1) = LVOVVT (IREP) + NV(IREP)*NOVVT(IREP)
       ENDDO
 C
 C     3-index arrays are used in t3corr : make index arrays
@@ -1573,6 +1625,31 @@ C
           LAOVOOT(IREP+1) = LAOVOOT(IREP)+NAO(IREP)*NVOOT(IREP)
           LAOAOSOSOT(IREP+1) = LAOAOSOSOT(IREP)+NAO(IREP)*NAOSOSOT(IREP)
          ENDDO
+ 
+C        Set dimension of effective Hamiltonian for Fock space
+
+         DO IREP = 1, NREP
+            NFS_HE(IREP,1) = 0
+            NFS_HE(IREP,2) = NAV(IREP)
+            NFS_HE(IREP,3) = NAO(IREP)
+            NFS_HE(IREP,4) = MAOAV(IREP)
+            NFS_HE(IREP,5) = NAVAVT(IREP)
+            NFS_HE(IREP,6) = NAOAOT(IREP)
+         ENDDO
+
+C        Set offset for addressing symmetry blocks of effective Hamiltonian (IFS_HE) 
+C        or its eigenvalues (IFS_EV)
+
+         DO ICURFSS = 1, 6
+            IFS_HE(IREP,ICURFSS) = 0
+            IFS_HE2(IREP,ICURFSS) = 0
+            DO IREP = 1, NREP
+               IFS_HE(IREP+1,ICURFSS) = IFS_HE(IREP,ICURFSS) +
+     &                                  NFS_HE(IREP,ICURFSS)
+               IFS_HE2(IREP+1,ICURFSS) = IFS_HE2(IREP,ICURFSS) +
+     &                                   NFS_HE(IREP,ICURFSS)**2
+            ENDDO
+         ENDDO
 C
       ENDIF
 C
@@ -1590,7 +1667,15 @@ C
       ENDDO
 C
       IF (FOCKSP) THEN
+          ! ... initialization
+          DO IREP = 1, NREP
+            NAOPI(IREP) = 0
+            NAVPI(IREP) = 0
+          ENDDO 
+!        ENDIF
+
          DO ISP = 1, NSP
+!           ... extract the symmetry of the Abelian subgroup, IREP
             IREP = IREPSP(ISP,2)
             II = IREPSP(ISP,4)
             IF (II.GT.0) THEN
@@ -1598,16 +1683,12 @@ C
             ELSE
                I = IO(NREP+1) + IV(IREP) - II
             ENDIF
+!           ... place orbital energy into common array; I - particular spinor
             EPS(I) = EPS1(ISP)
-C           Always fill this array, used in intermediate Hamiltonian formalism
-            IF (I.GT.MAXSPIM)
-     &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
             IPIORB(I)=0
-            DO J = 1, 2
-               IF(EPS(I).LE.ER_IH(2,J).AND.
-     &            EPS(I).GE.ER_IH(1,J)) IPIORB(I)=1
-            ENDDO
-         ENDDO
+       ENDDO
+
+
       ENDIF
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
@@ -1615,7 +1696,6 @@ C
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
-      RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
@@ -1736,6 +1816,7 @@ C
       NVTMIN = MAX(NVTMIN,JOOOO(2))
       NVTMIN = MAX(NVTMIN,JVOOO(2))
 C
+
       CALL MEMOPT('REAL',VT ,NVTMIN*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',VTA,NVTMIN*RCW,CC,KFREE,LFREE,ALLOC)
       V4  = VT
@@ -1754,8 +1835,11 @@ C
       SRTALL = .TRUE.
 C
 C  MP2 calculations need less integrals
+C  MP: DHF-ADC also needs all integral classes !
+C  MP: The eqns variable hereby turns on full sorting in this case.
 C
       IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
+      IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
       CALL RDINTS(IPRNT,NSP,CC(INDEX),CC(KR),CC(INDK),CC(INDL),
      &            CC(CBUF),CC(IBUF),NVT,CC(BUF1),CC(BUF2),IREPSP,
@@ -1985,7 +2069,7 @@ C
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
-     &           TOL,NBUF2,NBUF3)
+     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
 C
 C        This is a restart point: save the amplitudes and update status.
@@ -2102,6 +2186,7 @@ C
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "dcbmp2no.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2228,7 +2313,7 @@ C
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
 C
-C        Solve relativistic MP2 lambda equations
+C        Get MP2 amplitudes and lambdas
 C
          CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 C
@@ -2237,20 +2322,27 @@ C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
      &                 CC(DVO),CC(DOV),CC(DMO))
+C
 C        Solve Z-vector equations 
 C
-         TOL = 10.0D0**(-NTOLGR)
-         MAXIT  = MXITGR
-         MAXDIM = MXDIMGR
-         CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
-     &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
-     &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
-     &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
-     &                 CC(CCC),CC(BB1),CC(BB2),TOL)
+         IF (.NOT. NOZG) THEN
+            TOL = 10.0D0**(-NTOLGR)
+            MAXIT  = MXITGR
+            MAXDIM = MXDIMGR
+            CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
+     &                  CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
+     &                  CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+     &                  CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
+     &                  CC(CCC),CC(BB1),CC(BB2),TOL)
+         END IF
 C
 C        Calculate expecation value
 C
-         WRITE (IW,1002) '    MP2'
+         IF (NOZG) THEN
+            WRITE (IW,1002) 'MP2 noZ'
+         ELSE
+            WRITE (IW,1002) '    MP2'
+         END IF
          DO EOPER = 1, NEOPER
             EOFF = (EOPER-1)*NDIMX*RCW+1
             CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
@@ -2277,38 +2369,75 @@ C
              RETURN
           ENDIF
 #endif
+CMI      CALL MEMCHK('mp2g 0.1',CC,1)
 C
-C        Solve relativistic MP2 lambda equations
+C        Get MP2 amplitudes and lambdas
 C
          CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
+
+CMI      CALL MEMCHK('mp2g 0.2',CC,1)
 C
 C        Get amplitude part of density matrix
 C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
      &                 CC(DVO),CC(DOV),CC(DMO))
+
+         CALL MEMCHK('mp2g 0.3',CC,1)
+         CALL MEMCHK('mp2g 0.3.1',CC,T2)
+         CALL MEMCHK('mp2g 0.3.2',CC,BUF1)
+         CALL MEMCHK('mp2g 0.3.3',CC,BUF2)
+         CALL MEMCHK('mp2g 0.3.4',CC,BUF3)
+         CALL MEMCHK('mp2g 0.3.5',CC,XMO)
+         CALL MEMCHK('mp2g 0.3.6',CC,DMO)
+
 C        Solve Z-vector equations 
 C
-         CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
-     &                NBUF3,CC(XMO),CC(DMO))
+         IF (.NOT.NOZG)
+     &      CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
+     &                   NBUF3,CC(XMO),CC(DMO))
+
+CMI      ... here it fails in the Levy-Leblond mode....
+         CALL MEMCHK('mp2g 1.1.1',CC,T2)
+         CALL MEMCHK('mp2g 1.1.2',CC,BUF1)
+         CALL MEMCHK('mp2g 1.1.2',CC,BUF2)
+         CALL MEMCHK('mp2g 1.1.3',CC,BUF3)
+         CALL MEMCHK('mp2g 1.1.4',CC,XMO)
+         CALL MEMCHK('mp2g 1.1.5',CC,DMO)
+
+         CALL MEMCHK('mp2g 1.1',CC,1)
+
+CMI       call quit('here in relccsd finished')
+
 C
 C        Create upper triangle of density matrix
 C
          CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
 C
-C        Multiply denstity matrix with property matrices
-C        (i.e. calculate expectation value)
+C        Write density matrix to file for later processing
 C
-         KFREE1=1
-         LFREE1=NBUF3*RCW
-         CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
+         CALL STORE_CC_DENSITY ('MP2 ',CC(DMO))
+C
+C        Generate natural orbitals, if desired
+C
+         IF( DONATORB )THEN
+C
+C         MP2 - nat. orb. and nat. orb. occ. num.
+C
+          KFREE1=1
+          LFREE1=NBUF3*RCW
+C
+          CALL MP2_NATORB(CC(DMO),IPRMP2NO,NOZG,CC(BUF3),KFREE1,LFREE1)
+         END IF
+C
+         CALL MEMCHK('mp2g 2.1',CC,1)
 C
 C        Release the slaves (in case of parallel runs)
 C
 #if defined (VAR_MPI)
          NTEST = -1
          DO NODE = 1,NMPROC-1
-            CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,27,
+            CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,27,
      &                     MPI_COMM_WORLD,IERR)
          ENDDO
 #endif
@@ -2607,9 +2736,12 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC,FOCKSP,REPORT
-      INTEGER IFSS(6)
+CMI   INTEGER IFSS(6)
+      CHARACTER*2 IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
+      REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:,:),
+     &                                 EIGENVECTORS(:,:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -2619,6 +2751,7 @@ C
       FOCKSP = .TRUE.
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
+     
 C
 C Allocate space for the Fock space CCSD energy calculation
 C
@@ -2729,35 +2862,43 @@ C
       CALL GETVVOO (CC(T2))
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),2)
-      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),3)
 C     Save the zeroth order wave function
       CALL PUTAMPT (CC(T1),CC(T2))
 C
-      IFSS(1) = 00
-      IFSS(2) = 01
-      IFSS(3) = 10
-      IFSS(4) = 11
-      IFSS(5) = 02
-      IFSS(6) = 20
+      IFSS(1) = '00'
+      IFSS(2) = '01'
+      IFSS(3) = '10'
+      IFSS(4) = '11'
+      IFSS(5) = '02'
+      IFSS(6) = '20'
 C
 C     Solve Fock space equation sector by sector
 C
-      DO ISECT = 1, 6
-      IF (FSSECT(ISECT).NE.0) THEN
-      ICURFSS = IFSS(ISECT)
-      IF (ICURFSS.LE.20.AND.ICURFSS.NE.11) THEN
-        WRITE (IW,1009) ICURFSS
-        CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+      DO ICURFSS = 1, 6
+      IF (FSSECT(ICURFSS).NE.0) THEN
+        WRITE (IW,1009) IFSS(ICURFSS)
+        WRITE(IW,'(2X,A,I3)')
+     &  '...maximum number of iterations for this sector:',
+     &  MAXIT_SECT(ICURFSS)
+C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
+        ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
+        ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
+        ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
+        CALL CCEQN(MAXIT_SECT(ICURFSS),EPS,CC(FOO),CC(FVO),
+     &             CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &             CC(CCC),CC(BB1),CC(BB2),
-     &             TOL,NBUF2,NBUF3)
+     &             TOL,NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
+C       Print the Fock space eigenvalues, compute transition moments
+        CALL FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS)
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
+C       Deallocate space for the effective Hamiltonian
+        DEALLOCATE (HEFF)
+        DEALLOCATE (EIGENVALUES)
+        DEALLOCATE (EIGENVECTORS)
 C
-      ELSE
-        WRITE (IW,1010) ICURFSS
-      ENDIF
       ENDIF
       ENDDO
 C
@@ -2772,7 +2913,7 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1009  FORMAT (//" Solving equations for sector ",I2/)
+1009  FORMAT (//" Solving equations for sector ",A2/)
 1010  FORMAT (//" Sector ",I2," is not implemented."/)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2808,19 +2949,19 @@ C
 C---------------Executable code--------------------------------------
 C    
       DELS1 = 'DD'
-      IF (ICURFSS.EQ. 1) DELS1 = 'DK'
-      IF (ICURFSS.EQ.10) DELS1 = 'KD'
-      IF (ICURFSS.EQ.11) DELS1 = 'KK'
       IF (ICURFSS.EQ. 2) DELS1 = 'DK'
-      IF (ICURFSS.EQ.20) DELS1 = 'KD'
+      IF (ICURFSS.EQ. 3) DELS1 = 'KD'
+      IF (ICURFSS.EQ. 4) DELS1 = 'KK'
+      IF (ICURFSS.EQ. 5) DELS1 = 'DK'
+      IF (ICURFSS.EQ. 6) DELS1 = 'KD'
       DELS2 = 'DDDD'
-      IF (ICURFSS.EQ. 1) DELS2 = 'DDDK'
-      IF (ICURFSS.EQ.10) DELS2 = 'KDDD'
-      IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
-      IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
-      IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+      IF (ICURFSS.EQ. 2) DELS2 = 'DDDK'
+      IF (ICURFSS.EQ. 3) DELS2 = 'KDDD'
+      IF (ICURFSS.EQ. 4) DELS2 = 'KDDK'
+      IF (ICURFSS.EQ. 5) DELS2 = 'DDKK'
+      IF (ICURFSS.EQ. 6) DELS2 = 'KKDD'
 C
-      IF (ICURFSS.EQ.0) THEN
+      IF (ICURFSS.EQ.1) THEN
          CALL PUTAMPT(T1,T2)
       ELSE
          CALL GETAMPT(BUF1,BUF2)
@@ -3207,6 +3348,33 @@ C---- Keep OLD (MOLFDIR) format here for compatibility
           ENDDO
    11  CONTINUE
        READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
+
+c debug, ATT ! these informations are convenient to be printed out
+c for debugging purposes. Deactivated in the release.
+c      WRITE(IW,*)
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*) '**  MRCONEE CONTROL VARIABLES  *****'
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*)
+c      WRITE(IW,*) 'NSP:',NSP
+c      WRITE(IW,*) 'BREIT:',BREIT
+c      WRITE(IW,*) 'ECORE:',ecore
+c      WRITE(IW,*) 'NFSYM:',NFSYM
+c      WRITE(IW,*) 'NZ:',NZ
+c      WRITE(IW,*) 'SPFR:',SPFR
+c      WRITE(IW,*) 'NORBT:',NORBT
+c      WRITE(IW,*) 'NSYMRP:',NSYMRP
+c      WRITE(IW,*) 'REPNT:',REPNT
+c      WRITE(IW,*) 'NELEC:',NELEC
+c      WRITE(IW,*) 'NREP:',NREP
+c      WRITE(IW,*) 'REPNA:',REPNA
+c      WRITE(IW,*)
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*) '**  END CONTROL OUTPUT  ************'
+c      WRITE(IW,*) '************************************'
+c      WRITE(IW,*)
+c debug end
+
        READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 C      IREPSP is to be used as 2-dimensional array, read it like that
        READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),
@@ -3217,10 +3385,10 @@ C      Right adjust representation names
 C
        DO IRP = 1, NSYMRP
           REPN(IRP) = REPNT(IRP)(1:4)
-          CALL BLANKR (4,REPN(IRP))
+          CALL BLANKL (4,REPN(IRP))
        ENDDO
        DO IRP = 1, NREP
-          CALL BLANKR (4,REPNA(IRP))
+          CALL BLANKL (4,REPNA(IRP))
        ENDDO
       ENDIF
 C
@@ -3252,25 +3420,33 @@ C     Distribute the information read from MRCONEE
 C
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1) THEN
-         CALL MPI_BCAST(NSP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NSP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(ECORE,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NSYMRP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NFSYM,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NZ,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NORBT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NSYMRP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NORBT,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(REPN,NSYMRP*4,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NELEC,NSYMRP,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(NELEC,NSYMRP,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(NREP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NREP,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(REPNA,2*NREP*4,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MULTB,MXREP*MXREP*8,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(MULTB,MXREP*MXREP*8,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(IREPSP,2*NSP,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(IREPSP,2*NSP,my_MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(EPS1,NSP,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)

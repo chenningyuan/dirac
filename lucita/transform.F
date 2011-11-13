@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -197,8 +185,8 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       DIMENSION IBLOCK(8,NBLOCK)
       DIMENSION IBLTP(*)
 *
-      CALL REWINO(LUCIN)
-      CALL REWINO(LUCOUT)
+      CALL REWINE(LUCIN,-1)
+      CALL REWINE(LUCOUT,-1)
 *
       T2 = T**2
       DO JBLOCK = 1, NBLOCK
@@ -642,13 +630,13 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
 C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *
       LBLK = -1
-      CALL REWINO(LUC)
+      CALL REWINE(LUC,-1)
 *. Make sure LUDIA corresponds to original def
       LUDIA = 20
-      CALL REWINO(LUDIA)
+      CALL REWINE(LUDIA,-1)
       DO JROOT = 1, NROOT
 *. One-electron density for root JROOT
-        CALL REWINO(LUSC1)
+        CALL REWINE(LUSC1,-1)
         CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
         CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
         CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
@@ -673,7 +661,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
      &                LUSC1,ICISTR)
       END DO
 *     ^ End of loop over roots
-      CALL REWINO(LUDIA)
+      CALL REWINE(LUDIA,-1)
       IF(NTEST.GE.100) THEN
         DO JROOT = 1, NROOT
           CALL WRTVCD(WORK(KVEC1),LUDIA,0,LBLK)
@@ -783,7 +771,7 @@ C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
       WRITE(6,*) ' Norm of transformed vector', CNORM
 C?    WRITE(6,*) ' Transformed vector'
 C?    CALL WRTVCD(VEC1,LUSC1,1,LBLK)
-      CALL REWINO(LUSC1)
+      CALL REWINE(LUSC1,-1)
 C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
       CALL COPVCD(LUSC1,LUCOUT,VEC1,0,LBLK)
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACID')

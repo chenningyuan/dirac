@@ -1,36 +1,25 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
+C 
 C 
       PROGRAM TWOFIT
 C***********************************************************************
@@ -49,10 +38,10 @@ C
 C     Written by T. Saue April 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <codata.h>
+#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -62,7 +51,7 @@ C
       PARAMETER(MDIM=MORDER+1)
       DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
-      CHARACTER POTFIL*6,RESFIL*10,REPLY*1
+      CHARACTER POTFIL*40,REPLY*1
 C
 C     Heading
 C
@@ -80,12 +69,12 @@ C
       READ(LUCMD,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential curve (A6)'
+     &    'Name input file with potential curve (A16)'
         READ(LUCMD,'(A)') POTFIL
         NPRP = 0
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential/property curve (A6)'
+     &    'Name input file with potential/property curve (A16)'
         READ(LUCMD,'(A)') POTFIL
         WRITE(LUPRI,'(A)') 
      &    'Give number of property curves'
@@ -102,11 +91,11 @@ C
       WRITE(LUPRI,'(A)') 
      &  'Note that bond lengths should be given in Angstroms',
      &  ' and all other quantities in atomic units !'
+      i=LNBLNK(POTFIL)
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
-      RESFIL = POTFIL//'.res'
-      OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
-     &     ACCESS='SEQUENTIAL')
+      OPEN(ILOGG,FILE=POTFIL(1:i)//'.res',STATUS='UNKNOWN',
+     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       GOTO 30
  20   CONTINUE
       STOP 'Error opening POTFIL'
@@ -125,7 +114,7 @@ C
       ENDIF
  40   CONTINUE
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
-      WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
+      WRITE(ILOGG,'(A,A40)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
       DO I = 1,NP
        X(I) = X(I)/XTANG
@@ -142,7 +131,7 @@ C
       READ(LUCMD,*) NORDER
       IF(NORDER.LT.2) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* This program requires at least a quartic fit.'
+     &    '* This program requires at least a quadratic fit.'
         STOP 'Too low order fit !'
       ENDIF
       IF(NORDER.LT.4) THEN
@@ -173,9 +162,12 @@ C
       WRITE(ILOGG,'(3X,A)') '* Coefficients:'
       WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
+      WRITE(LUPRI,'(8X,A,4X,2A)')
+     &   'X',' Predicted Y',' Relative error'
       DO I = 1,NP
-        YP = (POLVAL(NORDER,C,X(I))-Y(I))/Y(I)
-        WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') XTANG*X(I),YP
+        YP = POLVAL(NORDER,C,X(I))
+        DEV = (YP-Y(I))/Y(I)
+        WRITE(LUPRI,'(3X,F6.3,4X,2E12.4)') XTANG*X(I),YP,DEV
       ENDDO
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
@@ -312,8 +304,8 @@ C
       TEMP = 7.0D0*V3*V3/V2/9.0D0
       T2 = 100.0D0*(TEMP - V4)/V4
       WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative                   : ', V3,
-     &   '* Fourth derivative                  : ', V4
+     &   '* Third derivative  (au)             : ', V3,
+     &   '* Fourth derivative (au)             : ', V4
       WRITE(ILOGG,'(A,D20.10, F9.2,A)')
      &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
       TEMP = D1/UM/OMEGA
@@ -365,8 +357,8 @@ C
         TEMP = 7.0D0*V3N*V3N/V2N/9.0D0
         T2 = 100.0D0*(TEMP - V4N)/V4N
         WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative                   : ', V3N,
-     &   '* Fourth derivative                  : ', V4N
+     &   '* Third derivative  (au)             : ', V3N,
+     &   '* Fourth derivative (au)             : ', V4N
         WRITE(ILOGG,'(A,D20.10, F9.2,A)')
      &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \\%'
         TEMP = D1/UM/OMEGA

@@ -1,41 +1,28 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
-C
-C VERSION : $Revision: 1.40.4.5 $
-C DATE    : $Date: 2004/09/01 12:09:52 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : trainp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -109,7 +96,8 @@ C     Default orbital strings is all occupied and all virtuals
         WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
-      IF (LEVYLE) MP2_INTFLG = ILLINT
+CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
+      IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
 C     MP2_ANTIS  = .TRUE.
       MP2_ANTIS  = .FALSE.
 C     note TODO: ANTIS is not implemented!
@@ -208,7 +196,7 @@ C
 C   'LS' gives the (LL|SS) contribution to the MP2 energy
 C   'SL' gives the (SS|LL) contribution to the MP2 energy
 C
-                  IF (LEVYLE) CALL QUIT(
+                  IF (LEVYLE.OR.BSS) CALL QUIT(
      &         '.SPECIAL testing in MP2 not allowed for Levy-Leblond')
                   READ(LUCMD,'(A2)') WS
                   IF (WS.EQ.'LS') THEN
@@ -300,7 +288,8 @@ C
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
 C
-      IF (LEVYLE) MP2_INTFLG = ILLINT
+CMI   IF (LEVYLE) MP2_INTFLG = ILLINT
+      IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
       IF(SCRMP2.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRMP2
       ELSE
@@ -407,6 +396,8 @@ C     Input section for module for 4-index transformation
 C
 C     Written by Jon K. Laerdahl, T. Saue and L. Visscher (Dec 1996)
 C
+C     Called from PAMINP/dirrdn.F
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -430,13 +421,13 @@ C
 #include "dcbham.h"
 C
       SAVE SET
-      DATA TABDIR /'*END OF','*PRPTRA','xXXXXXX','xXXXXXX'/
+      DATA TABDIR /'*END OF','*PRPTRA','*HSCC  ','xXXXXXX'/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
-     &            '.PAR4BS','.SCATTE','.MDCINT','xXXXXXX','xXXXXXX'/
+     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','xXXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -449,12 +440,22 @@ C
       LSPES  = .FALSE.
       LSPES2 = .FALSE.
       LSPES4 = .FALSE.
+
+CMI  ... no HSCC
+      DOHSCC = .FALSE.
 C
 C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-      ISTRAT = 4
+Caspg, default in MOLTA is scheme 6 unless it's a LUCITA run... 
+C      if problems are encountered, should be reverted to scheme 4
+      if (DOLUCT) then
+         ISTRAT = 4
+      else
+         ISTRAT = 6
+      endif
+
       ITRA_INTFLG = INTGEN
       IGTINT = IBTAND(INTGEN/8,1)
       ITRA_INTFL2 = -8
@@ -705,6 +706,8 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   NOMDCINT = .FALSE.
                GO TO 100
    24          CONTINUE
+C&&&& HSMRCC - interface
+                  DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
                GO TO 100
@@ -745,11 +748,17 @@ C
         CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 300
   313 CONTINUE
+C       prevent dirac.x running into an infinite loop here
+C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
+        CALL QUIT('*HSCC specified, '//
+     &     'but HSCC module is not included in this version')
         GO TO 300
   314 CONTINUE
         GO TO 300
 C
   400 CONTINUE
+
+
 C
 C     Process defaults for 2- and 4-index transformations
 C
@@ -776,7 +785,8 @@ C
       IF (ITRA_INTFL4.EQ.-8) THEN
          ITRA_INTFL4 = ITRA_INTFLG
       ENDIF
-      IF (LEVYLE) THEN
+CMI   IF (LEVYLE) THEN
+      IF (LEVYLE.OR.BSS) THEN
          ITRA_INTFL2 = MOD(ITRA_INTFL2,2)
          ITRA_INTFL4 = MOD(ITRA_INTFL4,2)
       ENDIF
@@ -839,9 +849,8 @@ C
      +     '* LS Integrals not included in core Fock-matrix'
       IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS Integrals not included in core Fock-matrix'
-CLuuk : activate output when Gaunt is ready and active
-CLuuk IF (MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
-CLuuk+     '* Gaunt Integrals not included in core Fock-matrix'
+      IF (GAUNT.AND.MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* Gaunt Integrals not included in core Fock-matrix'
 C
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,2)
@@ -865,7 +874,7 @@ C
       WRITE(LUPRI,'(/1X,A)')
      &   '* Set-up for 4-index transformation'
       WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRAT
-      GOTO (501,502,503,504) ISTRAT
+      GOTO (501,502,503,504,505,506) ISTRAT
   501 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - all half-transformed integrals (ij|rs) kept in core'
@@ -882,12 +891,23 @@ C
         WRITE(LUPRI,'(A)')
      &    ' - write (rs)-batches of half-transformed integrals ',
      &    ' (ij|rs) to disk; parallel scheme'
+        GOTO 500
+  505 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - scheme 5 is meant for MP2 properties'
+        CALL QUIT ('Specified wrong scheme for index transform')
+        GOTO 500
+  506 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - write half-transformed integrals (ij|rs) to disk'
+        GOTO 500
   500 CONTINUE
       IF(SCRTRA.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold :',SCRTRA
       ELSE
         WRITE(LUPRI,'(1X,A)') '* No screening.'
       ENDIF
+      WRITE(LUPRI,'(1X,A,1P,E8.2)') '* MO integral threshold :',THROUT
       IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL Integrals not transformed'
       IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)')
@@ -930,12 +950,6 @@ C
      &    '* Size of batches for strategy 4 determined dynamically.'
         END IF
       END IF
-C
-C     Batch size of strategy 4.
-C
-      WRITE(LUPRI,'(1X,A,I4)')
-     &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
-C
   999 CONTINUE
       RETURN
  1010 CONTINUE
@@ -1268,7 +1282,8 @@ C
       ENDIF
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL integrals not included.'
-      IF (.NOT.LEVYLE) THEN
+CMI   IF (.NOT.LEVYLE) THEN
+      IF (.NOT.(LEVYLE.OR.BSS)) THEN
          IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS integrals not included.'
          IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)')

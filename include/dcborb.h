@@ -1,9 +1,13 @@
 !
-! VERSION : $Revision: 1.19 $
-! DATE    : $Date: 2004/05/26 13:06:54 $
+! VERSION : $Revision: 7379 $
+! DATE    : $Date: 2008-08-15 16:39:09 +0200 (Fri, 15 Aug 2008) $
 ! FILE    : dcborb.h
 !
 !*** Dimensions for MO-basis ***
+!
+!     SK - Aug 2008: renamed NGAS to NGAS_DC (Dirac Common) to avoid 
+!                    conflicts with LUCI* modules.
+!
 !     Length of common block : keep up to date !!
 #include "mxmcgas.h"
       INTEGER NDCBORB
@@ -13,7 +17,7 @@
      &        NBORB(4, 2, 0:2), NFORB(2, 0:2), NTORB(0:2), N2ORBTQ,     &
      &        N2ORBXQ, NISH(2), N2ISH(2), NISHT, N2ISHT, N2ISHX,        &
      &        NASH(2), N2ASH(2), NASHT, N2ASHT, N2ASHX, N2ASHTQ,        &
-     &        N2ASHXQ, NNASHX, NGSH(2, MXMCGAS), NGSP(2, MXMCGAS), NGAS,&
+     &        N2ASHXQ, NNASHX, NGSH(2, MXMCGAS),NGSP(2,MXMCGAS),NGAS_DC,&
      &        NGSHT(MXMCGAS), NOCC(2), N2OCC(2), NOCCT, N2OCCT, N2OCCX, &
      &        NSSH(2), N2SSH(2), NSSHT, N2SSHT, N2SSHX, NESH(2),        &
      &        N2ESH(2), NESHT, N2ESHT, N2ESHX, NPSH(2), N2PSH(2), NPSHT,&
@@ -22,19 +26,25 @@
      &        NCMOT, NCMOTQ, ICMO(2), ICMOQ(2), IASH(2), I2ASHT(2),     &
      &        I2ASHX(2, 2), IOCC(2), I2OCCT(2), I2OCCX(2, 2), NAOCC(2), &
      &        NAOCCT, NIOCC(2), NIOCCT, NAVIR(2), NAVIRT, NIVIR(2),     &
-     &        NIVIRT, I2_DCBORB
+     &        NIVIRT, I_DCBORB_SET, I2_DCBORB
+!
+!     IMPORTANT !!!
+!     I1_DCBORB and I2_DCBORB are tags used to calculate the size of
+!     this COMMON block; must remain at start/end 
+!
       COMMON /DCBORB/ I1_DCBORB, NORB, N2ORB, NORBT, N2ORBT, N2ORBX,    &
      &                NBORB, NFORB, NTORB, N2ORBTQ, N2ORBXQ, NISH,      &
      &                N2ISH, NISHT, N2ISHT, N2ISHX, NASH, N2ASH, NASHT, &
      &                N2ASHT, N2ASHX, N2ASHTQ, N2ASHXQ, NNASHX, NGSH,   &
-     &                NGSP, NGAS, NGSHT, NOCC, N2OCC, NOCCT, N2OCCT,    &
+     &                NGSP, NGAS_DC, NGSHT, NOCC, N2OCC, NOCCT, N2OCCT, &
      &                N2OCCX, NSSH, N2SSH, NSSHT, N2SSHT, N2SSHX, NESH, &
      &                N2ESH, NESHT, N2ESHT, N2ESHX, NPSH, N2PSH, NPSHT, &
      &                N2PSHT, N2PSHX, NFRO, NFROT, NELEC, NAELEC,       &
      &                NELECT, IORB, I2ORBT, I2ORBX, NCMO, NCMOQ, NCMOT, &
      &                NCMOTQ, ICMO, ICMOQ, IASH, I2ASHT, I2ASHX, IOCC,  &
      &                I2OCCT, I2OCCX, NAOCC, NAOCCT, NIOCC, NIOCCT,     &
-     &                NAVIR, NAVIRT, NIVIR, NIVIRT, I2_DCBORB
+     &                NAVIR, NAVIRT, NIVIR, NIVIRT, I_DCBORB_SET,       &
+     &                I2_DCBORB
 
 ! Do NOT place any more variables after the end tag !!!
 !     Information on orbital subblocks. Used at the moment only for linear symmetry

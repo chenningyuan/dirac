@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.7.4.1 $
-C DATE    : $Date: 2004/09/01 08:04:04 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : her2her.F
 C
 C
@@ -189,6 +177,7 @@ C
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
      &          SCLFAC(NUABCD)
+#include "dcbham.h"
 #include "twosta.h"
 #include "subdir.h"
 #include "sdpre.h"
@@ -220,7 +209,19 @@ C
          DO 100 IOD12 = 1, NUC12
             EXPP   = EXP12(IOD12)
             FAC12I = FAC12(IOD12)
-            IF (PANAS .EQ. D0) THEN
+            IF (HFXMU .NE. D0) THEN
+               DO IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQ  = EXPP + EXPQ
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  ALPHA  = EXPP*EXPQ*EXPPQI
+                  BETA   = HFXMU**2/(ALPHA + HFXMU**2)
+                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  RJ000(IODS,0) = SQRT(BETA)*FACTOR
+               END DO
+            ELSEIF (PANAS .EQ. D0) THEN
                DO 110 IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
@@ -236,8 +237,11 @@ C
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
                   EXPMOD = EXPPQ/D2
+C.................this is eq. (48) for (chi)**2 of Panas&Snis, 
+C.................Theor. Chem. Acc. 97(1997) 232
                   EXPPQP = EXPMOD + SQRT(EXPMOD**2 + EXPP*EXPQ*PANAS)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
+C.................this is -2tau, where tau is from eq. (46)
                   TALPHA(IODS) = - D2*EXPP*EXPQ/EXPPQP
                   RJ000(IODS,0) = FACTOR
  111           CONTINUE
@@ -289,7 +293,36 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
             PX     = SGN12X*COOR12(IOD12,1)
             PY     = SGN12Y*COOR12(IOD12,2)
             PZ     = SGN12Z*COOR12(IOD12,3)
-            IF (PANAS .EQ. D0) THEN
+            IF (HFXMU .NE. D0) THEN
+               DO IOD34 = 1, NUC34
+#if !defined (SYS_IRIX)
+                  IODS = IODS + 1
+#endif
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  ALPHA = EXPP*EXPQ*EXPPQI
+                  BETA = HFXMU**2/(ALPHA + HFXMU**2)
+                  SCLFAC(IODS) = SQRT(BETA)*FACTOR
+#if !defined (SYS_IRIX)
+                  NODS = NODS + 1
+#endif
+                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  PQXI = PX - SGN34X*COOR34(IOD34,1)
+                  PQYI = PY - SGN34Y*COOR34(IOD34,2)
+                  PQZI = PZ - SGN34Z*COOR34(IOD34,3)
+                  PQX(IODS) = PQXI
+                  PQY(IODS) = PQYI
+                  PQZ(IODS) = PQZI
+                  WVALU(NODS)=ALPHA*BETA*
+     &               (PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  INDADR(NODS) = IODS
+#if defined (SYS_IRIX)
+                  IODS = IODS + 1
+                  NODS = NODS + 1
+#endif
+               END DO
+            ELSEIF (PANAS .EQ. D0) THEN
                DO 310 IOD34 = 1, NUC34
 #if !defined (SYS_IRIX) && !defined (SYS_DEC) && !defined (SYS_SX)
                   IODS = IODS + 1

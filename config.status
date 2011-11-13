@@ -6,4 +6,4 @@ fi
 if [ ! -r Makefile.config ]; then
    exit 1
 fi
-echo `grep "$1 .*= " Makefile.config | sed 's/.*= *//'`
+echo `grep -e "^$1[ ]*=" Makefile.config | sed 's/.*= *//'`

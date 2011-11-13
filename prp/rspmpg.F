@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpxlr_mpg */
@@ -74,45 +62,47 @@ C
       character tmp(4)*4
 
       call qenter('PRPXLR_MPG')
-C
+CMI   .. add this
+      KFRSAV = KFREE
+
       CALL TITLER('Solving Z-vector equation','*',123)
 C
 C     Initialize /XCBLR/
 C     ==================
 C
-      iprxlr    = 0            !general printlevel
-      thclr     = 1.d-7         !maximum norm of solutionerror vector
-      thrcom    = 1.0d-6         !threshold for compression
-      resxlr    = 1.d3
-      cnvxlr(1) = dummy
-      cnvxlr(2) = 1.d-2
+      CALL SETRSP
+      IPRXLR    = 0            !general printlevel
+      THCLR     = 1.d-7         !maximum norm of solutionerror vector
+      THRCOM    = 1.0d-6         !threshold for compression
+      RESXLR    = 1.d3
+      CNVXLR(1) = dummy
+      CNVXLR(2) = 1.d-2
       MAXRM     = 200           
-      itrxlr    = 100
-      intxlr    = intgen
-      itrilr(1) = 1
-      itrilr(2) = 1
-      nlrapt    = 0             !number of A operators
-      nlrbpt    = 0             !number of B operators
-      call izero(nlrap,8)
-      call izero(nlrbp,8)
-      nbfreq    = 1             !number of frequencies
-      bfreq(1)  = 0.d0
-      allcmb    = .false.       !generate all operator combinations
-      XLR_SKIPEP= .false.       !do include e-p orbital rotations
-      XLR_SKIPEE= .false.       !do include e-e orbital rotations
+      ITRXLR    = 100
+      INTXLR    = intgen
+      ITRILR(1) = 1
+      ITRILR(2) = 1
+      NLRAPT    = 0             !number of A operators
+      NLRBPT    = 0             !number of B operators
+      CALL IZERO(NLRAP,8)
+      CALL IZERO(NLRBP,8)
+      NBFREQ    = 1             !number of frequencies
+      BFREQ(1)  = 0.D0
+      ALLCMB    = .FALSE.       !generate all operator combinations
+      XLR_SKIPEP= .FALSE.       !do include e-p orbital rotations
+      XLR_SKIPEE= .FALSE.       !do include e-e orbital rotations
 c     qedrun    = .TRUE.        !not implemented
-      xlr_lsfg(1) = .true.        !Generate G-matrix in MO basis
-      xlr_lsfg(2) = .true.        !Generate G-matrix in MO basis
-      xlrnrm    = .true.        !normalize solutionvector
+      XLR_LSFG(1) = .TRUE.        !Generate G-matrix in MO basis
+      XLR_LSFG(2) = .TRUE.        !Generate G-matrix in MO basis
+      XLRNRM    = .TRUE.        !normalize solutionvector
       XLRDIH    = .TRUE.        !pre-conditioning of trail vectors
 C                                
-      orbdef(1) = .true.
-      orbdef(2) = .true.
-      orbdef(3) = .true.
-      triab     = .false.       !force triangularity
+      ORBDEF(1) = .TRUE.
+      ORBDEF(2) = .TRUE.
+      ORBDEF(3) = .TRUE.
+      TRIAB     = .FALSE.       !force triangularity
       XLR_XVCFIL    = 'NORXVC'
-      orbxlr    = .false.       !is this an orbital response problem
-      xstern    = .false.
+      XSTERN    = .FALSE.
 C
 C     Make sure common block dcbidx is set
 C
@@ -135,11 +125,13 @@ C
          call num2str(nesh(I),tmp(4))
          xlr_indstr(1,I)='1..'//tmp(1)
          xlr_indstr(2,I)='0'
-         if(levyle)then
+CMI      if(levyle)then
+         if(levyle.or.bss) then
             xlr_indstr(3,I)=tmp(3)//'..'//tmp(4)
          else
             xlr_indstr(3,I)='-'//tmp(2)//'..-1,'//tmp(3)//'..'//tmp(4)
          endif
+
       enddo
 C
 C     Initialize the operators needed
@@ -164,27 +156,15 @@ C     Allocate memory
 C     ===============
 C     
       nrspf=nlrbpt*nbfreq
-      if(orbxlr)then
-         CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
-         call deforb(work(klro),ncls_xlr,3,xlr_indstr,
-     &        work,kfree,lfree,iprxlr)
-         ni=0
-         do i=1,nfsym
-            ni=ni+ncls_xlr(1,1,i)+ncls_xlr(2,1,i)
-         enddo
-      else
-         ni=0
-         klrorb=kfree
-      endif
       if(xlr_skipee)then
          nee=0
       else
-         nee=ni+1
+         nee=+1
       endif
       if(xlr_skipep)then
          nep=0
       else
-         nep=ni+1
+         nep=1
       endif
       nci=0
       n2lrf=nlrapt*nrspf*(1+nee+nep+nci)
@@ -193,10 +173,15 @@ C
       call memget('REAL',kcnv,nrspf,work,kfree,lfree)
 C
 C
+CMI
+      CALL MEMCHK('prpxlr_mpg 1.00',WORK,1)
+
       CALL FLSHFO(LUPRI)
 C
-      call prpxl1_mpg(work(klrf),work(kcnv),work(klro),DMO,XMO,
+      call prpxl1_mpg(work(klrf),work(kcnv),DMO,XMO,
      &                work,kfree,lfree)
+
+CMI   CALL MEMCHK('prpxlr_mpg 1.01',WORK,1)
 C
 C     Calculate D_ax
 C     ==============
@@ -207,12 +192,15 @@ C
 C
       ENDIF
 C
+CMI   ... it's good to release the memmory after ...
+      CALL MEMREL('prpxlr_mpg',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+
       call qexit('PRPXLR_MPG')
       return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpxl1_mpg */
-      SUBROUTINE PRPXL1_MPG(ABLRF,RCNV,IORBCL,DMO,XMO,WORK,KFREE,LFREE)
+      SUBROUTINE PRPXL1_MPG(ABLRF,RCNV,DMO,XMO,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Written by C.V. Larsen
@@ -222,8 +210,6 @@ C     INPUT:   ABLRF  - something for the linear response function,
 C                       not needed for the MP2 gradient
 C              RCNV   - total norm of residual relative to norm of
 C                       solution vector
-C              IORBCL - something for the linear response function,
-C                       not needed for the MP2 gradient
 C              XMO   -  the Lagrangian
 C     
 C     REMARKS: -
@@ -249,7 +235,6 @@ C
       parameter(gpthrs=1.d-9)
       dimension ablrf(nfreq,nlrapt,nlrbpt,*)
       dimension rcnv(nbfreq,nlrbpt)
-      dimension iorbcl(2,*)
       DIMENSION DMO(*)
       DIMENSION XMO(*)
       DIMENSION WORK(*)
@@ -345,11 +330,10 @@ C
 C     Evaluate result
 C     ===============
 C
-      KEIG = KFREE
                call getlrf_mpg(ablrf,work(KIBTYP),work(kibcvc),
      &                         work(kibevc),work(kibpvc),RCNV(1,INDBP),
-     &                         work(kevalr),work(kevecr),iorbcl,
-     &                         work(keig),DMO,work,kfree,lfree)
+     &                         work(kevalr),work(kevecr),
+     &                         DMO,work,kfree,lfree)
  30         continue
          enddo
       enddo
@@ -359,7 +343,9 @@ C     Final remarks
 C     =============
 C
       close(luxvc,status='KEEP')
+
       call memrel('PRPGR1.FINAL',work,1,kfrsav,kfree,lfree)
+CMI   call memrel('PRPGR1.FINAL',work,kfrsav,kfrsav,kfree,lfree)
 C
       call qexit('PRPXL1_MPG')
       return
@@ -595,7 +581,11 @@ C  /* Deck num2str */
       SUBROUTINE NUM2STR(NUM,RESSTR)
 C***********************************************************************
 C     
-C     Written by C.V. Larsen
+C  PURPOSE: Convert entering integer number NUM (of range 0-9999)
+C           into the 4-byte string RESSTR.
+C     
+C  Written by C.V. Larsen
+C  Last modifications: Miro ILIAS/Strasbourg, March 2006
 C
 C***********************************************************************
 #include "implicit.h"
@@ -605,6 +595,12 @@ C***********************************************************************
 C
       CALL QENTER('NUM2STR')
 C
+      IF (NUM.LT.0.OR.NUM.GT.9999) THEN
+        write(lupri,*)
+     &  'NUM2STR: Entering number ',NUM,' is not in range 0-9999 !'
+        CALL QUIT('NUM2STR: Wrong entering value of integer number !!!')
+      ENDIF
+
       ifac=1000
       istr=1
       inum=num
@@ -616,7 +612,7 @@ C
       if(ifac.ge.1)goto 10
 C
       resstr=str(1)//str(2)//str(3)//str(4)
-c      write(lupri,'(2a)') 'Num2Str: ',resstr
+C     write(lupri,'(2a)') 'Num2Str: ',resstr
 C
       CALL QEXIT('NUM2STR')
 C
@@ -625,7 +621,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getlrf_mpg */
       SUBROUTINE GETLRF_MPG(ABLRF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,EVALR,
-     &                      EVECR,IORBCL,EIG,DMO,WORK,KFREE,LFREE)
+     &                      EVECR,DMO,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Written by C.V. Larsen
@@ -651,9 +647,6 @@ C              RCNV   - total norm of residual relative to norm of
 C                       solution vector
 C              EVALR  - eigenvalues of the reduced response equation
 C              EVECR  - eigenvectors of the reduced response equation
-C              IORBCL - something for the linear response function,
-C                       not needed for the MP2 gradient
-C              EIG    - eigenvalues of the mo's
 C              DMO    - the D^2 matrix
 C
 C     REMARKS: -
@@ -678,11 +671,9 @@ C
       dimension IBTYP(2,*)
       dimension ibcvc(*)
       dimension ibevc(*)
-      dimension iorbcl(2,*)
       dimension ibpvc(*)
       dimension evalr(*)
       dimension evecr(nredm,*)
-      dimension eig(*)
       DIMENSION DMO(NORBT,NORBT,NZ)
       dimension work(*)
 C
@@ -704,7 +695,7 @@ C
       call memget('REAL',kcmo,ncmotq,work,kfree,lfree)
       lubuf=22
       call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &              TOTERG,11,WORK,KFREE,LFREE)
@@ -728,8 +719,9 @@ C
          call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
      &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
-     &               work(kcmo),work(kibrp),iorbcl,eig,work(kzxope),
-     &               WORK(KIVEC),work,kfree,lfree)
+     &               work(kcmo),work(kibrp),iorbcl,work(kzxope),
+     &               WORK(KIVEC),IDUM,IDUM,IDUM,IDUM,IDUM,DUM,DUM,
+     &               work,kfree,lfree)
 C
 C     +-----------------------------+
 C     | Result can be isolated here |
@@ -785,8 +777,9 @@ C
          CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
          call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
-     &               work(kcmo),work(kibrp),iorbcl,eig,work(kzxopp),
-     &               WORK(KIVEC),work,kfree,lfree)
+     &               work(kcmo),work(kibrp),iorbcl,work(kzxopp),
+     &               WORK(KIVEC),IDUM,IDUM,IDUM,IDUM,IDUM,DUM,DUM,
+     &               work,kfree,lfree)
 C
 C    +---------------------------+
 C    |Result can be isolated here|

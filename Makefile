@@ -1,246 +1,106 @@
-MODS=  -DMOD_DFT   
-MODS_IBM=  -DMOD_DFT   
-include ./Makefile.config
+# This is a generic makefile, please see Makefile.config for compilation settings.
+# Files matching lines in the file dontbuild will not be compiled, while files
+# listed in safebuild will be built with "safe" flags.
+# This files might require GNU make
 
-#
-# Note that only object files from fortran files (.F) should be included in OBJS,
-# object files from C files (.c) should be in C_OBJS.
-# 
+include Makefile.config
 
-OBJS = \
-dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o dirac/dirv1c.o \
-dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \
-dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \
-dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \
-dirac/diropen.o dirac/diraos.o \
-main/dirac.o \
-abacus/her1ave.o    abacus/her1car.o    abacus/her1cat.o    abacus/her1drv.o    abacus/her1int.o\
-abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\
-abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\
-abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\
-abacus/her2out.o    abacus/her2sym.o    abacus/herbas.o\
-abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\
-abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\
-abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\
-abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o abacus/abarint.o \
-abacus/abaopt.o     abacus/abavrml.o abacus/abawalk.o abacus/abaop2.o \
-gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
-gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
-gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o \
-prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \
-prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \
-prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \
-prp/mp2lag.o        prp/pamxqr.o        \
-moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o moltra/tradr5.o \
-moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \
-moltra/traprp.o \
-relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \
-relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \
-relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \
-relccsd/waio.o  \
-dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \
-lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  lucita/doubledir.o  \
-lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \
-lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \
-lucita/vecmat.o
+TARGET=$(INSTALL_DIR)/dirac.x
+SOURCE_DIRS=.
 
-#
-# All .o files for C routines in .c files are listed separately from OBJS
-# (otherwise you'll get a lot of irrelevant error messages from ftnchek)
-#
-
-C_OBJS = \
-main/alloc_mem.o    main/csectid.o \
-main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \
-main/get_memsize.o  main/ini_mpi.o    main/main.o \
-main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \
-main/get_time.o \
-gp/gpc.o
-
-#
-
-OBJSLAVE = abacus/herpar.o
-
-PDLIB = -Lpdpack -lpdlib
-
-#
-# RELCCSD_OBJS and RELCCSD_MAIN are for stand-alone relccsd.x and mpiccsd.x
-#
-
-RELCCSD_OBJS = \
-relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \
-relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \
-relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \
-relccsd/ccfspc.o  relccsd/waio.o 
-
-RELCCSD_MAIN = relccsd/ccmain.o
-
-#
-# DIRRCI_OBJS and DIRRCI_MAIN are for stand-alone dirrci.x
-#
-
-DIRRCI_OBJS = \
-dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
-
-DIRRCI_MAIN = dirrci/cimain.o
-
-#
-# GP_OBJS are for stand-alone programs relccsd.x, mpiccsd.x, and dirrci.x
-#         and for some 'make utils' programs.
-#
-
-GP_OBJS = \
-gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
-gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
-gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o         gp/gpc.o
-
-
-# dft files written in fortran:
-
-DFTOBJS = \
-dft/pamdft.o dft/dftden.o      dft/dftdrv.o     dft/dftgrd.o dft/grtest.o dft/Lebedev-Laikov.o
-
-# dft files written in C:
-
-DFTOBJS_C = \
-dft/functionals.o dft/emb-functional.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o dft/fun-kin_tf.o dft/fun-kin_vw.o
-
-OBJSMXM = gp/mxmpack.o
-
-TOT_FORTRANOBJS = $(OBJS) $(ESROBJS) $(CCFOCKSPOBJS) \
-	$(DFTOBJS) $(DNFOBJS) $(ERIOBJS) $(XPPOBJS) $(KRMC_FOBJS)
-
-F_CPPS = $(TOT_FORTRANOBJS:.o=.i)
-
-dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \
-	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ   DFT_OBJ      
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \
-	$(OBJS) $(C_OBJS) \
-	   $(DFTOBJS) $(DFTOBJS_C)      \
-	$(OBJSMXM) $(PDLIB) $(LIB_LIST) 
-#
-# Run ftnchek on Dirac
-#
-pre:	$(F_CPPS)
-
-ftnchek: pre
-	ftnchek $(CHEKFLAGS) $(F_CPPS) > dirac.ftnchek
-dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \
-	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ   DFT_OBJ       SLAVE_OBJ
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirac.x \
-	$(OBJS) $(C_OBJS) $(OBJSLAVE) \
-	  $(DFTOBJS) $(DFTOBJS_C)      \
-	$(OBJSMXM) $(LIB_LIST) $(PDLIB) \
-	$(MPI_LIB_PATH) $(MPI_LIB)
-
-relccsd.x: GP_OBJ PD_OBJ \
-	CCM_OBJ
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/relccsd.x \
-	$(RELCCSD_MAIN) $(RELCCSD_OBJS) $(GP_OBJS) $(OBJSMXM) \
-	$(LIB_LIST) $(PDLIB)
-
-mpiccsd.x: GP_OBJ PD_OBJ \
-	CCM_OBJ
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/relccsd.x \
-	$(RELCCSD_MAIN) $(RELCCSD_OBJS) $(GP_OBJS) $(OBJSMXM) \
-	$(LIB_LIST) $(PDLIB) \
-	$(MPI_LIB_PATH) $(MPI_LIB)
-
-
-dirrci.x: GP_OBJ PD_OBJ \
-	CI_OBJ
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/dirrci.x \
-	$(DIRRCI_MAIN) $(DIRRCI_OBJS) $(GP_OBJS) $(OBJSMXM) \
-	$(LIB_LIST) $(PDLIB)
-
-
-utils	: GP_OBJ PD_OBJ UTIL_OBJ 
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/twofit.x \
-	utils/twofit.o abacus/hergp.o $(GP_OBJS) $(OBJSMXM) $(PDLIB) $(LIB_LIST) 
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/labread.x \
-	utils/labread.o abacus/hergp.o $(GP_OBJS) $(OBJSMXM) $(PDLIB) $(LIB_LIST) 
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/rspread.x \
-	utils/rspread.o 
-	$(F77) $(LDFLAGS) -o $(INSTALLDIR)/polfit.x \
-	utils/polfit.o abacus/hergp.o $(GP_OBJS) $(OBJSMXM) $(PDLIB) $(LIB_LIST) 
-
-
-clean   :
-	cd dirac    ; $(MAKE) clean
-	cd abacus   ; $(MAKE) clean
-	cd prp      ; $(MAKE) clean
-	cd main ; $(MAKE) clean
-	cd moltra   ; $(MAKE) clean
-	cd relccsd  ; $(MAKE) clean
-	cd dirrci  ; $(MAKE) clean
-	cd lucita  ; $(MAKE) clean
-	cd dft      ; $(MAKE) clean
-	cd gp       ; $(MAKE) clean
-	cd pdpack   ; $(MAKE) clean
-	$(RM) -f *~
-#
-#  Export target
-#
-export:
-	./export
-#
-#  Objects
-#
-
-MAIN_OBJ:
-	cd main ; $(MAKE) all
-
-DIR_OBJ :
-	cd dirac ; $(MAKE) all
-
-PRP_OBJ :
-	cd prp; $(MAKE) all
-
-TRA_OBJ :
-	cd moltra; $(MAKE) all
-
-CCM_OBJ :
-	cd relccsd ; $(MAKE) all
-
-SLAVE_OBJ :
-	cd abacus  ; $(MAKE) slave
-
-CI_OBJ:
-	cd dirrci ; $(MAKE) all
-
-LUCITA_OBJ:
-	cd lucita ; $(MAKE) all
-
-
-DFT_OBJ :
-	cd dft; $(MAKE) all
-
-HER_OBJ :
-	cd abacus ; $(MAKE) all
-
-GP_OBJ :
-	cd gp ; $(MAKE) all
-
-MXM_OBJ :
-	cd gp ; $(MAKE) mxm
-
-
-PD_OBJ:
-	cd pdpack ; $(MAKE) all
-
-UTIL_OBJ:
-	cd utils ; $(MAKE) all
-
+$(TARGET):
 
 depend:
-	cd dirac; $(MAKE) depend
-	cd prp; $(MAKE) depend
-	cd abacus; $(MAKE) depend
-	cd gp; $(MAKE) depend
-	cd pdpack; $(MAKE) depend
-	cd main; $(MAKE) depend
-	cd relccsd; $(MAKE) depend
-	cd moltra; $(MAKE) depend
-	cd dirrci; $(MAKE) depend
-	cd lucita; $(MAKE) depend
-	cd dft; $(MAKE) depend
+	@echo Forcing a rebuild of Makefile.obj and Makefile.dep
+	@rm Makefile.obj
+	@rm Makefile.dep
+# Make empty old files that can be included but will trigger a remake
+# This is needed because some make versions stop if an include file is
+# not found.
+	@touch -t 198001010000 Makefile.obj
+	@touch -t 198001010000 Makefile.dep
+	$(MAKE) Makefile.dep
+
+# Make a list of objects to build, and exceptions for files that need
+# different compilation options ("safe" flags)
+# It is a bit messy because we repeat the same code for .F .f90 .F90 .c
+Makefile.obj: safebuild dontbuild
+	@echo "Collecting source files for build into Makefile.obj"
+	@echo "#Automatically generated file, do not edit" > $@
+	@echo "OBJ=\\" >> $@
+	@(find $(SOURCE_DIRS) -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
+	| egrep -v -f dontbuild|sed 's/\.[cfF90]*$$/.o \\/g' >> $@)
+	@echo >> $@
+# safe .F files
+# The true command is needed on certain systems (AIX on Jump) where the
+# exit code of the whole for statement is the same as that of grep.
+	@(for f in `grep '\.F$$' safebuild; true`; do \
+	echo "`echo $$f | sed 's/.F$$/.o/'`: $$f" >> $@;  \
+	echo '	$$(F77) $$(F77FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	done)
+# safe .c files
+	@(for f in `grep '\.c$$' safebuild; true`; do \
+	echo "`echo $$f | sed 's/.c$$/.o/'`: $$f" >> $@;  \
+	echo '	$$(CC) $$(CFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	done)
+# safe .F90 files
+	@(for f in `grep '\.F90$$' safebuild; true`; do \
+	echo  "`echo $$f | sed 's/.F90$$/.o/'`: $$f" >> $@;  \
+	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	done)
+# safe .f90 files
+	@(for f in `grep '\.f90$$' safebuild; true`; do \
+	echo "`echo $$f | sed 's/.f90$$/.o/'`: $$f" >> $@;  \
+	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
+	done)
+
+Makefile.dep: Makefile.obj Makefile.moddef
+	@echo "Collecting dependencies into Makefile.dep"
+	@echo "# This file is automatically generated, do not edit" > $@
+# Not printing errors from mkdep.py since it warns spuriously about mpif.h
+# You will find out at compile time anyway.
+	@find $(SOURCE_DIRS) -name '*.F' -o -name '*.F90' -o -name '*.f90' \
+	| egrep -v -f dontbuild | ./utils/mkdep.py $(DEPFPP) >> $@ 2>/dev/null
+	@find $(SOURCE_DIRS) -name '*.c' \
+	| egrep -v -f dontbuild | ./utils/mkdep.py $(DEPCPP) >> $@ 2>/dev/null
+
+
+.PHONY:gp/compinfo.h
+gp/compinfo.h:
+	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
+	@echo "#define WHERE_COMPILED \"${HOST}\"" >> $@
+	@echo "#define FCOMP \"${F77} ${F77FLAGS}\"" >> $@
+	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
+	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
+
+gp/gpc.o: gp/compinfo.h
+
+include Makefile.obj
+include Makefile.dep
+
+$(TARGET): $(OBJ)
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+
+clean:
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~'`
+
+ftnchek:
+	ftnchek $(CHEKFLAGS) $(TARGET) $(CPPFLAGS)
+
+# Main target here is utils, which buils all utilities and
+# puts them in $(INSTALL_DIR)
+include utils/Makefile.utils
+
+# Implicit rules
+
+.SUFFIXES :
+.SUFFIXES : .F .F90 .f90 .c .o
+
+.F.o:
+	$(F77) $(F77FLAGS) -c -o $*.o $*.F
+.F90.o:
+	$(F90) $(F90FLAGS) -c -o $*.o $*.F90
+.f90.o:
+	$(F90) $(F90FLAGS) -c -o $*.o $*.f90
+.c.o:
+	$(CC) $(CFLAGS) -c -o $*.o $*.c

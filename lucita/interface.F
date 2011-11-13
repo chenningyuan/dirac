@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -53,6 +41,8 @@ C
       subroutine dirluc
 *
       implicit real*8 (A-H,O-Z)
+*
+#include "clunit.inc"
 *
 *  Say hello:
       call hello_dirluc
@@ -93,15 +83,23 @@ C
 *
 #include <luctinp.h>
 *
+#include "clunit.inc"
 #include "mxpdim.inc"
 #include "luci.inc"
 #include "units.inc"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "infpar.h"
+#include "parluci.h"
 *
       parameter (NCMD = 21)
       parameter (MXPLNC = 72)
       dimension IMOKW(NTABLE)
       character*1 CRDHEL
-      character*3 SCR3
+      character*3 SCR3,YESSTATEMENT
+      character*10 PERFORMCI
       character*4 COMMAND,CMD(NCMD)
       character*6 SCR6,MOLUCENV
       character*72 LINE,CARD(MXPNGAS),CARD2(MXPNGAS,MXPICI),CARD3(5)
@@ -123,6 +121,7 @@ C
 *     IMOKW(N) = 1           keyword given in input
 *     IMOKW(N) = 2           keyword has been set to default value
 *     IMOKW(N) = 3           keyword ignored, default is used
+*
 *
 *
 *  1: Default Title
@@ -457,6 +456,123 @@ C
          IRSTRT = IRSTLT
       end if
 *
+* 21: Type of parallel calculation
+*
+      if (IMOKW(21).eq.0) then
+#if defined (VAR_MPI2)
+         IODENSEPAR = 2
+         IRUNPA     = 1
+         IPARMODEL  = 2
+#else
+         IODENSEPAR = 0
+         IRUNPA     = 0
+         IPARMODEL  = 0
+#endif
+         IMOKW(21) = 2
+      else if (IMOKW(21).eq.1) then
+#if defined (VAR_MPI2)
+         IODENSEPAR = 2
+         IRUNPA     = 1
+         IPARMODEL  = 2
+#else
+         IODENSEPAR = 0
+         IRUNPA     = 0
+         IPARMODEL  = 0
+#endif
+      end if
+*
+* 22: Type of I/O model in parallel calculation
+*
+      if (IMOKW(22).eq.0) then
+#if defined (VAR_MPI2)
+         IIOMOD = 1
+         YESSTATEMENT = 'Yes'
+#else
+         IIOMOD = 0
+         YESSTATEMENT = 'No'
+#endif
+      else if (IMOKW(22).eq.1) then
+#if defined (VAR_MPI2)
+         IIOMOD = 1
+         YESSTATEMENT = 'Yes'
+#else
+         IIOMOD = 0
+         YESSTATEMENT = 'No'
+#endif
+      end if
+*
+* 23: Number of maximum CI Iterations
+*
+      if (IMOKW(23).eq.0) then
+         IMAXCIITER = 100
+         IMOKW(23) = 2
+      else if (IMOKW(23).eq.1) then
+         if(ICIMAXITER.le.0) then
+           IMAXCIITER = 100
+         else
+           IMAXCIITER = ICIMAXITER
+         end if
+      end if
+*
+* 24: Largest allowed batchsize (if larger than biggest block!) 
+*
+      if (IMOKW(24).eq.0) then
+         IMAXBLKSIZE = 100 000 000
+         IMAXLBLKSZ = IMAXBLKSIZE
+         IMOKW(24) = 2
+      else if (IMOKW(24).eq.1) then
+         IMAXLBLKSZ = MAX(100 000,IMAXBLKSIZE)
+C        .. we do not accept user input of less than 100 000 !
+      end if
+*
+* 26: Distribution routine to use (only relevant in parallel case) 
+*
+      IDISTROUTE = 0
+      if (IMOKW(26).eq.0) then
+        IDISTROUTE = 2
+        IMOKW(26)  = 2
+      else if (IMOKW(26).eq.1) then
+        if( I_USE_DIST_ROUTE .eq. 1 ) then
+          IDISTROUTE = I_USE_DIST_ROUTE
+        else if ( I_USE_DIST_ROUTE .eq. 2 ) then
+          IDISTROUTE = I_USE_DIST_ROUTE
+        else
+          write(6,*) 'Value for keyword DISTRT incorrect ',
+     &               I_USE_DIST_ROUTE
+          write(6,*) 'I will ignore your input.'
+          write(6,*) 'Program will continue.'
+          IDISTROUTE = 2   
+          IMOKW(26) = 2
+        endif
+      end if
+*
+* 28: Truncate residual vectors before creating new trial vector?
+*     (14-jun-07, hjaaj)
+*
+      if (IMOKW(28).eq.1) then
+        trunc_fac = ctrunc_fac
+      else
+      ! default: remove only very small numbers, less than round-off
+      ! factor
+        trunc_fac = 1.0D-10
+      end if
+*
+*
+* 29: memory multiplier ...
+*    
+*
+      if (IMOKW(29).eq.1) then
+         ISMEMFAC  = in_memfac 
+      else
+         ISMEMFAC  = 3
+      end if
+
+      if(irunpa.eq.1) then
+        performci = 'parallel'
+      else if(irunpa.eq.0) then
+        performci = 'sequential'
+      endif
+*
 *
 *-----------------------------------------------------------------*
 *  Print section
@@ -464,75 +580,111 @@ C
 *
 *  1: Title
 *
-      write(*,*)
-      write(*,'(1X,80A1)') ('*',I=1,80)
-      write(*,'(1X,80A1)') '*',(' ',I=1,78),'*'
-      write(*,'(1X,37A1,A6,37A1)')
+      write(LUOUT,*)
+      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
+      write(LUOUT,'(1X,80A1)') '*',(' ',I=1,78),'*'
+      write(LUOUT,'(1X,37A1,A6,37A1)')
      &        '*',(' ',I=1,36),'Title:',(' ',I=1,36),'*'
       do I=1,NTIT
-         write(*,'(1X,4A1,A72,4A1)')
+         write(LUOUT,'(1X,4A1,A72,4A1)')
      &        '*',(' ',J=1,3),Title(I),(' ',J=1,3),'*'
       end do
-      write(*,'(1X,80A1)') '*',(' ',I=1,78),'*'
-      write(*,'(1X,80A1)') ('*',I=1,80)
-      write(*,*)
+      write(LUOUT,'(1X,80A1)') '*',(' ',I=1,78),'*'
+      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
+      write(LUOUT,*)
 *
 *  2: Initial wave function
 *
-      write(6,'(A42,A6)')
+      write(LUOUT,'(A42,A6)')
      &  ' Orbitals as initial wave function .... ',WAFFCT
-      write(6,*)
+      write(LUOUT,*)
 *
 *  3: Type of CI calculation
 *
-      write(6,'(A42,A6)')
+      write(LUOUT,'(A42,A6)')
      &  ' Type of calculation .................. ',TYPE
-      write(6,*)
+      write(LUOUT,*)
 *
 *  4: Number of roots to be treated
 *
-      write(6,'(A42,I3)')
+      write(LUOUT,'(A42,I3)')
      &  ' Number of roots to be obtained ....... ',NROOT
-      write(6,*)
+      write(LUOUT,*)
 *
 *  5: State symmetry
 *
-      write(6,'(A42,I3)')
+      write(LUOUT,'(A42,I3)')
      &  ' Calculation carried out in irrep ..... ',IRREP
-      write(6,*)
+      write(LUOUT,*)
 *
 *  6: Number of active electrons
 *
       if (IMOKW(6).eq.1) then
-        write(6,'(A42,I3)')
+        write(LUOUT,'(A42,I3)')
      &  ' Number of active electrons ........... ',NACTEL
-        write(6,*)
+        write(LUOUT,*)
       end if
 *
 *  7: Spin multiplicity
 *
-      write(6,'(A42,I3)')
+      write(LUOUT,'(A42,I3)')
      &  ' Spin multiplicity .................... ',MULTIP
-      write(6,*)
+      write(LUOUT,*)
 *
 *  8: LUCIA global print parameter
 *
-      write(6,'(A42,A3)')
+      write(LUOUT,'(A42,A3)')
      &  ' Global print level is ................ ',PRILUC
-      write(6,*)
+      write(LUOUT,*)
 *
 *  9: MOLUC local print parameter
 *
-      write(6,'(A42,1I3)')
+      write(LUOUT,'(A42,1I3)')
      &  ' Local print level is ................. ',IPLOCAL
-      write(6,*)
+      write(LUOUT,*)
 *
 * 10: SIZE of CI calculation
 *
-      write(6,'(A42,A3)')
+      write(LUOUT,'(A42,A3)')
      &  ' Approximate size of CI calculation ... ',CALSIZ
-      write(6,*)
+      write(LUOUT,*)
 *
+* 10b: runtype of CI calculation
+*
+      write(LUOUT,'(A42,A8)')
+     &  ' Running the CI calculation ........... ',performci
+      write(LUOUT,*)
+*
+*
+* 10c: runtype of parallel calculation
+*
+      if(irunpa.gt.0)then
+        write(LUOUT,'(A42,I3)')
+     &  ' Applying parallel scheme ............. ',iparmodel
+        write(LUOUT,*)
+      endif
+*
+*
+* 10d: file version to use in parallel calculation
+*
+      write(LUOUT,'(A42,A3)')
+     &  ' Using MPI-FILE I/O ................... ',YESSTATEMENT
+      write(LUOUT,*)
+*
+*
+* 10e: file system in parallel calculation
+*
+      if( irunpa .gt. 0 ) then
+        write(LUOUT,'(A42,I1)')
+     &  ' Parallel distribution routine ........ ',IDISTROUTE
+      end if
+*
+* 10f: truncation factor
+*
+      write(LUOUT,'(/A42,1P,D10.2)')
+     &  ' Truncation Factor ..................... ',ctrunc_fac
+      write(LUOUT,*)
+                   
 * 11: INAC specification of inactive orbitals per symmetry
 *
 *     No printing. Will be directed to luciwrt after resolution
@@ -571,17 +723,17 @@ C
 * 18: DENSity matrix level
 *
       if (IDEMOL.ge.1) then
-        write(6,'(A42,1I3)')
+        write(LUOUT,'(A42,1I3)')
      &    ' Calculating density matrices at level  ',IDEMOL
-        write(6,*)
+        write(LUOUT,*)
       end if
 *
 * 19: Restart option activated
 *
       if (IRSTRT.eq.1) then
-        write(6,'(A42,A3)')
+        write(LUOUT,'(A42,A3)')
      &    ' Restarted calculation from file ...... ','YES'
-        write(6,*)
+        write(LUOUT,*)
       end if
 *
 *
@@ -678,6 +830,7 @@ C
       implicit real*8 (A-H,O-Z)
 *
 #include "multd2h.inc"
+#include "parluci.h"
 *
 *--------------------------------------
 *  Timo Fleig, October 2000
@@ -902,7 +1055,10 @@ C
         end do
       end if
 *
-      write(6,'(A)') ' Complete real list of 2-el. ints processed. '
+      if (myproc.eq.master) then
+        write(LUWRT,'(A)') 
+     &       ' Complete real list of 2-el. ints processed. '
+      end if
 *
       return
       end
@@ -1047,7 +1203,7 @@ C
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
-      CALL REWINO(LUINT)
+      CALL REWINE(LUINT,-1)
 *.1 : One-electron integrals
       WRITE(LUINT,'(E22.15)')
      &     (WORK(KINT1-1+INT1),INT1=1,NINT1)
@@ -1178,7 +1334,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
 * Jeppe Olsen, Feb. 98
 *
       WRITE(6,*)  ' GET_CMOAO_LUCIA, LUH = ', LUH
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *. skip Number of orbital symmetries
       READ(LUH,*)
 *. skip Number of MO's per symmetry
@@ -1542,7 +1698,7 @@ C     DATA XYZ/'X','Y','Z'/
         LABELX = LABEL
       END IF
 *
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *. Skip Number of orbital symmetries
       READ (LUH,*) NSMOB
 *. Skip Number of MO's per symmetry
@@ -1614,6 +1770,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "orbinp.inc"
 #include "crun.inc"
 #include "lucinp.inc"
+#include "parluci.h"
 *
       IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
 C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
@@ -1624,9 +1781,11 @@ C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
 *. Lucia : core energy is obtained from 2-e file
         CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
       else if (ENVIRO(1:5).eq.'DIRAC') then
-        write(6,*)
+        if (myproc.eq.master) then
+*        write(6,*)
         write(6,*) 'Integral import from DIRAC.'
         write(6,*) 'No checking of environment dims.'
+        end if
       ELSE IF(ENVIRO(1:4).EQ.'NONE') THEN
 *. No environment,
         WRITE(6,*) 'GET_ORB_DIM_ENV  in problems '
@@ -1811,7 +1970,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *     Load the core Hamiltonian matrix                                 *
 *----------------------------------------------------------------------*
       iDisk=iToc(2)
-      Call DaFile(LuOne,2,H,RtoI*NorbTT,iDisk)
 *----------------------------------------------------------------------*
 *     Terminate procedure                                              *
 *----------------------------------------------------------------------*
@@ -2628,7 +2786,7 @@ C?    WRITE(6,*) ' NORBT, NCMOT = ', NORBT,NCMOT
       INTEGER NMOS_ENV(*),NAOS_ENV(*)
 *
       LUH = 91
-      CALL REWINO(LUH)
+      CALL REWINE(LUH,-1)
 *.
       READ(LUH,*) NSMOB
 *.
@@ -3007,9 +3165,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
                 iijj=iijj-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -3039,9 +3195,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
               Else
                 iDisk=iDAdr(iBatch)
                 Do iSkip=1,iRec
-                  Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
                 End Do
-                Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
                 ijij=ijij-iRec*lTr2Rec
                 iRecOld=iRec
               End If
@@ -3188,14 +3342,16 @@ c       Write(*,Fmt) '*'//Line//'*'
 *     University of Lund, Sweden, 1993                                 *
 *     Modified, Timo Fleig, Dec 2001                                   *
 *                           Aug 2004                                   *
+*                           Aug 2006                                   *
 *                                                                      *
 *----------------------------------------------------------------------*
 *                                                                      *
 *     history: none                                                    *
 *                                                                      *
 ************************************************************************
+#include "clunit.inc"
       Character*8   Fmt
-      Character*80  Line,BlLine,StLine
+      Character*70  Line,BlLine,StLine
 *----------------------------------------------------------------------*
 *     Start and define the paper width                                 *
 *----------------------------------------------------------------------*
@@ -3213,12 +3369,12 @@ c       Write(*,Fmt) '*'//Line//'*'
 *----------------------------------------------------------------------*
 *     Print the program header                                         *
 *----------------------------------------------------------------------*
-      Write(*,*)
-      Write(*,*)
-      nLine=18
+      Write(LUOUT,*)
+      Write(LUOUT,*)
+      nLine=35
       Do i=1,nLine
         Line=BlLine
-        If ( i.eq.1 .or. i.eq.nLine )
+        If ( i.eq.1 .or. i.eq.2 .or. i.eq.nLine )
      &  Line=StLine
         If ( i.eq.5 )
      &  Line='D I R L U C'
@@ -3245,10 +3401,38 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.17)
      &  Line='                                                  '
         If ( i.eq.18)
+     &  Line='Citation:                                         '
+        If ( i.eq.19)
+     &  Line='  J. Olsen, P. Joergensen, J. Simons,             '
+        If ( i.eq.20)
+     &  Line='          Chem. Phys. Lett. 169 (1990) 463        '
+        If ( i.eq.21)
+     &  Line='  T. Fleig, L. Visscher,                          '
+        If ( i.eq.22)
+     &  Line='          Chem. Phys. 311 (2005) 113              '
+        If ( i.eq.25)
+     &  Line='Parallelization of LUCIA, Duesseldorf/Odense:     '
+        If ( i.eq.26)
+     &  Line='S. Knecht                                         '
+        If ( i.eq.27)
+     &  Line='Theoretische Chemie und Computerchemie,           '
+        If ( i.eq.28)
+     &  Line='Heinrich-Heine-Universitaet Duesseldorf           '
+        If ( i.eq.29)
+     &  Line='                                                  '
+        If ( i.eq.30)
+     &  Line='Citation:                                         '
+        If ( i.eq.31)
+     &  Line='  S. Knecht, H. J. Aa. Jensen and T. Fleig,       '
+        If ( i.eq.32)
+     &  Line='          J. Chem. Phys., 128 (2008) 014108       '
+        If ( i.eq.33)
+     &  Line='                                                  '
+        If ( i.eq.34 .or. i.eq.35 )
      &  Line = StLine
-        write(6,*) Line
+        write(LUOUT,*) Line
       End Do
-      Write(*,*)
+      Write(LUOUT,*)
 *----------------------------------------------------------------------*
 *     Normal termination                                               *
 *----------------------------------------------------------------------*
@@ -3542,12 +3726,22 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *                                                                      *
 ************************************************************************
 *
+* MPI adaption by Stefan Knecht, Feb. 2006
+* only master read in MRCONEE and distributes the information 
+* to all nodes
+*
       Implicit Real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
 #include "orbinf_lucita.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
+#include "parluci.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 *
       character*6 WAFFCT
       character*8 FNIPH
@@ -3561,6 +3755,10 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       NTEST = max(NTESTL,IPRT)
 *
 * Get info from DIRAC file MRCONEE
+C
+      IF (MYPROC.EQ.MASTER) THEN
+C
+
       open(LU1INT,FILE='MRCONEE',FORM='UNFORMATTED')
       read(LU1INT) MORB,BREIT,ECORE_DIR,NFSYM,NZ
       read(LU1INT) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
@@ -3577,7 +3775,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       close(LU1INT)
 *
       if (NTEST.ge.1)
-     &  write(6,'(A,1F18.10)') ' DIRAC core energy = ',ECORE_DIR
+     &  write(6,'(A,1F18.10)') '    DIRAC core energy = ',ECORE_DIR
       if (NTEST.ge.3) then
         write(6,*)
         write(6,*) 'Testing read MRCONEE'
@@ -3589,6 +3787,50 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
           write(6,'(A11,I5,A3,I12)') 'Spinor no. ',IB,' : ',IDUMAR(IB)
         end do
       end if
+      END IF
+C    /\ read in master
+C
+C     Distribute the information read from MRCONEE
+C
+#if defined (VAR_MPI)
+      IF (NMPROC.GT.1) THEN
+        CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,IDUMMY,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NCORE,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NDELE,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUMAR,MORB,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IDUM2,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NBREPD,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+      END IF
+#endif
+
+
 *
 *...  space definitions
 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3813,6 +4055,7 @@ C
 #include "lucinp.inc"
 #include "csm.inc"
 #include "orbinp.inc"
+#include "parluci.h"
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *./CECORE/
@@ -3886,7 +4129,11 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * ===============
 *
       else if (INTIMP.eq.6.and.NOINT.eq.0) then
-        write(6,*) 'Integrals imported from DIRAC files'
+        if (myproc.eq.master) then
+          write(6,*) 'Integrals imported from DIRAC files'
+        else
+          write(12,*) 'Integrals imported from DIRAC files'
+        end if
         call rdint_dirac(KINT1,KINT2,DOUGRP,IPRNT)
       END IF
 *
@@ -3915,7 +4162,9 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
       END IF
       ECORE_ORIG = ECORE
       ECORE = ECORE + ECORE_HEX
-      WRITE(6,*) ' Updated core energy ',ECORE
+      if (myproc.eq.master) then
+        WRITE(6,*) 'Updated core energy ',ECORE
+      end if
       CALL LMEMCHK
 *
 C?    WRITE(6,*) ' IDMPIN ', IDMPIN
@@ -4026,7 +4275,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
                 Else
                    Nintrc = nIJKL -(Nrec-1)*Ltr2Rec
                 End if
-                Call Dafile(LuTr2,2,Xint(Ioff),RtoI*Nintrc,Idisk)
                 Ioff = Ioff + Nintrc
    50        Continue
 *
@@ -4061,19 +4309,26 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
      &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
-     &                   IPRXT,IPRRSP,IPRDEN,IPROCC)
+     &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
 *
       implicit real*8 (A-H,O-Z)
 *
 #include "units.inc"
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
 *
       logical MSCOMB
       character*2 TYPELUC(MXSEQ)
       character*3 CALSIZ
       character*6 MACHINE
       character*72 TITLE(MXTIT),HESTR
+      CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
+      INTEGER LUCIAIN_MPIL
       dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
-      data KOMMA /1H,/
 *
 *-----------------------------------------------------------------*
 *  Print input for LUCITA input file           
@@ -4090,11 +4345,11 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
          NTITMN = NTIT
          do I=1,NTITMN,1
             call leftad(TITLE(I))
-            write(*,'(X,A70)') TITLE(I)
+            write(*,'(1X,A70)') TITLE(I)
          end do
 *
 CTF      write(*,'(A7)') 'MACHINE'
-CTF      write(*,'(X,A6)') MACHINE
+CTF      write(*,'(1X,A6)') MACHINE
 *
          if (CALSIZ.eq.'NOR') then
            write(*,'(A6)') 'MEGACI'
@@ -4104,95 +4359,97 @@ CTF      write(*,'(X,A6)') MACHINE
 *
          write(*,'(A6)') 'DIRAC '
 *
-         write(*,'(X,I1)') IDBGRP
+         write(*,'(1X,I1)') IDBGRP
 *
          write(*,'(A3)') 'D2H'
 *
          write(*,'(A6)') 'NIRREP'
-         write(*,'(X,I3)') NSYM
+         write(*,'(1X,I3)') NSYM
 *
          write(*,'(A6)') 'IREFSM'
-         write(*,'(X,I3)') IRREP
+         write(*,'(1X,I3)') IRREP
 *
          write(*,'(A5)') 'GASSH'
-         write(*,'(X,I3)') NGAS
+         write(*,'(1X,I3)') NGAS
 *
          HESTR = ' '
          write (HESTR,'(A,I1,A)') '(X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(X,I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
          do IGAS = 1,NGAS,1
             write(*,HESTR)
      &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
          end do
 *
          write(*,'(A6)') 'NACTEL'
-         write(*,'(X,I3)') NACTEL
+         write(*,'(1X,I3)') NACTEL
 *
          write(*,'(A6)') 'GASSPC'
-         write(*,'(X,I3)') NCISPC
+         write(*,'(1X,I3)') NCISPC
          do ISPC=1,NCISPC,1
-            write(*,'(X,2I3)')
+            write(*,'(1X,2I3)')
      &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
          end do
 *
          write(*,'(A6)') 'SEQUEN'
          do ICISPC=1,NCISPC,1
-            write(*,'(X,I3)') NSEQ
+            write(*,'(1X,I3)') NSEQ
             do ISEQ=1,NSEQ,1
                if (TYPELUC(ISEQ).eq.'CI') then
-                  write(*,'(X,A3,I3)') 'CI,',MAXIT
+                  write(*,'(1X,A3,I3)') 'CI,',MAXIT
                else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(*,'(X,A6,I3)') 'PERTU,',MAXIT
+                  write(*,'(1X,A6,I3)') 'PERTU,',MAXIT
                else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(*,'(X,A8,I3)') 'VECFREE,',IVFLEV
+                  write(*,'(1X,A8,I3)') 'VECFREE,',IVFLEV
                end if
             end do
          end do
 *
          write(*,'(A6)') 'RESTRT'
-         write(*,'(X,I3)') IRSTRT
+         write(*,'(1X,I3)') IRSTRT
 *
          write(*,'(A5)') 'MULTS'
-         write(*,'(X,I3)') MULTIP
+         write(*,'(1X,I3)') MULTIP
 *
          write(*,'(A3)') 'MS2'
-         write(*,'(X,I3)') MS2
+         write(*,'(1X,I3)') MS2
 *
          if (MSCOMB) then
             write(*,'(A6)') 'MSCOMB'
-            write(*,'(X,F3.1)') SCOMB
+            write(*,'(1X,F3.1)') SCOMB
          end if
 *
          write(*,'(A5)') 'ROOTS'
-         write(*,'(X,I3)') NROOT
+         write(*,'(1X,I3)') NROOT
 *
          write(*,'(A5)') 'DENSI'
-         write(*,'(X,I3)') IDEMOL
+         write(*,'(1X,I3)') IDEMOL
 *
          write(*,'(A5)') 'NOCSF'
 *
          write(*,'(A6)') 'IPRSTR'
-         write(*,'(X,I3)') IPRSTR
+         write(*,'(1X,I3)') IPRSTR
          write(*,'(A6)') 'IPRCIX'
-         write(*,'(X,I3)') IPRCIX
+         write(*,'(1X,I3)') IPRCIX
          write(*,'(A6)') 'IPRORB'
-         write(*,'(X,I3)') IPRORB
+         write(*,'(1X,I3)') IPRORB
          write(*,'(A6)') 'IPRDIA'
-         write(*,'(X,I3)') IPRDIA
+         write(*,'(1X,I3)') IPRDIA
          write(*,'(A5)') 'IPRXT'
-         write(*,'(X,I3)') IPRXT
+         write(*,'(1X,I3)') IPRXT
          write(*,'(A6)') 'IPRRSP'
-         write(*,'(X,I3)') IPRRSP
+         write(*,'(1X,I3)') IPRRSP
          write(*,'(A6)') 'IPRDEN'
-         write(*,'(X,I3)') IPRDEN
+         write(*,'(1X,I3)') IPRDEN
          write(*,'(A6)') 'IPROCC'
-         write(*,'(X,I3)') IPROCC
+         write(*,'(1X,I3)') IPROCC
+         write(*,'(A6)') 'PRNCIV'
+         write(*,'(1X,I3,A)') IPRNCIV
 *
          write(*,'(A6)') 'RESDIM'
-         write(*,'(X,I4)') IRESDIM
+         write(*,'(1X,I4)') IRESDIM
 *
          write(*,'(A6)') 'LCSBLK'
-         write(*,'(X,I7)') LCSBLK
+         write(*,'(I20)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
             write(*,'(A6)') 'USE_PH'
@@ -4210,7 +4467,26 @@ CTF      write(*,'(X,A6)') MACHINE
 *--------------------------------------------------
 * Write to file LUCIAIN
 *--------------------------------------------------
-      open(unit=LUINP,file='LUCIAIN',
+      LUCIAIN_MPIN = "LUCIAIN"
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (NLUCIAIN_MPI,'(A7,A1,I1)') LUCIAIN_MPIN,'.',MYPROC
+         LUCIAIN_MPIL=9
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (NLUCIAIN_MPI,'(A7,A1,I2)') LUCIAIN_MPIN,'.',MYPROC
+         LUCIAIN_MPIL=10
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',MYPROC
+         LUCIAIN_MPIL=11
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
+#else
+      NLUCIAIN_MPI=LUCIAIN_MPIN
+      LUCIAIN_MPIL=7
+#endif
+
+      open(unit=LUINP,file=NLUCIAIN_MPI(1:LUCIAIN_MPIL),
      &     status='UNKNOWN',form='FORMATTED')
          Rewind(LUINP)
          write(LUINP,'(A13)') '* &LUCIA &END'
@@ -4219,11 +4495,11 @@ CTF      write(*,'(X,A6)') MACHINE
          NTITMN = NTIT
          do I=1,NTITMN,1
             call leftad(TITLE(I))
-            write(LUINP,'(X,A70)') TITLE(I)
+            write(LUINP,'(1X,A70)') TITLE(I)
          end do
 *
 CTF      write(LUINP,'(A7)') 'MACHINE'
-CTF      write(LUINP,'(X,A6)') MACHINE
+CTF      write(LUINP,'(1X,A6)') MACHINE
 *
          if (CALSIZ.eq.'NOR') then
            write(LUINP,'(A6)') 'MEGACI'
@@ -4233,47 +4509,47 @@ CTF      write(LUINP,'(X,A6)') MACHINE
 *
          write(LUINP,'(A6)') 'DIRAC '
 *
-         write(LUINP,'(X,I1)') IDBGRP
+         write(LUINP,'(1X,I1)') IDBGRP
 *
          write(LUINP,'(A3)') 'D2H'
 *
          write(LUINP,'(A6)') 'NIRREP'
-         write(LUINP,'(X,I3)') NSYM
+         write(LUINP,'(1X,I3)') NSYM
 *
          write(LUINP,'(A6)') 'IREFSM'
-         write(LUINP,'(X,I3)') IRREP
+         write(LUINP,'(1X,I3)') IRREP
 *
          write(LUINP,'(A5)') 'GASSH'
-         write(LUINP,'(X,I3)') NGAS
+         write(LUINP,'(1X,I3)') NGAS
 *
          HESTR = ' '
-         write (HESTR,'(A,I1,A)') '(X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(X,I3)'
+         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
+         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
          do IGAS = 1,NGAS,1
             write(LUINP,HESTR)
      &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
          end do
 *
          write(LUINP,'(A6)') 'NACTEL'
-         write(LUINP,'(X,I3)') NACTEL
+         write(LUINP,'(1X,I3)') NACTEL
 *
          write(LUINP,'(A6)') 'GASSPC'
-         write(LUINP,'(X,I3)') NCISPC
+         write(LUINP,'(1X,I3)') NCISPC
          do ISPC=1,NCISPC,1
-            write(LUINP,'(X,2I3)')
+            write(LUINP,'(1X,2I3)')
      &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
          end do
 *
          write(LUINP,'(A6)') 'SEQUEN'
          do ICISPC=1,NCISPC,1
-            write(LUINP,'(X,I3)') NSEQ
+            write(LUINP,'(1X,I3)') NSEQ
             do ISEQ=1,NSEQ,1
                if (TYPELUC(ISEQ).eq.'CI') then
-                  write(LUINP,'(X,A3,I3)') 'CI,',MAXIT
+                  write(LUINP,'(1X,A3,I3)') 'CI,',MAXIT
                else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(LUINP,'(X,A6,I3)') 'PERTU,',MAXIT
+                  write(LUINP,'(1X,A6,I3)') 'PERTU,',MAXIT
                else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(LUINP,'(X,A8,I3)') 'VECFREE,',IVFLEV
+                  write(LUINP,'(1X,A8,I3)') 'VECFREE,',IVFLEV
                end if
             end do
          end do
@@ -4283,46 +4559,48 @@ CTF      write(LUINP,'(X,A6)') MACHINE
          end if
 *
          write(LUINP,'(A5)') 'MULTS'
-         write(LUINP,'(X,I3)') MULTIP
+         write(LUINP,'(1X,I3)') MULTIP
 *
          write(LUINP,'(A3)') 'MS2'
-         write(LUINP,'(X,I3)') MS2
+         write(LUINP,'(1X,I3)') MS2
 *
          if (MSCOMB) then
             write(LUINP,'(A6)') 'MSCOMB'
-            write(LUINP,'(X,F3.1)') SCOMB
+            write(LUINP,'(1X,F3.1)') SCOMB
          end if
 *
          write(LUINP,'(A5)') 'ROOTS'
-         write(LUINP,'(X,I3)') NROOT
+         write(LUINP,'(1X,I3)') NROOT
 *
          write(LUINP,'(A5)') 'DENSI'
-         write(LUINP,'(X,I3)') IDEMOL
+         write(LUINP,'(1X,I3)') IDEMOL
 *
          write(LUINP,'(A5)') 'NOCSF'
 *
          write(LUINP,'(A6)') 'IPRSTR'
-         write(LUINP,'(X,I3)') IPRSTR
+         write(LUINP,'(1X,I3)') IPRSTR
          write(LUINP,'(A6)') 'IPRCIX'
-         write(LUINP,'(X,I3)') IPRCIX
+         write(LUINP,'(1X,I3)') IPRCIX
          write(LUINP,'(A6)') 'IPRORB'
-         write(LUINP,'(X,I3)') IPRORB
+         write(LUINP,'(1X,I3)') IPRORB
          write(LUINP,'(A6)') 'IPRDIA'
-         write(LUINP,'(X,I3)') IPRDIA
+         write(LUINP,'(1X,I3)') IPRDIA
          write(LUINP,'(A5)') 'IPRXT'
-         write(LUINP,'(X,I3)') IPRXT
+         write(LUINP,'(1X,I3)') IPRXT
          write(LUINP,'(A6)') 'IPRRSP'
-         write(LUINP,'(X,I3)') IPRRSP
+         write(LUINP,'(1X,I3)') IPRRSP
          write(LUINP,'(A6)') 'IPRDEN'
-         write(LUINP,'(X,I3)') IPRDEN
+         write(LUINP,'(1X,I3)') IPRDEN
          write(LUINP,'(A6)') 'IPROCC'
-         write(LUINP,'(X,I3)') IPROCC
+         write(LUINP,'(1X,I3)') IPROCC
+         write(LUINP,'(A6)') 'PRNCIV'
+         write(LUINP,'(1X,I3)') IPRNCIV
 *
          write(LUINP,'(A6)') 'RESDIM'
-         write(LUINP,'(X,I4)') IRESDIM
+         write(LUINP,'(1X,I4)') IRESDIM
 *
          write(LUINP,'(A6)') 'LCSBLK'
-         write(LUINP,'(X,I7)') LCSBLK
+         write(LUINP,'(I20)') LCSBLK
 *
          if (IUSE_PH.eq.1) then
             write(LUINP,'(A6)') 'USE_PH'
@@ -4366,11 +4644,9 @@ CTF      write(LUINP,'(X,A6)') MACHINE
 *----------------------------------------------------------------------*
       LuTr2=LuTwo
       lTr2Rec=lBlk
-      Call DaName(luTr2,'TRAINT')
 *----------------------------------------------------------------------*
 *     Load the table of disk adresses                                  *
 *----------------------------------------------------------------------*
-      Call DaFile(LuTr2,2,iDAdr,mxBatch,iDisk)
 *----------------------------------------------------------------------*
 *     Generate the symmetry block to batch number translation table    *
 *----------------------------------------------------------------------*
@@ -4588,10 +4864,10 @@ CTF      write(LUINP,'(X,A6)') MACHINE
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -4927,10 +5203,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5265,10 +5541,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5415,10 +5691,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5470,6 +5746,10 @@ CC        IVFLEV = 1               ! could be made more flexible
           do ISYM=1,NSYM,1
             NSHPGS(4,ISYM) = NORB(ISYM) - NINOBS(ISYM) -
      &                       NSHPGS(2,ISYM) - NSHPGS(3,ISYM)
+            if (NSHPGS(4,ISYM).gt.MXTSOB) then
+              call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
+     &                      MXTSOB,NGAS,IPRT)
+            end if
           end do
         else
           NGAS = 5
@@ -5479,6 +5759,10 @@ CC        IVFLEV = 1               ! could be made more flexible
             NSHPGS(5,ISYM) = NORB(ISYM) - NINOBS(ISYM) -
      &                       NSHPGS(2,ISYM) - NSHPGS(3,ISYM)
      &                       - NSHPGS(4,ISYM)
+            if (NSHPGS(5,ISYM).gt.MXTSOB) then
+              call gassplit(NSHPGS(1,ISYM),5,MXPNGAS,
+     &                      MXTSOB,NGAS,IPRT)
+            end if
           end do
         end if
 *
@@ -5507,12 +5791,12 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
         NFMN = 2*NSUM
         NFMX = 2*NSUM
-        NIMN = max(min(NACTEL,2*NSUM + MXELR1) - MXHOL1,0)
-        NIMX = min(NACTEL,2*NSUM + MXELR1)
-        NAMN = min(NIMX + MXELR2,NACTEL - MXELR3)
-        NAMX = min(NACTEL,NIMX + MXELR2)
-        NEMN = NACTEL
-        NEMX = NACTEL
+        NIMX = MXELR1 + NFMX
+        NIMN = NIMX - MXHOL1
+        NEMN = NACTEL + NFMX
+        NEMX = NACTEL + NFMX
+        NAMX = NEMX
+        NAMN = NAMX - MXELR3
 *
         do ICISPC=1,NCISPC,1
           NELGS(1,1,ICISPC) = NFMN
@@ -5524,11 +5808,13 @@ CC        IVFLEV = 1               ! could be made more flexible
           NELGS(4,1,ICISPC) = NEMN
           NELGS(4,2,ICISPC) = NEMX
           if (NGAS.eq.5) then
-            NELGS(4,1,ICISPC) = NACTEL - MXELR3
-            NELGS(5,1,ICISPC) = NACTEL
-            NELGS(5,2,ICISPC) = NACTEL
+            do IGAS = 5,NGAS,1
+              NELGS(IGAS,1,ICISPC) = NACTEL + NFMX
+              NELGS(IGAS,2,ICISPC) = NACTEL + NFMX
+            end do
           end if
         end do
+        NACTEL = NACTEL+NFMX
         if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
           write(6,*) 'I am sure that fascinating discussions about'
           write(6,*) 'the energy of such a wave function exist,'
@@ -5601,10 +5887,10 @@ CC        IVFLEV = 1               ! could be made more flexible
         TYPELUC(NSEQ) = 'CI'
         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
         else if (CALSIZ.eq.'HUG') then
           TYPELUC(NSEQ) = 'CI'
-          MAXIT = 50
+          MAXIT = IMAXCIITER
 CC        TYPELUC(NSEQ) = 'VF'
 CC        IVFLEV = 1               ! could be made more flexible
         end if
@@ -5655,11 +5941,12 @@ CC        IVFLEV = 1               ! could be made more flexible
 *   IPRCIX (done)
 *   IPRORB (done)
 *   IPRDIA (done, but a little incomplete)
-*   IPRXT  (does not shop up anywhere)
+*   IPRXT  (does not show up anywhere)
 *   IPRRSP (for response jobs; omitted)
 *   IPRDEN (done)
 *   IPROCC (done)
 *   IPRNCIV (done)
+*
 *
       IPRDEN = 0
       if (PRILUC.eq.'NON') then
@@ -5701,7 +5988,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRRSP = 0
          if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
-         IPRNCIV = 1
+         IPRNCIV = 2
       else if (PRILUC.eq.'VHI') then
          IPRSTR = 500
          IPRCIX = 100
@@ -5711,7 +5998,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRRSP = 0
          if (IDEMOL.ge.1) IPRDEN = 500
          IPROCC = 00
-         IPRNCIV = 1
+         IPRNCIV = 5
       end if
 *
       if (IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
@@ -5726,7 +6013,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
      &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
-     &             IPRDEN,IPROCC)
+     &             IPRDEN,IPROCC,IPRNCIV)
 *
       return
       end
@@ -5816,6 +6103,9 @@ CC        IVFLEV = 1               ! could be made more flexible
 *
 #include "mxpdim.inc"
 #include "multd2h.inc"
+#include "files.inc"
+#include "clunit.inc"
+#include "parluci.h"
 *
       integer SYDI
       dimension SYDI(NIRR_PN)
@@ -5824,11 +6114,12 @@ CC        IVFLEV = 1               ! could be made more flexible
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 *
+      NTEST  = 00
       if (NTEST.ge.1) then
-        write(6,*)
-        write(6,*) '=========================='
-        write(6,*) ' numints_red speaking:    '
-        write(6,*) '=========================='
+        write(LUWRT,*)
+        write(LUWRT,*) '=========================='
+        write(LUWRT,*) ' numints_red speaking:    '
+        write(LUWRT,*) '=========================='
       end if
 *
 * Set up triangular array
@@ -5852,45 +6143,47 @@ CC        IVFLEV = 1               ! could be made more flexible
    10   continue
       end do
       if (NTEST.ge.5) then
-        write(6,*) 'Symmetry packing labels:'
+        write(LUWRT,*) 'Symmetry packing labels:'
         call iwrtma(IQISYM,NOCC,1,NOCC,1)
       end if
 *
 * Number of symmetry blocks and total number of integrals
       INIT = 1
       do ISP=1,NIRR_PN,1
-        if (NTEST.ge.10) write(6,*) 'ISP =',ISP
+        if (NTEST.ge.10) write(LUWRT,*) 'ISP =',ISP
         NSP=IQISYM(ISP)
         if (NSP.eq.0.and.NTEST.ge.1) then
-          write(6,*) 'Number of symm for P is  ',NSP
-          write(6,*) 'Skipping two-el. int. read.'
+          write(LUWRT,*) 'Number of symm for P is  ',NSP
+          write(LUWRT,*) 'Skipping two-el. int. read.'
           goto 333
         end if
-        if (NTEST.ge.10) write(6,*) 'NSP =',NSP
+        if (NTEST.ge.10) write(LUWRT,*) 'NSP =',NSP
         NOP=SYDI(NSP)
         do ISQ=1,ISP,1
-          if (NTEST.ge.10) write(6,*) 'ISQ =',ISQ
+          if (NTEST.ge.10) write(LUWRT,*) 'ISQ =',ISQ
           NSQ = IQISYM(ISQ)
           NOQ = SYDI(NSQ)
           ISPQ = MULTD2H(NSP,NSQ)
-          if (NTEST.ge.10) write(6,*) 'NSQ =',NSQ
+          if (NTEST.ge.10) write(LUWRT,*) 'NSQ =',NSQ
+          ntest = 00
           do ISR=1,ISP,1
-            if (NTEST.ge.10) write(6,*) 'ISR =',ISR
+            if (NTEST.ge.10) write(LUWRT,*) 'ISR =',ISR
             NSR = IQISYM(ISR)
             NOR = SYDI(NSR)
             ISPQR = MULTD2H(ISPQ,NSR)
             ISSM=ISR
             if (ISR.EQ.ISP) ISSM=ISQ
-            if (NTEST.ge.10) write(6,*) 'NSR =',NSR
+            if (NTEST.ge.10) write(LUWRT,*) 'NSR =',NSR
             do 40 ISS=1,ISSM,1
-              if (NTEST.ge.10) write(6,*) 'ISS =',ISS
+              if (NTEST.ge.10) write(LUWRT,*) 'ISS =',ISS
               NSS=IQISYM(ISS)
               NOS=SYDI(NSS)
               if (NTEST.ge.10) then
-                write(6,'(A,4I6)') 'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
-                write(6,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
+                write(LUWRT,'(A,4I6)') 
+     &          'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
+                write(LUWRT,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
               end if
-              if (NTEST.ge.10) write(6,*) 'NSS =',NSS
+              if (NTEST.ge.10) write(LUWRT,*) 'NSS =',NSS
               if(NSS.NE.ISPQR) goto 40
               if(NOS*NOR*NOQ*NOP.eq.0) goto 40
 *
@@ -5923,7 +6216,7 @@ CC        IVFLEV = 1               ! could be made more flexible
               INIT = INIT + 1
               IGLSUM = IGLSUM + NIGL
               if (NTEST.ge.1) then
-                 write(6,601) NSP,NSQ,NSR,NSS,NIGL
+                 write(LUWRT,601) NSP,NSQ,NSR,NSS,NIGL
               end if
 40          continue
           end do
@@ -5935,7 +6228,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
      &             ,4I2,' IS : ',I10)
 *
-      return
       end
 ***********************************************************************
 *                                                                     *
@@ -6109,15 +6401,21 @@ C    &           ' MO orbitals obtained from LUCIA ')
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "clunit.inc"
+#include "parluci.h"
 *
       dimension NBASD(MXPIRR),NSTR(2)
 *
       NTESTL = 0
       NTEST = max(NTESTL,IPRINT)
 *
-      write(6,*)
-      write(6,*) 'Using spinfree Dirac Hamiltonian!'
-*
+      if (myproc.eq.master) then
+        write(6,*)
+        write(6,*) 'Using spinfree Dirac Hamiltonian!'
+      else
+        write(12,*)
+        write(12,*) 'Using spinfree Dirac Hamiltonian!'
+      end if
+*     
       ISPINFREE = 1
       ISYDISUM = 0
       DIRACONE = 'MRCONEE'
@@ -6174,8 +6472,8 @@ C    &           ' MO orbitals obtained from LUCIA ')
       call memman(KDITWOE,NUM_TWEI,'ADDL  ',2,'IDITWO')
       call memman(KINVREO,ISYDISUM,'ADDL  ',2,'INVREO')
       call memman(KKR,(2*ISYDISUM+1),'ADDL  ',2,'IKR   ')
-      call memman(KINDK,NUM_TWEI/2+1,'ADDL  ',2,'INDK  ')
-      call memman(KINDL,NUM_TWEI/2+1,'ADDL  ',2,'INDL  ')
+      call memman(KINDK,num_twei,'ADDL  ',1,'INDK  ')
+      call memman(KINDL,num_twei,'ADDL  ',1,'INDL  ')
       call memman(KIOFF12,(2*ISYDISUM)**2,'ADDL  ',2,'IOFF12')
       call memman(KNUMINT,(2*ISYDISUM)**2,'ADDL  ',2,'NUMINT')
       call findhigh(NTOOBS(1),NIRREP,IMXDIM)
@@ -6195,6 +6493,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                 WORK(KKR),WORK(KIOFF12),WORK(KNUMINT),
      &                 WORK(KINDK),WORK(KINDL),NTEST)
 *
+CSK      call lmemchk
       IHAM12 = 2
       ISYDISUM2 = ISYDISUM*2
       call dist_ints_dirac2(WORK(KPICHE2),WORK(KDIONEE),
@@ -6208,6 +6507,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                     INVERSM,
      &                     IHAM12,ISPINFREE,IMXDIM,NIRREP,NTEST)
 *
+CSK      call lmemchk
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
 *
       return
@@ -6271,6 +6571,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
       end do
 *
       NTIT = 0
+*
 *
       call qenter('ReadIn')
 *
@@ -6666,6 +6967,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
 *
       if (IMOKW(10).eq.0) then
          CALSIZ = 'NOR'
+         IMAXCIITER = 100
          IMOKW(10) = 2
       else
          if (CALSIZ.ne.'NOR'.and.CALSIZ.ne.'LAR'.and.
@@ -6674,6 +6976,8 @@ C    &           ' MO orbitals obtained from LUCIA ')
            write(6,*) 'This is an unknown type.'
            Call Abend2('Quitting.')
          end if
+         if (CALSIZ.eq.'NOR'.or.CALSIZ.eq.'LAR') IMAXCIITER = 100
+         if (CALSIZ.eq.'HUG') IMAXCIITER = 50
       end if
 *
 * 11: Orbital distribution in inactive space (no defaults if RASCI)
@@ -6961,6 +7265,7 @@ c     call XFLUSH(6)
          NLIN = NLIN + 1
          if (CAREXP(NLIN-1).ne.
      &'                                              ') goto 5555
+*modifications ???* sk 
          open(unit=LUINP,file='LUCIAIN',
      &        status='NEW',form='FORMATTED')
            do I=1,NLIN-2,1
@@ -6989,9 +7294,15 @@ c     call XFLUSH(6)
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
 *  Import one-electron integrals from DIRAC environment
+*
+*  MPI adaption by Stefan Knecht, Feb. 2006
+*
+*  Master reads all the information in and braodcasts 
+*  everything to all nodes in MPI_COMM_WORLD
 *
       subroutine rdone_dirac(ONEINT,LUONE,DIRACONE,MORB,NDIM,
      &                       NBAS,ISPINFREE,IBOSYM,IDUMAR,DUMAR,
@@ -7001,6 +7312,12 @@ c     call XFLUSH(6)
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
+#include "parluci.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 *
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
@@ -7018,6 +7335,9 @@ c     call XFLUSH(6)
       IZERO = 0
       call isetvc(ICT,IZERO,NIRREP)
 *
+*
+      IF (MYPROC.EQ.MASTER) THEN
+C
       open(LUONE,FILE=DIRACONE,FORM='UNFORMATTED')
       read(LUONE) MORB,BREIT,ECORE_DIR
       read(LUONE) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
@@ -7028,7 +7348,6 @@ c     call XFLUSH(6)
       read(LUONE) (IDUMAR(ID),IDUMAR(ID),DUMAR(ID),ID=1,MORB,1),
      &            (IBOSYM(I),I=1,MORB,1)
 *
-      write(6,'(A,1F18.10)') 'DIRAC core energy = ',ECORE_DIR
       if (NTEST.ge.3) then
         write(6,*)
         write(6,*) 'Testing read MRCONEE'
@@ -7044,6 +7363,36 @@ c     call XFLUSH(6)
         end do
       end if
 *
+      END IF
+C    /\ read in master
+C
+C     Distribute the information read from MRCONEE
+C
+#if defined (VAR_MPI)
+      IF (NMPROC.GT.1) THEN
+         CALL MPI_BCAST(MORB,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(ECORE_DIR,1,MPI_DOUBLE_PRECISION,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IDUMMY,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(DUMCHA,IDUMMY,MPI_CHARACTER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IDUMAR,IDUMMY,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NSTR,NFSYM,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IDUMAR,2*MORB,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(DUMAR,MORB,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IBOSYM,MORB,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+#endif
+
       IERROR = 0
       NORBSM = 0
       do ISPINOR=1,MORB,1
@@ -7073,31 +7422,57 @@ c     call XFLUSH(6)
         call abend2('Quitting.')
       end if
 *
+      IF (MYPROC.EQ.MASTER) THEN
 * Read the integrals and close file
       read(LUONE) (ONEINT(I),TDUM,I=1,MORB*MORB)
       close(LUONE)
 *
+
       if (NTEST.ge.10) then
         do IND=1,MORB,1
           INOFF = (IND-1)*MORB
-          write(6,'(I4,X,4F18.12)')
+          write(6,'(I4,1X,4F18.12)')
      &          IND,(ONEINT(INOFF+JND),JND=1,MORB,1)
         end do
       end if
+      END IF
+C     /\ read in master
+C
+C     Distribute the information read from MRCONEE
+C
+#if defined (VAR_MPI)
+      IF (NMPROC.GT.1) THEN
+         CALL MPI_BCAST(ONEINT,MORB*MORB,MPI_DOUBLE_PRECISION,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(TDUM,1,my_MPI_INTEGER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+#endif
 *
+C     ...on here!
+C
+      if (myproc.eq.master) then
+      write(6,'(1X,A,1F18.10)') 'DIRAC core energy = ',ECORE_DIR
+      end if
+C
       ECORE = ECORE_DIR
 *
-      return
       end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+* parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
 *  Read DIRAC-COULOMB two-electron integrals
 *  (Later also BREIT integrals)
 *  (GAUNT integrals can be included in COULOMB type ints.,
-*   because they have the same symmetry.)
+*  because they have the same symmetry.)
+*
+*  In case of a parallel calculation:
+*  Broadcasting of general data from master to nodes
+*  Integrals are read in by every node
+*  Stefan Knecht, Feb. 06
 *
       subroutine rdtwo_dirac(RKLR,
      &                       LUTWO,DIRACTWO,
@@ -7106,19 +7481,41 @@ c     call XFLUSH(6)
 *
       implicit real*8 (A-H,O-Z)
 *
+#include "parluci.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "files.inc"
+*
       character*8 DIRACTWO
-      character*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
-      logical REALAR
+      character*10 DATEX,TIMEX*8
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+*      New characters used for timing 
+      CHARACTER CPUSTEP*12, WALLSTEP*12, CPUSTEPX*12,WALLSTEPX*12
 c     logical BREIT
 *
       dimension RKLR((2*NDIM)**4)
       dimension KR(-NDIM:NDIM),INDK((2*NDIM)**4),INDL((2*NDIM)**4),
      &          IOFF12(MORB,MORB),NUMINT(MORB,MORB)
 *
+     
+*
+* additionally inserted here because of the call from luciarel!
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 *
-      REALAR = .TRUE.
       TRESINT = 1.D-12
       NINT = 0
       N2EFIL = 0
@@ -7130,57 +7527,105 @@ c     logical BREIT
       else if (N2EFIL.ge.10.and.N2EFIL.le.99) then
         write(DIRACTWO,'(A6,I2)') 'MDCINT',N2EFIL
       end if
-*
+*     
+      IF (MYPROC.EQ.MASTER) THEN
+C
 * Open file (using same logical unit for all files)
       open (LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
       rewind (LUTWO)
+      END IF
       if (N2EFIL.eq.0) then
-        read (LUTWO) datex,timex,nkr,
-     &   (kr(i),kr(-i),i=1,nkr)
+        if (myproc.eq.master) then
+          read (LUTWO) datex,timex,nkr,
+     &          (kr(i),kr(-i),i=1,nkr)
+        end if
+#if defined (VAR_MPI)
+        if (nmproc.gt.1) then
+           call mpi_bcast(nkr,1,my_MPI_INTEGER,master,
+     &                    mpi_comm_world,ierr)
+           do j = 1, nkr
+             call mpi_bcast(kr(-j),1,my_MPI_INTEGER,master,
+     &                      mpi_comm_world,ierr)
+             call mpi_bcast(kr(j),1,my_MPI_INTEGER,master,
+     &                      mpi_comm_world,ierr)
+           end do
+        end if
+#endif
       end if
 *
       if (2*NKR.ne.MORB) then
-        write(6,*) 'MRCONEE and MDCINT are incompatible.'
-        stop 'Quitting.'
+        if (myproc.eq.master) then
+          write(6,*) 'MRCONEE and MDCINT are incompatible.'
+          stop 'Quitting.'
+        else
+          write(12,*) 'MRCONEE and MDCINT are incompatible.'
+          stop 'Quitting.'
+        end if
       end if
-      write(6,*) 'Integrals have been calculated on the'
-      write(6,'(A12,X,A)') '            ',DATEX,' at ',TIMEX
+      if (myproc.eq.master) then
+        write(6,*) 'Integrals have been calculated on the'
+        write(6,'(A12,1X,A)') '            ',DATEX,' at ',TIMEX
+      end if
       if (NTEST.ge.5) then
+        
         write(6,*)
         write(6,*) 'Info from MDCINT file'
-        write(6,*) 'NKR is ',NKR
-        write(6,*) 'KR array:'
+        write(6,*) 'NKR is (myproc)',NKR, myproc
+        write(6,*) 'KR array:(myproc)', myproc
         do I=1,NKR,1
           write(6,'(2I8)') KR(-I),KR(I)
         end do
       end if
-C
-C     -------------------------
-C     READ IN COULOMB INTEGRALS
-C     -------------------------
-C
-      rewind (LUTWO)
-      if (N2EFIL.eq.0) read (LUTWO)
+*
+*     -------------------------
+*     READ IN COULOMB INTEGRALS
+*     -------------------------
+*
+      if (myproc.eq.master) then
+        rewind (LUTWO)
+      else 
+        open(LUTWO,FILE=DIRACTWO,FORM='UNFORMATTED')
+        rewind (LUTWO)
+      end if
+        if (N2EFIL.eq.0) read (LUTWO)
+*
       IKR = 0
       JKR = 0
   10  IKR_SAVE = IKR
       JKR_SAVE = JKR
-      read (LUTWO) IKR,JKR,NZ,
-     &             (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
-     &             (rklr(inz+ISYMOFF),inz=1,NZ,1)
+         read (LUTWO) IKR,JKR,NZ,
+     &               (indk(inz+ISYMOFF),indl(inz+ISYMOFF),inz=1,NZ,1),
+     &               (rklr(inz+ISYMOFF),inz=1,NZ,1)
 *
       if (IKR.eq.0) then
-        close (LUTWO)
-        write(6,*) 'End of file MDCINT.'
+        if (myproc.eq. master) then
+          close (LUTWO)
+          write(6,*) 'End of file MDCINT.'
+        else 
+          close(LUTWO)
+         write(12,*) 'End of file MDCINT.' 
+        end if
         if (JKR.eq.0) then
-          write(6,*) 'Only or last 2-el. integral file.'
+          if (myproc.eq. master) then
+            write(6,*) 'Only or last 2-el. integral file.'
+          else 
+            write(12,*) 'Only or last 2-el. integral file.'
+          end if
           goto 20
         else if (JKR.ne.0) then
           N2EFIL = N2EFIL + 1
-          if (N2EFIL.le.9) then
-            write(6,'(A,A7,I1)') 'Reading next file ','MDCINT0',N2EFIL
-          else if (N2EFIL.gt.9.and.N2EFIL.le.99) then
-            write(6,'(A,A6,I2)') 'Reading next file ','MDCINT',N2EFIL
+          if (myproc.eq.master) then
+            if (N2EFIL.le.9) then
+             write(6,'(A,A7,I1)') 'Reading next file ','MDCINT0',N2EFIL
+            else if (N2EFIL.gt.9.and.N2EFIL.le.99) then
+             write(6,'(A,A6,I2)') 'Reading next file ','MDCINT',N2EFIL
+            end if
+          else 
+            if (N2EFIL.le.9) then
+             write(12,'(A,A7,I1)') 'Reading next file ','MDCINT0',N2EFIL
+            else if (N2EFIL.gt.9.and.N2EFIL.le.99) then
+             write(12,'(A,A6,I2)') 'Reading next file ','MDCINT',N2EFIL
+            end if
           end if
           goto 30
         end if
@@ -7203,10 +7648,10 @@ C
      &        'IOFF12(',KR(IKR),KR(JKR),') = ',IOFF12(KR(IKR),KR(JKR))
         write(6,'(A,2I4,A,I6)')
      &        'NUMINT(',KR(IKR),KR(JKR),') = ',NUMINT(KR(IKR),KR(JKR))
-        write(6,'(A,X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
+        write(6,'(A,1X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
         if (NTEST.ge.100) then
           do INT=1,NZ,1
-            write(6,'(A,2I8,X,1F18.12)')
+            write(6,'(A,2I8,1X,1F18.12)')
      &      'Indices K,L ',KR(INDK(INT+ISYMOFF)),KR(INDL(INT+ISYMOFF)),
      &                     RKLR(INT+ISYMOFF)
           end do
@@ -7214,7 +7659,7 @@ C
       end if
 *
       ISYMOFF = ISYMOFF + NZ
-C?    write(6,*) 'ISYMOFF = ',ISYMOFF
+**
       GOTO 10
 *
    20 if (NTEST.ge.50) then
@@ -7235,6 +7680,11 @@ C?    write(6,*) 'ISYMOFF = ',ISYMOFF
           end do
         end do
       end if
+*
+#if defined (VAR_MPI)
+      if (NMPROC .gt. 1)
+     &   CALL MPI_BARRIER(MPI_COMM_WORLD, IERR)
+#endif
 *
       RETURN
  1000 FORMAT (
@@ -7333,10 +7783,10 @@ C----- bit manipulation definitions
       PARAMETER (IBT02=3, IBT08=255, IBT10=1023, IBT16=65535)
       PARAMETER (MYSHF=16,IBTMY=IBT16,MAXLN=16)
       IBTAND(I,J) = IAND(I,J)
-      IBTOR(I,J)  = IOR(I,J)
-      IBTSHL(I,J) = ISHFT(I,J)
+C     IBTOR(I,J)  = IOR(I,J)
+C     IBTSHL(I,J) = ISHFT(I,J)
       IBTSHR(I,J) = ISHFT(I,-J)
-      IBTXOR(I,J) = IEOR(I,J)
+C     IBTXOR(I,J) = IEOR(I,J)
 C-----
 C
       REWIND LUINT
@@ -7408,6 +7858,12 @@ c
 #include "mxpdim.inc"
 #include <dcbbas.h>
 #include <dcborb.h>
+#if defined (VAR_MPI)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
 *
       character*6 WAFFCT
       dimension IBOSYM(MORB),ICT(MXPIRR),NSTR(NFSYM),NSSH_L(NBSYM),
@@ -7415,6 +7871,21 @@ c
      &          NCORE(NFSYM),NDELE(NFSYM),
      &          IFSOFF(2),NVIR(2)
 *
+C
+C     arrange for the MPI stuff and correct node number
+C     to the total number of running invocations.
+C
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node, NUMNOD = number of slaves
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+C
       NTESTL = 00
       NTEST = max(NTESTL,IPRNT)
 *
@@ -7491,6 +7962,24 @@ c
         write(6,'(A,8I3)') 'NSSH_L ',(NSSH_L(I),I=1,NBSYM,1)
       end if
 *
+C       this is necessary! - sk -
+C 
+#if defined (VAR_MPI)
+      IF (NMPROC.GT.1) THEN
+      CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      DO I = 1,NBSYM,1 
+      CALL MPI_BCAST(NISH_L(I),1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NASH_L(I),1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NSSH_L(I),1,my_MPI_INTEGER,
+     &  MASTER,MPI_COMM_WORLD,IERR)
+      END DO
+      END IF
+#endif
+C
+C
       IERROR = 0
       IRETISH = -1
       do ISM = 1,NBSYM,1
@@ -7513,6 +8002,7 @@ c
           stop 'Quitting.'
         end if
       end do
+C
       if (IERROR.ne.0) then
         write(6,*) 'Problem in transf_dirac.'
         do ISM = 1,NBSYM,1
@@ -7546,7 +8036,7 @@ c
      &                      (NSSH_L(I),I=1,NBSYM,1)
         write(6,'(A,8I4)') 'Total    orbs per symm : ',
      &                      (NORB_L(I),I=1,NBSYM,1)
-        write(6,'(A,X,I3)') ' Double group ',IDBGRP
+        write(6,'(A,1X,I3)') ' Double group ',IDBGRP
       end if
 *
       if (WAFFCT.eq.'HF_SCF'.and.NAELEC.gt.0) then

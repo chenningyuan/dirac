@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.9.4.1 $
-C DATE    : $Date: 2004/09/01 08:10:54 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : gpjeppe.F
 C
 C
@@ -128,6 +116,30 @@ C
 C
       DO 100 I = 1, NDIM
          IVEC(I) = IVALUE
+  100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck isetvc8 */
+      SUBROUTINE ISETVC8(IVEC,IVALUE,NDIM8)
+C
+      INTEGER*8 NDIM8
+      DIMENSION IVEC(NDIM8)
+C
+      DO 100 I = 1, NDIM8
+         IVEC(I) = IVALUE
+  100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck isetvc8 */
+      SUBROUTINE ISETVC8_2(IVEC,IVALUE_I8,NDIM)
+C
+      INTEGER*8 IVALUE_I8
+      DIMENSION IVEC(NDIM)
+C
+      DO 100 I = 1, NDIM
+         IVEC(I) = IVALUE_I8
   100 CONTINUE
 C
       RETURN
@@ -600,18 +612,50 @@ C Set VECOUT = 0 if VECIN = 0
 C   Timo Fleig, 18-12-2002
 C
 #include "implicit.h"
+CSK#include "../luciarel/lucipar_rel.inc"
       PARAMETER (THRES=1.0D-4)
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
-      DO 100 I=1,NDIM
-      DIVIDE=DIAG(I)+SHIFT
-      IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
-      IF(VECIN(I).EQ.0.0D0) THEN
-        VECOUT(I) = 0.0D0
-      ELSE
-        VECOUT(I)=VECIN(I)/DIVIDE
-      END IF
-  100 CONTINUE
+      DO I=1,NDIM
+         DIVIDE=DIAG(I)+SHIFT
+         IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
+         IF(VECIN(I).EQ.0.0D0) THEN
+CSK           WRITE(LUWRT,*) 'I set this to 0',I
+           VECOUT(I) = 0.0D0
+         ELSE
+CSK           WRITE(LUWRT,*) 'DIVIDE for I',DIVIDE,I
+           VECOUT(I)=VECIN(I)/DIVIDE
+         END IF
+      END DO
+      RETURN
+      END
+C  /* Deck diavc2_trunc */
+      SUBROUTINE DIAVC2_TRUNC(VECOUT,VECIN,DIAG,SHIFT,NDIM,
+     &                        THR_RTRUNC,THR_ETRUNC)
+C
+C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
+C
+C Set VECOUT = 0 if VECIN = 0
+C   Timo Fleig, 18-12-2002
+C Implemented THR_RTRUNC and THR_ETRUNC /HJAaJ 28-Mar-2007
+C
+#include "implicit.h"
+      PARAMETER (THRES=1.0D-4)
+      DIMENSION VECOUT(*),VECIN(*),DIAG(*)
+C
+      DO I=1,NDIM
+         IF(ABS(VECIN(I)) .LE. THR_RTRUNC) THEN
+           VECOUT(I) = 0.0D0
+         ELSE
+           DIVIDE=DIAG(I)+SHIFT
+           IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
+           VECOUT(I)=VECIN(I)/DIVIDE
+           IF (THR_ETRUNC .GT. 0.0D0) THEN
+              IF (ABS(VECOUT(I)*VECIN(I)) .LE. THR_ETRUNC)
+     &           VECOUT(I) = 0.0D0
+           END IF
+         END IF
+      END DO
       RETURN
       END
 C  /* Deck gatvec */

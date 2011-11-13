@@ -34,8 +34,10 @@ $i3 = 0;
 $i4 = 0;
 
 $deferror = "\$ERROR 1.0e-4";
+$defsigncheck = "\$SIGNCHECK";
 
 $errorvalue = $deferror;
+$signcheck = $defsigncheck;
 foreach $line (<SUMDAT>) {
     chop ($line);
 
@@ -45,6 +47,9 @@ foreach $line (<SUMDAT>) {
 
     if ($line =~ /^\$ERROR/) {
         $errorvalue = $line;
+        }
+    if ($line =~ /^\$IGNORESIGN/) {
+        $signcheck = "\$IGNORESIGN";
         }
 
     # ----
@@ -57,6 +62,8 @@ foreach $line (<SUMDAT>) {
         $from1[$i1] = '^ *'.$data;
         $eval1[$i1] = $errorvalue;
         $errorvalue = $deferror;
+        $signcheck1[$i1] = $signcheck;
+        $signcheck = $defsigncheck;
         }
 
     # --
@@ -92,6 +99,8 @@ foreach $line (<SUMDAT>) {
         $from1[$i1] = $data;
         $eval1[$i1] = $errorvalue;
         $errorvalue = $deferror;
+        $signcheck1[$i1] = $signcheck;
+        $signcheck = $defsigncheck;
         }
 
     # ----
@@ -126,6 +135,8 @@ foreach $line (<SUMDAT>) {
         $from2[$i2] = '^ *'.$data; 
         $eval2[$i2] = $errorvalue;
         $errorvalue = $deferror;
+        $signcheck2[$i2] = $signcheck;
+        $signcheck = $defsigncheck;
         $data = $line;
         $data =~ s/^nlines[^0-9]*//i;
         $data =~ s/:.*$//i;
@@ -142,6 +153,8 @@ foreach $line (<SUMDAT>) {
         $from2[$i2] = $data;
         $eval2[$i2] = $errorvalue;
         $errorvalue = $deferror;
+        $signcheck2[$i2] = $signcheck;
+        $signcheck = $defsigncheck;
         $data = $line;
         $data =~ s/^nlines[^0-9]*//i;
         $data =~ s/:.*$//i;
@@ -201,6 +214,7 @@ foreach $line (<SUBS>) {
         for ($i=0; $i<$i2; $i++) {
             if ($line =~ /$from2[$i]/) {
                 $ERVAL = $eval2[$i];
+                $SIGNCHK = $signcheck2[$i];
                 $NPRINT = $to2[$i];
                 if ($NPRINT > 1) {
                     $SEPBEFORE = 1;
@@ -216,6 +230,7 @@ foreach $line (<SUBS>) {
         for ($i=0; $i<$i1; $i++) {
             if ($line =~ /$from1[$i]/) {
                 $ERVAL = $eval1[$i];
+                $SIGNCHK = $signcheck1[$i];
                 $NPRINT = 2;
                 $TOLINE = $to1[$i];
                 $PRINTMATCH = $inclusive[$i];
@@ -239,6 +254,10 @@ foreach $line (<SUBS>) {
         if ($ERVAL !~ /^ *$/) {
           print "$ERVAL\n";
           $ERVAL = " ";
+          }
+        if ($SIGNCHK !~ /^ *$/) {
+          print "$SIGNCHK\n";
+          $SIGNCHK = " ";
           }
         $NPRINT--;
         $prline = $line;

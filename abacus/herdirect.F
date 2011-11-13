@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
@@ -490,7 +478,7 @@ C
 C
       CALL QENTER('HERFCK')
 C
-C     The new ERI routines haven't been parallelized yet.
+C     The new ERI routines havent been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
 C     USEERI is a temporary flag to check if we actually can in the present
 C     passage.
@@ -498,7 +486,7 @@ CNECgh980808: The construction of the Fock Matrix using the Temporary
 C matrices leads to huge bank conflicts in case of an even NBASIS.
 C We therefore assure that the first dimension of FCKTMP is always odd.
 C Changes for eri: HERFCK (allocation), HRFCK2 (zero out and summing)
-C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
+C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h and aobtch.h
 C We need to include nuclei.h here, to have NBASIS and NODD.
 C Initalization of NODD in herrdn.F and eriaob.F
 C
@@ -506,9 +494,6 @@ C
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
-#if defined (VAR_VECTOR)
-      ICHUNK = MAX(IVECLN/NDMT,1)
-#endif
 C
       IF (.NOT. USEERI) THEN
          CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
@@ -528,12 +513,7 @@ C
          ELSE
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
            CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-#if defined (VAR_VECTOR)
-           CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS+NODD)*NBASIS,
-     &                 WORK,KFREE,LFREE)
-#else
            KFCKTP = KFREE
-#endif
            CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
@@ -541,12 +521,7 @@ C
 #else
          CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-#if defined (VAR_VECTOR)
-         CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS,
-     &               WORK,KFREE,LFREE)
-#else
          KFCKTP = KFREE
-#endif
          CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &               WORK(KFREE),LFREE)
@@ -843,6 +818,7 @@ C
       N2BASX = NBAST*NBAST
       DO I = 1,NSYM
         NBAS(I) = NAOS(I)
+        IBAS(I) = ICOS(I,1)
       ENDDO
 C
       RETURN

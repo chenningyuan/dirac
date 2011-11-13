@@ -1,0 +1,19 @@
+**DIRAC
+.TITLE
+H2O2 molecule, integral calculations with ERI in pure one-component mode 
+.WAVE F
+**HAMILTONIAN
+#.IOTC
+.X2C
+**INTEGRALS
+.JENGINE
+.LINK
+.NUCMOD
+ 1
+*TWOINT
+.AOFOCK
+*READIN
+.UNCONTRACTED
+**WAVE FUNCTIONS
+.DHF
+*END OF

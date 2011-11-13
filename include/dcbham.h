@@ -1,19 +1,22 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision: 1.18 $
-! DATE    : $Date: 2004/05/26 13:06:54 $
+! VERSION : $Revision: 7467 $
+! DATE    : $Date: 2008-08-28 11:08:03 +0200 (Thu, 28 Aug 2008) $
 ! FILE    : dcbham.h
 !
 !*****************************************************************************
 !  DCBHAM:  Hamiltonian used for generation of wavefunction
 !
 !     IPRHAM     - Print level
-!     IPOVERLAP  - Pointer to overlap in DCBXPR
-!     IPBETAMT   - Pointer to beta matrix in DCBXPR
-!     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
-!     IPKINERG   - Pointer to kinetic energy in DCBXPR
-!     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
-!     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
+!     IPOVERLAP  - Pointer to the overlap in DCBXPR
+!     IPBETAMT   - Pointer to the beta matrix in DCBXPR
+!     IPMOLFLD   - Pointer to the nuclear attraction in DCBXPR
+!     IPKINERG   - Pointer to the kinetic energy in DCBXPR
+!     IPSOPP     - Pointer to the ECP spin-orbit matrix, SOPP DCBXPR
+!     IPANGMOM   - Pointer to the z-component of angular momentum in DCBXPR
+!     IPSPNMOM   - Pointer to the z-component of spin in DCBXPR
+!
+!     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
 !     IPR1OP     - Pointer to DCBXPR for additional operators
 !     QED        - use QED Hamiltonian (filled positronic levels)
@@ -25,6 +28,8 @@
 !     LEVYLE     - Levy-Leblond Hamiltonian
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
+!     SSMTRC_SAVE- Scaling factor for SS overlap matrix, temporary variable
+!
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
@@ -37,16 +42,71 @@
 !                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
 !                  Correction made to two-electron Fock-matrix.
 !     ONECOFF    - internal flag for turning off ONECAP
+!     VACPOL     - semi-classical QED: vacuum polarization included
 !
+!     BSS        - flag for generating matrix elements of
+!                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
+!     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
+!                  relativity)
+!     IMFCH      - charge of the system to be spliited among mean-field summations of AMFI centers
+!     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode
+!                  (only for infinite order Tronds approach), if .false., we do the preliminary
+!                  transformation to the free-particle basis or to the Vext-particle ON basis
+!     BLOCKD     - do the numerical block diagonalization (only for the infinite order)
+!
+!     DO2C4C     - run SCF first in 2c mode, then continue in the 4-component mode
+!     START2C    - if .true., run preliminary 2com BSS-SCF before 4comp DC-SCF (used together with DO2C4C)
+!     INI2C      - integer number specifying what two-component quantity will be used for (re)starting
+!                  the DC-SCF from previous BSS-SCF 
+!
+!     DO4C2C     - after finishing 4c DC-SCF do block diagonalize 4c Fock and continue 
+!                  at the 2c level
+!     USEDF      - if true, use the (converged) Dirac-Fock operator to be block-diagonalized
+!                  (instead of 1 electron Dirac operator)
+!     CONT2C     - continue with 2-component (inf.order) SCF after DC-SCF
+!     I2CHAM     - integer number (1,2...) specifynig post-DC-SCF 2component Hamiltonian type
+!
+!     RESTFCK    - flag to denote restarting DC-SCF from BSS-SCF, or vice versa, from 2c/4c Fock matrix in MO basis
+!
+!     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in the ONEFCK routine
+!
+!     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
+!     CMPEIG     - for IOTC: compare eigenvalues of 2c and 4c Hamiltonian
+!
+!     DKH1       - own flag for 1st order DKH - very rough ...
+!     DKH2       - own flag for second order DKH 
+!
+!     GAUNT      - Include Gaunt interaction in the 2-e operator
+!
+!     CAP        - flag for complex absoption potential used only with the FSCC method
+!
+!     NOAMFI      - do not include AMFI contributions at all
+!
+!     QDOTS      - use quantum dots harmonic potential instead of the electron-nuclei attraction potential
+!
+!     LSCALE_DFT_GAUNT - If true the Gaunt contribution will be scaled together with exchange in DFT
+!                  calculations. If false 100% of the Gaunt contribution (if turned on) will be 
+!                  included in DFT calculations.
+
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2)
-      COMMON /DCIHAM/ IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG,   &
-     &                IPANGMOM, IPSPNMOM, N1OPER, IPR1OP, LSOLMX,       &
-     &                IPRSOL, ICTLV1C
+     &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
+     &        INI2C, I2COFK, IPSOPP                                     
+!
+!     IMPORTANT !!!
+!     =============
+!     I1_HAM and I2_HAM are tags used to calculate the number of elements
+!     of this COMMON block. Make sure that they are always kept at the 
+!     start and the end !!!
+!
+      COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
+     &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
+     &                IMFCH, I2CHAM, INI2C, I2COFK,                     &
+     &                I2_HAM, IPSOPP                                    
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -54,22 +114,42 @@
       LOGICAL QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL, LEVYLE,      &
      &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
      &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
-     &        ONECOFF, NOSPIN
+     &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
+     &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
+     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT
+
+! keep and actualize here number of elements in the DCLHAM common block
+! MI: in there not an automatic way how to keep this variable actual ?
       INTEGER NDCLHAM
-      PARAMETER (NDCLHAM = 18)
+      PARAMETER (NDCLHAM = 41)
 
       COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
-     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN
+     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
+     &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
+     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
+     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
+     &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT
+!
+! aspg, 2006-04-21
+! checking should be done as to whether or not HFXFAC can leave 
+! DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
+!
+      REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC,        &
+     &       HFXATT, HFXMU, ONECNV
+      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       & 
+     &                HFXFAC, HFXMU, HFXATT, ONECNV
 
-      REAL*8 SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
-      COMMON /DCRHAM/ SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
+!     REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
+!     COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
+!
 
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
   extern struct common_dcrham {
-    real ssmtrc,epsol,epstat,rsolav,hfxfac;
+    real ssmtrc,ssmtrc_save,epsol,epstat,rsolav,hfxfac,hfxmu,hxatt,onecnv;
   } dcrham_;
 
 #endif /* __CVERSION__ */

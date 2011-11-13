@@ -1,6 +1,7 @@
 C
-C VERSION : $Revision: 1.2.46.1 $
-C DATE    : $Date: 2004/09/01 10:35:37 $
-C FILE    : dirrci/memory.inc
+C VERSION : $Revision: 240 $
+C DATE    : $Date: 1998-02-17 15:23:21 +0100 (Tue, 17 Feb 1998) $
+C FILE    : memory.inc
+C SOURCE  : $Source$
 C
       REAL*8 CI(*)

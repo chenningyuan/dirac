@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.34.2.1 $
-C DATE    : $Date: 2004/09/01 08:04:01 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : her2drv.F
 C
 C
@@ -393,7 +381,6 @@ C
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)
-C
       FIRST = .TRUE.
       DIRAC = RELCAL
       IF (EXPECT .AND. .NOT.NOPV) THEN
@@ -402,7 +389,9 @@ C
       IF (SUSCEP) THEN
          IF (.NOT.NOPV) REWIND LUPAO
          IF (.NOT.NOPV) REWIND LUPAS
-         CALL DZERO(SUS2EL,9)
+CMI ... we are intering more loops (LL,LS,SS integrals) and thus we need
+CMI     to accumulate integral contributions
+CMI      CALL DZERO(SUS2EL,9)
       END IF
 C
 C     For direct contributions: some parameters
@@ -443,6 +432,7 @@ C          DINTSKP(2,I,2) - number of integrals skipped, y direction
 C          DINTSKP(2,I,3) - number of integrals skipped, z direction
 C
       DOSCRN = .FALSE.
+      LSCALE_GAUNT = LSCALE_DFT_GAUNT
       IF(DIRFCK.OR.SOFOCK.OR.(EXPECT.AND.MAXDER.EQ.1))  THEN
          IF (DIRFCK.OR.SOFOCK) THEN
             CALL DZERO(DINTSKP,8)
@@ -470,6 +460,7 @@ C           ... no Coulomb term for antisymmetric density matrix
       ENDIF
 C
       IF(I2TYP.EQ.0) THEN
+C       Non-relativistic: all integrals (ab|cd) with (ab).ge.(cd)
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -479,6 +470,7 @@ C
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
       ELSEIF(I2TYP.EQ.1) THEN
+C       Coulomb integral class (LL|LL)
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -488,6 +480,7 @@ C
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.2) THEN
+C       Coulomb integral class (SS|LL)
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = 1
@@ -497,6 +490,7 @@ C
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.3) THEN
+C       Coulomb integral class (SS|SS)
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = NLRGBL+1
@@ -505,6 +499,16 @@ C
         IBSMAX = MAXSHL
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+C       Gaunt integral class (SL|SL)
+        IASTRT = NLRGBL+1
+        IBSTRT = 1
+        ICSTRT = NLRGBL+1
+        IDSTRT = 1
+        IASMAX = MAXSHL
+        IBSMAX = NLRGBL
+        ICSMAX = MAXSHL
+        IDSMAX = NLRGBL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'TWOLOP: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
@@ -538,7 +542,9 @@ C        ******************************
 C        ***** Second Shell Index *****
 C        ******************************
 C
-         DO 200 ISHELB = IBSTRT,ISHELA
+         IBMAX = ISHELA
+         IF (I2TYP.EQ.4) IBMAX = NLRGBL
+         DO 200 ISHELB = IBSTRT,IBMAX
 C
             ICB    = LCLASH(ISHELB)
 C
@@ -610,6 +616,8 @@ C              ***** Fourth Shell Index *****
 C              ******************************
 C
                IDMAX = ISHELC
+C              Note the order of these tests : can not be changed !
+               IF (I2TYP.EQ.4) IDMAX = NLRGBL
                IF (.NOT.SPNORB.AND.(ISHELA.EQ.ISHELC)) IDMAX = ISHELB
                DO 400 ISHELD = IDSTRT,IDMAX
 C
@@ -650,6 +658,7 @@ C
                      IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2)
      &                  GO TO 400
                   ENDIF
+
 C
 C                 *******************************
 C                 ***** Calculate integrals *****
@@ -662,6 +671,7 @@ C
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,DUM,ICEDIF,DINTSKP,
      &                        GABRAO,DMRAO,DMRSO,IREPDM,IDUM,IDUM)
+
 C
                   IF (RETUR) THEN
                      IF (ISHELA .EQ. IPRNTA .AND.
@@ -677,11 +687,15 @@ C
 C     Symmetrize skeleton Fock matrices
 C     =================================
 C
-CDIRAC      IF (DIRFCK .OR. DDFOCK .OR. EXPECT) THEN
-      IF (DDFOCK) THEN
+
+      IF (DDFOCK.AND.(.NOT.LONDON)) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
       END IF
+
+CMI   ... fix 
+      IPRINT = JPRINT
+
 C
 C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
 C
@@ -739,8 +753,8 @@ C      Eg. GRADNN is not defined in DIRAC
       END IF
 C
 C     Print Fock matrices
-C
-      IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.3) THEN
+      IF ((DIRFCK.OR.SOFOCK) .AND. IPRINT.GT.8) THEN
+CMI      write(LUPRI,*) 'IPRINT=',IPRINT
          CALL HEADER('Fock matrix in TWOINT',-1)
          DO 700 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
@@ -1664,6 +1678,8 @@ C  /* Deck symlop */
      &          GABRAO(NSYMBL,NSYMBL,0:7),DMRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,*),IREPDM(*),
      &          INDX(2,*),INDXAB(*)
+CMI ... added missing declarations (as in GABDR2)
+      DIMENSION COEFAB(*),COEFCD(*)
 #include "twocom.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -1862,9 +1878,20 @@ C
 C              If necessary change sign of expansion coefficients
 C              ==================================================
 C
+
+               IF (IPRINT .GT. 15) THEN
+                 WRITE(LUPRI,'(/,2X,A)') 'SYMLOP: EXCSGN start '
+                 CALL FLSHFO(LUPRI)
+               ENDIF
+
                CALL EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,
      &                     MXUCCD,ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,
      &                     SPNORB,ISYMT,IPRINT)
+
+               IF (IPRINT .GT. 15) THEN
+                 WRITE(LUPRI,'(/,2X,A)') 'SYMLOP: EXCSGN end '
+                 CALL FLSHFO(LUPRI)
+               ENDIF
 C
 C              Check whether this integral gives zero contribution
 C              ===================================================
@@ -1916,8 +1943,8 @@ C Largest exchange contribution
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
                         IF(IPRINT.GE.2) THEN
                    WRITE(LUPRI,
-     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
-     &        '*Skip: ',FCKMAX,
+     &              '(A,1P,2(D8.2,1X),4(I4,A1,A6,1X,3A1))')
+     &        '*Skip: ',DNSMAX,ULINT,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
      &        SPDCAR(NHKTSH(ISHELA)-1),')',
      &        ISHELB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),
@@ -1937,15 +1964,19 @@ C Largest exchange contribution
                       ULINT = GABRAO(ISYBLA,ISYBLB,0)*
      &                        GABRAO(ISYBLC,ISYBLD,0)
                       DNSMAX = D0
+C                     We take the product of the maximum density for
+C                     electron 1 and the maximum density for electron 2
+C                     These maxima are stored in the array DMRAO that has
+C                     as last dimension twice the number of density matrices
+C                     (first the ones for elec. 1, then those for elec. 2).
+C                     This why the offset is needed.
                       IOFF = NDMAT
                       DO I = 1,NDMAT
                         FAC = DMRAO(ISYBLC,ISYBLD,I)*
      &                        DMRAO(ISYBLA,ISYBLB,I+IOFF)
                         DNSMAX = MAX(DNSMAX,FAC)
                       ENDDO
-CTROND                      FAC = KHKTAB*NORBAB*KHKTCD*NORBCD
                       FAC = D1
-CTROND                      FAC = NORBAB*NORBCD
                       DISMAX = FAC*DNSMAX*ULINT
                       IF(DISMAX.LT.SCRTHR) THEN
                         DINTSKP(2,JDIS) = DINTSKP(2,JDIS) + NCCINT
@@ -2014,8 +2045,8 @@ C     not implemented. /980116-hjaaj/jth
                      END DO
                   IF (DOSCRN) THEN
                      IF (MAXDER .GE. 1) THEN
-                        CALL SCRINT(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
-     &                              IT,ULXINT,ULYINT,ULZINT,IPRINT)
+                        CALL SCRINT_GEOM(GABRAO,ISYBLA,ISYBLB,ISYBLC,
+     &                         ISYBLD,IT,ULXINT,ULYINT,ULZINT,IPRINT)
                      END IF
 C
 c                    IF (MAXDER .EQ. 2) THEN
@@ -2539,7 +2570,8 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 
-      PARAMETER (DSM = 1.0D-10)
+CMI   PARAMETER (DSM = 1.0D-10)
+      PARAMETER (DSM = 1.0D-12)
       LOGICAL ORBOUT(KMAX)
       DIMENSION IPRVOR(KMAX), IPRVPR(KMAX),
      *          JORBSH(KMAX,MXAOVC), KORBSH(KMAX,MXAOVC)
@@ -2643,8 +2675,16 @@ C
                         ILAST = MAX(ILAST,I)
                      END IF
                   END DO
+CMI               .... we might get negative value !!!!
                   NPRI = ILAST - IOFF
                   NUCOSH(MAXSHL) = NPRI
+CMI           ... check !!!
+                  IF (NPRI.LT.0) THEN
+                   write(LUPRI,*) 'NPRI=',NPRI,' MAXSHL=',MAXSHL
+                   write(LUPRI,*) 'ILAST,IOFF:',ILAST,IOFF
+                   write(LUPRI,*) 'DSM:',DSM
+                   call quit('PAOVE2: negative NPRI ! Decrease DMS !')
+                  ENDIF 
 C
 C                 set gen.cont. shell info
                   NSET       = 1
@@ -2718,6 +2758,12 @@ C
                      END IF
   210             CONTINUE
                   NUCOSH(MAXSHL) = NUCSH
+CMI         ... check it !!
+                  IF (NUCSH.LT.0) THEN
+                    write(LUPRI,*) '...NUCSH, indx MAXSHL:',NUCSH,MAXSHL
+                    call quit('PAOVE2: negative NUCSH !')
+                  ENDIF
+         
                   NSETSH(MAXSHL,1) = NSET
                END IF
                IF (NAOOUT .LT. KMAX) THEN
@@ -2792,26 +2838,33 @@ C
 C        WRITE (LUPRI,'(A,(T11,10I5))') ' NSTRSH',(NSTRSH(I),I=1,MAXSHL)
          WRITE (LUPRI,'(A,(T11,10I5))') ' IORBSB',(IORBSB(I),I=0,NTOT)
          WRITE (LUPRI,'(A,(T11,10I5))') ' NCNTSH',(NCNTSH(I),I=1,MAXSHL)
+         CALL FLSHFO(LUPRI)
          DO 2000 I = 1, MAXSHL
             WRITE (LUPRI,'(A,I5)')'JSTRSH (gen. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(JSTRSH(I,J,1),J=1,NORBSH(I))
             WRITE (LUPRI,'(A,I5)')'JSTRSH (seg. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(JSTRSH(I,J,2),J=1,NORBSH(I))
+            CALL FLSHFO(LUPRI)
  2000    CONTINUE
          DO 2001 I = 1, MAXSHL
             WRITE (LUPRI,'(A,I5)')'NPRIMS (gen. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(NPRIMS(I,J,1),J=1,NORBSH(I))
             WRITE (LUPRI,'(A,I5)')'NPRIMS (seg. con.) for ISHELL =',I
             WRITE (LUPRI,'(15I5)')(NPRIMS(I,J,2),J=1,NORBSH(I))
+            CALL FLSHFO(LUPRI)
  2001    CONTINUE
          DO 2002 I = 1, MAXSHL
             WRITE (LUPRI,'(A,I5)')'CENTSH for ISHELL =',I
             WRITE (LUPRI,'(3F20.10)')
      *             CENTSH(I,1),CENTSH(I,2),CENTSH(I,3)
+            CALL FLSHFO(LUPRI)
  2002    CONTINUE
          DO 2003 I = 1, MAXSHL
-            WRITE (LUPRI,'(A,I5)')'IORBSH for ISHELL =',I
+            WRITE (LUPRI,'(A,I5,A,I5,A,I5)')
+     &            'IORBSH for ISHELL =',I,'/',MAXSHL,
+     &            ' and for NORBSH(ISHELL)=',NORBSH(I)
             WRITE (LUPRI,'(15I5)')(IORBSH(I,J),J=1,NORBSH(I))
+            CALL FLSHFO(LUPRI)
  2003    CONTINUE
       END IF
       RETURN
@@ -3593,7 +3646,13 @@ C
 C  /* Deck cprlop */
       SUBROUTINE CPRLOP(IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,SQ12EL,
      &                  IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
+C
+C
+C     Called from GABDR2
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3616,6 +3675,7 @@ C
           WRITE (LUPRI,'(2X,A, L5)')'SQ12EL    ',SQ12EL
           WRITE (LUPRI,'(2X,A, I5)')'NOABCD    ',NOABCD
           WRITE (LUPRI,'(2X,A, I5)')'NOPREP    ',NOPREP
+          CALL FLSHFO(LUPRI)
         END IF
       END IF
       DO 100 IREPX = 1, NOPREP
@@ -3733,6 +3793,12 @@ C
   400    CONTINUE
       END IF
   100 CONTINUE
+C
+      IF (IPRINT .GT. 10) THEN
+        WRITE(LUPRI,'(2X,A)') '...reached end of CPRLOP'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+C
       RETURN
       END
 C  /* Deck twoper */
@@ -4414,7 +4480,7 @@ C*****************************************************************************
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck scrint */
-      SUBROUTINE SCRINT(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
+      SUBROUTINE SCRINT_GEOM(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
      &                  IT,ULXINT,ULYINT,ULZINT,IPRINT)
 C*****************************************************************************
 C
@@ -4788,13 +4854,13 @@ C
      &                GABRAO(ISYBLA,ISYBLB,0)*
      &                GABRAO(ISYBLC,ISYBLD,3))
       ELSE
-         WRITE(LUPRI,'(A,I4)') 'SCRINT ERROR: Unknown IT ',IT
+         WRITE(LUPRI,'(A,I4)') 'SCRINT_GEOM ERROR: Unknown IT ',IT
          WRITE(LUPRI,'(A)') 'Please report to Joern Thyssen'
-         CALL QUIT('SCRINT ERROR: Unknown IT')
+         CALL QUIT('SCRINT_GEOM ERROR: Unknown IT')
       END IF
       IF (IPRINT .LE. 30) RETURN
       WRITE(LUPRI,'(A,2X,I4,2X,3F17.13)') 
-     &   'SCRINT IT UL?INT',IT,ULXINT,ULYINT,ULZINT
+     &   'SCRINT_GEOM IT UL?INT',IT,ULXINT,ULYINT,ULZINT
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

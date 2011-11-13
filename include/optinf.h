@@ -1,5 +1,5 @@
 !
-!$Id: optinf.h,v 1.8 2004/05/26 13:06:57 cjacob Exp $
+!$Id: optinf.h 3426 2004-05-26 13:06:58Z cjacob $
 !
       INTEGER MAXPRE
       PARAMETER (MAXPRE = 10)

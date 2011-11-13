@@ -1,0 +1,23 @@
+!
+! Calculation of molecular oxygen using unrestricted single reference CC
+! Calculation done in D2h symmetry
+!
+**DIRAC
+.TITLE
+Moelcular oxygen. Ground state.
+.WAVE F
+**HAMILTONIAN
+.LVCORR
+**WAVE FUNCTIONS
+.DHF
+.RELCCSD
+*DHFCAL
+.CLOSED SHELL
+ 6 8
+.OPEN SHELL
+1
+2/4,0
+*END OF
+
+ &RELCCSD NELEC=4,2,3,3 &END
+

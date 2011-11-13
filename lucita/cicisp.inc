@@ -1,4 +1,4 @@
-*comdeck cicisp.inc $Revision: 1.2 $ 
+*comdeck cicisp.inc $Revision: 2268 $ 
 
       COMMON/CICISP/IDUMMY,NICISP,IASTFI(MXPICI),IBSTFI(MXPICI),
      &              IACTI_OLD(MXPICI),

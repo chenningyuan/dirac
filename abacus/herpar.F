@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.38.2.3 $
-C DATE    : $Date: 2004/09/01 08:04:09 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : herpar.F
 C
 C
@@ -182,6 +170,7 @@ C
 C
 C     Determine total number of tasks - MTOTTK.
       CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -216,21 +205,17 @@ C
       ELSE IF (ITYPE .EQ. 9) THEN
          NREQUI = NDMAT*N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-         NUMSUS = 9
-         NREQUI = 3*NNBASX + NUMSUS
+         NREQUI = 3*NDMAT*N2BASX     
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
 C
-C     Initialize DINTSKP
-C
-      CALL DZERO(DINTSKP,LDINTSKP)
-C
-C
       IF (LFREE .LT. NREQUI) THEN
-         WRITE(LUPRI,'(/5X,A,/5X,A16,I8,/5X,A16,I8)')
+         WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
      &    'Insufficient work space for subroutine RVRES',
-     &    'Free space     :',LFREE,'Required space :',NREQUI
+     &    'Free space     :',LFREE,
+     &    'Required space :',NREQUI,
+     &    'ITYPE, NDMAT   :',ITYPE,NDMAT
          CALL QUIT('Insufficient work space for RVRES')
       ENDIF
 C
@@ -251,14 +236,20 @@ C
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
+CSK      write(6,*)'master has been here',master
+
+
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
       CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+CSK      write(6,*)'master has been here again',master
+
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+
 C
 C--------------------------------------
 C     Receive final results from nodes.
@@ -266,6 +257,7 @@ C     Release nodes from this task
 C      and let them return to main menu.
 C--------------------------------------
 C
+      ITASK = - 1
       CALL DIRAC_PARCTL( -1 )
 C
 C-----------------------------------------
@@ -284,6 +276,7 @@ C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+
  90   CONTINUE
       CALL MEMREL('HER_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('HER_PARDRV')
@@ -326,7 +319,9 @@ C
          ELSEIF (I2TYP.EQ.3.AND.FIRST3) THEN
             DOFIRST = .TRUE.
             FIRST3 = .FALSE.
-         ELSE
+         ELSEIF (I2TYP.EQ.4.AND.FIRST4) THEN
+            DOFIRST = .TRUE.
+            FIRST4 = .FALSE.
          ENDIF
       ENDIF
 C
@@ -372,6 +367,7 @@ C
 C     Print the index array.
 C
       IF (IPRPAR .GE. 10) THEN
+C     IF (.TRUE.) THEN
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
@@ -404,7 +400,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dfterg.h"
 #endif
@@ -429,7 +425,7 @@ C
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
      &          DMRAO(NSYMBL,NSYMBL,*),GABRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(MAXSHL,MAXSHL,*), DSEND(2), ISEND(2)
-      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR, LSEND(6)
+      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR, LSEND(6), PRIMUPD_NODES
 C
 C--------------------------------------
 C     Calculate number of Fock matrices
@@ -468,24 +464,37 @@ C     ... not used any more (was used for PVM)
       JPRINT = IPRPAR
       JTASK  = NTASK
       JTYPE  = ITYPE
-      JNOCNT = 0
+
       JNODV  = 0
-      JNOPV  = 0
-      JRETUR = 0
-      JTIMIN = 0
-      JTKTIM = 0
-      JSOLVN = 0
-      JRELCL = 0
-      JLEVYL = 0
       IF (NODV)   JNODV  = 1
+
+      JNOPV  = 0
       IF (NOPV)   JNOPV  = 1
+
+      JNOCNT = 0
       IF (NOCONT) JNOCNT = 1
+
+      JRETUR = 0
       IF (RETUR)  JRETUR = 1
+
+      JTKTIM = 0
       IF (TKTIME) JTKTIM = 1
+
+      JTIMIN = 0
       IF (TIMING) JTIMIN = 1
+
+      JSOLVN = 0
       IF (SOLVNT) JSOLVN = 1
+
+      JRELCL = 0
       IF (RELCAL) JRELCL = 1
+
+      JLEVYL = 0
       IF (LEVYLE) JLEVYL = 1
+
+      JTWOCOMP = 0
+      IF (TWOCOMP) JTWOCOMP = 1
+
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
 C
@@ -508,29 +517,33 @@ C
  110  CONTINUE
 C
 #if defined (VAR_MPI)
+      PRIMUPD_NODES = .FALSE.
       IF (NEWGEO) THEN
-         CALL MPI_BCAST(NMLINE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,
+     &       MPI_COMM_WORLD,IERR)
+
 C........inforb.h
          NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
-         CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+         CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C........note that with icommsize COMMON blocks must be sent as integers...
-         CALL MPI_BCAST(I1_INFORB,NUMELM,MPI_INTEGER,MPARID,
+         CALL MPI_BCAST(I1_INFORB,NUMELM,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
 C
          CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MAXPRI,1,MPI_INTEGER,MPARID,
+         CALL MPI_BCAST(MAXPRI,1,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .FALSE.
+         PRIMUPD_NODES = .TRUE.
       ELSE
          NFINIS = 0
-         CALL MPI_BCAST(NFINIS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NFINIS,1,my_MPI_INTEGER,MPARID,
+     &       MPI_COMM_WORLD,IERR)
       END IF
 C
 C     Send Panas value and screening threshold
+
       DSEND(1) = PANAS
       DSEND(2) = SCREEN
       CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
@@ -541,27 +554,39 @@ C     Send SMLV1C and ONECAP,INTV1C
       LSEND(2) = ONECAP
       CALL MPI_BCAST(LSEND,2,MPI_LOGICAL,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(INTV1C,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
 C     Send parint.h
+
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C........note that with icommsize COMMON blocks must be sent as integers...
-      CALL MPI_BCAST(I1_PARINT,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(I1_PARINT,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     ... otherwise xyz reader fails in parallel mode
+C
+      IF( PRIMUPD_NODES )THEN
+#if defined (VAR_MPI)
+        CALL GET_PRIMITF()
+#endif
+      END IF
+C
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
-      CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      
+      CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
 C
+      
       IF(NFMAT.GT.0) THEN
-        CALL MPI_BCAST(IREPDM,NDMAT,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(IREPDM,NDMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
       IF(ITYPE.NE.4) THEN
@@ -570,11 +595,16 @@ C
         ELSE
           NFCTYP = NFMAT
         ENDIF
-        CALL MPI_BCAST(IFCTYP,NFCTYP,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(IFCTYP,NFCTYP,my_MPI_INTEGER,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       END IF
       CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(HFXATT,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
 C     ITYPE = 9 : direct SCF (SO-basis)
@@ -584,7 +614,8 @@ C
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
 C       ... broadcast screening matrix
         N2RED = NSYMBL*NSYMBL
-        CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(DMRAO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
         IF (ITYPE .EQ. 2) THEN
@@ -597,10 +628,12 @@ C       ... broadcast screening matrix
       END IF
       IF(ITYPE.EQ.9) THEN
         N2RED = MAXSHL*MAXSHL
-        CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(DMRSO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       END IF
+
 #endif
       RETURN
       END
@@ -614,12 +647,13 @@ C
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "infpar.h"
 #include "priunit.h"
 #include "maxorb.h"
-#include "infpar.h"
 C
       DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
+
       CALL IZERO(NSTAT,NODES)
 C
 C------------------------------------------
@@ -635,12 +669,16 @@ C
 C        Ready to receive request from any node.
 C
 #if defined (VAR_MPI)
-         CALL MPI_RECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+
+
+         CALL MPI_RECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 C
-         CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
+         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                 MPI_COMM_WORLD,IERR)
+
 #endif
+CSK         write(6,*)'send and recieve done',mytid
 C
          DO 200 J = 1,NTASK
             IPLACE = IPLACE + 1
@@ -649,7 +687,7 @@ C
             ISHELL(2) = IPLACE
 C
 #if defined (VAR_MPI)
-            CALL MPI_SEND(ISHELL,2,MPI_INTEGER,NODE,30,
+            CALL MPI_SEND(ISHELL,2,my_MPI_INTEGER,NODE,30,
      &                    MPI_COMM_WORLD,IERR)
 #endif
 C
@@ -687,10 +725,10 @@ C
 C           Ready to receive request from any node.
 C
 #if defined (VAR_MPI)
-         CALL MPI_RECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+         CALL MPI_RECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 C
-         CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
+         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
      &                 MPI_COMM_WORLD,IERR)
 #endif
 C
@@ -703,11 +741,12 @@ C  /* Deck rvres */
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
+C   MI: Added TEC changes....
+C
 #include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-C
 #endif
       PARAMETER (D1 = 1.0D0)
 C
@@ -724,7 +763,7 @@ C
 #include "infpar.h"
 C
       DIMENSION FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
-     &          DNSKBF(3*3*14)
+     &          DNSKBF(3*3*14),SUS2ELBUF(9)
 C
 C     Clean matrices.
 C
@@ -736,7 +775,8 @@ CTROND      ELSE IF (ITYPE .EQ. 3) THEN
 CTROND         CALL DZERO(FMAT,NREQUI)
       ELSE IF (ITYPE .EQ. -5) THEN
 CTROND        CALL DZERO(FMAT,3*N2BASX)
-         CALL DZERO(SUS2EL,9)
+CMI      CALL DZERO(SUS2EL,9)
+         CALL DZERO(SUS2ELBUF,9)
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,3*N2BASX)
       END IF
@@ -749,12 +789,14 @@ C
       DO 100 I = 1,NODES
 C
 #if defined (VAR_MPI)
-         CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPI_ANY_SOURCE,40,
+         CALL MPI_RECV(ITASK,1,my_MPI_INTEGER,MPI_ANY_SOURCE,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 C
          ICOUNT = ICOUNT + ITASK
 C
          NWHO = ISTAT(MPI_SOURCE)
+C         write(6,*)'NWHO is',NWHO,mytid
+
 C
          IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
              CALL MPI_RECV(DNSKBF,LDINTSKP,MPI_DOUBLE_PRECISION,
@@ -765,7 +807,6 @@ Cjth & trond - this is a bit risky
 C
          CALL MPI_RECV(WORK,NREQUI,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#endif
 C
 C        Add results to final matrices.
 C
@@ -784,15 +825,29 @@ C
             ENDDO
 C
          ELSE IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-            DO 200 J = 0, 2
-               LPOS = J*NNBASX + 1
-               MPOS = J*N2BASX + 1
-               CALL DAXPY(NNBASX,D1,WORK(LPOS),1,FMAT(MPOS),1)
- 200        CONTINUE
+CMI    ***  TEC made this part of code inactive ***
+CMI      ... this is added ...
+            CALL DAXPY(NREQUI,D1,WORK,1,FMAT,1)
+C           DO 200 J = 0, 2
+C              LPOS = J*NNBASX + 1
+C              MPOS = J*N2BASX + 1
+C              CALL DAXPY(NNBASX,D1,WORK(LPOS),1,FMAT(MPOS),1)
+C200        CONTINUE
 C
             IF (ITYPE .EQ. -5) THEN
-               NPOS = 3*NNBASX + 1
-               CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
+C              NPOS = 3*NNBASX + 1
+C              CALL DAXPY(9,D1,WORK(NPOS),1,SUS2EL,1)
+
+             CALL MPI_RECV(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,NWHO,40,
+     &                MPI_COMM_WORLD,ISTAT,IERR)
+
+CMI         write(0,*) 'RVRES: received two-electron integral'//  
+CMI  &      ' susceptibilities from slaves:'            
+C             CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)               
+CMI           CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)               
+CMI          .... accumulate data from nodes into SUS2EL
+              CALL DAXPY(9,D1,SUS2ELBUF,1,SUS2EL,1)
+
             END IF
          END IF
 C
@@ -801,17 +856,16 @@ C
          IF (TIMING) THEN
             DO 300, K = 1, ITASK
 C
-#if defined (VAR_MPI)
-               CALL MPI_RECV(NUMBER,1,MPI_INTEGER,NWHO,40,
+               CALL MPI_RECV(NUMBER,1,my_MPI_INTEGER,NWHO,40,
      &                       MPI_COMM_WORLD,ISTAT,IERR)
                CALL MPI_RECV(VALUE,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                       MPI_COMM_WORLD,ISTAT,IERR)
-#endif
 C
                TIMES(NUMBER) = VALUE
 C
   300       CONTINUE
          END IF
+#endif
   100 CONTINUE
 C
       IF (ICOUNT .NE. MTOTTK) THEN
@@ -935,7 +989,6 @@ C
          NODE = ISTAT(MPI_SOURCE)
          CPUS(NODE)  = RBUF(1)
          WALLS(NODE) = RBUF(2)
-#endif
 C
          TSOFAR = TSOFAR + CPUS(NODE)
 #ifdef PRG_DIRAC
@@ -945,17 +998,18 @@ C
          END IF
 #endif
 C
+#endif
   100 CONTINUE
 C
       IF (IPRPAR .GT. 2) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
-         WRITE(LUPRI,'(11X,5(A,4X))')    'Node',
+         WRITE(LUPRI,'(11X,5(A,4X))')   'Node',
      &                                  'Batches',
      &                                  'CPU time',
      &                                  'Wall time',
      &                                  'Efficiency'
-         WRITE(LUPRI,'(11X,5(A,4X)/)')   '----',
+         WRITE(LUPRI,'(11X,5(A,4X)/)')  '----',
      &                                  '-------',
      &                                  '--------',
      &                                  '---------',
@@ -996,6 +1050,9 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
+CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
+C
+CMI  TEC changes for LAO (2003,2006)
 #include "implicit.h"
 C
 #if defined (VAR_MPI)
@@ -1049,6 +1106,7 @@ C     ***************************************************
 C     ***** Receive initialization data from master *****
 C     ***************************************************
 C
+
       CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &            IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
@@ -1061,6 +1119,7 @@ C     ***** Allocate memory *****
 C     ***************************
 C
 C
+
       IF (ITYPE .EQ. 2) THEN
          NUMGRA = MXCOOR
          IF (MAXDIF .GT. 1) THEN
@@ -1074,10 +1133,12 @@ C
       ELSE IF (ITYPE .EQ.3.OR.ITYPE.EQ.9) THEN
          NREQUI = 0
          LFMAT  = NFMAT*N2BASX
+CMI      write(0,*) "node...dimens NFMAT,N2BASX:",NFMAT,N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
-         NUMSUS = 9
-         NREQUI = 3*NNBASX + NUMSUS
-         LFMAT  = 0
+CMI      NUMSUS = 9
+CMI      NREQUI = 3*NNBASX + NUMSUS
+CMI      LFMAT  = 0
+         LFMAT  = NFMAT*N2BASX
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
          LFMAT  = 0
@@ -1100,8 +1161,8 @@ C
       IF (ITYPE .EQ. 2) THEN
          CALL DZERO(GRADEE,NUMGRA)
          IF (MAXDIF.GT.1) CALL DZERO(HESSEE,NUMHES)
-      ELSE IF (ITYPE .EQ. -5) THEN
-         CALL DZERO(SUS2EL,NUMSUS)
+CMI   ELSE IF (ITYPE .EQ. -5) THEN
+CMI      CALL DZERO(SUS2EL,NUMSUS)
       END IF
 C
 C     ***********************************
@@ -1128,9 +1189,11 @@ C     ****************************************
 C     ***** Send final results to master *****
 C     ****************************************
 C
+      
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,
      &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
      &     WORK(KINDEX),WORK(KTIMES))
+
 C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
@@ -1174,7 +1237,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dfterg.h"
 #endif
@@ -1190,34 +1253,37 @@ C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
+
 C
 C-----------------------------------------
 C     Receive initializations from master.
 C-----------------------------------------
 C
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(NMLINE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+
+      CALL MPI_BCAST(NMLINE,1,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN
       ELSE IF (NMLINE .GT. 0) THEN
-         CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+
 C........inforb.h
-         CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(I1_INFORB,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+         CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(I1_INFORB,NUMELM,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
 C........
          CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MAXPRI,1,MPI_INTEGER,MPARID,
+         CALL MPI_BCAST(MAXPRI,1,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .TRUE.
       ELSE
-         NEWGEO = .FALSE.
+        NEWGEO = .FALSE.
       END IF
-C
+
+
 C     Receive PANAS and screening threshold
       CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1229,13 +1295,13 @@ C     Receive SMLV1C and ONECAP,INTV1C
      &               MPI_COMM_WORLD,IERR)
       SMLV1C = LSEND(1)
       ONECAP = LSEND(2)
-      CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(INTV1C,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C.....receive parint.h
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_PARINT,NUMELM,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(I1_PARINT,NUMELM,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
@@ -1265,6 +1331,7 @@ C
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
       LEVYLE = JLEVYL .EQ. 1
+      TWOCOMP = JTWOCOMP .EQ. 1
       ICEDIF = JCEDIF
 C
       CALL IZERO(MTIDS,MAXNOD)
@@ -1317,30 +1384,47 @@ C
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C
+C     
+
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
+CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
+C
+C     ... xyz input reader fails/gives wrong results from now on 
+C         in parallel if there is no update 
+C         for primitives. Does it change because of reordered geoemtry?
+C         FIXME: check enabling reordered geoemtry instead of broadcast of 
+C         primit.h. - SK 14 Sep 08
+      IF( NEWGEO )THEN
+#if defined (VAR_MPI)
+        CALL GET_PRIMITF()
+#endif
+      END IF
 C
 C     Set common-block BLOCKS
 C
       CALL PAOVEC(WORK(KFREE),LFREE,0,0)
 C
+
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       NDMAT = ISEND(1)
       NFMAT = ISEND(2)
+
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         LDMAT = NDMAT*N2BASX
         CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
-     &               MPARID,MPI_COMM_WORLD,IERR)
+     &                 MPARID,MPI_COMM_WORLD,IERR)
       ELSE
         KDMAT = KFREE
       ENDIF
+
       LFMAT = NFMAT*N2BASX
-      IF(NFMAT.GT.0) THEN
+
+      IF(NFMAT.GT.0) THEN       
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KIRD),NDMAT,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KIRD),NDMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ELSE
         KFMAT = KFREE
@@ -1350,17 +1434,22 @@ C
         KIFC = KFREE
       ELSEIF (ITYPE.EQ.2) THEN
         CALL MEMGET('INTE',KIFC,NDMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KIFC),NDMAT,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KIFC),NDMAT,my_MPI_INTEGER,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       ELSE
         CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KIFC),NFMAT,MPI_INTEGER,MPARID,
+        CALL MPI_BCAST(WORK(KIFC),NFMAT,my_MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
       END IF
       CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(HFXATT,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
-        CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
         LDMRAO = NDMAT*N2RED
         CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMRAO),LDMRAO,MPI_DOUBLE_PRECISION,
@@ -1378,8 +1467,10 @@ C
         KDMRAO = KFREE
         KGABAO = KFREE
       ENDIF
+
       IF(ITYPE.EQ.9) THEN
-        CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,
+     &               MPARID,MPI_COMM_WORLD,IERR)
         LDMRSO = NDMAT*N2RED
         CALL MEMGET('REAL',KDMRSO,LDMRSO,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMRSO),LDMRSO,MPI_DOUBLE_PRECISION,
@@ -1391,6 +1482,29 @@ C
 C
       RETURN
       END
+#if defined(VAR_MPI)
+      SUBROUTINE GET_PRIMITF()
+#include "implicit.h"
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "primit.h"
+#include "infpar.h"
+C........primit.h
+         CALL MPI_BCAST(PRIEXP,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICCF,MXPRIM*MXCONT,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICRX,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICRY,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(PRICRZ,MXPRIM,MPI_REAL8,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+      END
+#endif
 C  /* Deck parlop */
       SUBROUTINE PARLOP(WORK,LWORK,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &     EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,
@@ -1405,6 +1519,7 @@ C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
+CMI changes from TEC for LAO
 #include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1476,8 +1591,10 @@ C
             IY  = MOD(IFCTYP(I),10)
             IC  = MOD(IY,2)
             IE  = (IY - IC)/2
-            IF (IX.EQ.2) IC = 0
-C           ... no Coulomb term for antisymmetric density matrix
+C           ... no direct Coulomb term for antisymmetric density matrix
+            IF (I2TYP.LT.4.AND.IX.EQ.2) IC = 0
+C           ... no direct Gaunt term for symmetric density matrix
+            IF (I2TYP.EQ.4.AND.IX.EQ.1) IC = 0
             NCM = NCM + IC
             NEM = NEM + IE
           ENDDO
@@ -1503,6 +1620,11 @@ C           ... no Coulomb term for antisymmetric density matrix
         IDSTRT = NLRGBL+1
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+        ICSTRT = NLRGBL+1
+        IDSTRT = 1
+        ICSMAX = MAXSHL
+        IDSMAX = NLRGBL
       ENDIF
 C
 C     ***********************************
@@ -1511,21 +1633,21 @@ C     ***********************************
 C
       ICOUNT = 0
 C
+#if defined (VAR_MPI)
   100 CONTINUE
 C
-#if defined (VAR_MPI)
-      CALL MPI_SEND(MYTID,1,MPI_INTEGER,MPARID,20,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(MYTID,1,my_MPI_INTEGER,MPARID,20,
+     &              MPI_COMM_WORLD,IERR)
 C
-      CALL MPI_RECV(NTEST,1,MPI_INTEGER,MPARID,30,
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,MPARID,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
 C
       IF (NTEST .EQ. -1) GOTO 300
 C
       DO 200 I = 1, NTASK
 C
-         CALL MPI_RECV(IJSHEL,2,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(IJSHEL,2,my_MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#endif
 C
 C        **************************************
 C        ***** Check if it is a null task *****
@@ -1630,6 +1752,8 @@ C           ***** Fourth Shell Index *****
 C           ******************************
 C
             IDMAX = ISHELC
+C           Note the order of these tests : can not be changed !
+            IF (I2TYP.EQ.4) IDMAX = NLRGBL
             IF (.NOT.SPNORB.AND.(ISHELA.EQ.ISHELC)) IDMAX = ISHELB
             DO 500 ISHELD = IDSTRT,IDMAX
 C
@@ -1707,6 +1831,7 @@ C
       GOTO 100
 C
  300  CONTINUE
+#endif
 c                 print *,'dmat-start'
 c                 print *, (dmat(ii),ii=1,10)
 c                 print *,'dmat-slutt'
@@ -1724,7 +1849,9 @@ C     This reduces the size of data transferred to Master.
 C     For itypes 2 and 3 this routine is called outside TWOINT,
 C     to avoid doing the same work more than once.
 C
-      IF (DDFOCK) THEN
+CMI      *** TEC entry ***
+CMI   IF (DDFOCK) THEN
+      IF (DDFOCK.AND..NOT.LONDON) THEN
          CALL SKLFCK(FMAT,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,PERTUR,
      &               NODV,MAXDER,LONDON,NDMAT,IREPDM,IFCTYP,IATOM)
       END IF
@@ -1799,6 +1926,8 @@ C  /* Deck sdres */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
+CMi TEC's changes for LAO
+C
 #include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1810,7 +1939,7 @@ C
 #else
 #include "energy.h"
 #endif
-#if defined (MOD_DFT)
+#ifdef MOD_DFT
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dftbuf.h"
@@ -1819,30 +1948,14 @@ C
 #include "infpar.h"
 #include "inforb.h"
 C
-      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*)
+      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*),SUS2ELBUF(9)
 #if defined (VAR_MPI)
       DIMENSION RBUF(2)
 #endif
-C
-C-------------------------------
-C     Put all results in RESMAT.
-C-------------------------------
-C
-      IF (ITYPE .EQ. -5 .OR. ITYPE .EQ. 8) THEN
-         DO 100 J = 0, 2
-            LPOS = J*N2BASX + 1
-            MPOS = J*NNBASX + 1
-CTROND            CALL DCOPY(NNBASX,FMAT(LPOS),1,RESMAT(MPOS),1)
- 100     CONTINUE
-         IF (ITYPE .EQ. -5) THEN
-            NPOS = 3*NNBASX + 1
-CTROND            CALL DCOPY(NUMSUS,SUS2EL,1,RESMAT(NPOS),1)
-         END IF
-      END IF
-C
 #if defined (VAR_MPI)
-      CALL MPI_SEND(ICOUNT,1,MPI_INTEGER,MPARID,40,MPI_COMM_WORLD,IERR)
-#if defined (MOD_DFT)
+      CALL MPI_SEND(ICOUNT,1,my_MPI_INTEGER,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+#ifdef MOD_DFT
       IF(ITYPE.EQ.7) THEN
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
@@ -1860,8 +1973,10 @@ C
       ENDIF
 #endif
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
+CMI    write(0,*) "Node sending dintkip"
          CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
+CMI    write(0,*) "Node sending fmat; N2BASX,LFMAT:",N2BASX,LFMAT
          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ELSE IF (ITYPE.EQ.2) THEN
@@ -1869,13 +1984,27 @@ C
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(GRADEE,NUMGRA,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
+CMI - from TEC code...
+      ELSE IF(ITYPE.EQ.-5) THEN 
+          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+
+CMI      write(0,*) 'SDRES: sending two-electron integral'//
+CMI  &               ' susceptibilities to master:' 
+CMI       CALL OUTPUT(SUS2EL,1,3,1,3,3,3,1,0)                        
+          CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
+CMI       CALL OUTPUT(SUS2ELBUF,1,3,1,3,3,3,1,0)                        
+CMI        ... sending to the master...
+          CALL MPI_SEND(SUS2ELBUF,9,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+
       ENDIF
 C
 C
       IF (TIMING) THEN
          DO 200, I = 1, ICOUNT
 C
-            CALL MPI_SEND(INDEX(I),1,MPI_INTEGER,MPARID,40,
+            CALL MPI_SEND(INDEX(I),1,my_MPI_INTEGER,MPARID,40,
      &                    MPI_COMM_WORLD,IERR)
             CALL MPI_SEND(TIMES(I),1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                    MPI_COMM_WORLD,IERR)
@@ -2082,6 +2211,11 @@ C
         IBSTRT = NLRGBL+1
         IASMAX = MAXSHL
         IBSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.4) THEN
+        IASTRT = NLRGBL+1
+        IBSTRT = 1
+        IASMAX = MAXSHL
+        IBSMAX = NLRGBL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'DET_TOTTK: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
@@ -2096,12 +2230,16 @@ C
 C
          ICA    = LCLASH(ISHELA)
          NCENTA = NCNTSH(ISHELA)
+
+
 C
 C        ******************************
 C        ***** Second Shell Index *****
 C        ******************************
 C
-         DO 200 ISHELB = IBSTRT,ISHELA
+         IBMAX = ISHELA
+         IF (I2TYP.EQ.4) IBMAX = NLRGBL
+         DO 200 ISHELB = IBSTRT,IBMAX
 C
             ICB    = LCLASH(ISHELB)
             NCENTB = NCNTSH(ISHELB)

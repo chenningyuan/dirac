@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.12.2.1 $
-C DATE    : $Date: 2004/09/01 08:04:12 $
+C VERSION : $Revision: 7762 $
+C DATE    : $Date: 2008-09-18 11:03:03 +0200 (Thu, 18 Sep 2008) $
 C FILE    : hersym.F
 C
 C
@@ -56,7 +44,7 @@ SYMADD: Completely new module to determine molecular symmetry, find the
 #endif
 C  /* Deck symadd */
       SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,
-     &                                                KASYM,CLASS)
+     &                  KASYM,CLASS,internal_file)
 C*****************************************************************************
 C
 C     This module determines molecular symmetry automatically
@@ -65,18 +53,26 @@ C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
 #include "implicit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+#include "infpar.h"
 #include "mxcent.h"
 #include "mxsymm.h"
 #include "priunit.h"
 #include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER*1 KASYM(3,3), CLASS*15
+      LOGICAL :: internal_file
       IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
       ZERTOL = 1.0D-12
       MAXAXS = 50
       MAXMIR = 25
-      CALL HEADER('SYMADD: Requested addition of symmetry',-1)
-      WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
+CSK   only MASTER needs to print the information 
+      IF( MYTID .eq. MPARID )THEN
+        CALL HEADER('SYMADD: Requested addition of symmetry',-1)
+        WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
+      END IF
       KCOOR = 1
       KROT = KCOOR + 6 * (MXCENT + 1)
       KIROT = KROT + 6 * (MAXAXS + 1)
@@ -89,14 +85,19 @@ C*****************************************************************************
       LENTMP = MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR)
       CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
      &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
-     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK(KLAST),LWRK)
+     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,
+     &            internal_file,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
      &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
-     &                         CLASS,VRML,WORK,LWORK)
+     &                         CLASS,VRML,internal_file,WORK,LWORK)
 #include "implicit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+#include "infpar.h"
 #include "mxsymm.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -105,10 +106,10 @@ C  /* Deck fndsym */
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
-#ifndef PRG_DIRAC
+CCCC#ifndef PRG_DIRAC
 #include "r12int.h"
 #include "numder.h"
-#endif
+CCCC#endif
 C ***********************************************************
 C *   ATMARR - Atomic coordinates
 C *   CLASS  - Full point group
@@ -117,14 +118,22 @@ C *   DIRAXS - Improper rotational axes
 C *   DMRPLN - Mirror planes
 C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
+Caspg
+CCCC         LOGICAL NOMOVE
+Caspg
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM)
          LOGICAL VRML
+         LOGICAL :: internal_file
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
+Caspg
+CCCC         NOMOVE = .TRUE.
+Caspg
+
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 7
@@ -156,17 +165,17 @@ C        END IF
  100     CONTINUE
          ATMARR(1,0) = NUCLP
          TEXT = 'Original Coordinates                    '
-         CALL PRNARR(TEXT, MXCENT, ATMARR)
+         IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT, MXCENT, ATMARR)
 C        Sort atoms after atom number and distance from origo
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
-#ifndef PRG_DIRAC
+CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(MXCENT, ATMARR)
          END IF
-#else
+CCCC#else
 C        Place molecular center of mass at the origin
-         CALL CNTRML(MXCENT, ATMARR)
-#endif
+CCCC         CALL CNTRML(MXCENT, ATMARR)
+CCCC#endif
 C        Determine molecular point group
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
@@ -175,27 +184,28 @@ C ::: the symmetry elements is constructed.  :::
          IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
      &                          DMRPLN,MAXMIR,WORK,LWORK)
 C
-         WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
+         IF( MYTID .eq. MPARID ) 
+     &       WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
-#ifndef PRG_DIRAC
+CCCC#ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
            CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
          END IF
-#else
-         CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
-#endif
-#ifndef PRG_DIRAC
+CCCC#else
+CCCC         CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
+CCCC#endif
+CCCC#ifndef PRG_DIRAC
           IF (.NOT. NOMOVE) THEN
             TEXT = 'Centered and Rotated                    '
-            CALL PRNARR(TEXT , MXCENT, ATMARR)
+            IF( MYTID .eq. MPARID ) CALL PRNARR(TEXT , MXCENT, ATMARR)
           ELSE
             WRITE (LUPRI,'(/A/)') 
      &  ' System could not be centered or rotated due to finite field'
          END IF
-#else
-         TEXT = 'Centered and Rotated                    '
-         CALL PRNARR(TEXT , MXCENT, ATMARR)
-#endif
+CCCC#else
+CCCC         TEXT = 'Centered and Rotated                    '
+CCCC         CALL PRNARR(TEXT , MXCENT, ATMARR)
+CCCC#endif
          IF (IPREAD .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No rotational axes were found.'
@@ -220,7 +230,7 @@ C
                CALL PRNARR(TEXT, MAXMIR, DMRPLN)
             END IF
          END IF
-         CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM)
+         CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,internal_file)
          IF (IPREAD .GE. MIN(3,IPRTHR/2)) THEN
             TEXT = 'Symmetry Independent Centres            '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
@@ -235,20 +245,22 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Aangstroem mark, it's removed.    :::
-         I = 4
-         IF (BASIS) I = 5
-         TMPLN = MLINE(I)
-         WRITE(TMPLN(10:10), '(I1)') NSYMOP
-         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
-         MLINE(I) = TMPLN
-         IF (NSYMOP .EQ. 0) THEN
-            WRITE(LUPRI, '(/1X,A)') 'No symmetry elements were found.'
-         ELSE IF (NSYMOP .EQ. 1) THEN
-            WRITE(LUPRI, '(/1X,2A)') 'The following element was '
-     &                                           // 'found:   ',SYMM
-         ELSE
-            WRITE(LUPRI, '(/1X,2A)') 'The following elements were '
-     &                                           //  'found:   ',SYMM
+         if (internal_file) then
+           TMPLN = MLINE(NMLAU)
+           WRITE(TMPLN(10:10), '(I1)') NSYMOP
+           WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+           IF( MYTID .eq. MPARID ) THEN
+             IF (NSYMOP .EQ. 0) THEN
+               WRITE(LUPRI, '(/1X,A)') 'No symmetry elements '
+     &                                // 'were found.'
+             ELSE IF (NSYMOP .EQ. 1) THEN
+                WRITE(LUPRI, '(/1X,2A)') 'The following element was '
+     &                                // 'found:   ',SYMM
+             ELSE
+                WRITE(LUPRI, '(/1X,2A)') 'The following elements were '
+     &                               //  'found:   ',SYMM
+             END IF
+           end if
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
@@ -299,34 +311,35 @@ C ::: Then the different elements are counted, and arrays updated. :::
 #endif
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
-         DO 400 I = 1, NUCIND
-            NC = NCLINE(I)
-            TMPLN = MLINE(NC)
-            WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
-            WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
-            WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
+         if (internal_file) then
+           DO 400 I = 1, NUCIND
+             NC = NCLINE(I)
+             TMPLN = MLINE(NC)
+             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
+             WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
+             WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
 #ifndef PRG_DIRAC
-            QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
-            IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
-     &                            'Isotope=', NINT(QMASS)
+             QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
+             IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
+     &                             'Isotope=', NINT(QMASS)
 #endif
-            MLINE(NC) = TMPLN
- 400     CONTINUE
+CMI       ... fix for gfortran-4.3  - otherwise IPREAD get bad value...
+             MLINE(NC) = TMPLN
+ 400       CONTINUE
 C ::: Finally the number of atoms are updated. :::
-         I = 1
-         J = NINT(ATMARR(4,I))
-         DO 500 K = 1, NONTYP
-            NC = NCLINE(I) - 1
-            TMPLN = MLINE(NC)
-            WRITE(TMPLN(12:15),'(I4)') NONT(K)
-            MLINE(NC) = TMPLN
- 510        CONTINUE
-            IF (J .EQ. NINT(ATMARR(4,I))) THEN
-               I = I + 1
-               GOTO 510
-            END IF
-            J = NINT(ATMARR(4,I))
- 500     CONTINUE
+           I = 1
+           J = NINT(ATMARR(4,I))
+           DO K = 1, NONTYP
+              NC = NCLINE(I) - 1
+              TMPLN = MLINE(NC)
+              WRITE(TMPLN(12:15),'(I4)') NONT(K)
+              MLINE(NC) = TMPLN
+              do while(j==nint(atmarr(4,i)))
+                i=i+1
+              end do
+              J = NINT(ATMARR(4,I))
+           end do
+         end if
 C        IF (SOLVNT .OR. DORLM) THEN
 C           NUCIND = NUCIND + 1
 C           NCNTCV = NUCIND
@@ -382,7 +395,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "mxsymm.h"
          DIMENSION V1(3), V2(3)
          TEMP = (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))*
-     &           (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
+     &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
          IF (TEMP .GT. ZERTOL) THEN
             TEMP = (V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))/SQRT(TEMP)
 C ::: Parallell vectors might yield a value here that's slightly greater :::
@@ -1373,8 +1386,8 @@ C ::: track of indexes, so that all combinations are tried.        :::
                                  V2(3) = V2(3) + ATMARR(3,M)
  167                          CONTINUE
 C ::: We check for all possible orders of rotation from Ord/2 and down :::
-     0                        IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(1))
-     1                                       .GT. TOLLRN*TOLLRN) THEN
+                              IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
+     &                                       .GT. TOLLRN*TOLLRN) THEN
                                DO 168 M = IORD/2, MINORD, -1
                                 IF(ROTAXS(MXM,ATMARR,TMPARR,M,
      &                                                   V2,PROP))THEN
@@ -1943,7 +1956,8 @@ C     &                          (NINT(ARR(6,IATNO2)) .EQ. 0))
          RETURN
       END
 C  /* Deck reduce */
-      SUBROUTINE REDUCE(MXM, ATMARR, EXTARR, TMPARR, SYMELM)
+      SUBROUTINE REDUCE(MXM, ATMARR, EXTARR, TMPARR, SYMELM,
+     &                  internal_file)
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                             ::
 C ::       Removes symmetry-dependent atoms      ::
@@ -1957,6 +1971,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*9
+         LOGICAL :: internal_file
          LOGICAL MIRMOL, ROTAXS, INVMOL, NECESS, GENELM
          N = NINT(ATMARR(1,0))
          EXTARR(1,0) = 1.0D0*N
@@ -2094,6 +2109,7 @@ C ::: All symmetry dependant atoms are removed. :::
  615           CONTINUE
                I = I + 1
             ELSE
+               if (internal_file) then
                NC = NCLINE(NINT(EXTARR(5,J)))
                DO 620 K = NC, NMLINE - 1
                   MLINE(K) = MLINE(K+1)
@@ -2103,6 +2119,7 @@ C ::: All symmetry dependant atoms are removed. :::
      &           NCLINE(NINT(EXTARR(5,K)))=NCLINE(NINT(EXTARR(5,K)))-1
  640           CONTINUE
                NMLINE = NMLINE - 1
+               end if
             END IF
  600     CONTINUE
          ATMARR(1,0) = 1.0D0*(I - 1)

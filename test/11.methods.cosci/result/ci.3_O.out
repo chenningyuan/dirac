@@ -4,11 +4,11 @@ Master : DIRAC allocating 50000000 words of memory
 *                                O U T P U T                                 *
 *                                   from                                     *
 *                                                                            *
-*           @@@@@    @@   @@@@@     @@@@     @@@@@    @@@      @@            *
-*           @@  @@        @@  @@   @@  @@   @@       @   @    @ @            *
-*           @@  @@   @@   @@@@@    @@@@@@   @@       @   @   @@@@@           *
-*           @@  @@   @@   @@ @@    @@  @@   @@       @   @      @            *
-*           @@@@@    @@   @@  @@   @@  @@    @@@@@    @@@       @            *
+*                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+*                   @@  @@        @@  @@   @@  @@   @@                       *
+*                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+*                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+*                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
 *                                                                            *
 *                                                                            *
 %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
@@ -73,7 +73,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *          Direct Iterative Relativistic Allelectron Calculations            *
 *         =======================================================            *
 *                                                                            *
-*                        VERSION 04.0    SEPTEMBER 2004                      *
+*                        VERSION 04.1    SEPTEMBER 2004                      *
 *                                                                            *
 ******************************************************************************
 *                                                                            *
@@ -115,7 +115,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *    appropriate citation would be:                                          *
 *                                                                            *
 *    "Dirac, a relativistic ab initio electronic structure program",         *
-*    release DIRAC04.0 (2004),                                               *
+*    release DIRAC04.1 (2004),                                               *
 *    written by H. J. Aa. Jensen, T. Saue, and L. Visscher                   *
 *    with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,   *
 *    O. Fossgaard, T. Helgaker, J. K. Laerdahl, C. V. Larsen, P. Norman,     *
@@ -127,15 +127,45 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *    <URL:"http://dirac.chem.sdu.dk/doc/reference.shtml">)                   *
 *                                                                            *
 ******************************************************************************
- Version           : Dirac 4.0 (patchlevel 0) 
+ Version           : Dirac 4.1 (patchlevel 0) 
  Hostname          : radon.chem.vu.nl
- Operating system  : Darwin 7.5.0
+ Operating system  : Darwin 8.9.0
  Machine           : Power Macintosh
  Run               : Sequential
- Last compilation  : 09:31:26 Sep  1 2004 (by visscher@radon.chem.vu.nl)
- Basis set dir.    : /Users/visscher/sources/Dirac04/test/11.methods.cosci/:/Users/visscher/sources/Dirac04/basis/:/Users/visscher/sources/Dirac04/basis_dalton/
+ Last compilation  : 04:17:50 May 10 2007 (by visscher@radon.chem.vu.nl)
+ FORTRAN compiler  : xlf -O3 -qstrict -qextname 
+ C compiler        : /usr/bin/gcc-3.3 -O3 
+ Basis set dir.    : /Users/visscher/sources/Dirac.autotrunk.serial/test/11.methods.cosci/:/Users/visscher/sources/Dirac.autotrunk.serial/basis/:/Users/visscher/sources/Dirac.autotrunk.serial/basis_dalton/
 
- Date and time (IBM-AIX): Wed Sep  1 09:32:28 2004
+ Date and time (IBM-AIX): Thu May 10 09:23:24 2007
+
+
+ *********************************************************************************
+ *************************** Input read from DIRAC.INP ***************************
+ *********************************************************************************
+
+ **DIRAC                                                                         
+ .TITLE                                                                          
+ Oxygen atom.                                                                    
+ .WAVE F                                                                         
+ **WAVE FUNCTIONS                                                                
+ .RESOLVE                                                                        
+ *DHFCAL                                                                         
+ .CLOSED SHELL                                                                   
+ 4 0                                                                             
+ .OPEN S                                                                         
+ 1                                                                               
+ 4/0,6                                                                           
+ .MAXITR                                                                         
+ 25                                                                              
+ .EVCCNV                                                                         
+ 1.0E-8                                                                          
+ *RESOLVE                                                                        
+ .SCREEN                                                                         
+ 1.0D-20                                                                         
+ *END OF                                                                         
+                                                                                 
+  $GOSCIP IPRNT=5 &END                                                           
 
 
  **************************************************************************
@@ -155,6 +185,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
    - LL-integrals
    - SL-integrals
    - SS-integrals
+   - GT-integrals
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
@@ -294,13 +325,15 @@ Point group: D2h
   O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                    
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                              
   ----------------------------------------------------------------------
-                             27      27   L - large components
-                             68      68   S - small components
+                             27      27      L  - large components
+                             68      68      S  - small components
   ----------------------------------------------------------------------
   total:      1       8      95      95
 
   Cartesian basis used.
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
 
 
   References for the basis sets
@@ -464,10 +497,10 @@ Point group: D2h
  * Print level :    0
  * Dirac-Coulomb Hamiltonian
  * Default integral flags passed to all modules
-   - LL-integrals: T
-   - LS-integrals: T
-   - SS-integrals: T
-   - GT-integrals: F
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     1
+   - GT-integrals:     0
  * Basis set:
    - uncontracted large component basis set
    - uncontracted small component basis set
@@ -504,7 +537,8 @@ Point group: D2h
  DHFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 2
- * Open shell DHF calculation.
+ * Open shell SCF calculation using Average-of-Configuration
+
  * Shell specifications:
 
                                         Orbitals
@@ -560,7 +594,7 @@ Point group: D2h
    S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
 
 
-                            Output from DELPOS
+                            Output from MODHAM
                             ------------------
 
 * Applied strict kinetic balance !
@@ -623,23 +657,23 @@ Total no. of orbitals      (NORB):    28      24      52
    ********************************************************************
 
 
- Transformation started at : Wed Sep  1 09:32:28 2004
+ Transformation started at : Thu May 10 09:23:24 2007
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -74.8011655229094998
-* Heading :Oxygen atom.                                      Wed Sep  1 09:32:26 2004
+* REACMO: Coefficients read from file DFCOEF - Total energy: -74.8011655229095140
+* Heading :Oxygen atom.                                      Thu May 10 09:23:22 2007
 
-* GETGAB: label "GABAOXXX" not found; calling GABGEN.
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   53.97%    2.80%    2.59%   11.12%    .00000000s
-SOfock:SL  1.00D-12   46.11%    5.81%    2.04%   15.12%    .02000000s
-SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
+SOfock:LL  1.00D-12   56.02%     .52%    2.54%   11.79%    .00000000s
+SOfock:SL  1.00D-12   50.68%    1.35%    2.14%   14.45%    .02000000s
+SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .07000000s
 *** WARNING *** GTCFC1: No 1-Fock found. Regenerating.
 
 
- Core energy (includes nuclear repulsion) :            -68.0119434893
- - Electronic part :                                   -68.0119434893
-   - One-electron terms :                              -77.9507926092
-   - Two-electron terms :                                9.9388491200
+ Core energy (includes nuclear repulsion) :            -68.0119434913
+ - Electronic part :                                   -68.0119434913
+   - One-electron terms :                              -77.9507926147
+   - Two-electron terms :                                9.9388491234
 
 
  MOLFDIR file MRCONEE is written
@@ -661,29 +695,20 @@ SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
  ************************************************************************
 
 
- Transformation started at : Wed Sep  1 09:32:29 2004
+ Transformation started at : Thu May 10 09:23:24 2007
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -74.8011655229094998
-* Heading :Oxygen atom.                                      Wed Sep  1 09:32:26 2004
+* REACMO: Coefficients read from file DFCOEF - Total energy: -74.8011655229095140
+* Heading :Oxygen atom.                                      Thu May 10 09:23:22 2007
  - Integral class 1 : (LL|]  
-   - Beginning with task   1 of   3 after       .00 seconds
-                                and after       .00 CPU-seconds
-   - Beginning with task   2 of   3 after       .00 seconds
-                                and after       .00 CPU-seconds
-   - Beginning with task   3 of   3 after       .00 seconds
-                                and after       .01 CPU-seconds
+   - Beginning task   1 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   3 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|]  
-   - Beginning with task   4 of   8 after       .00 seconds
-                                and after       .02 CPU-seconds
-   - Beginning with task   5 of   8 after       .00 seconds
-                                and after       .02 CPU-seconds
-   - Beginning with task   6 of   8 after       .00 seconds
-                                and after       .04 CPU-seconds
-   - Beginning with task   7 of   8 after       .00 seconds
-                                and after       .04 CPU-seconds
-   - Beginning with task   8 of   8 after       .00 seconds
-                                and after       .07 CPU-seconds
- - Integral class 3 : (LS|]  
+   - Beginning task   4 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   6 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   8 of   8 after      0. seconds and      0. CPU-seconds
 * Screening statistics:
    (LL|LL)ints :  88.34%
    (SS|LL)ints :  91.47%
@@ -695,21 +720,24 @@ SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND fi        .160 seconds
- Time in  Computing+transform. i        .090 seconds
+ Time in  Initializing MS4IND fi        .170 seconds
+ Time in  Computing+transform. i        .120 seconds
 
 
  Total wall time used in RESOLV :  .00000000s
- Total CPU  time used in RESOLV :  .09000000s
+ Total CPU  time used in RESOLV :  .11999999s
 
- Transformation ended at : Wed Sep  1 09:32:29 2004
+ Transformation ended at : Thu May 10 09:23:24 2007
+GASRES: Set up the following information:
+       1Eg  2Eg  1Eu  2Eu
+    4    0    0    3    3
 
 
 
  GOSCIP (Version 1.8)
 
- Today is :    1 Sep 04 
- The time is :  09:32:29
+ Today is :   10 May 07 
+ The time is :  09:23:24
 
 
  &general
@@ -732,23 +760,28 @@ SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
  Number of active orbitals :                     6
 
  Orbital Representation        Orbital energy
-     1     Eu 1Eu                -.3652326854    
-     2     Eu 1Eu                -.3652326854    
-     3     Eu 1Eu                -.3652326854    
-     4     Eu 2Eu                -.3652326854    
-     5     Eu 2Eu                -.3652326854    
-     6     Eu 2Eu                -.3652326854    
+     1     Eu 1Eu                -.6074277452    
+     2     Eu 1Eu                -.6074277452    
+     3     Eu 1Eu                -.6074277452    
+     4     Eu 2Eu                -.6074277452    
+     5     Eu 2Eu                -.6074277452    
+     6     Eu 2Eu                -.6074277452    
+Number of determinants:
+   Symmetry   ag  :          9
+   Symmetry   bg  :          6
+   Symmetry   au  :          0
+   Symmetry   bu  :          0
 
- Coulomb integral file was generated at   1Sep04   09:32:29
+ Coulomb integral file was generated at  10May07   09:23:24
  Read     138 unique integrals
 
  Representation   ag;  5 vectors written to file  MDTRIV_  ag
 
- Eigenvalues           -74.841810659659
-                       -74.841088663517
-                       -74.840734160162
-                       -74.760879816158
-                       -74.640030313850
+ Eigenvalues           -74.841810659673
+                       -74.841088663531
+                       -74.840734160175
+                       -74.760879816144
+                       -74.640030313794
 
  CPU time for this representation 
 
@@ -762,59 +795,59 @@ SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
 
 
      -74.84181066
-                        2  101110                 .02645831
-                        3  011110                 .31435279
-                        4  110101                 .02540027
-                        6  011101                 .16102776
-                        7  110011                 .31432035
-                        8  101011                 .15840174
+                        2  101110                         .27602256
+                        3  011110                         .21948800
+                        4  110101                         .27823290
+                        6  011101                         .00347783
+                        7  110011                         .21950532
+                        8  101011                         .00323463
      -74.84181066
-                        2  101110                 .20319473
-                        4  110101                 .29770140
-                        6  011101                 .28316370
-                        8  101011                 .21553750
+                        2  101110                         .25429776
+                        4  110101                         .24562535
+                        6  011101                         .24205437
+                        8  101011                         .25795761
      -74.84181066
-                        2  101110                 .35365768
-                        3  011110                 .01890416
-                        4  110101                 .26020905
-                        6  011101                 .13911925
-                        7  110011                 .01869989
-                        8  101011                 .20937147
+                        2  101110                         .05299040
+                        3  011110                         .11385118
+                        4  110101                         .05945247
+                        6  011101                         .33777852
+                        7  110011                         .11377019
+                        8  101011                         .32211848
      -74.84108866
-                        2  101110                 .25000000
-                        4  110101                 .25000000
-                        6  011101                 .25000000
-                        8  101011                 .25000000
+                        2  101110                         .25000000
+                        4  110101                         .25000000
+                        6  011101                         .25000000
+                        8  101011                         .25000000
      -74.84073416
-                        2  101110                 .16666257
-                        3  011110                 .16666257
-                        4  110101                 .16666257
-                        6  011101                 .16666257
-                        7  110011                 .16666257
-                        8  101011                 .16666257
+                        2  101110                         .16666257
+                        3  011110                         .16666257
+                        4  110101                         .16666257
+                        6  011101                         .16666257
+                        7  110011                         .16666257
+                        8  101011                         .16666257
      -74.76087982
-                        1  110110                 .34584610
-                        5  101101                 .03859334
-                        9  011011                 .61550095
+                        1  110110                         .65941577
+                        5  101101                         .23002883
+                        9  011011                         .11051036
      -74.76087982
-                        3  011110                 .49995848
-                        7  110011                 .49998067
+                        3  011110                         .49997269
+                        7  110011                         .49998176
      -74.76087982
-                        1  110110                 .32079051
-                        5  101101                 .62804431
-                        9  011011                 .05112517
+                        1  110110                         .00722066
+                        5  101101                         .43661146
+                        9  011011                         .55612860
      -74.64003031
-                        1  110110                 .33332515
-                        5  101101                 .33332515
-                        9  011011                 .33332515
+                        1  110110                         .33332515
+                        5  101101                         .33332515
+                        9  011011                         .33332515
 
  Representation   bg;  5 vectors written to file  MDTRIV_  bg
 
- Eigenvalues           -74.841810659659
-                       -74.841088663517
-                       -74.760879816158
-                       -74.760879816158
-                       -74.640030313850
+ Eigenvalues           -74.841810659673
+                       -74.841088663531
+                       -74.760879816144
+                       -74.760879816144
+                       -74.640030313794
 
  CPU time for this representation 
 
@@ -828,42 +861,42 @@ SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
 
 
      -74.84181066
-                        2  111010                 .24817097
-                        3  111001                 .24997098
-                        5  010111                 .25180964
-                        6  001111                 .25000302
+                        1  111100                         .25000233
+                        2  111010                         .25168032
+                        4  100111                         .24997257
+                        5  010111                         .24830029
      -74.84181066
-                        1  111100                 .25000302
-                        2  111010                 .25180965
-                        4  100111                 .24997098
-                        5  010111                 .24817097
+                        2  111010                         .24830029
+                        3  111001                         .24997257
+                        5  010111                         .25168032
+                        6  001111                         .25000233
      -74.84108866
-                        2  111010                 .24945475
-                        3  111001                 .24999970
-                        5  010111                 .25054525
-                        6  001111                 .24999970
+                        1  111100                         .24999906
+                        2  111010                         .25096911
+                        4  100111                         .24999906
+                        5  010111                         .24903089
      -74.84108866
-                        1  111100                 .24999970
-                        2  111010                 .25054525
-                        4  100111                 .24999970
-                        5  010111                 .24945475
+                        2  111010                         .24903089
+                        3  111001                         .24999906
+                        5  010111                         .25096911
+                        6  001111                         .24999906
      -74.76087982
-                        3  111001                 .49998030
-                        6  001111                 .49998092
+                        1  111100                         .49998047
+                        4  100111                         .49998076
      -74.76087982
-                        1  111100                 .49998092
-                        4  100111                 .49998030
+                        3  111001                         .49998076
+                        6  001111                         .49998047
 
 
  Energy eigenvalues in atomic units
 
- Level   Rel eigenvalue     Abs eigenvalue  Degeneracy
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
 
-    1    .000000000000    -74.841810659658 (   5 * )
-    2    .000721996141    -74.841088663517 (   3 * )
-    3    .001076499497    -74.840734160162 (   1 * )
-    4    .080930843501    -74.760879816158 (   5 * )
-    5    .201780345809    -74.640030313850 (   1 * )
+    1    .000000000000     -6.829867168375      -74.841810659673 (   5 * )
+    2    .000721996142     -6.829145172233      -74.841088663531 (   3 * )
+    3    .001076499498     -6.828790668877      -74.840734160175 (   1 * )
+    4    .080930843529     -6.748936324846      -74.760879816144 (   5 * )
+    5    .201780345878     -6.628086822497      -74.640030313794 (   1 * )
 
 
  Total average:       -74.8011655229
@@ -876,8 +909,8 @@ SOfock:SS  1.00D-12   37.64%    8.47%    1.57%   16.34%    .06000001s
     1         .000000000           .000000   3   2   0   0
     2         .019646514        158.459837   1   2   0   0
     3         .029293041        236.264330   1   0   0   0
-    4        2.202240214      17762.267037   3   2   0   0
-    5        5.490722360      44285.666996   1   0   0   0
+    4        2.202240215      17762.267043   3   2   0   0
+    5        5.490722362      44285.667011   1   0   0   0
 
 
 Total CPU time :                    .0000
@@ -887,8 +920,8 @@ Total CPU time :                    .0000
 
 
 
- Date and time (IBM-AIX): Wed Sep  1 09:32:29 2004
+ Date and time (IBM-AIX): Thu May 10 09:23:24 2007
 *****************************************************
->>>> Total CPU  time used in DIRAC:  0.24000000s
->>>> Total WALL time used in DIRAC:  2.00000000s
+>>>> Total CPU  time used in DIRAC:  0.27999999s
+>>>> Total WALL time used in DIRAC:  1.00000000s
 ********** E N D   of   D I R A C  output  **********

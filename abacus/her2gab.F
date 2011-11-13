@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.30.4.2 $
-C DATE    : $Date: 2004/09/01 08:04:04 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : her2gab.F
 C
 C/* Deck gabdrv */
@@ -125,6 +113,11 @@ C
         DOINT(2,1) = .FALSE.
         DOINT(1,2) = .FALSE.
         DOINT(2,2) = .TRUE.
+      ELSEIF(IGTYP.EQ.2) THEN
+        DOINT(1,1) = .TRUE.
+        DOINT(2,1) = .TRUE.
+        DOINT(1,2) = .TRUE.
+        DOINT(2,2) = .TRUE.
       ELSE
         WRITE(LUPRI,'(A,I5)') 'GABDRV:Unknown IGTYP ',IGTYP
         CALL QUIT('GABDRV:Unknown IGTYP !')
@@ -144,7 +137,12 @@ C
       CALL MEMGET('INTE',KINDHR,  JTOP3,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDSQ,  NRTOP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIODHR,8*NRTOP,WORK,KFREE,LFREE)
+
+      CALL MEMCHK('GABDRV 1',WORK,1)
+
       CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
+
+      CALL MEMCHK('GABDRV 2',WORK,1)
 C
 C     *****************************
 C     ***** First Shell Index *****
@@ -163,6 +161,12 @@ C
         MULTA  = MULT(MULA)
         NSTRA  = IORBSB(IORBSH(ISHELA,1))
         NUCA   = NUCOSH(ISHELA)
+CMI ... selective test as here is the core of the problem
+        IF (NUCA.LT.0) THEN
+          write(LUPRI,*) '>> ISHELA, NUCOSH(ISHELA)=',NUCOSH(ISHELA)
+          call QUIT('negative NUCA !!!')
+        ENDIF
+
         NORBA  = NORBSH(ISHELA)
         CORAX0 = CENTSH(ISHELA,1)
         CORAY0 = CENTSH(ISHELA,2)
@@ -261,6 +265,8 @@ C
           KCKMAX = MAX(KCKTA,KCKTB)
           CALL MEMGET('INTE',KLMNVL,20*KCKMAX        ,
      &                              WORK,KFREE,LFREE)
+CMI      ... check ...
+          CALL MEMCHK('GABDRV 2.8',WORK,1)
 C
 C         First electron
 C
@@ -268,19 +274,44 @@ C
           LNPCOB = 2*NSETB*(NODCAB + 1)
           CALL MEMGET('INTE',KNPCOA,LNPCOA,WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KNPCOB,LNPCOB,WORK,KFREE,LFREE)
+
+          CALL MEMCHK('GABDRV 2.8.1',WORK,1)
+
           CALL IZERO(WORK(KNPCOA),LNPCOA)
           CALL IZERO(WORK(KNPCOB),LNPCOB)
+
           CALL MEMGET('INTE',KJSTRA,NSETA               ,
      &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KJSTRB,NSETB               ,
      &                              WORK,KFREE,LFREE)
+
+          CALL MEMCHK('GABDRV 2.8.2',WORK,1)
 C
           CALL MEMGET('REAL',KCORAB,9*NUCA*NUCB*NODCAB,
      &                              WORK,KFREE,LFREE)
+
+CMI       write(LUPRI,*) '... KCORAB=',KCORAB
+CMI       write(LUPRI,*) 'NUCA,NUCB,NODCAB=',NUCA,NUCB,NODCAB
+CMI       write(LUPRI,*) '... 9*NUCA*NUCB*NODCAB=',9*NUCA*NUCB*NODCAB
+CMI       write(LUPRI,*) 'KFREE,LFREE:',KFREE,LFREE
+
+CMI      ... here it fails !!! ...
+          CALL MEMCHK('GABDRV 2.8.3',WORK,1)
+
           CALL MEMGET('REAL',KEXPAB,3*NUCA*NUCB*NODCAB,
      &                              WORK,KFREE,LFREE)
+
+          CALL MEMCHK('GABDRV 2.8.4',WORK,1)
+
           CALL MEMGET('REAL',KFACAB,NUCA*NUCB*NODCAB,
      &                              WORK,KFREE,LFREE)
+CMI      ... here it fails !!! ...
+C         write(LUPRI,*) '... KFACAB=',KFACAB
+C         write(LUPRI,*) '... NUCA*NUCB*NODCAB=',NUCA*NUCB*NODCAB
+C         write(LUPRI,*) 'KFREE,LFREE:',KFREE,LFREE
+
+          CALL MEMCHK('GABDRV 2.9',WORK,1)
+
           IF (GENAB) THEN
             CALL MEMGET('REAL',KCONTA,2*NORBA*NUCA*NODCAB,
      &                                WORK,KFREE,LFREE)
@@ -341,6 +372,10 @@ C
      &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KINDCD,2*NORBC*NORBD,
      &                              WORK,KFREE,LFREE)
+
+CMI          ... here it fails !!!
+          CALL MEMCHK('GABDRV 3',WORK,1)
+
           CALL GABDR1(GABM,IJOB,WORK(KFREE),LFREE,
      &          UNDIFF,PERTUR,LONDON,SPNORB,EXPECT,SUSCEP,DDFOCK,
      &          DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
@@ -360,6 +395,7 @@ C               Electron 2:
   200    CONTINUE
   100 CONTINUE
 C
+      CALL MEMCHK('GABDRV 4',WORK,1)
       CALL MEMREL('GABDRV-end',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GABDRV')
       RETURN
@@ -605,7 +641,7 @@ C
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
 C
-      CALL QENTER('GABDR2')
+CMI   CALL QENTER('GABDR2')
 #include "memint.h"
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR2','*',103)
 C
@@ -689,6 +725,12 @@ C
          IF (PERTUR .OR. LONDON .OR. SPNORB)
      &       CALL DZERO(SOINT,NSOINT)
       END IF
+
+      IF (IPRINT .GT. 15) THEN
+        WRITE(LUPRI,'(2X,A)') '...  GABDR2: big cycle start...'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
       NSYMR = 0
       DO 100 ISYMR = 0,MAXOPR
       IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
@@ -712,6 +754,7 @@ c is programmed (normally one-center is skipped because
 c the total contribution is zero).  /jan.98-hjaaj,jth
          CAEQCB = ICENTA .EQ. ICENTB .AND. IATOM  .NE. NCENTA
      &            .AND. MAXDER .EQ. 0
+
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),
      &             WORK(KFREE),LFREE,
      &             JMAXA,JMAXB,NHKTA,NHKTB,NSETA,NSETB,NUCA,
@@ -721,6 +764,13 @@ c the total contribution is zero).  /jan.98-hjaaj,jth
      &             AACDX,AACDY,AACDZ,IAB0X,IAB0Y,IAB0Z,CAEQCB,.TRUE.,
      &             .TRUE.,BIGVEC,UNDIFF,LONDON,SPNORB,12,THRESH,
      &             MAXDER,IPRINT)
+
+         IF (IPRINT .GT. 15) THEN
+             WRITE(LUPRI,'(2X,A)') 'GABDR2: first ODCOEF end'
+             CALL FLSHFO(LUPRI)
+         ENDIF
+
+
          NSYMS = 0
          DO 200 ISYMS = 0, MAXOPR
          IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
@@ -751,6 +801,13 @@ C
      &                 CORDY0,CORDZ0,ABCCX,ABCCY,ABCCZ,ICD0X,ICD0Y,
      &                 ICD0Z,.FALSE.,.TRUE.,.TRUE.,BIGVEC,UNDIFF,
      &                 LONDON,SPNORB,34,THRESH,MAXDER,IPRINT)
+
+           IF (IPRINT .GT. 15) THEN
+             WRITE(LUPRI,'(2X,A)') 'GABDR2: second ODCOEF end'
+             CALL FLSHFO(LUPRI)
+           ENDIF
+
+
             IF (NOCONT) THEN
               NCCINT = NUCAB *NUCCD *KHKTAB*KHKTCD
             ELSE
@@ -785,9 +842,20 @@ C
 C             If necessary change sign of expansion coefficients
 C             ==================================================
 C
+              IF (IPRINT .GT. 15) THEN
+               WRITE(LUPRI,'(/,2X,A)') 'GABDR2: EXCSGN start '
+               CALL FLSHFO(LUPRI)
+              ENDIF
+C
               CALL EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,
      &                    MXUCCD,ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,
      &                    SPNORB,ISYMT,IPRINT)
+
+              IF (IPRINT .GT. 15) THEN
+               WRITE(LUPRI,'(/,2X,A)') 'GABDR2: EXCSGN end '
+               CALL FLSHFO(LUPRI)
+              ENDIF
+C
 C
 C             Check whether this integral gives zero contribution
 C             ===================================================
@@ -929,6 +997,11 @@ C
   200    CONTINUE
       END IF
   100 CONTINUE
+
+      IF (IPRINT .GT. 15) THEN
+        WRITE(LUPRI,'(2X,A)') '...  GABDR2: big cycle end...'
+        CALL FLSHFO(LUPRI)
+      ENDIF
 C
 C     ********************************
 C     ***** Process SO integrals *****
@@ -960,7 +1033,13 @@ C
             CALL QUIT('London not yet implemented !')
          END IF
       ENDIF
-      CALL QEXIT('GABDR2')
+CMI   CALL QEXIT('GABDR2')
+
+      IF (IPRINT .GT. 15) THEN
+        WRITE(LUPRI,'(2X,A)') 'GABDR2 routine end...'
+        CALL FLSHFO(LUPRI)
+      ENDIF
+
       RETURN
 C
       END
@@ -1754,6 +1833,12 @@ C
       CALL QENTER('GABGEN')
       IF (IPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 #include "memint.h"
+C
+C     Construct the identifier for this data, should include
+C     - AO or SO type integrals
+C     - regular or derivative type integrals
+C     - active classes (LL, SL, LS and SS,depending on IGTYP)
+C  
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -1776,6 +1861,11 @@ C
             CALL QUIT('GABGEN: Invalid IJOB')
          ENDIF
       END DO
+C
+      DO I = 1,NGAB
+         WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
+      ENDDO
+C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
 C     Check if file AOPROPER is present
@@ -1953,6 +2043,10 @@ C
             CALL QUIT('GETGAB: Invalid IJOB')
          ENDIF
       END DO
+C
+      DO I = 1,NGAB
+         WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
+      ENDDO
 C
 C     Check if file AOPROPER is present
 C     ---------------------------------

@@ -1,71 +1,82 @@
-Master : DIRAC allocating 50000000 words of memory
+Master : DIRAC allocating 3000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
 *                                   from                                     *
 *                                                                            *
-*           @@@@@    @@   @@@@@     @@@@     @@@@@    @@@      @@            *
-*           @@  @@        @@  @@   @@  @@   @@       @   @    @ @            *
-*           @@  @@   @@   @@@@@    @@@@@@   @@       @   @   @@@@@           *
-*           @@  @@   @@   @@ @@    @@  @@   @@       @   @      @            *
-*           @@@@@    @@   @@  @@   @@  @@    @@@@@    @@@       @            *
+*                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+*                   @@  @@        @@  @@   @@  @@   @@                       *
+*                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+*                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+*                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
 *                                                                            *
 *                                                                            *
-%}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
-$?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
-(%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
-$S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
-SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
-SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::':/://:/::-::
-?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
-S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
-(?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
-$S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:'::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
-S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
-c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
-S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
-$SZ?MMMMMMMMMMMMMMMMMH?.                                        "&((/?//?|::::
-$%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
-($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
-Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/??/!:/:|:
-(??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
-SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
-$%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
-%$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
-$$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
-4$($S$M//::S?ZHMMMMMH/:.':::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|::
-)[$S$S($|_i:#>::*H&?/::.::/:"://:?>>':&HMHSMMMM$:'-   MMHMMMMHHT .)i/?////:::/
-$$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.'   `H?$T*" `  /%?>%:)://ii|
-$&=&/ZS}$RF<:?/-.|%r/:::/:/:'.-.-..|::S//!`"``          >??:    `SS<S:)!/////|
-Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. '-.'  `                         ,>%%%:>/>/!|:/
-$$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
-&$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
-=[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
-$&>1MHHMMMM6M9MMMM$Z$}$S%/:::.'.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
-MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&''     ../>%;/?>??:<::>
-MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
-MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..'.  .|//1d/`://?*/*/"` '     .:/(SS$%(S%)):%~
-MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.':;&&b/D/$p=qpv//b/~'   :/~~%%??$=$)Z$S+;
-MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:`'???bD&{b<<-'     .,:/)|SS(}Z/$$?/<S
-MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::'  `` .             SS?SS?Z/]1$/&$c/$S
-MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
-MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/??/''"    _MMHk/7S/]dq&1S<&&></
-MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// '         ,MMMMMMM&/Z6H]DkH]1$&&
-MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
-MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
-MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
-MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
-MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#':MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
-MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR' dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
-MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM' .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
-MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
-MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
-MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
-MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
-MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
-MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
-MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
-MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+MMMMMMMMMMMMMMMMMMMMMMMMMMP!<<~"<<<<<!<<<<!!!!!<~"!****MMHMMMMMMMMX?HMXMMX9M?H
+MMMMMMMMMMMMMMMMMMMMMMMM!M!<<<<<<:<<<<<<<<<<~<<< <<~~~<!!MMMMMMMMMMH%XX%!XMMXX
+MMMMMMMMMMMMMMMMMMMMMMM!<!!!<<<<<<<<<<<<<<< <~<~~~~    ~<~!!??MSMMMM!tXX!9HtSM
+MMMMMMMMMMMMMMMMMMMMMMM!:!<<<<!!!<<<<<<~<`<~~~     `     <<<~!*MMHM9XXMMHSHMMM
+MMMMMMMMMMMMMMMMMMMMMMM%?<<<<<<<<<<~~<~'~<~'             `<<<!~!MMMMMMMXMMMMMM
+MMMMMMMMMMMMMMMMMMMMMM!!!X<<<<<<<<<~     ~                 `<<<<!?MMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMX<<!!<!<<<~~<<<                       `~<<<~?MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMM?M:<<<<<<<~ <<<<      :                  `<<<!MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMM!!!!<<<<<<<~ <<~ '<::<<<<<<:                `<<MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMX<<<<<<<<<<<:<<  <`<<<<<:nnnhnn:              ~<!MMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMXxnnnnxnxi:<<<<<<<<<<<<xHMMMMMMnx:              `"??MMMMMMM
+MMMMMMMMMMMMMMMMMMX8NN888MMMMXXx:::xxHMMMMMMMMMMMMMMH::              <!!?MMMMM
+MMMMMMMMMMMMMMMM?9$$$$$$$NM8MMMMMMMMMMMMMMMMMMMMMMMMMMH:            '!!!!MMMMM
+MMMMMMMMMMMMMMMXt$$$$$$$$$$$N8MMMMMNNMMMMMMMMMMMMMMMMMMh<            <<<!?MMMM
+MMMMMMMMMMMMMMXN$$$$$$$$$$$$$$$NN$$$$NN8N9MMMMMMMMMMMMMX<~            `~<<!MSM
+MMMMMMMMMMMM!~t$$$$$$$$$$$$$$$$$$$$$$$BMMMMMMMMMMMMMMMMM>               `<XMMM
+MMMMMMMMMMMMXX$$$$$$$$$$$$$$$$$$$$$$R$RMMMMMMMMMMMMMMMMM%<               <XMSt
+MMMMMMMMMMMMXN$$$$$$$$$$$$$$$$$$$$MMMMMMMMMMMMMMMMMMMMMMf<<  :          :<?MMH
+MMMMMMMMMMMMX$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMMMMMMMMM!<<<            `<MMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$RMMMMMB8MMMMMMMMMMMMMMMMMMMM!<<<            <!HXSt
+MMMMMMMMMMMM9$$$$$$$$$$$$N$8MMM8NN$$8NNMMMMMMMMMMMMMMMM!<<<<            <!MMMX
+MMMMMMMMMMMM$$$$$$$$$$$$$$NN8N$$$$$$$$$MMMMMMMMMMMMMMMMX<<<<            <XXMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMx<<<            <XMXMX
+MMMMMMMMMMMMM$$$$$$$$$$$$$$$RR$RRRRM*!"""!*MMMMMMMMMMMMMH><~           ::MMMHM
+MMMMMMMMMMMMMRRRRR$$$RM$$RRMMMM*!"!~<<<<<::X??MMMMMMMMMMMf~        :xnx:?MMMHM
+MMMMMMMMMMMMMM*!"""?*MMMMMMMM!!    <<<<<!*MMMMMMMMMMMMMMMf:       <HM!<<!XMMX!
+MMMMMMMMMMMMMMi<<<~~<"!MMMMMM<<<<<<  ~~<<~"!MMMMMMMMMMMMM!<<:~   <HMHx:<!M!t?!
+MMMMMMMMMMMMMMf<<~~ `~~!M8MMHi<<<<<::: :<:<<!H9MMMMMMMMMMk:<~ ::nHMMMMX<<X!?XX
+MMMMMMMMMMMMMMh<::< <x<<M$$MMM::<<<!h:::HMMMMMMMMMMMMMMMMMMhixMMMf?*MMXM!MX!?!
+MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!|!!
+MMMMMMMMMMMMMM9NMMMMMHM8$$MMMMMMHnHnHHHHMMMMMMMMMMMMMMMMMMMMMMMMMMh:<?M!M!!!!!
+MMMMMMMMMMMMMM9$BMMMMMN$$RMMMMMMMN88MMMMMMMMMMMMMMMMMMMMMM%!MMMMMMM!<HHH!!!!~!
+MMMMMMMMMMMMMM9$$B888N$$$MMMMMMMMM$$$N8MMMMMMMMMMMMMMMMMMX!HMMMMMMMH!?!!!<!<<!
+MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM|MMMMMMMMXH!!!~<~!!
+MMMMMMMMMMMMMMM$$$$$$$$$MMMMMMMMMMR$$$$NMMMMMMMMMMMMMMMM!!!!?MHHMMMM!!<~~~<!!<
+MMMMMMMMMMMMMMM9$$$$$$$$RMMRMMMMMMMMMMRMMMMMMMMMMMMMMMMM!!!!!!*MM*!!~<<<<~::!!
+MMMMMMMMMMMMMMM9$$$$RRRMM****MMMMMMMMMMMMMMMMMMMMMMMMMMHH!!!!<`!!<<< ~~<<<!!?!
+MMMMMMMMMMMMMMMM$$$$MMS!"<<:<<~9MMMMMMMMMMMMMMMMMMMMMMMMX!<!!<<<<<<<    ~~<<!~
+MMMMMMMMMMMMMMMM$$$B$$Mi!<~!<!!?MMMMMMMMMMMMMMMMMMMMMMMMM!<<<::<<::<         `
+MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2|*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
+MMMMMMMMMMMMMMMMM$$RMMMHn:::xxHMMMHx:<?MMMMMMMMMMMMMMMM!!<<<!!!X?Xf           
+MMMM?M%?X9MMMMMMMM$$MM*!!M*!""?""?"!"!!MMMMMMMMMMMMMM!!!<<<<<!!XXH!           
+MMMSX?!H??MMMMMMMM$$MHsi:!%+!+!!+!<::xXMMMMMMMMMMMMM?!<<<<<<<!!MMM~           
+MM|?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
+?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM|!!!<<<<<<<<<!XMMM            
+X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M            
+!!!:!<<<<<~!!!!!"!<<?MMRMHnixxHMMMMMMMMMMMMM?!!<<<<<<<<<<<<<!!X9$f            
+!!!!!<<<<<<<!!!<<<<<~tMMMN$$MMMMMMMMMMMMMM!"!<<<<<<<<<<<<<<<<X9$R!            
+<<<<<<<<<<<<!<<~     ~?MMRRMMMMMMMMMMMM!"!<<~      <<<<<<<<<<H$$f             
+<<<<<<<<<<<<<<~       ~MMMMMMMMMMM**M?"<<~         <<<<<<<<:HM$R"             
+<<<<<<<<<<<<<~         `***!"?"!!!<<<<~           :<<<<<<<HMMMRP              
+<<<<<<<<<<<<<             `~ ` ~~    :            ~<<<<<xHMMMMM"              
+<<<<<<<<<<<<~                       <<:            ~ <<:HMMMMMf               
+<<<<<<<<<<<<                        `Hn:             <xMMMMMMM"               
+<<<<<<<<<<<                          !MMi          <xXMMMMMMM!                
+<<<<<<<<<<<                           !MM:        :!MMMMMMMMM~                
+<<<<<<<<<<:                            "MMr::  :xnHMMMMMMMMM!                 
+<<<<<<<<<<                              `"  `~~~?MMMMMMMMM?!                  
+<<<<<<<<<<                                      `"*MP*?XMM!~                  
+<<<<<<<<<<                                        `"!<!MMf~                   
+<<<<<<<<<~                                          `~!!?!                    
+<<<<<<<<<                                            `<~!~                    
+<<<<<<<<<                                          <:<<`~                     
+<<<<<<<<<~                                         ::<<                      :
+<<<<<<<<<<                                        'MHk<                      <
+:<<<<<<<<<                                        `MMH:                   < <<
 ******************************************************************************
 *                                                                            *
 *         =======================================================            *
@@ -73,37 +84,23 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *          Direct Iterative Relativistic Allelectron Calculations            *
 *         =======================================================            *
 *                                                                            *
-*                        VERSION 04.0    SEPTEMBER 2004                      *
+*                        VERSION 3.1     OCTOBER 1998                        *
 *                                                                            *
 ******************************************************************************
 *                                                                            *
-*    Written by:                                                             *
+* Written by:                                                                *
+*    Trond Saue,              The University of Tromsoe,        Norway       *
+*    Vebjoern Bakken,         University of Oslo,               Norway       *
+*    Thomas Enevoldsen,       SDU, Odense University,           Denmark      *
+*    Trygve Helgaker,         University of Oslo,               Norway       *
+*    Hans Joergen Aa. Jensen, SDU, Odense University,           Denmark      *
+*    Jon K. Laerdahl,         University of Oslo                Norway       *
+*    Kenneth Ruud,            University of Oslo,               Norway       *
+*    Joern Thyssen,           SDU, Odense University,           Denmark      *
+*    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Netherlands  *
 *                                                                            *
-*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
-*    Trond Saue               CNRS/ULP Strasbourg               France       *
-*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands  *
 *                                                                            *
-*    with contributions from:                                                *
-*                                                                            *
-*    Vebjoern Bakken          University of Oslo                Norway       *
-*    Ephraim Eliav            University of Tel Aviv            Israel       *
-*    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
-*    Timo Fleig               University of Duesseldorf         Germany      *
-*    Olav Fossgaard           University of Tromsoe             Norway       *
-*    Trygve Helgaker          University of Oslo                Norway       *
-*    Jon K. Laerdahl          University of Oslo                Norway       *
-*    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
-*    Patrick Norman           Linkoeping University             Sweden       *
-*    Jeppe Olsen              Aarhus University                 Denmark      *
-*    Markus Pernpointner      Vrije Universiteit Amsterdam      Netherlands  *
-*    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
-*    Kenneth Ruud             University of Tromsoe             Norway       *
-*    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
-*    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands  *
-*    Joern Thyssen            University of Southern Denmark    Denmark      *
-*    Olivier Visser           University of Groningen           Netherlands  *
-*    Toke Winther             University of Southern Denmark    Denmark      *
-*                                                                            *
+* Note:                                                                      *
 *    This is an experimental code. The authors accept no responsibility      *
 *    for the performance of the code or for the correctness of the results.  *
 *                                                                            *
@@ -114,28 +111,22 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *    If results obtained with this code are published, an                    *
 *    appropriate citation would be:                                          *
 *                                                                            *
-*    "Dirac, a relativistic ab initio electronic structure program",         *
-*    release DIRAC04.0 (2004),                                               *
-*    written by H. J. Aa. Jensen, T. Saue, and L. Visscher                   *
-*    with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,   *
-*    O. Fossgaard, T. Helgaker, J. K. Laerdahl, C. V. Larsen, P. Norman,     *
-*    J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud, P. Salek,           *
-*    J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther             *
-*    (http://dirac.chem.sdu.dk).                                             *
-*                                                                            *
-*    (for a suitable BibTEX entry, see                                       *
-*    <URL:"http://dirac.chem.sdu.dk/doc/reference.shtml">)                   *
+*    T. Saue, V. Bakken, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen,       *
+*    J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher:                      *
+*    "Dirac, a relativistic ab initio electronic structure program,          *
+*    Release 3.2 (2000)"                                                     *
+*    (for a suitable BibTEX entry, see <URL:"insert URL here">)               *
 *                                                                            *
 ******************************************************************************
- Version           : Dirac 4.0 (patchlevel 0) 
- Hostname          : radon.chem.vu.nl
- Operating system  : Darwin 7.5.0
- Machine           : Power Macintosh
+ Version           : Dirac Newest 3.1 (patchlevel 0) 
+ Hostname          : assens
+ Operating system  : IRIX 6.5
+ Machine           : IP22
  Run               : Sequential
- Last compilation  : 09:31:26 Sep  1 2004 (by visscher@radon.chem.vu.nl)
- Basis set dir.    : /Users/visscher/sources/Dirac04/test/14.basis.set.input/:/Users/visscher/sources/Dirac04/basis/:/Users/visscher/sources/Dirac04/basis_dalton/
+ Last compilation  : 17:59:56 Aug 29 2000 (by jth@assens.chem.ou.dk)
+ Basis set dir.    : /home/jth/prog/Dirac/basis/:./
 
- Date and time (IBM-AIX): Wed Sep  1 09:32:33 2004
+ Date and time (IRIX)   : Tue Aug 29 18:00:17 2000
 
 
  *************************************************************************
@@ -150,11 +141,12 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ************************** General DIRAC set-up **************************
  **************************************************************************
 
- * The speed of light :        137.0359998
+ * The speed of light :        137.0359895
  * Direct evaluation of the following two-electron integrals:
-   - LL-integrals
-   - SL-integrals
-   - SS-integrals
+ * Default integral flags passed to all modules
+   - LL-integrals: T
+   - LS-integrals: T
+   - SS-integrals: T
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
@@ -169,11 +161,14 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ****************** Output from HERMIT input processing ******************
  *************************************************************************
 
+
+
  Default print level:        1
 
- Input test run only ...
 
- Nuclear model: Gaussian charge distribution.
+ Input test run only 
+
+ * Nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -202,15 +197,14 @@ WARNING!!! Cartesian Gaussians must be specified
 Atomic type:     1
    Nuclear charge:   6.0
    Number of symmetry independent centres:     1
-
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
+   Nuclear Gaussian exponent for atom of charge   6.000:     6.8077502929D+08
    Symmetry independent centers:
-      C  1    .000000000000000    .000000000000000    .000000000000000
+      C  1   0.000000000000000   0.000000000000000   0.000000000000000
 Parameters for well-tempered progression: 
-alpha =          .0500000000
+alpha =         0.0500000000
 beta  =         3.0000000000
-gamma =          .0000000000
-delta =          .0000000000
+gamma =         0.0000000000
+delta =         0.0000000000
 N     =  11
 
 
@@ -231,57 +225,57 @@ N     =  11
       10     1.500000D-01
       11     5.000000D-02
 Contraction matrix:
- .2952450000E+04
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .9841500000E+03
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .3280500000E+03
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1093500000E+03
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .3645000000E+02
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.2952450000E+04
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.9841500000E+03
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.3280500000E+03
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1093500000E+03
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.3645000000E+02
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
    L=  0  Block:    1
       Primitives:      5
       Shells    :      5
       KinBal    :      0
 Contraction matrix:
- .1215000000E+02
-  1.00000000   .00000000   .00000000   .00000000   .00000000   .00000000
- .4050000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000   .00000000
- .1350000000E+01
-   .00000000   .00000000  1.00000000   .00000000   .00000000   .00000000
- .4500000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1500000000E+00
-   .00000000   .00000000   .00000000   .00000000  1.00000000   .00000000
- .5000000000E-01
-   .00000000   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.1215000000E+02
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.4050000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.1350000000E+01
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.4500000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.5000000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
    L=  0  Block:    2
       Primitives:      6
       Shells    :      6
       KinBal    :      0
 Contraction matrix:
- .4050000000E+01
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .1350000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .4500000000E+00
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1500000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .5000000000E-01
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.4050000000E+01
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.1350000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.4500000000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.5000000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
    L=  1  Block:    1
       Primitives:      5
       Shells    :      5
       KinBal    :      0
 Contraction matrix:
- .4500000000E+00
-  1.00000000   .00000000
- .1500000000E+00
-   .00000000  1.00000000
+0.4500000000E+00
+  1.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  1.00000000
    L=  2  Block:    1
       Primitives:      2
       Shells    :      2
@@ -289,69 +283,68 @@ Contraction matrix:
    Large component set:
       Max.ang.quantum no.:    2  Blocks:    2    1    1
 Contraction matrix:
- .4050000000E+01
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .1350000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .4500000000E+00
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1500000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .5000000000E-01
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.4050000000E+01
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.1350000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.4500000000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.5000000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .2952450000E+04
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .9841500000E+03
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .3280500000E+03
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1093500000E+03
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .3645000000E+02
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.2952450000E+04
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.9841500000E+03
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.3280500000E+03
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1093500000E+03
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.3645000000E+02
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .1215000000E+02
-  1.00000000   .00000000   .00000000   .00000000   .00000000   .00000000
- .4050000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000   .00000000
- .1350000000E+01
-   .00000000   .00000000  1.00000000   .00000000   .00000000   .00000000
- .4500000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1500000000E+00
-   .00000000   .00000000   .00000000   .00000000  1.00000000   .00000000
- .5000000000E-01
-   .00000000   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.1215000000E+02
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.4050000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.1350000000E+01
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.4500000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.5000000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
  INFO: GENSML deleted  2 small functions in a block out of  2
 Contraction matrix:
- .4050000000E+01
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .1350000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .4500000000E+00
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1500000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .5000000000E-01
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.4050000000E+01
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.1350000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.4500000000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.5000000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .4500000000E+00
-  1.00000000   .00000000
- .1500000000E+00
-   .00000000  1.00000000
+0.4500000000E+00
+  1.00000000  0.00000000
+0.1500000000E+00
+  0.00000000  1.00000000
    Small component set:
       Max.ang.quantum no.:    3  Blocks:    1    2    1    1
 
 Atomic type:     2
    Nuclear charge:   1.0
    Number of symmetry independent centres:     1
-
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+   Nuclear Gaussian exponent for atom of charge   1.000:     2.1248239171D+09
    Symmetry independent centers:
       H  2   1.184862720000000   1.184862720000000   1.184862720000000
 Parameters for well-tempered progression: 
-alpha =          .3000000000
+alpha =         0.3000000000
 beta  =         3.0000000000
 gamma =         2.0000000000
 delta =         7.0000000000
@@ -365,23 +358,23 @@ N     =   4
                Column   1
        1      31.26836872
        2       3.47426319
-       3        .91406250
-       4        .30000000
+       3       0.91406250
+       4       0.30000000
 Contraction matrix:
- .3126836872E+02
-  1.00000000   .00000000   .00000000   .00000000
- .3474263191E+01
-   .00000000  1.00000000   .00000000   .00000000
- .9140625000E+00
-   .00000000   .00000000  1.00000000   .00000000
- .3000000000E+00
-   .00000000   .00000000   .00000000  1.00000000
+0.3126836872E+02
+  1.00000000  0.00000000  0.00000000  0.00000000
+0.3474263191E+01
+  0.00000000  1.00000000  0.00000000  0.00000000
+0.9140625000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000
+0.3000000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000
    L=  0  Block:    1
       Primitives:      4
       Shells    :      4
       KinBal    :      0
 Contraction matrix:
- .3000000000E+00
+0.3000000000E+00
   1.00000000
    L=  1  Block:    1
       Primitives:      1
@@ -390,19 +383,19 @@ Contraction matrix:
    Large component set:
       Max.ang.quantum no.:    1  Blocks:    1    1
 Contraction matrix:
- .3000000000E+00
+0.3000000000E+00
   1.00000000
 Contraction matrix:
- .3126836872E+02
-  1.00000000   .00000000   .00000000   .00000000
- .3474263191E+01
-   .00000000  1.00000000   .00000000   .00000000
- .9140625000E+00
-   .00000000   .00000000  1.00000000   .00000000
- .3000000000E+00
-   .00000000   .00000000   .00000000  1.00000000
+0.3126836872E+02
+  1.00000000  0.00000000  0.00000000  0.00000000
+0.3474263191E+01
+  0.00000000  1.00000000  0.00000000  0.00000000
+0.9140625000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000
+0.3000000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .3000000000E+00
+0.3000000000E+00
   1.00000000
    Small component set:
       Max.ang.quantum no.:    2  Blocks:    1    1    1
@@ -493,10 +486,10 @@ Point group: D2
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C  1        1       6      38      38      L  - [11s5p2d|11s5p2d]                                  
-                             88      88      S  - [5s11p5d2f|5s11p5d2f]                              
-  H  2        4       1       7       7      L  - [4s1p|4s1p]                                        
-                             19      19      S  - [1s4p1d|1s4p1d]                                    
+  C  1        1       6      38      38      L - [11s5p2d|11s5p2d]                      
+                             88      88      S - [5s11p5d2f|5s11p5d2f]                  
+  H  2        4       1       7       7      L - [4s1p|4s1p]                            
+                             19      19      S - [1s4p1d|1s4p1d]                        
   ----------------------------------------------------------------------
                              66      66   L - large components
                             164     164   S - small components
@@ -507,22 +500,15 @@ Point group: D2
   Threshold for integrals:  1.00D-15
 
 
-  References for the basis sets
-  -----------------------------
-
-  Atom type   1   2
-  Well-tempered basis set typed explicitly in input file                          
-
-
   Cartesian Coordinates
   ---------------------
 
   Total number of coordinates: 15
 
 
-   1   C  1     x       .0000000000
-   2            y       .0000000000
-   3            z       .0000000000
+   1   C  1     x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
 
    4   H  2 1   x      1.1848627200
    5            y      1.1848627200
@@ -584,11 +570,11 @@ Point group: D2
 
             C  1        H  1        H  2        H  3        H  4
 
-   C  1     .000000
-   H  1    1.086000     .000000
-   H  2    1.086000    1.773430     .000000
-   H  3    1.086000    1.773430    1.773430     .000000
-   H  4    1.086000    1.773430    1.773430    1.773430     .000000
+   C  1    0.000000
+   H  1    1.086000    0.000000
+   H  2    1.086000    1.773431    0.000000
+   H  3    1.086000    1.773431    1.773431    0.000000
+   H  4    1.086000    1.773431    1.773431    1.773431    0.000000
 
 
 
@@ -620,170 +606,262 @@ Point group: D2
   Nuclear repulsion energy :   13.484875956018
 
 
-                            GETLAB: AO-labels
-                            -----------------
-
-   * Large components:   26
-     1  L C     s        2  L C     px       3  L C     py       4  L C     pz       5  L C     dxx      6  L C     dxy 
-     7  L C     dxz      8  L C     dyy      9  L C     dyz     10  L C     dzz     11  L H   1 s       12  L H   2 s   
-    13  L H   3 s       14  L H   4 s       15  L H   1 px      16  L H   1 py      17  L H   1 pz      18  L H   2 px  
-    19  L H   2 py      20  L H   2 pz      21  L H   3 px      22  L H   3 py      23  L H   3 pz      24  L H   4 px  
-    25  L H   4 py      26  L H   4 pz  
-   * Small components:   60
-    27  S C     s       28  S C     px      29  S C     py      30  S C     pz      31  S C     dxx     32  S C     dxy 
-    33  S C     dxz     34  S C     dyy     35  S C     dyz     36  S C     dzz     37  S C     fxxx    38  S C     fxxy
-    39  S C     fxxz    40  S C     fxyy    41  S C     fxyz    42  S C     fxzz    43  S C     fyyy    44  S C     fyyz
-    45  S C     fyzz    46  S C     fzzz    47  S H   1 s       48  S H   2 s       49  S H   3 s       50  S H   4 s   
-    51  S H   1 px      52  S H   1 py      53  S H   1 pz      54  S H   2 px      55  S H   2 py      56  S H   2 pz  
-    57  S H   3 px      58  S H   3 py      59  S H   3 pz      60  S H   4 px      61  S H   4 py      62  S H   4 pz  
-    63  S H   1 dxx     64  S H   1 dxy     65  S H   1 dxz     66  S H   1 dyy     67  S H   1 dyz     68  S H   1 dzz 
-    69  S H   2 dxx     70  S H   2 dxy     71  S H   2 dxz     72  S H   2 dyy     73  S H   2 dyz     74  S H   2 dzz 
-    75  S H   3 dxx     76  S H   3 dxy     77  S H   3 dxz     78  S H   3 dyy     79  S H   3 dyz     80  S H   3 dzz 
-    81  S H   4 dxx     82  S H   4 dxy     83  S H   4 dxz     84  S H   4 dyy     85  S H   4 dyz     86  S H   4 dzz 
-
-
-                            GETLAB: SO-labels
-                            -----------------
-
-   * Large components:   26
-     1  L A  C  s        2  L A  C  dxx      3  L A  C  dyy      4  L A  C  dzz      5  L A  H  s        6  L A  H  px  
-     7  L A  H  py       8  L A  H  pz       9  L B3 C  px      10  L B3 C  dyz     11  L B3 H  s       12  L B3 H  px  
-    13  L B3 H  py      14  L B3 H  pz      15  L B1 C  pz      16  L B1 C  dxy     17  L B1 H  s       18  L B1 H  px  
-    19  L B1 H  py      20  L B1 H  pz      21  L B2 C  py      22  L B2 C  dxz     23  L B2 H  s       24  L B2 H  px  
-    25  L B2 H  py      26  L B2 H  pz  
-   * Small components:   60
-    27  S A  C  s       28  S A  C  dxx     29  S A  C  dyy     30  S A  C  dzz     31  S A  C  fxyz    32  S A  H  s   
-    33  S A  H  px      34  S A  H  py      35  S A  H  pz      36  S A  H  dxx     37  S A  H  dxy     38  S A  H  dxz 
-    39  S A  H  dyy     40  S A  H  dyz     41  S A  H  dzz     42  S B3 C  px      43  S B3 C  dyz     44  S B3 C  fxxx
-    45  S B3 C  fxyy    46  S B3 C  fxzz    47  S B3 H  s       48  S B3 H  px      49  S B3 H  py      50  S B3 H  pz  
-    51  S B3 H  dxx     52  S B3 H  dxy     53  S B3 H  dxz     54  S B3 H  dyy     55  S B3 H  dyz     56  S B3 H  dzz 
-    57  S B1 C  pz      58  S B1 C  dxy     59  S B1 C  fxxz    60  S B1 C  fyyz    61  S B1 C  fzzz    62  S B1 H  s   
-    63  S B1 H  px      64  S B1 H  py      65  S B1 H  pz      66  S B1 H  dxx     67  S B1 H  dxy     68  S B1 H  dxz 
-    69  S B1 H  dyy     70  S B1 H  dyz     71  S B1 H  dzz     72  S B2 C  py      73  S B2 C  dxz     74  S B2 C  fxxy
-    75  S B2 C  fyyy    76  S B2 C  fyzz    77  S B2 H  s       78  S B2 H  px      79  S B2 H  py      80  S B2 H  pz  
-    81  S B2 H  dxx     82  S B2 H  dxy     83  S B2 H  dxz     84  S B2 H  dyy     85  S B2 H  dyz     86  S B2 H  dzz 
-
-
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           65    55    55    55
-  Number of large orbitals in each symmetry:     24    14    14    14
-  Number of small orbitals in each symmetry:     41    41    41    41
+  Number of orbitals in each symmetry:          65   55   55   55
+  Number of large orbitals in each symmetry:    24   14   14   14
+  Number of small orbitals in each symmetry:    41   41   41   41
 
-* Large component functions
-
-  Symmetry  A  ( 1)
-
-       11 functions:    C  s   
-        2 functions:    C  dxx 
-        2 functions:    C  dyy 
-        2 functions:    C  dzz 
-        4 functions:    H  s   1+2+3+4
-        1 functions:    H  px  1-2+3-4
-        1 functions:    H  py  1-2-3+4
-        1 functions:    H  pz  1+2-3-4
-
-  Symmetry  B3 ( 2)
-
-        5 functions:    C  px  
-        2 functions:    C  dyz 
-        4 functions:    H  s   1-2+3-4
-        1 functions:    H  px  1+2+3+4
-        1 functions:    H  py  1+2-3-4
-        1 functions:    H  pz  1-2-3+4
-
-  Symmetry  B1 ( 3)
-
-        5 functions:    C  pz  
-        2 functions:    C  dxy 
-        4 functions:    H  s   1+2-3-4
-        1 functions:    H  px  1-2-3+4
-        1 functions:    H  py  1-2+3-4
-        1 functions:    H  pz  1+2+3+4
-
-  Symmetry  B2 ( 4)
-
-        5 functions:    C  py  
-        2 functions:    C  dxz 
-        4 functions:    H  s   1-2-3+4
-        1 functions:    H  px  1+2-3-4
-        1 functions:    H  py  1+2+3+4
-        1 functions:    H  pz  1-2+3-4
-
-* Small component functions
 
   Symmetry  A  ( 1)
 
-        5 functions:    C  s   
-        5 functions:    C  dxx 
-        5 functions:    C  dyy 
-        5 functions:    C  dzz 
-        2 functions:    C  fxyz
-        1 functions:    H  s   1+2+3+4
-        4 functions:    H  px  1-2+3-4
-        4 functions:    H  py  1-2-3+4
-        4 functions:    H  pz  1+2-3-4
-        1 functions:    H  dxx 1+2+3+4
-        1 functions:    H  dxy 1+2-3-4
-        1 functions:    H  dxz 1-2-3+4
-        1 functions:    H  dyy 1+2+3+4
-        1 functions:    H  dyz 1-2+3-4
-        1 functions:    H  dzz 1+2+3+4
+    1     C  1 L   s            1
+    2     C  1 L   s            2
+    3     C  1 L   s            3
+    4     C  1 L   s            4
+    5     C  1 L   s            5
+    6     C  1 L   s            6
+    7     C  1 L   s            7
+    8     C  1 L   s            8
+    9     C  1 L   s            9
+   10     C  1 L   s           10
+   11     C  1 L   s           11
+   12     C  1 L   dxx         27
+   13     C  1 L   dyy         30
+   14     C  1 L   dzz         32
+   15     C  1 L   dxx         33
+   16     C  1 L   dyy         36
+   17     C  1 L   dzz         38
+   18     H  2 L   s           39  +    40  +    41  +    42
+   19     H  2 L   s           43  +    44  +    45  +    46
+   20     H  2 L   s           47  +    48  +    49  +    50
+   21     H  2 L   s           51  +    52  +    53  +    54
+   22     H  2 L   px          55  -    58  +    61  -    64
+   23     H  2 L   py          56  -    59  -    62  +    65
+   24     H  2 L   pz          57  +    60  -    63  -    66
+   25     C  1 S   s           67
+   26     C  1 S   s           68
+   27     C  1 S   s           69
+   28     C  1 S   s           70
+   29     C  1 S   s           71
+   30     C  1 S   dxx        105
+   31     C  1 S   dyy        108
+   32     C  1 S   dzz        110
+   33     C  1 S   dxx        111
+   34     C  1 S   dyy        114
+   35     C  1 S   dzz        116
+   36     C  1 S   dxx        117
+   37     C  1 S   dyy        120
+   38     C  1 S   dzz        122
+   39     C  1 S   dxx        123
+   40     C  1 S   dyy        126
+   41     C  1 S   dzz        128
+   42     C  1 S   dxx        129
+   43     C  1 S   dyy        132
+   44     C  1 S   dzz        134
+   45     C  1 S   fxyz       139
+   46     C  1 S   fxyz       149
+   47     H  2 S   s          155  +   156  +   157  +   158
+   48     H  2 S   px         159  -   162  +   165  -   168
+   49     H  2 S   py         160  -   163  -   166  +   169
+   50     H  2 S   pz         161  +   164  -   167  -   170
+   51     H  2 S   px         171  -   174  +   177  -   180
+   52     H  2 S   py         172  -   175  -   178  +   181
+   53     H  2 S   pz         173  +   176  -   179  -   182
+   54     H  2 S   px         183  -   186  +   189  -   192
+   55     H  2 S   py         184  -   187  -   190  +   193
+   56     H  2 S   pz         185  +   188  -   191  -   194
+   57     H  2 S   px         195  -   198  +   201  -   204
+   58     H  2 S   py         196  -   199  -   202  +   205
+   59     H  2 S   pz         197  +   200  -   203  -   206
+   60     H  2 S   dxx        207  +   213  +   219  +   225
+   61     H  2 S   dxy        208  +   214  -   220  -   226
+   62     H  2 S   dxz        209  -   215  -   221  +   227
+   63     H  2 S   dyy        210  +   216  +   222  +   228
+   64     H  2 S   dyz        211  -   217  +   223  -   229
+   65     H  2 S   dzz        212  +   218  +   224  +   230
+
 
   Symmetry  B3 ( 2)
 
-       11 functions:    C  px  
-        5 functions:    C  dyz 
-        2 functions:    C  fxxx
-        2 functions:    C  fxyy
-        2 functions:    C  fxzz
-        1 functions:    H  s   1-2+3-4
-        4 functions:    H  px  1+2+3+4
-        4 functions:    H  py  1+2-3-4
-        4 functions:    H  pz  1-2-3+4
-        1 functions:    H  dxx 1-2+3-4
-        1 functions:    H  dxy 1-2-3+4
-        1 functions:    H  dxz 1+2-3-4
-        1 functions:    H  dyy 1-2+3-4
-        1 functions:    H  dyz 1+2+3+4
-        1 functions:    H  dzz 1-2+3-4
+   66     C  1 L   px          12
+   67     C  1 L   px          15
+   68     C  1 L   px          18
+   69     C  1 L   px          21
+   70     C  1 L   px          24
+   71     C  1 L   dyz         31
+   72     C  1 L   dyz         37
+   73     H  2 L   s           39  -    40  +    41  -    42
+   74     H  2 L   s           43  -    44  +    45  -    46
+   75     H  2 L   s           47  -    48  +    49  -    50
+   76     H  2 L   s           51  -    52  +    53  -    54
+   77     H  2 L   px          55  +    58  +    61  +    64
+   78     H  2 L   py          56  +    59  -    62  -    65
+   79     H  2 L   pz          57  -    60  -    63  +    66
+   80     C  1 S   px          72
+   81     C  1 S   px          75
+   82     C  1 S   px          78
+   83     C  1 S   px          81
+   84     C  1 S   px          84
+   85     C  1 S   px          87
+   86     C  1 S   px          90
+   87     C  1 S   px          93
+   88     C  1 S   px          96
+   89     C  1 S   px          99
+   90     C  1 S   px         102
+   91     C  1 S   dyz        109
+   92     C  1 S   dyz        115
+   93     C  1 S   dyz        121
+   94     C  1 S   dyz        127
+   95     C  1 S   dyz        133
+   96     C  1 S   fxxx       135
+   97     C  1 S   fxyy       138
+   98     C  1 S   fxzz       140
+   99     C  1 S   fxxx       145
+  100     C  1 S   fxyy       148
+  101     C  1 S   fxzz       150
+  102     H  2 S   s          155  -   156  +   157  -   158
+  103     H  2 S   px         159  +   162  +   165  +   168
+  104     H  2 S   py         160  +   163  -   166  -   169
+  105     H  2 S   pz         161  -   164  -   167  +   170
+  106     H  2 S   px         171  +   174  +   177  +   180
+  107     H  2 S   py         172  +   175  -   178  -   181
+  108     H  2 S   pz         173  -   176  -   179  +   182
+  109     H  2 S   px         183  +   186  +   189  +   192
+  110     H  2 S   py         184  +   187  -   190  -   193
+  111     H  2 S   pz         185  -   188  -   191  +   194
+  112     H  2 S   px         195  +   198  +   201  +   204
+  113     H  2 S   py         196  +   199  -   202  -   205
+  114     H  2 S   pz         197  -   200  -   203  +   206
+  115     H  2 S   dxx        207  -   213  +   219  -   225
+  116     H  2 S   dxy        208  -   214  -   220  +   226
+  117     H  2 S   dxz        209  +   215  -   221  -   227
+  118     H  2 S   dyy        210  -   216  +   222  -   228
+  119     H  2 S   dyz        211  +   217  +   223  +   229
+  120     H  2 S   dzz        212  -   218  +   224  -   230
+
 
   Symmetry  B1 ( 3)
 
-       11 functions:    C  pz  
-        5 functions:    C  dxy 
-        2 functions:    C  fxxz
-        2 functions:    C  fyyz
-        2 functions:    C  fzzz
-        1 functions:    H  s   1+2-3-4
-        4 functions:    H  px  1-2-3+4
-        4 functions:    H  py  1-2+3-4
-        4 functions:    H  pz  1+2+3+4
-        1 functions:    H  dxx 1+2-3-4
-        1 functions:    H  dxy 1+2+3+4
-        1 functions:    H  dxz 1-2+3-4
-        1 functions:    H  dyy 1+2-3-4
-        1 functions:    H  dyz 1-2-3+4
-        1 functions:    H  dzz 1+2-3-4
+  121     C  1 L   pz          14
+  122     C  1 L   pz          17
+  123     C  1 L   pz          20
+  124     C  1 L   pz          23
+  125     C  1 L   pz          26
+  126     C  1 L   dxy         28
+  127     C  1 L   dxy         34
+  128     H  2 L   s           39  +    40  -    41  -    42
+  129     H  2 L   s           43  +    44  -    45  -    46
+  130     H  2 L   s           47  +    48  -    49  -    50
+  131     H  2 L   s           51  +    52  -    53  -    54
+  132     H  2 L   px          55  -    58  -    61  +    64
+  133     H  2 L   py          56  -    59  +    62  -    65
+  134     H  2 L   pz          57  +    60  +    63  +    66
+  135     C  1 S   pz          74
+  136     C  1 S   pz          77
+  137     C  1 S   pz          80
+  138     C  1 S   pz          83
+  139     C  1 S   pz          86
+  140     C  1 S   pz          89
+  141     C  1 S   pz          92
+  142     C  1 S   pz          95
+  143     C  1 S   pz          98
+  144     C  1 S   pz         101
+  145     C  1 S   pz         104
+  146     C  1 S   dxy        106
+  147     C  1 S   dxy        112
+  148     C  1 S   dxy        118
+  149     C  1 S   dxy        124
+  150     C  1 S   dxy        130
+  151     C  1 S   fxxz       137
+  152     C  1 S   fyyz       142
+  153     C  1 S   fzzz       144
+  154     C  1 S   fxxz       147
+  155     C  1 S   fyyz       152
+  156     C  1 S   fzzz       154
+  157     H  2 S   s          155  +   156  -   157  -   158
+  158     H  2 S   px         159  -   162  -   165  +   168
+  159     H  2 S   py         160  -   163  +   166  -   169
+  160     H  2 S   pz         161  +   164  +   167  +   170
+  161     H  2 S   px         171  -   174  -   177  +   180
+  162     H  2 S   py         172  -   175  +   178  -   181
+  163     H  2 S   pz         173  +   176  +   179  +   182
+  164     H  2 S   px         183  -   186  -   189  +   192
+  165     H  2 S   py         184  -   187  +   190  -   193
+  166     H  2 S   pz         185  +   188  +   191  +   194
+  167     H  2 S   px         195  -   198  -   201  +   204
+  168     H  2 S   py         196  -   199  +   202  -   205
+  169     H  2 S   pz         197  +   200  +   203  +   206
+  170     H  2 S   dxx        207  +   213  -   219  -   225
+  171     H  2 S   dxy        208  +   214  +   220  +   226
+  172     H  2 S   dxz        209  -   215  +   221  -   227
+  173     H  2 S   dyy        210  +   216  -   222  -   228
+  174     H  2 S   dyz        211  -   217  -   223  +   229
+  175     H  2 S   dzz        212  +   218  -   224  -   230
+
 
   Symmetry  B2 ( 4)
 
-       11 functions:    C  py  
-        5 functions:    C  dxz 
-        2 functions:    C  fxxy
-        2 functions:    C  fyyy
-        2 functions:    C  fyzz
-        1 functions:    H  s   1-2-3+4
-        4 functions:    H  px  1+2-3-4
-        4 functions:    H  py  1+2+3+4
-        4 functions:    H  pz  1-2+3-4
-        1 functions:    H  dxx 1-2-3+4
-        1 functions:    H  dxy 1-2+3-4
-        1 functions:    H  dxz 1+2+3+4
-        1 functions:    H  dyy 1-2-3+4
-        1 functions:    H  dyz 1+2-3-4
-        1 functions:    H  dzz 1-2-3+4
+  176     C  1 L   py          13
+  177     C  1 L   py          16
+  178     C  1 L   py          19
+  179     C  1 L   py          22
+  180     C  1 L   py          25
+  181     C  1 L   dxz         29
+  182     C  1 L   dxz         35
+  183     H  2 L   s           39  -    40  -    41  +    42
+  184     H  2 L   s           43  -    44  -    45  +    46
+  185     H  2 L   s           47  -    48  -    49  +    50
+  186     H  2 L   s           51  -    52  -    53  +    54
+  187     H  2 L   px          55  +    58  -    61  -    64
+  188     H  2 L   py          56  +    59  +    62  +    65
+  189     H  2 L   pz          57  -    60  +    63  -    66
+  190     C  1 S   py          73
+  191     C  1 S   py          76
+  192     C  1 S   py          79
+  193     C  1 S   py          82
+  194     C  1 S   py          85
+  195     C  1 S   py          88
+  196     C  1 S   py          91
+  197     C  1 S   py          94
+  198     C  1 S   py          97
+  199     C  1 S   py         100
+  200     C  1 S   py         103
+  201     C  1 S   dxz        107
+  202     C  1 S   dxz        113
+  203     C  1 S   dxz        119
+  204     C  1 S   dxz        125
+  205     C  1 S   dxz        131
+  206     C  1 S   fxxy       136
+  207     C  1 S   fyyy       141
+  208     C  1 S   fyzz       143
+  209     C  1 S   fxxy       146
+  210     C  1 S   fyyy       151
+  211     C  1 S   fyzz       153
+  212     H  2 S   s          155  -   156  -   157  +   158
+  213     H  2 S   px         159  +   162  -   165  -   168
+  214     H  2 S   py         160  +   163  +   166  +   169
+  215     H  2 S   pz         161  -   164  +   167  -   170
+  216     H  2 S   px         171  +   174  -   177  -   180
+  217     H  2 S   py         172  +   175  +   178  +   181
+  218     H  2 S   pz         173  -   176  +   179  -   182
+  219     H  2 S   px         183  +   186  -   189  -   192
+  220     H  2 S   py         184  +   187  +   190  +   193
+  221     H  2 S   pz         185  -   188  +   191  -   194
+  222     H  2 S   px         195  +   198  -   201  -   204
+  223     H  2 S   py         196  +   199  +   202  +   205
+  224     H  2 S   pz         197  -   200  +   203  -   206
+  225     H  2 S   dxx        207  -   213  -   219  +   225
+  226     H  2 S   dxy        208  -   214  +   220  -   226
+  227     H  2 S   dxz        209  +   215  +   221  +   227
+  228     H  2 S   dyy        210  -   216  -   222  +   228
+  229     H  2 S   dyz        211  +   217  -   223  -   229
+  230     H  2 S   dzz        212  -   218  -   224  +   230
+
+  Symmetries of electric field:  B3 (2)  B2 (4)  B1 (3)
+
+  Symmetries of magnetic field:  B3 (2)  B2 (4)  B1 (3)
 
 
  ***************************************************************************
@@ -791,60 +869,24 @@ Point group: D2
  ***************************************************************************
 
  * Print level :    0
- * Dirac-Coulomb Hamiltonian
- * Default integral flags passed to all modules
-   - LL-integrals: T
-   - LS-integrals: T
-   - SS-integrals: T
-   - GT-integrals: F
- * Basis set:
-   - uncontracted large component basis set
-   - uncontracted small component basis set
-
-
- Information about the restricted kinetic balance scheme:
+ * Uncontracted basis set
+ * Restricted kinetic balance
  * Default RKB projection:
-   1: Pre-projection in scalar basis
-   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
-
-
- *********************************************************************************
- *************************** Memory required by HERMIT ***************************
- *********************************************************************************
-
+   1: Pre-projection on scalar basis
+   2: Removing unphysical solutions for no external field
+ * Dirac-Coulomb Hamiltonian
 ===========================================================================
- Maximum memory load for two-electron integral processing:
+ Maximum memory load for two-integral processing in HERMIT:
 ===========================================================================
  * LL-integrals:
-   4(C  1 Ld)   3(C  1 Lp)   3(C  1 Lp)   3(C  1 Lp)              133795
+   4(C  1 Ld)   3(C  1 Lp)   3(C  1 Lp)   3(C  1 Lp)              124045
  * SL-integrals:
-  11(C  1 Sf)  10(C  1 Sd)   3(C  1 Lp)   3(C  1 Lp)              419585
+  11(C  1 Sf)  10(C  1 Sd)   3(C  1 Lp)   3(C  1 Lp)              386585
  * SS-integrals:
-  13(H  2 Sp)  13(H  2 Sp)  13(H  2 Sp)  13(H  2 Sp)             1377869
-
-
- ********************************************************************************
- *************************** Input consistency checks ***************************
- ********************************************************************************
-
+  11(C  1 Sf)  10(C  1 Sd)  10(C  1 Sd)  10(C  1 Sd)             1236585
 
 
  *************************************************************************
  ************************ End of input processing ************************
  *************************************************************************
-
-
-  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---                       
-
- Date and time (IBM-AIX): Wed Sep  1 09:32:33 2004
- Normal exit, only input check was asked.
-
-
- QTRACE dump of internal trace stack
-
- ====================
-      level    module
- ====================
-          1    DIRCTL  
- ====================
 

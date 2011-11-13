@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 1.9 $
-! DATE    : $Date: 2004/05/26 13:06:55 $
+! VERSION : $Revision: 7396 $
+! DATE    : $Date: 2008-08-20 09:45:31 +0200 (Wed, 20 Aug 2008) $
 ! FILE    : dcbxrs.h
 !
 !*** Reduced response equations
@@ -28,7 +28,7 @@
 !     (b_1)^T = [ Z  Y^*]     (b_2)^T  =  [Y   Z^*]
 !
 !    
-      CHARACTER*9 XRS_INTTYP
+      CHARACTER*12 XRS_INTTYP
       CHARACTER*2 BVTYP(6)
       CHARACTER*16 RSPLAB
       CHARACTER*8 XRS_CIPROGRAM
@@ -41,7 +41,7 @@
      &           3)
 
       LOGICAL RSREST, STATIC, LINEQ, LSVCFG(2), TKNORM, DIAGHE, STERNH, &
-     &        FKRMC, XRS_NOPFQ, XRS_NOFQX
+     &        FKRMC, XRS_NOPFQ, XRS_NOFQX, UNCOUP, TRIPLET, IMFREQ
       INTEGER IPRXRS, JSYMOP, JTIMOP, JOPSY, MAXITR, ITMIC, NFREQ,      &
      &        NEXSIM, NEXSTV, NEXCNV, LOFFTY, IPX, IMX, MAXSIM, NZVAR,  &
      &        NZVARQ, NZCONF, NZCONFQ, NTYP, NZXOPT, NZXOPTQ, NZXOPE,   &
@@ -64,7 +64,8 @@
       COMMON /XRSRCB/ THCXRS, CNVINT, RESFAC, GPTNRM, ENRGY
 
       COMMON /WRKFLG/ STATIC, RSREST, LINEQ, LSVCFG, TKNORM, DIAGHE,    &
-     &                STERNH, FKRMC, XRS_NOPFQ, XRS_NOFQX
+     &                STERNH, FKRMC, XRS_NOPFQ, XRS_NOFQX, UNCOUP,      &
+     &                TRIPLET, IMFREQ           
 
       INTEGER KBTOT, KBCI, KBOE, KBOP, KZCONF, KZXOPE, KZXOPP
       COMMON /MEMXRS/ KBTOT, KBCI, KBOE, KBOP, KZCONF, KZXOPE, KZXOPP

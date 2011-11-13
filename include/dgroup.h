@@ -24,14 +24,19 @@
       INTEGER I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP(4, 2), JBTOF(0:7, 2), &
      &        JMROI(4), JSPINR(4, 2, 2), JQBAS(0:7, 2), JFSYM(4, 2),    &
      &        IPQTOQ(4, 0:7), IQTOPQ(4, 0:7), IQPH(4, 2),               &
-     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT, I2_DGROUP
+     &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT, NZC1 ,    &
+     &        I2_DGROUP
       COMMON /DGROUP/ I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,&
      &                JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,       &
-     &                IHQMAT, IRQMAT, IQDEF, ITOT, I2_DGROUP
+     &                IHQMAT, IRQMAT, IQDEF, ITOT, NZC1, I2_DGROUP
 
 !     Do NOT add any variables after the end tag !
       LOGICAL LINEAR
       COMMON /DGRPL/ LINEAR
+
+! CMI ... number of operator types in DIRAC is now in NOPTYP
+      INTEGER NOPTYP
+      PARAMETER (NOPTYP = 20)
 
 ! *** 4-component operators : Matrix part ***
 !
@@ -42,13 +47,12 @@
 !                   (1,2(i),3(j),4(k))
 !     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 !
-!     OPERATORS (18 types):
+!     OPERATORS (NOPTYP types):
 !
 !     MCMP  - number of components for a given operator
 !     JM4   - pointer to matrix operator for a given component
 !     JCOM  - coefficient of component
 !
-      INTEGER MCMP(18), JM4(3, 18), JCOM(3, 18), JM4REP(0:7),           &
-     &        JM4POS(0:7), JM4FAS(0:7)
+      INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
+     &         JM4REP(0:7),   JM4POS(0:7),     JM4FAS(0:7)
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
-

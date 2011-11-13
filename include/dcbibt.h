@@ -1,12 +1,12 @@
 C*** Unpack four-indices ***
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (INT_STAR8)
       PARAMETER (IBIT2=65536,IBIT2M=65535,IBIT4=4294967296,
      + IBIT4M=4294967295)
 #else
       PARAMETER (IBIT2 = 256,IBIT2M = 255,IBIT4 = 65536,IBIT4M = 65535)
 #endif
 #include <ibtfun.h>
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (INT_STAR8)
       INDGET(I,J) = IBTAND(IBTSHR(I,J),IBIT2M)
       LGET(I) = INDGET(I,0)
       KGET(I) = INDGET(I,16)

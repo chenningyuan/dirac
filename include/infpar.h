@@ -1,23 +1,64 @@
-#ifdef __CVERSION__
-#define MAXNOD 100
-struct common_infpar {
+#ifdef COMMENT
+! -- infpar.h --
+!     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
+!        so we can handle "-i8" compilations on 32-bit machines,
+!        using INT_STAR8 /Jan-2007 hjaaj
+#endif
+#if defined (INT_STAR8)
+#define my_MPI_INTEGER MPI_INTEGER8
+#else
+#define my_MPI_INTEGER MPI_INTEGER4
+#endif
+
+#if defined(__CVERSION__)
+#define MAXNOD 200
+#define MAXCL2 10000
+#define nodtot numnod
+extern struct common_diracinfpar {
     double totval;
-    int icount, kprint, mtids[MAXNOD], mparid, mytid;
-    int node, nodes, numnod, ntask, ncode, parher, timing;
-} infpar_;
+#if defined (INT_STAR8)
+    long iprpar, ntask, ncode, ndegdi, mynum, mytid;
+    long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
+    long parher, slave, timing, debug, pario;
+#else
+    int  iprpar, ntask, ncode, ndegdi, mynum, mytid;
+    int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes;
+    int  parher, slave, timing, debug, pario;
+#endif 
+} diracinfpar_;
 #else /* __CVERSION__ */
+!  -- File: infpar.h for DIRAC; specific information for parallel calculations
 !     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
-!        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
+!        NODTOT = NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 100, MAXCL2 = 10000)
-
+      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
       REAL*8 TOTWAL
-      LOGICAL PARHER, TIMING, SLAVE, DEBUG
-      INTEGER ICOUNT, IPRPAR, MTIDS(MAXNOD), MPARID, MYTID, NODE, NODES,&
-     &        NUMNOD, NTASK, NCODE, NODTOT, NDEGDI
-      COMMON /INFPAR/ TOTWAL, ICOUNT, IPRPAR, MTIDS, MPARID, MYTID,     &
-     &                NODE, NODES, NUMNOD, NTASK, NCODE, PARHER, TIMING,&
-     &                SLAVE, NODTOT, NDEGDI, DEBUG
+!CSK      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT
+      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
+      INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID, NODE, NODES
+      LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
+      CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
+!CSK      COMMON /DIRACINFPAR/ TOTWAL                                        &
+!CSK     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
+      COMMON /DIRACINFPAR/ TOTWAL                                        &
+     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
+     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES                         &
+     &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
+     &       ,NODNAM, MYNAME
 
+      EQUIVALENCE (NODTOT, NUMNOD)
+!C     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
+!C         This equivalence is important such that both e.g. abacus routines using NODTOT
+!C         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
+
+#if defined (INT_STAR8)
+!     integer array ISTAT contains MPI_SOURCE information.
+!     Proper use of ISTAT on 64-bit machines in 
+!     combination with INT_STAR8 requires explicit declaration 
+!     as INTEGER*4 /March-2007 sk 
+      INTEGER*4 ISTAT
+#endif
+
+!C -- end of infpar.h --
 #endif

@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.44.2.1 $
-C DATE    : $Date: 2004/09/01 08:14:30 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : traone.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -100,18 +88,21 @@ C
 C
       RETURN
       END      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
       SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
      &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
 C
+C     Called from traone.F/TRAONE
+C                 trapam.F/RESOLV
+C
 C     Based on Trond Saue's GETFCK, Luuk Visscher, Mar 17 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -187,7 +178,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
-      LOGICAL TOBE,BF1,BF2,BF3
+      LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
@@ -199,6 +190,7 @@ C
 C
 C     Initialize
 C
+      NOPENBUF = NOPEN
       NFMAT = 1
       NOPEN = 0
 C
@@ -213,19 +205,14 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-        NPOS = 0
-        IF(PARCAL) THEN
-           BF1  = FIRST1
-           BF2  = FIRST2
-           BF3  = FIRST3
-           FIRST1 = .TRUE.
-           FIRST2 = .TRUE.
-           FIRST3 = .TRUE.
-           NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-           NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-           NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
-        ENDIF
-        CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+        call SaveTaskDistribFlags(saveflags)
+       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+        call SetIntTaskArrayDimension(NPOS,PARCAL)
+        if (NPOS.GT.0) THEN
+           CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+        else
+           KPOS = KFREE
+        endif
 C
 C       Closed shell Hartree - Fock
 C       ===========================
@@ -239,11 +226,9 @@ C       Get core density matrix
         CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
-        IF(PARCAL) THEN
-          FIRST1 = BF1
-          FIRST2 = BF2
-          FIRST3 = BF3
-        ENDIF
+
+        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+
         CALL MEMREL('GTCFC1.TWOFCK',WORK,1,KFRSAV,KFREE,LFREE)
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        
@@ -301,7 +286,8 @@ C
      &              IPQTOQ(1,0),LUPRI)
       ENDIF
 C
-      IF (SPINFR) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
+CMI   ... in the BSS mode the spin-free AO matrix is ready on ONEFCK
+      IF (SPINFR.AND.(.NOT.BSS)) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.5.AND.SPINFR) THEN
         CALL HEADER('GTCFC1:Total spinfree Fock matrix in AO-basis',-1)
@@ -333,6 +319,10 @@ C
      &            WORK(KFREE),LFREE,IPRINT)
  10   CONTINUE
 C
+C     Restore NOPEN
+C
+      NOPEN = NOPENBUF
+C
       CALL QEXIT('GTCFC1')
       RETURN
 C
@@ -355,7 +345,7 @@ C
       CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
         IF(NSPC(I,0).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
      &              QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
      &              1,NSPC(I,0),NFBAS(I,0))
    10 CONTINUE
@@ -373,11 +363,11 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcone */
       SUBROUTINE MRCONE(FMO,ORBE,ORBE1,ORBE2,IBORB,IBORB1,IBORB2,
      &                  NSPC,NSTR,NSTRT,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Write core Fock-matrix and other information in MRCONEE format 
 C     A better interface needs to be defined, this will serve for the
@@ -386,7 +376,7 @@ C     modified.
 C
 C     Luuk Visscher, Mar 18 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.D0)
@@ -438,6 +428,7 @@ C
 C
       CALL MEMREL('TRAONE',WORK,KFRSAV,KFMOM,KFREE,LFREE)
 C
+      CALL QEXIT('MRCONE')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -450,6 +441,8 @@ C     Luuk Visscher, Mar 18 1997
 C
 C     Added number of boson symmetry reps (of parent group).
 C      Timo Fleig, Mar 28, 2002
+C
+C     Miro Ilias, Febr.2007   
 C
 C***********************************************************************
 #include "implicit.h"
@@ -477,6 +470,10 @@ C
       DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
       DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
       DATA IPHS/ 1,-1,-1, 1/
+
+      CALL QENTER('MRCON1')
+
+      KFRSAV = KFREE
 C
 C
 C     Fixed information. At the moment we cannot treat the Breit 
@@ -596,13 +593,8 @@ C
 C
 C     Fill in complete core-Fock matrix in complex form
 C
-      CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
-C
-      IF (IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
-          CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
-     &                IPQTOQ(1,0),LUPRI)
-      ENDIF
+      CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD,IPRTRA)
+
 C
 C     Write MRCONEE file
 C
@@ -616,10 +608,14 @@ C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR.OR.LEVYLE,
      &               NORBT
-C     Number of fermion irreps in parent group, names of these
-C     irreps (gerade, ungerade), number of spinors active
-C     in the transformation, number of occupied frozen spinors,
-C     number of deleted spinors.
+C     NSYMRP        - Number of fermion irreps in parent group
+C     REPN          - names of these irreps (gerade, ungerade)
+C     NAEL          - number of spinors active in the transformation
+C     NSPC          - number of occupied frozen (core) spinors,
+C                     0: total
+C                     1: positive energy
+C                     2: negative energy
+C     NESH-NST-NSPC -number of deleted spinors.
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),
@@ -649,7 +645,7 @@ C     Matrix elements over the core Fock operator.
 C
       WRITE (LUPRI,1000) 
 C
-      CALL QEXIT('MRCONE')
+      CALL QEXIT('MRCON1')
 C
  1000 FORMAT (//' MOLFDIR file MRCONEE is written')
       RETURN
@@ -772,25 +768,27 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmultln */
       SUBROUTINE GMULTLN (NSYMRPA,REPA,MJ_TO_REP,MULTB,NORDER)
-C*****************************************************************************
+C***********************************************************************
 C
-C     We make the multiplication table for linear molecules where we have
-C     used the mj quantum number to identify blocks. Here the full point group
-C     is the non-Abelian Dinfh or Cinfv and we use the Abelian Cinfh or Cinf, 
-C     respectively. Since the Cinfh and Cinv have an infinite number of irreps 
-C     and we use a finite multiplication table to store the coupling information
-C     we need to truncate at some point. We do this at mj=15/2 in Cinfh and 
-C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like before. 
-C     In fact this means that we'll be using the subgroups C8h and C16 respectively.
-C     This can be easily extended or decreased using the input parameter NORDER
-C     that indicates how large MULTB may become.
+C     We make the multiplication table for linear molecules where we 
+C     have used the mj quantum number to identify blocks. Here the 
+C     full point group is the non-Abelian Dinfh or Cinfv and we use 
+C     the Abelian Cinfh or Cinf, respectively. Since the Cinfh and 
+C     Cinv have an infinite number of irreps and we use a finite 
+C     multiplication table to store the coupling information we need 
+C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
+C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
+C     before. In fact this means that we'll be using the subgroups C8h 
+C     and C16 respectively. This can be easily extended or decreased 
+C     using the input parameter NORDER that indicates how large MULTB 
+C     may become.
 C
 C     Luuk Visscher, Nov 03 2003
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -907,7 +905,8 @@ C
                WRITE (REPA(IREP),1001) -MJ,PARITY
                IF (MJ.NE.0) MJ_TO_REP(-MJ,IFSYM) = IREP
             ENDDO
-C           For MJ = 16 we will not distinguish between positive and negative MJ
+C           For MJ = 16 we will not distinguish between positive and 
+C           negative MJ
             MJ = NORDER
             IREP = IREP + 1
             WRITE (REPA(IREP),1001) MJ,PARITY
@@ -1078,10 +1077,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck moltodir */
-      SUBROUTINE MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD)
+      SUBROUTINE MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD,IPRINT)
 C***********************************************************************
 C     
+C Purpose: Transform DIRAC Fock matrix, FMO, into MOLFDIR format, FMOM
+C          (if FORWARD=.true, otherwise transform back)     
+C     
 C     Luuk Visscher, Mar 26 2002
+C         Miro Ilias, June 2007 - added IPRINT
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1097,9 +1100,11 @@ C
       DIMENSION FMO(NORBT,NORBT,NZ)
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2)
       DIMENSION NSTR(2)
+
+      CALL QENTER('MOLTODIR')
 C
 C
-C     Transform from matrix in quaternion DIRAC form to complex MOLFDIR form
+C     Transform from matrix in quaternion DIRAC form to complex MOLFDIR form 
 C     ... or backwards if we want to go from RELCCSD back to DIRAC
 C
       IF (FORWARD) THEN
@@ -1122,7 +1127,7 @@ C
           ELSE
              CALL DCOPY(NSTR(IFSYM),FMOM(1+IOFF2,J+IOFF2,1),1,
      &                              FMO (1+IOFF1,J+IOFF1,1),1)
-           ENDIF
+          ENDIF
         ENDDO
         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
           DO J = 1, NSTR(IFSYM)
@@ -1163,6 +1168,27 @@ C
         IOFF3 = IOFF3 + NSTR(IFSYM)
       ENDDO
 C
+      IF (IPRINT.GE.7) THEN
+        IF (FORWARD) THEN
+         CALL HEADER(
+     &   'MOLTODIR: transformation from DIRAC into MOLFDIR format',-1)
+        ELSE
+         CALL HEADER(
+     &   'MOLTODIR: transformation from MOLFDIR into DIRAC format',-1)
+        ENDIF
+C       ....  
+        WRITE(LUPRI,'(/3X,A)')
+     &  'MOLTODIR:  *** matrix in DIRAC format, FMO ***'
+        CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
+     &               IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/3X,A)')
+     &  'MOLTODIR:  *** matrix in MOLFDIR format, FMOM ***'
+C       CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MINO(NZ,2),
+        CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,2,
+     &              IPQTOQ(1,0),LUPRI)
+      ENDIF
+    
+      CALL QEXIT('MOLTODIR')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

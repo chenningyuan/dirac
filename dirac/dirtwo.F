@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.42.4.2 $
-C DATE    : $Date: 2004/09/01 08:08:56 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirtwo.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -45,6 +33,7 @@ C  /* Deck twofck */
 C*****************************************************************************
 C
 C     Driver for the construction of the two-electron Fock matrix in SO-basis
+C     
 C
 C     Written by T.Saue - January 1995
 C     tsaue - Sep 3 1996    Extended to include parameter NFMAT, number of
@@ -96,7 +85,7 @@ C
       DO I = 1,NFMAT
         IREP = ISYMOP(I)-1
         IF(IPRINT.GE.5) THEN
-          CALL HEADER('Unsorted DMAT',-1)
+          CALL HEADER('TWOFCK: Unsorted DMAT',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(DMAT(1,1,I),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NTBAS(0),NZ,
@@ -147,68 +136,31 @@ C     =====
       ENDIF
 C     =====
 C
-      IF (DENSFIT) THEN
-         NIND = 2 * NUMBER_OF_NUCLEI(2) + 2
-         CALL MEMGET ('INTE',KINDAO,NTBAS(0),WORK,KFREE,LFREE)
-         CALL MEMGET ('INTE',KINDAOS,NTBAS(0),WORK,KFREE,LFREE)
-         CALL MEMGET ('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
-         CALL MEMGET ('REAL',KSDMAT,N2BBASX,WORK,KFREE,LFREE)
-         CALL MEMGET ('REAL',KADMAT,N2BBASX,WORK,KFREE,LFREE)
-         CALL INDAOC (WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO))
-C        We allocate the fit-coefficients in work for the time being.
-C        When we have implemented the fit-basis read routine and the Coulomb build routine, they should
-C        probably be allocated at a higher level and passed on to TWOFCK.
-         nfit_coef = 1000 ! something to start with as long as we have not implemented the correct structure
-         CALL MEMGET ('REAL',KCFIT,nfit_coef,WORK,KFREE,LFREE)
-         DO I = 1,NFMAT
-            IREP = ISYMOP(I)-1
-            IF (IREP.NE.0) 
-     &      CALL QUIT ("Only totally symmetric densities can be fitted")
-            CALL DTSOUAO(DMAT(1,1,I),WORK(KSDMAT),WORK,KFREE,LFREE)
-c           CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
-c    &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
-c    &                     IPRINT,WORK(KCFIT))
-         ENDDO
-         CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
-      ENDIF
-C
-C     Initialize Fock matrix
-C     ======================
+C     Initialize and build Fock matrix
+C     ================================
 C
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
+      IF (HFXMU.NE.D0) THEN
 C
-C     *************************************************
-C     *****  D i r e c t  c o n s t r u c t i o n *****
-C     *****  o f   F o c k   m a t r i c e s      *****
-C     *************************************************
+C       Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
+C       NOTE that this extra part has to be calculated first,
+C       since there is a scaling of Fock matrices in the SO Fock build
+C       The scaling is now turned off for HFXMU.NE.0
 C
-C     This module has to come before the conventional SCF-module;
-C     otherwise FOCK must be copied into buffer; this stems from
-C     the symmetrization procedure
-C
-      IF(IDFLAG.NE.0) THEN
-        IF(SOFOCK) THEN
-          CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
-     &                IPRINT,WORK,LWORK)
-        ELSE
-          CALL DIRSCF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
-     &                IPRINT,WORK,LWORK)
-        ENDIF
-      ENDIF
-C
-C     **********************************************
-C     *****  C o n v e n t i o n a l    S C F  *****
-C     **********************************************
-C
-      IF(IDFLAG.NE.7) THEN
-        IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
-     &       CALL QUIT('HFXFAC not implemented in CONSCF !')
-C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
-        CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
-     &              IPRINT,WORK,LWORK)
-      ENDIF
+        HFXTMP = HFXFAC
+        HFXFAC = HFXATT 
+C       ...note that when HFXMU.NE.0, Coulomb contributions are
+C       turned off !
+CTROND  Gaunt-integrals should be turned off !
+        CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+        HFXFAC = HFXTMP
+      END IF
+      HFXTMP = HFXMU
+      HFXMU = D0
+      CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+      HFXMU = HFXTMP
 C
 C     ===========================
       IF (ONECAP.AND.SMLV1C) THEN
@@ -290,7 +242,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pretwo */
+C  /* Deck Twoprp */
       SUBROUTINE TWOPRP(WORK,LWORK)
 C*****************************************************************************
 C
@@ -304,28 +256,29 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
+#ifdef MOD_ERI
+#include "cbieri.h"
+#endif /* MOD_ERI */
 #include "dcbind.h"
 #include "dcbbas.h"
 #include "hrunit.h"
       DIMENSION WORK(LWORK)
-C
-C     Initialize COMMON BLOCKS
-C     ========================
-C
-      CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-C
-C     Initialize HRUNIT
-C     =================
-C
       LUINTA = 11
-      LUSUPM = 17
-      LUDASP = 24
-      LUSOL  = 49
+#ifdef MOD_ERI
+      IF(.NOT.RUNERI) THEN
+#endif /* MOD_ERI */
+        LUSUPM = 17
+        LUDASP = 24
+        LUSOL  = 49
+        CALL PAOVEC(WORK,LWORK,0,IPRTWO)
+#ifdef MOD_ERI
+      ENDIF
+#endif /* MOD_ERI */
 C
 C     Define bit packing
 C     ==================
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
       NIBUF = 1
       IF (NTBAS(0) .LE. 255) THEN
          NBITS = 8
@@ -1532,12 +1485,9 @@ C
 #include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
       DIMENSION IREPA(*),WORK(LWORK)
-C
+C     Undifferentiated integrals written on file
+      INTTYP = 0
       NCHUNK = 600
-      IRNTYP = 0
-      MAXDIS = 1
-      MAXDIF = 0
-      JATOM  = 0
 C
 C     Make array of boson irrep for each basis function
 C
@@ -1565,16 +1515,10 @@ C
 C       Generate integrals
 C
         I2TYP = 1
-        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
-        IF(IPRTWO.GE.2)
-     +     WRITE(LUPRI,'(1P,A,D9.2)') 'LL-int - threshhold:',THRS
+CTROND        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
+        CALL GPOPEN(LUINTA,'DFTWLL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
-     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
-     &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
-     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
-     &              IDUM,DUM)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
         CALL TIMER('LL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
@@ -1612,21 +1556,13 @@ C
 C       Generate integrals
 C
         I2TYP  = 2
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(1)
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(1P,A,D9.2)') 'SL-int - threshhold:',THRS
-        CALL OPNFIL(LUINTA,'DFTWSL','UNKNOWN','TWOGE1')          
+        CALL GPOPEN(LUINTA,'DFTWSL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
-     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
-     &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
-     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
-     &              IDUM,DUM)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
         CALL TIMER('SL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
-        THRS = THRBUF
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
 C
@@ -1666,24 +1602,34 @@ C
 C       Generate integrals
 C
         I2TYP  = 3
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(2)
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'SS-int - threshhold:',THRS
-        CALL OPNFIL(LUINTA,'DFTWSS','UNKNOWN','TWOGE1')          
+        CALL GPOPEN(LUINTA,'DFTWSS','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
-     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
-     &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
-     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
-     &              IDUM,DUM)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
         CALL TIMER('SS-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
-        THRS = THRBUF
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
+C
+C     Gaunt - integrals
+C
  40   CONTINUE
+      IF(.NOT.LBIT(IDFLAG,4).AND.LBIT(INTGEN,4)) THEN
+C
+C       Generate integrals
+C
+        I2TYP  = 4
+        IF(IPRTWO.GE.2)
+     +     WRITE(LUPRI,'(A,E9.2)') 'GT-int - threshhold:',THRS
+        CALL GPOPEN(LUINTA,'DFTWGT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
+        CALL TIMER('GT-int',TIMSTR,TIMEND)
+        CALL FLSHFO(LUPRI)
+        CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
+      ENDIF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3233,8 +3179,286 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirscf */
-      SUBROUTINE DIRSCF(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+C  /* Deck jengine */
+      SUBROUTINE JENGINE(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &                   NPOS,INTFLG,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct Coulomb-contrubution using the J-engine
+C     Two possible options; with and without desity-fitting.
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
+      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
+     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
+     &        NPOS(*),WORK(LWORK)
+      LOGICAL SAVE_DOCART
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "densfit.h"
+#include "dcbgen.h"
+#include "maxaqn.h"
+#include "ccom.h"
+C
+C     (SR,ASPG,TS,LV june 2007) A four-component special :
+C     A not-so-clean hack to use the Hermite scheme ONLY for the Coulomb
+C     2-electron integrals, while keeping the Cartesian intermediates for
+C     all other integrals and transformations. This allows most of the code to
+C     be unmodified while having a faster integral evaluation where it counts
+C     1) Switch off DOCART before diving into FCK3
+C     2) FCK3 uses the Hermite scheme (switch HERECF) and builds a Fock matrix 
+C        directly in the restricted kinetic balance scalar basis that is also
+C        used as an intermediary basis in the Cartesian -> 2c RKB transformation.
+C     3) We switch DOCART back to the orginal value.
+C
+      IF (.NOT.(TWOCOMP)) THEN
+         SAVE_DOCART = DOCART
+         DOCART = .FALSE.
+      ENDIF
+C
+      NDIM = N2BBASX*NZC1*NFMAT
+      CALL DSCAL(NDIM,D2,DSO,1)
+      NDMAT = NZC1*NFMAT
+      KIFCTP = 1
+      KISYMD = KIFCTP + NDMAT
+      KLAST  = KISYMD + NDMAT
+      LWRK   = LWORK - KLAST + 1
+      IF (KLAST.GT.LWRK) CALL STOPIT('JENGINE','Coulomb',KLAST,
+     &                         LWORK)
+      CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
+     &          IFCKOP,IPRINT)
+#ifdef MOD_ERI
+        CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
+     &                   IPRINT,WORK(KLAST),LWRK)
+      CALL DSCAL(NDIM,DP5,DSO,1)
+#else /* MOD_ERI */
+      CALL QUIT('JENGINE only works if ERI is also present.')
+#endif /* MOD_ERI */
+C     Make sure to switch back DOCART....
+      IF (.NOT.(TWOCOMP)) THEN
+         SAVE_DOCART = DOCART
+         DOCART = .FALSE.
+      ENDIF
+C
+      RETURN
+      END
+#ifdef MOD_ERI
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FCK_Coulomb */
+      SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
+     &                       IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct Coulomb-contrubution using the J-engine
+C     without density-fitting
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+      DIMENSION FMAT(N2BBASX,NZC1,NDMT),DMAT(N2BBASX,NZC1,NDMT),
+     &        ISYMDM(NZC1,NDMT),IFCTYP(NZC1,NDMT),WORK(LWORK)
+#include "dcbbas.h"
+#include "dgroup.h"
+      DO IDMT=1,NDMT
+        IF ( (MOD(IFCTYP(1,IDMT),10).EQ.1) .OR.
+     &       (MOD(IFCTYP(1,IDMT),10).EQ.3) ) THEN
+          CALL ACT_ALL_BATCHES
+          CALL FCK3DRV(FMAT(1,1,IDMT),DMAT(1,1,IDMT),1,DUMMY,DUMMY,
+     &             DUMMY,WORK,LWORK)
+        END IF
+      END DO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck linkdr */
+      SUBROUTINE LINKDR(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct LinK exchange
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "cbieri.h"
+      PARAMETER(D0=0.0D0,DP5 = 0.5D0,D2=2.0D0)
+      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
+     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
+     &        NPOS(*),WORK(LWORK)
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "memint.h"
+      I2TYP_TEMP = 1
+      NDIM = N2BBASX*NZC1*NFMAT
+      NDMAT = NFMAT*NZC1
+      IF (HFXFAC.NE.D0) THEN  
+        CALL DSCAL(NDIM,D2,DSO,1)
+        KIFCTP = 1
+        KISYMD = KIFCTP + NDMAT
+        KCCFBT = KISYMD + NDMAT
+        KINDXB = KCCFBT + MXPRIM*MXCONT
+        KFCKTP = KINDXB + 8*MXSHEL*MXCONT
+        KFREE  = KFCKTP
+        LFREE  = LWORK - KFREE + 1
+        IF (KFREE.GT.LWORK) CALL STOPIT('LINKDR','EXC',KFREE,
+     &                           LWORK)
+        CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
+     &            IFCKOP,IPRINT)
+C
+        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP_TEMP)
+C
+        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
+     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &            WORK(KFREE),LFREE)
+        CALL DSCAL(NDIM,DP5,DSO,1)
+      END IF
+CCTROND Scale in accordance with DIRAOF->SKLFC1
+      CALL DSCAL(NDIM,DP5,FMAT,1)
+      RETURN
+      END
+C
+#endif /* MOD_ERI */ 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck fastjk */
+      SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Driver for direct construction of skeleton Fock-matrix
+C
+C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+C
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+      PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
+      DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
+     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
+     &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
+C
+      DIM = N2BBASX*NZC1*NFMAT
+#ifdef MOD_ERI
+      IF (DOLINK .AND. DOFCK3) THEN
+C
+C       Jengine Coulomb contribution, regular or density-fitted
+        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &             NPOS,INTFLG,IPRINT,WORK,LWORK)
+C       LinK-exchange
+        CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
+C
+      ELSEIF (DOLINK) THEN
+C
+C       LinK-exchange plus conventional Coulomb
+C
+C       Turn off exchange. This will affect how IX and IY will be set 
+C       for instance in FCKCON, but IX and IY will be set in SETFCK,
+C       and care has to be taken to correctly match the ifckop_temp
+C       values and those expected in SETFCK... in other words, 
+C       whenever you change this, check if you're doing the correct
+C       correspondenct to the table IPFCK in SETFCK. /aspg/
+C
+        DO IFMAT=1, NFMAT
+          IF (IFCKOP(IFMAT).EQ.1)  THEN
+            IFCKOP_TEMP(IFMAT) = 2
+          ELSEIF (IFCKOP(IFMAT).EQ.3) THEN
+            IFCKOP_TEMP(IFMAT) = 0
+          ELSE
+            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
+          ENDIF
+        ENDDO
+C     
+C       first add conventional (via 4-center integrals) AO Coulomb
+C
+      CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &            IFCKOP_TEMP,NPOS,INTFLG,
+     &            IPRINT,WORK,LWORK)
+C   
+C       now adding exchange via LinK... 
+C
+C       a "hack"-type solution to combine J from ERI and 
+C       K from linK is to perform a symmetrization of FMAT 
+C       and DMAT inside DIRAO1 before passing them on to LINKDR,
+C       because (a) only the upper triangular elements of the 
+C       fock matrices are placed in FMAT when HRFCK2 is
+C       called, and the full symmetrization of FMAT and
+C       DMAT is done only outside FASTJK; and (b) LINKDR
+C       creates the symmetrical matrices, so the symmetrization
+C       outside FASTJK gets completely wrong after
+C       exchange is added via LINKDR. /aspg/ 
+C       
+      CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
+C
+      ELSEIF (DOFCK3) THEN
+C
+C       Jengine Coulomb contribution, regular or density-fitted
+C       plus exchange via the conventional AO code
+C
+        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
+     &               NPOS,INTFLG,IPRINT,WORK,LWORK)
+C
+C       Turn off Coulomb. same comments as for the LinK/Conventional
+C       combination (see above) apply. 
+C
+C       HEADS UP for possible problems when using jengine and eri
+C       together, since JENGINE also creates full matrices (as link,
+C       see comment above) and ERI the upper triangular, but I haven't
+C       seen wrong resuls for the pure non-relativistic calculations.
+C       So at this point (2006-07-27) there's no dirty tricks is DIRAO1
+C       to symmetrize matrices when DOFCK3 is switched on. /aspg/ 
+C
+        DO IFMAT=1, NFMAT
+          IF (IFCKOP(IFMAT).EQ.1) THEN
+            IFCKOP_TEMP(IFMAT) = 3
+          ELSEIF (IFCKOP(IFMAT).EQ.2) THEN
+            IFCKOP_TEMP(IFMAT) = 0
+          ELSE
+            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
+          ENDIF
+        ENDDO
+C
+C       Conventional (4-center integrals) AO exchange
+C
+        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &              IFCKOP_TEMP,NPOS,INTFLG,
+     &              IPRINT,WORK,LWORK)
+C
+      ELSE
+#endif /* MOD_ERI */
+C       Conventional (4-center integrals) AO Coulomb + exchange
+        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &              IFCKOP,NPOS,INTFLG,
+     &              IPRINT,WORK,LWORK)
+#ifdef MOD_ERI
+      ENDIF
+#endif /* MOD_ERI */
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck diraof */
+      SUBROUTINE DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -3250,24 +3474,27 @@ C*****************************************************************************
 C
       PARAMETER ( D0 = 0.0D0 )
 C
+      LOGICAL LBIT
 #include "maxorb.h"
 #include "aovec.h"
-      DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
+      DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
 #include "dgroup.h"
 #include "dcbqal.h"
 #include "dcbbas.h"
+#include "dcbgen.h"
+#include "cbieri.h"
 #include "blocks.h"
 #include "cbihr2.h"
       EXTERNAL BDQALGEBRA
 #include "ibtfun.h"
 C
-      CALL QENTER('DIRSCF')
+      CALL QENTER('DIRAOF')
 #include "memint.h"
 C
 C     Memory allocation
-      NDMAT   = NFMAT*4
+      NDMAT   = NFMAT*NZC1
       N2GAB   = NSYMBL*NSYMBL
       NDMRAO  = N2GAB*NDMAT
       CALL MEMGET('INTE',KIFC  ,NDMAT  ,WORK,KFREE,LFREE)
@@ -3275,20 +3502,28 @@ C     Memory allocation
       CALL MEMGET('REAL',KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
 C
+      IF (.NOT.RUNERI) THEN 
+C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      IF (SCRFCK .GT. D0) THEN
+         IF (SCRFCK .GT. D0) THEN
 C
-         IJOB   = 0
-         ITYPE  = 0
-         IGTYP  = 1
-         MAXDIF = 0
-         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
-     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+            IJOB   = 0
+            ITYPE  = 0
+            IGTYP  = 0
+C           IGTYP 0 gives just the LL integrals
+C           IGTYP 1 will add the SS type integrals
+            IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C           IGTYP 2 will add also the SL (Gaunt) type integrals
+            IF(LBIT(INTFLG,4)) IGTYP = 2
+            MAXDIF = 0
+            CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &           IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+         ENDIF
+      ENDIF
 C
-      END IF
-C
+CTROND      IF((NBSYM.GT.1) .AND. (NZC1 .GT. 1)) THEN
       IF(NBSYM.GT.1) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3300,13 +3535,13 @@ C
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
-            IF(IPQ.GT.NZ) CALL QUIT('DIRSCF: IPQ.GT.NZ !')
-            IF(IPQ.LE.0 ) CALL QUIT('DIRSCF: IPQ.LE.0 !')
-            CALL DTSOAO(DSO(1,IPQ,I),WORK(KDAO+IOFF),
+            IF(IPQ.GT.NZ) CALL QUIT('DIRAOF: IPQ.GT.NZ !')
+            IF(IPQ.LE.0 ) CALL QUIT('DIRAOF: IPQ.LE.0 !')
+            CALL DTSOAO(DMAT(1,IPQ,I),WORK(KDAO+IOFF),
      &                 NTBAS(0),IREPD,IPRTWO)
             IOFF = IOFF + N2BBASX
           ENDDO
@@ -3315,7 +3550,7 @@ C
             WRITE(LUPRI,'(A,I5)') '** Matrix no.',I
             CALL HEADER('Backtransformed hph. density matrix',-1)
             CALL PRQMAT(WORK(JOFF),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),4,IQMULT,LUPRI)
+     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
           ENDIF
         ENDDO
 C
@@ -3323,10 +3558,16 @@ C       Construct Fock matrix
 C       ======================
 C
         CALL DZERO(WORK(KFAO),N2BBASX*NDMAT)
-        CALL DIRSC1(WORK(KFAO),WORK(KDAO),NFMAT,
+        CALL DIRAO1(WORK(KFAO),WORK(KDAO),NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
+CTROND
+          IF(IPRINT.GE.5) THEN
+            WRITE(LUPRI,'(A)') 'After DIRAO1'
+            CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZC1,IQMULT,LUPRI)
+          ENDIF
 C
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -3335,7 +3576,7 @@ C
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
@@ -3346,23 +3587,23 @@ C
         ENDDO
       ELSE
 C
-C       If there is no symmetry involved the density matrix DSO
-C       is sent to DIRSC1 module:
+C       If there is no symmetry involved the density matrix DMAT
+C       is sent to DIRAO1 module:
 C
-        CALL DIRSC1(FMAT,DSO,NFMAT,
+        CALL DIRAO1(FMAT,DMAT,NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
       ENDIF
-      CALL MEMREL('DIRSCF.DIRSC1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DIRAOF.DIRAO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('DIRSCF')
+      CALL QEXIT('DIRAOF')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirsc1 */
-      SUBROUTINE DIRSC1(FAO,DAO,NFMAT,
+C  /* Deck dirao1 */
+      SUBROUTINE DIRAO1(FAO,DAO,NFMAT,
      &                  IFCTYP,IREPDM,ISYMOP,IHRMOP,IFCKOP,
      &                  DMRAO,GABRAO,NPOS,INTFLG,
      &                  IPRINT,WORK,LWORK)
@@ -3373,7 +3614,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D2 = 2.0D0,D10 = 10.0D0)
+      PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
 #include "dummy.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -3389,38 +3630,45 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
+#include "cbieri.h"
+#include "cbifck3.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "shells.h"
 #include "blocks.h"
 #include "dcbqal.h"
+#include "densfit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
-      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12
-      DIMENSION FAO(N2BBASX*4,NFMAT),DAO(*),
+      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12,
+     &          AOTEXT*9
+      DIMENSION FAO(N2BBASX*4,NFMAT),DAO(N2BBASX*4,NFMAT),
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
       EXTERNAL BDQALGEBRA
 C
-      CALL QENTER('DIRSC1')
+      CALL QENTER('DIRAO1')
 #include "memint.h"
 C
 Ctec Is FIRST needed???
       FIRST = .TRUE.
-      NDMAT = NFMAT*4
-      CALL SETFCK(IFCTYP,IREPDM,NFMAT,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
+      NDMAT = NFMAT*NZC1
+      CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZC1,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
-      IF (SCRFCK.GT.D0) THEN
+
+      IF (.NOT.RUNERI) THEN
+         IF (SCRFCK.GT.D0) THEN
 C
 C       Make reduced density matrix for screening
 C       ==========================================
 C       (Reduced GAB is already present in GABRAO)
 C
-        CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
+           CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
+         ENDIF
       ENDIF
 C
 C     ****************************
@@ -3432,201 +3680,148 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
+      THRSBUF = THRS
       IF (PARCAL) THEN
          CALL SCRSTA('MPIHeader',DUM,DUM)
       ELSE
          CALL SCRSTA('Header',DUM,DUM)
       END IF
 C
-C initialize MTOTTK
+C....> Start looping over the four possible integral classes
 C
-C     LL - integrals
+      DO I2TYP = 1, 4
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
-        I2TYP = 1
+C....> Set the parameters that are special for each class
+C
+      IF (I2TYP.EQ.1) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF
+         AOTEXT = 'AOfock:LL'
+      ELSEIF (I2TYP.EQ.2) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF*THRFAC(1)
+         AOTEXT = 'AOfock:SL'
+      ELSEIF (I2TYP.EQ.3) THEN
+         MTOTTK = NSMLBL*(NSMLBL+1)/2
+         THRS   = THRSBUF*THRFAC(2)
+         AOTEXT = 'AOfock:SS'
+      ELSEIF (I2TYP.EQ.4) THEN
+         MTOTTK = NSMLBL*NLRGBL
+         THRS   = THRSBUF*THRFAC(1)
+         AOTEXT = 'AOfock:GT'
+C        Inform the Fock matrix builder that we're going to do Gaunt
+         DO IFMAT = 1, NFMAT
+C           The real matrix can only have an exchange contribution
+            IX = IFCTYP(1,IFMAT)/10
+            IY = MOD(IFCTYP(1,IFMAT),10)
+            IC = MOD(IY,2)
+            IE = (IY-IC)/2
+            IFCTYP(1,IFMAT)=10*IX+4+IE
+C           For the imaginary parts we'll just add 6 to signal that it is Gaunt
+            IFCTYP(2,IFMAT)=IFCTYP(2,IFMAT)+6
+            IFCTYP(3,IFMAT)=IFCTYP(3,IFMAT)+6
+            IFCTYP(4,IFMAT)=IFCTYP(4,IFMAT)+6
+         ENDDO
+      ENDIF
+C
+C....> Check whether the class is active
+C
+      IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
+C
+         IF (.NOT.RUNERI) THEN  ! hermit-based scf
 #if defined (VAR_MPI)
-        IF (PARCAL) THEN
+            IF (PARCAL) THEN
 C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C             Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
-           CALL DIRAC_PARCTL( 1 )
+              CALL DIRAC_PARCTL( 1 )
 C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
+              CALL GETTIM(CPU1,WALL1)
+              CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
+     &             IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
+     &             TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
+     &             ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
 C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:LL',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
+              CALL GETTIM(CPU2,WALL2)
+              CPU    = CPU2 - CPU1
+              WALL   = WALL2 - WALL1
+              TOTWAL = TOTWAL + WALL
+              CALL SCRSTA(AOTEXT,DNTSKP,WALL)
+              IF (IPRINT .GT. 0) THEN
+                 TOTTID = SECTID(TOTWAL)
+                 WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &                TOTTID
+                 IF (IPRINT .GT. 2) THEN
+                    CPUTID = SECTID(CPU)
+                    WALLTID = SECTID(WALL)
+                    WRITE(LUPRI,'(A,A12,A1,A12)')
      &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &             CPUTID,'/',WALLTID
+     &                CPUTID,'/',WALLTID
+                 END IF
               END IF
-           END IF
-        ELSE
+           ELSE
 #endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
+              CPU = SECOND()
+              CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
+     &             IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
+     &             .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &             IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
+              CPU = SECOND() - CPU
+              CALL SCRSTA(AOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
-        ENDIF
+           ENDIF
 #endif
-        IF(IPRINT.GE.5) THEN
-           DO I = 1,NFMAT
-              CALL HEADER('Skeleton LL-FOCK',-1)
-              WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
-              CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0
-     &             ),4,IQMULT,LUPRI)
-           ENDDO
-        ENDIF
+         ELSE
+C
+C we are using the eri/fck3 fock matrix builder, if
+C eri has been enabled
+C
+#ifdef MOD_ERI
+           CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
+           KFCKTP = KFREE
+           CPU = SECOND()
+C
+           CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
+C
+           IPRFCK=IPRINT
+           CALL DSCAL(N2BBASX*NDMAT,D2,DAO,1)
+           CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
+C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
+     &                 WORK(KFREE),LFREE)
+           CALL DSCAL(N2BBASX*NDMAT,DP5,DAO,1)
+           CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
+           CPU = SECOND() - CPU
+         ENDIF
+#else /* MOD_ERI */
+            CALL QUIT('*** Direct SCF only possible with HERMIT 
+     &                 in this version. Recompile with ERI ***')
+         ENDIF
+#endif /* MOD_ERI */
       ENDIF
+C
+C     Restore IFCTYP to the old value (even though we'll not need
+C     it anymore)
+      IF (I2TYP.EQ.4) THEN
+         DO IFMAT = 1, NFMAT
+            IFCTYP(1,IFMAT)=10*(IFCTYP(1,IFMAT)/10)+IY
+            IFCTYP(2,IFMAT)=IFCTYP(2,IFMAT)-6
+            IFCTYP(3,IFMAT)=IFCTYP(3,IFMAT)-6
+            IFCTYP(4,IFMAT)=IFCTYP(4,IFMAT)-6
+         ENDDO
+      ENDIF
+C
+C---> Update the offset
+C
       KPOS = KPOS + MTOTTK
 C
-C     SL - integrals
+C.... End of loop over integral classes
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
-        I2TYP  = 2
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(1)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
+      ENDDO
 C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
-C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:SL',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &         '>>>> Total wall time used in HER_PARDRV so far   :',
-     &         TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &         CPUTID,'/',WALLTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        IF(IPRINT.GE.5) THEN
-          DO I = 1,NFMAT
-            CALL HEADER('Skeleton LL+SL-FOCK',-1)
-            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
-            CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  4,IQMULT,LUPRI)
-          ENDDO
-        ENDIF
-        THRS = THRBUF
-        CALL FLSHFO(LUPRI)
-      ENDIF
-      KPOS = KPOS + MTOTTK
-C
-C     SS - integrals
-C
-      MTOTTK = NSMLBL*(NSMLBL+1)/2
-      IF(LBIT(INTFLG,3).AND.LBIT(IDFLAG,3)) THEN
-        I2TYP  = 3
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(2)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
-C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
-C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:SS',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &         CPUTID,'/',WALLTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        IF(IPRINT.GE.5) THEN
-          DO I = 1,NFMAT
-            CALL HEADER('Skeleton LL+SL+SS-FOCK',-1)
-            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
-            CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  4,IQMULT,LUPRI)
-          ENDDO
-        ENDIF
-        CALL FLSHFO(LUPRI)
-        THRS = THRBUF
-      ENDIF
-      KPOS = KPOS + MTOTTK
 C
 C     Symmetrize Fock matrix
 C     ======================
@@ -3635,14 +3830,34 @@ C
      &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,IFCTYP,IDUM)
       IF(IPRINT.GE.5) THEN
         DO I = 1,NFMAT
-          CALL HEADER('Symmetrized skeleton LL+SL+SS-FOCK',-1)
+          CALL HEADER('Symmetrized skeleton FOCK',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                4,IQMULT,LUPRI)
+     &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
+#ifdef MOD_ERI
+Caspg
 C
-      CALL QEXIT('DIRSC1')
+C   2006-07-27
+C
+C   temporary solution (or dirty trick, take your pick) to make the 
+C   combination ERI->J / LinK->K work, due to the differences in 
+C   constructing the fock matrices in each case. So below we add
+C   a bare bones version of the code outside FASTJK responsible to
+C   perform the final setup on the matrices (symmetrization etc).
+C  
+C   This assumes that a call to LINKDR comes after the call to DIRAO1,
+C   otherwise the fock matrices will continue to be updated incorrectly.
+C
+      IF (DOLINK) THEN
+        CALL FULMAT('S',NTBAS(0),NTBAS(0),FAO)
+      ENDIF
+C
+Caspg
+#endif /* MOD_ERI */
+C
+      CALL QEXIT('DIRAO1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3732,7 +3947,7 @@ C
 C
 C     LL-integrals
 C     ============
-C
+
       IF(LBIT(INTFLG,1).AND.(.NOT.LBIT(IDFLAG,1))) THEN
         WRITE(LUPRI,'(A)') 'CONSCF: LL-integrals:'
         CALL TIMER('START ',TIMSTR,TIMEND)
@@ -3783,6 +3998,15 @@ C     Gaunt-integrals
 C     ===============
 C     to be programmed
 C
+C     aspg, 2006-05-14: added if for gaunt integrals, at present
+C     just makes the program stop if conventional scf is asked
+C     together with gaunt integrals 
+C
+      IF(LBIT(INTFLG,4).AND.(.NOT.LBIT(IDFLAG,4))) THEN
+        WRITE(LUPRI,'(A)') 'CONSCF: Gaunt-integrals not yet implemented'
+        CALL QUIT('*** ERROR in CONSC1 ***') 
+      ENDIF
+C
       RETURN
 C
       END
@@ -3811,6 +4035,8 @@ C         1 - Coulomb
 C         2 - Exchange
 C         3 - Coulomb+Exchange
 C
+CMI    IREPDM is set up as well.
+C
 C     For the moment we will assume closed-shell Fock-matrices
 C
 C     Written by T.Saue Sep 4 1996
@@ -3818,6 +4044,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"    
+      PARAMETER (D0 = 0.0D0)
 C
 #include "dcbqal.h"
 #include "pgroup.h"
@@ -3828,17 +4055,25 @@ C     External variables
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 C     Local variables
-      PARAMETER (D0 = 0.0D0)
       SAVE IPFCK,HTYP
-      DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
+c     DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
+      DIMENSION IPFCK(4,0:3),IRFCK(4),IQFCK(4)
       CHARACTER HTYP(0:3)*1
       DATA HTYP /'G','S','A','M'/
-      DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
+c     DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
+      DATA IPFCK/0,0,0,0, 3,2,2,2, 1,0,0,0, 2,2,2,2/
 #include "ibtfun.h"
 C
       IF (IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
         WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
+        IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(3X,A,I2,A,I2)')
+     &   '* Entering parameters:  NFMAT=',NFMAT,' MZ= ',MZ
+         WRITE(LUPRI,*) 'ISYMOP(1:NFMAT) >',(ISYMOP(I),I=1,NFMAT)
+         WRITE(LUPRI,*) 'IHRMOP(1:NFMAT) >',(IHRMOP(I),I=1,NFMAT)
+         WRITE(LUPRI,*) 'IFCKOP(1:NFMAT) >',(IFCKOP(I),I=1,NFMAT)
+        ENDIF
       ENDIF
       CALL IZERO(IFCTYP,MZ*NFMAT)
       DO I = 1,NFMAT
@@ -3853,7 +4088,7 @@ C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
 C
 C       First determine contributions
 C
-        DO IZ = 1,4
+        DO IZ = 1,NZC1
           IRFCK(IZ) = IRQMAT(IZ,IREP)
           IY        = IPFCK(IZ,IFCK)
           IC        = MOD(IY,2)
@@ -3863,6 +4098,8 @@ C         An anti-symmetric matrix gives no Coulomb contributions
           IF (IH.EQ.2) IC = 0
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
+C         No Coulomb contributions if HFXMU.NE.0
+          IF (HFXMU.NE.D0) IC = 0
           IY   = IC + IE
           IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)
@@ -3886,7 +4123,7 @@ C           irrep gives symmetric matrix elements and thus
 C           Coulomb contributions. /hjaaj Apr 2002
 C
           ELSE
-C           ... MZ.eq.4: we are using DIRSCF (not .SOFOCK)
+C           ... MZ.eq.4: we are using DIRAOF (not .SOFOCK)
             IQFCK(IZ)     = IZ
             IFCTYP(IZ,I)  = 10*IH+IY
             IREPDM(IZ,I) =  IRFCK(IZ)
@@ -3895,18 +4132,22 @@ C           ... MZ.eq.4: we are using DIRSCF (not .SOFOCK)
 C
 C     Print section
 C
+#if defined (DEBUG_DIRAC_FCKBUILD_DF)
+        IF(IPRINT.GE.0) THEN
+#else
         IF(IPRINT.GE.2) THEN
+#endif
           WRITE(LUPRI,'(A,I5,3X,A,3X,A,A3)') 
      &      '* Fock matrix no.',I,' - ',
      &      'Operator irrep: ',REP(IREP)
           WRITE(LUPRI,'(A,4(2X,A3))')
-     &      'Matrix symmetry:',(REP(IRFCK(IZ)),IZ=1,4)
+     &      'Matrix symmetry:',(REP(IRFCK(IZ)),IZ=1,NZC1)
           IF(MZ.LT.4) THEN
             WRITE(LUPRI,'(A,4(3X,A1,1X))')
-     &        'Packing        :',(QUNIT(IQFCK(IZ)),IZ=1,4)
+     &        'Packing        :',(QUNIT(IQFCK(IZ)),IZ=1,NZC1)
             WRITE(LUPRI,'(A,4(3X,A1,1X))')
      &        'Eff.   packing :',
-     &        (QUNIT(IQTOPQ(IQFCK(IZ),IREP)),IZ=1,4)
+     &        (QUNIT(IQTOPQ(IQFCK(IZ),IREP)),IZ=1,NZC1)
           ENDIF
             WRITE(LUPRI,'(A)') 
      &      '    Mat.  IFC  SYM  Coulomb Exchange Irrep'
@@ -3921,6 +4162,7 @@ C
      &        IZ,'(',QUNIT(IQ),')',
      &        IFCTYP(IZ,I),HTYP(IH),IC,IE/2,REP(IREPDM(IZ,I))
           ENDDO
+          CALL FLSHFO(LUPRI)
         ENDIF
       ENDDO
 C
@@ -3943,6 +4185,7 @@ C
 C
 #include "maxorb.h"
 #include "aovec.h"
+      LOGICAL LBIT
 Ctec Is FIRST needed??
       LOGICAL FIRST
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
@@ -3976,8 +4219,12 @@ C
       IF (SCRFCK .GT. D0) THEN
          IJOB   = 0
          ITYPE  = 0
-         IGTYP  = 1
          MAXDIF = 0
+         IGTYP  = 1
+C        IGTYP 1 gives LL + SS type integrals
+         IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C        IGTYP 2 will add also the SL (Gaunt) type integrals
+         IF(LBIT(INTFLG,4)) IGTYP = 2
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
 C
@@ -3987,7 +4234,7 @@ C
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &            WORK(KDMRAO),WORK(KDMRSO),WORK(KGAB),
      &            NPOS,INTFLG,IPRINT,WORK(KFREE),LFREE)
-      CALL MEMREL('DIRSCF.DIRSC1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DIRSOF.DIRSO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('DIRSOF')
       RETURN
@@ -4016,13 +4263,15 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "ccom.h"
 #include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
       LOGICAl LBIT
-      CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12
+      CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12,
+     &          SOTEXT*9
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
      &          IFCTYP(*),IREPDM(*),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -4056,15 +4305,47 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
+      THRSBUF = THRS
       IF (PARCAL) THEN
          CALL SCRSTA('MPIHeader',DUM,DUM)
       ELSE
          CALL SCRSTA('Header',DUM,DUM)
       END IF
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
-        I2TYP = 1
+C....> Start looping over the four possible integral classes
+C
+      DO I2TYP = 1, 4
+C
+C....> Set the parameters that are special for each class
+C
+      IF (I2TYP.EQ.1) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF
+         SOTEXT = 'SOfock:LL'
+      ELSEIF (I2TYP.EQ.2) THEN
+         MTOTTK = NLRGBL*(NLRGBL+1)/2
+         THRS   = THRSBUF*THRFAC(1)
+         SOTEXT = 'SOfock:SL'
+      ELSEIF (I2TYP.EQ.3) THEN
+         MTOTTK = NSMLBL*(NSMLBL+1)/2
+         THRS   = THRSBUF*THRFAC(2)
+         SOTEXT = 'SOfock:SS'
+      ELSEIF (I2TYP.EQ.4) THEN
+         MTOTTK = NSMLBL*NLRGBL
+         THRS   = THRSBUF*THRFAC(1)
+         SOTEXT = 'SOfock:GT'
+Cluuk: scale real part by factor 3 and eliminate Coulomb
+Cluuk: this code does only work for C1 and Ci, use AOFOCK
+        IF (LBIT(INTFLG,4).AND.NZ.LT.4) 
+     &     call quit ('Gaunt not implemented for SOFOCK')
+         factor = -3.d0
+         CALL DSCAL(N2BBASX,factor,DSO,1)
+         IFCTYP(1)=IFCTYP(1)+4
+      ENDIF
+C
+C....> Check whether the class is active
+C
+      IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
@@ -4082,7 +4363,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:LL',DNTSKP,WALL)
+           CALL SCRSTA(SOTEXT,DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -4105,142 +4386,38 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-           CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
+           CALL SCRSTA(SOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
       ENDIF
-      KPOS = KPOS + MTOTTK
-C
-C     SL - integrals
-C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
-      IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
-        I2TYP  = 2
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(1)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
-C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           CALL GETTIM(CPU1,WALL1)
-           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
-C
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:SL',DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-              IF (IPRINT .GT. 2) THEN
-                 CPUTID = SECTID(CPU)
-                 WALLTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12,A1,A12)')
-     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
-     &         CPUTID,'/',WALLTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        THRS = THRBUF
-        CALL FLSHFO(LUPRI)
+cluuk correct for scaling
+      IF (I2TYP.EQ.4) THEN
+         factor = 1.d0/factor
+         CALL DSCAL(N2BBASX,factor,DSO,1)
       ENDIF
+C
+C---> Update the offset
+C
       KPOS = KPOS + MTOTTK
 C
-C     SS - integrals
+C.... End of loop over integral classes
 C
-      MTOTTK = NSMLBL*(NSMLBL+1)/2
-      IF(LBIT(INTFLG,3).AND.LBIT(IDFLAG,3)) THEN
-        I2TYP  = 3
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(2)
-        CALL TIMER('START ',TIMSTR,TIMEND)
-#if defined (VAR_MPI)
-        IF (PARCAL) THEN
+      ENDDO
 C
-C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
-C
-           CALL DIRAC_PARCTL( 1 )
-C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
-           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
-     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
-     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
-           CALL GETTIM(CPU2,WALL2)
-           CPU    = CPU2 - CPU1
-           WALL   = WALL2 - WALL1
-           TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:SS',DNTSKP,WALL)
-C
-           IF (IPRINT .GT. 0) THEN
-              TOTTID = SECTID(TOTWAL)
-              WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in HER_PARDRV so far   :',
-     &             TOTTID
-C     
-              IF (IPRINT .GT. 2) THEN
-                 INTTID = SECTID(CPU)
-                 WRITE(LUPRI,'(A,A12)')
-     &            '>>>> CPU  time used in HER_PARDRV last iteration :',
-     &            INTTID
-                 INTTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12)')
-     &            '>>>> Wall time used in HER_PARDRV last iteration :',
-     &            INTTID
-              END IF
-           END IF
-        ELSE
-#endif
-           CPU = SECOND()
-           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
-     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
-     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
-     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
-           CPU = SECOND() - CPU
-           CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
-        CALL FLSHFO(LUPRI)
-        THRS = THRBUF
-      ENDIF
-      KPOS = KPOS + MTOTTK
-C     
 C     Scale matrices
 C
-      DO I = 1,NDMAT
-        IY = MOD(IFCTYP(I),10)
-        IX = (IFCTYP(I)-IY)/10
-        IF(IX.EQ.0) THEN
-          CALL DSCAL(N2BBASX,D2,FSO(1,I),1)
-        ELSE
-          CALL DSCAL(N2BBASX,D4,FSO(1,I),1)
-        ENDIF
-      ENDDO
+      IF (HFXMU.EQ.D0) THEN
+        DO I = 1,NDMAT
+          IY = MOD(IFCTYP(I),10)
+          IX = (IFCTYP(I)-IY)/10
+          IF(IX.EQ.0) THEN
+            CALL DSCAL(N2BBASX,D2,FSO(1,I),1)
+          ELSE
+            CALL DSCAL(N2BBASX,D4,FSO(1,I),1)
+          ENDIF
+        ENDDO
+      ENDIF
       CALL QEXIT('DIRSO1')
       RETURN
       END
@@ -4292,7 +4469,7 @@ C
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
-          DO IZ = 1,4
+          DO IZ = 1,NZC1
             IREPDM = IRQMAT(IZ,IREP)
             IQ     = IQMULT(1,JQBAS(IREPDM,IPAR),IZ)
             IQP    = IQTOPQ(IQ,IREP)
@@ -4322,3 +4499,316 @@ C
       CALL QEXIT('MKDRQO')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Twodrv */
+      SUBROUTINE TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     General driver for the calculation of two-electron integrals
+C     by either the ERI or the HERMIT code
+C
+C     INTTYP:
+C        0 - Undifferentiated integrals written on file
+C
+C     Written by T. Saue, Nov 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+C
+#ifdef MOD_ERI
+#include "cbieri.h"
+#endif
+#include "cbihr2.h"
+#include "ccom.h"
+#include "dgroup.h"
+C
+      LOGICAL NODV,NOPV,NOCONT,RELCAL
+      DIMENSION WORK(LWORK)
+      CHARACTER CINT(3)*2
+      DATA CINT/'LL','SL','SS'/
+#include "memint.h"
+C
+#ifdef MOD_ERI
+      IF(RUNERI) THEN
+C.......Allocate:
+C       CCFBT - normalized contraction coefficients
+        CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
+C       INDXBT - orbital indices for AO batches
+        CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
+C
+        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
+C
+        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
+        CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+#endif /* MOD_ERI */
+C.......Undifferentiated integrals written on file
+        IF(INTTYP.EQ.0) THEN
+          NDMAT  = 1
+          THRBUF = THRS
+          IF(I2TYP.EQ.2) THRS = THRS*THRFAC(1)
+          IF(I2TYP.EQ.3) THRS = THRS*THRFAC(2)
+          IF(IPRINT.GE.2) THEN
+            WRITE(LUPRI,'(1P,A2,A,D9.2)') 
+     &         CINT(I2TYP),'-int - threshhold:',THRS
+          ENDIF
+        ENDIF
+        MAXDIS = 1
+        MAXDIF = 0
+        JATOM  = 0
+        NODV   = .TRUE.
+        NOPV   = .TRUE.
+        NOCONT = .FALSE.
+        RELCAL = .TRUE.
+        ISHLA  = 0
+        CALL TWOINT(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,GMAT,
+     &               INDX,INDXAB,INTTYP,MAXDIF,JATOM,NODV,
+     &               NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
+     &               IPRNTD,RTNTWO,ISHLA,I2TYP,ICEDIF,SCREEN,
+     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &               INDEX,TIMES)
+        IF(INTTYP.EQ.0) THEN
+          THRS = THRBUF 
+        ENDIF
+#ifdef MOD_ERI
+      ENDIF
+#endif
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SET_AOBATCH_STATE(ICENTER,STATUS)
+#include "implicit.h"
+#include "cbieri.h"
+      CHARACTER STATUS
+C
+C     sets and individual center as active when calculating ao batches 
+C     icenter is the center on the two-electron integral to be made active.
+C
+C     arguments:
+C
+C     icenter: the numerical designation for the center, takes 
+C              values 1,2,3 or 4
+C     status : whether to make the center active or inactive, takes 
+C              values 'A' for active and 'I' for inactive
+C
+C     note: the variables are defined in the CBIERI common block 
+C
+      IF (    (ICENTER.LT.1) .OR.(ICENTER.GT.4)
+     &    .OR.((STATUS.NE.'A').AND.(STATUS.NE.'I'))) 
+     &   CALL QUIT('wrong parameter value in set_aobatch_state')
+
+      IF (STATUS.EQ.'A') THEN
+C     center is active
+         NCENTS(ICENTER)   = 0
+         ICENTS(1,ICENTER) = 0
+      ELSE
+         NCENTS(ICENTER)   = 1
+         ICENTS(1,ICENTER) = 1
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SET_ALL_AOCENTERS_ACTIVE(I2TYP)
+#include "implicit.h"
+C
+C sets all centers active for the ao-batches of class i2typ
+C
+Caspg     write (6,*) 'debug: setting centers'
+      CALL SET_AOBATCH_STATE(1,'A')
+      CALL SET_AOBATCH_STATE(2,'A')
+      CALL SET_AOBATCH_STATE(3,'A')
+      CALL SET_AOBATCH_STATE(4,'A')
+      CALL SET_AOBATCH_CLASS(I2TYP)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SET_AOBATCH_CLASS(I2TYP)
+#include "implicit.h"
+#include "cbieri.h"
+C
+C     note: the variables are in the CBIERI common block 
+C
+C     Index 1
+      IF(I2TYP.EQ.1) THEN
+C       (LL|LL)-integrals
+        ICLASSES(1) = 1
+        ICLASSES(2) = 1
+        ICLASSES(3) = 1
+        ICLASSES(4) = 1
+      ELSEIF(I2TYP.EQ.2) THEN
+C       (SS|LL)-integrals
+        ICLASSES(1) = 2
+        ICLASSES(2) = 2
+        ICLASSES(3) = 1
+        ICLASSES(4) = 1
+      ELSEIF(I2TYP.EQ.3) THEN
+C       (SS|SS)-integrals
+        ICLASSES(1) = 2
+        ICLASSES(2) = 2
+        ICLASSES(3) = 2
+        ICLASSES(4) = 2
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Fockbuild */
+      SUBROUTINE FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                     IFCKOP,NPOS,INTFLG,
+     &                     IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Fock matrix builder
+C
+C     Written by T. Saue Sep 5 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "dummy.h"
+      PARAMETER(D0=0.0D0, D1=1.0D0)
+C
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "dcbham.h"
+C
+      DIMENSION FMAT(*),DMAT(*),ISYMOP(NFMAT),IHRMOP(NFMAT),
+     &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
+C
+C     *************************************************
+C     *****  D i r e c t  c o n s t r u c t i o n *****
+C     *****  o f   F o c k   m a t r i c e s      *****
+C     *************************************************
+C
+C     This module has to come before the conventional SCF-module;
+C     otherwise FOCK must be copied into buffer; this stems from
+C     the symmetrization procedure
+C
+C aspg, 2006-05-15: added test so that whenever gaunt integrals
+C       and at least one other type of integral is asked for in
+C       the direct calculation it assumes all other types are also
+C       calculated on the fly. otherwise conventional scf is
+C       performed. 
+C
+      IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
+        IF(SOFOCK) THEN
+C.........construction of Fock matrix using ERIs in SO-basis
+          CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                IFCKOP,NPOS,INTFLG,
+     &                IPRINT,WORK,LWORK)
+        ELSE
+C.........construction of Fock matrix using ERIs in AO-basis:
+C.........skeleton Fock approach
+C aspg, timing
+          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                IFCKOP,NPOS,INTFLG,
+     &                IPRINT,WORK,LWORK)
+          CALL TIMER('fastjk',TIMSTR,TIMEND)
+C aspg, timing
+        ENDIF
+      ELSE
+C
+C     **********************************************
+C     *****  C o n v e n t i o n a l    S C F  *****
+C     **********************************************
+C
+        IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
+     &       CALL QUIT('HFXFAC not implemented in CONSCF !')
+C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
+        CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
+     &              IPRINT,WORK,LWORK)
+      ENDIF
+C
+      RETURN
+      END
+
+Ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+C
+C aspg, 20080411
+C
+C  Parallel calculations require an integer array describing the
+C  slave tasks as argument to TWOFCK.
+C
+C  below are some utility routines to handle the transfer of such
+C  information. they are pretty much what was in the STEX_GET_NPOS
+C  subroutine by ulfek but it seems better to decouple the setting
+C  of the FIRST* variables (used to indicate that this is the first
+C  time the integral code is being called for a given class of
+C  integrals - LL,SL,SS,GT) and the settinf of the dimension of the
+C  integer array (heferred to in the code as NPOS)
+C
+C  i have made the names a bit longer than usual, but at least i hope
+C it makes it more obvious what is happening.
+C
+
+C
+C  SaveTaskDistribFlags:
+C
+C  saves the content of the FIRST* flags into the array
+C  saveflags for later use
+C
+      SUBROUTINE SaveTaskDistribFlags(saveflags)
+#include "implicit.h"
+#include "dcbfir.h"
+      LOGICAL saveflags(4)
+
+      saveflags(1) = FIRST1
+      saveflags(2) = FIRST2
+      saveflags(3) = FIRST3
+      saveflags(4) = FIRST4
+      END
+C
+C  SetTaskDistribFlags:
+C
+C  sets the FIRST* variables to make TWOFCK fill the array
+C  with new content.
+C
+      SUBROUTINE SetTaskDistribFlags(flags)
+#include "implicit.h"
+#include "dcbfir.h"
+      LOGICAL FLAGS(4)
+
+      FIRST1 = flags(1)
+      FIRST2 = flags(2)
+      FIRST3 = flags(3)
+      FIRST4 = flags(4)
+      END
+C
+C  SetIntTaskArrayDimension: sets TskArrDim
+C
+C  TskArrDim will give the dimension of the variable "NPOS" in
+C  the case of parallel calculations. for serial runs, it will
+C  have value zero
+C
+      SUBROUTINE SetIntTaskArrayDimension(TskArrDim,isParallel)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "cbihr2.h"
+#include "blocks.h"
+      logical isParallel
+      integer TskArrDim
+
+      TskArrDim = 0
+      IF (isParallel) THEN
+C  We will always allocate the maximum size, even if some
+C  integral classes are inactive (keep the code simple)
+         TskArrDim = TskArrDim + NLRGBL*(NLRGBL+1)/2
+         TskArrDim = TskArrDim + NLRGBL*(NLRGBL+1)/2
+         TskArrDim = TskArrDim + NSMLBL*(NSMLBL+1)/2
+         TskArrDim = TskArrDim + NSMLBL*NLRGBL
+      ENDIF
+      END
+C
+Ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+

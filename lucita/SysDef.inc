@@ -8,6 +8,10 @@
       Integer    ItoB,      RtoB,      RtoI
       Character Arch_Type*13
 
-      Parameter( ItoB = 8 , RtoB = 8 , RtoI = 2  )
+#if defined(INT_STAR8)
+      Parameter( ItoB = 8 , RtoB = 8 , RtoI = 1  )
+#else
+      Parameter( ItoB = 4 , RtoB = 8 , RtoI = 2  )
+#endif
 
       Data Arch_Type/'IRIX64'/

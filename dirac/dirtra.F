@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.37.2.1 $
-C DATE    : $Date: 2004/09/01 08:08:55 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirtra.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -44,6 +32,8 @@ C  /* Deck getlab */
 C***********************************************************************
 C
 C      Generate primitive labels for basis functions in dcblab.h
+C
+C      Called from PAMINP
 C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
@@ -94,8 +84,8 @@ C
             NAORB = NAORB + 1
             JLAB  = IPACK(ICLS,ICENT,IDEG,ITYP)
 C
-C           Check if labels are already defined
-C           ==================================
+C           Check if label is already defined
+C           =================================
             DO 40 ILAB = 1,NLAB
             IF(JLAB.EQ.IATTR(ILAB,1)) THEN
               IPLAB(NAORB,1) = ILAB
@@ -103,7 +93,7 @@ C           ==================================
             ENDIF
 C
  40         CONTINUE
-            NLAB          = NLAB + 1
+            NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
             DEG = '  '
             IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
@@ -127,8 +117,8 @@ C
             NAORB = NAORB + 1
             JLAB  = IPACK(ICLS,ICENT,IDEG,ITYP)
 C
-C           Check if labels is already defined
-C           ==================================
+C           Check if label is already defined
+C           =================================
             DO 80 ILAB = 1,NLAB
             IF(JLAB.EQ.IATTR(ILAB,1)) THEN
               IPLAB(NAORB,1) = ILAB
@@ -138,7 +128,7 @@ C           ==================================
 C
 C           Define new label
 C           ================
-            NLAB          = NLAB + 1
+            NLAB = NLAB + 1
             IF(NLAB.GT.MAXLAB) GOTO 999
             DEG = '  '
             IF(NDEG.GT.1) WRITE(DEG,'(I2)') IDEG
@@ -746,7 +736,7 @@ C  /* Deck mtaoso */
       SUBROUTINE MTAOSO(AAO,ASO,NBAST,IREPDM,IPRINT)
 C***********************************************************************
 C
-C     Matrix transform: SO-basis to AO-basis
+C     Matrix transform: AO-basis to SO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
 C
 C     Written by T.Saue - Sept 10 1995
@@ -766,7 +756,13 @@ C***********************************************************************
 #include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
-      IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
+
+      CALL QENTER('MTAOSO')
+
+      IF (IPRINT .GE. 10) THEN
+        CALL HEADER('Subroutine MTAOSO',-1)
+        WRITE(LUPRI,'(2X,A,I2)') 'entering symmetry, IREPDM=',IREPDM
+      ENDIF
 C
 C     Loop over all irreps in molecule
 C
@@ -810,6 +806,14 @@ C
      &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
                         ASO(I,J) = ASO(I,J)
      &                                 + FACA*FACB*AAO(INDA,INDB)
+          IF (IPRINT.GE.28) THEN 
+CMI        ... control print-out to track the AO-SO matrix construction
+             WRITE(LUPRI,
+     &'(2X,A,I3,A,I3,A,D12.6,A,D10.4,A,D10.4,A,I3,A,I3,A,D12.6)')
+     &'ASO(',I,',',J,') =',ASO(I,J),
+     &'  from :  ',
+     & FACA,'*',FACB,'*AAO(',INDA,',',INDB,')=',AAO(INDA,INDB)
+          ENDIF
                      END IF
   600                CONTINUE
   500             CONTINUE
@@ -823,12 +827,15 @@ C
          ISTRA = ISTRA + NBA
   150    CONTINUE
   100 CONTINUE
+
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER('INPUT:  Total matrix in AO basis',-1)
+         CALL HEADER('INPUT(MTAOSO):  Total matrix in AO basis',-1)
          CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         CALL HEADER('OUTPUT: Total matrix in SO basis',-1)
+         CALL HEADER('OUTPUT(MTAOSO): Total matrix in SO basis',-1)
          CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
+
+      CALL QEXIT('MTAOSO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -925,7 +932,7 @@ C  /* Deck dtaoso */
       SUBROUTINE DTAOSO(AAO,ASO,NBAST,IREPDM,IPRINT)
 C***********************************************************************
 C
-C     Matrix transform: SO-basis to AO-basis
+C     Matrix transform: AO-basis to SO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
 C
 C     Written by T.Saue - Sept 10 1995
@@ -1649,11 +1656,11 @@ C
       ENDDO
       CALL QEXIT ('MTBUBS')
       RETURN
-C
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphgen */
-      SUBROUTINE SPHGEN(WORK,LWORK,IPRINT)
+      SUBROUTINE SPHGEN(MORDER,MINTEG,CSCADAPT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate coefficients for transforming from Cartesian to
@@ -1665,10 +1672,13 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision: Sep 19 1995
 C
+CMI   MORDER=1, MINTEG=2 ... previous settings
+CMI   CSCADAPT ... if true, adapt CSP matrix for C-S-C transformation
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 #include "maxaqn.h"
 C
 C Used from COMMON blocks
@@ -1677,9 +1687,11 @@ C
 #include "dcbsph.h"
 
       DIMENSION WORK(LWORK)
+      LOGICAL CSCADAPT
 C
       CALL QENTER('SPHGEN')
 #include "memint.h"
+
       NCSPT = (MXQN*(MXQN + 1)/2)*(2*MXQN - 1)
       CALL DZERO(CSP,NCSP)
 C
@@ -1690,8 +1702,11 @@ C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
 C     MINTEG eq 1 : the spherical components are normalized such
 C                   that all coefficients are integers.
-      MORDER = 1
-      MINTEG = 1
+CMI   MORDER = 1
+CMI    ... only this works ...
+CMI   MINTEG = 2
+CMI ... try for CSC tra..
+CMI   MINTEG = 1
       IOFF = 1
       DO 10 LVAL = 0, MXQN - 1
         NLM            = 2*LVAL + 1
@@ -1707,56 +1722,10 @@ C                   that all coefficients are integers.
         ELSE
           CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,MORDER,MINTEG,
      &                WORK(KFREE),LFREE,IPRINT)
-C
-C         Normalize matrix
-C
-        IF(LVAL.EQ.3) THEN
-C
-C     Jon K. Laerdahl (16.12.96):
-C         Normalization NOT necessary
-C         Makes RKB transformation more complicated
-C         --> Remove Normalization
-C
-C          JOFF = KCSPT
-C1
-C          FAC = D1/SQRT(24.0000D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C2
-C          JOFF = JOFF + NXYZ
-C3
-C          FAC = D1/SQRT(40.0D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C4
-C          FAC = D1/SQRT(6.666666666670D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C5
-C          FAC = D1/SQRT(40.0D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C6
-C          FAC = D1/SQRT(4.0D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C7
-C          FAC = D1/SQRT(2.66666667D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
           CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,CSP(ISPADR(LVAL+1)),NLM)
-        ELSE
-C          JOFF = KCSPT
-C          DO K = 1,NLM
-C            FAC = DDOT(NXYZ,WORK(JOFF),1,WORK(JOFF),1)
-C            FAC = D1/SQRT(FAC)
-C            CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C            JOFF = JOFF + NXYZ
-C          ENDDO
-          CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,CSP(ISPADR(LVAL+1)),NLM)
-        END IF
         END IF
  10   CONTINUE
+
 C
 C     Generate backtransformation as well
 C
@@ -1766,6 +1735,59 @@ C
         NXYZ = (L*(L+1))/2
         CALL MTRSP(NLM,NXYZ,CSP(IOFF),NLM,SPC(IOFF),NXYZ)
       ENDDO
+
+CMI ... adapt the SPC matrixes for S-C correct transformations...
+      IF (CSCADAPT) THEN
+       CALL MEMGET('REAL',KSCCS,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KSCCS1,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KIPIV,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KINDXR,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KINDXC,NCSPT,WORK,KFREE,LFREE)
+
+CMI     ... start from d-functions...
+        DO L = 3,MXQN
+          IOFF = ISPADR(L)
+          NLM  = 2*L- 1
+          NXYZ = (L*(L+1))/2
+C        ... do the multiplication CSP*SPC = WORK(KSCCS)
+          CALL DZERO(WORK(KSCCS),NCSPT)
+          CALL DZERO(WORK(KSCCS1),NCSPT)
+          CALL IZERO(WORK(KIPIV),NCSPT)
+          CALL IZERO(WORK(KINDXR),NCSPT)
+          CALL IZERO(WORK(KINDXC),NCSPT)
+
+          CALL DGEMM('N','N',NLM,NLM,NXYZ,D1,CSP(IOFF),NLM,
+     &          SPC(IOFF),NXYZ,D0,WORK(KSCCS),NLM)
+
+          IF (IPRINT.GE.4) THEN
+            WRITE (LUPRI,'(/1X,A,I5)')
+     &      'CSP*SPC matrix for L=',L-1
+            WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+          ENDIF
+C        ... do the matrix inverse, WORK(KSCCS)
+          CALL MATRIX_INVERSION(WORK(KSCCS),NLM,WORK(KIPIV),
+     &                          WORK(KINDXR),WORK(KINDXC))
+          IF (IPRINT.GE.4) THEN
+            WRITE (LUPRI,'(1X,A,I5)')
+     &      'CSP*SPC inversion matrix for L=',L-1
+            WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+          ENDIF
+C        ... do the matrix multiplication, WORK(KSCCS)*CSP = CSP
+           NLX = NLM*NXYZ
+          CALL DCOPY(NLX,CSP(IOFF),1,WORK(KSCCS1),1) 
+          CALL DGEMM('N','N',NLM,NXYZ,NLM,D1,WORK(KSCCS),NLM,
+     &          WORK(KSCCS1),NLM,D0,CSP(IOFF),NLM)
+          IF (IPRINT.GE.4) THEN
+            WRITE (LUPRI,'(1X,A,I5)')
+     &      'inv(CSP*SPC)*CSP for L=',L-1
+            WRITE (LUPRI,'(1X,A,2I5)') ' size NLM, NXYZ:',NLM,NXYZ
+            CALL OUTPUT(CSP(IOFF),1,NLM,1,NXYZ,NLM,NXYZ,1,LUPRI)
+          ENDIF
+        ENDDO
+      ENDIF
+
 C
 C     Print section
 C
@@ -1795,6 +1817,7 @@ C
       RETURN
 C
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtaocs */
       SUBROUTINE VTAOCS(AOV,LDA,CSV,LDC,NVEC,LCOMP,IPRINT)
@@ -1809,6 +1832,8 @@ C     LCOMP = 1   Transform only large components
 C     LCOMP = 2   Transform only small components
 C
 C     NSPH - number of spherical components
+C
+C       LDC <= LDA
 C
 C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
@@ -1829,6 +1854,12 @@ C    NUCLEI: NLARGE,NSMALL,NBASIS
 #include "shells.h"
 #include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
+
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('VTAOCS: Input vectors:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,NVEC
+        CALL OUTPUT(AOV,1,LDA,1,NVEC,LDA,NVEC,1,LUPRI)
+      ENDIF
 C
 C     Set limits
 C
@@ -1850,7 +1881,7 @@ C       Small components
         CALL QUIT('VTAOCS: Unknown component LCOMP !!!')
       ENDIF
 C
-C     Transform to spherical components
+C     Transform to cartesian components
 C
       IOFF = 1
       JOFF = 1
@@ -1859,7 +1890,7 @@ C
         NLM   = 2*(L-1) + 1
         NXYZ  = L*(L+1)/2
         NDEG   = NUCDEG(NCENT(ISHELL))
-        DO IDEG = 1,NDEG
+        DO IDEG = 1, NDEG
           CALL DGEMM('N','N',NLM,NVEC,NXYZ,D1,CSP(ISPADR(L)),NLM,
      &               AOV(IOFF,1),LDA,D0,CSV(JOFF,1),LDC)
           IOFF = IOFF + NXYZ
@@ -1870,7 +1901,11 @@ C
 C     Print section
 C
       IF(IPRINT.GE.5) THEN
+CMI     CALL HEADER('VTAOCS: Transformed vectors(full size):',-1)
+CMI     CALL OUTPUT(CSV,1,LDC,1,NVEC,LDC,NVEC,1,LUPRI)
+
         CALL HEADER('VTAOCS: Transformed vectors:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NSPH,NVEC
         CALL OUTPUT(CSV,1,NSPH,1,NVEC,LDC,NVEC,1,LUPRI)
       ENDIF
 C
@@ -1903,6 +1938,12 @@ C
 #include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*),WORK(LWORK)
       CALL QENTER('MTAOCS')
+
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('MTAOCS: Input AO (C) matrix:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,LDA
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+      ENDIF
 C
 C     Set limits
 C
@@ -1930,16 +1971,17 @@ C
 C
 C     First transform rows
 C
-      CALL VTAOCS(AOM,LDA,WORK(KW1),NSPH,NVEC,LCOMP,0)
+      CALL VTAOCS(AOM,LDA,WORK(KW1),NSPH,NVEC,LCOMP,IPRINT)
       IF(IPRINT.GE.6) THEN
         CALL HEADER('MTAOCS: Half-transformed matrix:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NVEC:',NSPH,NVEC
         CALL OUTPUT(WORK(KW1),1,NSPH,1,NVEC,NSPH,NVEC,1,LUPRI)
       ENDIF
 C
 C     Transpose and transform columns
 C
       CALL MTRSP(NSPH,NVEC,WORK(KW1),NSPH,WORK(KW2),NVEC)
-      CALL VTAOCS(WORK(KW2),NVEC,WORK(KW1),NSPH,NSPH,LCOMP,0)
+      CALL VTAOCS(WORK(KW2),NVEC,WORK(KW1),NSPH,NSPH,LCOMP,IPRINT)
 C
 C     Backtranspose to obtain final matrix
 C
@@ -1951,12 +1993,161 @@ C
 C     Print section
 C
       IF(IPRINT.GE.5) THEN
-        CALL HEADER('MTAOCS: Transformed matrix:',-1)
+        CALL HEADER('MTAOCS: Transformed (S) matrix:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NSPH:',NSPH,NSPH
         CALL OUTPUT(CSM,1,NSPH,1,NSPH,LDC,NSPH,1,LUPRI)
       ENDIF
       CALL QEXIT ('MTAOCS')
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mtaocs */
+      SUBROUTINE MTAOSC(AOM,LDA,CSM,LDC,LCOMP,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Transform NVEC vectors from Spherical AO basis to Cartesian
+C     AO basis
+C
+C     Options:
+C     LCOMP = 0   Transform all components
+C     LCOMP = 1   Transform only large components
+C     LCOMP = 2   Transform only small components
+C
+C     NSPH - total number of spherical components
+C
+C     On input:  CSM in spherical components (NB,NB)
+C     On output: AOM in cartesian components (NB,NB)
+C
+C
+C  Written by Miro Ilias (after T.Saue's MTAOCS), Strasburg, 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+#include "mxcent.h"
+C
+#include "nuclei.h"
+      DIMENSION AOM(LDA,*),CSM(LDC,*)
+C     DIMENSION AOM(*),CSM(*)
+
+      DIMENSION WORK(LWORK)
+      CALL QENTER('MTAOSC')
+
+C
+C     Set limits
+C
+      NSPH = NSPHCM(LCOMP)
+
+      IF    (LCOMP.EQ.0) THEN
+C       All components
+        NVEC = NBASIS
+      ELSEIF(LCOMP.EQ.1) THEN
+C       Large components
+        NVEC = NLARGE
+      ELSEIF(LCOMP.EQ.2) THEN
+C       Small components
+        NVEC = NSMALL
+      ELSE
+        WRITE(LUPRI,'(A,I5)') '* Unknown LCOMP = ',LCOMP
+        CALL QUIT('MTAOCS: Unknown component LCOMP !!!')
+      ENDIF
+
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('MTAOSC: Entering matrix in S AO:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'size: NROWS, NCOLS',LDC,LDC
+        WRITE(LUPRI,'(2X,A,2I4,A,2I4)')
+     &   'desired:  (S) NSPH,NSPH:',NSPH,NSPH,
+     &   ' -> (C) NVEC,NVEC:',NVEC,NVEC
+        CALL OUTPUT(CSM,1,LDC,1,LDC,LDC,LDC,1,LUPRI)
+      ENDIF
+
+CMI   NVEC >= NSPH !!
+
+C
+C     Allocate work space
+C
+#include "memint.h"
+      NWRK = NVEC*NSPH
+      NWRK2 = NVEC*NVEC
+
+CMI   CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KW1,NWRK2,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KW2,NWRK2,WORK,KFREE,LFREE)
+C
+C     First transform rows
+C
+CMI   CALL VTAOCS(AOM,LDA,WORK(KW1),NSPH,NVEC,LCOMP,0)
+CMI   CALL VTCSAO(CSM,LDC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
+C ... in calling of this routine is the origin of the memmory fault !!!
+C     CALL VTCSAO(CSM,LDC,WORK(KW1),NSPH,NVEC,LCOMP,IPRINT)
+C     CALL VTCSAO(CSM,LDC,WORK(KW1),NSPH,NVEC,LCOMP,IPRINT)
+C1    CALL VTCSAO(CSM,LDC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
+      CALL VTCSAO(CSM,LDC,WORK(KW1),NVEC,NVEC,LCOMP,IPRINT)
+
+CMI   ... we get WORK(KW1) ... NVECxNSPH
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('MTAOSC: Half-transformed matrix, WORK(KW1):',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NSPH:',NVEC,NSPH
+C       CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NSPH,1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NVEC,1,LUPRI)
+      ENDIF
+
+C      WORK(KW1),NVECxNSPH -> WORK(KW2),NSPHxNVEC
+C
+C     Transpose and transform columns
+C
+CMI   CALL MTRSP(NSPH,NVEC,WORK(KW1),NSPH,WORK(KW2),NVEC)
+C     CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,WORK(KW2),NSPH)
+C1    CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,WORK(KW2),NVEC)
+      CALL MTRSP(NVEC,NVEC,WORK(KW1),NVEC,WORK(KW2),NVEC)
+
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER(
+     &    'MTAOSC: Half-transformed transposed matrix, WORK(KW2):',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NSPH, NVEC:',NSPH,NVEC
+        CALL OUTPUT(WORK(KW2),1,NSPH,1,NVEC,NVEC,NVEC,1,LUPRI)
+      ENDIF
+
+
+CMI ... we have WORK(KW2) NSPHxNVEC -> WORK(KW1) ... NVECxNVEC
+CMI   CALL VTAOCS(WORK(KW2),NVEC,WORK(KW1),NSPH,NSPH,LCOMP,0)
+C     CALL VTCSAO(WORK(KW2),NVEC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
+      CALL VTCSAO(WORK(KW2),NVEC,WORK(KW1),NVEC,NVEC,LCOMP,IPRINT)
+
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER(
+     &    'MTAOSC: Transformed transposed matrix, WORK(KW1):',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NVEC:',NVEC,NVEC
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NVEC,NVEC,NVEC,1,LUPRI)
+      ENDIF
+
+C
+C     Backtranspose to obtain final matrix WORK(KW1) ->  AOM
+C
+CMI   CALL MTRSP(NSPH,NSPH,WORK(KW1),NSPH,CSM,LDC)
+CMI   CALL MTRSP(NVEC,NVEC,WORK(KW1),NVEC,AOM,LDA)
+C1    CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,AOM,LDA)
+      CALL MTRSP(NVEC,NVEC,WORK(KW1),NVEC,AOM,LDA)
+C
+C     Memory deallocation
+C  ... MI makes error, removed...
+C   ... origin unknown...
+      CALL MEMREL('MTAOSC',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C     Print section
+C
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('MTAOSC: Final transformed matrix in C AO:',-1)
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+      ENDIF
+
+      CALL QEXIT ('MTAOSC')
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtcsao */
       SUBROUTINE VTCSAO(CSV,LDC,AOV,LDA,NVEC,LCOMP,IPRINT)
@@ -2033,6 +2224,7 @@ C
       IF(IPRINT.GE.5) THEN
         NDIM = IOFF-1
         CALL HEADER('VTCSAO: Transformed vectors:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NDIM,NVEC
         CALL OUTPUT(AOV,1,NDIM,1,NVEC,LDA,NVEC,1,LUPRI)
       ENDIF
 C
@@ -2113,7 +2305,8 @@ C
 #include "memint.h"
 C
       CALL HEADER('Output from SPHTST',-1)
-      CALL SPHGEN(WORK,LWORK,IPRINT)
+CMI   CALL SPHGEN(WORK,LWORK,IPRINT)
+      CALL SPHGEN(1,2,.FALSE.,WORK,LWORK,IPRINT)
 C
 C     Check normalization
 C
@@ -2325,6 +2518,8 @@ C     LCOMP  = 2   SS-block
 C
 C     Written June 20 1996 - Trond Saue
 C     Last revision June 20 1996 - tsaue
+C   
+C     Used in BSS mode, M.ILIAS, Strasbourg, 2005
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2354,8 +2549,12 @@ C     SS-block
 C
       NSPH = NSPHCM(LCOMP)
       NWRK = NDIM*NSPH
-      WRITE(LUPRI,'(A,I6)') '* DELSPH: NSPH',NSPH
-      CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,1,LUPRI)
+
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,'(A,I6)') '* DELSPH: NSPH',NSPH
+       WRITE(LUPRI,'(A)') '* DELSPH: Entering AMAT matrix '
+       CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,1,LUPRI)
+      ENDIF
 C     Allocate buffers
       CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
@@ -2614,48 +2813,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck Getsph */
-      SUBROUTINE GETSPH(CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Get spherical transformation matrices up to LMAX
-C     Written by T.Saue May 1 1998
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-      PARAMETER(D1 = 1.0D0)
-#include "ccom.h"
-#include "sphtrm.h"
-#include "symmet.h"
-#include "pgroup.h"
-      DIMENSION CSPH(*),ICSP(*),WORK(*)
-C
-C     MORDER eq 0 : M_l order 0, +1, -1, +2, -2, ..., +LVAL, -LVAL
-C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
-C
-C     MINTEG eq 1 : the spherical components are normalized such
-C                   that all coefficients are integers.
-      MORDER = 1
-      SPHNRM = .FALSE.
-      MINTEG = 1
-      IOFF   = 0
-      DO LL = 1, LMAX
-        L    = LL - 1
-        NLM  = 2*L + 1
-        NXYZ = (LL*(LL+1))/2
-        CALL SPHCOM(L,CSPH(IOFF+1),NLM,NXYZ,MORDER,MINTEG,
-     &                WORK,LWORK,IPRINT)
-        ICSP(LL) = IOFF
-        IOFF     = IOFF + NLM*NXYZ
-      ENDDO
-      RETURN
-C     
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck keepll */
       SUBROUTINE KEEPLL(AMAT,MZ,BASIS)
 C***********************************************************************
@@ -2724,22 +2881,24 @@ C***********************************************************************
 C      
 #include "dcbbas.h"
 #include "dcborb.h"  
+#include "dcbdhf.h"  
 #include "dgroup.h" 
       DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
 C
-      CALL DZERO(FMO(I2ORBT(IFRP)+1),N2ORB(IFRP)*NZ)
+      NDIM = NTMO(IFRP)*NTMO(IFRP)*NZ
+      CALL DZERO(FMO(I2TMOT(IFRP)+1),NDIM)
       IBORB = 0    
       DO ISUB = 1,N_SUB_BL(IFRP)
       IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
         IAO = I2BASX(IFRP,IFRP)+1
-        IMO = I2ORBT(IFRP) + (NORB(IFRP)+1)*IBORB + 1
+        IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &         FMO(IMO),NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),
-     &         TM1(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
-     &         TM2(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
+     &         FMO(IMO),NTMO(IFRP),NTMO(IFRP),1,IPQTOQ(1,0),
+     &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
      &         BUF,LBUF,IPRINT)
           IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
       ENDIF
@@ -2816,12 +2975,26 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKSAOMO */
-      SUBROUTINE MKSAOMO(SAOMO,TMAT,IPRINT,WORK,LWORK)
+      SUBROUTINE MKSAOMO(SAOMO,TMAT,TWOC,IPRINT,WORK,LWORK)
 C**********************************************************************
-C     PURPOSE:
-C        Construct half transformed overlap matrix, Saomo = Sao C
 C
-C        Written by L. Visscher (based on MKSMOAO by J. Thyssen).
+C     PURPOSE:
+C   =============
+C        Construct half transformed overlap matrix, Saomo = Sao T
+C        From the relation T^(dagger) Sao T = 1 follows that
+C        Sao T is the inverse of T^(dagger)
+C
+C    On input:  TMAT - transformation matrix, Y
+C               TWOC - flag for setting the two-component scheme
+C               note: after MAKE_BSS in GMOTRA we may be anyhow the 2c picture,
+C                      so we use TWOC=.false.
+C
+C   On output:  SAOMO - half transformed overlap matrix
+C
+C   Note(MI,Aug05): It uses NZT,SSMTRC, I2TMT and NTMO variables !
+C
+C   Written by L. Visscher (based on MKSMOAO by J. Thyssen).
+C   Last modifications: M.Ilias, aug 2005
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2835,15 +3008,55 @@ C***********************************************************************
 #include "dgroup.h"
 C
       DIMENSION SAOMO(*),TMAT(*),WORK(*)
+      LOGICAL TWOC
 C
 #include "memint.h"
 C
       CALL QENTER('MKSAOMO')
 C
+
+      IF (IPRINT.GE.5) THEN
+       CALL HEADER('*** Output from MKSAOMO ***',-1)
+       write(lupri,'(2X,A,I1,A,I1)')
+     & 'NZ=',NZ,' >>>> Dirac uses NZT=',NZT
+       IF (TWOC) THEN
+         write(lupri,'(2X,A)')
+     &   'TWOC=.true. => Hard used two-component mode !'
+       ELSE
+         write(lupri,'(2X,A)')
+     &  'TWOC=.false. => Used four-component mode'
+       ENDIF
+       IF (TWOCOMPBSS.AND.BSS) THEN
+        WRITE(LUPRI,'(2X,A)') 
+     &  'IOTC in is pure two-component mode!' 
+       ELSE IF (.NOT.TWOCOMPBSS.AND.BSS) THEN
+        WRITE(LUPRI,'(2X,A)') 
+     &  'IOTC in pure four-component mode'//
+     &  '(full 4comp matrixes, but wasting memory space)!' 
+       ENDIF
+      ENDIF
+      
       ISIZE = 0
       DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
-      END DO
+        IF (TWOC) THEN
+          NREF = NESH(I) 
+        ELSE
+          NREF = NTMO(I)
+        ENDIF
+CMI     ... it uses NZT now !
+CMI     ISIZE = ISIZE + NZ*NFBAS(I,0)*NTMO(I)
+CMI     ISIZE = ISIZE + NZT*NFBAS(I,0)*NTMO(I)
+        ISIZE = ISIZE + NZT*NFBAS(I,0)*NREF
+        IF (IPRINT.GE.5) THEN
+          write(lupri,'(2X,A,I1,A,I1,A,I3)')
+     &    'ifsym=',I,'/',NFSYM, ' NFBAS(I,0)=',NFBAS(I,0)
+          write(lupri,'(2X,A,I3,A,I3,A,I3,A,I3,A,I3)')
+     &    '>>>> NPSH(I)=',NPSH(I),
+     &    ' NESH(I)=',NESH(I),' NTMO(I)=',NTMO(I),
+     &    ' - NORB(I)=',NORB(I),'>>> used NREF=',NREF
+        ENDIF
+      ENDDO
+
       CALL DZERO(SAOMO,ISIZE)
 C
 C     Get AO overlap matrix
@@ -2852,25 +3065,56 @@ C
       CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
 C
       IOFF = 1
+      ITMAT = 0
       DO I = 1,NFSYM
-         IF ( NTMO(I) .GT. 0 ) THEN
-            CALL QGEMM(NFBAS(I,0),NTMO(I),NFBAS(I,0),D1,
-     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
-     &         NTBAS(0),NTBAS(0),1,
-     &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &         NFBAS(I,0),NTMO(I),NZT,
-     &         D0,IPQTOQ(1,0),SAOMO(IOFF),
-     &         NFBAS(I,0),NTMO(I),NZT)
-C
+        IF (TWOC) THEN
+          NREF = NESH(I) 
+        ELSE
+          NREF = NTMO(I)
+          ITMAT = I2TMT(I)
+        ENDIF
+        IF ( NREF .GT. 0 ) THEN
+
             IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('MKSAOMO: Right index transf. overlap'//
-     &            ' matrix Saomo',-1)
-               CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NTMO(I),
-     &            NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL HEADER('MKSAOMO: Overlap matrix'//
+     &            ' (from GTOVLX)',-1)
+               WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &         '*** Fermion corep ',I,'/',NFSYM 
+               write(lupri,*) ' SSMTRC=',SSMTRC
+               CALL PRQMAT(WORK(KSAO+I2BASX(I,I)),NFBAS(I,0),NFBAS(I,0),
+     &                     NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+
+               CALL HEADER('MKSAOMO: Entering transformation matrix,'//
+     &            ' TMAT (symm.adapted,NZT)',-1)
+               WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &         '*** Fermion corep ',I,'/',NFSYM 
+               CALL PRQMAT(TMAT(ITMAT+1),NFBAS(I,0),NREF,
+     &            NFBAS(I,0),NREF,NZT,IPQTOQ(1,0),LUPRI)
                CALL FLSHFO(LUPRI)
             END IF
+
+            CALL QGEMM(NFBAS(I,0),NREF,NFBAS(I,0),D1,
+     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
+     &         NTBAS(0),NTBAS(0),1,
+     &         'N','N',IPQTOQ(1,0),TMAT(ITMAT+1),
+     &         NFBAS(I,0),NREF,NZT,
+     &         D0,IPQTOQ(1,0),SAOMO(IOFF),
+     &         NFBAS(I,0),NREF,NZT)
+C
+            IF ( IPRINT .GE. 10 ) THEN
+              CALL HEADER('MKSAOMO: Right index transf. overlap'//
+     &          ' matrix SaoCmo, with NZT',-1)
+              WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &        '*** Fermion corep ',I,'/',NFSYM 
+              CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NREF,
+     &           NFBAS(I,0),NREF,NZT,IPQTOQ(1,0),LUPRI)
+              CALL FLSHFO(LUPRI)
+            END IF
          END IF
-      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
+CMI      IOFF = IOFF + NZ*NFBAS(I,0)*NTMO(I)
+CMI      IOFF = IOFF + NZT*NFBAS(I,0)*NTMO(I)
+         IOFF = IOFF + NZT*NFBAS(I,0)*NREF
+         IF (TWOC) ITMAT = ITMAT + (NFBAS(I,0)*NREF*NZT)
       END DO
 C
       CALL MEMREL('SAOMO',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3141,16 +3385,16 @@ C
       DIMENSION IQW(4)
 C
 #include "ibtfun.h"
-      CALL QENTER('QTRANS')
+      CALL QENTER('QBTRANS')
 C
 C     Add the results on to the contents of the MO matrix ?
 C
 #ifdef DEBUG
-      print*, 'QTRANS: The AO matrix'
+      print*, 'QBTRANS: The AO matrix'
       CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM1'
+      print*, 'QBTRANS: The transformation matrix TM1'
       CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM2'
+      print*, 'QBTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
 #endif
       IF((NCMO.EQ.0).OR.(NRMO.EQ.0)) GOTO 999
@@ -3162,7 +3406,7 @@ C
       ELSEIF(TREV.EQ.'A') THEN
         TRA = 'I'
       ELSE
-        CALL QUIT('QTRANS: Unknown keyword TREV '//TREV)
+        CALL QUIT('QBTRANS: Unknown keyword TREV '//TREV)
       ENDIF
 C
 C     *******************************************************
@@ -3184,7 +3428,7 @@ C
           NBUF = NRAO*NCMO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 C
@@ -3259,7 +3503,7 @@ C
           NBUF = NRMO*NCAO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 
@@ -3345,7 +3589,7 @@ C
           NBUF = NRMO*NCAO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 C
@@ -3367,7 +3611,7 @@ C
           NBUF = NRAO*NCMO*NZW
           IF(NBUF.GT.LBUF) THEN
              WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   ' >>> QBTRANS error, need work space    ',NBUF,
      &   '                   current work space ',LBUF
           ENDIF
 C
@@ -3390,11 +3634,11 @@ C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
 C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
 C        ENDIF
       ELSE
-        CALL QUIT('FTRANS: Unknown keyword TYP '//TYP)
+        CALL QUIT('QBTRANS: Unknown keyword TYP '//TYP)
       ENDIF
 C
  999  CONTINUE
-      CALL QEXIT('QTRANS')
+      CALL QEXIT('QBTRANS')
       RETURN
 C
       END
@@ -3411,8 +3655,9 @@ C
 C     INPUT:
 C	NORB - number of vectors to be tranformed
 C	COFU - array of untransformed vectors of dimension (NORB,NORB,NZC)
-C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
 C       TMAT - transformation matrix of dimension (NBAS,NORB,NZT)
+C     On output:
+C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
 C
 C	Written by T.Saue January 1995
 C	LAST VERSION: June 27 1996 - tsaue
@@ -3454,8 +3699,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Bcktr2 */
-      SUBROUTINE BCKTR2(IFRP,IUNIT,COFT,COFU,EIG,
-     &                  TMAT,IBUF,BUF,EBUF,IPRINT)
+      SUBROUTINE BCKTR2(IFRP,IUNIT,COFT,COFU,EIG,IBEIG,
+     &                  TMAT,IBUF,BUF,EBUF,IBBUF,IPRINT)
 C***********************************************************************
 C
 C     Backtransform coefficients and insert the frozen orbitals
@@ -3465,8 +3710,8 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-      DIMENSION COFT(*),COFU(*),EIG(*),TMAT(*),
-     &          BUF(*),EBUF(*),IBUF(*)
+      DIMENSION COFT(*),COFU(*),EIG(*),IBEIG(*),TMAT(*),
+     &          BUF(*),EBUF(*),IBBUF(*),IBUF(*)
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -3491,6 +3736,7 @@ C
       JOFT = 1
       JOFU = 1
       CALL DCOPY(NTMO(IFRP),EIG,1,EBUF,1)        
+      CALL ICOPY(NTMO(IFRP),IBEIG,1,IBBUF,1)        
       DO IFO=1,NFRO(IFRP)
         JFRO = IBUF(IFO)
         JEND = JFRO-1
@@ -3503,6 +3749,7 @@ C       Backtransform coefficients inbetween
      &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
      &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
           CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+          CALL ICOPY(NVEC,IBBUF(JOFU),1,IBEIG(JOFT),1)
           JOFU = JOFU+NVEC
           JOFT = JOFT+NVEC
         ENDIF
@@ -3515,7 +3762,7 @@ C       Insert frozen orbital
           IB = IB + NFBAS(IFRP,0)
           IC = IC + NOFF
         ENDDO
-        EIG(JFRO)=D0
+        READ(IUNIT) EIG(JFRO),IBEIG(JFRO)
         JOFT = JOFT + 1
       ENDDO
 C
@@ -3528,7 +3775,8 @@ C
      &                COFU,NTMO(IFRP),NTMO(IFRP),
      &                NTMO(IFRP),NZ,NVEC,JOFU,NFBAS(IFRP,0),
      &                TMAT,NFBAS(IFRP,0),NTMO(IFRP),NZT,0)
-          CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+        CALL DCOPY(NVEC,EBUF(JOFU),1,EIG(JOFT),1)
+        CALL ICOPY(NVEC,IBBUF(JOFU),1,IBEIG(JOFT),1)
       ENDIF
 C
       IF(IPRINT.GE.IBPRNT) THEN
@@ -3538,4 +3786,65 @@ C
       ENDIF
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DENSMO_TO_DENSAO (DMO,DAO)
+C***********************************************************************
+C
+C     Transform density matrix in MO form to AO format using coefficients
+C     taken from DFCOEF
+C     Written by L. Visscher, March 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+C
+      REAL*8  DMO(NORBT,NORBT,NZ), DAO(N2BBASX,NZ)
+      REAL*8, ALLOCATABLE :: CMO(:),WORK(:)
+      LOGICAL FILEX
+C
+C     Allocate the memory that is required by QTRANS (REACMO will not
+C     use the work memory). QTRANS needs to store the halftransformed
+C     matrix that has the same dimension as the MO coefficients
+C
+      KFREE = 1
+      LFREE = NCMOTQ
+      ALLOCATE (WORK(LFREE))
+      ALLOCATE (CMO(NCMOTQ))
+     
+C
+C     Read the MO coefficients
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2, 
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+C     Perform the transformation
+      DO IFSYM = 1,NFSYM
+          CALL QTRANS('MOAO','S',D0,
+     &       NFBAS(IFSYM,0),NFBAS(IFSYM,0),
+     &       NORB(IFSYM),NORB(IFSYM),
+     &       DAO(I2BASX(IFSYM,IFSYM)+1,1),NTBAS(0),NTBAS(0),
+     &       NZ,IPQTOQ(1,0),
+     &       DMO(IORB(IFSYM)+1,IORB(IFSYM)+1,1),NORBT,NORBT,
+     &       NZ,IPQTOQ(1,0),
+     &       CMO(ICMOQ(IFSYM)+1),NFBAS(IFSYM,0),NORB(IFSYM),
+     &       NZ,IPQTOQ(1,0),
+     &       CMO(ICMOQ(IFSYM)+1),NFBAS(IFSYM,0),NORB(IFSYM),
+     &       NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,1)
+      END DO
+   
+C     Free the memory
+      DEALLOCATE (WORK)
+      DEALLOCATE (CMO)
+
       END

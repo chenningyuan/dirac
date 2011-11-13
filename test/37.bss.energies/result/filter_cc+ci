@@ -1,0 +1,9 @@
+$ERROR 0.000000001 
+Nlines 8:Electronic energy
+
+$ERROR 1.E-9 
+From:Overview of calculated energies
+ToI:@ Total CCSD-T  energy
+
+$ERROR 1.E-5
+Nlines 1:Final energy

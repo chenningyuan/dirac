@@ -3,7 +3,7 @@ Nlines 8:Electronic energy
 
 $ERROR 1.E-5 
 From:Eigenvalues
-ToRE:HOMO - LUMO
+ToRE:Occupation in fermion
 
 $ERROR 1.E-9 
 From:Overview of calculated energies

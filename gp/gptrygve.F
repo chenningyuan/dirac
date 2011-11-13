@@ -1,80 +1,70 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
-C
-C VERSION : $Revision: 1.17.4.2 $
-C DATE    : $Date: 2004/09/01 08:10:57 $
 C FILE    : gptrygve.F
-C
 C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
 #include "priunit.h"
 C
-      LENGTH = LEN(HEAD)
+      LHEAD = LNBLNK(HEAD)
       IF (IN .GE. 0) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = (72 - LENGTH)/2 + 1
+         INDENT = MAX(1,(80 - LHEAD)/2 + 1)
       END IF
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-      WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), ('-',I=1,LENGTH)
+      WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+      WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
       RETURN
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
-      CHARACTER TEXT*6
 #include "priunit.h"
+      CHARACTER TEXT*(*), OUT_TEXT*50
 C
-      IF (TEXT .EQ. 'START ') THEN
-         TIMSTR = SECOND()
+      IF (TEXT(1:6) .EQ. 'START ') THEN
+         CALL GETTIM(TIMSTR,DUMMY)
       ELSE
-#if !defined (SYS_T3D)
-         TIMEND = SECOND()
-#else
-         TIMEND = SECOND() + 1.0D0
+         CALL GETTIM(TIMEND,DUMMY)
+#if defined (SYS_T3D)
+         TIMEND = TIMEND + 1.0D0
 #endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
-         WRITE (LUPRI,'()')
-         CALL TIMTXT('>>> Time used in '//TEXT//' is',TIME,LUPRI)
-         WRITE (LUPRI,'()')
-         CALL FLSHFO(LUPRI)
+         IF (TIME .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            WRITE (LUPRI,'()')
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
+            LOUT = 17 + LTEXT + 3
+            CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
+            WRITE (LUPRI,'()')
+            CALL FLSHFO(LUPRI)
+         END IF
       END IF
       RETURN
       END
@@ -156,6 +146,7 @@ C  /* Deck timpri */
 C 980826-hjaaj: initialize TREST for next abacus call
          TREST = 0.0D0
       END IF
+      IF (TIMALL .EQ. 0.0D0) RETURN
       ITIME = NINT(HUN*TIME/TIMALL)
       IF (ITIME .GT. 0 .AND. INT(TIME) .GT. 0) THEN
          MINUTE = INT(TIME)/60
@@ -171,40 +162,43 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
-      CHARACTER HEAD*(*), A
 #include "priunit.h"
+      CHARACTER HEAD*(*), A*(*)
 C
-      LENGTH = LEN(HEAD)
+      LHEAD  = LNBLNK(HEAD)
+      LENGTH = LHEAD
       IF (IN .EQ. 200) THEN
          LENGTH = LENGTH + 2
       ELSE IF (IN .GE. 100) THEN
-         MARG = IN - 100
+         MARG = (80 - LENGTH)/2 - 1
+         MARG = MIN(MARG, IN - 100)
          IF (MARG .GT. 0) MARG = MARG + 1
          LENGTH = LENGTH + 2*MARG
       END IF
       IF (IN .GE. 0 .AND. IN .LT. 100) THEN
          INDENT = IN + 1
       ELSE
-         INDENT = MAX(1,(72 - LENGTH)/2 + 1)
+         INDENT = MAX(1,(80 - LENGTH)/2 + 1)
       END IF
       IF (IN .EQ. 200) THEN
-         WRITE (LUPRI, '(//,120A)')
+         WRITE (LUPRI, '(//150A)')
      *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
-         WRITE (LUPRI,'(120A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
-         WRITE (LUPRI, '(120A)')
+         WRITE (LUPRI, '(150A)')
+     &      (' ',I=1,INDENT),'| ', HEAD(1:LHEAD), ' |'
+         WRITE (LUPRI, '(150A)')
      *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
       ELSE IF (IN .EQ. 100) THEN
-         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE IF (IN .GT. 100) THEN
-         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT),
-     *      (A,I=1,MARG-1), ' ', HEAD, ' ', (A,I=1,MARG-1)
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT),
+     *      (A,I=1,MARG-1), ' ', HEAD(1:LHEAD), ' ', (A,I=1,MARG-1)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE
-         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
+         WRITE (LUPRI, '(150A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       END IF
       WRITE (LUPRI, '()')
       CALL FLSHFO(LUPRI)
@@ -214,15 +208,16 @@ C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
       CHARACTER HEAD*(*)
 #include "priunit.h"
-      LNG = LEN(HEAD) + 2
-      IND = (72 - LNG)/2 + 1
-      WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '! ', HEAD, ' !'
-      WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
-C     WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '| ', HEAD, ' |'
-C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
-      WRITE (LUPRI, '()')
+      LHEAD  = LNBLNK(HEAD)
+      LNG    = LHEAD + 2
+      IND = MAX(1,(80 - LNG)/2 + 1)
+      WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+      WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '! ', HEAD(1:LHEAD), ' !'
+      WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
+Cx    WRITE (LUPRI,'(//150A)') (' ',I=1,IND), '.', ('-',I=1,LNG), '.'
+Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '| ', HEAD(1:LHEAD), ' |'
+Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
+      WRITE (LUPRI,'()')
       RETURN
       END
 C  /* Deck stopit */
@@ -232,7 +227,7 @@ C  /* Deck stopit */
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
-      IF ((LEN(PLACE) .GT. 1) .OR. (PLACE .NE. ' ')) THEN
+      IF (LNBLNK(PLACE) .GT. 0) THEN
          WRITE (LUPRI,'(/2A)') ' Location: ',PLACE
       END IF
       JNT1  = ABS(INT1)
@@ -258,7 +253,7 @@ C  /* Deck quit */
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #endif
-      CHARACTER TEXT*(*), STRING*70
+      CHARACTER TEXT*(*), STRING*70, BLA*1
 C
 #if defined (VAR_MPI)
       IF (MYTID .GT. 0) THEN
@@ -287,6 +282,15 @@ C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
 #endif
       CALL FLSHFO(LUPRI)
+
+#if defined (SYS_LINUX)
+C aspg, replacing trace with os-provided traceback facilities. linux support for now
+C 3 = pretty print traceback to stdout...
+      CALL GET_TRACEBACK_INFO (3,BLA,1) 
+#else
+      CALL TRACE
+#endif /* SYS_LINUX */
+
 #if defined (VAR_MPI)
 #   if defined (PRG_DIRAC)
       IF(PARCAL) CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
@@ -297,7 +301,6 @@ C     Write to stderr
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)
 #endif
-      CALL TRACE
       STOP 1000
       END
 C  /* Deck opendx */
@@ -326,7 +329,7 @@ C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
 #include "priunit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (INT_STAR8)
 C
 C     CRAY has 8 byte integers.
 C
@@ -370,8 +373,9 @@ C
             ELSE IF (IOS .LT. 6000) THEN
                WRITE(102,'(A,I4,A)') '    (try explain lib-',IOS,')'
             ENDIF
-            CALL FLUSH(102,IOS)
-            CALL TRBK()
+CMI         CALL FLUSH(102,IOS)
+            CALL FLUSH(102)
+CSK            CALL TRBK()
 #if defined(SYS_T3D)
             CALL STOP_ALL()
 #else
@@ -380,7 +384,8 @@ C
          ENDIF
   600 CONTINUE
 #endif
-#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN)
+#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN) 
+CSK|| defined (SYS_LINUX)
 C
 C     Assume same for CONVEX --  1-Nov-1989 hjaaj
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
@@ -494,7 +499,7 @@ C
       IF (LEN .EQ. 0) RETURN
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
       LRECL = LRECL/8
 #else
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
@@ -575,7 +580,7 @@ C
 C
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
       LRECL = LRECL/8
 #else
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
@@ -639,61 +644,59 @@ C
 #endif
       RETURN
       END
-C
-C panor: The 48 bit shift done below:
-C        IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-C        genereates a compilation error on SUN Solaris 32 bit
-C        architectures. The subroutine is commented out because 
-C        it is presently not used in Dirac. 2004-08-28
-C
 C  /* Deck aolab4 */
-C       SUBROUTINE AOLAB4(IINDPK,NMAX,NIBUF,NBITS,IINDX4,N)
-C C
-C C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
-C C     Generalized 25-Oct-1993 hjaaj
-C C                 31-Jul-1996 hjaaj (new NIBUF parameter)
-C C
-C C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
-C C
-C #include "implicit.h"
-C       DIMENSION IINDPK(*), IINDX4(4,*)
-C #include "ibtdef.h"
-C C
-C       N = IINDPK(NIBUF*NMAX+1)
-C C
-C       IF (NIBUF .EQ. 1) THEN
-C       IF (NBITS .EQ. 8) THEN
-C          DO 100 I = 1,N
-C             LABEL = IINDPK(I)
-C             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-C             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-C             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-C             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
-C   100    CONTINUE
-C       ELSE IF (NBITS .EQ. 16) THEN
-C          DO 200 I = 1,N
-C             LABEL = IINDPK(I)
-C             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-C             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
-C             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-C             IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
-C   200    CONTINUE
-C       ELSE
-C 	 CALL QUIT('AOLAB4 error')
-C       END IF
-C       ELSE
-C          DO 300 I = 1,N
-C             LABEL = IINDPK(I)
-C             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-C             IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-C             LABEL = IINDPK(NMAX+I)
-C             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-C             IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
-C   300    CONTINUE
-C       END IF
-C C
-C       RETURN
-C       END
+      SUBROUTINE AOLAB4(IINDPK,NMAX,NIBUF,NBITS,IINDX4,N)
+C
+C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
+C     Generalized 25-Oct-1993 hjaaj
+C                 31-Jul-1996 hjaaj (new NIBUF parameter)
+C
+C     Unpack 4 integer indices packed in NIBUF *4 integer(s)
+C     or one *8 integer.
+C
+#include "implicit.h"
+      DIMENSION IINDPK(*), IINDX4(4,*)
+#include "ibtdef.h"
+C
+      N = IINDPK(NIBUF*NMAX+1)
+C
+      IF (NIBUF .EQ. 1) THEN
+        IF (NBITS .EQ. 8) THEN
+          DO I = 1,N
+            LABEL = IINDPK(I)
+            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
+            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
+            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
+            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+          END DO
+        ELSE IF (NBITS .EQ. 16) THEN
+#ifdef INT_STAR8
+          DO I = 1,N
+            LABEL = IINDPK(I)
+            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
+            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
+            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+            IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
+          END DO
+#else
+          CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
+#endif
+        ELSE
+          CALL QUIT('AOLAB4 error; NBITS neither 8 nor 16')
+        END IF
+      ELSE
+        DO I = 1,N
+          LABEL = IINDPK(I)
+          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+          LABEL = IINDPK(NMAX+I)
+          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+        END DO
+      END IF
+C
+      RETURN
+      END
 C  /* Deck GPOPEN */
       SUBROUTINE GPOPEN(LUNIT,FILEIN,STATIN,ACCEIN,FORMIN,NELEM,OLDDX)
 C
@@ -740,9 +743,9 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "chrnos.h"
-      CHARACTER*80 FILENM, STATUF, ACCESF, FORMF
+      CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
-      INTEGER FILELN, STATLN, ACCELN, FORMLN
+      INTEGER       FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
       DATA FIRST /.TRUE./
@@ -757,10 +760,10 @@ C
 C
 C     We first deal with the unit number
 C
-      FILELN = LEN(FILEIN)
-      STATLN = LEN(STATIN)
-      ACCELN = LEN(ACCEIN)
-      FORMLN = LEN(FORMIN)
+      FILELN = LNBLNK(FILEIN)
+      STATLN = LNBLNK(STATIN)
+      ACCELN = LNBLNK(ACCEIN)
+      FORMLN = LNBLNK(FORMIN)
       FILENM(1:FILELN) = FILEIN(1:FILELN)
       STATUF(1:STATLN) = STATIN(1:STATLN)
       ACCESF(1:ACCELN) = ACCEIN(1:ACCELN)
@@ -792,19 +795,19 @@ C
 C     We've got a file number now, get rid of the direct access case
 C
       IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
-         IF (FILELN .EQ. 1) THEN
-            FILELN = 6
-            FILENM(1:6) = 'UNIT'//CHRNOS(LUNIT/10)//
+         IF (FILELN .EQ. 0) THEN
+            FILELN = 13
+            FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
      &                    CHRNOS(MOD(LUNIT,10))
          END IF
-         IF (STATLN .EQ. 1) THEN
+         IF (STATLN .LE. 1) THEN
             STATLN = 7
             STATUF(1:7) = 'UNKNOWN'
          END IF
          CALL OPENDX(LUNIT,FILENM(1:FILELN),NELEM,STATUF(1:STATLN),
      &               OLDDX)
       ELSE
-         IF (STATLN .EQ. 1) THEN
+         IF (STATLN .LE. 1) THEN
             STATLN = 7
             STATUF(1:7) = 'UNKNOWN'
          END IF
@@ -812,11 +815,11 @@ C
 C
 C     This better be a file with a name, and it better exist
 C
-            IF (FILELN .EQ. 1) GOTO 9005
+            IF (FILELN .EQ. 0) GOTO 9005
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS,
      &              ERR=9006)
             IF (.NOT. FEXST) GOTO 9007
-            IF (FORMLN .EQ. 1) THEN
+            IF (FORMLN .EQ. 0) THEN
                FORMLN = 9
                FORMF(1:FORMLN)='FORMATTED'
             END IF
@@ -826,12 +829,12 @@ C
          ELSE
             IF (STATUF(1:3) .EQ. 'NEW' .AND. IUNTAB(LUNIT) .NE. 0)
      &           GOTO 9006
-            IF (FILELN .EQ. 1) THEN
-               FILELN = 6
-               FILENM(1:6) = 'UNIT'//CHRNOS(LUNIT/10)//
+            IF (FILELN .EQ. 0) THEN
+               FILELN = 13
+               FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
      &                               CHRNOS(MOD(LUNIT,10))
             END IF
-            IF (FORMLN .EQ. 1) THEN
+            IF (FORMLN .EQ. 0) THEN
                FORMLN = 11
                FORMF(1:11)='UNFORMATTED'
             END IF
@@ -859,8 +862,7 @@ C
      &     'THE SOURCE CODE'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) NO MORE FILE NUMBERS')
+      GOTO 9100
 C
  9002 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -871,8 +873,7 @@ C
       WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
+      GOTO 9100
 C
  9003 CONTINUE
       WRITE (6,'(//A/A)')
@@ -882,16 +883,18 @@ C
       WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY '//
-     &          'IN USE')
+      GOTO 9100
 C
  9004 CONTINUE
+#ifdef GFORTRAN
+C
+      call perror(' GPOPEN calling perror:')
+#endif
+C
       WRITE (6,'(//A,I3/A,I7)')
      &     ' *** ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',
      &     LUNIT, ' *** ERROR CODE RETURNED ',IOS
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) UPON OPENING A FILE')
+      GOTO 9100
 C
  9005 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -900,9 +903,7 @@ C
      &     ' *** ENTRY INDICATE THAT IT DOES NOT EXIST'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
-     &          'FILE AS OLD')
+      GOTO 9100
 C
  9006 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -911,9 +912,7 @@ C
      &     ' *** ENTRY INDICATE THAT IT ALREADY EXISTS'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
-      CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
-     &          'FILE AS NEW')
+      GOTO 9100
 C
  9007 CONTINUE
       WRITE (6,'(//A/A/A)')
@@ -922,9 +921,21 @@ C
      &     ' *** DOES NOT EXIST'
       WRITE (6,'(/A)') ' ### Please report the problem to '//
      &     'dirac-admin@dirac.chem.sdu.dk'
+      GOTO 9100
+ 9100 CONTINUE
+      write(6,'(/A/A)') 'Parameters specified to GPOPEN:',
+     &                  '==============================='
+      write(6,*) 'File unit ',LUNIT
+      write(6,*) 'File name ',FILEIN,' -> ',FILENM(1:FILELN)
+      write(6,*) 'Status    ',STATIN,' -> ',STATUF(1:STATLN)
+      write(6,*) 'Access    ',ACCEIN,' -> ',ACCESF(1:ACCELN)
+      write(6,*) 'Format    ',FORMIN,' -> ',FORMF(1:FORMLN)
+      write(6,*) 'NELEM     ',NELEM
+      write(6,*) 'OLDDX     ',OLDDX
+      inquire(unit=lunit,name=filenm)
+      write(6,*) 'File name from inquire for this file unit: ',FILENM
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
-     &          'FILE AS OLD')
+      CALL QUIT('*** (GPOPEN) ERROR TRYING TO OPEN A FILE')
 C
 C end of GPOPEN
 C
@@ -984,7 +995,7 @@ C
          INQUIRE(UNIT=LUNIT,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
             INQUIRE(UNIT=LUNIT,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
             LRECL = LRECL/8
 #endif
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
@@ -1184,7 +1195,6 @@ C
          LUNIT = IUN
          IF (LUNIT .GT. 99) GOTO 9001
       END IF
-      CALL DANAME(LUNIT,NAME)
       RETURN
 C     
 C error branch

@@ -1,0 +1,73 @@
+### Demo of using of the GNU/gdb debugger ###
+
+###  load the executable file with all symbols
+file dirac.x
+
+### This settings is necessary for complex breakpoint conditions in fortran...
+#set language fortran
+set language c
+set language auto
+
+### Write where I am...
+echo In directory:
+shell echo pwd
+echo \n Files in dir:
+shell ls -a
+
+##################################################################
+### Delete  DIRAC files in the scratch directory
+### - needed for restarting and for further catching of bugs..
+##################################################################
+shell /bin/rm -r DF*  AOPROPER BSSMAT  
+echo \n After deletion remaining files in dir:
+shell ls -a
+
+### clean the desk: delete all previous breakpoints
+d b
+
+###################################
+# Example of macros
+###################################
+define my_macro
+printf "in GMOTRA begin NZ=%d N2BBASXQ=%d SPINFR=%d\n",nz,n2bbasxq,spinfr
+end
+
+define my_macro1
+printf "in GMOTRA begin SPINFR2=%d\n",spinfr2
+end
+
+### demo of a conditional breakpoint 
+b gmotra_ if (nz==1 | (n2bbasxq==0 && spinfr==0)) 
+command
+ my_macro
+ my_macro1
+ echo type continue or sipmly c...\n
+# c
+end
+
+### example of the unconditional breakpoint 
+b dirone.F:1399
+command
+ if ( (nfsym.eq.1 && n2bbasxq.gt.10) | nz.eq.1 | spinfr.eq.0)
+  printf "NFSYM=%d\n", NFSYM
+  if (nfsym.eq.2)
+    printf "NTMO(1)=%d NTMO(2)=%d\n",NTMO(1),NTMO(2)
+  else
+    printf "One symmetry...NTMO(1)=%d \n",NTMO(1)
+  end
+ else
+  printf "... else branch...."
+ end
+
+##### while cycle demo #####
+printf" Few values of the WORK(KTMAT) array, KTMAT=%d... \n",KTMAT
+ set $indx=0 
+ while ($indx.lt.5)
+   printf "WORK(%d)=%lf\n",ktmat+$indx,(*WORK)(ktmat+$indx)
+#  p ktmat+$indx
+  set $indx=$indx+1
+ end 
+
+end
+
+#### That's all #### 

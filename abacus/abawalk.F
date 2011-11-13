@@ -1,42 +1,30 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
 C
-C VERSION : $Revision: 1.18.2.1 $
-C DATE    : $Date: 2004/09/01 08:03:54 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : abawalk.F
 C
 #ifndef PRG_DIRAC
@@ -2119,7 +2107,7 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
-      LUMOL = 0
+      LUMOL = -1
       CALL GPOPEN(LUMOL,'ABACUS.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       DO 200 IMLINE = 1,NMLINE
@@ -6879,10 +6867,12 @@ C
   100 CONTINUE
       RETURN
       END
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkdin */
       SUBROUTINE WLKDIN(COR,TMASS,N,ANGMOM,TINERT,OMEGA,CEPVAL,
-     &                  CEPVEC,DOCOPY,PLANAR,LINEAR)
+     &                  CEPVEC,DOCOPY,PLANAR,LINEAR,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4)
       INTEGER X, Y, Z
       LOGICAL PLANAR, LINEAR, DOCOPY
@@ -6916,8 +6906,18 @@ C
       AMAT(4) = TINERT(3,1)
       AMAT(5) = TINERT(3,2)
       AMAT(6) = TINERT(3,3)
+
+      IF (IPRINT.GE.9) THEN
+       write(lupri,*) 'WLKDIN: AMAT:',(AMAT(i),i=1,6)
+      ENDIF
+
       CALL DUNIT(EIGVEC,3)
       CALL JACO(AMAT,EIGVEC,3,3,3,AWRK,IWRK)
+      IF (IPRINT.GE.9) THEN
+       write(lupri,*)
+     &  'WLKDIN: EIGVEC',((EIGVEC(i,j),i=1,3),j=1,3)
+      ENDIF
+
       EIGVAL(1) = AMAT(1)
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)
@@ -6959,6 +6959,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkcrs */
       SUBROUTINE WLKCRS(VEC1,N1,VEC2,N2,VEC3,N3)
 #include "implicit.h"
@@ -7183,7 +7184,7 @@ C  /* Deck ircpot */
 #include "mxcent.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
-      LUTRJ = 0
+      LUTRJ = -1
       CALL GPOPEN(LUTRJ,'ABACUS.IRC','OLD','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       NPOINT = 2

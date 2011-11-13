@@ -1,36 +1,24 @@
 /*
-       Copyright (c) 2004 by the authors of Dirac (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       Dirac, a relativistic ab initio electronic structure program,
-       release DIRAC04.0 (2004),
-       written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-       with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-       O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-       P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-       P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-       (http://dirac.chem.sdu.dk).
-    
-       For a suitable BibTEX entry, see:
-          http://dirac.chem.sdu.dk/doc/reference.shtml
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dirac,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dirac-admin@dirac.chem.sdu.dk
-    
-       For information on how to get a licence see:
-          http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 */
 /* -*-mode:c; c-style:bsd; c-basic-offset:4;indent-tabs-mode:nil; -*- */
 /* fun-vwn.c:
@@ -46,6 +34,7 @@
 #endif
 #include <math.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #define __CVERSION__
 
@@ -54,13 +43,34 @@
 /* INTERFACE PART */
 static int  vwn_isgga(void) { return 0; }
 static int  vwn_read(const char* conf_line);
-static real vwn_energy(DftDensProp* dp);
-static void vwn_first(FirstFuncDrv *ds,       real factor, DftDensProp* dp);
-static void vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
-static void vwn_third(ThirdFuncDrv *ds,   real factor, DftDensProp* dp);
+static real vwn3_energy(const FunDensProp* dp);
+static void vwn3_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static real vwn_energy(const FunDensProp* dp);
+static void vwn_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static real vwni_energy(const FunDensProp* dp);
+static void vwni_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void vwni_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
-Functional VWNFunctional = {
-    "VWN",      /* name */
+/* VWN3 is a Gaussian version of the VWN functional based on suboptimal
+ * set of parameters */
+Functional VWN3Functional = {
+    "VWN3",      /* name */
+    vwn_isgga,  /* gga-corrected */
+    vwn_read,   /* no extra input expected, just set the common block */
+    NULL,
+    vwn3_energy, 
+    vwn3_first,
+    vwn3_second,
+    vwn3_third
+};
+
+Functional VWN5Functional = {
+    "VWN5",     /* name */
     vwn_isgga,  /* gga-corrected */
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,
@@ -70,22 +80,60 @@ Functional VWNFunctional = {
     vwn_third
 };
 
+/* VWN is used for backward compatibility only */
+Functional VWNFunctional = {
+    "VWN",     /* name */
+    vwn_isgga,  /* gga-corrected */
+    vwn_read,   /* no extra input expected, just set the common block */
+    NULL,
+    vwn_energy, 
+    vwn_first,
+    vwn_second,
+    vwn_third
+};
+
+/* VWNIFunctional is a variant of VWN5 functional with another spin
+   polarization dependence:
+
+   F(r,zeta) = (E_p + f(zeta)*(E_f - E_p))*rho
+
+   The implementation is crippled and works only for closed shell
+   systems up to linear response.
+ */
+Functional VWNIFunctional = {
+    "VWNI",      /* name */
+    vwn_isgga,  /* gga-corrected */
+    vwn_read,   /* no extra input expected, just set the common block */
+    NULL,
+    vwni_energy, 
+    vwni_first,
+    vwni_second,
+    vwni_third
+};
+
+
 /* IMPLEMENTATION PART */
+#define VWN_ZERO 1e-40
+
 static int
 vwn_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 
 /* vwn_params contains two sets of parameters for paramagnetic and
    ferromagnetic cases.  See Table 5 in VWN paper.
 */
+
+
 static const struct vwn_params {
     real X0, A, B, C;
 }   vwn_paramagnetic  = { -0.1049800, 0.0621814, 3.72744, 12.9352 },
     vwn_ferromagnetic = { -0.3250000, 0.0310907, 7.06042, 18.0578 },
-    vwn_interp        = { -0.0047584,-0.0337737, 1.13107, 13.0045 };
+    vwn_interp        = { -0.0047584,-0.0337737, 1.13107, 13.0045 },
+    vwn3_paramagnetic = { -0.4092860, 0.0621814, 13.0720, 42.7198 },
+    vwn3_ferromagnetic= { -0.7432940, 0.0310907, 20.1231, 101.578 };
             
         
 static const real SPINPOLF    = 1.92366105093154; /* 1/(2(2^(1/3)-1)) */
@@ -159,18 +207,19 @@ vwn_en_pot(real* enpot, real rho, int order, const struct vwn_params* p)
 }
 
 static real
-vwn_energy(DftDensProp* dp)
+par_energy(const FunDensProp* dp, const struct vwn_params* para,
+           const struct vwn_params* ferro)
 {
     real ep_p[2], ep_f[2], ep_i[2], zeta, zeta4, f_zeta, delta;
     real rhoa = dp->rhoa, rhob = dp->rhob, rho;
 
-    if(rhoa==0) rhoa = 1e-40;
-    if(rhob==0) rhob = 1e-40;
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
     rho = rhoa + rhob;
-    vwn_en_pot(ep_p, rho, 0, &vwn_paramagnetic);
+    vwn_en_pot(ep_p, rho, 0, para);
 
-    if(dp->rhoa == dp->rhob) return ep_p[0]*rho;
-    vwn_en_pot(ep_f, rho, 0, &vwn_ferromagnetic);
+    if(fabs(dp->rhoa-dp->rhob)<VWN_ZERO) return ep_p[0]*rho;
+    vwn_en_pot(ep_f, rho, 0, ferro);
     vwn_en_pot(ep_i, rho, 0, &vwn_interp);
 
     zeta   = (dp->rhoa-dp->rhob)/rho;
@@ -182,21 +231,22 @@ vwn_energy(DftDensProp* dp)
 }
 
 static void
-vwn_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
+par_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp,
+          const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta3,zeta4, f_zeta, f_zet1, e_f,acp, dacp, vcfp, g_f;
     real delta, ep_p[2], ep_f[2], ep_i[2];
     real rhoa = dp->rhoa, rhob = dp->rhob, rho;
 
-    if(rhoa==0) rhoa = 1e-40;
-    if(rhob==0) rhob = 1e-40;
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
     rho = rhoa + rhob;
-    vwn_en_pot(ep_p, rho, 1, &vwn_paramagnetic);
+    vwn_en_pot(ep_p, rho, 1, para);
 
     ds->df1000 += ep_p[1]*factor;
     ds->df0100 += ep_p[1]*factor;
 
-    if(dp->rhoa==dp->rhob) return;
+    if(fabs(dp->rhoa-dp->rhob)<VWN_ZERO) return;
 
     /* contribution from spin-polarized case; first order */
     zeta   = (dp->rhoa-dp->rhob)/rho;
@@ -204,7 +254,7 @@ vwn_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
     zeta4  = zeta3*zeta;
     f_zeta = SPINPOLF*(pow(1+zeta,FOURTHREE)+pow(1-zeta,FOURTHREE)-2.0);
     f_zet1 = SPINPOLF*4.0/3.0*(pow(1+zeta,1.0/3.0)-pow(1-zeta,1.0/3.0));
-    vwn_en_pot(ep_f, rho, 1, &vwn_ferromagnetic);
+    vwn_en_pot(ep_f, rho, 1, ferro);
     e_f    = ep_f[0] - ep_p[0];
     g_f    = ep_f[1] - ep_p[1];
     vwn_en_pot(ep_i, rho, 1, &vwn_interp);
@@ -224,9 +274,9 @@ vwn_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 /* vwn_second:
    CAUTION: may raise zeros to a negative power!
 */
-
 static void
-vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+par_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp,
+           const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta2, zeta3,zeta4, f_zeta, f_zet1, f_zet2, vcfp;
     real delta, ep_p[3], ep_f[3], ep_i[3];
@@ -236,7 +286,7 @@ vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
     real rho2 = rho*rho;
     real dAA, dAB, dBB;
 
-    vwn_en_pot(ep_p, rho, 2, &vwn_paramagnetic);
+    vwn_en_pot(ep_p, rho, 2, para);
 
     ds->df1000 += ep_p[1]*factor;
     ds->df0100 += ep_p[1]*factor;
@@ -244,7 +294,7 @@ vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
     ds->df0200 += ep_p[2]*factor;
     ds->df1100 += ep_p[2]*factor;
 
-    if(0&&dp->rhoa==dp->rhob) return;
+    /* if(0&&dp->rhoa==dp->rhob) return; */
     /* contribution from spin-polarized case; second order */
     zeta   = (dp->rhoa-dp->rhob)/rho;
     zeta2  = zeta*zeta;
@@ -254,11 +304,11 @@ vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
     f_zet1 = SPINPOLF*4.0/3.0*(pow(1+zeta,1.0/3.0)-pow(1-zeta,1.0/3.0));
     /* CAUTION: may raise 0 to negative power! */
     f_zet2 = SPINPOLF*4.0/9.0*(pow(1+zeta,-2.0/3.0)+pow(1-zeta,-2.0/3.0));
-    vwn_en_pot(ep_f, rho, 2,&vwn_ferromagnetic);
+    vwn_en_pot(ep_f, rho, 2, ferro);
     ef0   = ep_f[0] - ep_p[0];
     ef1   = ep_f[1] - ep_p[1];
     ef2   = ep_f[2] - ep_p[2];
-    vwn_en_pot(ep_i, rho, 2,&vwn_interp);
+    vwn_en_pot(ep_i, rho, 2, &vwn_interp);
     ei0   = ep_i[0]*THREEFTHRD2;
     ei1   = ep_i[1]*THREEFTHRD2;
     ei2   = ep_i[2]*THREEFTHRD2;
@@ -281,9 +331,9 @@ vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
              +8*f_zet1*(ef0-ei0)*zeta3
              +12*f_zeta*(ef0-ei0)*zeta2)*rho;
 
-    dAA = (spA)        ? dterm*spA*spA : 0;
-    dAB = (spA && spB) ? dterm*spA*spB : 0;
-    dBB = (spA)        ? dterm*spB*spB : 0;
+    dAA =  dterm*spA*spA;
+    dAB =  dterm*spA*spB;
+    dBB =  dterm*spB*spB;
 
     /* the final section: begin */
     ds->df1000 += (vcfp + delta*(1-zeta))*factor;
@@ -297,7 +347,8 @@ vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
 
 /* third not tested for open-shell! */
 static void
-vwn_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+par_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp,
+          const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta2, zeta3,zeta4, f_zeta, f_zet1, f_zet2, f_zet3, vcfp;
     real delta, ep_p[4], ep_f[4], ep_i[4];
@@ -307,12 +358,12 @@ vwn_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
     real spA, spB, spAA, spAB, spBB;
     real rhoa = dp->rhoa, rhob = dp->rhob, rho, rho2, rho3;
 
-    if(rhoa==0) rhoa = 1e-40;
-    if(rhob==0) rhob = 1e-40;
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
     rho = rhoa + rhob;
     rho2 = rho*rho; rho3 = rho2*rho;
     
-    vwn_en_pot(ep_p, rho, 3, &vwn_paramagnetic);
+    vwn_en_pot(ep_p, rho, 3, para);
 
     ds->df1000 += ep_p[1]*factor;
     ds->df0100 += ep_p[1]*factor;
@@ -325,7 +376,7 @@ vwn_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
     ds->df1200 += ep_p[3]*factor;
     ds->df0300 += ep_p[3]*factor;
 
-    if(0&&dp->rhoa==dp->rhob) return;
+    /* if(0&&dp->rhoa==dp->rhob) return; */
     /* contribution from spin-polarized case; second order */
     zeta   = (dp->rhoa-dp->rhob)/rho;
     zeta2  = zeta*zeta;
@@ -336,7 +387,7 @@ vwn_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
     f_zet2 = SPINPOLF*4.0/9.0 *(pow(1+zeta,-2.0/3.0)+pow(1-zeta,-2.0/3.0));
     f_zet3 =-SPINPOLF*8.0/27.0*(pow(1+zeta,-5.0/3.0)-pow(1-zeta,-5.0/3.0));
 
-    vwn_en_pot(ep_f, rho, 3,&vwn_ferromagnetic);
+    vwn_en_pot(ep_f, rho, 3, ferro);
     ef0   = ep_f[0] - ep_p[0];
     ef1   = ep_f[1] - ep_p[1];
     ef2   = ep_f[2] - ep_p[2];
@@ -410,3 +461,187 @@ vwn_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
     /* the final section: end */
 }
 
+/* The dispatch part of the functional implementation */
+static real
+vwn3_energy(const FunDensProp* dp)
+{
+    return par_energy(dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_first(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_second(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    par_third(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+
+static real
+vwn_energy(const FunDensProp* dp)
+{
+    return par_energy(dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_first(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_second(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    par_third(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+
+/* Other spin interpolation scheme */
+static real
+spni_energy(const FunDensProp* dp, const struct vwn_params* para,
+            const struct vwn_params* ferro)
+{
+    real ep_p[2], ep_f[2], ep_i[2], zeta, zeta4, f_zeta, delta;
+    real rhoa = dp->rhoa, rhob = dp->rhob, rho;
+
+    if(rhoa<VWN_ZERO) rhoa = 1e-40;
+    if(rhob<VWN_ZERO) rhob = 1e-40;
+    rho = rhoa + rhob;
+    vwn_en_pot(ep_p, rho, 0, para);
+
+    if( fabs(dp->rhoa - dp->rhob)<VWN_ZERO) return ep_p[0]*rho;
+    vwn_en_pot(ep_f, rho, 0, ferro);
+    vwn_en_pot(ep_i, rho, 0, &vwn_interp);
+
+    zeta   = (dp->rhoa-dp->rhob)/rho;
+    zeta4  = pow(zeta,4.0);
+    f_zeta = SPINPOLF*(pow(1+zeta,FOURTHREE)+pow(1-zeta,FOURTHREE)-2.0);
+    delta  = f_zeta*(ep_f[0]-ep_p[0]);
+    
+    return (ep_p[0]+ delta)*rho;
+}
+
+static void
+spni_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp,
+           const struct vwn_params* para, const struct vwn_params* ferro)
+{
+    real zeta, f_zeta, f_zet1, vcfp;
+    real delta, ep_p[2], ep_f[2];
+    real rhoa = dp->rhoa, rhob = dp->rhob, rho;
+
+    if(rhoa<VWN_ZERO) rhoa = 1e-40;
+    if(rhob<VWN_ZERO) rhob = 1e-40;
+    rho = rhoa + rhob;
+    vwn_en_pot(ep_p, rho, 1, para);
+
+    ds->df1000 += ep_p[1]*factor;
+    ds->df0100 += ep_p[1]*factor;
+
+    /* if(dp->rhoa==dp->rhob) return; */
+
+    /* contribution from spin-polarized case; first order */
+    zeta   = (dp->rhoa-dp->rhob)/rho;
+    f_zeta = SPINPOLF*(pow(1+zeta,FOURTHREE)+pow(1-zeta,FOURTHREE)-2.0);
+    f_zet1 = SPINPOLF*4.0/3.0*(pow(1+zeta,1.0/3.0)-pow(1-zeta,1.0/3.0));
+    vwn_en_pot(ep_f, rho, 1, ferro);
+
+    vcfp = f_zeta*(ep_f[1] - ep_p[1]);
+    delta= f_zet1*(ep_f[0] - ep_p[0]);
+
+    /* the final section: begin */
+    ds->df1000 += (vcfp + delta*(1-zeta))*factor;
+    ds->df0100 += (vcfp - delta*(1+zeta))*factor; 
+    /* the final section: end */
+}
+
+static void
+spni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp,
+            const struct vwn_params* para, const struct vwn_params* ferro)
+{
+    real zeta, f_zeta, f_zet1, f_zet2, vcfp;
+    real delta, ep_p[3], ep_f[3];
+    real rhoa = dp->rhoa, rhob = dp->rhob, rho = dp->rhoa + dp->rhob;
+    real rho2 = rho*rho;
+    real vcf2, fac2, vap2, ef0, ef1, ef2;
+    real zA, zB, zAAr, zABr, zBBr;
+
+    vwn_en_pot(ep_p, rho, 2, para);
+
+    ds->df1000 += ep_p[1]*factor;
+    ds->df0100 += ep_p[1]*factor;
+    ds->df2000 += ep_p[2]*factor;
+    ds->df1100 += ep_p[2]*factor;
+    ds->df0200 += ep_p[2]*factor;
+
+    /* if( fabs(rhoa - rhob)<VWN_ZERO) return; */
+    /* contribution from spin-polarized case; first order */
+    zeta   = (rhoa - rhob)/rho;
+    f_zeta = SPINPOLF*(pow(1+zeta,FOURTHREE)+pow(1-zeta,FOURTHREE)-2.0);
+    f_zet1 = SPINPOLF*4.0/3.0*(pow(1+zeta, 1.0/3.0)-pow(1-zeta, 1.0/3.0));
+    f_zet2 = SPINPOLF*4.0/9.0*(pow(1+zeta,-2.0/3.0)+pow(1-zeta,-2.0/3.0));
+    vwn_en_pot(ep_f, rho, 2, ferro);
+
+    ef0   = ep_f[0] - ep_p[0];
+    ef1   = ep_f[1] - ep_p[1];
+    ef2   = ep_f[2] - ep_p[2];
+    vcfp = f_zeta*ef1;
+    delta= f_zet1*ef0;
+
+    vcf2 = f_zeta*ef2;
+    vap2 = f_zet1*ef1;
+    fac2 = f_zet2*ef0*rho;
+    zA   =  2*rhob/rho2;
+    zB   = -2*rhoa/rho2;
+    zAAr = -4*rhob/rho2;
+    zABr =  2*zeta/rho;
+    zBBr =  4*rhoa/rho2;
+    
+    /* the final section: begin */
+    ds->df1000 += (vcfp + delta*rho*zA)*factor;
+    ds->df0100 += (vcfp - delta*(1+zeta))*factor; 
+
+    ds->df2000 += (vcf2 + vap2*(zA+zA) + fac2*zA*zA + delta*zAAr)*factor;
+    ds->df1100 += (vcf2 + vap2*(zA+zB)  +fac2*zA*zB + delta*zABr)*factor;
+    ds->df0200 += (vcf2 + vap2*(zB+zB) + fac2*zB*zB + delta*zBBr)*factor;
+    /* the final section: end */
+}
+
+static real
+vwni_energy(const FunDensProp* dp)
+{
+    return spni_energy(dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwni_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    spni_first(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    spni_second(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwni_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    fun_printf("vwni_third not implemented."); exit(1);
+}

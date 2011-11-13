@@ -1,0 +1,20 @@
+$ERROR 0.000000001 
+Nlines 8:Electronic energy
+
+$ERROR 1.E-5 
+From:Eigenvalues
+ToRE:HOMO - LUMO
+
+From:Expectation values
+To:    s0 = T : Expectation value zero by point group symmetry.
+
+From:Quadratic Response Functions
+To:@   average 
+
+From:DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS
+ToI:DSO contribution to reduced SSCC K (SI)
+
+$ERROR 1.0E-5
+Nlines 4:At1  #  iso 
+
+

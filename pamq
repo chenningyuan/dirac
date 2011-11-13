@@ -14,12 +14,11 @@ LOC=`pwd`
 # Installation specfic variables : chose the right defaults for your system
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-QSYS=pbs
-PAMDIR=$HOME/bin
-DEFAULT_MW=100
-DEFAULT_NW=100
+QSYS=LoadLeveler
+PAMDIR=/home/v20/devel/cvs/snapshots/newmalloc/Dirac
+DEFAULT_MW=256
+DEFAULT_NW=256
 DEFAULT_QUEUE=default
-DEFAULT_MPI_NPROC=8
 DEFAULT_TIME=15m
 #
 usage ()
@@ -32,7 +31,7 @@ usage ()
    echo "                        Known queue systems: pbs, bsub, LoadLeveler, XGrid"
    echo "     -t time          : Time limit for job; default is \"$DEFAULT_TIME\""
    echo "                        Specify either hours (as in 20h) or minutes (as in 30m)"
-   echo "     -mpi n           : Run MPI with n nodes; default is $DEFAULT_MPI_NPROC"
+   echo "     -mpi n           : Run MPI with n nodes; default is to run a serial job"
    echo "     -mw mem          : Set memory (in megawords) for master; default is $DEFAULT_MW"
    echo "                        (and slave nodes if "-nw mem" not specified)"
    echo "     -nw mem          : Set memory (in megawords) for the slave nodes; default is $DEFAULT_NW"
@@ -57,6 +56,7 @@ while [ $# -gt 2 ]; do
          ;;
        -mpi)
          MPI_NPROC=$1
+         parallel="-pe mpich $MPI_NPROC" 
          shift
          ;;
       -q)
@@ -104,10 +104,6 @@ if [  -z "$NW" ]; then
    NW=$DEFAULT_NW;
    all_arguments="-nw $NW $all_arguments"
 fi
-if [  -z "$MPI_NPROC" ]; then
-   MPI_NPROC=$DEFAULT_MPI_NPROC;
-   all_arguments="-mpi $MPI_NPROC $all_arguments"
-fi
 #  The next two variables need not be passed to pam as the queuing system will take care.
 if [  -z "$TIME" ]; then
    TIME=$DEFAULT_TIME;
@@ -136,7 +132,7 @@ case $TIME in
   ;;
   *h)
    wallt_ll="`basename $TIME h`:0:0"
-   wallt_bsub="`basename $TIME h`:0:0"
+   wallt_bsub="`basename $TIME h`:0"
    wallt_qsub="`basename $TIME h`:0:0"
   ;;
   *)
@@ -186,6 +182,25 @@ EOJ
 bsub -M $MEM_IN_KBYTES -n $MPI_NPROC -o $jobout -J $jobname -W $wallt_bsub $QUEUEQ < $jobinp
 #################### End of bsub code #####
 ;;
+#### SGE queueing system (on the TC cluster in Amsterdam  ########
+  sge-amsterdam)
+# 
+#  Create jobinp file
+#  
+cat <<EOJ >$jobinp
+#
+# change to original directory
+# 
+cd $LOC
+#
+# execute pam shell script
+#
+$PAMDIR/pam $all_arguments
+EOJ
+SHORT=`echo $jobname | cut -c1-10`
+qsub -e $SHORT.\$JOB_ID.out -o $SHORT.\$JOB_ID.out -l s_cpu=$wallt_qsub -cwd -V $parallel -l queue=$QUEUE -N $SHORT $jobinp
+#################### End of sgq-amsterdam code #####
+;;
 #### Linux PBS ########
   pbs)
 # 
@@ -207,19 +222,15 @@ qsub -j oe -N $SHORT -o $jobout -l walltime=$wallt_qsub,nodes=$MPI_NPROC:$QUEUE 
 ;;
 #### IBM's LoadLeveler ########
   LoadLeveler)
-JTYPE=parallel
-REQUIRE="(Memory >= $MEM_IN_MBYTES)"
+JTYPE=serial
+#REQUIRE="(Memory >= $MEM_IN_MBYTES)"
+REQUIRE=""
 CLASS=""
 case $QUEUE in
   default)
   ;;
-  ppwr4)
-    REQUIRE="$REQUIRE && (OpSys == \"AIX51\")"
-    CLASS="ppwr4"
-  ;;
   *)
-    echo "$0:  unknown queue $QUEUE"
-    exit 1
+  CLASS="$QUEUE"
   ;;
 esac
 if [ $MPI_NPROC -le 32 ]; then
@@ -241,33 +252,17 @@ cat <<EOJ >$jobinp
 #
 # loadl stuff
 #
-# @ shell = /bin/sh
-# @ initialdir = $LOC
-# @ output = $jobout
-# @ error = $jobout
-# @ job_type = parallel
-# @ node = $NNODE
-# @ total_tasks = $MPI_NPROC
-# @ requirements = $REQUIRE
-EOJ
-
-if [ -z "$CLASS" ]; then
-cat <<EOJ >>$jobinp
-# @ class = $CLASS
-EOJ
-fi
-
-if test "$QUEUE" = "p-test"
-then
-cat <<EOJ >>$jobinp
-# @ class = $CLASS
-EOJ
-fi
-
-cat <<EOJ >> $jobinp
+# @ shell            = /bin/sh
+# @ initialdir       = $LOC
+# @ output           = $jobout 
+# @ error            = $jobout 
+# @ node             = $NNODE 
+# @ tasks_per_node   = $MPI_NPROC 
+# @ job_type         = parallel
 # @ wall_clock_limit = $wallt_ll
-# @ environment = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
-# @ notification = never
+# @ environment      = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
+# @ network.MPI      = sn_all,not_shared,US
+# @ notification     = never
 # @ queue
 
 #

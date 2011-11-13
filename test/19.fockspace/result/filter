@@ -1,7 +1,10 @@
 $ERROR 0.000000001 
-Nlines 8:Sum of all contributions to the energy
+Nlines 5:Sum of all contributions to the energy
 
 $ERROR 1.E-5 
-From:Solving equations for sector  1
-To: Today is
+From:Energy     1
+To:Energy     2
+
+From: Energy eigenvalues in atomic units
+ToRe: Relative real eigenvalues in other units;
 

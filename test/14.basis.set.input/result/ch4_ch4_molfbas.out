@@ -1,71 +1,82 @@
-Master : DIRAC allocating 50000000 words of memory
+Master : DIRAC allocating 127000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
 *                                   from                                     *
 *                                                                            *
-*           @@@@@    @@   @@@@@     @@@@     @@@@@    @@@      @@            *
-*           @@  @@        @@  @@   @@  @@   @@       @   @    @ @            *
-*           @@  @@   @@   @@@@@    @@@@@@   @@       @   @   @@@@@           *
-*           @@  @@   @@   @@ @@    @@  @@   @@       @   @      @            *
-*           @@@@@    @@   @@  @@   @@  @@    @@@@@    @@@       @            *
+*                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+*                   @@  @@        @@  @@   @@  @@   @@                       *
+*                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+*                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+*                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
 *                                                                            *
 *                                                                            *
-%}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
-$?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
-(%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
-$S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
-SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
-SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::':/://:/::-::
-?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
-S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
-(?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
-$S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:'::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
-S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
-c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
-S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
-$SZ?MMMMMMMMMMMMMMMMMH?.                                        "&((/?//?|::::
-$%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
-($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
-Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/??/!:/:|:
-(??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
-SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
-$%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
-%$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
-$$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
-4$($S$M//::S?ZHMMMMMH/:.':::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|::
-)[$S$S($|_i:#>::*H&?/::.::/:"://:?>>':&HMHSMMMM$:'-   MMHMMMMHHT .)i/?////:::/
-$$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.'   `H?$T*" `  /%?>%:)://ii|
-$&=&/ZS}$RF<:?/-.|%r/:::/:/:'.-.-..|::S//!`"``          >??:    `SS<S:)!/////|
-Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. '-.'  `                         ,>%%%:>/>/!|:/
-$$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
-&$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
-=[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
-$&>1MHHMMMM6M9MMMM$Z$}$S%/:::.'.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
-MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&''     ../>%;/?>??:<::>
-MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
-MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..'.  .|//1d/`://?*/*/"` '     .:/(SS$%(S%)):%~
-MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.':;&&b/D/$p=qpv//b/~'   :/~~%%??$=$)Z$S+;
-MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:`'???bD&{b<<-'     .,:/)|SS(}Z/$$?/<S
-MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::'  `` .             SS?SS?Z/]1$/&$c/$S
-MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
-MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/??/''"    _MMHk/7S/]dq&1S<&&></
-MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// '         ,MMMMMMM&/Z6H]DkH]1$&&
-MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
-MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
-MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
-MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
-MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#':MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
-MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR' dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
-MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM' .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
-MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
-MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
-MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
-MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
-MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
-MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
-MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
-MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+MMMMMMMMMMMMMMMMMMMMMMMMMMP!<<~"<<<<<!<<<<!!!!!<~"!****MMHMMMMMMMMX?HMXMMX9M?H
+MMMMMMMMMMMMMMMMMMMMMMMM!M!<<<<<<:<<<<<<<<<<~<<< <<~~~<!!MMMMMMMMMMH%XX%!XMMXX
+MMMMMMMMMMMMMMMMMMMMMMM!<!!!<<<<<<<<<<<<<<< <~<~~~~    ~<~!!??MSMMMM!tXX!9HtSM
+MMMMMMMMMMMMMMMMMMMMMMM!:!<<<<!!!<<<<<<~<`<~~~     `     <<<~!*MMHM9XXMMHSHMMM
+MMMMMMMMMMMMMMMMMMMMMMM%?<<<<<<<<<<~~<~'~<~'             `<<<!~!MMMMMMMXMMMMMM
+MMMMMMMMMMMMMMMMMMMMMM!!!X<<<<<<<<<~     ~                 `<<<<!?MMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMX<<!!<!<<<~~<<<                       `~<<<~?MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMM?M:<<<<<<<~ <<<<      :                  `<<<!MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMM!!!!<<<<<<<~ <<~ '<::<<<<<<:                `<<MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMX<<<<<<<<<<<:<<  <`<<<<<:nnnhnn:              ~<!MMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMXxnnnnxnxi:<<<<<<<<<<<<xHMMMMMMnx:              `"??MMMMMMM
+MMMMMMMMMMMMMMMMMMX8NN888MMMMXXx:::xxHMMMMMMMMMMMMMMH::              <!!?MMMMM
+MMMMMMMMMMMMMMMM?9$$$$$$$NM8MMMMMMMMMMMMMMMMMMMMMMMMMMH:            '!!!!MMMMM
+MMMMMMMMMMMMMMMXt$$$$$$$$$$$N8MMMMMNNMMMMMMMMMMMMMMMMMMh<            <<<!?MMMM
+MMMMMMMMMMMMMMXN$$$$$$$$$$$$$$$NN$$$$NN8N9MMMMMMMMMMMMMX<~            `~<<!MSM
+MMMMMMMMMMMM!~t$$$$$$$$$$$$$$$$$$$$$$$BMMMMMMMMMMMMMMMMM>               `<XMMM
+MMMMMMMMMMMMXX$$$$$$$$$$$$$$$$$$$$$$R$RMMMMMMMMMMMMMMMMM%<               <XMSt
+MMMMMMMMMMMMXN$$$$$$$$$$$$$$$$$$$$MMMMMMMMMMMMMMMMMMMMMMf<<  :          :<?MMH
+MMMMMMMMMMMMX$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMMMMMMMMM!<<<            `<MMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$RMMMMMB8MMMMMMMMMMMMMMMMMMMM!<<<            <!HXSt
+MMMMMMMMMMMM9$$$$$$$$$$$$N$8MMM8NN$$8NNMMMMMMMMMMMMMMMM!<<<<            <!MMMX
+MMMMMMMMMMMM$$$$$$$$$$$$$$NN8N$$$$$$$$$MMMMMMMMMMMMMMMMX<<<<            <XXMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMx<<<            <XMXMX
+MMMMMMMMMMMMM$$$$$$$$$$$$$$$RR$RRRRM*!"""!*MMMMMMMMMMMMMH><~           ::MMMHM
+MMMMMMMMMMMMMRRRRR$$$RM$$RRMMMM*!"!~<<<<<::X??MMMMMMMMMMMf~        :xnx:?MMMHM
+MMMMMMMMMMMMMM*!"""?*MMMMMMMM!!    <<<<<!*MMMMMMMMMMMMMMMf:       <HM!<<!XMMX!
+MMMMMMMMMMMMMMi<<<~~<"!MMMMMM<<<<<<  ~~<<~"!MMMMMMMMMMMMM!<<:~   <HMHx:<!M!t?!
+MMMMMMMMMMMMMMf<<~~ `~~!M8MMHi<<<<<::: :<:<<!H9MMMMMMMMMMk:<~ ::nHMMMMX<<X!?XX
+MMMMMMMMMMMMMMh<::< <x<<M$$MMM::<<<!h:::HMMMMMMMMMMMMMMMMMMhixMMMf?*MMXM!MX!?!
+MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!|!!
+MMMMMMMMMMMMMM9NMMMMMHM8$$MMMMMMHnHnHHHHMMMMMMMMMMMMMMMMMMMMMMMMMMh:<?M!M!!!!!
+MMMMMMMMMMMMMM9$BMMMMMN$$RMMMMMMMN88MMMMMMMMMMMMMMMMMMMMMM%!MMMMMMM!<HHH!!!!~!
+MMMMMMMMMMMMMM9$$B888N$$$MMMMMMMMM$$$N8MMMMMMMMMMMMMMMMMMX!HMMMMMMMH!?!!!<!<<!
+MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM|MMMMMMMMXH!!!~<~!!
+MMMMMMMMMMMMMMM$$$$$$$$$MMMMMMMMMMR$$$$NMMMMMMMMMMMMMMMM!!!!?MHHMMMM!!<~~~<!!<
+MMMMMMMMMMMMMMM9$$$$$$$$RMMRMMMMMMMMMMRMMMMMMMMMMMMMMMMM!!!!!!*MM*!!~<<<<~::!!
+MMMMMMMMMMMMMMM9$$$$RRRMM****MMMMMMMMMMMMMMMMMMMMMMMMMMHH!!!!<`!!<<< ~~<<<!!?!
+MMMMMMMMMMMMMMMM$$$$MMS!"<<:<<~9MMMMMMMMMMMMMMMMMMMMMMMMX!<!!<<<<<<<    ~~<<!~
+MMMMMMMMMMMMMMMM$$$B$$Mi!<~!<!!?MMMMMMMMMMMMMMMMMMMMMMMMM!<<<::<<::<         `
+MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2|*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
+MMMMMMMMMMMMMMMMM$$RMMMHn:::xxHMMMHx:<?MMMMMMMMMMMMMMMM!!<<<!!!X?Xf           
+MMMM?M%?X9MMMMMMMM$$MM*!!M*!""?""?"!"!!MMMMMMMMMMMMMM!!!<<<<<!!XXH!           
+MMMSX?!H??MMMMMMMM$$MHsi:!%+!+!!+!<::xXMMMMMMMMMMMMM?!<<<<<<<!!MMM~           
+MM|?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
+?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM|!!!<<<<<<<<<!XMMM            
+X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M            
+!!!:!<<<<<~!!!!!"!<<?MMRMHnixxHMMMMMMMMMMMMM?!!<<<<<<<<<<<<<!!X9$f            
+!!!!!<<<<<<<!!!<<<<<~tMMMN$$MMMMMMMMMMMMMM!"!<<<<<<<<<<<<<<<<X9$R!            
+<<<<<<<<<<<<!<<~     ~?MMRRMMMMMMMMMMMM!"!<<~      <<<<<<<<<<H$$f             
+<<<<<<<<<<<<<<~       ~MMMMMMMMMMM**M?"<<~         <<<<<<<<:HM$R"             
+<<<<<<<<<<<<<~         `***!"?"!!!<<<<~           :<<<<<<<HMMMRP              
+<<<<<<<<<<<<<             `~ ` ~~    :            ~<<<<<xHMMMMM"              
+<<<<<<<<<<<<~                       <<:            ~ <<:HMMMMMf               
+<<<<<<<<<<<<                        `Hn:             <xMMMMMMM"               
+<<<<<<<<<<<                          !MMi          <xXMMMMMMM!                
+<<<<<<<<<<<                           !MM:        :!MMMMMMMMM~                
+<<<<<<<<<<:                            "MMr::  :xnHMMMMMMMMM!                 
+<<<<<<<<<<                              `"  `~~~?MMMMMMMMM?!                  
+<<<<<<<<<<                                      `"*MP*?XMM!~                  
+<<<<<<<<<<                                        `"!<!MMf~                   
+<<<<<<<<<~                                          `~!!?!                    
+<<<<<<<<<                                            `<~!~                    
+<<<<<<<<<                                          <:<<`~                     
+<<<<<<<<<~                                         ::<<                      :
+<<<<<<<<<<                                        'MHk<                      <
+:<<<<<<<<<                                        `MMH:                   < <<
 ******************************************************************************
 *                                                                            *
 *         =======================================================            *
@@ -73,37 +84,23 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *          Direct Iterative Relativistic Allelectron Calculations            *
 *         =======================================================            *
 *                                                                            *
-*                        VERSION 04.0    SEPTEMBER 2004                      *
+*                        VERSION 3.2     OCTOBER 2000                        *
 *                                                                            *
 ******************************************************************************
 *                                                                            *
-*    Written by:                                                             *
+* Written by:                                                                *
+*    Trond Saue,              University of Tromsoe,            Norway       *
+*    Vebjoern Bakken,         University of Oslo,               Norway       *
+*    Thomas Enevoldsen,       SDU, Odense University,           Denmark      *
+*    Trygve Helgaker,         University of Oslo,               Norway       *
+*    Hans Joergen Aa. Jensen, SDU, Odense University,           Denmark      *
+*    Jon K. Laerdahl,         University of Oslo,               Norway       *
+*    Kenneth Ruud,            University of Tromsoe,            Norway       *
+*    Joern Thyssen,           SDU, Odense University,           Denmark      *
+*    Luuk Visscher,           Vrije Universiteit Amsterdam,     Netherlands  *
 *                                                                            *
-*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
-*    Trond Saue               CNRS/ULP Strasbourg               France       *
-*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands  *
 *                                                                            *
-*    with contributions from:                                                *
-*                                                                            *
-*    Vebjoern Bakken          University of Oslo                Norway       *
-*    Ephraim Eliav            University of Tel Aviv            Israel       *
-*    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
-*    Timo Fleig               University of Duesseldorf         Germany      *
-*    Olav Fossgaard           University of Tromsoe             Norway       *
-*    Trygve Helgaker          University of Oslo                Norway       *
-*    Jon K. Laerdahl          University of Oslo                Norway       *
-*    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
-*    Patrick Norman           Linkoeping University             Sweden       *
-*    Jeppe Olsen              Aarhus University                 Denmark      *
-*    Markus Pernpointner      Vrije Universiteit Amsterdam      Netherlands  *
-*    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
-*    Kenneth Ruud             University of Tromsoe             Norway       *
-*    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
-*    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands  *
-*    Joern Thyssen            University of Southern Denmark    Denmark      *
-*    Olivier Visser           University of Groningen           Netherlands  *
-*    Toke Winther             University of Southern Denmark    Denmark      *
-*                                                                            *
+* Note:                                                                      *
 *    This is an experimental code. The authors accept no responsibility      *
 *    for the performance of the code or for the correctness of the results.  *
 *                                                                            *
@@ -114,28 +111,23 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *    If results obtained with this code are published, an                    *
 *    appropriate citation would be:                                          *
 *                                                                            *
-*    "Dirac, a relativistic ab initio electronic structure program",         *
-*    release DIRAC04.0 (2004),                                               *
-*    written by H. J. Aa. Jensen, T. Saue, and L. Visscher                   *
-*    with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,   *
-*    O. Fossgaard, T. Helgaker, J. K. Laerdahl, C. V. Larsen, P. Norman,     *
-*    J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud, P. Salek,           *
-*    J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther             *
-*    (http://dirac.chem.sdu.dk).                                             *
-*                                                                            *
+*    T. Saue, V. Bakken, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen,       *
+*    J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher:                      *
+*    "Dirac, a relativistic ab initio electronic structure program,          *
+*    Release 3.2 (2000)"                                                     *
 *    (for a suitable BibTEX entry, see                                       *
 *    <URL:"http://dirac.chem.sdu.dk/doc/reference.shtml">)                   *
 *                                                                            *
 ******************************************************************************
- Version           : Dirac 4.0 (patchlevel 0) 
- Hostname          : radon.chem.vu.nl
- Operating system  : Darwin 7.5.0
- Machine           : Power Macintosh
+ Version           : Dirac 3.2 (patchlevel 1) 
+ Hostname          : fs0.das2.cs.vu.nl
+ Operating system  : Linux 2.4.9-13.smp
+ Machine           : i686
  Run               : Sequential
- Last compilation  : 09:31:26 Sep  1 2004 (by visscher@radon.chem.vu.nl)
- Basis set dir.    : /Users/visscher/sources/Dirac04/test/14.basis.set.input:/Users/visscher/sources/Dirac04/test/14.basis.set.input/../../basis/MOLFDIR/accpvtz:/Users/visscher/sources/Dirac04/test/14.basis.set.input/:/Users/visscher/sources/Dirac04/basis/:/Users/visscher/sources/Dirac04/basis_dalton/
+ Last compilation  : 09:04:05 Oct 10 2002 (by visscher@fs0.das2.cs.vu.nl)
+ Basis set dir.    : /home4/visscher/sources/Dirac.latest/test/14.basis.set.input:/home4/visscher/sources/Dirac.latest/test/14.basis.set.input/../../basis/MOLFDIR/accpvtz:/home4/visscher/sources/Dirac.latest/test/14.basis.set.input/:/home4/visscher/sources/Dirac.latest/basis/
 
- Date and time (IBM-AIX): Wed Sep  1 09:32:42 2004
+ Date and time (Linux) : Thu Oct 10 09:07:36 2002
 
 
  *************************************************************************
@@ -150,11 +142,12 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ************************** General DIRAC set-up **************************
  **************************************************************************
 
- * The speed of light :        137.0359998
+ * The speed of light :        137.0359895
  * Direct evaluation of the following two-electron integrals:
-   - LL-integrals
-   - SL-integrals
-   - SS-integrals
+ * Default integral flags passed to all modules
+   - LL-integrals: T
+   - LS-integrals: T
+   - SS-integrals: T
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
@@ -169,11 +162,14 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ****************** Output from HERMIT input processing ******************
  *************************************************************************
 
+
+
  Default print level:        1
 
- Input test run only ...
 
- Nuclear model: Gaussian charge distribution.
+ Input test run only 
+
+ * Nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -205,72 +201,74 @@ Atomic type:     1
 
   Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
    Symmetry independent centers:
-      C  1    .000000000000000    .000000000000000    .000000000000000
+      C  1   0.000000000000000   0.000000000000000   0.000000000000000
+Trying basis set file: 
+"/home4/visscher/sources/Dirac.latest/test/14.basis.set.input/aug-cc-pVDZ"
    Large component set:
       Max.ang.quantum no.:    2  Blocks:    1    1    1
 Contraction matrix:
- .9439000000E+01
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .2002000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .5456000000E+00
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1517000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .4041000000E-01
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.9439000000E+01
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.2002000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.5456000000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1517000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.4041000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .6665000000E+04
-  1.00000000   .00000000   .00000000   .00000000   .00000000   .00000000
-   .00000000   .00000000   .00000000   .00000000
- .1000000000E+04
-   .00000000  1.00000000   .00000000   .00000000   .00000000   .00000000
-   .00000000   .00000000   .00000000   .00000000
- .2280000000E+03
-   .00000000   .00000000  1.00000000   .00000000   .00000000   .00000000
-   .00000000   .00000000   .00000000   .00000000
- .6471000000E+02
-   .00000000   .00000000   .00000000  1.00000000   .00000000   .00000000
-   .00000000   .00000000   .00000000   .00000000
- .2106000000E+02
-   .00000000   .00000000   .00000000   .00000000  1.00000000   .00000000
-   .00000000   .00000000   .00000000   .00000000
- .7495000000E+01
-   .00000000   .00000000   .00000000   .00000000   .00000000  1.00000000
-   .00000000   .00000000   .00000000   .00000000
- .2797000000E+01
-   .00000000   .00000000   .00000000   .00000000   .00000000   .00000000
-  1.00000000   .00000000   .00000000   .00000000
- .5215000000E+00
-   .00000000   .00000000   .00000000   .00000000   .00000000   .00000000
-   .00000000  1.00000000   .00000000   .00000000
- .1596000000E+00
-   .00000000   .00000000   .00000000   .00000000   .00000000   .00000000
-   .00000000   .00000000  1.00000000   .00000000
- .4690000000E-01
-   .00000000   .00000000   .00000000   .00000000   .00000000   .00000000
-   .00000000   .00000000   .00000000  1.00000000
+0.6665000000E+04
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.00000000  0.00000000
+0.1000000000E+04
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.00000000  0.00000000
+0.2280000000E+03
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.00000000  0.00000000
+0.6471000000E+02
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.00000000  0.00000000
+0.2106000000E+02
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+  0.00000000  0.00000000  0.00000000  0.00000000
+0.7495000000E+01
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
+  0.00000000  0.00000000  0.00000000  0.00000000
+0.2797000000E+01
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+  1.00000000  0.00000000  0.00000000  0.00000000
+0.5215000000E+00
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+  0.00000000  1.00000000  0.00000000  0.00000000
+0.1596000000E+00
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  1.00000000  0.00000000
+0.4690000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .5500000000E+00
-  1.00000000   .00000000
- .1510000000E+00
-   .00000000  1.00000000
+0.5500000000E+00
+  1.00000000  0.00000000
+0.1510000000E+00
+  0.00000000  1.00000000
 Contraction matrix:
- .9439000000E+01
-  1.00000000   .00000000   .00000000   .00000000   .00000000
- .2002000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000
- .5456000000E+00
-   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1517000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000
- .4041000000E-01
-   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.9439000000E+01
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.2002000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.5456000000E+00
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1517000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.4041000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .5500000000E+00
-  1.00000000   .00000000
- .1510000000E+00
-   .00000000  1.00000000
+0.5500000000E+00
+  1.00000000  0.00000000
+0.1510000000E+00
+  0.00000000  1.00000000
    Small component set:
       Max.ang.quantum no.:    3  Blocks:    1    2    1    1
 
@@ -281,48 +279,52 @@ Atomic type:     2
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
    Symmetry independent centers:
       H  2   1.184862720000000   1.184862720000000   1.184862720000000
+BFGINP: Trying basis set file for LARGE component: 
+"/home4/visscher/sources/Dirac.latest/test/14.basis.set.input/H.accpvtz.bas"
+BFGINP: Trying basis set file for LARGE component: 
+"/home4/visscher/sources/Dirac.latest/test/14.basis.set.input/../../basis/MOLFDIR/accpvtz/H.accpvtz.bas"
 LARGE MOLFBAS Block:    4    6    4
 LARGE MOLFBAS Block:    5    3    3
 LARGE MOLFBAS Block:    6    2    2
    Large component set:
       Max.ang.quantum no.:    2  Blocks:    1    1    1
 Contraction matrix:
- .1407000000E+01
-  1.00000000   .00000000   .00000000
- .3880000000E+00
-   .00000000  1.00000000   .00000000
- .1020000000E+00
-   .00000000   .00000000  1.00000000
+0.1407000000E+01
+  1.00000000  0.00000000  0.00000000
+0.3880000000E+00
+  0.00000000  1.00000000  0.00000000
+0.1020000000E+00
+  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .3387000000E+02
-  1.00000000   .00000000   .00000000   .00000000   .00000000   .00000000
- .5095000000E+01
-   .00000000  1.00000000   .00000000   .00000000   .00000000   .00000000
- .1159000000E+01
-   .00000000   .00000000  1.00000000   .00000000   .00000000   .00000000
- .3258000000E+00
-   .00000000   .00000000   .00000000  1.00000000   .00000000   .00000000
- .1027000000E+00
-   .00000000   .00000000   .00000000   .00000000  1.00000000   .00000000
- .2526000000E-01
-   .00000000   .00000000   .00000000   .00000000   .00000000  1.00000000
+0.3387000000E+02
+  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.5095000000E+01
+  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000  0.00000000
+0.1159000000E+01
+  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000  0.00000000
+0.3258000000E+00
+  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000  0.00000000
+0.1027000000E+00
+  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000  0.00000000
+0.2526000000E-01
+  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .1057000000E+01
-  1.00000000   .00000000
- .2470000000E+00
-   .00000000  1.00000000
+0.1057000000E+01
+  1.00000000  0.00000000
+0.2470000000E+00
+  0.00000000  1.00000000
 Contraction matrix:
- .1407000000E+01
-  1.00000000   .00000000   .00000000
- .3880000000E+00
-   .00000000  1.00000000   .00000000
- .1020000000E+00
-   .00000000   .00000000  1.00000000
+0.1407000000E+01
+  1.00000000  0.00000000  0.00000000
+0.3880000000E+00
+  0.00000000  1.00000000  0.00000000
+0.1020000000E+00
+  0.00000000  0.00000000  1.00000000
 Contraction matrix:
- .1057000000E+01
-  1.00000000   .00000000
- .2470000000E+00
-   .00000000  1.00000000
+0.1057000000E+01
+  1.00000000  0.00000000
+0.2470000000E+00
+  0.00000000  1.00000000
    Small component set:
       Max.ang.quantum no.:    3  Blocks:    1    2    1    1
 
@@ -412,10 +414,10 @@ Point group: D2
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C  1        1       6      37      25      L  - [10s5p2d|4s3p2d]                                   
-                             91      91      S  - [5s12p5d2f|5s12p5d2f]                              
-  H  2        4       1      27      25      L  - [6s3p2d|4s3p2d]                                    
-                             65      65      S  - [3s8p3d2f|3s8p3d2f]                                
+  C  1        1       6      37      25      L - [10s5p2d|4s3p2d]                                   
+                             91      91      S - [5s12p5d2f|5s12p5d2f]                              
+  H  2        4       1      27      25      L - [6s3p2d|4s3p2d]                                    
+                             65      65      S - [3s8p3d2f|3s8p3d2f]                                
   ----------------------------------------------------------------------
                             145     125   L - large components
                             351     351   S - small components
@@ -426,33 +428,15 @@ Point group: D2
   Threshold for integrals:  1.00D-15
 
 
-  References for the basis sets
-  -----------------------------
-
-  Atom type   1
-  Correlation consistent singly augmented double zeta                             
-  H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                      
-  He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).       
-  Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                      
-  Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                     
-  Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).       
-  Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).        
-  B- F pol : R.A. Kendall, T.H. Dunning, Jr. and R.J. Harrison, JCP 96,6769 (1992)
-
-  Atom type   2
-  Basis set read from MOLFDIR file : H.accpvtz.bas                                
-  Hydrogen correlation consistent augm. pvtz basis : recontraction.               
-
-
   Cartesian Coordinates
   ---------------------
 
   Total number of coordinates: 15
 
 
-   1   C  1     x       .0000000000
-   2            y       .0000000000
-   3            z       .0000000000
+   1   C  1     x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
 
    4   H  2 1   x      1.1848627200
    5            y      1.1848627200
@@ -514,11 +498,11 @@ Point group: D2
 
             C  1        H  1        H  2        H  3        H  4
 
-   C  1     .000000
-   H  1    1.086000     .000000
-   H  2    1.086000    1.773430     .000000
-   H  3    1.086000    1.773430    1.773430     .000000
-   H  4    1.086000    1.773430    1.773430    1.773430     .000000
+   C  1    0.000000
+   H  1    1.086000    0.000000
+   H  2    1.086000    1.773431    0.000000
+   H  3    1.086000    1.773431    1.773431    0.000000
+   H  4    1.086000    1.773431    1.773431    1.773431    0.000000
 
 
 
@@ -807,29 +791,16 @@ Point group: D2
  ***************************************************************************
 
  * Print level :    0
- * Dirac-Coulomb Hamiltonian
- * Default integral flags passed to all modules
-   - LL-integrals: T
-   - LS-integrals: T
-   - SS-integrals: T
-   - GT-integrals: F
  * Basis set:
    - contracted large component basis set
    - uncontracted small component basis set
-
-
- Information about the restricted kinetic balance scheme:
+ * Restricted kinetic balance
  * Default RKB projection:
-   1: Pre-projection in scalar basis
-   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
-
-
- *********************************************************************************
- *************************** Memory required by HERMIT ***************************
- *********************************************************************************
-
+   1: Pre-projection on scalar basis
+   2: Removing unphysical solutions for no external field
+ * Dirac-Coulomb Hamiltonian
 ===========================================================================
- Maximum memory load for two-electron integral processing:
+ Maximum memory load for two-integral processing in HERMIT:
 ===========================================================================
  * LL-integrals:
    6(H  2 Ld)   6(H  2 Ld)   6(H  2 Ld)   6(H  2 Ld)             1360749
@@ -839,28 +810,7 @@ Point group: D2
   16(H  2 Sf)  16(H  2 Sf)  16(H  2 Sf)  16(H  2 Sf)            10425285
 
 
- ********************************************************************************
- *************************** Input consistency checks ***************************
- ********************************************************************************
-
-
-
  *************************************************************************
  ************************ End of input processing ************************
  *************************************************************************
-
-
-  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---                       
-
- Date and time (IBM-AIX): Wed Sep  1 09:32:42 2004
- Normal exit, only input check was asked.
-
-
- QTRACE dump of internal trace stack
-
- ====================
-      level    module
- ====================
-          1    DIRCTL  
- ====================
 

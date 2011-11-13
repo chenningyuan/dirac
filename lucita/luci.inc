@@ -1,4 +1,4 @@
-*comdeck luci.inc $Revision: 1.3 $ 
+*comdeck luci.inc $Revision: 5515 $ 
 C     
 C     COMMON INFORMATION FOR LUCITA CI PROGRAM
 C     
@@ -9,6 +9,6 @@ C
       character*3 CALSIZ
       common/LUCIIF/TITLE,TYPE,WAFFCT,PRILUC,CALSIZ
       integer        IRREP,NROOT,NACTEL,MULTIP,MXHOL1,MXELR3,INACOB,
-     &               IDEMOL,IRSTRT
+     &               IDEMOL,IRSTRT,MXCIVL,IMAXCIITER
       common/iLUCIIF/IRREP,NROOT,NACTEL,MULTIP,MXHOL1,MXELR3,INACOB,
-     &               IDEMOL,IRSTRT
+     &               IDEMOL,IRSTRT,MXCIVL,IMAXCIITER

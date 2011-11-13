@@ -1,47 +1,34 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C$Id: abaopt.F,v 1.44.4.2 2004/09/01 08:03:50 cjacob Exp $
+C$Id: abaopt.F 7732 2008-09-16 20:30:19Z bast $
 C
 C#include "single.h"
-#ifdef UNDEF
-/* Comdeck log */
-950915-vebjornb: New module taking care of optimizations.
-                 It uses both the old cbiwlk.h and the new optinf.h
-#endif
+! OLD_LOG
+!950915-vebjornb: New module taking care of optimizations.
+!                 It uses both the old cbiwlk.h and the new optinf.h
+!
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
 #include "implicit.h"
@@ -500,7 +487,7 @@ C&&&& : BFGSR1: Use 1st order method with BFGS/rank one combination update
  66         BFGSR1 = .TRUE.
             GOTO 100
  67         CONTINUE
-C&&&& : NUMGRA: Use numerical gradient
+C&&&& :  NUMGRA: Use numerical gradient
             DONGRD = .TRUE.
             GOTO 100
  68         CONTINUE
@@ -1376,7 +1363,7 @@ C
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IJOB = 0
-         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MOTHER),
+         CALL MPI_BCAST(IJOB,1,my_MPI_INTEGER,NODEID(MOTHER),
      &                  MPI_COMM_WORLD,IERR)
       END IF
 #endif      
@@ -2358,6 +2345,8 @@ C
          CALL EXEDIR(WORK(IWOFF+1),LWORK)
          IF (DOCCM) THEN
             ENERGY = RGETCCSD()
+         ELSE IF (DOCIM) THEN
+            ENERGY = RGETCI()
          ELSE IF (DOMP2) THEN
             ENERGY = EMP2+DHFERG
          ELSE IF (DODHF.OR.DODFT) THEN
@@ -3109,7 +3098,8 @@ C
 #include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD) 
       DIMENSION GAMMA(MXRCRD), HESOLD(MXRCRD,MXRCRD) 
       CHARACTER UPDTXT*6, OUTTXT*18
@@ -3177,7 +3167,8 @@ C
 #include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESINT(MXRCRD,MXRCRD)
 C
@@ -3230,7 +3221,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), GAMMA(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -3348,7 +3340,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), GAMMA(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -3496,7 +3489,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), GAMMA(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -3608,7 +3602,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), GAMMA(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -3676,7 +3671,8 @@ C Updates the Hessian using BFGS/rank one combination update (ala Bofill)
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), GAMMA(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -3747,7 +3743,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), GAMMA(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -3847,7 +3844,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), STPMAT(25,MCRD)
       DIMENSION GAMMA(MXRCRD), GRDMAT(25,MCRD)
@@ -4130,7 +4128,8 @@ C  /* Deck upmult */
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION DELTA(MXRCRD), STPMAT(25,MCRD)
       DIMENSION GAMMA(MXRCRD), GRDMAT(25,MCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESNEW(MCRD,MCRD)
@@ -4399,7 +4398,8 @@ C  /* Deck upcmbm */
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), STPMAT(25,MCRD)
       DIMENSION GAMMA(MXRCRD), GRDMAT(25,MCRD)
@@ -4485,7 +4485,8 @@ C  /* Deck upmodh */
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), STPMAT(25,MCRD)
       DIMENSION GAMMA(MXRCRD), GRDMAT(25,MCRD)
@@ -4548,7 +4549,8 @@ C  /* Deck upmodo */
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       DIMENSION DELTA(MXRCRD), STPMAT(25,MCRD)
       DIMENSION GAMMA(MXRCRD), GRDMAT(25,MCRD)
@@ -5307,7 +5309,8 @@ C
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESSMT(NCRD,NCRD)
       LOGICAL STPSCL
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       STPSCL = .TRUE.
 C      STPSCL = .FALSE.
       IF (IPRINT .GE. IPRDBG) THEN
@@ -5441,7 +5444,8 @@ C
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESSMT(NCRD,NCRD)
       LOGICAL STPSCL
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       STPSCL = .TRUE.
 C      STPSCL = .FALSE.
@@ -5618,7 +5622,9 @@ C
       DIMENSION TMPMT3(MX2CRD*MX2CRD),TMPMT4(MX2CRD,MX2CRD)
       DIMENSION VECMOD(MXCOOR)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
-      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
+
 C
 C     For saddle point optimizations, we can follow a specific eigenvector.
 C     Due to the fact that we are separating one mode for maximization,
@@ -6479,11 +6485,7 @@ C     earlier but ends up with the same energy, we're having trouble.
 C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
-      TMPLN = MLINE(1)
-      BASIS = (TMPLN(1:5) .EQ. 'BASIS')
-      I = 4
-      IF (BASIS) I = 5
-      TMPLN = MLINE(I)
+      TMPLN = MLINE(NMLAU)
       READ(TMPLN(1:5),'(I5)') NONTYP
       WRITE(TMPLN(10:20), '(A11)') '           '
       II = 0
@@ -6493,7 +6495,7 @@ C
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
       IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
-      MLINE(I) = TMPLN
+      MLINE(NMLAU) = TMPLN
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
@@ -6702,10 +6704,10 @@ C
 C     If all symmetry has been removed during preoptimization, we try
 C     to detect it again after each preoptimization phase.
 C
-      TMPLIN = MLINE(5)
+      TMPLIN = MLINE(NMLAU)
       IF ((MAXOPR .EQ. 0) .AND. (ITRBRK .GE. 0)) THEN
          WRITE(TMPLIN(10:20), '(A11)') '           '
-         MLINE(5) = TMPLIN
+         MLINE(NMLAU) = TMPLIN
          NWSYMM = .TRUE.
       END IF
       CALL PNCMOL
@@ -7184,8 +7186,19 @@ C
 #include "optinf.h"
 #include "gnrinf.h"
       CHARACTER*12 FILENM
+      LOGICAL :: ex
 C
-      CALL GPOPEN(LUMOL,'MOLECULE.INP','UNKNOWN',' ','FORMATTED',IDUMMY,
+C     ADJUST FOR XYZ FILES
+      INQUIRE(file='MOLECULE.MOL',exist=ex)
+      IF (.NOT.(ex)) THEN
+        INQUIRE(file='MOLECULE.XYZ', exist=ex)
+        IF (ex) WRITE(LUPRI,*)
+     &       'ERROR: abaopt.F PNCMOL not adjusted for XYZ files.'
+        CALL QUIT('ERROR: abaopt.F(PNCMOL): MOLECULE FILE NOT FOUND.')
+      END IF
+
+      LUMOL = -1
+      CALL GPOPEN(LUMOL,'MOLECULE.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND (LUMOL)
       DO 200 IMLINE = 1,NMLINE
@@ -7231,7 +7244,7 @@ C
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MXCOOR,MXCOOR)
       DIMENSION WORK(LWORK)
 C
-      LUHES = 0
+      LUHES = -1
       CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',IDUMY,
      &     .FALSE.)
       IF (REDINT .OR. DELINT) THEN
@@ -7303,7 +7316,7 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), WORK(LWORK)
 C
-      LUHES = 0
+      LUHES = -1
       IERR = 0
       CALL DZERO(HESMOL,MXCOOR*MXCOOR)
       INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
@@ -7432,7 +7445,8 @@ C
 #include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
-      LOGICAL EXHER, EXSIR, EXABA, BIG
+      LOGICAL EXHER, EXSIR, EXABA, BIG, ex
+      CHARACTER*4 NAME
       DIMENSION WORK(LWORK), COOR(3,MXCENT)
 C
 #include "molinp.h"
@@ -7534,7 +7548,18 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
-         CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
+         LUMOL = -1
+C        ADJUST FOR XYZ FILES
+         INQUIRE(file='MOLECULE.MOL',exist=ex)
+         IF (.NOT.(ex)) THEN
+           INQUIRE(file='MOLECULE.XYZ', exist=ex)
+           IF (ex) WRITE(LUPRI,*) 'ERROR: abaopt.F PNCMOL not adjust 
+     &          for XYZ files.'
+           CALL QUIT('ERROR:abaopt(NUMGRD): MOLECULE FILE NOT FOUND.')
+         END IF
+
+
+         CALL GPOPEN(LUMOL,'MOLECULE.MOL','OLD',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND (LUMOL)
          DO 200 IMLINE = 1,NMLINE

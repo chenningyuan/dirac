@@ -1,36 +1,24 @@
 /*
-       Copyright (c) 2004 by the authors of Dirac (see below).
-       All Rights Reserved.
-    
-       The source code in this file is part of
-       Dirac, a relativistic ab initio electronic structure program,
-       release DIRAC04.0 (2004),
-       written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-       with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-       O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-       P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-       P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-       (http://dirac.chem.sdu.dk).
-    
-       For a suitable BibTEX entry, see:
-          http://dirac.chem.sdu.dk/doc/reference.shtml
-    
-       This source code is provided under a written licence and may be
-       used, copied, transmitted, or stored only in accord with that
-       written licence.
-    
-       In particular, no part of the source code or compiled modules may
-       be distributed outside the research group of the licence holder.
-       This means also that persons (e.g. post-docs) leaving the research
-       group of the licence holder may not take any part of Dirac,
-       including modified files, with him/her, unless that person has
-       obtained his/her own licence.
-    
-       For questions concerning this copyright write to:
-          dirac-admin@dirac.chem.sdu.dk
-    
-       For information on how to get a licence see:
-          http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 */
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-tester.c:
@@ -48,16 +36,13 @@
  */
 #define __CVERSION__
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "general.h"
 #include "functionals.h"
-#include "inforb.h"
-
-/* backward compatibility block */
-struct common_inforb inforb_;
-
 
 #if !defined __inline__
 /* inline some stuff whenever possible */
@@ -76,18 +61,16 @@ void dftpot1(SecondDrv *ds, const real *w, const real* rho, const real* grad,
 void condft_(void);
 
 static __inline__
-int test_var(real comp, real refer, const char* fun, const char* drv, 
-             int* counter)
+void test_var(real comp, real refer, const char* fun, const char* drv, 
+              int* counter)
 {
-    if(fabs(comp-refer)>2e-8+5e-5*(fabs(comp)+fabs(refer))) { 
+      if(fabs(comp-refer)>2e-7+5e-5*(fabs(comp)+fabs(refer))) { 
         if(*counter<95)
             printf("%s %s: fin.diff: %12g found: %12g, diff=%g\n", 
                    fun, drv, refer, comp, fabs(comp-refer));
 	++*counter;
-        return 1;
-    } /* else printf("Test '%s:%s' passed (expected: %g found: %g).\n", fun,drv,
-	       refer, comp); */
-    return 0;
+	  }/*  else printf("Test '%s:%s' passed (expected: %g found: %g).\n",
+               fun,drv, refer, comp); */
 }
 
 const int GRID_STEP = 1;
@@ -100,17 +83,17 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 { 
     int i, j, k, failed = 0;
     real drho, dgra, resp, resm, num;
-    FirstFuncDrv gga;
+    FunFirstFuncDrv gga;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.2*rho, 0.8*rho, 0.2*ngrad, 0.8*ngrad };
+		FunDensProp dt, dp = { 0.5*rho,0.2*rho, 0.2*ngrad,0.2*ngrad };
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		/* TEST df1000 */
-		drho = rho*1e-7;
+		drho = rho*1e-4;
 		dt = dp; dt.rhoa -= drho; resm = func(&dt);
 		dt = dp; dt.rhoa += drho; resp = func(&dt);
 		drv1_clear(&gga);
@@ -126,7 +109,7 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 		test_var(gga.df0010,num, fun_name, "df0010", &failed);
 		
 		/* TEST df00001 */
-		if(gracos==0) continue;
+		if(fabs(gracos)<1e-5) continue;
 		dgra = gracos*1e-7;
 		dt = dp; dt.gradab -= dgra; resm = func(&dt);
 		dt = dp; dt.gradab += dgra; resp = func(&dt);
@@ -144,119 +127,117 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
    It is assumed that the first order derivatives are OK.
 */
 static int
-test_second(const char* fun_name,
+test_second(const char* fname,
             FirstOrderFun first_fun, SecondOrderFun second_fun)
 { 
-    int i, j, k, failed = 0;
+    int i, j, k, fail = 0;
     real drho, dgra, num;
-    FirstFuncDrv tmpm, tmpp;
-    SecondFuncDrv gga;
+    FunFirstFuncDrv m, p;
+    FunSecondFuncDrv d;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.2*ngrad };
+		FunDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.3*ngrad };
 		dp.gradab = dp.grada*dp.gradb*gracos;
-		drv2_clear(&gga);
-		second_fun(&gga, 1, &dp);
-		drv1_clear(&tmpm);
-		first_fun(&tmpm, 1, &dp);
-		test_var(gga.df1000, tmpm.df1000, fun_name, "df1000X", &failed);
-		test_var(gga.df0010, tmpm.df0010, fun_name, "df0010X", &failed);
-		test_var(gga.df00001,tmpm.df00001,fun_name, "df00001X", &failed);
+		drv2_clear(&d);
+		second_fun(&d, 1, &dp);
+		drv1_clear(&m);
+		first_fun(&m, 1, &dp);
+		test_var(d.df1000, m.df1000, fname, "df1000X", &fail);
+		test_var(d.df0010, m.df0010, fname, "df0010X", &fail);
+		test_var(d.df00001,m.df00001,fname, "df00001X", &fail);
 
-		drv2_clear(&gga);
-		second_fun(&gga, 1, &dp);
-		drv1_clear(&tmpm);
-		first_fun(&tmpm, 1, &dp);
-		test_var(gga.df0100, tmpm.df0100, fun_name, "df0100X", &failed);
-		test_var(gga.df0001, tmpm.df0001, fun_name, "df0001X", &failed);
-		test_var(gga.df00001,tmpm.df00001,fun_name, "df00001X", &failed);
+		drv2_clear(&d);
+		second_fun(&d, 1, &dp);
+		drv1_clear(&m);
+		first_fun(&m, 1, &dp);
+		test_var(d.df0100, m.df0100, fname, "df0100X", &fail);
+		test_var(d.df0001, m.df0001, fname, "df0001X", &fail);
+		test_var(d.df00001,m.df00001,fname, "df00001X", &fail);
 
 		/* TEST df2000, df1010, df1001 and df10001  */
-		drho = rho*1e-7;
-		drv1_clear(&tmpm);
-		dt = dp; dt.rhoa -= drho; first_fun(&tmpm, 1, &dt);
-		//printf("%g %g %g %g\n", dp.rhoa, dp.rhob, dp.grada, dp.gradb);
-		drv1_clear(&tmpp);
-		dt = dp; dt.rhoa += drho; first_fun(&tmpp, 1, &dt);
-		num = (tmpp.df1000-tmpm.df1000)/(2*drho);
-		test_var(gga.df2000, num, fun_name, "df2000", &failed);
-		//printf("%g %g %g %g\n", dp.rhoa, dp.rhob, dp.grada, dp.gradb);
-		num = (tmpp.df0010-tmpm.df0010)/(2*drho);
-		test_var(gga.df1010, num, fun_name, "df1010a", &failed);
-		num = (tmpp.df0001-tmpm.df0001)/(2*drho);
-		test_var(gga.df1001, num, fun_name, "df1001a", &failed);
-		num = (tmpp.df00001-tmpm.df00001)/(2*drho);
-		test_var(gga.df10001, num, fun_name, "df10001", &failed);
+		drho = rho*1e-5;
+		drv1_clear(&m);
+		dt = dp; dt.rhoa -= drho; first_fun(&m, 1, &dt);
+		drv1_clear(&p);
+		dt = dp; dt.rhoa += drho; first_fun(&p, 1, &dt);
+		num = (p.df1000-m.df1000)/(2*drho);
+		test_var(d.df2000, num, fname, "df2000", &fail);
+		num = (p.df0010-m.df0010)/(2*drho);
+		test_var(d.df1010, num, fname, "df1010a", &fail);
+		num = (p.df0001-m.df0001)/(2*drho);
+		test_var(d.df1001, num, fname, "df1001a", &fail);
+		num = (p.df00001-m.df00001)/(2*drho);
+		test_var(d.df10001, num, fname, "df10001", &fail);
 		
 		/* TEST df0200, df0101, df0110 and df01001 */
 	       	drho = rho*1e-7;
-		drv1_clear(&tmpm);
-		dt = dp; dt.rhob -= drho; first_fun(&tmpm, 1, &dt);
-		drv1_clear(&tmpp);
-		dt = dp; dt.rhob += drho; first_fun(&tmpp, 1, &dt);
-		num = (tmpp.df0100-tmpm.df0100)/(2*drho);
-		test_var(gga.df0200, num, fun_name, "df0200", &failed);
-		// printf("%g %g %g %g\n", dp.rhoa, dp.rhob, dp.grada, dp.gradb);
-		num = (tmpp.df0010-tmpm.df0010)/(2*drho);
-		test_var(gga.df0110, num, fun_name, "df0110a", &failed);        
-		num = (tmpp.df0001-tmpm.df0001)/(2*drho);
-		test_var(gga.df0101, num, fun_name, "df0101a", &failed);
-		num = (tmpp.df00001-tmpm.df00001)/(2*drho);
-		test_var(gga.df01001, num, fun_name, "df01001", &failed);
+		drv1_clear(&m);
+		dt = dp; dt.rhob -= drho; first_fun(&m, 1, &dt);
+		drv1_clear(&p);
+		dt = dp; dt.rhob += drho; first_fun(&p, 1, &dt);
+		num = (p.df0100-m.df0100)/(2*drho);
+		test_var(d.df0200, num, fname, "df0200", &fail);
+		/* printf("%g %g %g %g\n", dp.rhoa, dp.rhob, dp.grada, dp.gradb); */
+		num = (p.df0010-m.df0010)/(2*drho);
+		test_var(d.df0110, num, fname, "df0110a", &fail);        
+		num = (p.df0001-m.df0001)/(2*drho);
+		test_var(d.df0101, num, fname, "df0101a", &fail);
+		num = (p.df00001-m.df00001)/(2*drho);
+		test_var(d.df01001, num, fname, "df01001", &fail);
 		
 		/* TEST df1010, df0110, df0020 */
 		 dgra = ngrad*1e-5;
-	         drv1_clear(&tmpm);
-		 dt = dp; dt.grada -= dgra; first_fun(&tmpm, 1, &dt);
-		 drv1_clear(&tmpp);
-		 dt = dp; dt.grada += dgra; first_fun(&tmpp, 1, &dt);
-		 num = (tmpp.df1000-tmpm.df1000)/(2*dgra);
-		 test_var(gga.df1010, num, fun_name, "df1010b", &failed);
-		 num = (tmpp.df0010-tmpm.df0010)/(2*dgra);
-		 test_var(gga.df0020, num, fun_name, "df0020", &failed);
-                 num = (tmpp.df0100-tmpm.df0100)/(2*dgra);
-		 test_var(gga.df0110, num, fun_name, "df0110b", &failed); 
+	         drv1_clear(&m);
+		 dt = dp; dt.grada -= dgra; first_fun(&m, 1, &dt);
+		 drv1_clear(&p);
+		 dt = dp; dt.grada += dgra; first_fun(&p, 1, &dt);
+		 num = (p.df1000-m.df1000)/(2*dgra);
+		 test_var(d.df1010, num, fname, "df1010b", &fail);
+		 num = (p.df0010-m.df0010)/(2*dgra);
+		 test_var(d.df0020, num, fname, "df0020", &fail);
+                 num = (p.df0100-m.df0100)/(2*dgra);
+		 test_var(d.df0110, num, fname, "df0110b", &fail); 
                	/* TEST df1001, df0101, df0002 */
 		 dgra = ngrad*1e-5;
-	         drv1_clear(&tmpm);
-		 dt = dp; dt.gradb -= dgra; first_fun(&tmpm, 1, &dt);
-		 drv1_clear(&tmpp);
-		 dt = dp; dt.gradb += dgra; first_fun(&tmpp, 1, &dt);
-		 num = (tmpp.df1000-tmpm.df1000)/(2*dgra);
-		 test_var(gga.df1001, num, fun_name, "df1001b", &failed);
-		 num = (tmpp.df0001-tmpm.df0001)/(2*dgra);
-		 test_var(gga.df0002, num, fun_name, "df0002", &failed);
-                 num = (tmpp.df0100-tmpm.df0100)/(2*dgra);
-		 test_var(gga.df0101, num, fun_name, "df0101b", &failed);   
+	         drv1_clear(&m);
+		 dt = dp; dt.gradb -= dgra; first_fun(&m, 1, &dt);
+		 drv1_clear(&p);
+		 dt = dp; dt.gradb += dgra; first_fun(&p, 1, &dt);
+		 num = (p.df1000-m.df1000)/(2*dgra);
+		 test_var(d.df1001, num, fname, "df1001b", &fail);
+		 num = (p.df0001-m.df0001)/(2*dgra);
+		 test_var(d.df0002, num, fname, "df0002", &fail);
+                 num = (p.df0100-m.df0100)/(2*dgra);
+		 test_var(d.df0101, num, fname, "df0101b", &fail);   
 		
 		/* TEST REMAINING     df1100, df0200, df1001 */
 		 drho = rho*1e-7;
-		 drv1_clear(&tmpm);
-		 dt = dp; dt.rhob -= drho; first_fun(&tmpm, 1, &dt);
-		 drv1_clear(&tmpp);
-		 dt = dp; dt.rhob += drho; first_fun(&tmpp, 1, &dt);
-		 num = (tmpp.df0100-tmpm.df0100)/(2*drho);
-		 test_var(gga.df0200, num, fun_name, "df0200", &failed);
-		 num = (tmpp.df1000-tmpm.df1000)/(2*drho);
-		 test_var(gga.df1100, num, fun_name, "df1100", &failed);
+		 drv1_clear(&m);
+		 dt = dp; dt.rhob -= drho; first_fun(&m, 1, &dt);
+		 drv1_clear(&p);
+		 dt = dp; dt.rhob += drho; first_fun(&p, 1, &dt);
+		 num = (p.df0100-m.df0100)/(2*drho);
+		 test_var(d.df0200, num, fname, "df0200", &fail);
+		 num = (p.df1000-m.df1000)/(2*drho);
+		 test_var(d.df1100, num, fname, "df1100", &fail);
 		 dgra = ngrad*1e-7;
-		 drv1_clear(&tmpm);
-		 dt = dp; dt.gradb -= dgra; first_fun(&tmpm, 1, &dt);
-		 drv1_clear(&tmpp);
-		 dt = dp; dt.gradb += dgra; first_fun(&tmpp, 1, &dt);
-		 num = (tmpp.df1000-tmpm.df1000)/(2*dgra);
-		 test_var(gga.df1001, num, fun_name, "df1001b", &failed);
-		 num = (tmpp.df0010-tmpm.df0010)/(2*dgra);
-		 test_var(gga.df0011, num, fun_name, "df0011", &failed);
+		 drv1_clear(&m);
+		 dt = dp; dt.gradb -= dgra; first_fun(&m, 1, &dt);
+		 drv1_clear(&p);
+		 dt = dp; dt.gradb += dgra; first_fun(&p, 1, &dt);
+		 num = (p.df1000-m.df1000)/(2*dgra);
+		 test_var(d.df1001, num, fname, "df1001b", &fail);
+		 num = (p.df0010-m.df0010)/(2*dgra);
+		 test_var(d.df0011, num, fname, "df0011", &fail);
 	    }
 	}
     }
-    if(failed==0) printf("%-5s (second order derivatives): OK\n", fun_name);
-    return failed;
+    if(fail==0) printf("%-5s (second order derivatives): OK\n", fname);
+    return fail;
 }
 
 /* test_third:
@@ -269,118 +250,118 @@ test_third(const char* fun_name,
 { 
     int i, j, k, failed = 0;
     real drho, dgra, num;
-    SecondFuncDrv tmpm, tmpp;
-    ThirdFuncDrv gga;
+    FunSecondFuncDrv m, p;
+    FunThirdFuncDrv d;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.2*ngrad };
+		FunDensProp dt, dp = {0.5*rho, 0.3*rho, 0.5*ngrad, 1*ngrad};
 		dp.gradab = dp.grada*dp.gradb*gracos;
-		drv3_clear(&gga);
-		third_fun(&gga, 1, &dp);
-		drv2_clear(&tmpm);
-		second_fun(&tmpm, 1, &dp);
-		test_var(gga.df1000, tmpm.df1000, fun_name, "df1000X",&failed);
-               	test_var(gga.df0100, tmpm.df0100, fun_name, "df0100X",&failed);
-		test_var(gga.df0010, tmpm.df0010, fun_name, "df0010X",&failed);
-                test_var(gga.df0001, tmpm.df0001, fun_name, "df0001X",&failed);
-		test_var(gga.df2000, tmpm.df2000, fun_name, "df2000X",&failed);
-               	test_var(gga.df0200, tmpm.df0200, fun_name, "df0200X",&failed);
-		test_var(gga.df1100, tmpm.df1100, fun_name, "df1100X",&failed);
-                test_var(gga.df0011, tmpm.df0011, fun_name, "df0011X",&failed);
-		test_var(gga.df1010, tmpm.df1010, fun_name, "df1010X",&failed);
-		test_var(gga.df1001, tmpm.df1001, fun_name, "df1001X",&failed);
-               	test_var(gga.df0101, tmpm.df0101, fun_name, "df0101X",&failed);
-		test_var(gga.df0110, tmpm.df0110, fun_name, "df0110X",&failed); 
-		test_var(gga.df0020, tmpm.df0020, fun_name, "df0020X",&failed);
-                test_var(gga.df0002, tmpm.df0002, fun_name, "df0002X",&failed); 
-                test_var(gga.df00001, tmpm.df00001, fun_name, "df00001X",&failed);   
-                test_var(gga.df10001, tmpm.df10001, fun_name, "df10001X",&failed);  
-                test_var(gga.df01001, tmpm.df01001, fun_name, "df01001X",&failed);    
+		drv3_clear(&d);
+		third_fun(&d, 1, &dp);
+		drv2_clear(&m);
+		second_fun(&m, 1, &dp);
+		test_var(d.df1000, m.df1000, fun_name, "df1000X",&failed);
+               	test_var(d.df0100, m.df0100, fun_name, "df0100X",&failed);
+		test_var(d.df0010, m.df0010, fun_name, "df0010X",&failed);
+                test_var(d.df0001, m.df0001, fun_name, "df0001X",&failed);
+		test_var(d.df2000, m.df2000, fun_name, "df2000X",&failed);
+               	test_var(d.df0200, m.df0200, fun_name, "df0200X",&failed);
+		test_var(d.df1100, m.df1100, fun_name, "df1100X",&failed);
+                test_var(d.df0011, m.df0011, fun_name, "df0011X",&failed);
+		test_var(d.df1010, m.df1010, fun_name, "df1010X",&failed);
+		test_var(d.df1001, m.df1001, fun_name, "df1001X",&failed);
+               	test_var(d.df0101, m.df0101, fun_name, "df0101X",&failed);
+		test_var(d.df0110, m.df0110, fun_name, "df0110X",&failed); 
+		test_var(d.df0020, m.df0020, fun_name, "df0020X",&failed);
+                test_var(d.df0002, m.df0002, fun_name, "df0002X",&failed); 
+                test_var(d.df00001, m.df00001, fun_name, "df00001X",&failed);
+                test_var(d.df10001, m.df10001, fun_name, "df10001X",&failed);  
+                test_var(d.df01001, m.df01001, fun_name, "df01001X",&failed);
 
 		/* drhoa: test  */
 		drho = rho*1e-7;
-		drv2_clear(&tmpm);
-		dt = dp; dt.rhoa -= drho; second_fun(&tmpm, 1, &dt);
-		drv2_clear(&tmpp);
-		dt = dp; dt.rhoa += drho; second_fun(&tmpp, 1, &dt);
-		num = (tmpp.df2000-tmpm.df2000)/(2*drho);
-		test_var(gga.df3000, num, fun_name, "df3000", &failed); 
-		num = (tmpp.df1100-tmpm.df1100)/(2*drho);
-		test_var(gga.df2100, num, fun_name, "df2100a", &failed);
-		num = (tmpp.df0200-tmpm.df0200)/(2*drho);
-		test_var(gga.df1200, num, fun_name, "df1200a", &failed);
-		num = (tmpp.df1010-tmpm.df1010)/(2*drho);
-		test_var(gga.df2010, num, fun_name, "df2010a", &failed);
-               	num = (tmpp.df1001-tmpm.df1001)/(2*drho);
-		test_var(gga.df2001, num, fun_name, "df2001a", &failed);
-		num = (tmpp.df0020-tmpm.df0020)/(2*drho);
-		test_var(gga.df1020, num, fun_name, "df1020a", &failed);
-		num = (tmpp.df0002-tmpm.df0002)/(2*drho);
-		test_var(gga.df1002, num, fun_name, "df1002a", &failed);
-		num = (tmpp.df0011-tmpm.df0011)/(2*drho);
-		test_var(gga.df1011, num, fun_name, "df1011a", &failed);
-		num = (tmpp.df0101-tmpm.df0101)/(2*drho);
-		test_var(gga.df1101, num, fun_name, "df1101a", &failed);
-                num = (tmpp.df0110-tmpm.df0110)/(2*drho);
-		test_var(gga.df1110, num, fun_name, "df1110a", &failed); 
-                num = (tmpp.df10001-tmpm.df10001)/(2*drho);
-		test_var(gga.df20001, num, fun_name, "df20001a", &failed);   
-		num = (tmpp.df01001-tmpm.df01001)/(2*drho);
-		test_var(gga.df11001, num, fun_name, "df11001a", &failed);  
+		drv2_clear(&m);
+		dt = dp; dt.rhoa -= drho; second_fun(&m, 1, &dt);
+		drv2_clear(&p);
+		dt = dp; dt.rhoa += drho; second_fun(&p, 1, &dt);
+		num = (p.df2000-m.df2000)/(2*drho);
+		test_var(d.df3000, num, fun_name, "df3000", &failed); 
+		num = (p.df1100-m.df1100)/(2*drho);
+		test_var(d.df2100, num, fun_name, "df2100a", &failed);
+		num = (p.df0200-m.df0200)/(2*drho);
+		test_var(d.df1200, num, fun_name, "df1200a", &failed);
+		num = (p.df1010-m.df1010)/(2*drho);
+		test_var(d.df2010, num, fun_name, "df2010a", &failed);
+               	num = (p.df1001-m.df1001)/(2*drho);
+		test_var(d.df2001, num, fun_name, "df2001a", &failed);
+		num = (p.df0020-m.df0020)/(2*drho);
+		test_var(d.df1020, num, fun_name, "df1020a", &failed);
+		num = (p.df0002-m.df0002)/(2*drho);
+		test_var(d.df1002, num, fun_name, "df1002a", &failed);
+		num = (p.df0011-m.df0011)/(2*drho);
+		test_var(d.df1011, num, fun_name, "df1011a", &failed);
+		num = (p.df0101-m.df0101)/(2*drho);
+		test_var(d.df1101, num, fun_name, "df1101a", &failed);
+                num = (p.df0110-m.df0110)/(2*drho);
+		test_var(d.df1110, num, fun_name, "df1110a", &failed); 
+                num = (p.df10001-m.df10001)/(2*drho);
+		test_var(d.df20001, num, fun_name, "df20001a", &failed);   
+		num = (p.df01001-m.df01001)/(2*drho);
+		test_var(d.df11001, num, fun_name, "df11001a", &failed);  
 
                 /*drhob: test */
                	drho = rho*1e-7;
-		drv2_clear(&tmpm);
-		dt = dp; dt.rhob -= drho; second_fun(&tmpm, 1, &dt);
-		drv2_clear(&tmpp);
-		dt = dp; dt.rhob += drho; second_fun(&tmpp, 1, &dt);
-		num = (tmpp.df0200-tmpm.df0200)/(2*drho);
-		test_var(gga.df0300, num, fun_name, "df0300", &failed); 
-		num = (tmpp.df0101-tmpm.df0101)/(2*drho);
-		test_var(gga.df0201, num, fun_name, "df0201a", &failed);
-                num = (tmpp.df0110-tmpm.df0110)/(2*drho);
-		test_var(gga.df0210, num, fun_name, "df0210a", &failed);  
-		num = (tmpp.df0002-tmpm.df0002)/(2*drho);
-		test_var(gga.df0102, num, fun_name, "df0102a", &failed);
-               	num = (tmpp.df0020-tmpm.df0020)/(2*drho);
-		test_var(gga.df0120, num, fun_name, "df0120a", &failed);  
-		num = (tmpp.df1100-tmpm.df1100)/(2*drho);
-		test_var(gga.df1200, num, fun_name, "df1200a", &failed);
-		num = (tmpp.df0011-tmpm.df0011)/(2*drho);
-		test_var(gga.df0111, num, fun_name, "df0111a", &failed);
-               	num = (tmpp.df1001-tmpm.df1001)/(2*drho);
-		test_var(gga.df1101, num, fun_name, "df1101b", &failed);
-              	num = (tmpp.df1010-tmpm.df1010)/(2*drho);
-		test_var(gga.df1110, num, fun_name, "df1110b", &failed);    
-		num = (tmpp.df01001-tmpm.df01001)/(2*drho);
-		test_var(gga.df02001, num, fun_name, "df02001a", &failed);   
-		num = (tmpp.df10001-tmpm.df10001)/(2*drho);
-		test_var(gga.df11001, num, fun_name, "df11001b", &failed);
+		drv2_clear(&m);
+		dt = dp; dt.rhob -= drho; second_fun(&m, 1, &dt);
+		drv2_clear(&p);
+		dt = dp; dt.rhob += drho; second_fun(&p, 1, &dt);
+		num = (p.df0200-m.df0200)/(2*drho);
+		test_var(d.df0300, num, fun_name, "df0300", &failed); 
+		num = (p.df0101-m.df0101)/(2*drho);
+		test_var(d.df0201, num, fun_name, "df0201a", &failed);
+                num = (p.df0110-m.df0110)/(2*drho);
+		test_var(d.df0210, num, fun_name, "df0210a", &failed);  
+		num = (p.df0002-m.df0002)/(2*drho);
+		test_var(d.df0102, num, fun_name, "df0102a", &failed);
+               	num = (p.df0020-m.df0020)/(2*drho);
+		test_var(d.df0120, num, fun_name, "df0120a", &failed);  
+		num = (p.df1100-m.df1100)/(2*drho);
+		test_var(d.df1200, num, fun_name, "df1200a", &failed);
+		num = (p.df0011-m.df0011)/(2*drho);
+		test_var(d.df0111, num, fun_name, "df0111a", &failed);
+               	num = (p.df1001-m.df1001)/(2*drho);
+		test_var(d.df1101, num, fun_name, "df1101b", &failed);
+              	num = (p.df1010-m.df1010)/(2*drho);
+		test_var(d.df1110, num, fun_name, "df1110b", &failed);    
+		num = (p.df01001-m.df01001)/(2*drho);
+		test_var(d.df02001, num, fun_name, "df02001a", &failed);   
+		num = (p.df10001-m.df10001)/(2*drho);
+		test_var(d.df11001, num, fun_name, "df11001b", &failed);
 		/* dgrada: test */
 		dgra = ngrad*1e-7;
-		drv2_clear(&tmpm);
-		dt = dp; dt.grada -= dgra; second_fun(&tmpm, 1, &dt);
-		drv2_clear(&tmpp);
-		dt = dp; dt.grada += dgra; second_fun(&tmpp, 1, &dt);
-                num = (tmpp.df0020-tmpm.df0020)/(2*dgra);
-	        test_var(gga.df0030, num, fun_name, "df0030", &failed);
-	        num = (tmpp.df0011-tmpm.df0011)/(2*dgra);
-		test_var(gga.df0021, num, fun_name, "df0021", &failed);
+		drv2_clear(&m);
+		dt = dp; dt.grada -= dgra; second_fun(&m, 1, &dt);
+		drv2_clear(&p);
+		dt = dp; dt.grada += dgra; second_fun(&p, 1, &dt);
+                num = (p.df0020-m.df0020)/(2*dgra);
+	        test_var(d.df0030, num, fun_name, "df0030", &failed);
+	        num = (p.df0011-m.df0011)/(2*dgra);
+		test_var(d.df0021, num, fun_name, "df0021", &failed);
 
                	/* dgradb: test */  
                	dgra = ngrad*1e-7;
-		drv2_clear(&tmpm);
-		dt = dp; dt.gradb -= dgra; second_fun(&tmpm, 1, &dt);
-		drv2_clear(&tmpp);
-		dt = dp; dt.gradb += dgra; second_fun(&tmpp, 1, &dt);
-                num = (tmpp.df0002-tmpm.df0002)/(2*dgra);
-	        test_var(gga.df0003, num, fun_name, "df0003", &failed);
-	        num = (tmpp.df0011-tmpm.df0011)/(2*dgra);
-		test_var(gga.df0012, num, fun_name, "df0012", &failed);
+		drv2_clear(&m);
+		dt = dp; dt.gradb -= dgra; second_fun(&m, 1, &dt);
+		drv2_clear(&p);
+		dt = dp; dt.gradb += dgra; second_fun(&p, 1, &dt);
+                num = (p.df0002-m.df0002)/(2*dgra);
+	        test_var(d.df0003, num, fun_name, "df0003", &failed);
+	        num = (p.df0011-m.df0011)/(2*dgra);
+		test_var(d.df0012, num, fun_name, "df0012", &failed);
 	    }
 	}
     }
@@ -389,13 +370,16 @@ test_third(const char* fun_name,
 }
 
 static int
-test_derivatives(Functional* f, DaltonEnFunc dal_fun)
+test_derivatives(Functional* f, int *orders, DaltonEnFunc dal_fun)
 {
     int res = 0;
     /* if(dal_fun) res = test_energy(f->name, f->func, dal_fun); */
-    if(!res) res = test_first(f->name,  f->func,   f->first);
-    if(!res) res = test_second(f->name, f->first,  f->second);
-    if(!res) res = test_third(f->name,  f->second, f->third);
+    if(!res && (!orders || orders[0]) )
+       res = test_first(f->name,  f->func,   f->first);
+    if(!res && (!orders || orders[1]) )
+        res = test_second(f->name, f->first,  f->second);
+    if(!res && (!orders || orders[2]) )
+        res = test_third(f->name,  f->second, f->third);
     return res;
 }
 
@@ -406,22 +390,36 @@ test_derivatives(Functional* f, DaltonEnFunc dal_fun)
 int
 main(int argc, char* argv[])
 {
-    FirstFuncDrv tmpm, tmpp;
-    SecondFuncDrv gga;
-    int res = 0, i, length;
+    int res = 0, i, length, argidx, funcsel = 0;
+    static int funco[] = { 0, 0, 0 };
     char* arg;
     Functional* func;
-    FirstFuncDrv df = { 0, 0 };
-    SecondFuncDrv ds = { 0 };
+    FunDensProp  dp;
+    FunFirstFuncDrv ds;
+
+    dp.rhoa = dp.rhob = 1.0000;
+    dp.rhoa -= 0.0001;
+    dp.grada = dp.gradb = sqrt(3);
+    dp.gradab = dp.grada*dp.gradab; 
+    
     if(argc<=1) {
-	fprintf(stderr, "Functional derivative tester:\n");
-        fprintf(stderr, "usage: fun-tester <functional> <options>\n");
-        fprintf(stderr, "example: fun-tester GGAKey becke=1 lyp=1\n");
+	fprintf(stderr,
+                "Functional derivative tester:\n"
+                "usage: fun-tester [-n] <functional> <options>\n"
+                "-n - test only selected order of derivatives\n"
+                "example: fun-tester GGAKey becke=1 lyp=1\n");
         return 1;
     } 
+    for(argidx=1; argidx<argc && argv[argidx][0] == '-'; argidx++)
+        switch(argv[argidx][1]) {
+        case '1': funcsel = 1; funco[0]=1; break;
+        case '2': funcsel = 1; funco[1]=1; break;
+        case '3': funcsel = 1; funco[2]=1; break;
+        default: fprintf(stderr, "option %s is unknown.\n", argv[argidx]);
+        }
 
     for(i=0; available_functionals[i]; i++)
-        if(strcmp(argv[1], available_functionals[i]->name)==0)
+        if(strcasecmp(argv[argidx], available_functionals[i]->name)==0)
             break;
     if(available_functionals[i]==NULL) {
         fprintf(stderr, "Functional '%s' not found.\n\n"
@@ -431,20 +429,21 @@ main(int argc, char* argv[])
         return 2;
     } 
     func = available_functionals[i];
-
-    for(length=1, i=2; i<argc; i++)
+    argidx++;
+    for(length=1, i=argidx; i<argc; i++)
         length += strlen(argv[i])+1;
-    
+
     arg = malloc(length);
-    if(argc>2)
-        strcpy(arg, argv[2]);
+    if(argc>argidx+1)
+        strcpy(arg, argv[argidx]);
     else
         *arg = '\0';
 
-    for(i=3; i<argc; i++) {
+    for(i=argidx; i<argc; i++) {
         strcat(arg, " ");
         strcat(arg, argv[i]);
     }
+
     if(!func->read(arg)) {
         fprintf(stderr, "Reading configuration for %s from '%s' failed.\n",
                 argv[1], arg);
@@ -452,10 +451,13 @@ main(int argc, char* argv[])
     }
     free(arg);
 
-    res += test_derivatives(func, NULL);
+    if(func->report)
+        func->report();
+    res += test_derivatives(func, funcsel ? funco: NULL, NULL);
 
     if(res>0) 
 	printf("%i tests failed.\n", res);
     else printf("OK\n");
     return res;
 }
+

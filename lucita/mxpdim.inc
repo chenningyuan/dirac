@@ -1,12 +1,14 @@
-*comdeck mxpdim.inc $Revision: 1.2 $ 
+*comdeck mxpdim.inc $Revision: 5542 $ 
 *
-      COMMON /CMXPWRD/ MXPWRD
+      INTEGER IMAXLBLKSZ
+      COMMON /CMXPWRD/ MXPWRD,IMAXLBLKSZ
 *
 * contains all PARAMETERS defining LUCIA
       PARAMETER (MXPIRR = 8)
       PARAMETER (MXPOBS = 35)
 CTF  Globally included here:
       parameter (MXTSOB = 30)
+CSK      parameter (MXTSOB = 50)
 *
       PARAMETER (MXPR4T = 10)
       PARAMETER (MXPR0T = 1)

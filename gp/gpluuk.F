@@ -1,41 +1,29 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+C
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C
 C
-C VERSION : $Revision: 1.24.4.1 $
-C DATE    : $Date: 2004/09/01 08:10:56 $
+C
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : gpluuk.F
 C
 C
@@ -48,7 +36,7 @@ C
 C     August 1997
 C
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (INT_STAR8)
       PARAMETER (NBITS=64)
 #else
       PARAMETER (NBITS=32)
@@ -82,7 +70,7 @@ C
 C     August 1997
 C
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if defined (INT_STAR8)
       PARAMETER (NBITS=64)
 #else
       PARAMETER (NBITS=32)
@@ -111,6 +99,8 @@ C***********************************************************************
 C
 C     This subroutine goes through array ARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
+C
+C     The array ARR is not touched.
 C
 C***********************************************************************
       INTEGER N,INDX(N),M,NSTACK
@@ -205,10 +195,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
       INTEGER NREAL,NINTE,NLOGI,IRECLEN
 C
-#if defined (SYS_VAX)
-      IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#else
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if  defined (INT_STAR8)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
 #if defined (SYS_IRIX) || defined (SYS_SX) || defined (SYS_DEC)
@@ -226,21 +213,20 @@ C     SGI IRIX counts recl in *4 words
 #endif
 #endif
 #endif
-#endif
 C
       IRECLEN = IRECL
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BLANKR (N,A)
+      SUBROUTINE BLANKL (N,A)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
 C     Circular shift of character array such that the blanks are to the
-C     right side of the array.
+C     left side of the array.
 C
 C---------------Routines called----------------------------------------
 C
@@ -274,6 +260,63 @@ C
          A(I) = ' '
       ENDDO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BLANKR (N,A)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Circular shift of character array such that the blanks are to the
+C     right side of the array.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER N
+      CHARACTER*1 A(N)
+C
+C---------------Common Blocks--------------------------------------
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IS = 0
+Caspg
+C for some reason N was being corrupted, at least for some
+C compilers, so we save its value in ntt
+Caspg
+      NTT = N
+      DO I = 1, N
+         IF (A(I).NE.' ') GOTO 2
+         IS = IS + 1
+      ENDDO
+C
+    2 IF (IS.EQ.0) RETURN
+C
+Caspg write (*,*) 'before loop2: i,n,is',i,n,is
+      DO I = 1, N-IS
+C           write (*,*) 'a(i):',a(i),': <- a(i+is):',a(i+is),':'
+            A(I) = A(I+IS)
+Caspg       write (*,*) 'inside loop2: i, a(i)',i,a(i)
+      ENDDO
+
+Caspg write (*,*) 'before crashing loop: i,ntt,n,is',i,n,ntt,is
+      DO I = NTT-IS+1, NTT
+C        write (*,*) 'inside crashing loop: i,n,ntt,is',i,n,ntt,is
+C        write (*,*) 'a(i) before conversion to whitespace :',a(i),':'
+         A(I) = ' '
+      ENDDO
+C
+Caspg write (*,*) 'final line',a
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -381,7 +424,7 @@ C     format of TIJD: '00:00:00'
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION INTOWP(N)
-#if defined (SYS_CRAY) || defined (SYS_T3D)
+#if  defined (INT_STAR8)
       INTOWP = N
 #else
       INTOWP=2*N
@@ -389,18 +432,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
+      SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   INDX,IRPS,IND)
-C 
+C
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
 C
 C     Print list of eigenvalues from different symmetries, sorted on
 C     increasing energy value.
-C 
+C
 C     An offset is added to this value so that e.g. the constant
-C     CCSD energy can be added to the Fockspace eigenvalues.
+C     CCSD nergy can be added to the Fockspace eigenvalues.
 C
 C     The routine is based on an older routine in GOSCIP but changed
 C     to get rid of the common blocks.
@@ -411,6 +454,7 @@ C     - N_IRPS  : Number of irreps
 C     - N_EV    : Number of eigenvalues in each irrep
 C     - REPNA   : Name of each irrep
 C     - E_OFF   : Energy offset
+C     - IRCW    : 1 (real values) or 2 (complex energy values)
 C     - EV      : Eigenvalues
 C     - INDX    : Work array of the same length as EV
 C     - IRPS    : Work array of the same length as EV
@@ -424,13 +468,18 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher, august 2003.
 C
+C     Miro Ilias, July 2007 -  total imaginary eigenenergies are printed
+C      if CARITH=T (IRCW,ECCIM parameters)
+C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION N_EV(*),INDX(*)
-      DIMENSION EV(*)
+C     DIMENSION EV(*)
+      DIMENSION EV(IRCW,*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
-
+      REAL*8   , ALLOCATABLE :: EVI(:)
+      LOGICAL DODBG
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -441,7 +490,7 @@ C
       PARAMETER (DEGEN=1.D-9)
 C
 C---------------Executable code----------------
-C     
+C
 C     Compute the total number of eigenvalues and fill
 C     the array with the identication
 C
@@ -452,48 +501,175 @@ C
       ENDDO
 C
       IF (N_TOTAL.EQ.0) RETURN
-C     
+C
 C     Sort them from low to high
 C
-      CALL INDEXX(N_TOTAL,EV,INDX)
+      DODBG = .FALSE.
+C     DODBG = .TRUE.
+
+      IF (DODBG) THEN
+      write(LUPRI,*) 'before sorting'
+      DO I =1, N_TOTAL
+       IF (IRCW.EQ.1) THEN
+         write(LUPRI,*) 're:',EV(1,I)
+       ELSE IF (IRCW.EQ.2) THEN
+         write(LUPRI,*) 're:',EV(1,I),' im:',EV(2,I)
+       ENDIF
+      ENDDO
+      write(LUPRI,*)
+      ENDIF
+
+      call FLSHFO(LUPRI)
+
+      IF (IRCW.EQ.2) THEN
+        ALLOCATE(EVI(N_TOTAL))
+        DO I=1,N_TOTAL
+         EVI(I) = EV(1,I)
+        ENDDO
+        CALL INDEXX(N_TOTAL,EVI,INDX)
+        DEALLOCATE(EVI)
+      ELSE IF (IRCW.EQ.1) THEN
+        CALL INDEXX(N_TOTAL,EV(1,1),INDX)
+      ELSE
+        write(LUPRI,*) 'IRCW=',IRCW
+        CALL QUIT('PRT_EV...wrong parameter !!! ')
+      ENDIF
+
+      IF (DODBG) THEN
+      write(LUPRI,*) 'after sorting'
+CMI ... own printout
+      IF (IRCW.EQ.2) THEN
+       DO I=1,N_TOTAL
+         write(LUPRI,*) 're:',EV(1,INDX(I)),' im:',EV(2,INDX(I))
+       ENDDO
+      ELSE IF (IRCW.EQ.1) THEN
+       DO I=1,N_TOTAL
+         write(LUPRI,*) 're:',EV(1,INDX(I))
+       ENDDO
+      ENDIF
+      ENDIF
 C
-      WRITE (LUPRI,1005)
+      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+
+      IF (IRCW.EQ.1) THEN
+        WRITE (LUPRI,1005)
+      ELSE IF (IRCW.EQ.2) THEN
+        WRITE (LUPRI,1007)
+      ELSE
+        WRITE(LUPRI,*) 'PRT_EV: IRCW=',IRCW
+        CALL QUIT('PRT_EV: wrong IRCW value !')
+      ENDIF
+C
+C     write(LUPRI,*) 'in FS_ANALYSIS1...3'
+C     call FLSHFO(LUPRI)
+
       ILEVEL=0
       EW=0.0D0
-      EWF=EV(INDX(1))
+      EWIM = 0.0D0
+
+CMI   EWF=EV(INDX(1))
+      EWF=EV(1,INDX(1))
       NEW=0
       AVER=0.0D0
+      AVERIM=0.0D0
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...4'
+C     call FLSHFO(LUPRI)
+
       DO I=1,N_TOTAL
-        E = EV(INDX(I))
+
+CMI     E = EV(INDX(I))
+        E = EV(1,INDX(I))
+        IF (IRCW.EQ.2) EIM = EV(2,INDX(I))
+
+        IF (DODBG) THEN
+         write(lupri,*) 'I,NEW=',I,NEW,' E=',E,' E-EW=',E-EW
+         IF (IRCW.EQ.2) write(lupri,*) 'EIM=',EIM,' EIM-EWIM=',EIM-EWIM
+        ENDIF
+
         AVER=AVER+E
-        IF (ABS(E-EW).GT.DEGEN) THEN
-          IF (NEW.NE.0)
-     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+        IF (IRCW.EQ.2) AVERIM=AVERIM+EIM
+
+       IF      (IRCW.EQ.1) THEN
+        IF ( ABS(E-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0) THEN
+             WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+          ENDIF
           ILEVEL=ILEVEL+1
           NEW=1
           EW=E
         ELSE
           NEW=NEW+1
           EW=((NEW-1)*EW+E)/DBLE(NEW)
+        ENDIF  
+
+       ELSE IF (IRCW.EQ.2) THEN
+
+        IF ( ABS(E-EW).GT.DEGEN.OR.ABS(EIM-EWIM).GT.DEGEN ) THEN  
+          IF (NEW.NE.0) THEN
+            WRITE(LUPRI,1015) ILEVEL,EW-EWF,EW,EW+E_OFF,
+     &      EWIM+ECCIM, NEW
+          ENDIF
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=E
+          EWIM = EIM
+        ELSE
+          NEW=NEW+1
+          EW=((NEW-1)*EW+E)/DBLE(NEW)
+          EWIM=((NEW-1)*EWIM+EIM)/DBLE(NEW)
         ENDIF
+
+       ELSE
+         call quit('prt_ev blind branch !')
+       ENDIF
+
       ENDDO
-      IF (NEW.NE.0)
-     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...5'
+C     call FLSHFO(LUPRI)
+
+      IF (NEW.NE.0) THEN
+CMI    WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+        IF (IRCW.EQ.1) THEN
+          WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+        ELSE IF (IRCW.EQ.2) THEN
+          WRITE(LUPRI,1015) ILEVEL,EW-EWF,EW,EW+E_OFF,
+     &    EWIM+ECCIM,NEW
+C    &    EV(2,INDX(I)),NEW
+        ENDIF
+      ENDIF
+
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
-C
+
+CMI ... print out conversion factors (from codata.h)
+CMI   WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+CMI  & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...6'
+C     call FLSHFO(LUPRI)
+
+CMI  ... printout with symmetry classification ...real energies only...
       DO IRP1 = 1, N_IRPS, 8
       IRP2 = MIN0(N_IRPS,IRP1+7)
       WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
       ILEVEL=0
       EW=0.0D0
-      EWF=EV(INDX(1))
+CMI   EWF=EV(INDX(1))
+      EWF=EV(1,INDX(1))
       NEW=0
       DO JRP = IRP1, IRP2
          IND(JRP) = 0
       END DO
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...7'
+C     call FLSHFO(LUPRI)
 C
+
       DO 140 I=1,N_TOTAL
-        E=EV(INDX(I))
+CMI     E=EV(INDX(I))
+        E=EV(1,INDX(I))
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
      &      WRITE(LUPRI,1030) ILEVEL,
@@ -511,23 +687,278 @@ C
           IND(IRPS(INDX(I))) = IND(IRPS(INDX(I))) + 1
           EW=((NEW-1)*EW+E)/DBLE(NEW)
         ENDIF
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...8'
+C     call FLSHFO(LUPRI)
+
  140    CONTINUE
-      IF (NEW.NE.0) WRITE(LUPRI,1030) ILEVEL,
-     &              XTEV*(EW-EWF),XTKAYS*(EW-EWF),
-     &              (IND(JRP),JRP=IRP1,IRP2)
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...8.1'
+C     call FLSHFO(LUPRI)
+
+      IF (NEW.NE.0) THEN
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...9.1'
+C     call FLSHFO(LUPRI)
+
+         WRITE(LUPRI,1030) ILEVEL,
+     &   XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &   (IND(JRP),JRP=IRP1,IRP2)
+
+      ENDIF
+
+C     write(LUPRI,*) 'in FS_ANALYSIS1...9.2'
+C     call FLSHFO(LUPRI)
+
       ENDDO
+
+!      write(LUPRI,*) 'PRT_EV done.'
+      call FLSHFO(LUPRI)
+
+
  1000 FORMAT(F17.8)
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
  1005 FORMAT(//' Energy eigenvalues in atomic units'
      +            //' Level   Rel eigenvalue     ',
-     +            'Abs eigenvalue  Degeneracy'/)
- 1010 FORMAT(I5,F17.12,F20.12,' (',I4,' * )')
+     +            'Abs eigenvalue      Total Energy    Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
+ 1007 FORMAT(//' Energy eigenvalues in atomic units'
+     & //' Level   Rel eigenvalue     Abs eigenvalue     ',
+     & ' Total Energy       Total imag.ener.  Degeneracy'/)
+ 1015 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' ',F20.15,' (',I4,' * )')
+ 1020 FORMAT(//' Total average: ',F20.10)
+ 1025 FORMAT(//' Relative real eigenvalues in other units;'/' Symmetry',
+     +       ' Classification in the Abelian subgroup',
+     +       //' Level  eigenvalue (eV) ',
+     +      ' Eigenvalue (cm-1)',2X,8A4/)
+ 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRT_EV_VEC (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
+     &                       INDX,IRPS,IND,VEC,LBL_SEC1,LBL_SEC2,
+     &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
+     &                       TSHOLD)
+C
+#include "implicit.h"
+C
+C---------------Description--------------------------------------------
+C
+C     Print list of eigenvalues from different symmetries, sorted on
+C     increasing energy value.
+C
+C     An offset is added to this value so that e.g. the constant
+C     CCSD energy can be added to the Fockspace eigenvalues.
+C
+C     The routine is based on an older routine in GOSCIP but changed
+C     to get rid of the common blocks.
+C
+C     Parameters :
+C     - LUPRI   : Output unit
+C     - N_IRPS  : Number of irrep
+C     - N_EV    : Number of eigenvalues in each irrep
+C     - REPNA   : Name of each irrep after adding particles
+C     - REPNAO  : Name of each irrep before adding particles
+C     - E_OFF   : Energy offset
+C     - EV      : Eigenvalues
+C     - VEC     : Eigenvectors
+C     - NACTV   : Number of active virtual for each irrep
+C     - LBL_SEC1: Sector 1 spinor for eigenvectors in each irrep
+C     - LBL_SEC2: Sector 2 spinor for eigenvectors in each irrep
+C     - IRSEC1  : Sector 1 irrep for eigenvectors in each irrep
+C     - IRSEC2  : Sector 2 irrep for eigenvectors in each irrep
+C     - IRSEC12 : Bosono mult sector 1  sector 2
+C     - INDX    : Work array of the same length as EV
+C     - IRPS    : Work array of the same length as EV
+C     - IND     : Work array of length N_IRPS
+C
+C---------------Routines called----------------------------------------
+C
+C     INDEXX
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Ivan Infante, september 2005
+C
+C---------------Calling variables--------------------------------------
+C
+      DIMENSION N_EV(*),INDX(*), INDXV(600)
+      DIMENSION EV(*), VEC(*), VEC_TMP(600*600)
+      DIMENSION LBL_SEC1(*), LBL_SEC2(*)
+      DIMENSION IRSEC1(*), IRSEC2(*), IRSEC12(*)
+      DIMENSION LSEC1(600*600), LSEC2(600*600)
+      DIMENSION IRPSEC1(600*600), IRPSEC2(600*600), IRPSEC12(600*600)
+      DIMENSION N_TOT_EV(64), N_TOT_VEC(64), NACTV(*)
+      DIMENSION IRPS(*),IND(*)
+      CHARACTER*4 REPNA(*), REPNAO(*)
+      INTEGER TSHOLD
+      REAL*8 E_OFF
+
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "codata.h"
+C
+C---------------Local variables--------------------------------------
+C
+      PARAMETER (DEGEN=1.D-9)
+C
+C---------------Executable code----------------
+C
+C     Compute the total number of eigenvalues and fill
+C     the array with the identication
+C     Select total number of eigenvectors to use like offset later
+C
+      N_TOTAL = 0
+      N_TOT_EV(1) = 0
+      N_TOT_VEC(1) = 0
+      DO IRP = 1, N_IRPS
+         CALL ICOPY(N_EV(IRP),IRP,0,IRPS(N_TOTAL+1),1)
+         N_TOTAL = N_TOTAL + N_EV(IRP)
+         N_TOT_EV(IRP+1) = N_TOT_EV(IRP) + N_EV(IRP)
+         N_TOT_VEC(IRP+1) = N_TOT_VEC(IRP) + N_EV(IRP)* N_EV(IRP)
+      ENDDO
+C
+      IF (N_TOTAL.EQ.0) RETURN
+C
+C
+C
+C     Sort them from low to high
+C
+      CALL INDEXX(N_TOTAL,EV,INDX)
+C
+CMI ... print out conversion factors (from codata.h)
+      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+
+
+      WRITE (LUPRI,1005)
+      ILEVEL=0
+      EW=0.0D0
+      EWF=EV(INDX(1))
+      NEW=0
+      AVER=0.0D0
+      DO I=1,N_TOTAL
+        E = EV(INDX(I))
+        AVER=AVER+E
+        IF (ABS(E-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0)
+     &      WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=E
+        ELSE
+          NEW=NEW+1
+          EW=((NEW-1)*EW+E)/DBLE(NEW)
+        ENDIF
+      ENDDO
+      IF (NEW.NE.0)
+     &WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
+      WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
+C
+      DO IRP1 = 1, N_IRPS, 8
+        IRP2 = MIN0(N_IRPS,IRP1+7)
+        WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
+        ILEVEL=0
+        EW=0.0D0
+        EWF=EV(INDX(1))
+        NEW=0
+        DO JRP = IRP1, IRP2
+           IND(JRP) = 0
+        END DO
+        DO 140 I=1,N_TOTAL
+          E=EV(INDX(I))
+          IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I)))
+     &            + N_TOT_VEC(IRPS(INDX(I))) + 1
+          IF (ABS(E-EW).GT.DEGEN) THEN
+             IF (NEW.NE.0) THEN
+               WRITE(LUPRI,1030) ILEVEL,
+     &                       XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &                      (IND(JRP),JRP=IRP1,IRP2)
+             ENDIF
+             DO JRP = IRP1, IRP2
+                IND(JRP) = 0
+             ENDDO
+             ILEVEL = ILEVEL + 1
+             IND(IRPS(INDX(I))) = 1
+             NEW=1
+             EW=E
+          ELSE
+             NEW=NEW+1
+             IND(IRPS(INDX(I))) = IND(IRPS(INDX(I))) + 1
+             EW=((NEW-1)*EW+E)/DBLE(NEW)
+          ENDIF
+ 140     CONTINUE
+         IF (NEW.NE.0) THEN
+             WRITE(LUPRI,1030) ILEVEL,
+     &                XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &                (IND(JRP),JRP=IRP1,IRP2)
+         ENDIF
+      ENDDO
+C
+C     New part (I.I.):
+C     Print composition of each excited state
+C     PS: It should be generalized for other sectors
+C
+      ILEVEL=1
+      EWF=EV(INDX(1))
+      LBL = 0
+      WRITE(LUPRI,1080)
+      DO IRP = 1, N_IRPS
+         DO I = 1, NACTV(IRP)
+            LBL = LBL + 1
+            WRITE(LUPRI,1085) LBL, REPNAO(IRP)
+         ENDDO
+      ENDDO
+      DO I=1,N_TOTAL
+        E = EV(INDX(I))
+        IVEC = (INDX(I)-N_TOT_EV(IRPS(INDX(I)))-1)*N_EV(IRPS(INDX(I)))
+     &          + N_TOT_VEC(IRPS(INDX(I))) + 1
+        WRITE(LUPRI,1055) ILEVEL,E-EWF,XTEV*(E-EWF),XTKAYS*(E-EWF)
+        WRITE(LUPRI,1090) E_OFF + E
+        CALL DCOPY(N_EV(IRPS(INDX(I))),VEC(IVEC),1,VEC_TMP,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),LBL_SEC1(IVEC),1,LSEC1,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),LBL_SEC2(IVEC),1,LSEC2,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC1(IVEC),1,IRPSEC1,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC2(IVEC),1,IRPSEC2,1)
+        CALL ICOPY(N_EV(IRPS(INDX(I))),IRSEC12(IVEC),1,IRPSEC12,1)
+        WRITE(LUPRI,1060)
+        DO J = 1, N_EV(IRPS(INDX(I)))
+          VEC_TMP(J) =  VEC_TMP(J)*VEC_TMP(J)*100
+          IF (VEC_TMP(J).GT.TSHOLD) THEN
+           WRITE(LUPRI,1065) LSEC2(J),REPNAO(IRPSEC2(J)),
+     &                       LSEC1(J),REPNAO(IRPSEC1(J)),
+     &                       REPNA(IRPSEC12(J)),VEC_TMP(J)
+           ENDIF
+        ENDDO
+        ILEVEL=ILEVEL+1
+      ENDDO
+C
+ 1000 FORMAT(F17.8)
+ 1008 FORMAT(17X,I8,2X,16(A1),F16.8)
+ 1005 FORMAT(//' Energy eigenvalues in atomic units'
+     +            //' Level   Rel eigenvalue     ',
+     +            'Abs eigenvalue      Total Energy    Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,'  ',F20.12,' (',I4,' * )')
+ 1015 FORMAT(I5,F17.12,F19.9,F18.6)
  1020 FORMAT(//' Total average: ',F20.10)
  1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
      +       ' Classification in the Abelian subgroup',
      +       //' Level  eigenvalue (eV) ',
      +      ' Eigenvalue (cm-1)',2X,8A4/)
  1030 FORMAT(I5,F19.9,F18.6,8(I4))
+ 1035 FORMAT(/'Real Vector:',/(1x,6f12.7))
+ 1055 FORMAT(//'Energy ',I5,':',F12.9,' (au)',3X,F12.5,' (eV)',3X,F19.5
+     +       ,' (cm-1)')
+ 1060 FORMAT(/,6x,'Composition:'/,11x,'Spinor 2',2x,'Rep',6x,'Spinor 1',
+     +       2x,'Rep',5x,'Tot Rep',3x,'weight (%)')
+ 1065 FORMAT(10x,I5,4x,A4,7x,I5,4x,A4,5x,A4,5x,F10.5)
+ 1080 FORMAT(/,2x,'Composition of all excited states in (0h,2p) sector'
+     +        /'  Active Spinor',5x,'Abelian'/)
+ 1085 FORMAT(4x,I5,9x,A6)
+ 1090 FORMAT('Total CCSD energy + affinity: ',F20.12)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -536,8 +967,8 @@ C
 C     Initial routine written by M. Pernpointner
 C     Documented and revised by L. Visscher
 C
-C     Input parameters 
-C         - TIMERT : Type of timer (Used in MPE calls 
+C     Input parameters
+C         - TIMERT : Type of timer (Used in MPE calls
 C                                   0:Do not log in MPE
 C                                   1:Initialization
 C                                   2:Wait,
@@ -566,7 +997,7 @@ C
 C     Check first for operations that involve all timers
 C
       IF (FUNCT.EQ.TINIT) THEN
-C     
+C
 C        Initialization of all timers
 C
          DO I = 1, MXTIMF
@@ -578,7 +1009,7 @@ C
          LAST_MPE_STATE  = 0
          RETURN
       ELSEIF (FUNCT.EQ.TPRNTA) THEN
-C     
+C
 C        Print out of all timers
 C
         IF (MYTID.EQ.MPARID) WRITE(LUPRI,220) NAME
@@ -589,7 +1020,7 @@ C       Serial code : no need to communicate with slaves
         ENDDO
 #else
 C
-C       We may have the parallel version running in serial mode, 
+C       We may have the parallel version running in serial mode,
 C       handle this first (same code as serial)
 C
         IF (NUMNOD.EQ.0) THEN
@@ -597,7 +1028,7 @@ C
             IF(CPUTFT(I).NE.D0) WRITE(LUPRI,222) CPUTT(I),CPUTFT(I)
           ENDDO
         ELSE
-C      
+C
 C        The parallel version runs in parallel. We need to communicate
 C        to gather all data on the master.
 C
@@ -705,7 +1136,7 @@ C
       DO I = 1, MXTIMF
          IF (NAME.EQ.CPUTT(I)) TIMERN = I
       ENDDO
-C 
+C
 C     We may have a new timer, look for free slots
 C
       IF (TIMERN.EQ.-1) THEN
@@ -719,7 +1150,7 @@ C           Use the first free slot and initialize
             CPUTT(TIMERF)=NAME
             CPUTFT(TIMERF)=D0
             TIMERN = TIMERF
-         ELSE 
+         ELSE
 C           Too bad, we ran out of slots
             WRITE(LUPRI,130) MYTID,NAME
             RETURN
@@ -748,7 +1179,7 @@ C          Announce the new state if necessary
               I_MPE = 2 * TIMERT - 1
               CALL MPE_LOG_EVENT(I_MPE,0,NAME)
               LAST_MPE_STATE  = TIMERT
-              LAST_MPE_ACTION = 1    
+              LAST_MPE_ACTION = 1
            ENDIF
         ENDIF
 #endif
@@ -764,7 +1195,7 @@ C          Only do something if everything matches
               I_MPE = 2 * TIMERT
               CALL MPE_LOG_EVENT(I_MPE,0,NAME)
               LAST_MPE_STATE  = TIMERT
-              LAST_MPE_ACTION = 2    
+              LAST_MPE_ACTION = 2
            ENDIF
         ENDIF
 #endif
@@ -794,7 +1225,7 @@ C
      &          T68,'Average'/)
  340  FORMAT(T2,A30,T33,F10.1,T43,F10.1,T53,F10.1,T63,F10.1)
  350  FORMAT(/'------ End of timing report ------'/)
-     
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -819,4 +1250,572 @@ C
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LFNAM */
+      CHARACTER*10 FUNCTION LFNAM (FILNAM)
+C
+C     Add the node identification to the file name for shared disk systems
+C     Written by Luuk Visscher, February 1998
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include "implicit.h"
+#include "dcbgen.h"
+#include "infpar.h"
+      CHARACTER*5  FILNAM
+      CHARACTER*10 LFILNAM
+      NODE = MYTID
+C     ... MYTID will be zero if this is a sequential version of Dirac
+C
+ 1000 FORMAT (A5,I5)
+C
+      WRITE (LFILNAM,1000) FILNAM,NODE
+      DO I = 6, 10
+         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
+      ENDDO
+C
+      LFNAM = LFILNAM
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_INFO (NBUF,NSIZE)
+C
+C     Report the maximum number of buffer and record size that
+C     will be used in the sort
+C
+C     Calling parameters
+C
+C     NBUF   : Maximum number of buffers (hardwired in the common block)
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+C
+      NBUF = N_BUFFER
+      NSIZE = NGBFSZ
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_INIT (I_FILE)
+C
+C     Initialize a buffer file to transpose a large matrix that is generated in parts
+C     Currently used in MOLTRA for the halftransformed two-electron
+C     integrals but it may be useful at other places as well.
+C
+C     Calling parameters
+C
+C     I_FILE   : Bucket sort indentifier (we may have more than one active)
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+      CHARACTER*10 NAME*5,FNODE,LFNAM
+C
+C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
+C     because we also need to store the labels
+C
+      IRECL = IRECLEN(NGBFSZ+1,2*NGBFSZ+2,0)
+C
+C     The opening of a file is a bit tricky in FORTRAN, pray that the unit
+C     is not yet in use....
+C
+      WRITE (NAME,'(A4,I1)') 'BUFF',I_FILE
+      FNODE = LFNAM(NAME)
+      LGFIL = I_BF_UNIT+I_FILE
+
+#if !defined (VAR_PFS)
+      OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
+#endif
+C
+C     Initialize the data that is kept in the common block
+C
+      I_BF_REC(I_FILE) = 0
+      BF_NAME(I_FILE) = FNODE
+      CALL IZERO(LGREC(1,I_FILE),N_BUFFER)
+      CALL IZERO(LGBUF(1,I_FILE),N_BUFFER)
+      N_WRITTEN = 0
+      N_DELETED = 0
+C
+#if defined (VAR_MPI)
+      DO I = 1, MAX_SEND_BUFFERS
+         IREQ(I) = MPI_REQUEST_NULL
+      ENDDO
+#endif
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_OUT (I_FILE,RGBUF,IGBUF,IROWS,
+     &                            A,NROWS,ICOL,TRESHOLD)
+C
+C     Scatter row of matrix A over the buffers, flush them if necessary
+C
+C     Calling parameters
+C
+C     I_FILE   : File unit
+C     RGBUF    : Real data in buffers
+C     IGBUF    : Integer data data in buffers
+C     IROWS    : Pointer from the rows to buffer
+C     A        : Column of matrix that is to be buffered away
+C     NROWS    : Number of rows in A
+C     ICOL     : Column index of A
+C     TRESHOLD : Treshold for writing the matrix element
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
+      DIMENSION IGBUF(2,NGBFSZ,*)
+      DIMENSION IROWS(3,NROWS)
+C
+C     Loop through the row and check if the data need be stored
+C
+      DO I = 1, NROWS
+         IBUF = IROWS(1,I)
+         IF (IBUF.GT.0.AND.ABS(A(I)).GT.TRESHOLD) THEN
+            N_WRITTEN = N_WRITTEN + 1
+            N = LGBUF(IBUF,I_FILE) + 1
+            RGBUF(N,IBUF) = A(I)
+            IGBUF(1,N,IBUF) = ICOL
+            IGBUF(2,N,IBUF) = IROWS(2,I)
+            IF (N.GE.NGBFSZ) THEN
+               INODE = IROWS(3,I)
+#if defined (VAR_PFS)
+               CALL GLOBAL_FILE_WRITE (
+     &         RGBUF(1,IBUF),IGBUF(1,1,IBUF),N,MYTID,INODE,IBUF)
+#else
+#if defined (VAR_MPI)
+               IF (INODE.NE.MYTID) THEN
+                   CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
+     &              IGBUF(1,1,IBUF),N,INODE)
+               ELSE
+#endif
+                   CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
+     &              IGBUF(1,1,IBUF),N)
+#if defined (VAR_MPI)
+               ENDIF
+#endif
+#endif
+               N = 0
+            ENDIF
+            LGBUF(IBUF,I_FILE) = N
+         ELSE
+            N_DELETED = N_DELETED + 1
+         ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF,IGBUF,N)
+C
+C     Write local integrals
+C
+C     Calling parameters
+C
+C     I_FILE   : File unit
+C     IBUF     : Buffer number
+C     RGBUF    : One buffer with real data
+C     IGBUF    : One buffer with integer data
+C     N        : Actual size of the buffer
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ)
+      DIMENSION IGBUF(2,NGBFSZ)
+C
+C     Get file unit number and file pointer
+C
+      LGFIL    = I_BF_UNIT+I_FILE
+      IREC     = I_BF_REC(I_FILE) + 1
+      WRITE (LGFIL,REC=IREC) LGREC(IBUF,I_FILE),N,RGBUF,IGBUF
+C
+C     Update file pointers
+C
+      LGREC(IBUF,I_FILE) = IREC
+      I_BF_REC(I_FILE) = IREC
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_FLUSH (I_FILE,RGBUF,IGBUF,IROWS,NROWS)
+C
+C     Flush the buffers
+C
+C     Calling parameters
+C
+C     LGFIL    : File unit
+C     RBUF     : Real data in buffers
+C     IBUF     : Integer data data in buffers
+C     IROWS    : Pointer from rows to buffer and node
+C     NROWS    : Number of rows
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ,*)
+      DIMENSION IGBUF(2,NGBFSZ,*)
+      DIMENSION IROWS(3,NROWS)
+C
+C     Loop through the rows and check whether the data is to be flushed
+C
+      DO I = 1, NROWS
+         IBUF = IROWS(1,I)
+         N = LGBUF(IBUF,I_FILE)
+         IF (IBUF.GT.0.AND.N.GT.0) THEN
+            INODE = IROWS(3,I)
+#if defined (VAR_PFS)
+             CALL GLOBAL_FILE_WRITE (
+     &        RGBUF(1,IBUF),IGBUF(1,1,IBUF),N,MYTID,INODE,IBUF)
+#else
+#if defined (VAR_MPI)
+            IF (INODE.NE.MYTID) THEN
+                CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
+     &           IGBUF(1,1,IBUF),N,INODE)
+            ELSE
+#endif
+                CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
+     &           IGBUF(1,1,IBUF),N)
+#if defined (VAR_MPI)
+            ENDIF
+#endif
+#endif
+            N = 0
+         ENDIF
+         LGBUF(IBUF,I_FILE) = N
+      ENDDO
+C
+      PERC = N_WRITTEN+N_DELETED
+      PERC = 100.D0/PERC
+      PERC = PERC*N_WRITTEN
+      WRITE (LUPRI,1000) N_WRITTEN,PERC
+ 1000 FORMAT (/" Buffers flushed:",I16," HT integrals written (",
+     &        F6.2,"% )") 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL)
+C
+C     Read back the sorted integrals and put them at the right position
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ),A(NROW)
+      DIMENSION IGBUF(2,NGBFSZ)
+C
+      LGFIL    = I_BF_UNIT+I_FILE
+      IREC     = LGREC(IBUF,I_FILE)
+C
+      CALL DZERO (A,NROW)
+C
+    1 IF (IREC.EQ.0) RETURN
+C
+C     Read a batch and the link to the previous record.
+C
+      READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
+      IREC = IRECN
+C
+C     Pick out the integrals that we need.
+C
+      DO I = 1, N
+         IF (IGBUF(2,I).EQ.ICOL) THEN
+            A(IGBUF(1,I)) = RGBUF(I)
+         ENDIF
+      ENDDO
+C
+C     We read in reverse order, if we have the first block we're done
+C
+      GOTO 1
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_REMOVE (I_FILE)
+C
+C     Write local integrals
+C
+C     Calling parameters
+C
+C     I_FILE   : File unit
+C
+C     Delete the buffer file (free some disk space)
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+C
+C     Get file unit number and file pointer
+C
+      LGFIL  = I_BF_UNIT+I_FILE
+      CLOSE (LGFIL,STATUS='DELETE')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     The following routines are only needed in parallel runs, they take
+C     care of the communication between the nodes
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#if defined (VAR_MPI)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_FREE (IFREE)
+C
+C     Check the status of buffers that were sent via a nonblocking send
+C
+C     Calling parameters
+C
+C     IFREE    : Contains on output the first free send buffer or zero
+C                if none is free.
+C
+C     Written by Luuk Visscher, October 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      LOGICAL READY
+C
+      IFREE = 0
+      READY = .FALSE.
+      DO I = 1, MAX_SEND_BUFFERS
+         CALL MPI_TEST(IREQ(I), READY, ISTAT, IERR)
+         IF (READY) THEN
+            IFREE = I
+            RETURN
+         ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF,IGBUF,N,INODE)
+C
+C     Send buffer IBUF to node INODE
+C
+C     Calling parameters
+C
+C     I_FILE   : File unit
+C     IBUF     : Buffer number
+C     RGBUF    : One buffer with real data
+C     IGBUF    : One buffer with integer data
+C     N        : Actual size of the buffer
+C     INODE    : Node where the buffer should go
+C
+C     Written by Luuk Visscher, October 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ)
+      INTEGER*4 IGBUF(2,NGBFSZ)
+C
+C     Loop until we find a free send buffer IFREE
+    1 CONTINUE
+         CALL BUFFER_FILE_FREE(IFREE)
+C        Check for incoming buffers
+         CALL BUFFER_FILE_RECV()
+         IF (IFREE.EQ.0) GOTO 1
+C     Pack all data in the integer array ISGBUF
+      ISGBUF(1,IFREE) = N
+      ISGBUF(2,IFREE) = IBUF
+      ISGBUF(3,IFREE) = I_FILE
+      ISGBUF(4,IFREE) = IFREE
+      CALL ICOPY (2*N,IGBUF,1,ISGBUF(5,IFREE),1)
+      CALL DCOPY (N,RGBUF,1,ISGBUF(5+2*N,IFREE),1)
+      CALL MPI_ISSEND(ISGBUF(1,IFREE),4*NGBFSZ+4,my_MPI_INTEGER,
+     &               INODE,95,MPI_COMM_WORLD,IREQ(IFREE),IERR)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_RECV ()
+C
+C     Receive and write buffers that were sent to this node
+C
+C     Calling parameters
+C
+C     Written by Luuk Visscher, October 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      LOGICAL NEWMAIL
+      INTEGER IHBUF(4*NGBFSZ+4)
+C
+C     Check whether there are any messages waiting
+C
+   1  CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
+     &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Find out who was sending this
+         INODE = ISTAT(MPI_SOURCE)
+C        Receive the buffer
+         CALL MPI_RECV(IHBUF,4*NGBFSZ+4,my_MPI_INTEGER,INODE,95,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+C        Decode the information and determine where the buffer should go
+         N      = IHBUF(1)
+         IBUF   = IHBUF(2)
+         I_FILE = IHBUF(3)
+         IFREE  = IHBUF(4)
+C        Write the buffers
+         CALL BUFFER_FILE_WRITE (I_FILE,IBUF,IHBUF(5+2*N),IHBUF(5),N)
+C        There may be more messages still waiting, go back to the start
+         NEWMAIL = .FALSE.
+         GOTO 1
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_END ()
+C
+C     Monitor status of our own pending messages and
+C     stay in receiving mode until master tells us to stop
+C
+C     Calling parameters
+C
+C     Written by Luuk Visscher, October 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTATS(MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
+      LOGICAL NEWMAIL
+      INTEGER IEND
+      INTEGER IBUFMPI(5)
+      LOGICAL READY, ALLRECV
+C
+C     The actual value of IEND does not matter, we need to send
+C     something. Likewise for IBUFMPI, only the third element is used
+C
+      CALL IZERO (IBUFMPI,5)
+      IBUFMPI(3) = -1
+      IEND = 1
+C
+C     The code for the slaves
+C
+      IF (MYTID.NE.MPARID) THEN
+C
+C     Start loop that will only end when master sends the termination
+C     signal.
+C
+      ALLRECV = .FALSE.
+   1  CONTINUE
+C     Verify status of our own messages
+      IF (.NOT.ALLRECV) THEN
+         CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
+     &                    ISTATS, IERR)
+C        Tell master in case all our messages were received
+         IF (ALLRECV) CALL MPI_ISEND(IEND,1,my_MPI_INTEGER,MPARID,98,
+     &               MPI_COMM_WORLD,IREQ(1),IERR)
+      ENDIF
+C     Check for end signal
+      CALL MPI_IPROBE(MPARID,99,MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Receive the end signal message and return
+         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,MPARID,99,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         RETURN
+      ELSE
+C        There are still buffers waiting out there, see if we get some
+         CALL BUFFER_FILE_RECV ()
+         GOTO 1
+      ENDIF
+C
+C     The code for the master
+C
+      ELSE
+C
+      NREADY = 0
+    2 CONTINUE
+C
+C     Initially the slaves are still waiting for a new integral task,
+C     tell them that they should do something else
+C
+      CALL MPI_IPROBE (MPI_ANY_SOURCE,20,MPI_COMM_WORLD,NEWMAIL,
+     &                 ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Find out who was sending this
+         INODE = ISTAT(MPI_SOURCE)
+C        Receive this signal
+         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,20,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,INODE,30,
+     &                 MPI_COMM_WORLD,IERR)
+      ENDIF
+C
+C     Check for ready signals from the slaves
+C
+      CALL MPI_IPROBE (MPI_ANY_SOURCE,98,MPI_COMM_WORLD,NEWMAIL,
+     &                 ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Find out who was sending this
+         INODE = ISTAT(MPI_SOURCE)
+C        Receive this signal
+         CALL MPI_RECV(IEND,1,my_MPI_INTEGER,INODE,98,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         NREADY = NREADY + 1
+      ENDIF
+C
+C     Send out end signal when all nodes are ready
+C
+      IF (NREADY.EQ.NODES) THEN
+         DO INODE = 1, NODES
+            CALL MPI_SEND(IEND,1,my_MPI_INTEGER,INODE,99,
+     &                    MPI_COMM_WORLD,IERR)
+         ENDDO
+         RETURN
+      ELSE
+C        There are still buffers waiting out there, see if we get some
+         CALL BUFFER_FILE_RECV ()
+         GOTO 2
+      ENDIF
+C
+C     End of master-slave branching
+C
+      ENDIF
+C
+      RETURN
+      END
+#endif

@@ -1,0 +1,23 @@
+**DIRAC
+.TITLE
+H2O2 molecule, integral calculations with ERI in pure two-component mode, SOO included 
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+#.IOTC
+.X2C
+.GAUNT
+**INTEGRALS
+.RUNERI
+.NUCMOD
+ 1
+*TWOINT
+.AOFOCK
+*READIN
+.UNCONTRACTED
+**WAVE FUNCTIONS
+.DHF
+**PROPERTIES
+.DIPOLE
+.POLARIZABILITY
+*END OF

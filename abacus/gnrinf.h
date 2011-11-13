@@ -1,5 +1,5 @@
 C
-C$Id: gnrinf.h,v 1.1 2002/08/20 15:49:29 tsaue Exp $
+C$Id: gnrinf.h 2415 2002-08-20 15:49:42Z tsaue $
 C
       LOGICAL TESTIN, OPTWLK,  RNHERM, RNSIRI, RNABAC, GEOCNV,
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,

@@ -2,8 +2,14 @@
 #
 # Set up calculation
 #  
-MENU=fsccsd;
 MOL=Mg;
-export MENU;
 export MOL;
+#############
+echo "DC Hamiltonian, FSCCSD"
+MENU=fsccsd;
+export MENU;
 ../run.sh
+#############
+#############
+#############
+

@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.39.2.1 $
-C DATE    : $Date: 2004/09/01 08:08:54 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -45,6 +33,9 @@ C***********************************************************************
 C
 C     Subroutine for setting dimensions and generate overlap and Lowdin
 C     matrices
+C
+C     Called from:  DIRCTL (after PAMINP)
+C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
 #include "implicit.h"
@@ -58,31 +49,73 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "cbihr1.h"
+#include "cbirea.h"
 #include "infpar.h"
 C
+      LOGICAL TWOBUF,GOFAST
       DIMENSION WORK(LWORK)
+
+      CALL QENTER('PAMSET')
+      CALL TIMER('START ',TIMSTR,TIMEND)
+C
+C     Attempt a restart unless geometry optimization
+C     ==============================================
+C
+      IF(OPTIMI) THEN
+        GOFAST = .FALSE.
+      ELSE
+        CALL GOTEST(GOFAST,IPREAD)
+      ENDIF
+      IF(GOFAST.AND.(.NOT.DOHRM)) GOTO 10
+C
+C ... if 2c-mode IOTC, read basis in 4c-mode here
+C
+      IF (TWOCOMPBSS) THEN                     
+        TWOCOMP = .FALSE.
+        RDINPC = .FALSE.
+        CNTMAT = .FALSE.
+        IPREAD = IPREAD - 5
+        CALL READIN(WORK,LWORK,.FALSE.)
+        CALL SETDC1(IPREAD)
+        IPREAD = IPREAD + 5
+      ENDIF
 C
 C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
       CALL ONEGEN(WORK,LWORK)
-      IF(DOHRM) RETURN
+
+      IF(DOHRM) THEN
+        CALL TIMER('PAMSET',TIMSTR,TIMEND)
+        RETURN
+      ENDIF
 C
 C     Generate MO-transformation matrix and write to file
 C     ===================================================
 C
+C
+C     DO4C2C=T : after 4c SCF perform IOTC transformation
+C     DO2C4C=T : jump to 4c level after some 2c SCF iterations
+C
       CALL GMOTRA(WORK,LWORK)
 C
-C     Use supersymmetry for linear molecules
-C     ======================================
+C     Write orbital output to DFTMAT
+C     ==============================
 C
-      IF (LINEAR) CALL GLINSM(WORK,LWORK)
+      CALL ORBDAT
+C
+ 10   CONTINUE
 C
 C     Set DCB common blocks - second time
 C     ===================================
 C
       CALL SETDC2(IPRGEN)
+C
+C     If semiclassical QED, write density of bare vacuum to file
+C     ==========================================================
+C
+      IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
 C
 C     Prepare for two-electron integrals
 C     ==================================
@@ -94,13 +127,15 @@ C     ==============================================
 C
       CALL RELINF
 C
+      CALL TIMER('PAMSET',TIMSTR,TIMEND)
+      CALL QEXIT('PAMSET')
       RETURN
-C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setdc1 */
       SUBROUTINE SETDC1(IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Set DIRAC common blocks (DCB)
 C
@@ -142,7 +177,11 @@ C              2 - small
 C
 C     Written by T.Saue - October 1994
 C     Last revision: Nov 23 1994 - tsaue
-C*****************************************************************************
+C
+CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables, which
+CMI are calculated in READIN
+C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -304,6 +343,7 @@ C
       LU1INT = 19
       LUPMAT = 20
       LUINTR = 0
+      LUKRMC = 50 
 C
 C     *****************************************
 C     ***** COMMON/FIRSTN/ -              *****
@@ -313,12 +353,13 @@ C
       FIRST1 = .TRUE.
       FIRST2 = .TRUE.
       FIRST3 = .TRUE.
+      FIRST4 = .TRUE.
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setdc2 */
       SUBROUTINE SETDC2(IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Set DIRAC common blocks (DCB) - second run
 C
@@ -360,7 +401,7 @@ C              2 - small
 C
 C     Written by T.Saue - November 1994
 C     Last revision: Nov 23 1994 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -524,18 +565,24 @@ C
             CALL QUIT('NOCC>NORB')
          END IF
       END DO
+C
+C     Set a variable so that we may check whether the orbital information
+C     is already defined.
+C
+      I_DCBORB_SET = 1
+C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setdhf */
       SUBROUTINE SETDHF(IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Set dimensions for COMMON blocks in SCF-module
 C
 C     Written by T.Saue November 1994
 C     Last revision : Nov 23 1994 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -559,17 +606,16 @@ C
       LUCMOS    = 23
       LUSMOS    = 24
       N2EVECTQ  = 0
-      NSMOTQ    = 0
       DO IFRP = 1,NFSYM
-         ISMOQ(IFRP) = NSMOTQ
          N2EVECTQ = N2EVECTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
-         NSMOTQ   = NSMOTQ   + NOCC(IFRP)*NORB(IFRP)*NZ
       ENDDO
 C
 C     Closed shell Hartree - Fock
 C     ===========================
 C
-      IF (NOPEN.GT.0) THEN
+      IF (.NOT.AOC) THEN
+         NFMAT = 1
+      ELSEIF (NOPEN.GT.0) THEN
          NFMAT = NOPEN+1
       ELSE
          IF (NASHT.GT.0) THEN
@@ -764,13 +810,13 @@ C
         CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
 C
 C     Get small component charges
-C     Two options (dicided in SCDENS) :
+C     Two options (decided in SCDENS) :
 C     - Old method uses a table lookup with to get the DHF limit
 C       small component charges
 C     - New method uses a Mulliken analysis of the density
 C       THIS WILL NOT WORK FOR PARTIAL DENSITIES AS IN MOLTRA !!!!
 C
-        IF(NOPEN.GT.1) THEN
+        IF(AOC) THEN
           CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
           CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)           
           DO ISHELL = 1, NOPEN
@@ -1424,4 +1470,298 @@ C
       RETURN
 C      
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck barvac */
+      SUBROUTINE BARVAC(WORK,LWORK,IPRINT)
 C***********************************************************************
+C
+C     Generate and write bare vacuum density to file
+C
+C     Written by T. Saue Nov 7 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK)
+#include "memint.h"
+      INQUIRE(FILE='DFBVAC',EXIST=TOBE)
+      IF(TOBE) THEN
+        WRITE(6,'(A)') 
+     &   '* WARNING: BARVAC found file DFBVAC. '//
+     &   'No reference vacuum generated.'
+      ELSE
+        CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL BARVA1(WORK(KFAO),WORK(KFMO),WORK(KTMAT),
+     &            WORK(KEIG),WORK(KIBRP),IPRINT,WORK,KFREE,LFREE)
+        CALL MEMREL('BARVAC',WORK,KWORK,KWORK,KFREE,LFREE)
+      ENDIF
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck barva1 */
+      SUBROUTINE BARVA1(FAO,FMO,TMAT,EIG,IBEIG,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Generate and write bare vacuum density to file
+C
+C     Written by T. Saue Nov 7 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      DIMENSION FAO(*),FMO(*),TMAT(*),EIG(*),IBEIG(*),WORK(*)
+C
+      LUBUF  = 10
+C
+C     Generate free particle matrix
+C
+      CALL FREEMT(FAO,IPRINT,WORK(KFREE),LFREE)      
+C
+C     Transform to MO-basis FAO --> FMO
+C
+      CALL OPNFIL(LUBUF,'DFTMAT','OLD','BARVAC')
+      CALL READT(LUBUF,N2TMT,TMAT)
+      CLOSE(LUBUF,STATUS='KEEP')
+      CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
+C
+C     Diagonalize
+C
+      CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
+C
+C     Inspect eigenvalues
+C
+      DO I = 1,NFSYM
+        WRITE(LUPRI,*) '* BARVAC fermion ircop :',I
+        DO J = 1,NORB(I)
+          WRITE(6,'(I5,E20.10)') J,EIG(IORB(I)+J)
+        ENDDO
+      ENDDO
+C     Backtransform solutions to FMO
+C
+      DO 10 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 10
+        CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+     &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &              NORB(I),NZ,NORB(I),1,NFBAS(I,0),
+     &              TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),NZT,
+     &              IPRINT)
+ 10   CONTINUE
+C
+C     Construct bare vacuum density matrix and write to file
+C
+      CALL GENDEN(FAO,FMO,8,IPRINT)
+      CALL OPNFIL(LUBUF,'DFBVAC','UNKNOWN','BARVAC')
+      CALL WRITT(LUBUF,N2BBASXQ,FAO)
+      CLOSE(LUBUF,STATUS='KEEP')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck gofast */
+      SUBROUTINE GOTEST(GOFAST,IPRINT)
+C***********************************************************************
+C
+C     Look for MO-transformation matrices and other necessary
+C     information in order to skip GMOTRA which may be lengthy
+C
+C     Written by T. Saue Jun 15 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+C
+      LOGICAL GOFAST
+      GOFAST = .FALSE.
+      INQUIRE(FILE='DFTMAT',EXIST=GOFAST)
+      IF(GOFAST) THEN
+        INQUIRE(FILE='AOPROPER',EXIST=GOFAST)
+        IF(GOFAST.AND.BSS) THEN
+          INQUIRE(FILE='BSSMAT',EXIST=GOFAST)
+          LUBSS = 40
+        ENDIF
+      ENDIF
+      IF(GOFAST) THEN
+        WRITE(LUPRI,'(A)') 
+     &  '* GOTEST found the following files:',
+     &  '    - DFTMAT: transformation matrices',
+     &  '    - AOPROPER: one-electron integrals'
+        IF(BSS) WRITE(LUPRI,'(A)')
+     &  '    - BSSMAT: BSS stuff'
+        WRITE(LUPRI,'(A)')
+     &  '  ...will attempt restart.'
+      ENDIF
+C
+C     The necessary files have been found;
+C     try to get the necessary information from
+C     file DFTMAT
+C
+      IF(GOFAST) THEN
+        NBRP = 4/NZ
+        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','GOFAST')
+C.......skip AO2MO transformation matrix
+        READ(LUTMAT)
+C.......skip inverse transformation matrix
+        READ(LUTMAT)
+C.......read records containing orbital information
+        READ(LUTMAT,END=10) NZT,URKBAL,SUB_BL,I2COFK
+        N2TMT   = 0
+        N2TMOTQ = 0
+        DO IFRP = 1,NFSYM
+          READ(LUTMAT,END=10) 
+     &       NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+     &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        NESHMF(IFRP),NPSHMF(IFRP)
+          I2TMT(IFRP) = N2TMT
+          N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+          I2TMOT(IFRP) = N2TMOTQ
+          N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+        ENDDO
+        IF(SUB_BL) THEN
+          DO IFRP = 1,NFSYM
+            READ(LUTMAT,END=10) N_SUB_BL(IFRP),
+     &       ((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &       ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
+          ENDDO
+        ENDIF
+        CLOSE(LUTMAT,STATUS='KEEP')
+        GOTO 20
+C.......did not find the necessary records. 
+C.......Look for a formatted file with same information
+ 10     CONTINUE
+        CLOSE(LUTMAT,STATUS='KEEP')
+        INQUIRE(FILE='GOFAST',EXIST=GOFAST)
+        IF(GOFAST) THEN
+          OPEN(LUTMAT,FILE ='GOFAST',STATUS='OLD',
+     &             ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
+          READ(LUTMAT,*,END=30) NZT,URKBAL,SUB_BL,I2COFK
+          N2TMT   = 0
+          N2TMOTQ = 0
+          DO IFRP = 1,NFSYM
+            READ(LUTMAT,*,END=30) 
+     &      NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+     &      ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        NESHMF(IFRP),NPSHMF(IFRP)
+            I2TMT(IFRP) = N2TMT
+            N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+            I2TMOT(IFRP) = N2TMOTQ
+            N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
+          ENDDO
+          IF(SUB_BL) THEN
+            DO IFRP = 1,NFSYM
+              READ(LUTMAT,*,END=30) N_SUB_BL(IFRP),
+     &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &        ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
+            ENDDO
+          ENDIF
+          GOTO 20
+ 30       CONTINUE
+          GOFAST = .FALSE.
+        ENDIF
+      ENDIF
+ 20   CONTINUE
+      IF(GOFAST) THEN
+        WRITE(LUPRI,'(A)') '*** Restart successful !'
+        IF(IPRINT.GE.2) THEN
+          WRITE(LUPRI,*) NZT,URKBAL,SUB_BL,I2COFK
+          WRITE(LUPRI,*) 'NORB...',(NORB(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NFORB..',
+     &       ((NFORB(IFRP,J),J=0,2),IFRP=1,NFSYM)
+          WRITE(LUPRI,*) 'NISH...',(NISH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NESH...',(NESH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NPSH...',(NPSH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NASH...',(NASH(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NACSH..',
+     &       ((NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),IFRP=1,NFSYM)
+          WRITE(LUPRI,*) 'NFRO...',(NFRO(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NTMO...',(NTMO(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NISHMF.',(NISHMF(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NOCCMF.',(NOCCMF(I),I=1,NFSYM)
+          WRITE(LUPRI,*) 'NACSHMF',
+     &       ((NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),IFRP=1,NFSYM)
+          IF(SUB_BL) THEN
+            DO IFRP = 1,NFSYM
+              WRITE(LUPRI,*) N_SUB_BL(IFRP),
+     &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &        ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
+            ENDDO
+          ENDIF
+        ENDIF
+      ENDIF
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Orbdat*/
+      SUBROUTINE ORBDAT
+C***********************************************************************
+C
+C     Dump information from GMOTRA as rec 3 on DFTMAT
+C
+C     Written by T. Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+C
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','ORBDAT')
+      NBRP = 4/NZ
+      READ(LUTMAT)
+      READ(LUTMAT)
+      WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
+      DO IFRP = 1,NFSYM
+        WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
+     &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
+     &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
+     &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
+     &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
+     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        NESHMF(IFRP),NPSHMF(IFRP)
+      ENDDO
+      IF(SUB_BL) THEN
+        DO IFRP = 1,NFSYM
+          NN = N_SUB_BL(IFRP)
+          WRITE(LUTMAT) 
+     &     NN,((NORB_SUB(IB,IFRP,IC),IC=0,2),
+     &     ID_SUB_BL(IB,IFRP),IB=1,NN)
+        ENDDO
+      ENDIF
+      CLOSE(LUTMAT,STATUS='KEEP')      
+C
+      RETURN
+      END
+

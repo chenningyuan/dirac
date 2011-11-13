@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.36.2.1 $
-C DATE    : $Date: 2004/09/01 08:14:30 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : traout.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -52,8 +40,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "infpar.h"
       DIMENSION NSTR(2),IKRA(*),IKRB(*)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
+      CHARACTER*10 FNODE,LFNAM
+C
+C     Define a unique name for MDCINT. For backwards compatibility we name 
+C     the file  on the master node simply MDCINT
+C
+      IF (MYTID.EQ.0) THEN
+         FNODE = 'MDCINT    '
+      ELSE
+         FNODE = LFNAM('MDCINT')
+      ENDIF
 C
 C     The date is kept in a 10-character variable in RELCCSD
 C
@@ -72,7 +71,7 @@ C
          JJ = JJ + NSTR(IFSYM)
       ENDDO
 C           
-      OPEN (LUMLF2,FILE='MDCINT',FORM='UNFORMATTED')
+      OPEN (LUMLF2,FILE=FNODE,FORM='UNFORMATTED')
       WRITE (LUMLF2) DATEX,TIMEX,II,(IKRA(I),IKRB(I),I=1,II)
       NTKL = 0
       N2EFIL = 0
@@ -97,14 +96,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
 C
-      IF (PARCAL) THEN
-         WRITE (LUPRI,1001) MYTID
-      ELSE
+      IF (MYTID.EQ.0) THEN
          WRITE (LUPRI,1000)
       END IF
       CALL FLSHFO(LUPRI)
  1000 FORMAT (' - MOLFDIR file MDCINT was written.')
- 1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -118,7 +114,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
-      CHARACTER*8 NEXTFIL
+      CHARACTER*5 NEXTFIL
+      CHARACTER*10 FNODE,LFNAM
 C
       NTKL = NTKL + NZKL
 C     Every integral takes at most 32 bytes on 4 byte integer machines
@@ -127,16 +124,17 @@ C     This solves the 2Gb problem on Linux.
       IF (NTKL.GT.60 000 000) THEN
          N2EFIL = N2EFIL + 1
          IF (N2EFIL.LT.10) THEN
-            WRITE (NEXTFIL,'(A7,I1)') 'MDCINT0',N2EFIL
+            WRITE (NEXTFIL,'(A4,I1)') 'MDC0',N2EFIL
          ELSEIF (N2EFIL.LT.100) THEN
-            WRITE (NEXTFIL,'(A6,I2)') 'MDCINT',N2EFIL
+            WRITE (NEXTFIL,'(A3,I2)') 'MDC',N2EFIL
          ELSE
             STOP "100 integral files is enough !"
          ENDIF
+         FNODE = LFNAM(NEXTFIL)
          WRITE (LUMLF2) 0,N2EFIL,0
-         WRITE (LUMLF2) NEXTFIL
+         WRITE (LUMLF2) FNODE
          CLOSE (LUMLF2,STATUS='KEEP')
-         OPEN (LUMLF2,FILE=NEXTFIL,FORM='UNFORMATTED')
+         OPEN (LUMLF2,FILE=FNODE,FORM='UNFORMATTED')
          NTKL = 0
       ENDIF
 C
@@ -146,12 +144,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTB */
       SUBROUTINE MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
      &                  FMAT,NFM,INDK,INDL,RKL)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Write block of integrals to MDINT file. This is the old MOLFDIR
 C     format and should work with both RELCCSD and DIRRCI.
 C
 C     26-6-2002 : Slightly modified to avoid writing of imaginary zeroes
 C     in case of real groups.
+C
+C     Called from SYMFINT.
 C
 C     Written by Luuk Visscher, March 1997
 C
@@ -164,6 +165,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NFM,RCW),INDK(*),INDL(*)
       REAL*8 RKL(*)
+
+      CALL QENTER('MDINTB')
+
+      IF (IPRTRA.GE.5) THEN
+        CALL HEADER('Output from MDINTB routine',-1)
+        write(LUPRI,'(2X,A,I4)') '....Integral CLASS=',ICLASS
+C     Class 1 : (i    j    | k    l   )
+C     Class 2 : (i    j    | kbar lbar)
+C     Class 3 : (i    jbar | k    lbar)
+C     Class 4 : (ibar j    | k    lbar)
+C     ...      
+      ENDIF
 C
       NZKL = 0
       IKR1 = IKR
@@ -172,6 +185,13 @@ C
       LL = 0
       DO IREPL = 1, NFSYM
          IREPK = MOD(IREPL+IREPIJ,2) + 1
+
+         IF (IPRTRA.GE.5) THEN
+          WRITE(LUPRI,'(2X,A,I3,A,I3)') 'IREPK=',IREPK,' IREPL=',IREPL
+          WRITE(LUPRI,'(2X,A,I3,A,I3)') ' NSTR3(IREPK)=',NSTR3(IREPK), 
+     &                                  ' NSTR4(IREPL)=',NSTR4(IREPL)
+         ENDIF
+         
          DO L = 1, NSTR4(IREPL)
             LL = LL + 1
             DO K = 1, NSTR3(IREPK)
@@ -235,24 +255,32 @@ C
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
 C
-C     We may  exceed the maximum file length. Check !
+C     We may exceed the maximum file length. Check it in the following
+C     routine !
 C
       CALL MDINTN (NZKL)
-C
-      call flshfo(lupri)
+
+C     ... write the integral batch to the file 
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
      &               (RKL(INZ),INZ=1,NZKL*RCW)
+
 C
 C     We should send in the print flag here, and make this an option.
-C
-      IF (IPRINT.GE.5) THEN
+C   ------------------------------------------------------------------
+      IF (IPRTRA.GE.5) THEN
+         WRITE(LUPRI,'(2x,a,3i4)')
+     &  'MOLTRA: integrals batch saved;  IKR1,JKR1,NZKL:',
+     &   IKR1,JKR1,NZKL
          DO INZ = 1, NZKL
-            WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
-     &                                   (RKL(RCW*INZ-2+I),I=1,RCW)
+           WRITE (LUPRI,'(I4,A,I4,A,A,I4,A,I4,A,2f30.16)')
+     &     INZ,'./',NZKL,' >',
+     &     ' INDK=',INDK(INZ),' INDL=',INDL(INZ),
+     &     ' intgrl:',(RKL(RCW*(INZ-1)+I),I=1,RCW)
          ENDDO
       ENDIF
 C
+      CALL QEXIT('MDINTB')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -533,6 +561,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "dgroup.h"
       DIMENSION WORK(*)
+      LOGICAL   FEXIST
       CHARACTER*10 FNODE,LFNAM,FNAM*5
 C
       NQQCLASS = NZ * NZ * NBSYM / NFSYM
@@ -552,11 +581,16 @@ C
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
-C        Open and delete first in order to overwrite possible old files,
-C        leaving out the next two lines leads to errors in MCSCF where the record
+C        Open and delete first if old file, for some systems
+C        leaving out this leads to errors in MCSCF where the record
 C        length changes as the calculation continues
-         OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
-         CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
+         INQUIRE(FILE=FNODE,EXIST=FEXIST)
+         IF (FEXIST) THEN
+            JRECL = IRECLEN(1,0,0) 
+            OPEN (LUMLF3+IREPIJ,FILE=FNODE,STATUS='OLD',
+     &            ACCESS='DIRECT',RECL=JRECL)
+            CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
+         END IF
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
          CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,WORK(KFTMAT))
@@ -762,10 +796,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck INIMDINFO */
-      SUBROUTINE INIMDINFO
+C/* Deck INI4INDINFO */
+      SUBROUTINE INI4INDINFO
 C
-C     Initialize MDINFO file
+C     Initialize 4INDINFO file
 C     Authored by Joern Thyssen, 1/11/2000.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -778,11 +812,10 @@ C
 C
 C     Open file
 C
-      OPEN (LUMLF2,FILE='MDINFO',FORM='UNFORMATTED')
+      OPEN (LUMLF2,FILE='4INDINFO',FORM='UNFORMATTED')
 C
 C     Write date and time
 C
-      call flshfo(lupri)
       CALL GETDAT (DATEX,TIMEX)
       WRITE (LUMLF2) DATEX,TIMEX
 C

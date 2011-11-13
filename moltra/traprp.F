@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.22.4.1 $
-C DATE    : $Date: 2004/09/01 08:14:33 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : traprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -63,7 +51,7 @@ C
 #include "dcbprl.h"
 #include "mxcent.h"
 #include "dcbtrp.h"
-      LOGICAL TOBE,TRASAM
+      LOGICAL TOBE,TOBEK,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),
      &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,2)
@@ -116,7 +104,7 @@ C     Print section
 C     =============
 C
       DO I = 1, NFSYM
-         CALL TRAPRI(2,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),DUM,DUM,NSTR)
+         CALL TRAPRI(2,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),0,0,NSTR)
       ENDDO
 C
 C     Get all coefficients and eigenvalues
@@ -124,19 +112,18 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('TRAPAM: No coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
-      ENDIF
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(A)') 'Coefficient file not present'
+            CALL QUIT('TRAPAM: No coefficients !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+         ENDIF
 C
 C     Get the boson symmetries of the transformed spinors
 C
-      CALL DCOPY(4,KFREE,0,KIBE,1)
       DO I = 1,2
        DO IFRP = 1, NFSYM
         CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
@@ -144,6 +131,9 @@ C
      &                WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
        ENDDO
+       IF (NFSYM.EQ.1) CALL MEMGET('INTE',KIBE(2,I),0,WORK,KFREE,LFREE)
+C      ... always define KIBE(2,*) for PRPMLF call below
+C          so we don't get undefined address
       ENDDO
 C
 C

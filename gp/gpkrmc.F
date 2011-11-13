@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.4.2.1 $
-C DATE    : $Date: 2004/09/01 08:10:55 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : gpkrmc.F
 C
 C Purpose: General Purpose utility routines originally made for krmc,
@@ -181,6 +169,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "iratdef.h"
+#include "dcbopt.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
@@ -193,12 +182,64 @@ C     Write vector
 C
       LEN = MAX(4,ISIZE)
       CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
+      IF( CWRTFO_MAT ) CALL WRITSQ(LUNIT,IRAT*1,ECORE_LR)
       CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
 C
       REWIND LUNIT
 C
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck KRCI_PRPFILE */
+      SUBROUTINE KRCI_PRPFILE(LUNIT,LABEL,VECTOR,ISIZE,IRWRT)
+C***********************************************************************
+C
+C     Read/write VECTOR from/to LUNIT under label LABEL.
+C
+C     IRWRT controls reading/writing:
+C                                     0: read vector
+C                                     1: write vector
+C
+C     Input:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C      
+C
+C     Output:
+C
+C        VECTOR  - vector of size ISIZE (if not input)   
+C
+C     Based on WRTKRMC.
+C
+C     Written by S. Knecht - Aug 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION VECTOR(ISIZE)
+      CHARACTER LABEL*8
+C
+      IF( IRWRT .eq. 0 )THEN
+C
+C       Write label at end or - if already existing - after SODLABEL
+C
+        CALL LABKRMC(LUNIT,LABEL)
+C
+C       Write vector
+C
+        CALL WRITSQ(LUNIT,ISIZE,VECTOR)
+        CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
+        REWIND LUNIT
+      ELSE
+C       ... read from file
+        REWIND LUNIT
+        CALL MOLLAB(LABEL,LUNIT,LUPRI)
+        CALL READT(LUNIT,ISIZE,VECTOR)
+      END IF
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck iwrtkrmc */
@@ -668,24 +709,24 @@ c#ifdef KRMC_DEBUG
       do i = 1,norbi
       do j = 1,norbi
          if (i.eq.j) then
-            if (work(kcos+ioff)-d1.gt.d_max) then
+            if (abs(work(kcos+ioff)-d1).gt.d_max) then
                i_max = i
                j_max = j
-               d_max = work(kcos+ioff)-d1
+               d_max = abs(work(kcos+ioff)-d1)
             end if
          else
             if (work(kcos+ioff).gt.d_max) then
                i_max = i
                j_max = j
-               d_max = work(kcos+ioff)
+               d_max = abs(work(kcos+ioff))
             end if
          end if
          ioff = ioff + 1
       end do
       end do
-      if (d_max .gt. d0) then
-         write(6,*) 'ROTCMO: maximum deviation from unitary matrix'
-         write(6,*) 'Element ',i_max,j_max,' value :',d_max
+      if (d_max .gt. thrzer) then
+         write(LUPRI,*) 'ROTCMO: maximum deviation from unitary matrix'
+         write(LUPRI,*) 'Element ',j_max,i_max,' value :',d_max
       end if
 C#endif
 C
@@ -862,7 +903,7 @@ C
             IDXG2P(IORBI) = IPSHI
             IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = -1
-            IDXG2V(IORBI) = -1
+            IDXG2S(IORBI) = -1
 C
          END DO
          DO I = 1, NISH(IFSYM)
@@ -877,7 +918,7 @@ C
             IDXG2P(IORBI) = -1
             IDXG2I(IORBI) = IISHI
             IDXG2U(IORBI) = -1
-            IDXG2V(IORBI) = -1
+            IDXG2S(IORBI) = -1
 C
             IDXE2G(IESHI) = IORBI
             IDXI2G(IISHI) = IORBI
@@ -895,7 +936,7 @@ C
             IDXG2P(IORBI) = -1
             IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = IASHI
-            IDXG2V(IORBI) = -1
+            IDXG2S(IORBI) = -1
 C
             IDXU2G(IASHI) = IORBI
             IDXE2G(IESHI) = IORBI
@@ -913,10 +954,10 @@ C
             IDXG2P(IORBI) = -1
             IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = -1
-            IDXG2V(IORBI) = ISSHI
+            IDXG2S(IORBI) = ISSHI
 C
             IDXE2G(IESHI) = IORBI
-            IDXV2G(ISSHI) = IORBI
+            IDXS2G(ISSHI) = IORBI
          END DO
       END DO
 C
@@ -1097,7 +1138,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qnorm */
-      SUBROUTINE QNORM(S,VC,NBASI,NORBI,NZ,IP,IRETUR,SCR1,SCR2)
+      SUBROUTINE QNORM(S,VC,NBASI,NORBI,NZ,IPQTOQ,IRETUR,SCR1,SCR2)
 C***********************************************************************
 C
 C     Gram-Schmidt orthogonalize coefficients.
@@ -1108,6 +1149,8 @@ C     Output:
 C
 C     Written by J. Thyssen - Jan 23 2001
 C
+C     Last revision: HJAaJ - Aug 2008 
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1116,11 +1159,8 @@ C
 #include "consts.h"
       PARAMETER (THRRND = 0.9D0, THNORM = 1.0D-6)
 C
-      DIMENSION S(NBASI,NBASI)
-      DIMENSION VC(NBASI,NORBI,NZ)
-      DIMENSION IP(*)
-      DIMENSION SCR1(NBASI,NZ)
-      DIMENSION SCR2(NORBI)
+      DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)
+      DIMENSION IPQTOQ(*), SCR1(NBASI,NZ), SCR2(NORBI)
 C
       DO 20 I = 1, NORBI
          ITURN = 0
@@ -1130,17 +1170,17 @@ C
 C        Calculate S * VC(I)
 C
          CALL QGEMM(NBASI,1,NBASI,D1,
-     &        'N','N',IP,S,NBASI,NBASI,1,
-     &        'N','N',IP,VC(1,I,1),NBASI,NORBI,NZ,
-     &        D0,IP,SCR1,NBASI,1,NZ)
+     &        'N','N',IPQTOQ,S,NBASI,NBASI,1,
+     &        'N','N',IPQTOQ,VC(1,I,1),NBASI,NORBI,NZ,
+     &             D0,IPQTOQ,SCR1,NBASI,1,NZ)
 C
          TNORM = D0
          DO IZ = 1, NZ
             TNORM = TNORM + DDOT(NBASI,VC(1,I,IZ),1,SCR1(1,IZ),1)
          END DO
-D        write(lupri,*) 'tnorm = ',tnorm
+C        write(lupri,*) 'tnorm = ',tnorm
          IF (TNORM .LT. THRZER) THEN
-            IRETUR = -1
+            IRETUR = -I
             RETURN
          END IF
 C
@@ -1149,14 +1189,8 @@ C
          TNORM = D1 / SQRT(TNORM)
          DO IZ = 1, NZ
             CALL DSCAL(NBASI,TNORM,VC(1,I,IZ),1)
+            CALL DSCAL(NBASI,TNORM,SCR1(1,IZ),1)
          END DO
-C
-C        Calculate S * VC(I)
-C
-         CALL QGEMM(NBASI,1,NBASI,D1,
-     &        'N','N',IP,S,NBASI,NBASI,1,
-     &        'N','N',IP,VC(1,I,1),NBASI,NORBI,NZ,
-     &        D0,IP,SCR1,NBASI,1,NZ)
 C
          TNORM = D0
          DO IZ = 1, NZ
@@ -1168,7 +1202,7 @@ C
          DO J = 1, I - 1
             T = D0
             DO IZ = 1, NZ
-               T = T +  DDOT(NBASI,VC(1,J,IZ),1,SCR1(1,IZ),1)
+               T = T + DDOT(NBASI,VC(1,J,IZ),1,SCR1(1,IZ),1)
             END DO
             TNORM = TNORM - T * T
             SCR2(J) = -T
@@ -1176,7 +1210,7 @@ C
 C
          IF (TNORM .LT. THRZER) THEN
 C           ... zero vector after orthogonalization
-            IRETUR = -1
+            IRETUR = -I * 1 000 000
             RETURN
          END IF
 C
@@ -1193,16 +1227,16 @@ C
 C        SCR1 = \sum_{k=1,i} SCR2(k) * VC(*,k)
 C
          CALL QGEMM(NBASI,1,I,D1,
-     &        'N','N',IP,VC,NBASI,NORBI,NZ,
-     &        'N','N',IP,SCR2,NORBI,1,1,
-     &        D0,IP,SCR1,NBASI,1,NZ)
+     &        'N','N',IPQTOQ,VC,NBASI,NORBI,NZ,
+     &        'N','N',IPQTOQ,SCR2,NORBI,1,1,
+     &             D0,IPQTOQ,SCR1,NBASI,1,NZ)
 C
          DO IZ = 1, NZ
             CALL DCOPY(NBASI,SCR1(1,IZ),1,VC(1,I,IZ),1)
          END DO
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
-D           write(LUPRI,*) 'INFO: second round in QNORM'
+C           write(LUPRI,*) 'INFO: second round in QNORM'
             GOTO 1
          END IF
          IF (IROUND .GT. 0) CALL QUIT('QNORM internal error')

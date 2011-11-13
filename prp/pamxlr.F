@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.54.2.1 $
-C DATE    : $Date: 2004/09/01 08:16:15 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : pamxlr.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -112,29 +100,15 @@ C
 C
       NRSPF  = NLRBPT*NBFREQ
       IF(NRSPF.EQ.0) GOTO 10
-      IF(ORBXLR) THEN
-        CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
-     &              WORK,KFREE,LFREE,IPRXLR)
-        NI = 0
-C       Number of inactive orbitals
-CTROND  Check out active ones...
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
-      ELSE
-        NI = 0
-        KLRO = KFREE
-      ENDIF
       IF(XLR_SKIPEE) THEN
         NEE = 0
       ELSE
-        NEE = NI + 1
+        NEE = 1
       ENDIF
       IF(XLR_SKIPEP) THEN
         NEP = 0
       ELSE
-        NEP = NI + 1
+        NEP = 1
       ENDIF
       NCI = 0
       N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)
@@ -142,7 +116,7 @@ CTROND  Check out active ones...
       CALL DZERO(WORK(KLRF),N2LRF)
       CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
 C
-      CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK(KLRO),WORK,KFREE,LFREE)
+      CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
 C
  10   CONTINUE
       IF (XLRANA) CALL ANAXRS(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
@@ -153,10 +127,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXL1 */
-      SUBROUTINE PRPXL1(ABLRF,RCNV,IORBCL,WORK,KFREE,LFREE)
+      SUBROUTINE PRPXL1(ABLRF,RCNV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Called by PRPXLR (see PRPXLR for description of task)
+C
+C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
+C     calculation of magnetic properties
 C
 C***********************************************************************
 #include "implicit.h"
@@ -164,16 +141,23 @@ C***********************************************************************
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
+#include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbnmr.h"
+
 C
+      LOGICAL   LBUF
       CHARACTER TTYP(-1:1)*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
-     &          IORBCL(4,*),WORK(*)
+     &          WORK(*)
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
 C
@@ -185,28 +169,22 @@ C     *** I N I T I A L I Z E  ***
 C     ****************************
 C
       CALL SETXLR(WORK,KFREE,LFREE)
-C
-C     If orbital analysis; extract relevant orbital energies
-C     ======================================================
-C
-      IF(ORBXLR) THEN
-        NI = 0
-C       Number of inactive orbitals
-CTROND  Check out active ones...
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
-        CALL MEMGET('REAL',KEIG,NI,WORK,KFREE,LFREE)
-        CALL EIGEXT(WORK(KEIG),IORBCL,1,WORK,KFREE,LFREE)
+
+      IF(XLRANA) THEN
+        CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
+     &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
-        KEIG = KFREE
+        KLRO = KFREE
       ENDIF
+
 C
 C     **********************************************************
 C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
+
 C
 C     Memory allocation
 C     =================
@@ -261,9 +239,14 @@ C
             CALL MEMGET('REAL',KGPCI,NZCONFQ,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KGPOE,NZXOPEQ,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KGPOP,NZXOPPQ,WORK,KFREE,LFREE)
+            IF(NOSPIB) THEN
+              LBUF = NOSPIN
+              NOSPIN = .TRUE.
+            ENDIF
             CALL PAMGRD(INDPRB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
      &                  JOPSY,WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
      &                  NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRXLR)
+            IF(NOSPIB) NOSPIN = LBUF
 C
 C           Check norm of property gradient; skip if below threshold
 C           ========================================================
@@ -311,10 +294,15 @@ C           ************************************************************
 C           *** E V A L U A T E   R E S P O N S E   F U N C T I O N  ***
 C           ************************************************************
 C
+            IF(NOSPIA) THEN
+              LBUF = NOSPIN
+              NOSPIN = .TRUE.
+            ENDIF
             CALL GETLRF(ABLRF,WORK(KIBTYP),WORK(KIBCVC),
      &                  WORK(KIBEVC),WORK(KIBPVC),RCNV(1,INDBP),
-     &                  WORK(KEVALR),WORK(KEVECR),IORBCL,WORK(KEIG),
+     &                  WORK(KEVALR),WORK(KEVECR),WORK(KLRO),
      &                  WORK,KFREE,LFREE)
+            IF(NOSPIA) NOSPIN = LBUF
  30       CONTINUE
  20     CONTINUE
  10   CONTINUE
@@ -322,7 +310,7 @@ C
 C
 C     Final print section
 C
-      CALL XLROUT(ABLRF,RCNV,WORK(KEIG),WORK,KFREE,LFREE)
+      CALL XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPXL1')
@@ -335,6 +323,8 @@ C***********************************************************************
 C
 C     Input section for linear response  <<A;B>>
 C
+C     Called from:  PRPINP
+C
 C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
@@ -345,7 +335,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 36,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -364,21 +354,19 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.A OPER','.B OPER','.OPERAT',
      &            '.B FREQ','.ALLCMB','.THRESH','.MAXITR',
-     &            '.SKIPEP','.MAXRED','xXXXXXX','.XLRNRM',
+     &            '.SKIPEP','.MAXRED','.TRIPLE','.XLRNRM',
      &            '.ONLYSF','.ONLYSG','.INTFLG','.NOPREC',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.COMPRE',
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
-     &            '.MXLOAD','xXXXXXX','xXXXXXX','xXXXXXX'/
+     &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
+     &            '.IMAGIN','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
 C
-      NEWDEF = (WORD .EQ. '*LINEAR')
+
       IF (SET) THEN
-         IF (NEWDEF)
-     &      CALL QUIT('Only one "*LINEAR" input section allowed')
-C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -393,6 +381,7 @@ C
       ILLINT = IBTAND(INTGEN,1)
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
+      IGTINT = IBTAND(INTGEN/8,1)
 C
 C
 C     Initialize /XCBLR/
@@ -405,10 +394,12 @@ C
       CNVXLR(1)  = DUMMY
       CNVXLR(2)  = DUMMY
       MAXRM      = -1
-      MXLOAD     = 0
+      MXLOAD     = -1
       ITRXLR     = 50
-      INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
-      IF (LEVYLE) INTXLR = ILLINT
+      INTXLR     = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+CMI ... set up only LL class of integrals 
+C        as the default for LevyLe/BSS
+      IF (LEVYLE.OR.BSS) INTXLR = ILLINT
       ITRILR(1)  = 1
       ITRILR(2)  = 1
       NLRAPT     = 0
@@ -426,34 +417,26 @@ C
       XLRDIH     = .TRUE.
       TRIAB      = .FALSE.
       XLR_XVCFIL = 'NORXVC'
-      ORBXLR     = .FALSE.
-C     .... hjaaj: ORBXLR was not defined any more, but referenced
-C     .... TODO: Trond, should ORBXLR be removed completely ? /hjaaj July 2001
+      XLR_UNCOUP = .FALSE.
+      XLR_IMFREQ = .FALSE.
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
+      NOSPIA     = .FALSE.
+      NOSPIB     = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
          XLR_INDSTR(3,I) = ' '
       ENDDO
+      XLR_TRIPLET = .FALSE.
 C
 C     Initialize user-defined linear response properties
 C     ==================================================
 C
-C     Electric dipole polarizibilities
-C     Magnetic susceptibilities
-      IF(MSUSCP) THEN
-C        CALL DEF_MSUSCP(WORK,LWORK)
-      ENDIF
-C     NMR shielding constants
-      IF(SHIELD) THEN
-C        CALL DEF_SHIELD(WORK,LWORK)
-      ENDIF
-C     NMR indirect spin-spin coupling constants
-C
 C     Process input from CBIXLR
 C     =========================
 C
+      NEWDEF = (WORD .EQ. '*LINEAR')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN
@@ -470,7 +453,8 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30,31,32), I
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31,32,33,34,35,36), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -548,7 +532,8 @@ C&&&& MAXRED: max dimension of matrix in reduced system
                   READ(LUCMD,*) MAXRM
                GOTO 100
  11            CONTINUE
-C&&&&
+C&&&& TRIPLET: allow triplet excitations in SPINFREE runs
+               XLR_TRIPLET = .TRUE.
                GOTO 100
  12            CONTINUE
 C&&&& XLRNRM: normalize trial vectors
@@ -564,8 +549,13 @@ C&&&& ONLYSG: Only generate G matrix (Fock-matrix of modified density)
                GOTO 100
 C&&&& INTFLG: specify what two-electron integrals to include
  15            CONTINUE
-                  READ(LUCMD,*) ILLINT,ISLINT,ISSINT
-                  INTXLR = ILLINT + 2*ISLINT + 4*ISSINT
+                  IF (GAUNT) THEN
+                     READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
+                     INTXLR = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+                     INTXLR = ILLINT+2*ISLINT+4*ISSINT
+                  ENDIF
                GOTO 100
  16            CONTINUE
 C&&&& NOPREC: no preconditioning of initial trial vectors
@@ -632,10 +622,26 @@ C&&&& MXLOAD: Maximum number of trial vectors to be loaded in each microiteratio
                   READ(LUCMD,*) MXLOAD
                GO TO 100
  30            CONTINUE
+C&&&& NOSPIA: Eliminate all spin-dependene of property operator A
+                 NOSPIA = .TRUE.
                GO TO 100
  31            CONTINUE
+C&&&& NOSPIB: Eliminate all spin-dependene of property operator B
+                 NOSPIB = .TRUE.
                GO TO 100
  32            CONTINUE
+C&&&& UNCOUP: Uncoupled Hartree-Fock
+                 XLR_UNCOUP = .TRUE.
+               GO TO 100
+ 33            CONTINUE
+C&&& IMAGINARY: Purely imaginary frequencies
+                 XLR_IMFREQ = .TRUE.
+               GO TO 100
+ 34            CONTINUE
+               GO TO 100
+ 35            CONTINUE
+               GO TO 100
+ 36            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -658,7 +664,7 @@ C
 C        ... then calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(LEVYLE.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
+      IF(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
 C     ... no positrons for Levy-Leblond or no-pair
 C     ... also to make sure diamagnetic terms are calculated for magn.prop.
 C           (see PRPDEF) /hj jan 2001
@@ -667,6 +673,10 @@ C           (see PRPDEF) /hj jan 2001
      &   'QED invalid for Levy-Leblond/no-pair/.SKIPEP'
          INPERR = INPERR + 1
       END IF
+      IF (XLR_UNCOUP) THEN
+        ITRXLR = 0
+        XLRDIH = .TRUE.
+      ENDIF
 C
 C     Print section
 C     =============
@@ -675,10 +685,12 @@ C
       IF(.NOT.(DOXLR.OR.XLRANA)) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
-     &   ' XLRINP: Electronic linear reponse properties'
+     &' XLRINP: Electronic linear reponse properties'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A,I5)')
      &   ' * Print level                 :',IPRXLR
+      IF(XLR_UNCOUP) WRITE(LUPRI,'(A)') 
+     &  ' * NB !!! Uncoupled calculation.'
       IF(XLRANA) WRITE(LUPRI,'(A)')
      &   ' * Analysis of solution vectors.'
       IF(XSTERN .AND. DOXLR) THEN
@@ -687,7 +699,7 @@ C
      &'  and ignoring coupling between e-e and e-p rotations.',
      &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
      &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
-        IF (LEVYLE .OR. FREEPJ .OR. VEXTPJ .OR. XLR_SKIPEP) THEN
+        IF (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEP) THEN
            WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP'
            CALL QUIT(
@@ -701,11 +713,34 @@ Chj Oct 2000: check if .STERNH should invoke the following:
         XLR_XVCFIL = 'NORXVC'
 Chj Oct 2000 end
       END IF
-      IF(XLR_SKIPEE) WRITE(LUPRI,'(A)')
-     &     ' * NB!!! No e-e rotations'
-      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.FREEPJ.OR.VEXTPJ))
+      IF (XLR_SKIPEE) THEN
+        WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
+      ELSE
+        WRITE(LUPRI,'(A)')
+     &  ' * e-e rotations are allowed in the linear response function.'
+      ENDIF
+      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
+      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
+     &  WRITE(LUPRI,'(A)')
+     &  ' * No rotations between electrons and positrons,'// 
+     &  ' which are expelled.'
+      IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
+     &  ' * e-p rotations are allowed in the linear response function.'
+      IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')
+     &  ' * Triplet excitations allowed.'
+      IF (NOSPIA) WRITE(LUPRI,'(A)')
+     &  ' * All spin-dependence removed from property operator A'
+      IF (NOSPIB) WRITE(LUPRI,'(A)')
+     &  ' * All spin-dependence removed from property operator B'
+      IF (LEVYLE) WRITE(LUPRI,'(A)')
+     &  ' * You are running in the nonrelativistic (Levy-Leblond) mode.'
+      IF (BSS) WRITE(LUPRI,'(A)')
+     &  ' * You are running in the 2-component BSS relativistic mode.'
+      IF (DOPCT) WRITE(LUPRI,'(A)')
+     &  '   with activated picture change transformation'//
+     &  ' of four-component property operators.'
       IF(QED) WRITE(LUPRI,'(A)')
      &     ' * QED: rotations between positrons and secondary orbitals.'
       IF(.NOT.DOXLR) THEN
@@ -736,6 +771,14 @@ C
       WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
+      IF ((LEVYLE.OR.BSS).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
+        WRITE(LUPRI,'(3X,A)')
+     & 'Only LL integrals are allowed for LevyLe/BSS!'
+        ISLINT=0
+        ISSINT=0
+        IGTINT=0
+        INTXLR=1
+      ENDIF
       IF(ISLINT.EQ.1) THEN
         IF(CNVXLR(1).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,1P,D8.1)')
@@ -767,39 +810,49 @@ C
         WRITE(LUPRI,'(A)')
      &  ' * No preconditioning of initial trial vectors.'
       ENDIF
-      IF(MXLOAD.NE.0) WRITE(LUPRI,'(A,I5)')
+      IF(MXLOAD.GT.0) WRITE(LUPRI,'(A,I5)')
      &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
 C
-C     A operators
-C     ===========
+C     User specified A operators
+C     ===========================
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A)') ' ** A operators **'
-      CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,NLRAPT
+      IF (NLRAPT.GT.0) THEN
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** User specified A operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRAPT
         INDXPR = LLRAPU(I)
         CALL WRIXPR(I,INDXPR)
-      ENDDO
+       ENDDO
+      ENDIF
 C
-C     B operators
-C     ===========
+C     User specified B operators
+C     ===========================
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A)') ' ** B operators **'
-      CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,NLRBPT
+      IF (NLRBPT.GT.0) THEN
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** User specified B operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRBPT
         INDXPR = LLRBPU(I)
         CALL WRIXPR(I,INDXPR)
-      ENDDO
+       ENDDO
+      ENDIF
 C
 C     Frequencies
 C     ===========
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A)')
+C     CALL PRSYMB(LUPRI,'-',75,0)
+      IF(XLR_IMFREQ) THEN
+        WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
-     &   'frequencies:'
+     &   'IMAGINARY frequencies:'
+      ELSE
+        WRITE(LUPRI,'(A)')
+     &' * Linear response functions evaluated at the following '//
+     &   'REAL frequencies:'
+      ENDIF
       DO J = 1,NBFREQ
         FMT = MXFORM(BFREQ(J),12)
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
@@ -810,132 +863,18 @@ C
          WRITE(LUPRI,'(/A)') ' FATAL ERROR: both SKIPEE and SKIPEP'
       END IF
       IF (INPERR.GT.0) CALL QUIT('Input error in *LINEAR RESPONSE')
+
       RETURN
-C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck NMRINP */
-      SUBROUTINE NMRINP(WORD,RESET)
-C***********************************************************************
-C
-C     Input section for NMR properties
-C
-C     Written by T.Enevoldsen - Nov 1997
-C     Last revision:
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "orgcom.h"
-      PARAMETER (NTABLE = 8)
-      LOGICAL SET, NEWDEF, RESET, GORG
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-C
-      SAVE SET
-      DATA TABLE /'.GAUGEO','xXXXXXX','xXXXXXX','xXXXXXX',
-     &            'xXXXXXX','xXXXXXX','xXXXXXX','xXXXXXX'/
-      DATA SET/.FALSE./
-C
-      NEWDEF = (WORD .EQ. '*NMR')
-      IF (SET) THEN
-         IF (NEWDEF)
-     &      CALL QUIT('Only one "*NMR" input section allowed')
-C        hjaaj: repeated input sections give infinite loop ...
-         IF (RESET) SET = .FALSE.
-         RETURN
-      END IF
-      IF (RESET) THEN
-         SET = .FALSE.
-      ELSE
-         SET = .TRUE.
-      END IF
-C
-C
-C     Initialize
-C     ===================
-C
-      GORG = .FALSE.
-      CALL DZERO(GAGORG,3)
-C
-C     Process input
-C     =========================
-C
-      ICHANG = 0
-      IF (NEWDEF) THEN
-         WORD1 = WORD
-  100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
-  110       CONTINUE
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8), I
-                  END IF
-  200          CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in NMRINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in NMRINP.')
-    1          CONTINUE
-C Read user specified gauge origin
-                  READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-                  GORG = .TRUE.
-               GO TO 100
-    2          CONTINUE
-               GO TO 100
-    3          CONTINUE
-               GO TO 100
-    4          CONTINUE
-               GO TO 100
-    5          CONTINUE
-               GO TO 100
-    6          CONTINUE
-               GO TO 100
-    7          CONTINUE
-               GO TO 100
-    8          CONTINUE
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in NMRINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in NMRINP.')
-            END IF
-      END IF
-  300 CONTINUE
-C
-C     Print section
-C     =============
-C
-      IF (GORG) THEN
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(A)') ' *NMR input: '
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(/,A,3F12.6,/)') 'User defined gauge '//
-     &           'origin used:',(GAGORG(I), I = 1, 3)
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      END IF
-  999 CONTINUE
-      RETURN
-C
-      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxlr */
       SUBROUTINE SETXLR(WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Linear response module:
-C       Initialize variables/Open necessary files etc.
+C  ================================
+C     Initialize variables/Open necessary files etc.
 C
 C     Written by T.Saue and H.J.Aa.Jensen July 1996
 C     Last revision: July 9 1996 - tsaue
@@ -946,15 +885,21 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0)
 C
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcbxlr.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
+#include "dcbxpr.h"
 C
       LOGICAL TOBE,ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
+      CHARACTER  TTYP(-1:1)*2
+      DATA TTYP /'T-','T0','T+'/
+
       CALL QENTER('SETXLR')
       KFRSAV = KFREE
+
 C
 C     ************************************
 C     *** Set orbital strings          ***
@@ -966,17 +911,84 @@ C     ************************************
 C     *** Sort operators on symmetries ***
 C     ************************************
 C
+
+CMI/TODO heartfull wish July 2006: It would be good to have sorting of
+C       A,B operators at the beginning of the run (after the XLRINP)
+
       CALL OP1SRT('LLAPSU',LLRAPU,LLAPSU,NLRAPT,NLRAP,JLRAP,
      &            WORK(KFREE),LFREE)
+
       CALL OP1SRT('LLBPSU',LLRBPU,LLBPSU,NLRBPT,NLRBP,JLRBP,
      &            WORK(KFREE),LFREE)
+
+CMI   ... print out on what couples are going into the linear response...
+      IF (IPRXLR.GE.7) THEN
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all A operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRAPT
+        INDXPR = LLRAPU(I)
+        CALL WRIXPR(I,INDXPR)
+       ENDDO
+
+       CALL PRSYMB(LUPRI,'-',75,0)
+       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all B operators **'
+       CALL PRSYMB(LUPRI,'-',75,0)
+       DO I = 1,NLRBPT
+        INDXPR = LLRBPU(I)
+        CALL WRIXPR(I,INDXPR)
+       ENDDO
+      
+       WRITE(LUPRI,'(A)')
+     & ' ** SETXLR: Sorted couples of A,B operators'//
+     & ' for linear response calculations **'
+
+        DO IOPSY = 1,NFSYM
+          NBF = NBSYM/NFSYM
+          DO IBF = 1,NBF
+            ISYM = JFSYM(IBF,IOPSY)
+            NOPA = NLRAP(ISYM)
+            JOPA = JLRAP(ISYM)
+            NOPB = NLRBP(ISYM)
+            JOPB = JLRBP(ISYM)
+            DO IOPA = 1,NOPA
+              INDAP  = LLAPSU(JOPA+IOPA)
+              INDPRA = LLRAPU(INDAP)
+              IREPA  = IPRPSYM(INDPRA)-1
+              ITIMA  = IPRPTIM(INDPRA)
+              DO IOPB = 1,NOPB
+                INDBP  = LLBPSU(JOPB+IOPB)
+                INDPRB = LLRBPU(INDBP)
+                IREPB  = IPRPSYM(INDPRB)-1
+                ITIMB  = IPRPTIM(INDPRB)
+                ITIMAB = ITIMA*ITIMB
+                IF    (ITIMAB.EQ. 1) THEN
+                  WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &             '<<A(',INDAP,'),B(',INDBP,
+     &             ')>> - linear response function (real):'
+                ELSEIF(ITIMAB.EQ.-1) THEN
+                  WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &             '<<A(',INDAP,'),B(',INDBP,
+     &             ')>> - linear response function (imaginary):'
+                ENDIF
+                CALL PRSYMB(LUPRI,'-',95,0)
+                WRITE(LUPRI,'(3X,A,A16,5X,A3,2X,A2)')
+     &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
+     &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
+                CALL PRSYMB(LUPRI,'-',95,0)
+             ENDDO
+             ENDDO
+             ENDDO
+             ENDDO
+      ENDIF
+
 C
 C     **************************************************
 C     *** Transfer information from XCBXLR to WRKXRS ***
 C     **************************************************
 C
+      CALL SETRSP
       LINEQ     = .TRUE.
-      FKRMC     = .FALSE.
       LSVCFG(1) = XLR_LSFG(1)
       LSVCFG(2) = XLR_LSFG(2)
       TKNORM    = XLRNRM
@@ -991,6 +1003,9 @@ C
       N2REDM    = MAXRM*MAXRM
       LOFFTY    = 0
       STATIC    = (NFREQ.EQ.1.AND.BFREQ(1).EQ.D0)
+      UNCOUP    = XLR_UNCOUP
+      IMFREQ    = XLR_IMFREQ
+      TRIPLET   = XLR_TRIPLET
       CNVINT(1) = CNVXLR(1)
       CNVINT(2) = CNVXLR(2)
       ITRINT(1) = ITRILR(1)
@@ -1028,13 +1043,15 @@ C
         LURST = 28
         CALL OPNFIL(LURST,XLR_XVCFIL,'OLD','PRPXLR')
       ENDIF
+
       CALL QEXIT('SETXLR')
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLRF */
       SUBROUTINE GETLRF(ABLRF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
-     &                  EVALR,EVECR,IORBCL,EIG,WORK,KFREE,LFREE)
+     &                  EVALR,EVECR,IORBCL,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Evaluate linear response functions <<A;B>>.
@@ -1057,19 +1074,11 @@ C
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
-     &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
+     &          IBPVC(*),EVALR(*),EVECR(NREDM,*),WORK(*)
 C
       CALL QENTER('GETLRF')
       KFRSAV = KFREE
       FIRST = .TRUE.
-      IF(ORBXLR) THEN
-        NI = 0
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
-      ELSE
-        NI = 0
-      ENDIF
       NRSP = NFREQ*NLRAPT*NLRBPT
 C
 C     First evaluate solution vectors for all frequencies
@@ -1088,7 +1097,7 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETLRF')
-      IF(SPINFR.OR.LEVYLE) THEN
+      IF(SPINFR) THEN
         CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
      &              TOTERG,10,WORK,KFREE,LFREE)
@@ -1099,11 +1108,21 @@ C
       ENDIF
       CLOSE(LUBUF,STATUS='KEEP')
 C
-      IOFF  = 1
+C
+C
+      IF(XLRANA) THEN
+        CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
+     &              WORK,KFREE,LFREE,IPRXLR)
+      ELSE
+        KLRO=KFREE
+      ENDIF
+C
 C
 C     Solution vector - orbital (e-e) part
 C     ====================================
 C
+      IOFF  = 1
       IF(NZXOPE.GT.0) THEN
         NESIM = NFREQ * IFAC
         KEE   = KFREE
@@ -1111,11 +1130,35 @@ C
         CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPEQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NESIM        ,WORK,KFREE,LFREE)
+        IF(XLRANA) THEN
+          NI = 0
+          NV = 0
+          DO IFRP = 1,NFSYM
+C...inactive electron orbitals
+            NI = NI + NCLS_XLR(2,1,IFRP)
+C...secondary electron orbitals
+            NV = NV + NCLS_XLR(2,3,IFRP)
+          ENDDO
+          NINDX=MAX(NI,NV,NZXOPE)
+          CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
+        ELSE
+          KINDX= KFREE
+          KII  = KFREE
+          KIV  = KFREE
+          KRI  = KFREE
+          KRV  = KFREE
+        ENDIF
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
-     &              WORK(KCMO),WORK(KBEIG),IORBCL,EIG,WORK(KZXOPE),
-     &              WORK(KIVEC),WORK,KFREE,LFREE)
+     &              WORK(KCMO),WORK(KBEIG),IORBCL,WORK(KZXOPE),
+     &              WORK(KIVEC),NI,NV,
+     &              WORK(KINDX),WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
+     &              WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
           FIRST = .FALSE.
@@ -1123,7 +1166,7 @@ C
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-e',WORK,1,KEE,KFREE,LFREE)
-        IOFF = IOFF + NI + 1
+        IOFF = IOFF + 1
       ENDIF
 C
 C     Solution vector - orbital (e-p) part
@@ -1136,11 +1179,35 @@ C
         CALL MEMGET('REAL',KGVEC,NZXOPPQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPPQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
+        IF(XLRANA) THEN
+          NI = 0
+          NV = 0
+          DO IFRP = 1,NFSYM
+C...inactive electron orbitals
+            NI = NI + NCLS_XLR(2,1,IFRP)
+C...secondary positron orbitals
+            NV = NV + NCLS_XLR(1,3,IFRP)
+          ENDDO
+          NINDX=MAX(NI,NV,NZXOPP)
+          CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
+        ELSE
+          KINDX= KFREE
+          KII  = KFREE
+          KIV  = KFREE
+          KRI  = KFREE
+          KRV  = KFREE
+        ENDIF
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBPVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
-     &              WORK(KCMO),WORK(KBEIG),IORBCL,EIG,WORK(KZXOPP),
-     &              WORK(KIVEC),WORK,KFREE,LFREE)
+     &              WORK(KCMO),WORK(KBEIG),IORBCL,WORK(KZXOPP),
+     &              WORK(KIVEC),NI,NV,
+     &              WORK(KINDX),WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
+     &              WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
           FIRST = .FALSE.
@@ -1148,7 +1215,7 @@ C
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-p',WORK,1,KEP,KFREE,LFREE)
-        IOFF = IOFF + NI + 1
+        IOFF = IOFF + 1
       ENDIF
 C
 C     Solution vector - configurational part
@@ -1166,8 +1233,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLR1 */
       SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
-     &                  GPO,XPO,BBUF,NXPAR,CMO,IBEIG,IORBCL,EIG,JXOP,
-     &                  IVECS,WORK,KFREE,LFREE)
+     &                  GPO,XPO,BBUF,NXPAR,CMO,IBEIG,IORBCL,JXOP,
+     &                  IVECS,NI,NV,INDX,IIBF,IVBF,RIBF,RVBF,
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Get linear response function for orbital rotation parameter
@@ -1189,9 +1257,12 @@ C
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
-     &          CMO(*),IBEIG(*),EIG(*),IORBCL(4,*),
+     &          CMO(*),IBEIG(*),IORBCL(4,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
-     &          JXOP(2,*),IVECS(*),WORK(*)
+     &          JXOP(2,*),IVECS(*),IIBF(*),IVBF(*),INDX(*),
+     &          RIBF(*),RVBF(*),WORK(*)
+      CHARACTER TYP(3)*1
+      DATA TYP/'i','a','v'/
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
@@ -1236,6 +1307,22 @@ C
         CALL QUIT('GETLR1: Inappropriate INDPRB !')
       ENDIF
 C
+C     Prepare for orbital analysis
+C
+      IF(XLRANA) THEN
+        CALL IZERO(IIBF,NI)
+        CALL IZERO(IVBF,NV)
+C       Assign orbitals
+        DO J = 1,NXPAR
+          I1 = JXOP(1,J)
+          J1 = IORBCL(4,I1)
+          I2 = JXOP(2,J)
+          J2 = IORBCL(4,I2)
+          IIBF(J1) = I1
+          IVBF(J2) = I2
+        ENDDO
+      ENDIF
+C
 C     First get solution vector
 C     =========================
 C
@@ -1255,10 +1342,14 @@ C
 C     Print section
 C     -------------
 C
-Cjth   IF(IPRXLR.GE.10) THEN
       IF(IPRXLR.GE.3) THEN
-        WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
+        IF(NFREQ.EQ.1) THEN
+          WRITE(LUPRI,'(/1X,A2,A)') BVTYP(ITYP),
+     &   '- part of solution vectors for one frequency:'
+        ELSE
+          WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
      &   '- part of solution vectors for',NFREQ,' frequencies:'
+        ENDIF
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -1293,25 +1384,86 @@ C         Form linear reponse function
 C         ----------------------------
 C
           DO IFREQ = 1,NFREQ
-            IF (KTIMOP .EQ. ITIM) ABLRF(IFREQ,INDAP,INDBP,1)  =
+            IF (KTIMOP .EQ. ITIM) THEN
+              ABLRF(IFREQ,INDAP,INDBP,1)  =
      &        D2*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
-            IF(IPRXLR.GE.2) THEN
-              FREQ = EVALR(IFREQ)
-              WRITE(LUPRI,1000)
+              IF(XLRANA.OR.IPRXLR.GE.2) THEN
+                FREQ = EVALR(IFREQ)
+                WRITE(LUPRI,1000)
      &            '<<',INDAP,',',INDBP,'>>:',ABLRF(IFREQ,INDAP,INDBP,1),
      &            ' a.u.,  ',BVTYP(ITYP),
      &            '-contribution at frequency',FREQ,' a.u.'
-            ENDIF
-            IF(ORBXLR .AND. KTIMOP.EQ.ITIM) THEN
-              DO IZ = 1,NZ
-                DO I = 1,NXPAR
-                  I1 = JXOP(1,I)
-                  IND = IORBCL(2,I1) + 1
-                  ABLRF(IFREQ,INDAP,INDBP,IND)=
-     &            ABLRF(IFREQ,INDAP,INDBP,IND)+D2*GPO(I,IZ)*
-     &              XPO(I,IZ,IFREQ)
+              ENDIF
+              IF(XLRANA) THEN
+                CALL PRSYMB(LUPRI,'-',95,0)
+                WRITE(LUPRI,'(/A/)') '* ORBITAL ANALYSIS'
+                CALL DZERO(BBUF,NXPAR)
+                DO IZ = 1,NZ
+                  DO I = 1,NXPAR
+                    BBUF(I) = BBUF(I)+GPO(I,IZ)*XPO(I,IZ,IFREQ)
+                  ENDDO
                 ENDDO
-              ENDDO
+                CALL DSCAL(NXPAR,D2,BBUF,1)
+                TMP = 100.0D0/ABLRF(IFREQ,INDAP,INDBP,1)
+                CALL DZERO(RIBF,NI)
+                CALL DZERO(RVBF,NV)
+                DO J = 1,NXPAR
+                  I1 = JXOP(1,J)
+                  J1 = IORBCL(4,I1)
+                  I2 = JXOP(2,J)
+                  J2 = IORBCL(4,I2)
+                  RIBF(J1) = RIBF(J1) + BBUF(J)
+                  RVBF(J2) = RVBF(J2) + BBUF(J)
+                ENDDO
+        THR = 2.0D-0
+C.......Give major inactive orbitals
+        WRITE(LUPRI,'(3X,A)') 'Dominant inactive orbitals:'
+        CALL ABSIND (NI,RIBF,INDX)
+        DO J = NI,1,-1
+          JJ = INDX(J)
+          FAC = RIBF(JJ)*TMP
+          IF(ABS(FAC).LE.THR) GOTO 3
+          I1  = IIBF(JJ)
+          J1 = IORBCL(2,I1)
+          WRITE(LUPRI,'(I6,A1,A3,A1,E16.8,3X,F8.2,A1)')
+     &        J1,'(',FREP(IORBCL(3,I1)),')',
+     &        RIBF(JJ),FAC,'%'
+        ENDDO
+ 3      CONTINUE
+C       Give major virtual orbitals
+        WRITE(LUPRI,'(3X,A)') 'Dominant virtual orbitals:'
+        CALL ABSIND (NV,RVBF,INDX)
+        DO J = NV,1,-1
+          JJ = INDX(J)
+          FAC = RVBF(JJ)*TMP
+          IF(ABS(FAC).LE.THR) GOTO 4
+          I2 = IVBF(JJ)
+          J2 = IORBCL(2,I2)
+          WRITE(LUPRI,'(I6,A1,A3,A1,E16.8,3X,F8.2,A1)')
+     &        J2,'(',FREP(IORBCL(3,I2)),')',
+     &        RVBF(JJ),FAC,'%'
+        ENDDO
+ 4      CONTINUE
+        CALL ABSIND (NXPAR,BBUF,INDX)
+        WRITE(LUPRI,'(3X,A,E10.2/)')
+     &   'Amplitudes larger than threshold ',THR
+        DO J = NXPAR,1,-1
+          JJ = INDX(J)
+          FAC = BBUF(JJ)*TMP
+          IF(ABS(FAC).LE.THR) GOTO 5
+          I1 = JXOP(1,JJ)
+          I2 = JXOP(2,JJ)
+          WRITE(LUPRI,
+     &    '(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8,3X,F8.2,A1)')
+     &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
+     &      FREP(IORBCL(3,I1)),')',
+     &      ' ---> ',
+     &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
+     &      FREP(IORBCL(3,I2)),')',BBUF(JJ),FAC,'%'
+        ENDDO
+ 5      CONTINUE
+            CALL PRSYMB(LUPRI,'-',95,0)
+              ENDIF
             ENDIF
           ENDDO
         ENDDO
@@ -1346,7 +1498,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XLROUT */
-      SUBROUTINE XLROUT(ABLRF,RCNV,EIG,WORK,KFREE,LFREE)
+      SUBROUTINE XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Final output from linear response module
@@ -1365,30 +1517,10 @@ C
 #include "dcbxpr.h"
 C
       CHARACTER MXFORM*6,FMT*6,TTYP(-1:1)*2
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),EIG(*),
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          RCNV(NBFREQ,NLRBPT),IBUF(2),WORK(*)
       DATA TTYP /'T-','T0','T+'/
 C
-      IF(ORBXLR) THEN
-        NI = 0
-C       Number of inactive orbitals
-CTROND  Check out active ones...
-        DO I = 1,NFSYM
-          NI = NI + NCLS_XLR(1,1,I) + NCLS_XLR(2,1,I)
-        ENDDO
-        IOFF = 1
-        NVAR = 0
-        IF(.NOT.XLR_SKIPEE) THEN
-          NVAR = NVAR + 1
-          IBUF(NVAR)  = IOFF+1
-          IOFF = IOFF + NI + 1
-        ENDIF
-        IF(.NOT.XLR_SKIPEP) THEN
-          NVAR = NVAR + 1
-          IBUF(NVAR)  = IOFF+1
-          IOFF = IOFF + NI + 1
-        ENDIF
-      ENDIF
 C
 C     Loop over perturbation operators
 C     ================================
@@ -1430,7 +1562,13 @@ C
                 CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
                   FMT = MXFORM(ABLRF(I,INDAP,INDBP,1),15)
-                  IF(RCNV(I,INDBP).LT.THCLR) THEN
+                  IF(UNCOUP) THEN
+                    WRITE(LUPRI,
+     &                '(3X,'//FMT//',A,A,F15.8,A,3X,A)')
+     &                ABLRF(I,INDAP,INDBP,1),' a.u.',
+     &                ' at frequency ',BFREQ(I),' a.u.',
+     &                '--- (uncoupled calculation)'
+                  ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
                     WRITE(LUPRI,
      &                '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
      &                ABLRF(I,INDAP,INDBP,1),' a.u.',
@@ -1442,34 +1580,6 @@ C
      &                ABLRF(I,INDAP,INDBP,1),' a.u.',
      &                ' at frequency ',BFREQ(I),' a.u.',
      &                RCNV(I,INDBP),'(**NOT** converged!)'
-                  ENDIF
-                  IF(ORBXLR) THEN
-                    WRITE(LUPRI,'(2X,A)') '* Orbital analysis:'
-                    IND = 0
-                    DO IFRP = 1,NFSYM
-C - positronic orbitals
-                      DO J = 1,NCLS_XLR(1,1,IFRP)
-                        IND = IND + 1
-                        A = D0
-                        DO K = 1,NVAR
-                          A = A + ABLRF(I,INDAP,INDBP,IBUF(K)+IND)
-                        ENDDO
-                        WRITE(LUPRI,'(A3,A1,4(2X,F16.8))')
-     &       FREP(IFRP),'p',EIG(IND),A,
-     &       (ABLRF(I,INDAP,INDBP,IBUF(K)+IND),K=1,NVAR)
-                      ENDDO
-C - electronic orbitals
-                      DO J = 1,NCLS_XLR(2,1,IFRP)
-                        IND = IND + 1
-                        A = D0
-                        DO K = 1,NVAR
-                          A = A + ABLRF(I,INDAP,INDBP,IBUF(K)+IND)
-                        ENDDO
-                        WRITE(LUPRI,'(A3,A1,4(2X,F16.8))')
-     &       FREP(IFRP),'e',EIG(IND),A,
-     &       (ABLRF(I,INDAP,INDBP,IBUF(K)+IND),K=1,NVAR)
-                      ENDDO
-                    ENDDO
                   ENDIF
                 ENDDO
                 CALL PRSYMB(LUPRI,'-',95,0)
@@ -1488,9 +1598,9 @@ C/* Deck xrspar */
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
-C     RPA calculation
+C     linear response calculation
 C
-C     Written by T.Saue July 18 1997
+C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1528,7 +1638,7 @@ C
       CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KNOROT),NORBT)
       GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,JOPSY,WORK(KNOROT),
+      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,WORK(KNOROT),
      &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
      &            WORK,KFREE,LFREE,IPRINT)
 C     No CALL MEMREL here!!!!
@@ -1647,7 +1757,6 @@ C       New parameter class
         IF(TYP1(1:1).NE.PBUF.OR.LAB1.NE.LBUF) THEN
           IF(TOBE) THEN
 C           Analyze NVEC solution vectors from previous parameter class
-CTROND            NVEC = IVEC+1-IPAR
             NVEC = IVEC-IPAR
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
@@ -1766,7 +1875,8 @@ C...secondary positron orbitals
       ELSE
         CALL QUIT('ANAXR1: Unknown IC !')
       ENDIF
-      CALL MEMGET('INTE',KINDX,NBDIM,WORK,KFREE,LFREE)
+      NINDX=MAX(NI,NV,NBDIM)
+      CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
@@ -1798,7 +1908,7 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),
-     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM),
+     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(*),JXOP(2,NBDIM),
      &          IORBCL(4,*),IIBF(NI),IVBF(NV),RIBF(NI),RVBF(NV)
 C     Local variables
       CHARACTER TYP(3)*1

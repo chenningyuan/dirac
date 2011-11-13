@@ -1,36 +1,24 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -106,8 +94,20 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
       CHARACTER*72 CHAR_X
+      INTEGER FLLNGTH
+      CHARACTER*10 SCRFLL
+      CHARACTER*6 SCRFL
+
 *
 #include "units.inc"
+#if defined (VAR_MPI2)
+#include "mpif.h"
+#include "infpar.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#include "parluci.h"
+#endif
+      
+
 *
       NTESTL = 0
       if (NTESTL.ge.1) then
@@ -116,9 +116,28 @@ C
       end if
 *
       LU_INTERNAL = LUSC_INT
+      SCRFL ="LUSCDL"
 *
+#if defined (VAR_MPI2)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',MYPROC
+         FLLNGTH=8
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (SCRFLL,'(A6,A1,I2)') SCRFL,'.',MYPROC
+         FLLNGTH=9
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (SCRFLL,'(A6,A1,I3)') SCRFL,'.',MYPROC
+         FLLNGTH=10
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+      ENDIF
+#else
+      SCRFLL=SCRFL
+      FLLNGTH=6
+#endif
+
       Open(Unit=LU_INTERNAL,
-     &     File='LUSCDL',
+     &     File=SCRFLL(1:FLLNGTH),
      &     Status='NEW',
      &     Form='FORMATTED')
 *
@@ -497,7 +516,8 @@ C
 ***********************************************************************
 *  Dummy routine for normal compilations
 *
-      subroutine rightad
+      subroutine rightad(string)
+      character*12 string
       return
       end
 ***********************************************************************
@@ -647,7 +667,9 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 ***********************************************************************
 *  Dummy routine for normal compilations
 *
-      subroutine stdfmt
+      subroutine stdfmt(char_x,string)
+      CHARACTER*72 CHAR_X
+      CHARACTER*12 STRING
       return
       end
 ***********************************************************************

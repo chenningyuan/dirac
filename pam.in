@@ -1,29 +1,29 @@
 #
-#...   Copyright (c) 2004 by the authors of Dirac (see below).
-#...   All Rights Reserved.
-#...
-#...   This code is provided under a written licence and may be 
-#...   used, copied, transmitted, or stored only in accord with that
-#...   written licence.
-#...
-#...   In particular, no part of the source code or compiled modules may 
-#...   be distributed outside the research group of the licence holder. 
-#...   This means also that persons (e.g. post-docs) leaving the research
-#...   group of the licence holder may not take any part of Dirac,
-#...   including modified files, with him/her, unless that person has
-#...   obtained his/her own licence. 
-#...
-#...   For questions concerning this copyright write to:
-#...      dirac-admin@dirac.chem.sdu.dk
-#...
-#...   For information on how to get a licence see:
-#...      http://dirac.chem.sdu.dk
+#      Copyright (c) 2008 by the authors of DIRAC.
+#      All Rights Reserved.
+#
+#      This source code is part of the DIRAC program package.
+#      It is provided under a written license and may be used,
+#      copied, transmitted, or stored only in accordance to the
+#      conditions of that written license.
+#
+#      In particular, no part of the source code or compiled modules may
+#      be distributed outside the research group of the license holder.
+#      This means also that persons (e.g. post-docs) leaving the research
+#      group of the license holder may not take any part of Dirac,
+#      including modified files, with him/her, unless that person has
+#      obtained his/her own license.
+#
+#      For information on how to get a license, as well as the
+#      author list and the complete list of contributors to the
+#      DIRAC program, see: http://dirac.chem.sdu.dk
+#
 #
 #
 # Shell Script for running Dirac
 #
-# VERSION : $Revision: 1.68.2.4 $
-# DATE    : $Date: 2004/09/03 06:27:01 $
+# VERSION : $Revision: 7758 $
+# DATE    : $Date: 2008-09-17 18:37:33 +0200 (Wed, 17 Sep 2008) $
 # FILE    : pam.in
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -46,12 +46,14 @@ fi
 shortusage ()
 {
    echo
-   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo 'Usage: '$0' [Flags] [ARCHIVE.tgz] mol[.mol] menu[.inp]'
    echo '   For information about flags enter "'$0'" without any options.'
 }
 usage ()
 {
-   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo 'Usage: '$0' [Flags] [ARCHIVE.tgz] mol[.mol] menu[.inp]'
+   echo ' Run Dirac with the given molecule and input file. If a .tgz archive'
+   echo ' is given the calculation can restart from the contents of this file.'
    echo '   Flags:'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential'
    echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
@@ -59,24 +61,26 @@ usage ()
    echo '     -mw mem                : Set memory (in megawords) for master'
    echo '                              (and slave nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the slave nodes'
+   echo '     -aw mem                : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
    echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
    echo '     -clean                 : Clean work area before calculation'
    echo '     -keepwrk               : Keep work area after calculation (default: remove)'
-   echo '     -copy "file1 file2 .." : Copy specified files from job directory to   work area'
-   echo '     -get "file1 file2 .."  : Get  specified files to   job directory from work area'
+   echo '     -put "file1 file2 .."  : Put specified files from job directory to   work area'
+   echo '     -get "file1 file2 .."  : Get specified files to   job directory from work area'
    echo '     -incmo                 : Copy DFCOEF from job directory to   work area (when restarting)'
    echo '     -outcmo                : Save DFCOEF to   job directory from work area (for restart)'
    echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
    echo '     -outfck                : Save DFFCK2 to   job directory from work area'
+   echo '     -noarch                : Do not create a .tgz archive of the calculation'
+   echo '     -full-restart          : All files from ARCHIVE.tgz are unpacked, not just DFCOEF.'
+   echo '                              This allows you to omit the molecule and input files.'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
    echo '     -notify                : Notify when finished to user starting job'
    echo '     -user e-mail           : Notify when finished using specified e-mail address'
    echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
-   echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
-   echo '                              (path must be included if executable is not in input directory)'
    echo '     -help                  : More help on pam than this'
 }
 #
@@ -99,7 +103,6 @@ notify_user()
       fi
    fi
    mail $TO <<EOF
-   cat <<EOF
 
 Your job has has returned with exit status: $EXIT
 
@@ -107,10 +110,34 @@ Command      : $0 $ARG_SAVE
 Hostname     : `hostname`
 Input dir    : $LOC
 Menu file    : $MENU
-Molecule file: $MOL
+Molecule file: $MOL.$EXT
 Output file  : $OUTPUT_FILE
 
 EOF
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# Define backup function /hjaaj
+#
+backup () {
+  if [ "$1" = "-v" ]; then ekko=1; shift
+     else ekko=0;
+  fi
+  for i in $* ; do
+     if [ -f "${i}" ]; then
+        for j in 6 5 4 3 2 1 0 ; do
+           let jp=$j+1
+           if [ -f "${i}.${j}" ]; then 
+              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+              mv -f "${i}.${j}" "${i}.${jp}"
+           fi
+        done
+        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+        mv -f "${i}" "${i}.0"
+     fi
+  done
 }
 #
 #
@@ -147,25 +174,26 @@ setup_command()
       DIRAC=dirac.x
    fi
    #
-   # Execute Dirac with ssrun ?
-   #
-   if [ -n "$SSRUN" ]; then
-      SSRUN_CMD="ssrun -$SSRUN"
-      mkdir $LOC/speedshop.$$
-      ln -s $BIN_DIR/$DIRAC $LOC/speedshop.$$/$DIRAC
-      export _SPEEDSHOP_OUTPUT_DIRECTORY=$LOC/speedshop.$$
-   else
-      SSRUN_CMD=""
-   fi
-   #
    # MPI?
    #
    if [ "$DIRPAR" = "1" ]; then
 #  Parallel run ($MPIARG allows any MPI run argument):
       DIRAC_CMD="$MPIRUN $MPIARG"
 #     Set number of processors:      
-      if [ "$MPIRUN" = 'mpirun' ]; then
+      if [ "${MPIRUN##*/*/}" = 'mpirun' ]; then
         DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
+#       Include machinefile
+        if [ -n "$MACH_FILE" ]; then
+          if [ -r "$MACH_FILE" ]; then
+            DIRAC_CMD="$DIRAC_CMD -machinefile $MACH_FILE"
+          else
+            echo "ERROR: Machinefile $MACH_FILE cannot be read"
+            exit 1
+          fi
+        fi
+
+      elif [ "${MPIRUN##*/*/}" = 'openmpirun' ]; then
+        DIRAC_CMD="$DIRAC_CMD -n $MPI_NPROC"
 #       Include machinefile
         if [ -n "$MACH_FILE" ]; then
           if [ -r "$MACH_FILE" ]; then
@@ -181,63 +209,19 @@ setup_command()
 #  Sequential run:
       DIRAC_CMD=
    fi
-   DIRAC_CMD="$DIRAC_CMD $SSRUN_CMD $DIRAC"
    #
-   # Debug
+   # Debug (will ignore any MPIRUN)
    #
    if [ -n "$DEBUG" ]; then
-      if [ "$DEBUGGER" = "gdb" ]; then
-        DIRAC_CMD="gdb -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/main "
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/moltra -directory=$SRC_DIR/relccsd "
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/esr -directory=$SRC_DIR/prp/xpp "
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/xqr -directory=$SRC_DIR/relccsd/ccfocksp "
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/pdpack -directory=$SRC_DIR/gp"
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include $DIRAC"
-      else
-        DIRAC_CMD="$DEBUGGER -I $SRC_DIR/dirac -I $SRC_DIR/abacus  -I $SRC_DIR/prp "
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/main "
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/esr -I $SRC_DIR/prp/xpp "
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/xqr -I $SRC_DIR/relccsd/ccfocksp "
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/pdpack -I $SRC_DIR/gp"
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
+      if [ -n "$DIRAC_CMD" ]; then
+         echo "WARNING. DEBUG requested, thus these options ignored: $DIRAC_CMD"
       fi
+      DIRAC_CMD="$DEBUGGER"
    fi
-
-   $echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
-
    #
-   # Delete $WRK/$DIRAC if the executable is older than the
-   # executable in $BIN_DIR. This is useful when you've compiled
-   # a new executable, but didn't delete your scratch directory
-   # in the previous calculation.
+   # Finally append executable
    #
-
-   if [ -f $WRK/$DIRAC ]; then
-      if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
-         echo "Old $WKR/$DIRAC deleted because it is older than $BIN_DIR/$DIRAC"
-         rm $WRK/$DIRAC
-      fi
-   fi
-
-   if [ ! -f $WRK/$DIRAC ]; then
-      if [ -x $BIN_DIR/$DIRAC ]; then
-         cp $BIN_DIR/$DIRAC . || \
-            ( \
-               echo "   Error copying $BIN_DIR/$DIRAC" ; \
-               EXIT=1 ;\
-               exitfunc \
-            )
-         echo "ok"
-      else
-         echo "not found"
-         EXIT=1
-         exitfunc
-      fi
-   else
-      echo "was already there"
-   fi
+   DIRAC_CMD="$DIRAC_CMD $BIN_DIR/$DIRAC"
 }
 #
 #
@@ -250,21 +234,21 @@ setup_command()
 execute_dirac()
 {
 
-   echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR(S) :"
+   echo "   Executing \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
    BDIR=$BASDIR
    while [ -n "`echo $BDIR | grep ':'`" ]; do
       TDIR=`echo $BDIR | cut -d ":" -f 1`
-      echo "   $TDIR"
+      echo "      $TDIR"
       BDIR=`echo $BDIR | cut -d ":" -f 2-`
    done
-   $echo "   $BDIR \n"
+   $echo "      $BDIR \n"
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
       $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
          ( \
             echo "   $DIRAC returned non-zero exit code" ; \
-            EXIT=1 ; export EXIT \
+            $CLEANUP ; EXIT=1 ; export EXIT \
          )
    fi
 }
@@ -282,9 +266,10 @@ print_header()
    echo "   **** OUTPUT FROM DIRAC SHELL SCRIPT ****"
    echo "   ****************************************"
    echo
-   echo '   $Revision: 1.68.2.4 $'
+   echo '   $Revision: 7758 $'
    echo "   Host        : `hostname`"
    echo "   Date        : `date`"
+   echo "   Command     : $0 $ARG_SAVE "
    echo "   PID         : $$"
    echo "   Input dir   : $LOC"
    echo "   Work dir    : $WRK"
@@ -301,6 +286,12 @@ print_header()
 #
 exitfunc()
 {
+   if [ -r "$OUTPUT_FILE" ]; then
+       grep WARNING $OUTPUT_FILE
+  	if [ -n "`grep 'SEVERE ERROR' $OUTPUT_FILE`" ]; then
+ 	     EXIT=1	
+	fi
+   fi   
    if [ $EXIT -eq 0 ]; then
       echo
       echo "   Exit date: `date`"
@@ -329,17 +320,20 @@ remove_work_dir()
 #  We alays delete the work directories on remote machines.
 #  These directories are not suited for restart.
 #
-   master=`hostname`
-   for node in ` uniq $WRK/dirac_machines `; do
-       if [ $node != $master ]; then
-          echo "Contents of work directory $WRK on slave node $node"
-          $RSH $node "ls -l $WRK"
-          $RSH $node "rm -fr $WRK"
-       fi
-   done
+   master=`hostname -s`
+   if test -f $WRK/dirac_machines; then
+       for node in ` uniq $WRK/dirac_machines | sed s/:.//`; do
+          if [ $node != $master ]; then
+             echo "Contents of work directory $WRK on slave node $node"
+             $RSH $node "ls -l $WRK"
+             $RSH $node "rm -fr $WRK"
+          fi
+       done
+   fi
 #
 #  Now delete work directory on primary machine if requested
 #
+   echo
    echo "Contents of work directory $WRK on master node $master"
    cd ..
    ls -l $WRK
@@ -400,31 +394,32 @@ distribute_work_dir()
 #  This routine is only called when local disks
 #  The list of machines available to dirac.x
 #
-   if [ -n "$MACH_FILE" ]; then
+   if [ -z "$MACH_FILE" ]; then
 #     Serial run of parallel program
       echo `hostname` > dirac_machines 
    else
       cp $MACH_FILE dirac_machines
    fi
 #
-#  Initialize value of master
+#  Initialize value of master (without domain name,
+#  since on some installations it is absent in the machine list).
 #
-   master=`hostname` 
+   master=`hostname -s` 
 #
 #  Loop over the remote machines and copy the contents of the work directory.
 #
-   for node in `uniq dirac_machines `; do
-       if [ $node != $master ]; then
-          echo "copying contents of $master:$WRK to $node:$WRK"
-          $RSH $node "mkdir -p $WRK"
-          if [ -n "$RMSCR" ]; then
-             $RSH $node rm -f $WRK/*
-          fi
-          for file in ` ls `; do
-              $RCP $file $node:$WRK/$file
-          done
-       fi
-   done
+   if test -f dirac_machines; then
+      for node in `grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`; do
+         echo "copying contents of $master:$WRK to $node:$WRK"
+         $RSH $node "mkdir -p $WRK"
+         if [ -n "$RMSCR" ]; then
+            $RSH $node rm -f $WRK/*
+         fi
+         for file in ` ls `; do
+           $RCP $file $node:$WRK/$file
+         done
+      done
+   fi
    #
 }
 #
@@ -432,7 +427,7 @@ distribute_work_dir()
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-# SAVE REQUESTED FILES
+# SAVE (GET) REQUESTED FILES
 #
 #
 save_files()
@@ -442,14 +437,32 @@ save_files()
    #
    if [ -n "$GET_FILES" ]; then
       for file in $GET_FILES; do
-         $echo "   Saving $WRK/$file : \c"
          if [ -a $WRK/$file ]; then
+            backup -v $LOC/$file
+            $echo "   Saving $WRK/$file : \c"
             cp $WRK/$file $LOC || $echo "not \c"
             echo "ok"
          else
-            echo "not found"
+            echo "   Saving $WRK/$file : not found"
          fi
       done
+   fi
+   if [ -n "$DO_ARCHIVE" ]; then
+       FILES=
+       for f in $ARCHIVE_FILES; do
+         if [ -r "$f" ]; then
+             FILES="$FILES $f"
+         fi
+       done
+       if [[ -n "$MENU" && -n "$MOL" ]]; then
+	   ARCHNAME=${MENU}_$MOL.tgz
+       else
+	   #This overwrites the old archive in case of a full restart without .mol/.inp
+	   #We might consider a different ARCHNAME
+	   ARCHNAME=$RESTART_ARCHIVE 
+       fi
+       echo "   Creating archive file $ARCHNAME"
+       tar c $FILES | gzip > "$LOC/$ARCHNAME"
    fi
 }
 #
@@ -462,44 +475,94 @@ save_files()
 #
 copy_files()
 {
+   # Have to extract the archive _before_ copying .inp/.mol,
+   # since the archive also contains these files.
+    if [[ -n "$RESTART_ARCHIVE" ]]; then
+	echo "   Extracting files from $RESTART_ARCHIVE"
+	# By default only restart from DFCOEF
+	if [[ -n "$RESTART_ONLY" ]]; then
+	    gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv $RESTART_ONLY
+	else
+	    gzip -d < "$LOC/$RESTART_ARCHIVE" | tar xv
+	fi
+    fi
+
+# Check if we got .mol or .inp from the archive
+   if [[ -r MOLECULE.MOL || -r MOLECULE.XYZ ]]; then
+       HAS_MOL=yes
+   else
+       HAS_MOL=
+   fi
+   if [[ -r DIRAC.INP ]]; then
+       HAS_INP=yes
+   else
+       HAS_MOL=
+   fi
+
    #
    # COPY MOLECULE AND MENU FILE
    #
-   $echo "   Copying $LOC/$MOL.mol to working directory : \c"
-#   if [ -a $LOC/$MOL.mol ]; then
-   if [ -f $LOC/$MOL.mol ]; then
-      cp $LOC/$MOL.mol MOLECULE.INP || \
-         ( \
-            echo "   Error copying $LOC/$MOL.mol" ; \
-            EXIT=1 ; \
-            exitfunc \
-         )
-      echo "ok"
+   if [[ -n $MOL ]]; then
+       $echo "   Copying $LOC/$MOL.$EXT to working directory : \c"
+       if [ -f $LOC/$MOL.$EXT ]; then
+	   cp $LOC/$MOL.$EXT MOLECULE.$EXTOUT || \
+	       ( \
+	       echo "   Error copying $LOC/$MOL.$EXT" ; \
+	       EXIT=1 ; \
+	       exitfunc \
+	       )
+	   echo "ok"
+	   if [ "$EXTOUT" = .MOL ]; then
+	       ln -s MOLECULE$EXTOUT MOLECULE.INP
+	   fi
+       else
+	   echo "not found"
+	   EXIT=1
+	   exitfunc
+       fi
    else
-      echo "not found"
-      EXIT=1
-      exitfunc
+       if [[ -z $HAS_MOL ]]; then
+	   echo
+	   echo "ERROR: Molecule file not specified on command line."
+	   shortusage
+	   EXIT=1
+	   exitfunc   
+       else
+	   echo "   No molecule file specified, using file from archive."
+       fi
    fi
-   $echo "   Copying $LOC/$MENU.inp to working directory : \c"
-#   if [ -a $LOC/$MENU.inp ]; then
-   if [ -f $LOC/$MENU.inp ]; then
-      cp $LOC/$MENU.inp DIRAC.INP || \
-         ( \
-            echo "   Error copying $LOC/$MENU.inp" ; \
-            EXIT=1 ; \
-            exitfunc \
-         )
-      echo "ok"
+
+   if [[ -n "$MENU" ]]; then
+       $echo "   Copying $LOC/$MENU.inp to working directory : \c"
+       if [ -f $LOC/$MENU.inp ]; then
+	   cp $LOC/$MENU.inp DIRAC.INP || \
+	       ( \
+	       echo "   Error copying $LOC/$MENU.inp" ; \
+	       EXIT=1 ; \
+	       exitfunc \
+	       )
+	   echo "ok"
+       else
+	   echo "not found"
+	   EXIT=1
+	   exitfunc
+       fi
    else
-      echo "not found"
-      EXIT=1
-      exitfunc
+       if [[ -z $HAS_INP ]]; then
+	   echo
+	   echo "ERROR: Input file not specified on command line."
+	   shortusage
+	   EXIT=1
+	   exitfunc   
+       else
+	   echo "   No input file specified, using file from archive."
+       fi
    fi
    #
    # COPY REQUESTED FILES TO WORKING DIRECTORY
    #
-   if [ -n "$COPY_FILES" ]; then
-      for file in $COPY_FILES; do
+   if [ -n "$PUT_FILES" ]; then
+      for file in $PUT_FILES; do
          $echo "   Copying $LOC/$file to working directory : \c"
          if [ -a $LOC/$file ]; then
             cp $LOC/$file . || \
@@ -535,14 +598,16 @@ save_old_output()
    #
 #   if [ -a $OUTPUT_FILE ]; then
    if [ -f $OUTPUT_FILE ]; then
-      $echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
-      mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
-         ( \
-            echo "   Error renaming $OUTPUT_FILE" ; \
-            EXIT=1 ; \
-            exitfunc \
-         )
-      echo "ok"
+	echo "   Backing up old output files"
+      backup $OUTPUT_FILE
+#      $echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
+#      mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
+#         ( \
+#            echo "   Error renaming $OUTPUT_FILE" ; \
+#            EXIT=1 ; \
+#            exitfunc \
+#         )
+#      echo "ok"
    fi
 }
 #
@@ -563,6 +628,9 @@ set_dirac_environment()
    fi
    if [ -n "$NODE_MEMORY" ]; then
       DIRNOD=$NODE_MEMORY; export DIRNOD
+   fi
+   if [ -n "$MAX_MEMORY" ]; then
+      DIRMAX=$MAX_MEMORY; export DIRMAX
    fi
 #  Next line is for IBM only but will not hurt other systems
    XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
@@ -589,10 +657,10 @@ initialize()
 
    EXIT=0
 
-   RMWRK=0
+   RMWRK=1
    RMSCR=
 
-   COPY_FILES=
+   PUT_FILES=
 
    DEBUG=
 
@@ -600,6 +668,7 @@ initialize()
 
    MEMORY=
    NODE_MEMORY=
+   MAX_MEMORY=
 
    RUN='out'
 
@@ -616,7 +685,6 @@ initialize()
    MPIARG=
 
    NICE=
-   SSRUN=
 
    NOTIFY=
    NOTIFY_USER=
@@ -628,6 +696,13 @@ initialize()
 #  2) basis set directory in Dirac distribution
 
    BASDIR="$LOC/:$BASDIR"
+
+# Files to include in the .tgz archive file.
+   ARCHIVE_FILES="MOLECULE.MOL MOLECULE.XYZ DIRAC.INP DFCOEF *.cube AOPROPER DFTMAT BSSMAT"
+   DO_ARCHIVE=yes
+
+   RESTART_ARCHIVE=
+   RESTART_ONLY=DFCOEF
 }
 #
 #
@@ -646,7 +721,8 @@ initialize
 ARG_SAVE="$*"
 if [ -z "$1" ]; then
    usage
-   exitfunc
+   EXIT=2
+   exitfunc 
 fi
 
 while [ -n "$1" ]; do
@@ -655,28 +731,35 @@ while [ -n "$1" ]; do
          shift
          BASDIR="$1:${BASDIR}"
          ;;
-      -copy)
+      -put|-copy)
          shift
-         COPY_FILES="$COPY_FILES $1"
+         PUT_FILES="$PUT_FILES $1"
          ;;
       -debug)
          DEBUG=1
          ;;
-      -get)
+      -get|-save)
          shift
          GET_FILES="$GET_FILES $1"
          ;;
       -infck)
-         COPY_FILES="$COPY_FILES DFFCK2"
+         PUT_FILES="$PUT_FILES DFFCK2"
          ;;
       -outfck|-utfck)
          GET_FILES="$GET_FILES DFFCK2"
          ;;
       -incmo)
-         COPY_FILES="$COPY_FILES DFCOEF"
+         PUT_FILES="$PUT_FILES DFCOEF"
          ;;
       -outcmo|-utcmo)
          GET_FILES="$GET_FILES DFCOEF"
+         ;;
+      -noarch)
+         DO_ARCHIVE=
+         ;;
+      -full-restart)
+         # Unpack everything from a given archive file, not only DFCOEF
+         RESTART_ONLY=   
          ;;
       -mw|-memory)
          shift
@@ -686,7 +769,11 @@ while [ -n "$1" ]; do
          shift
          let NODE_MEMORY=$1*1000000
          ;;
-      -clean|-rmscr)
+      -aw)
+         shift
+         let MAX_MEMORY=$1*1000000
+         ;;
+      -clean*|-rmscr)
          RMSCR=1
          ;;
       -keepwrk|-keepwork)
@@ -718,10 +805,6 @@ while [ -n "$1" ]; do
          ;;
       -nice)
          NICE=1
-         ;;
-      -ssrun)
-         shift
-         SSRUN=$1
          ;;
       -notify)
          NOTIFY=1
@@ -758,28 +841,35 @@ while [ -n "$1" ]; do
          EXIT=2
          exitfunc
          ;;
+      *.tgz)
+         RESTART_ARCHIVE="$1"
+	 ;;
       *)
-         MOL=${1%\.mol}
-         shift 
-         if [ -z "$1" ]; then
-            echo "ERROR: No Dirac menu file given"
-            shortusage
-            EXIT=1
-            exitfunc
+#        The last parameters should always be the input file(s)
+#        Process the geometry file first, can be either a
+#        MOLECULE file (extension .mol) or an xyz file (.xyz)
+         MOL=`echo $1 | cut -d'.' -f1`
+         EXT=`echo $1 | cut -s -d'.' -f2-`
+#        We need to check for input files that have dots in the name
+         n=1
+         while [ -n "`echo $EXT | cut -s -d'.' -f2`" ]; do
+               n=`expr $n + 1`
+               MOL=`echo $1 | cut -d'.' -f1-$n`
+               EXT=`echo $EXT | cut -s -d'.' -f2-`
+         done
+#        With no extension given we presume it is a .mol file
+         if [ -z "$EXT" ]; then
+           EXT='mol'
          fi
+#        Capitalize the extension
+         EXTOUT=`echo $EXT | tr a-z A-Z`
+         shift 
          MENU=${1%\.inp}
          ;;
    esac
    shift
 done
-#
-if [ -z "$MOL" ]; then
-   echo "ERROR: molecule and Dirac menu files not specified"
-   shortusage
-   EXIT=1
-   exitfunc
-fi
-#
+
 EXIT=0
 set_work_dir  # set and go to work directory
 set_dirac_environment
@@ -787,7 +877,7 @@ print_header
 copy_files
 save_old_output
 setup_command
-if [ "$LOCALDISKS" = "yes" ]; then
+if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
 execute_dirac

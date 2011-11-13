@@ -1,42 +1,30 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 
 C
 C
-C VERSION : $Revision: 1.45.2.1 $
-C DATE    : $Date: 2004/09/01 08:08:47 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : dirgp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -255,6 +243,7 @@ C
             JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
           ENDDO
           CALL MEMREL('REACMO.cf',WORK,KC,KC,KFREE,LFREE)
+        TEST = .FALSE.
         ELSE
           READ (IUNIT,END=30,ERR=40) CMO
         ENDIF
@@ -387,7 +376,7 @@ C  /* Deck pcmou1 */
       SUBROUTINE PCMOU1(CMO,EIG,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Write DHF-coefficients and eigenvalues from FORMATTED file
+C     Write DHF-coefficients and eigenvalues to FORMATTED file
 C
 C     Written by T.Saue Feb 1997
 C
@@ -609,7 +598,7 @@ C     If the string starts with 'all', all elements in the range enters.
 C
 C                           Jon K. Laerdahl 30.12.96
 C     Minor polish T.Saue Jan 7 1997
-
+C
 C     Additional feature (LV, 15-5-2001) : Determine list based on energy or
 C     other criteria. This is more user-friendly for standard cases.
 C
@@ -626,6 +615,8 @@ C
       CHARACTER A*(*)
       DIMENSION ILIST(NLIST),WORK(LWORK)
       LOGICAL TOBE
+
+      CALL QENTER('NUMLST')
 C
 C     Memory initialization
 C     =====================
@@ -647,10 +638,15 @@ C
 C        Get eigenvalues from DFCOEF
 C
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF(.NOT.TOBE) THEN
+         IF(.NOT.TOBE.OR.I_DCBORB_SET.NE.1) THEN
 C
 C           DFCOEF does not (yet) exist, put IP = - 666, which makes 
 C           NUMLS2 return with an empty list
+C           Another showstopper occurs if we call this before the 
+C           orbital common block is set (this info is currently needed
+C           to correctly process the orbital energy list), this is
+C           why we check for I_DCBORB_SET as well.
+C
 C
             IP = - 666
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG))
@@ -666,6 +662,7 @@ C
 C
       CALL MEMREL('NUMLST',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+      CALL QEXIT('NUMLST')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -701,11 +698,12 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER (MAXLB = 72)
+      PARAMETER (MAXLB = 90)
 C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
       DIMENSION ITMPAR(IRNGE1:IRNGE2),ILIST(NLIST)
+
 C
 C     Initialize
 C
@@ -879,6 +877,7 @@ C
       IP = ICNT
 C
       RETURN
+
  900  CONTINUE
       WRITE(LUPRI,'(//A,I3//3A/9X,200A1)')
      &     'NUMLS1: Wrong syntax in input at character ',I,
@@ -892,8 +891,11 @@ C
       CALL QUIT('NUMLS1: Wrong Character in Input')
  920  CONTINUE
       WRITE(LUPRI,'(/A,2I6//3A/9X,200A1)')
-     &     'Out of Range in NUMLS1. Range:',IRNGE1,IRNGE2,
-     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+     &     'Out of Range in NUMLS1. Supported range:',IRNGE1,IRNGE2,
+     &     'Entering string: "',B(1:NB),'"',(' ',J=1,I-1),'^'
+      WRITE(LUPRI,'(2X,A,/)')  
+     & '...upper value of this range is defined by parameter'
+      CALL FLSHFO(LUPRI) 
       CALL QUIT('NUMLS1: Out of Range!')
  930  CONTINUE
       WRITE(LUPRI,'(/A,I7//3A/9X,200A1)')
@@ -916,12 +918,11 @@ C  /* Deck numls2 */
       SUBROUTINE NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
 C*****************************************************************************
 C
-C     Gives the list of oribitals that fulfill the energy criteria
+C     Gives the list of orbitals that fulfill the energy criteria
 C
 C     Input: 
 C           IP = 0: Only IP as OUTPUT
 C           IP > 0: Give also list
-C           IP < 0: Exit after printing the criteria 
 C
 C     Output:
 C           IP : number of elements in the list A.
@@ -961,7 +962,27 @@ C
    1  EMIN = 1.E16
       EMAX = - 1.E16
 C
-      DO I = IRNGE1, IRNGE2
+C     Set start and end of search region
+C
+      IF (IRNGE1.LT.0) THEN
+         ISTART = IRNGE1 + 1
+      ELSEIF (IRNGE1.GT.0) THEN
+         ISTART = IRNGE1
+      ELSE
+         WRITE(LUPRI,*) ' IRNGE1:',IRNGE1
+         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
+      ENDIF
+C
+      IF (IRNGE2.LT.0) THEN
+         IEND = IRNGE2 + 1
+      ELSEIF (IRNGE2.GT.0) THEN
+         IEND = IRNGE2
+      ELSE
+         WRITE(LUPRI,*) 'IRNGE2:',IRNGE2
+         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
+      ENDIF
+C
+      DO I = ISTART, IEND
         EI = EIG(I)
         IF (EI.GE.ELOW.AND.EI.LE.EHIGH) THEN
            IF (EMIN.GT.EI) EMIN = EI
@@ -972,7 +993,7 @@ C
       CHMIN = .FALSE.
       CHMAX = .FALSE.
 C
-      DO I = IRNGE1, IRNGE2
+      DO I = ISTART, IEND
         EI = EIG(I)
         IF (EI.LT.EMIN.AND.EI.GE.EMIN-EGAP) THEN
            IF (ELOW.GT.EI) ELOW = EI
@@ -992,7 +1013,7 @@ C
 C     Determine the orbitals that fall within this energy range
 C
       ICNT = 0
-      DO I = IRNGE1, IRNGE2
+      DO I = ISTART, IEND
         EI = EIG(I)
         IF (EI.GE.ELOW.AND.EI.LE.EHIGH) THEN
            ICNT = ICNT + 1
@@ -1012,6 +1033,150 @@ C
  1001 FORMAT (/' Changed ',A7,' energy for active orbital range to ',
      & F10.4,' because of near-degeneracies.')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck numls4 */
+      SUBROUTINE NUMLS4(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
+C*****************************************************************************
+C
+C     Gives the list of NOs that fulfill the NO occupancy selection 
+C     criteria to use in subsequent correlation calculation
+C
+C     Input: 
+C           IP = 0: Only IP as OUTPUT
+C           IP > 0: Give also list
+C           IP < 0: Exit after printing the criteria 
+C
+C     Output:
+C           IP : number of elements in the list A.
+C
+C     IRNGE1..IRNGE2 is range of allowed values in A.
+C     EIG   : List of eigenvalues
+C
+C     S. Knecht, April 2008 
+C
+C     based on NUMLS2 by L. Visscher.
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      CHARACTER A*(*)
+      DIMENSION EIG(*)
+      DIMENSION ILIST(NLIST)
+      LOGICAL CHMIN,CHMAX
+C     
+C     Determine begin and end of the part of the string that contains
+C     the energy values
+C
+      NA = LEN(A)
+      MA = INDEX(A(1:NA),'NO-occ') + 6
+C     
+      READ (A(MA:NA),*,END=900,ERR=900) OHIGH,OLOW,OGAP
+C
+      IF (IP.EQ.-666) THEN
+         IP = 0
+         RETURN
+      ENDIF
+C
+      WRITE (LUPRI,1000) OHIGH,OLOW,OGAP*100
+C
+C     Check that the specified OLOW and OHIGH are separated by a 
+C     large enough gap from the next lower/higher energies
+C
+   1  OMIN = -1.0D-01
+      OMAX = 2.0D0
+C
+C     Set start and end of search region
+C
+      IF (IRNGE1.LT.0) THEN
+         ISTART = IRNGE1 + 1
+      ELSEIF (IRNGE1.GT.0) THEN
+         ISTART = IRNGE1
+      ELSE
+         CALL QUIT ("Error in occupation-based vector 
+     &               selection; IRNGE1 (NUMLST4)")
+      ENDIF
+C
+      IF (IRNGE2.LT.0) THEN
+         IEND = IRNGE2 + 1
+      ELSEIF (IRNGE2.GT.0) THEN
+         IEND = IRNGE2
+      ELSE
+         CALL QUIT ("Error in occupation-based vector 
+     &               selection; IRNGE2 (NUMLST4)")
+      ENDIF
+C
+      DO I = ISTART, IEND
+        OI = EIG(I)
+        IF (OI.GE.OLOW.AND.OI.LE.OHIGH) THEN
+           IF (OMIN.GT.OI) OMIN = OI
+           IF (OMAX.LT.OI) OMAX = OI
+        ENDIF
+      ENDDO
+C
+      CHMIN = .FALSE.
+      CHMAX = .FALSE.
+C
+      DO I = ISTART, IEND
+        OI = EIG(I)
+        IF (OI.LT.OMIN.AND.OI.GE.OMIN-(OGAP*OLOW)) THEN
+           IF (OLOW.GT.OI) OLOW = OI
+           CHMIN = .TRUE.
+        ENDIF
+        IF (OI.GT.OMAX.AND.OI.LE.OMAX+(OGAP*OHIGH)) THEN
+           IF (OHIGH.LT.OI) OHIGH = OI
+           CHMAX = .TRUE.
+        ENDIF
+      ENDDO
+C
+      IF (CHMIN) WRITE (LUPRI,1001) 'minimum',OLOW
+      IF (CHMAX) WRITE (LUPRI,1001) 'maximum',OHIGH
+C
+      IF (CHMIN.OR.CHMAX) GOTO 1
+C
+C     Determine the NOs that fall within this occupation range
+C
+      ICNT = 0
+      DO I = ISTART, IEND
+        OI = EIG(I)
+        IF (OI.GE.OLOW.AND.OI.LE.OHIGH) THEN
+           ICNT = ICNT + 1
+           IF (IP.NE.0) ILIST(ICNT) = I
+        ENDIF
+      ENDDO
+C
+      IP = ICNT
+      RETURN
+C
+ 900  CONTINUE
+      WRITE(LUPRI,'(//A)')
+     &' NUMLS4: Error reading selection criteria, the string is ',
+     &  A(1:NA)
+      CALL Abend2('NUMLS4: Error in Input')
+ 1000 FORMAT (/3X,'Occ. sel. of active natural orbitals :',
+     & F10.6,' < occ. < ',F10.6,' with a relative gap of ',F6.2,'%')
+ 1001 FORMAT (/' Changed ',A7,' occupation for active NO range to ',
+     & F10.4,' because of near-degeneracies.')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck NOSELPRI */
+      SUBROUTINE NOSELPRI(NINDEX,I,NUMTOT)
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION NINDEX(*)
+C
+      WRITE(LUPRI,*)' '
+      WRITE(LUPRI,'(3X,A,A3)')'* Fermion ircop ',FREP(I)
+      WRITE(LUPRI,'(3X,A,I4/)')'* active natural spinors:',NUMTOT
+      WRITE(LUPRI,1000) (NINDEX(K),K=1,NUMTOT)
+C
+ 1000 FORMAT (3X,8I5)
+C
+      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readnm */
       SUBROUTINE READNM(I,NUM,A)
@@ -1320,6 +1485,34 @@ C
 C     Read coefficients from unformatted DFCOEF, 
 C     take out symmetry and write to unformatted DFACMO 
 C
+C     There is a catch:
+C       In HERMIT the basis set is generally symmetry-adapted. 
+C       Routines like WTSOAO will transform from this SO-basis
+C       to an AO-basis, where the symmetry adaption is taken out.
+C       In this AO-basis looping is over
+C        - atomic type
+C         - symmetry independent center
+C          - shell
+C           - degeneracy of center
+C             - component
+C       [NOTE that in DALTON the looping over degeneracy and components
+C        is reversed !]
+C
+C       A consequence of this is that the ordering of the AO-basis may change
+C       if the symmetry of the system is lowered, that is one does not use the
+C       full symmetry.
+C
+C       In order to make a more universal AO-basis, ACMOUT will modify the
+C       basis set ordering such that the looping goes as
+C        - atomic type
+C         - symmetry independent center
+C           - degeneracy of center
+C             - shell
+C               - component
+C
+C       This is not completely foolproof, so the import of DFACMO to another
+C       symmetry has to be handled with care !
+C       
 C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
@@ -1387,6 +1580,15 @@ C
       DIMENSION IDIM(3)
 #include "memint.h"
 C
+C     First check if file DFCOEF is there
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'ACMOUT: Unformatted file DFCOEF not found !'
+          CALL QUIT('ACMOUT: Unformatted file DFCOEF not found !')
+      ENDIF
+C
 C     Find correct ordering of nuclei
 C
       CALL LSQMA1(INUC)
@@ -1407,13 +1609,7 @@ C
 C     Get coefficients from DFCOEF --> stored in CMO1
 C     ===============================================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'ACMOUT: Unformatted file DFCOEF not found !'
-          CALL QUIT('ACMOUT: Unformatted file DFCOEF not found !')
-      ENDIF
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')        
       CALL REACMO(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14,
      &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -1465,20 +1661,20 @@ C
 C     Sort eigenvalues and boson irrep info
       DO J = 1,NORBT
         EIG2(J) = EIG1(IBUF(J))
-        IBEIG2(J) = IBEIG1(IBUF(J))
         CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
       ENDDO
+      CALL IZERO(IBEIG2,NORBT)
 C
 C     Write coefficients etc. to file
 C     ===============================
 C
-      CALL OPNFIL(LUCOEF,'DFACMO','NEW','ACMOUT')
+      CALL OPNFIL(LUCOEF,'DFACMO','UNKNOWN','ACMOUT')
       DO I = 1,2
         IDIM(I) = 0
       ENDDO
       DO IFRP = 1,NFSYM
         IDIM(1) = IDIM(1) + NPSH(IFRP)  
-        IDIM(1) = IDIM(1) + NESH(IFRP)  
+        IDIM(2) = IDIM(2) + NESH(IFRP)  
       ENDDO
       IDIM(3) = NTBAS(0)
       TEXT(1:50) = TITLE
@@ -1533,6 +1729,10 @@ C/* Deck Reaprj */
 C***********************************************************************
 C
 C     Read DFPRJC, file from projection analysis
+C     NP(IFRP,1) - number of fragment orbitals in fermion ircop IFRP
+C     NP(IFRP,2) - number of MO (and polarization) orbitals 
+C                  in fermion ircop IFRP
+C
 C     Written by T. Saue, Oct 21 2003
 C
 C***********************************************************************
@@ -1766,4 +1966,1452 @@ C           ... single number
      &     'NUMLS3: oo must be two consecutive characters.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLS3: oo must be two consecutive characters.')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck cmomi1 */
+      SUBROUTINE CMOROT(CMO,EIG,IBEIG,WORK,LWORK)
+C***********************************************************************
+C
+C     Perform Jacobi rotations of user-specified angle on pairs
+C     of orbitals
+C
+C     Written by T. Saue March 1 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D180=180.0D0)
+#include "pi.h"
+C
+#include "dcbgen.h"
+#include "dcbrot.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
+#include "memint.h"
+C
+      X = ROTANG*PI/D180
+      COSX = COS(X)
+      SINX = SIN(X)      
+      DO 10 IFRP = 1,NFSYM
+        NVECS = 1
+        CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
+        CALL NUMLST(VECROT(IFRP),WORK(KJVEC),NORB(IFRP),
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS,WORK(KFREE),LFREE)
+        CALL ORBCN2(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
+        IF(MOD(NVECS,2).EQ.1) THEN
+          CALL QUIT('CMOROT: Odd number of orbitals to rotate !')
+        ENDIF
+        IF(NVECS.EQ.0) GOTO 20
+        CALL MEMGET('REAL',KBUF,NFBAS(IFRP,0),WORK,KFREE,LFREE)
+        CALL JACORB(COSX,SINX,NVECS,WORK(KJVEC),CMO(ICMOQ(IFRP)+1),
+     &              NFBAS(IFRP,0),NORB(IFRP),WORK(KBUF))
+ 20     CONTINUE
+        CALL MEMREL('CMOROT',WORK,1,KWORK,KFREE,LFREE)
+ 10   CONTINUE
+C
+      RETURN
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck jacorb */
+      SUBROUTINE JACORB(COSX,SINX,NVECS,JVEC,CMO,NBAS,NORB,BUF)
+C***********************************************************************
+C
+C     Perform Jacobi rotation of orbitals
+C
+C     Written by T. Saue March 1 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+      DIMENSION CMO(NBAS,NORB,NZ),BUF(NBAS),JVEC(NORB)
+      DO I=1,NVECS,2
+        I1 = JVEC(I)
+        I2 = JVEC(I+1)
+        DO IZ = 1,NZ
+          CALL DROT(NBAS,CMO(1,I1,IZ),1,CMO(1,I2,IZ),1,COSX,SINX)
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck preorb */
+      SUBROUTINE PREORB(WORK,LWORK)
+C***********************************************************************
+C
+C     Manipulation of DFCOEF prior to wave function calculation
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbreo.h"
+#include "dcbrot.h"
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK)
+C
+#include "memint.h"
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
+C
+C     Read coefficients, eigenvalues and irrep identification 
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &            WORK(KIBG),TOTERG,14,WORK,KFREE,LFREE)
+C
+C     Reorder orbitals
+C
+      IF (LMOORD) CALL REORD(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+     &                       IMOORD,IREORD,MXREORD,WORK(KFREE),LFREE)
+C
+C     Rotate orbitals
+C
+      IF(ROTORB) CALL CMOROT(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+     &         WORK(KFREE),LFREE)
+C
+C     Write new coefficients
+C
+      CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBG),TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Memory deallocation
+      CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+C
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'PREMOD: Coefficient file not found !'
+      CALL QUIT('PREMOD: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pstorb */
+      SUBROUTINE PSTORB(WORK,LWORK)
+C***********************************************************************
+C
+C     Manipulation of DFCOEF after a wave function calculation
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcborb.h"
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK)
+C
+#include "memint.h"
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
+C
+      CALL PSTOR1(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+     &            WORK(KFREE),LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+C
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'PSTORB: Coefficient file not found !'
+      CALL QUIT('PSTORB: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*Deck Pstor1 */
+      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,WORK,LWORK)
+C***********************************************************************
+C
+C     Post orbital modifications
+C     Written by T. Saue Jan 27 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbreo.h"
+      DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(*)
+#include "memint.h"
+
+C
+C     Read coefficients, eigenvalues and irrep identification 
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &            WORK,KFREE,LFREE)
+C
+C     Reorder orbitals
+C
+      IF (LMOORF) CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
+     &                       WORK(KFREE),LFREE)
+C
+C     Phase-adjustment of coefficients, if requested...
+C
+      IF(PHCOEF) THEN
+        DO I = 1,NFSYM
+          CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
+        ENDDO
+      ENDIF
+C
+C     Write new coefficients
+C
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Orbnum */
+      SUBROUTINE ORBNUM(VECREF,IFRP,KVEC,NSTR,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     From an orbital string VECREF for fermion ircop IFRP
+C     find the total number of vectors NSTR(IFRP,0) and allocate
+C     starting adress KVEC. 
+C     
+C     On input:
+C     NSTR(IFRP,1) : max. number of vectors of positive energy
+C     NSTR(IFRP,2) : max. number of vectors of negative energy
+C
+C
+C     On output:
+C     NSTR(IFRP,0) : total number of vectors
+C     NSTR(IFRP,1) : vectors of positive energy
+C     NSTR(IFRP,2) : vectors of negative energy
+C     
+C     Written by T. Saue Sep 1 2006
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+      CHARACTER VECREF*(*)
+      DIMENSION NSTR(2,0:2),WORK(*)
+C
+      CALL MEMGET('INTE',KVEC,NORB(IFRP),WORK,KFREE,LFREE)
+      NSTR(IFRP,0) = 1
+      CALL NUMLST(VECREF,WORK(KVEC),NORB(IFRP),-NSTR(IFRP,2),
+     &            NSTR(IFRP,1),IFRP,NSTR(IFRP,0),WORK(KFREE),LFREE)
+      CALL ORBCNT(WORK(KVEC),NSTR(IFRP,0),IFRP,
+     &            NSTR(IFRP,2),NSTR(IFRP,1))
+      NSTR(IFRP,0) = NSTR(IFRP,1) + NSTR(IFRP,2)
+      CALL MEMREL('ORBNUM',WORK,KVEC,KVEC,KFREE,LFREE)
+      CALL MEMGET('INTE',KVEC,NSTR(IFRP,0),WORK,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck SelFrag */
+      SUBROUTINE SELFRAG(CSEL,NVECS,ESEL,IBSEL,NFRAG,NSTR,FRAGFIL,
+     &                   OWNBAS,NUCFRAG,IOPT,KVEC,CMO,EIG,IBEIG,
+     &                   IOFF,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for extracting coefficients, eigenvalues and boson irrep
+C     information for a set of fragments.
+C
+C     For each fragments, this information is first read into:
+C        CMO - coefficients
+C        EIG - eigenvalues
+C        IBEIG - boson irrep information
+C     Then, using the list of orbitals with adresses given in KVEC,
+C     the selected information is extracted into the corresponding
+C     arrays CSEL,ESEL and IBSEL
+C
+C     Written by Trond Saue Sep 6 2006
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbham.h"
+      LOGICAL TOBE,OWNBAS,LBIT
+      CHARACTER FRAGFIL(NFRAG)*6
+      DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
+     &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
+      DIMENSION IOFF(2)
+C
+C.....loop over fragments
+      INUC  = 1
+      DO 10 IFRAG = 1,NFRAG
+        NVECT = 0
+        DO IFRP = 1,NFSYM
+          NVECT = NVECT + NSTR(IFRP,0,IFRAG)
+        ENDDO
+        IF(NVECT.EQ.0) THEN
+          WRITE(LUPRI,'(A,A6)') 
+     &       '* No coefficients selected for fragment ',FRAGFIL(IFRAG)
+          GOTO 12
+        ENDIF
+        INQUIRE(FILE=FRAGFIL(IFRAG),EXIST=TOBE)
+        IF (.NOT.TOBE) THEN
+           WRITE(LUPRI,'(A,A6,A)') 
+     &     'Fragment coefficient file ',FRAGFIL(IFRAG),' not present'
+           CALL QUIT('SELFRAG: No fragment coefficients !')
+        ENDIF
+C
+        CALL OPNFIL(LUCOEF,FRAGFIL(IFRAG),'OLD','SELFRAG')
+        IF(LBIT(IOPT,1)) THEN
+          WRITE(LUPRI,'(A,A6)') 
+     &       '* SELFRAG: Coefficients from file: ',FRAGFIL(IFRAG)
+        ENDIF
+C.......Fragment orbitals in own basis
+        IF(OWNBAS) THEN
+          CALL SELOWN(IOPT,CMO,EIG,IBEIG,
+     &                INUC,NUCFRAG(IFRAG),LUCOEF,FRAGFIL(IFRAG),
+     &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
+     &                NSTR(1,0,IFRAG),WORK,KFREE,LFREE)
+C.......Fragment orbitals in molecular basis
+        ELSE
+          CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
+     &                TOTERG,IOPT,WORK,KFREE,LFREE)
+          ICOFF = 1
+          IEOFF = 1
+          DO IFRP = 1, NFSYM
+            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+C             Select coefficients
+              IF(LBIT(IOPT,2)) THEN
+                ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
+                CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,CSEL(ICSEL),
+     &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
+     &                       NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG),
+     &                       NFBAS(IFRP,0),NORB(IFRP))
+              ENDIF
+              IESEL = IEOFF + IOFF(IFRP)
+C             Select eigenvalues
+              IF(LBIT(IOPT,3)) THEN
+                CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,ESEL(IESEL),
+     &               WORK(KVEC(IFRP,IFRAG)),
+     &               NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
+              ENDIF
+C       Select boson irrep information
+              IF(LBIT(IOPT,4)) THEN
+                CALL SELIBEIG(IBEIG(1+IORB(IFRP)),IORB(IFRP),IFRP,
+     &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
+     &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
+              ENDIF
+              ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
+              IEOFF = IEOFF + NVECS(IFRP)
+            ENDIF
+          ENDDO
+        ENDIF
+        DO IFRP = 1,NFSYM
+          IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,IFRAG)
+        ENDDO
+        CLOSE(LUCOEF,STATUS='KEEP')
+ 12     CONTINUE
+        INUC = INUC + NUCFRAG(IFRAG)
+ 10   CONTINUE
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck sphcar */
+      SUBROUTINE SPHCAR(SPHM,IREP,IC,NCAR,NSPH,
+     &                  DONRM,IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C***  Generate spherical transformation matrix for component IC
+C***  and irrep IREP
+C
+C     Input:
+C       IREP - irrep
+C       IC   - L(1),S(2) component
+C       DONRM - normalize column by column
+C       
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+C
+#include "ccom.h"
+      LOGICAL DONRM
+      DIMENSION SPHM(*),WORK(LWORK)
+#include "memint.h"
+C.....LMAX is L + 1 where L is top angular momentum quantum number
+      LMAX  = NHTYP
+C.....NFUN gives the number of Cartesian functions up to and including LMAX
+      NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
+C.....NCRED gives the sum of squares of Cartesian functions up to and 
+C     including LMAX
+      NCRED = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
+      CALL MEMGET('REAL',KCRED,NCRED ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIRED,3*LMAX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
+      CALL SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,NFUN,
+     &            DONRM,WORK(KCRED),WORK(KIRED),WORK(KIFUN),IPRINT)
+      CALL MEMREL('SPHCAR',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck sphma1 */
+      SUBROUTINE SPHCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,
+     &                  NFUN,DONRM,CRED,IRED,IFUN,IPRINT)
+C***********************************************************************
+C
+C***  Generate spherical transformation matrix for component IC
+C***  and irrep IREP
+C
+C     Input:
+C       IREP - irrep
+C       IC   - L(1),S(2) component
+C       
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+C
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+C
+#include "ccom.h"
+#include "sphtrm.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "dgroup.h"
+      LOGICAL DONRM
+      CHARACTER COMP(2)*1
+      DIMENSION IFUN(NFUN,3),
+     &          SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX)
+      DATA COMP/'L','S'/
+#include "ibtfun.h"
+C
+C     Initialize
+C     ==========
+C
+C.....Large components
+      IF(IC.EQ.1) THEN
+        JA1 = 1
+        JA2 = NLRGSH
+C.....Small components
+      ELSEIF(IC.EQ.2) THEN
+        JA1 = NLRGSH+1
+        JA2 = KMAX
+      ENDIF
+C.....
+      N2MAT = NCAR*NCAR
+      CALL DZERO(SPHM,N2MAT)
+C
+C     Initial print section
+C     =====================
+C
+C     Loop over shells
+C     ================
+C
+      ISOFF = ICOS(IREP+1,IC)
+      NAORB = NSTRT(JA1)
+      INUC = 0
+      IROW = 0
+      ICOL = 0
+      DO 10 JA = JA1,JA2
+        JNUC = NCENT(JA)
+C
+C       New center; check out allowed symmetries
+C       ----------------------------------------
+        IF(JNUC.NE.INUC) THEN
+          INUC = JNUC
+          ILL  = 0
+          IOFF = 0
+        ENDIF
+        LL  = NHKT(JA)
+C
+C       New L-value; extract relevant transformation matrix
+C       ---------------------------------------------------
+        IF(LL.NE.ILL) THEN
+          ILL  = LL
+          CALL EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
+     &                DONRM,IOFF,IPRINT)
+        ENDIF
+C
+C       Expand transformation matrix
+C       ============================
+C
+        KLM  = IRED(2,LL)
+        IF(KLM.EQ.0) GOTO 10
+        KXYZ = IRED(1,LL)
+        KOFF = IRED(3,LL)+1
+        DO J = 1,KLM
+          CALL DCOPY(KXYZ,CRED(KOFF),1,
+     &                SPHM(IROW+1,ICOL+J),1)   
+          KOFF = KOFF + KXYZ
+        ENDDO
+        IROW = IROW + KXYZ
+        ICOL = ICOL + KLM
+   10 CONTINUE
+      NSPH = ICOL
+C
+C     Final print section
+C
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'SPHCAR: Transformation matrix for ',REP(IREP),COMP(IC)
+        CALL PRSYMB(LUPRI,'-',40,0)
+        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NPSH,1,LUPRI)
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Extsph */
+      SUBROUTINE EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
+     &                  DONRM,IOFF,IPRINT)
+C***********************************************************************
+C
+C     Extract spherical transformation matrix for symmetry adapted
+C     basis functions of angular momentum L=LL-1 of irrep IREP
+C     and centered on symmetry-independent center JNUC
+C
+C       IFUN(*,1) - points to Cartesian component in full list
+C       IFUN(*,2) - points to spherical component in full list
+C       IFUN(*,3) - points to Cartesian comp. in symmetry-reduced list
+C     The symmetry-reduced spherical transformation matrix is
+C     stored in CRED. For each L value
+C       IRED(1,*) - gives number of symmetry-reduced Cartesians KXYZ
+C       IRED(2,*) - gives number of symmetry-reduced sphericals KLM
+C       IRED(3,*) - gives offsets to each L value
+C     For each L value CRED has the dimension CRED(KXYZ,KLM)
+C
+C     A cut'n paste job. T. Saue Jun 23 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+C
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+C
+#include "ccom.h"
+#include "symmet.h"
+#include "sphtrm.h"
+#include "nuclei.h"
+      LOGICAl DONRM
+      DIMENSION IFUN(NFUN,3),IRED(3,LMAX),CRED(*)
+C
+#include "ibtfun.h"
+      L    = LL - 1
+      NLM  = 2*L + 1
+      NXYZ = (LL*(LL+1))/2
+      LOFF = NHKOFF(LL)
+      MULA = ISTBNU(JNUC)
+C
+C     Cartesian functions
+C
+      KXYZ = 0
+      DO ICMP = 1,NXYZ
+        IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
+        IF(IBTAND(MULA,IVARB).EQ.0) THEN
+          KXYZ              = KXYZ + 1
+          IFUN(LOFF+KXYZ,1) = ICMP
+          IFUN(LOFF+ICMP,3) = KXYZ
+        ENDIF
+        IRED(1,LL) = KXYZ
+      ENDDO
+C
+C     Solid harmonic functions
+C
+      KLM = 0
+      DO ICMP = 1,NLM
+        M = MDEF(L,ICMP)
+        IVARB = IBTXOR(IREP,IREPLM(L,M))
+        IF(IBTAND(MULA,IVARB).EQ.0) THEN
+          KLM               = KLM + 1
+          IFUN(LOFF+KLM,2)  = ICMP
+        ENDIF
+        IRED(2,LL) = KLM
+      ENDDO
+C
+C     Extract spherical transformation matrix
+C
+      IRED(3,LL) = IOFF
+      IF(KLM.GT.0) THEN
+        CALL EXTELM('T',CSP(ISPADR(LL)),NLM,NXYZ,
+     &              CRED(IOFF+1),KXYZ,KXYZ,KLM,
+     &              IFUN(LOFF+1,1),IFUN(LOFF+1,2))
+        IF(DONRM) THEN
+          JOFF = IOFF
+          DO J = 1,KLM
+            FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
+            CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
+            JOFF = JOFF + KXYZ
+          ENDDO
+        ENDIF
+        IOFF = IOFF + KXYZ*KLM
+      ENDIF
+      IF(IPRINT.GE.4) THEN
+        KOFF = IRED(3,LL)
+        WRITE(LUPRI,'(A)') '* EXTSPH:'
+        WRITE(LUPRI,'(A,I3)')
+     &       ' * Center : ',JNUC,
+     &       ' * L-value: ',L
+        IF(KLM.GT.0) THEN
+          WRITE(lupri,*) 'KXYZ,KLM=',KXYZ,KLM
+          CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
+        ELSE
+          WRITE(LUPRI,'(A)') ' - no functions - '
+        ENDIF
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck rkbcar */
+      SUBROUTINE RKBCAR(SPHM,IREP,IC,NCAR,NSPH,
+     &                  DONRM,IRKB,IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Generate spherical transformation matrix for component IC
+C     and irrep IREP
+C
+C     For a given L value there is, in addition to the standard
+C     solid harmonic Gaussians modified functions of the form
+C
+C     X(L-2,M) = N * sum(i+j+k=L-2) [c_{ijk}^{L-2,M}
+C                *(G_{i+2,j,k} + G_{i,j+2,k} + G_{i,j,k+2})-2(2L-1)G_{ijk}]
+C
+C     where the normalization constant is
+C
+C     N = 1/{(2L+1)(2L-1)}
+C     
+C     Input:
+C       IREP - irrep
+C       IC   - L(1),S(2) component
+C       DONRM - normalize column by column
+C       NCAR - number of Cartesian Gaussians of this symmetry
+C     Output:
+C       SPHM - transformation matrix
+C       
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+C
+#include "ccom.h"
+      LOGICAL DONRM
+      DIMENSION SPHM(*),IRKB(*),WORK(LWORK)
+#include "memint.h"
+      LMAX  = NHTYP
+      NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
+      NCRED = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
+      IF(LMAX.GE.3) THEN
+        L2    = LMAX - 2
+        NCRED = NCRED + ((L2+2)*(L2+1)*(3*L2**2+6*L2+1)*L2)/60
+      ENDIF
+      CALL MEMGET('REAL',KCRED,NCRED ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIRED,3*LMAX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
+      CALL RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,NFUN,DONRM,
+     &            IRKB,WORK(KCRED),WORK(KIRED),WORK(KIFUN),IPRINT)
+      CALL MEMREL('RKBCAR',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck rkbca1 */
+      SUBROUTINE RKBCA1(SPHM,IREP,IC,NCAR,NSPH,LMAX,
+     &                  NFUN,DONRM,IRKB,CRED,IRED,IFUN,IPRINT)
+C***********************************************************************
+C
+C***  Generate modified spherical transformation matrix for component IC
+C***  and irrep IREP
+C
+C       IFUN(*,1) - points to Cartesian component in full list
+C       IFUN(*,2) - points to spherical component in full list
+C       IFUN(*,3) - points to Cartesian comp. in symmetry-reduced list
+C     The symmetry-reduced spherical transformation matrix is
+C     stored in CRED. For each L value
+C       IRED(1,*) - gives number of symmetry-reduced Cartesians KXYZ
+C       IRED(2,*) - gives number of symmetry-reduced sphericals KLM
+C       IRED(3,*) - gives offsets to each L value
+C     Input:
+C       IREP - irrep
+C       IC   - L(1),S(2) component
+C       
+C
+CMI:  IPRINT is IPRHAM (from GMOTRA)
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
+C
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "aovec.h"
+C
+#include "ccom.h"
+#include "xyzpow.h"
+#include "sphtrm.h"
+#include "primit.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "dgroup.h"
+      LOGICAL DONRM,LRKB
+      CHARACTER COMP(2)*1
+      DIMENSION IFUN(NFUN,3),SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX),
+     &          IRKB(NPSHEL)
+      DATA COMP/'L','S'/
+#include "ibtfun.h"
+#include "sdpre.h"
+C
+C
+C     Initialize
+C     ==========
+C
+      IF(IC.EQ.1) THEN
+        JA1 = 1
+        JA2 = NLRGSH
+      ELSEIF(IC.EQ.2) THEN
+        JA1 = NLRGSH+1
+        JA2 = KMAX
+      ENDIF
+      N2MAT = NCAR*NCAR
+      CALL DZERO(SPHM,N2MAT)
+C
+C     Initial print section
+C     =====================
+C
+      IF(IPRINT.GE.4) THEN
+        WRITE(LUPRI,'(/,2X,A,A3,2X,A1)') 
+     &  '*** RKBCA1: Transformation matrix for ',REP(IREP),COMP(IC)
+        WRITE(LUPRI,*) 'JA1=',JA1,' JA2=',JA2
+        CALL FLSHFO(LUPRI) 
+      ENDIF
+C
+C     Loop over shells
+C     ================
+C     (Shell number will be different from primitive number
+C      if large component is contracted, thus the double
+C      loop structure)
+C
+C     Offset in SO-basis:
+      ISOFF = ICOS(IREP+1,IC)
+C     Offset in AO-basis:
+      NAORB = NSTRT(JA1)
+C
+      INUC = 0
+      ICOL = 0
+      JP1_TEST = 0
+C.....loop over shells
+      DO 10 JA = JA1,JA2
+        JP1  = JSTRT(JA) + 1
+C
+C       Skip primitives already processed in another shell.
+C
+        IF ( JP1_TEST .EQ. JP1 ) GO TO 10
+        JP1_TEST = JP1
+        JP2  = JSTRT(JA) + NUCO(JA)
+C
+        JNUC = NCENT(JA)
+C
+C       New center; check out allowed symmetries
+C       ----------------------------------------
+        IF(JNUC.NE.INUC) THEN
+          INUC = JNUC
+          ILL  = 0
+          IOFF = 0
+        ENDIF
+        LL  = NHKT(JA)
+
+        IF(IPRINT.GE.8) THEN
+          write(LUPRI,*) 'JA, NHKT(JA)=',JA, NHKT(JA)
+          write(LUPRI,*) 'LL=',LL
+          CALL FLSHFO(LUPRI) 
+        ENDIF
+
+C   
+C       New L-value; extract relevant transformation matrix
+C       ---------------------------------------------------
+        IF(LL.NE.ILL) THEN
+          ILL  = LL
+          JRKB = 0
+          LOFF = NHKOFF(LL)
+          CALL EXTSPH(LL,IREP,JNUC,CRED,LMAX,NFUN,IFUN,IRED,
+     &                 DONRM,IOFF,IPRINT)
+C.........these factors assure the correct normalized linear
+C.........combination of L and (L-2) for the modified solid harmonic
+          L = LL - 1
+
+          ARGSQRT = (D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1)
+
+          IF (IPRINT.GE.8) THEN
+           write(lupri,*) 'L,SDPRE(L)=',L,SDPRE(L)
+           write(lupri,*) 'ARGSQRT=',ARGSQRT
+           CALL FLSHFO(LUPRI) 
+          ENDIF
+
+CMI       FACL   = D1/SQRT((D2*SDPRE(L)+D1)*(D2*SDPRE(L)-D1))
+          IF (ARGSQRT.GT.D0) THEN
+            FACL   = D1/SQRT(ARGSQRT)
+          ELSE
+            FACL   = D0
+            IF (IPRINT.GE.2) THEN
+             WRITE(LUPRI,'(2X,A,D12.6)') 'RKBCA1: warning, ARGSQRT=',
+     &       ARGSQRT
+            ENDIF
+          ENDIF
+          FACLM2 = -D2*(D2*SDPRE(L)-D1)*FACL
+        ENDIF
+C
+C       Expand transformation matrix
+C       ============================
+C
+        KLM = IRED(2,LL)
+        IF(KLM.EQ.0) GOTO 10
+        KXYZ = IRED(1,LL)
+C
+C.......Loop over primitives
+        DO 15 JP = JP1, JP2
+C
+C         A function can contribute to kinetic balance in two ways :
+C         a. It balances a (L-1) large component function
+C         b. It balances a (L+1) large component function
+C
+C         In case b it needs to be combined with a (L+2) function,
+C         and we take this combination when we enter this (L+2) shell.
+C         This means we can disgard the functions for the moment,
+C         provided that case a. does not apply as well (as may happen
+C         with family-type basis sets).
+C
+C         Look for (L-2) small function. If it does not exist, 
+C         IRKB returns the pointer to (L-1) large component function
+C         (case b). If this is zero it means that we have the
+C         first function for case b and we may skip it.
+C
+          JB = IRKB(JP)
+          IF (JB.EQ.0) GOTO 15
+C
+          IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
+C                       ^- to get correct shell number
+C
+C         JA is the pointer to the start of this series of uncontracted
+C         shells, increase it by the distance from the start
+C
+          IROW = IPTSYM(IROW,IREP) - ISOFF
+C
+C         Fill in standard spherical transformation matrix
+C
+          KOFF = IRED(3,LL)+1
+          DO J = 1,KLM
+            CALL DCOPY(KXYZ,CRED(KOFF),1,SPHM(IROW,ICOL+J),1)   
+            KOFF = KOFF + KXYZ
+          ENDDO
+          ICOL = ICOL + KLM
+C
+C         Possibly add RKB part
+C
+          LRKB = LL.GE.3
+          IF(LRKB) THEN
+            LLM2   = LL-2
+            KLMM2  = IRED(2,LLM2)
+            LRKB   = KLMM2.GT.0
+          ENDIF
+          IF(LRKB) THEN
+C
+C           Possibly generate RKB matrix
+C
+            IF(JRKB.EQ.0) THEN
+              JRKB = 1
+              NXYZM2 = (LLM2*(LLM2+1))/2
+              NLMM2  = 2*LLM2-1
+              KXYZM2 = IRED(1,LLM2)                            
+              KRKB   = KXYZ + KXYZM2
+              IM2    = IOFF + KXYZ
+              LM2F   = NHKOFF(LLM2)
+              CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
+C
+C             First extract spherical transformation matrix 
+C             for L-2 partner
+C
+              CALL EXTELM('T',CSP(ISPADR(LLM2)),NLMM2,NXYZM2,
+     &                   CRED(IM2+1),KRKB,KXYZM2,KLMM2,
+     &                   IFUN(LM2F+1,1),IFUN(LM2F+1,2))
+C
+C              Then fill in corresponding number for r**2
+C
+C              A triplet (i,j,k) can be generated by looping over the
+C              lower triangle of a square matrix of dimension L + 1
+C              From an element (a,b) of the matrix the values of the triplet
+C              are given by
+C
+C              i = L + 1 - a; j = a - b; k = b - 1
+C
+C              The inverse relations are:
+C
+C              b = k + 1; a = j + k + 1
+C                 
+C              Consider a triplet (i,j,k) corresponding to a matrix
+C              element (a,b). The above relations show that
+C                (i+2,j,k) --> (a,b)
+C                (i,j+2,k) --> (a+2,b)
+C                (i,j,k+2) --> (a+2,b+2)
+C
+              DO K = 1,KXYZM2
+                IJ = IFUN(LM2F+K,1)
+                IB = NVAL(IJ) + 1
+                IA = MVAL(IJ) + IB
+C**             x**2: (ia  ,ib  )
+                IJX = IJ
+                KOFF = IOFF + IFUN(LOFF+IJX,3)
+                CALL DAXPY(KLMM2,FACL,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+C**             y**2: (ia+2,ib  )
+                IJY = IJ + IA + IA + 1
+                KOFF = IOFF + IFUN(LOFF+IJY,3)
+                CALL DAXPY(KLMM2,FACL,CRED(IM2+K),KRKB,
+     &                     CRED(KOFF),KRKB)
+C**             z**2: (ia+2,ib+2)
+                IJZ = IJY + 2
+                KOFF = IOFF + IFUN(LOFF+IJZ,3)
+                CALL DAXPY(KLMM2,FACL,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+              ENDDO
+C
+C             Scale matrix for L-2 partner
+C
+              KOFF = IM2+1
+              DO K = 1,KLMM2
+                CALL DSCAL(KXYZM2,FACLM2,CRED(KOFF),1)
+                KOFF = KOFF + KRKB
+              ENDDO
+C
+C             Normalize...
+C
+              IF(DONRM) THEN
+                KOFF = IOFF+1
+                DO J = 1,KLMM2
+                  FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
+                  CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
+                  KOFF = KOFF + KRKB
+                ENDDO
+              ENDIF
+              IF(IPRINT.GE.4) THEN
+                WRITE(LUPRI,'(A)') '* RKB part:'
+                CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
+     &                      KRKB,KLMM2,1,LUPRI)
+              ENDIF
+              IOFF = IOFF + KRKB*KLMM2
+            ENDIF
+C
+C           Copy extra functions for L
+C            
+            IRM2 = NSTRT(JB) + IFUN(LM2F+1,1)
+            IRM2 = IPTSYM(IRM2,IREP) - ISOFF
+            KOFF = IRED(3,LL)+KXYZ*KLM+1
+            DO J = 1,KLMM2
+              CALL DCOPY(KXYZ,CRED(KOFF),1,
+     &                   SPHM(IROW,ICOL+J),1)   
+              KOFF = KOFF + KXYZ
+              CALL DCOPY(KXYZM2,CRED(KOFF),1,
+     &                   SPHM(IRM2,ICOL+J),1)   
+              KOFF = KOFF + KXYZM2
+            ENDDO
+            IROW = IROW + KXYZ
+            ICOL = ICOL + KLMM2
+          ENDIF
+ 15     CONTINUE
+ 10   CONTINUE
+      NSPH = ICOL
+C
+C     Final print section
+C
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A,A3,2X,A1)') 
+     &    'RKBCAR: Transformation matrix for ',REP(IREP),COMP(IC)
+        CALL PRSYMB(LUPRI,'-',40,0)
+        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,1,LUPRI)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck acmout */
+      SUBROUTINE ACMOIN(WORK,LWORK)
+C*****************************************************************************
+C
+C     Read coefficients in C1 symmetry from unformatted DFACMO,
+C     adapt to current symmetry and write to unformatted DFCOEF
+C
+C     Written by T. Saue Mar 3 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "cbirea.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION WORK(LWORK)
+      CALL QENTER('ACMOIN')
+#include "memint.h"
+C
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO1,N2BBASX*4 ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO2,N2BBASX*4 ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG1,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG2,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG1,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG2,NORBT     ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINUC,NTBAS(0)  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NTBAS(0)*2,WORK,KFREE,LFREE)
+C
+      CALL ACMOI1(WORK(KCMO1),WORK(KEIG1),WORK(KIBG1),
+     &            WORK(KCMO2),WORK(KEIG2),WORK(KIBG2),
+     &            WORK(KINUC),WORK(KIBUF),IPREAD,
+     &            WORK(KFREE),LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('ACMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('ACMOIN')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck acmou1 */
+      SUBROUTINE ACMOI1(CMO1,EIG1,IBEIG1,CMO2,EIG2,IBEIG2,INUC,
+     &                  IBUF,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Read coefficients from unformatted DFCOEF, 
+C     take out symmetry and write to unformatted DFACMO 
+C
+C     Written by T.Saue May 26 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER(DM1 = -1.0D0)
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcblab.h"
+#include "dgroup.h"
+#include "nuclei.h"
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      DIMENSION CMO1(*),EIG1(NORBT),IBEIG1(NORBT),
+     &          CMO2(*),EIG2(NORBT),IBEIG2(NORBT),
+     &          INUC(*),IBUF(*),WORK(LWORK)
+      DIMENSION IDIM(3),NBF(2)
+#include "memint.h"
+C
+C     First check if file DFACMO is there
+C
+      INQUIRE(FILE='DFACMO',EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'ACMOIN: Unformatted file DFACMO not found !'
+          CALL QUIT('ACMOIN: Unformatted file DFACMO not found !')
+      ENDIF
+C
+C     Get coefficients from DFACMO --> stored in CMO2
+C     ===============================================
+C
+      CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
+      READ(LUCOEF) TEXT,NSYM,(IDIM(I),I = 1,3),TOTERG
+      NDIM = NTBAS(0)*NORBT*4
+      CALL READT(LUCOEF,NDIM,CMO2)
+      CALL READT(LUCOEF,NORBT,EIG2)
+      CALL READI(LUCOEF,NORBT,IBEIG2)
+      CALL IZERO(IBEIG2,NORBT)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* ACMOIN : Coefficients read from DFACMO'
+          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+      ENDIF
+C
+C     Find correct ordering of nuclei
+C
+      CALL LSQMA1(INUC)
+      I1 = 0
+      I2 = 0
+      DO IC = 1,2
+        DO ICENT = 1,NUCDEP
+          DO IB = 1,NTBAS(IC)
+          IF(INUC(I1+IB).EQ.ICENT) THEN
+            I2 = I2 + 1
+            IBUF(I1+IB) = I2
+          ENDIF
+          ENDDO
+        ENDDO
+        I1 = I1 + NTBAS(IC)
+      ENDDO
+C
+C     Get correct row ordering (NBAS) --> stored in CMO1     
+C     ==================================================
+C
+      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF)
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* ACMOIN : row-ordered coefficients'
+          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+      ENDIF
+C
+C     Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
+C
+      NDIM = NORBT*4
+      CALL VTAOSO(CMO1,CMO2,NTBAS(0),NDIM,0)
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* ACMOIN : raw SO coefficients'
+          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+      ENDIF
+C
+C     Analyze distribution of symmetry on quaternion units
+C     and prepare for compression
+C
+        CALL QSYMANA(CMO2,NTBAS(0),NORBT,NBF,IBUF)
+        DO IFRP = 1,NFSYM
+          IF(NORB(IFRP).NE.NBF(IFRP)) THEN
+            WRITE(LUPRI,'()')
+     &        '*** ERROR: ACMOIN Fermion ircop:',IFRP,
+     &        '     Expected : ',NORB(IFRP),
+     &        '     Found    : ',NBF(IFRP)
+            CALL QUIT('ACMOIN: Wrong number of orbitals !')
+          ENDIF
+        ENDDO
+C
+C     Compact orbitals (and orbital energies) to sorted basis -> CMO1
+C
+      CALL MKQCMO(CMO2,EIG2,IBEIG2,CMO1,EIG1,IBEIG1,NBF,IBUF)
+      IF(IPRINT.GE.3) THEN
+        DO IFRP = 1,NFSYM
+          WRITE(LUPRI,'(A,A,I2)') 
+     &      '* ACMOIN : final SO coefficients.',
+     &      ' Fermion ircop ',IFRP
+          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
+        ENDDO
+      ENDIF
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','ACMOIN')
+C     tsaue:
+C     A possible source of error is that IBEIG1 may contain information
+C     about linear or boson symmetry, and the reduction of the variational
+C     space will not work in the default case. This needs some thinking; for 
+C     now I simply set IBEIG1 to zero.
+      CALL ICOPY (NORBT,0,0,IBEIG1,1) 
+      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck qsymana */
+      SUBROUTINE QSYMANA(CMO,NB,NO,NBF,IBUF)
+C***********************************************************************
+C
+C     Input: Non-compressed quaternion MO-coefficients
+C            in terms of symmetry-adapted basis functions
+c            in unsorted basis (HERMIT order).
+C     This routine will prepare for compression by checking if the 
+C     coefficients have the right (quaternion) phase, that is that 
+C     the symmetry-adapted functions are in the expected positions.
+C
+C     In the DIRAC the real and imaginary parts of a spinor have
+C     fixed symmetries, that is
+C
+C     La  ( 0 , R_z)
+C     Lb  (R_y, R_x)
+C     Sa  (xyz, z  )
+C     Sb  ( y , x  )
+C
+C     where R_q is rotation about axis q.
+C
+C     If the system has inversion symmetry such that there is a second
+C     fermion ircop, the symmetry distribution in the second ircop is
+C
+C     La  (xyz, z  )
+C     Lb  ( y , x  )
+C     Sa  ( 0 , R_z)
+C     Sb  (R_y, R_x)
+C
+C     This information is contained in the array JSPINR(IM,IC,IFRP)
+C     where IM = 1,4 is the part, IC=1,2 refers to large or small component
+C     and IFRP refers to fermion ircop.
+C            
+C     A quaternion number is given by 
+C       q = a + bi + cj +dk
+C     where (i,j,k) are the quaternion units. In general the quaternion
+C     units i,j and k come in positions 2, 3, and 4, respectively.
+C     There are two exceptions for complex group, having one totally symmetric
+C     rotation (see routine DBLGRP):
+C      - for a totally symmetric x-rotation the mapping is (x,y,z) --> (i,k,j)
+C      - for a totally symmetric y-rotation the mapping is (x,y,z) --> (j,i,k)
+C     contrary to the standard mapping
+C      (x,y,z) --> (k,j,i)
+C
+C     Written by T. Saue Mar 4 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+      PARAMETER(D0=0.0D0,DTOL=1.0D-1)
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbham.h"
+#include "dcbqal.h"
+      DIMENSION CMO(NB,NO,4),IBUF(NO,2)
+      DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
+#include "dcbibt.h"
+C
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C     Initialize
+      II = 0
+      DO IC = 1,MC
+        DO IREP = 0,7
+          DO IQ = 1,4
+            II = II + 1
+            IB(II,2) = IQ
+            IB(II,3) = IREP
+            IB(II,4) = IC
+          ENDDO
+        ENDDO
+      ENDDO
+      NBF(1) = 0
+      NBF(2) = 0
+      DO JORB = 1,NO
+        CALL DZERO(WB,64)
+C
+C       Accumulate gerade and ungerade norms
+C
+        TMP(1)=D0
+        TMP(2)=D0
+        DO IC = 1,MC
+          DO IREP = 0,MAXREP
+            ISYM = IREP + 1
+            IFRP = JBTOF(IREP,IC)
+            IBB  = ICOS (ISYM,IC)
+            NBB  = NBBAS(IREP,IC)
+            IBRQ = IBTXOR(IREP,III(IC))
+            IF(NBB.GT.0) THEN
+              DO IQ = 1,4
+                WB(IQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
+     &                   CMO(IBB+1,JORB,IQ),1)
+                TMP(IFRP) = TMP(IFRP) + WB(IQ,ISYM,IC)
+              ENDDO
+C
+C             Order contributions
+C
+              CALL INDEXX(4,WB(1,ISYM,IC),IB)
+C       
+C             Find the number of non-zero contributions;
+C             it has to be less or equal to NZ,
+C             otherwise the compression of coefficients will fail.
+C
+              MZ = 0
+              DO IQ = 4,1,-1
+                IF(WB(IB(IQ,1),ISYM,IC).GT.D0) MZ = MZ + 1
+              ENDDO
+              IF(MZ.GT.NZ) THEN
+                WRITE(LUPRI,'(A,I5)')
+     &          '*** ERROR (QSYMANA): MO-coefficient no. ',JORB
+                IF(IC.EQ.1) THEN
+                  WRITE(LUPRI,'(3X,A,A3,A,I3,A)')
+     &          'Large component basis functions of symmetry ',
+     &           REP(IREP),' has ',MZ,' non-zero components'
+                ELSE 
+                  WRITE(LUPRI,'(3X,A,A3,A,I3,A)')
+     &          'Large component basis functions of symmetry ',
+     &           REP(IREP),' has ',MZ,' non-zero components'
+                ENDIF
+                CALL QUIT('QSYMANA. Compression will fail !')
+              ENDIF
+            ENDIF
+          ENDDO ! End loop over boson irreps
+        ENDDO ! End loop over large and small components
+C
+C       Decide parity of MO
+C
+        IF(TMP(1).GT.TMP(2)) THEN
+          IBUF(JORB,1) = 1
+          NBF(1) = NBF(1) + 1
+          IF(TMP(2).GT.DTOL) THEN
+            WRITE(LUPRI,'(A,I5,3X,E7.2)')
+     &        '*** WARNING from QSYMANA: Contamination of orbital:',
+     &        JORB,TMP(2)
+          ENDIF
+        ELSE
+          IBUF(JORB,1) = 2
+          NBF(2) = NBF(2) + 1
+          IF(TMP(1).GT.DTOL) THEN
+            WRITE(LUPRI,'(A,I5,3X,E7.2)')
+     &        '*** WARNING from QSYMANA: Contamination of orbital:',
+     &        JORB,TMP(1)
+          ENDIF
+        ENDIF
+C
+C       Check if a quaternion phase transformation (IQ) is necessary
+C
+        CALL INDEXX(64,WB,IB)
+C
+C       For now only consider largest contribution;
+C       a consistency check can be included later
+C       by scanning through more contributions
+C
+        II   = IB(64,1)
+        IQ   = IB(II,2)
+        IREP = IB(II,3)
+        IC   = IB(II,4)
+        IBRQ = IBTXOR(IREP,III(IC))        
+        IBUF(JORB,2) = IQMULT(IQ,IPQTOQ(1,IBRQ),1)
+      ENDDO ! End loop over coefficients
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mkqcmo */
+      SUBROUTINE MKQCMO(CBU,EIGU,IBEIGU,CBS,EIGS,IBEIGS,NBF,IBUF)
+C***********************************************************************
+C
+C     Starting from quaternion MO-coefficients in unsorted basis
+C     make compressed coefficients in sorted basis
+C
+C     Written by T.Saue Mar 4 2008
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DM1 = -1.0D0)
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+C
+#include "dcblab.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+C
+      DIMENSION CBU(*),EIGU(*),IBEIGU(*),
+     &          CBS(NCMOTQ),EIGS(*),IBEIGS(*),IBUF(NORBT,2),NBF(2)
+      EXTERNAL BDQALGEBRA
+C
+      CALL DZERO(CBS,NCMOTQ)
+      NBF(1) = 0
+      NBF(2) = 0
+      DO JU = 1,NORBT
+        IFRP = IBUF(JU,1)
+        JQ   = IBUF(JU,2)
+        NBS = NFBAS(IFRP,0)
+        NOS = NORB(IFRP)
+        NBF(IFRP) = NBF(IFRP)+1
+        JS = IORB(IFRP) + NBF(IFRP)
+        EIGS(JS) = EIGU(JU)
+        IBEIGS(JS) = IBEIGU(JU)
+        IOFF = ICMOQ(IFRP)+1
+        CALL MKQCMO1(CBU,NTBAS(0),NORBT,JU,IFRP,JQ,
+     &               CBS(IOFF),NBS,NOS,NBF(IFRP))
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck mkqcmo1 */
+      SUBROUTINE MKQCMO1(CBU,NBU,NOU,IVU,IFRP,JQ,CBS,NBS,NOS,IVS)
+C***********************************************************************
+C
+C     Starting from quaternion MO-coefficient CBU(IVU) in unsorted basis
+C     make compressed coefficient CBS(IVS) in sorted basis.
+C
+C     JQ is a quaternion unit used for phase transformation if needed.
+C
+C     Written by T.Saue Mar 4 2008
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+      PARAMETER(DM1=-1.0D0)
+C
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcbqal.h"
+      DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
+#include "dcbibt.h"
+C
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C
+      NBRP = 4/NZ
+      DO IC = 1,MC
+        DO ISYM = 1,NBRP
+          IP    = MOD(IFRP+IC,2) + 1
+          IBSYM = JFSYM(ISYM,IP)
+          IBRP  = IBSYM - 1
+          IS    = IBBAS(IBRP,IC) - IBAS(IFRP) + 1
+          IU    = ICOS(IBSYM,IC) + 1 
+          IBRQ  = IBTXOR(IBRP,III(IC))
+          NBB   = NBBAS(IBRP,IC)
+          DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,IBRQ)
+            KQ = IQMULT(IQ,JQ,1)
+            CALL DCOPY(NBB,CBU(IU,IVU,KQ),1,CBS(IS,IVS,IZ),1)
+            IFAC = IQPHASE(IQ,JQ,1)
+            IF(IFAC.EQ.-1) CALL DSCAL(NBB,DM1,CBS(IS,IVS,IZ),1)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
       END

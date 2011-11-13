@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.32.2.2 $
-C DATE    : $Date: 2004/09/01 08:17:51 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : ccgrad.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -179,9 +167,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -423,12 +411,14 @@ C
 C     Solve Z-vector equations at the MP2 level, using the AO based 
 C     implementation.
 C
+C     Called from: CCFOPR/ccdriv.F
+C
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
-C
+CMI 
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T2(*)
@@ -453,10 +443,15 @@ C     | Generate the T's in the right order for the    |
 C     | contraction with the 3/4 transformed integrals |
 C     +------------------------------------------------+
 C
+CMI   CALL MEMCHK('mp2zvec 1',BUF1,1) 
+
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
+
+CMI ... these two subroutines cause the memchk error in the Levy-Leblond mode...
       CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
       CALL SRTT1T2(BUF2,BUF1)
+
 C
 C     +---------------------------------------------------+
 C     | Generate the tau dependent part of the Lagrangian |
@@ -471,6 +466,7 @@ C     +-------------------------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW
+CMI   CALL MEMCHK('mp2zvec 1',XMO,2) 
       CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
 C
 C     +-------------------------------------------------+
@@ -487,8 +483,13 @@ C     +----------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW
+CMI   CALL MEMCHK('mp2zvec 1.1.3',XMO,1) 
+CMI    ... in this routine MEMCHK works fine..
       CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
-C
+CMI   CALL MEMCHK('mp2zvec 1.1.3',XMO,1) 
+C 
+      CALL FLSHFO(IW)
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -516,9 +517,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -634,4 +635,392 @@ C
       CEXPA = EPHASE * EXPA_SUM
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate MP2 nat. orb. and nat. orb. occ. num.
+C
+C     Called from: CCFOPR/ccdriv.F
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Stefan Knecht and Hans Joergen Aa. Jensen, Feb. 2008
+C
+C     Last modifications: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbmp2no.h"
+#include "infpar.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+C
+      DIMENSION DMO(NORBT,NORBT,NZ), WORK(*)
+      LOGICAL NOZG
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 LABEL
+C
+      CALL QENTER('MP2_NATORB')
+C
+      KFRSAV=KFREE
+C
+C     memory allocation
+C     -----------------
+      CALL MEMGET('REAL',KCMO_NAT,NORBT*NESHT*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCC_NAT,NESHT,WORK,KFREE,LFREE)
+C
+C     initialize
+C
+      CALL DZERO(WORK(KCMO_NAT),NORBT*NESHT*NZ)
+      CALL DZERO(WORK(KOCC_NAT),NESHT)
+C
+C     build diagonal according to Fock matrix
+C     ---------------------------------------
+      CALL ADD_TWO_FOCK(DMO,NOZG,NOPRNT)
+C
+C     calculate NO occ. num. 
+C     ----------------------
+      CALL MP2_NATORB_GEN(DMO,WORK(KCMO_NAT),WORK(KOCC_NAT),
+     &                    WORK,KFREE,LFREE,NOPRNT)
+C
+C     save nat. orb. occ. num. and transform. matrix to file 
+C     ------------------------------------------------------
+      IF( MYTID .eq. MPARID )THEN
+C
+C       ... KRMCOLD file
+C
+C       sk + hjaaj: we use KRMCOLD and not KRMCSCF for the MP2 nat.orb.
+C       coefficients, because the KRMC module starts by deleting the
+C       KRMCSCF file !!! (And it uses CMO from KRMCOLD as first priority
+C       for starting orbitals.)
+C
+        CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
+        CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
+C
+        CALL WRTKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NORBT*NESHT*NZ)
+        CALL WRTKRMC(LUKRMC,'MP2NATOC',WORK(KOCC_NAT),NESHT)
+        CLOSE(LUKRMC,STATUS='KEEP')
+C
+      END IF
+C
+C     memory deallocation
+C     -------------------
+      CALL MEMREL('MP2_NATORB',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('MP2_NATORB')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,WORK,KFREE,
+     &                          LFREE,NOPRNT)
+C***********************************************************************
+C
+C     diagonalize second order density matrix DMO
+C     and calculate nat. orb. occ. num.
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Stefan Knecht and Hans Joergen Aa. Jensen, Feb. 2008
+C
+C     Last modifications: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+      DIMENSION OCC_NAT(*), CMO_NAT(NORBT,NESHT,NZ)
+      DIMENSION DMO(NORBT,NORBT,*), WORK(*)
+C
+      IF ( NOPRNT .ge. 5 )THEN
+         CALL HEADER(
+     &               'MP2_NATORB_GEN: DMO :',-1)
+         CALL PRQMAT(DMO,
+     &               NORBT,NORBT,NORBT,NORBT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      IOFF2 = 1
+C
+      DO IFSYM = 1, NFSYM  
+C
+        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+C
+        IF(DOJACO) THEN
+           CALL RSJACO(NORBT,NESH(IFSYM),NESH(IFSYM),DMO(IOFF1,IOFF1,1),
+     &                 OCC_NAT(IOFF2),1,-1,0,CMO_NAT(IOFF1,IOFF2,1),
+     &                 WORK(KFREE),LFREE)
+        ELSE
+           CALL QDIAG(NZ,NESH(IFSYM),DMO(IOFF1,IOFF1,1),NORBT,NORBT,
+     &                OCC_NAT(IOFF2),1,
+     &                CMO_NAT(IOFF1,IOFF2,1),NORBT,NESH(IFSYM),
+     &                WORK(KFREE),LFREE,IERR)
+CSK        WRITE(LUPRI,*) ' Fermionic symmetry ', IFSYM
+CSK        CALL HEADER(
+CSK  &     'MP2_NATORB_GEN: Eigenvalues unsorted:',-1)
+CSK        WRITE(LUPRI,'(I5,F25.10)')
+CSK  &     (J,OCC_NAT(IOFF2-1+J),J=1,NESH(IFSYM)) 
+C          reorder eigenvalues and eigenvectors: descending order ==>
+C          IORDER = - 1
+           IORDER = - 1
+           CALL QORDER3(NESH(IFSYM),OCC_NAT(IOFF2),
+     &                  CMO_NAT(IOFF1,IOFF2,1),
+     &                  NORBT,NESH(IFSYM),NESH(IFSYM),NZ,IORDER)
+        ENDIF
+        IOFF2 = IOFF2 + NESH(IFSYM)
+      END DO
+C
+C     debug print section
+C
+      IOFF2 = 1
+      IF ( NOPRNT .ge. 5 ) THEN
+         DO IFSYM = 1, NFSYM
+           IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+           CALL HEADER(
+     &     'MP2_NATORB_GEN: Eigenvectors :',-1)
+           WRITE(LUPRI,*) ' fermionic irrep', IFSYM
+           CALL PRQMAT(CMO_NAT(IOFF1,IOFF2,1),
+     &                 NORBT,NESH(IFSYM),NORBT,NESH(IFSYM),
+     &                 NZ,IPQTOQ(1,0),LUPRI)
+           IOFF2 = IOFF2 + NESH(IFSYM)
+         END DO
+      ENDIF
+C
+C     MP2 - nat. orb. occ. num.
+C
+      IOFF2 = 1
+C
+      IF ( NOPRNT .ge. 3 ) THEN
+        DO I = 1, NFSYM
+           NOCCI = NESH(I)
+           IF (NOCCI .EQ. 0) THEN
+              WRITE(LUPRI,9001) I
+           ELSE
+              OCCSUM = DSUM(NOCCI,OCC_NAT(IOFF2),1)
+              WRITE(LUPRI,9002) I, (OCC_NAT(IOFF2-1+J),J=1,NESH(I))
+              WRITE(LUPRI,9003) OCCSUM
+           END IF
+           IOFF2 = IOFF2 + NESH(I)
+        END DO
+      END IF
+C
+ 9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
+ 9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
+     &            I3,//,(5F14.9))
+ 9003 FORMAT(/'   Sum =',T15,F14.9)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ADD_TWO_FOCK(DMO,NOZG,NOPRNT)
+C***********************************************************************
+C
+C     build proper diagonal part in second order density matrix DMO
+C
+C     INPUT:   DMO - second order density matrix
+C
+C     Written by Stefan Knecht, Feb. 2008
+C
+C     Last modifications: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "../moltra/dcbtr3.h"
+C
+      DIMENSION DMO(NORBT,NORBT,*)
+      LOGICAL NOZG
+C
+      D2 = 2.0D0
+C
+C     add "alpha" and "beta" by scaling with 2.0
+C
+      CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
+C
+      IF ( NOPRNT .ge. 10 )THEN
+         CALL HEADER(
+     &               'ADD_TWO_FOCK input: DMO :',-1)
+         CALL PRQMAT(DMO,
+     &               NORBT,NORBT,NORBT,NORBT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      IOFF2 = 1
+C
+      DO IFSYM = 1, NFSYM  
+        IOFF1 = IORB(IFSYM) + NPSH(IFSYM) + 1
+C
+C       zero 'wrong' offdiagonal terms for frozen orbs
+C
+CSK        WRITE(LUPRI,*) ' NDMOQC(2,IFSYM,1)',NDMOQC(2,IFSYM,1)
+C
+        IF( .NOT. NOZG )THEN
+          DO IZ = 1, NZ
+            CALL DZERO(DMO(IOFF1,IOFF1,IZ),NDMOQC(2,IFSYM,1)*NORBT)
+          END DO
+        END IF
+C
+        IOCC_A = 0
+        DO I = 1, NOCC(IFSYM)
+           DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2
+           IOCC_A = IOCC_A + 1
+        END DO
+      END DO
+C
+      IF ( NOPRNT .ge. 10 )THEN
+         CALL HEADER(
+     &               'ADD_TWO_FOCK output: DMO :',-1)
+         CALL PRQMAT(DMO,
+     &               NORBT,NORBT,NORBT,NORBT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      PARAMETER (HALF=0.5D0)
+      CHARACTER*4 WF                     ! Wave function type
+      CHARACTER*2 BASIS                  ! Representation
+      REAL*8 DMAT(*)                     ! Density matrix
+      INTEGER IERR                       ! Error code
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      LOGICAL FND,FNDLAB
+      CHARACTER*8 LABEL
+C
+C---------------Executable code--------------------------------------
+ 
+      SELECT CASE (WF)
+         CASE ("MP2 ")
+            WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
+            LABEL = 'MP2 DENS'
+            IERR = 0
+         CASE ("HF  ")
+            WRITE (LUPRI,*) " Generating Hartree-Fock density matrix"
+            IERR = 0
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented density: ",WF
+            WRITE (LUPRI,*) " Will use Hartree-Fock density matrix"
+            IERR = 1
+      END SELECT
+
+C     Read the appropriate correlated density from file
+
+      ALLOCATE (DMO(NORBT,NORBT,NZ))
+      CALL OPNFIL(MCCDENS,'CCDENS','OLD','GET_CC')
+      FND =  FNDLAB(LABEL,MCCDENS)
+      CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CLOSE(Unit=MCCDENS,Status='KEEP')
+
+C     Add the closed shell Hartree-Fock contribution
+
+C     The add_two routine scales by 2, scale back to the orginal afterwards
+      CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+      CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+
+      SELECT CASE (BASIS)
+         CASE ("MO")
+            CALL DCOPY (N2ORBTQ,DMO,1,DMAT,1)
+         CASE ("AO")
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented basis: ",BASIS
+            WRITE (LUPRI,*) " Use density matrix in AO basis "
+            IERR = IERR + 2
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+      END SELECT
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE STORE_CC_DENSITY (WF,DMO)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*4 WF                     ! Wave function type
+      REAL*8 DMO(*)                      ! Density matrix (MO-basis)
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 LABEL
+C---------------Executable code--------------------------------------
+ 
+      WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
+      LABEL = WF//'DENS'
+
+C     Write the correlated density to file
+
+      CALL OPNFIL(MCCDENS,'CCDENS','UNKNOWN','STORE_')
+      CALL NEWLAB(LABEL,MCCDENS,LUPRI)
+      CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CLOSE(Unit=MCCDENS,Status='KEEP')
+
       END

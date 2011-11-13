@@ -14,7 +14,7 @@ if [ ! -z "$RUNTYPE" ]; then
          ;;
       "long")
          MENU=1.3.5_trisilacyclohexane;
-         MOL=1.3.5_trisilacyclohexane;
+         MOL=1.3.5_trisilacyclohexane.mol;
          ;;
    esac
 else

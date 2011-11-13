@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.15.4.2 $
-C DATE    : $Date: 2004/09/01 08:04:03 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : her2fck.F
 C
 C
@@ -61,6 +49,8 @@ C  /* Deck intfck */
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,WORK,LWORK)
 C*****************************************************************************
+C
+C  Direct calculation of Fock matrices in AO-basis
 C
 C  Major surgery Aug 26 1996 by T.Saue
 C
@@ -126,6 +116,8 @@ C  /* Deck intfc1 */
      &                  DNSBUF,DINTSKP,HFXFAC,IND)
 C*****************************************************************************
 C
+C  Direct calculation of Fock matrices in AO-basis
+C
 C  Revised Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
@@ -140,7 +132,8 @@ C*****************************************************************************
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
+      PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
+     &          DM1=-1.D0, DM3=-3.D0)
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -297,13 +290,6 @@ C
                         IND(2,NBUF) = B
                         IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
                         IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-CTROND
-CTS                      C = IND(3,NBUF)
-CTS                      D = IND(4,NBUF)
-CTS          IF((A.EQ.C.AND.B.EQ.D).OR.(A.EQ.D.AND.B.EQ.C))
-CTS     &     WRITE (LUPRI,'(1X,A,F16.12,4I5)')
-CTS     &      'GINT,A,B,C,D',AINT*SYMFAC,A,B,C,D
-CTROND
                       ENDIF
                     ENDDO
                     IOFF = IOFF + NORBCD
@@ -351,13 +337,6 @@ CTROND
                         IND(2,NBUF) = B
                         IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
                         IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-CTROND
-CTS                      C = IND(3,NBUF)
-CTS                      D = IND(4,NBUF)
-CTS          IF((A.EQ.C.AND.B.EQ.D).OR.(A.EQ.D.AND.B.EQ.C))
-CTS     &     WRITE (LUPRI,'(1X,A,F16.12,4I5)')
-CTS     &      'GINT,A,B,C,D',AINT*SYMFAC,A,B,C,D
-CTROND
                       ENDIF
                     ENDDO
                     IOFF = IOFF + NORBCD
@@ -399,23 +378,66 @@ C           X = 0 General: no symmetry
 C           X = 1 Symmetric
 C           X = 2 Anti-symmetric
 C           X = 3 Mixed: some blocks symmetric and some antisymmetric
-C         Y indicates contributions
-C           Y = 1 Coulomb
+C         G indicates whether we build Coulomb or Gaunt
+C           G = 0 Coulomb
+C           G = 1 Gaunt
+C
+C         Y indicates contributions (Direct and Exchange)
+C
+C         For Coulomb they have the following meaning:
+C           Y = 0 Nothing (neither direct nor exchange)
+C           Y = 1 Direct
 C           Y = 2 Exchange
-C           Y = 3 Coulomb + Exchange
+C           Y = 3 Direct + Exchange
+C
+C         For Gaunt we need to distinguish between real and imag. matrices
+C         See the note on the implementation of Gaunt:
+C         There is never a direct contribution for IZ=1.
+C         The exchange part for IZ=1 scales by 3, not -1.
+C
+C           Y = 4 Nothing           for IZ = 1
+C           Y = 5 Exchange          for IZ = 1
+C           Y = 6 Nothing           for IZ > 1
+C           Y = 7 Direct            for IZ > 1
+C           Y = 8 Exchange          for IZ > 1
+C           Y = 9 Direct + Exchange for IZ > 1
 C
       TFCK = SECOND()
       DO 400 I = 1,NDMAT
         FCM = DNSBUF(1,I)*AOMAX
         FEM = DNSBUF(2,I)*AOMAX
-        IY = MOD(IFCTYP(I),10)
+C       Unpack the bitcode
         IX = IFCTYP(I)/10
-        IC = MOD(IY,2)
-        IE = IY - IC
-        IF (IX.EQ.2) IC = 0
-C       ... no Coulomb term for antisymmetric density matrix
+        IY = MOD(IFCTYP(I),10)
+        IG = IY/4
+C       We can build Coulomb and Gaunt type matrices by specifying the
+C       appropriate multiplication factors.
+        IF (IG.EQ.0) THEN
+C..........Coulomb interaction
+           IC = MOD(IY,2)
+           IE = IY - IC
+C          ... no direct term for antisymmetric density matrix
+           IF (IX.EQ.2) IC = 0
+        ELSE
+C..........Gaunt interaction
+           IF (IY.LE.5) THEN
+              IZ = 1
+              IC = 0
+              IE = 2*MOD(IY-4,2)
+           ELSE
+              IZ = 2 ! It could also be 3 or 4, makes no difference
+              IY = IY-6
+              IC = MOD(IY,2)
+              IE = IY - IC
+           ENDIF
+C          ... no direct term for symmetric density matrix
+           IF (IX.EQ.1) IC = 0
+        ENDIF
+C
+C       Exchange may be switched off in DFT calculations
+C
         IF (HFXFAC.EQ.D0) IE = 0
-C       Screening on Coulomb contributions
+C       Screening on direct contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
           DINTSKP(2,3) = DINTSKP(2,3) + NBUF
@@ -428,7 +450,28 @@ C       Screening on exchange contributions
         IY = IC + IE
         IF(IY.EQ.0) GOTO 400
         IF(IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
-          EXCFAC = DMP25*HFXFAC
+          IF (IG.EQ.0) THEN
+C............Coulomb multiplication factors
+             DIRFAC = D1
+             EXCFAC = DMP25*HFXFAC
+          ELSE
+C............Gaunt multiplication factors
+             IF (IZ.EQ.1) THEN
+                DIRFAC = D0
+                IF (LSCALE_GAUNT) THEN
+                   EXCFAC = DM3*DMP25*HFXFAC
+                ELSE
+                   EXCFAC = DM3*DMP25
+                ENDIF
+             ELSE
+                DIRFAC = DM1
+                IF (LSCALE_GAUNT) THEN
+                   EXCFAC = DMP25*HFXFAC
+                ELSE
+                   EXCFAC = DMP25
+                ENDIF
+             ENDIF
+          ENDIF
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -441,13 +484,17 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
+              DINT = DIRFAC*AOINT(INT)
               EINT = EXCFAC*AOINT(INT)
-              FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
-              FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
+C...............Direct contributions
+              FMAT(A,B,I) = FMAT(A,B,I) + DINT*DMAT(C,D,I)
+              FMAT(C,D,I) = FMAT(C,D,I) + DINT*DMAT(A,B,I)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
             ENDDO
 C
 C         Antisymmetric singlet Fock matrix OR
@@ -464,10 +511,12 @@ C
               C = IND(3,INT)
               D = IND(4,INT)
               EINT = EXCFAC*AOINT(INT)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
             ENDDO
 C
 C         Coulomb contributions only
@@ -480,8 +529,10 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
-              FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
-              FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
+              DINT = DIRFAC*AOINT(INT)
+C...............Direct contributions
+              FMAT(A,B,I) = FMAT(A,B,I) + DINT*DMAT(C,D,I)
+              FMAT(C,D,I) = FMAT(C,D,I) + DINT*DMAT(A,B,I)
             ENDDO
           ELSE
             WRITE (LUPRI,'(/A,2(/A,I10))')
@@ -492,6 +543,7 @@ C
      &        'ERROR in INTFC1: specified IFCTYP not implemented.')
           ENDIF
         ELSE IF (IX.EQ.0) THEN
+          DIRFAC = D1
           EXCFAC = DMP5*HFXFAC
 C
 C         General singlet case - no permutational symmetry
@@ -505,21 +557,25 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
-              GCD  = AOINT(INT)*(DMAT(C,D,I) + DMAT(D,C,I))
+              DINT = DIRFAC*AOINT(INT)
+C...............Direct contributions
+              GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I) = FMAT(A,B,I) + GCD
               FMAT(B,A,I) = FMAT(B,A,I) + GCD
-              GAB  = AOINT(INT)*(DMAT(A,B,I) + DMAT(B,A,I))
+              GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I) = FMAT(C,D,I) + GAB
               FMAT(D,C,I) = FMAT(D,C,I) + GAB
               EINT = EXCFAC*AOINT(INT)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
-              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
               FMAT(A,D,I) = FMAT(A,D,I) + EINT*DMAT(B,C,I)
               FMAT(B,C,I) = FMAT(B,C,I) + EINT*DMAT(A,D,I)
-              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
             ENDDO
 C
 C         General triplet case - no permutational symmetry
@@ -534,14 +590,16 @@ C
               C = IND(3,INT)
               D = IND(4,INT)
               EINT = EXCFAC*AOINT(INT)
+C...............Exchange (LL or SS for Gaunt)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
+              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
+              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
+              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
+C...............Exchange (LS or SL for Gaunt)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
-              FMAT(D,B,I) = FMAT(D,B,I) + EINT*DMAT(C,A,I)
-              FMAT(A,C,I) = FMAT(A,C,I) + EINT*DMAT(B,D,I)
               FMAT(A,D,I) = FMAT(A,D,I) + EINT*DMAT(B,C,I)
               FMAT(B,C,I) = FMAT(B,C,I) + EINT*DMAT(A,D,I)
-              FMAT(B,D,I) = FMAT(B,D,I) + EINT*DMAT(A,C,I)
             ENDDO
 C
 C         General Coulomb case - no permutational symmetry
@@ -555,10 +613,12 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
-              GCD  = AOINT(INT)*(DMAT(C,D,I) + DMAT(D,C,I))
+              DINT = DIRFAC*AOINT(INT)
+C...............Direct contributions
+              GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I) = FMAT(A,B,I) + GCD
               FMAT(B,A,I) = FMAT(B,A,I) + GCD
-              GAB  = AOINT(INT)*(DMAT(A,B,I) + DMAT(B,A,I))
+              GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I) = FMAT(C,D,I) + GAB
               FMAT(D,C,I) = FMAT(D,C,I) + GAB
             ENDDO
@@ -841,8 +901,6 @@ C   a) changed definition of IFCTYP
 C   b) symmetrization/anti-symmetrization is taken out
 C   c) operations containing inversion provided with minus sign
 C      when acting on small components (RELCAL)
-C      For now the program assumes RELCAL if KMAX.GT.NLRGSH,
-C       -- this is a bit shaky .....
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -942,6 +1000,7 @@ C
             END IF
   310       CONTINUE
   300    CONTINUE
+#ifdef PRG_DIRAC
 C
 C        The next paragraph concerns relativistic calculations only !
 C        IPARity is invoked since the operation of inversion
@@ -963,9 +1022,7 @@ C
             END IF
   350       CONTINUE
   340    CONTINUE
-C
-C        END of relativistic code .....
-C
+#endif
 C
 C        NPOINT and NFACTR
 C
@@ -1045,8 +1102,7 @@ C
          END IF
 C
 C
-C Check for relativistic calculation....
-      IF(KMAX.GT.NLRGSH) RETURN
+#ifndef PRG_DIRAC
 C
 CCTOND:     Matrices must be symmetrized/anti-symmetrized first !
 C
@@ -1165,6 +1221,7 @@ CTROND                              NB    = IBTSHR(IPIND(J),4) - IB*16
                ISTRA = ISTRA + NORBA
   600       CONTINUE
          END IF
+#endif
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("SO Fock matrix in SKLFC1",1)
             DO 700 N = 1, NMAT

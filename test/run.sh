@@ -21,6 +21,21 @@ fi
 if [ -z "$TAG" ]; then
    TAG=out
 fi
+#
+# Run calculation (pass on additional arguments for pam that are supplied by the caller)
+#
+EXIT=0 
+$PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+#
+# Finished : either regular or with a crash. Make two branches.
+#
+if [ $EXIT -eq 0 ]; then
+#
+#  Succesful run : check for deviations with the standard output.
+#
+MENU=${MENU%\.inp}
+MOL=${MOL%\.mol}
+MOL=${MOL%\.xyz}
 if [ "$MOL" = "$MENU" ]; then
    NEWOUT=${MENU}.${TAG}
    OLDOUT=${MENU}.out 
@@ -29,16 +44,6 @@ else
    OLDOUT=${MENU}_${MOL}.out 
 fi
 #
-# Run calculation (pass on additional arguments for pam that are supplied by the caller)
-#
-EXIT=0 
-$PAM_PATH/pam -dirac $DIRAC -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
-#
-# Finished : either regular or with a crash. Make two branches.
-#
-if [ $EXIT -eq 0 ]; then
-#
-#  Succesful run : check for deviations with the standard output.
 #  Extract report from the output using the filter file
 #
   if [ -z "$FILTER" ]; then

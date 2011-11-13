@@ -1,7 +1,8 @@
 C
-C VERSION : $Revision: 1.4.46.1 $
-C DATE    : $Date: 2004/09/01 10:35:38 $
-C FILE    : dirrci/param.inc
+C VERSION : $Revision: 4346 $
+C DATE    : $Date: 2005-05-20 11:48:29 +0200 (Fri, 20 May 2005) $
+C FILE    : param.inc
+C SOURCE  : $Source$
 C
 C
 C     DEFINITION OF PARAMETERS DIRRCI
@@ -13,6 +14,6 @@ C     N8  MAXIMUM NUMBER OF ROOTS OPTIMIZED SIMULTANEOUSLY
 C
       COMMON/MAXMEM/MAXCORE
       PARAMETER (N2=100)
-      PARAMETER (N3=200)
-      PARAMETER (N4=50)
+      PARAMETER (N3=300)
+      PARAMETER (N4=80)
       PARAMETER (N8=36)

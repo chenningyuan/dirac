@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.49.4.1 $
-C DATE    : $Date: 2004/09/01 08:17:50 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : cceqns.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -133,7 +121,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCEQN(MAXIT,EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,CZ,H,
      &                 HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
-     &                 NBUF2,NBUF3)
+     &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -164,6 +152,10 @@ C
       REAL*8 RMS,CONV
       REAL*8 DIAG
 C
+C     for Fock space ...
+C
+      REAL*8 HEFF(*),EIGENVECTORS(*),EIGENVALUES(0:*)
+C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
@@ -171,7 +163,6 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
-#include "ihm.inc"
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -210,17 +201,17 @@ C
          TEQ = .TRUE.
          FOCKSP = .TRUE.
          DELS1 = 'DD'
-         IF (ICURFSS.EQ. 1) DELS1 = 'DK'
-         IF (ICURFSS.EQ.10) DELS1 = 'KD'
-         IF (ICURFSS.EQ.11) DELS1 = 'KK'
          IF (ICURFSS.EQ. 2) DELS1 = 'DK'
-         IF (ICURFSS.EQ.20) DELS1 = 'KD'
+         IF (ICURFSS.EQ. 3) DELS1 = 'KD'
+         IF (ICURFSS.EQ. 4) DELS1 = 'KK'
+         IF (ICURFSS.EQ. 5) DELS1 = 'DK'
+         IF (ICURFSS.EQ. 6) DELS1 = 'KD'
          DELS2 = 'DDDD'
-         IF (ICURFSS.EQ. 1) DELS2 = 'DDDK'
-         IF (ICURFSS.EQ.10) DELS2 = 'KDDD'
-         IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
-         IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
-         IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+         IF (ICURFSS.EQ. 2) DELS2 = 'DDDK'
+         IF (ICURFSS.EQ. 3) DELS2 = 'KDDD'
+         IF (ICURFSS.EQ. 4) DELS2 = 'KDDK'
+         IF (ICURFSS.EQ. 5) DELS2 = 'DDKK'
+         IF (ICURFSS.EQ. 6) DELS2 = 'KKDD'
 C
 C        Initialize S1 and S2 in case we want to do zero
 C        iterations (tests). In normal runs S1 and S2 will
@@ -255,7 +246,7 @@ C
       NIT = 0
 C
       CALL T1DIAG(DIAG,T1,BUF1)
-      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD)
+      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
       IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
       IF (IPRNT.GE.1) THEN
@@ -325,6 +316,7 @@ C
       CALL XTIME(5,1,'- T2 equations                  ')
 
       
+CMI  ... debugging output ...
       IF (DEBUG) THEN
         WRITE (*,111) "ho ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
         WRITE (*,111) "hv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)
@@ -365,9 +357,13 @@ C ... we collect the H array
 
         CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
         CALL XCOPY (NBUF3,A0,0,BUF3,1)
+CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
+        IERR = 0
         CALL MPI_ALLREDUCE(H,BUF3,RCW*IVOVO(NREP+1),
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-        IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
+        IF(IERR.GT.0) THEN
+           CALL QUIT('MPI_REDUCE ERROR in collecting HINTM !')
+        ENDIF
         CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
         CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
 
@@ -413,11 +409,6 @@ C
 C
  100  CONTINUE
 C
-C     Delete the Pi->Q excitations in case of Int. Ham. CCFS
-      IF (FOCKSP.AND.DOIH) THEN
-         CALL DENOMF (EPS,S1,S2,S1,S2,3)
-      ENDIF
-C
 C     Add the first order wave function contribution
 C
       CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
@@ -453,7 +444,6 @@ C
 C       Remove the Hamiltonian elements, T1 and T2 should only contain
 C       the wave function (amplitudes) appropriate for this sector.
         CALL DENOMF (EPS,T1,T2,T1,T2,2)
-        CALL DENOMF (EPS,T1,T2,T1,T2,3)
       ELSE
         CALL DENOM (EPS,T1,T2,T1,T2)
       ENDIF
@@ -467,7 +457,8 @@ C
 C
 C.....when debugging print out energies in every iteration
       IF (FOCKSP.AND.DEBUG) 
-     &   CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+     &   CALL HEFF1(ICURFSS,1,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
+     &              HEFF,EIGENVALUES,EIGENVECTORS)
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C
@@ -488,7 +479,7 @@ C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
       IF (TEQ) THEN
          IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-         CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
+         CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
       ENDIF
 C
       CALL T1DIAG (DIAG,T1,BUF1)
@@ -509,7 +500,7 @@ C
       IF (.NOT.FOCKSP) THEN
          PRENE =  TEQ
       ELSE
-         PRENE = ICURFSS .EQ. 0
+         PRENE = ICURFSS .EQ. 1
       ENDIF
 C
       IF (PRENE) THEN
@@ -531,7 +522,8 @@ C
 C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
+     &              HEFF,EIGENVALUES,EIGENVECTORS)
       ENDIF
 C
 C     Read out timers for the most important contractions
@@ -611,7 +603,6 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "ihm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 C
@@ -871,7 +862,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "eqns.inc"
-#include "ihm.inc"
 #include "symm.inc"
 #include "ccpar.inc"
 C
@@ -2051,7 +2041,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC)        
+      SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC,ECCIM)        
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -2066,13 +2056,14 @@ C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
+C              Miro Ilias,July 2007 - added imaginary part of CCSD energy
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*)
       REAL*8 FVO(*)
       REAL*8 BUF1(*),BUF2(*)
-      REAL*8 ECC
+      REAL*8 ECC,ECCIM
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2108,6 +2099,11 @@ C
       IF (CARITH) THEN
          IF (ABS(CECC2(2)).GT.ACCUR) 
      &      WRITE (IW,1000) 'T2',CECC2(2)
+      ENDIF
+
+CMI  ... sum imaginary energies
+      IF (CARITH) THEN
+        ECCIM = CECC1(2) + CECC2(2)
       ENDIF
 C
       RETURN

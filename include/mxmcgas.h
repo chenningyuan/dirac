@@ -6,4 +6,4 @@
 !     Maximum number of GAS spaces in KRMC
 !     MUST(!) match MXPNGAS from luciarel.
       INTEGER MXMCGAS
-      PARAMETER (MXMCGAS = 6)
+      PARAMETER (MXMCGAS = 7)

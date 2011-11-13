@@ -1,41 +1,29 @@
 C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!      Copyright (c) 2008 by the authors of DIRAC.
+!      All Rights Reserved.
+!
+!      This source code is part of the DIRAC program package.
+!      It is provided under a written license and may be used,
+!      copied, transmitted, or stored only in accordance to the
+!      conditions of that written license.
+!
+!      In particular, no part of the source code or compiled modules may
+!      be distributed outside the research group of the license holder.
+!      This means also that persons (e.g. post-docs) leaving the research
+!      group of the license holder may not take any part of Dirac,
+!      including modified files, with him/her, unless that person has
+!      obtained his/her own license.
+!
+!      For information on how to get a license, as well as the
+!      author list and the complete list of contributors to the
+!      DIRAC program, see: http://dirac.chem.sdu.dk
+!
 C 
 C
 C
-C VERSION : $Revision: 1.15.4.1 $
-C DATE    : $Date: 2004/09/01 08:04:00 $
+C VERSION : $Revision: 7732 $
+C DATE    : $Date: 2008-09-16 22:30:19 +0200 (Tue, 16 Sep 2008) $
 C FILE    : her2ave.F
 C
 C
@@ -70,10 +58,27 @@ Cjth - they are now defined always.
          KPAA   = KPAO
          KLAST  = KPAO + NORBA*NORBB*NORBC*NORBD
       END IF
-      IF (LONDON .AND. DDFOCK) THEN
+CMI   IF (LONDON .AND. DDFOCK) THEN
+      IF (LONDON .AND. DDFOCK .AND. .NOT.SUSCEP) THEN
          KPINT = KLAST
          KQINT = KPINT + 3*NCCINT
          KLAST = KQINT + 3*NCCINT
+CMI ... an addition from TEC
+         IF (KLAST .GT. LWORK) CALL STOPIT('INTEXP',' ',KLAST,LWORK)
+         LWRK   = LWORK  - KLAST + 1
+         MWINTE = MAX(MWINTE,KLAST)
+         LWTOT  = LWTOT + KLAST
+         MWTOT  = MAX(MWTOT,LWTOT)
+         CALL INTFCL(AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,WORK(KDERIV),
+     &            WORK(KPAO),WORK(KPAA),WORK(KPINT),
+     &            WORK(KQINT),WORK(KLAST),LWRK,
+     &            NCCINT,NINTYP,ISYMR,ISYMS,ISYMT,
+     &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
+     &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
+     &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DDFOCK,
+     &            DINTSKP)
+CMI       ... I try this ...
+         LWTOT  = LWTOT - KLAST
       ELSE
          KPINT = KLAST
          KQINT = KLAST
@@ -111,13 +116,14 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
+#include "dcbham.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
      &           D0 = 0.0 D00, DP125 = 0.125D00,
      &           D4 = 4.0 D00, D8 = 8.0 D00)
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
-     &        EXPECT, LONDON
+     &        EXPECT, LONDON, DOQUAT
 Cjth - bugfix ICORBD(NORBC)  -->  ICORBD(NORBD)
 C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -145,6 +151,9 @@ C
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
+CMI  define calculation of SO contributions
+      DOQUAT = .NOT. (SPINFR .OR. LEVYLE)
+C     DOQUAT = .TRUE.
 C
       CALL DZERO(DINTMAX,3) 
       DV = .NOT. NODV
@@ -346,14 +355,14 @@ C
                      IF (DV) DVAB = DMAT(A,B,2)
 #else
                      DTAB1 = DMAT(A,B,1)
-                     DTAB2 = DMAT(A,B,2)
-                     DTAB3 = DMAT(A,B,3)
-                     DTAB4 = DMAT(A,B,4)
+C                    DTAB2 = DMAT(A,B,2)
+C                    DTAB3 = DMAT(A,B,3)
+C                    DTAB4 = DMAT(A,B,4)
                      IF (DV) THEN
                         DVAB1 = DMAT(A,B,5)
-                        DVAB2 = DMAT(A,B,6)
-                        DVAB3 = DMAT(A,B,7)
-                        DVAB4 = DMAT(A,B,8)
+C                       DVAB2 = DMAT(A,B,6)
+C                       DVAB3 = DMAT(A,B,7)
+C                       DVAB4 = DMAT(A,B,8)
                      END IF
 #endif
                                                       FAB = D1
@@ -391,7 +400,7 @@ C                          ==================
 C
                            IF (EXPECT) THEN
 #ifndef PRG_DIRAC
-oehm
+Coehm
 #else
 C
 C                             For DMAT(1) include both coulombic and 
@@ -403,26 +412,37 @@ C                             For the sake of optimization only
 C                             DMAT(A,B) is put in a variable.
 C                             the others are not.
 C
-                              PVAL = DTAB1*DMAT(C,D,1) -
-     &                               DP25*(DMAT(C,A,1)*DMAT(D,B,1)
-     &                                   + DMAT(D,A,1)*DMAT(C,B,1)
-     &                                   + DMAT(C,A,2)*DMAT(D,B,2)
-     &                                   + DMAT(D,A,2)*DMAT(C,B,2)
-     &                                   + DMAT(C,A,3)*DMAT(D,B,3)
-     &                                   + DMAT(D,A,3)*DMAT(C,B,3)
-     &                                   + DMAT(C,A,4)*DMAT(D,B,4)
-     &                                   + DMAT(D,A,4)*DMAT(C,B,4))
-                              IF (DV) THEN
-                                 PVAL = PVAL - DVAB1*DMAT(C,D,5) +
-     &                                  DP25*(DMAT(C,A,5)*DMAT(D,B,5)
-     &                                      + DMAT(D,A,5)*DMAT(C,B,5)
-     &                                      + DMAT(C,A,6)*DMAT(D,B,6)
-     &                                      + DMAT(D,A,6)*DMAT(C,B,6)
-     &                                      + DMAT(C,A,7)*DMAT(D,B,7)
-     &                                      + DMAT(D,A,7)*DMAT(C,B,7)
-     &                                      + DMAT(C,A,8)*DMAT(D,B,8)
-     &                                      + DMAT(D,A,8)*DMAT(C,B,8))
+C ...try save comp. time by specifying spin-free/full relativity case
+C
+                              PVAL = DTAB1*DMAT(C,D,1)
+                              XVAL = DMAT(C,A,1)*DMAT(D,B,1)
+     &                             + DMAT(D,A,1)*DMAT(C,B,1)
+                              IF (DOQUAT) THEN
+                                 XVAL = XVAL
+     &                                + DMAT(C,A,2)*DMAT(D,B,2)
+     &                                + DMAT(D,A,2)*DMAT(C,B,2)
+     &                                + DMAT(C,A,3)*DMAT(D,B,3)
+     &                                + DMAT(D,A,3)*DMAT(C,B,3)
+     &                                + DMAT(C,A,4)*DMAT(D,B,4)
+     &                                + DMAT(D,A,4)*DMAT(C,B,4)
                               END IF
+                              IF (DV) THEN
+C                             ... subtract the act-act part, treated with PAO
+                                 PVAL = PVAL - DVAB1*DMAT(C,D,5)
+                                 XVAL = XVAL
+     &                                - DMAT(C,A,5)*DMAT(D,B,5)
+     &                                - DMAT(D,A,5)*DMAT(C,B,5)
+                                IF (DOQUAT) THEN
+                                 XVAL = XVAL
+     &                                - DMAT(C,A,6)*DMAT(D,B,6)
+     &                                - DMAT(D,A,6)*DMAT(C,B,6)
+     &                                - DMAT(C,A,7)*DMAT(D,B,7)
+     &                                - DMAT(D,A,7)*DMAT(C,B,7)
+     &                                - DMAT(C,A,8)*DMAT(D,B,8)
+     &                                - DMAT(D,A,8)*DMAT(C,B,8)
+                                END IF
+                              END IF
+                              PVAL = PVAL - DP25*XVAL
                               IF (.NOT. NOPMAT) THEN
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                                  PVAL = PVAL + PAOVAL
@@ -520,9 +540,61 @@ C                       **************************
 C                       ***** Magnetic field *****
 C                       **************************
 C
+CMI/HJ (TEC) implementation of two-electron part of magnet. susceptibilities
                         ELSE
 #ifdef PRG_DIRAC
-                           CALL QUIT('LONDON not implemented in Dirac')
+                           FACTOR = DP125*FAB*FCD*FCABCD
+                           IF (SUSCEP) THEN
+C
+                           IF (NODV) THEN
+                           XCADB = DMAT(C,A,1)*DMAT(D,B,1)
+                           XDACB = DMAT(D,A,1)*DMAT(C,B,1)
+                           IF (DOQUAT) THEN
+
+                              XCADB = XCADB
+     &                        + DMAT(C,A,2)*DMAT(D,B,2)
+     &                        + DMAT(C,A,3)*DMAT(D,B,3)
+     &                        + DMAT(C,A,4)*DMAT(D,B,4)
+                              XDACB = XDACB
+     &                        + DMAT(D,A,2)*DMAT(C,B,2)
+     &                        + DMAT(D,A,3)*DMAT(C,B,3)
+     &                        + DMAT(D,A,4)*DMAT(C,B,4)
+
+                            ENDIF
+                            PVAL1 = DTAB1*DMAT(C,D,1)
+     &                            - DP25*(XCADB + XDACB)
+                            PVAL2 = DP25*(XCADB - XDACB)
+
+                            ELSE  ! with DV, Rather do not touch yet...
+                              CALL QUIT(
+     &   'INTEX1: The DV part for relativ. suscep. is not implemented!')
+                                 PVAL1  = DTAB*DTCD - DVAB*DVCD
+     &                                  - DP25*(DTAC*DTBD - DVAC*DVBD
+     &                                        + DTAD*DTBC - DVAD*DVBC)
+                                 PVAL2  = DP25*(DTAC*DTBD - DVAC*DVBD
+     &                                        - DTAD*DTBC + DVAD*DVBC)
+                            END IF
+                              IF (.NOT.NOPMAT) THEN
+                                PVAL1 = PVAL1
+     &                                + PAO(IORBA,IORBB,IORBC,IORBD)
+                                PVAL2 = PVAL2
+     &                                + PAA(IORBA,IORBB,IORBC,IORBD)
+                              ENDIF
+                              PVAL1 = FACTOR*PVAL1
+                              PVAL2 = FACTOR*PVAL2
+                              IF (ABS(PVAL1) .GT. THRSH) THEN
+                                 NODER = .FALSE.
+                                 DO 900 I = 7, 18
+                                    DERIV(I)=DERIV(I)+PVAL1*AOINT(INT,I)
+  900                            CONTINUE
+                              END IF
+                              IF (ABS(PVAL2) .GT. THRSH) THEN
+                                 NODER = .FALSE.
+                                 DO 910 I = 19, 27
+                                    DERIV(I)=DERIV(I)+PVAL2*AOINT(INT,I)
+  910                            CONTINUE
+                              END IF
+                           END IF
 #else
                            FACTOR = DP125*FAB*FCD*FCABCD
                            IF (SUSCEP) THEN
@@ -1461,5 +1533,396 @@ C
 60          CONTINUE
 50       CONTINUE
 40    CONTINUE
+      RETURN
+      END
+
+C  /* Deck intfcl */
+      SUBROUTINE INTFCL(AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,DERIV,PAO,PAA,
+     &     PINT,QINT,WORK,LWORK,NCCINT,NINTYP,
+     &     ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
+     &     THRESH,SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
+     &     NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,
+     &     DDFOCK,DINTSKP)
+C     
+C     Calculates expectation values and Fock matrices
+C     of differentiated integrals
+C
+C  MI: It's TEC's routine for implementation of London orbitals.
+C   Odense, 2002,2003
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+      PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
+     &     D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
+     &     D0 = 0.0 D00, DP125 = 0.125D00,
+     &     D4 = 4.0 D00, D8 = 8.0 D00)
+      INTEGER A, B, C, D, X, Y, Z, Y2, Z2
+      LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
+     &     EXPECT, LONDON
+C     jth - bugfix ICORBD(NORBC)  -->  ICORBD(NORBD)
+C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
+      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
+     &     DERIV(NINTYP), PSO(*), PSA(*),
+     &     PAO(NORBA,NORBB,NORBC,NORBD),
+     &     PAA(NORBA,NORBB,NORBC,NORBD),
+     &     AOINT(NCCINT,NINTYP),
+     &     NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
+     &     DMAT(NBASIS,NBASIS,NDMAT), WORK(LWORK),
+     &     FT(NBASIS,NBASIS,NDMAT,*), FV(NBASIS,NBASIS,NDMAT,*),
+     &     DINT(12), NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
+     &     DIFAB(3), DIFCD(3), DINTSKP(*)
+#include "twocom.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "expcom.h"
+#include "dirprt.h"
+#include "dcbgrd.h"
+#include "doxyz.h"
+#include "ibtfun.h"
+C
+C     jth
+C     
+      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      NEXT(I) = MOD(I,3) + 1
+
+
+      IF (IPRINT.GE.4) THEN
+       WRITE(LUPRI,'(/8X,A)') 'Output from INTFCL'
+       WRITE(LUPRI,'(10X,A,L2)') 'LONDON:',LONDON
+       WRITE(LUPRI,'(10X,A,L2)') 'SUSCEP:',SUSCEP
+       WRITE(LUPRI,'(10X,A,L2)') 'DDFOCK:',DDFOCK
+       WRITE(LUPRI,'(10X,A,L2)') 'EXPECT:',EXPECT
+       WRITE(LUPRI,'(10X,A,L2)') 'NOPMAT:',NOPMAT
+       WRITE(LUPRI,'(10X,A,L2)') 'NODV:',NODV
+      ENDIF
+C     
+      ISYMTS   = IBTXOR(ISYMT,ISYMS)
+      DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+      DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+      DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+      DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+      DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+      DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+      DO 10 N = 1, 3
+         Y   = NEXT(N)
+         Z   = NEXT(Y)
+         ABY = DIFAB(Y)
+         ABZ = DIFAB(Z)
+         CDY = DIFCD(Y)
+         CDZ = DIFCD(Z)
+         Y2  = Y + 3
+         Z2  = Z + 3
+         DO 20 I = 1, NCCINT
+            AOAB = ABY*AOINT(I,Z ) - ABZ*AOINT(I,Y )
+            AOCD = CDY*AOINT(I,Z2) - CDZ*AOINT(I,Y2)
+            PINT(I,N) = AOAB + AOCD
+            QINT(I,N) = AOAB - AOCD
+ 20      CONTINUE
+ 10   CONTINUE
+C     
+      SFAC = SYMFAC
+      IF (.NOT.SHABAB) SFAC = D2*SFAC
+      IF (.NOT.SHAEQB) SFAC = D2*SFAC
+      IF (.NOT.SHCEQD) SFAC = D2*SFAC
+C     
+      THRSH = MAX(THRESH,ZERADD)
+C     
+c     IF(DOSCRN .AND. .NOT.DDFOCK) THEN
+C     ... DNSMAX fits EXPECT, not DDFOCK
+c     EXPTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
+c     ELSE
+      EXPTOL = 1.00D-15
+c     ENDIF
+C     
+C     
+C     ***** Loop over shell components *****
+C     
+      IAOFF = 1
+      DO 100 ICOMPA = 1, KHKTA
+         KHKTBB = KHKTB
+         IF (DIAGAB) KHKTBB = ICOMPA
+         DO 200 ICOMPB = 1, KHKTBB
+            DCMPAB = DIAGAB .AND. ICOMPA .EQ. ICOMPB
+            FACAB  = D1
+            IF (DIAGAB .AND. ICOMPA .NE. ICOMPB) FACAB = D2
+            DO 300 ICOMPC = 1, KHKTC
+               KHKTDD = KHKTD
+               IF (DIAGCD) KHKTDD = ICOMPC
+               DO 400 ICOMPD = 1, KHKTDD
+C     
+C     Step 2 screening on gradient, hessian, London, and
+C     susceptibilities.
+C     Always do Step 2 screening 
+C     
+                  AOMAX = D0
+                  DO I = 1,NINTYP
+                     IAOMAX = IDAMAX(NOABCD,AOINT(IAOFF,I),1)-1
+                     AOMAX = MAX(AOMAX,ABS(AOINT(IAOFF+IAOMAX,I)))
+                  END DO
+                  IF (AOMAX .LT. EXPTOL) GO TO 510
+
+C     
+C     
+                  DCMPCD = DIAGCD .AND. ICOMPC .EQ. ICOMPD
+                  FACCD  = D1
+                  IF (DIAGCD .AND. ICOMPC .NE. ICOMPD) FACCD = D2
+                  FCABCD = FACAB*FACCD*SFAC
+C     
+                  INT = IAOFF
+C     
+C     
+C     ***** Loop over contracted functions *****
+C     
+                  DO 500 IORBAB = 1, NORBAB
+                     IORBA = NINDAB(IORBAB,1)
+                     IORBB = NINDAB(IORBAB,2)
+                     A = ICORBA(IORBA) + ICOMPA
+                     B = ICORBB(IORBB) + ICOMPB
+                     FAB = D1
+                     IF (TCONAB .AND. IORBA.NE.IORBB) FAB = D2
+                     DO 600 IORBCD = 1, NORBCD
+                        IORBC = NINDCD(IORBCD,1)
+                        IORBD = NINDCD(IORBCD,2)
+                        C = ICORBC(IORBC) + ICOMPC
+                        D = ICORBD(IORBD) + ICOMPD
+                        FCD = D1
+                        IF (TCONCD.AND.IORBC.NE.IORBD) FCD = D2
+C     
+C     *******************************************
+C     ***** Two-electron Fock London matrix *****
+C     *******************************************
+C     
+CMI/Dec 6 2004 Added comments to be clear how 
+C             relativistic terms were derived 
+C             based on DALTON integrals formalism
+C
+CMI TODO: Carefully analyze these formulas ! 
+C
+                        DFAC = -DP125*FAB*FCD*FCABCD
+CMI DALTON COUNTERPART  DFAC =  DP125*FAB*FCD*FCABCD
+
+                        EFAC = DP5*DFAC
+C     
+C     Total Fock matrix
+C     
+                        DO IMAT = 1, NDMAT
+                           DAB  = DFAC*DMAT(B,A,IMAT)
+                           DCD  = DFAC*DMAT(D,C,IMAT)
+                           DAC  = EFAC*DMAT(C,A,IMAT)
+                           DAD  = EFAC*DMAT(D,A,IMAT)
+                           DBC  = EFAC*DMAT(C,B,IMAT)
+                           DBD  = EFAC*DMAT(D,B,IMAT)
+                           DO IXYZ = 1, 3
+                              ABCD = PINT(INT,IXYZ)
+                              ABDC = QINT(INT,IXYZ)
+CTEC/MI  Remember that D(1) is symmetric whereas D(2,3,4) are antisymmetric
+C        ===================================================================
+                              IF (IMAT.EQ.1) THEN 
+CMI                       .... real part
+                                 FT(B,A,IMAT,IXYZ) = FT(B,A,IMAT,IXYZ)
+     &                                + (ABCD+ABDC)*DCD
+CMI DALTON  Re  FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
+
+                                 FT(D,C,IMAT,IXYZ) = FT(D,C,IMAT,IXYZ)
+     &                                + (ABCD-ABDC)*DAB
+CMI DALTON  Re  FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
+                               ELSE  
+CMI                       .... quaternion imaginary part
+                                 FT(B,A,IMAT,IXYZ) = FT(B,A,IMAT,IXYZ)
+     &                                - (ABCD-ABDC)*DCD
+CMI DALTON  Re  FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
+
+                                 FT(D,C,IMAT,IXYZ) = FT(D,C,IMAT,IXYZ)
+     &                                - (ABCD+ABDC)*DAB
+CMI DALTON  Re  FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
+                              END IF
+
+                              FT(C,A,IMAT,IXYZ) = FT(C,A,IMAT,IXYZ)
+     &                                - ABDC*DBD
+CMI DALTON  Re  FT(C,A,N) = FT(C,A,N) + ABDC*DBD
+
+                              FT(D,A,IMAT,IXYZ) = FT(D,A,IMAT,IXYZ)
+     &                                - ABCD*DBC
+CMI DALTON  Re  FT(D,A,N) = FT(D,A,N) + ABCD*DBC 
+
+                              FT(C,B,IMAT,IXYZ) = FT(C,B,IMAT,IXYZ)
+     &                                + ABCD*DAD
+CMI DALTON  Re  FT(C,B,N) = FT(C,B,N) - ABCD*DAD
+
+                              FT(D,B,IMAT,IXYZ) = FT(D,B,IMAT,IXYZ)
+     &                                + ABDC*DAC
+CMI DALTON  Re  FT(D,B,N) = FT(D,B,N) - ABDC*DAC
+
+                           END DO
+                        END DO
+CMI  ... control print-out
+                        IF (IPRINT .GT. 30) THEN
+                          WRITE(LUPRI,'(//A,4I5)')
+     &                             ' IORBA...IORBD ',
+     &                           IORBA,IORBB,IORBC,IORBD
+                          WRITE(LUPRI,'(A,4I5,A,I5)')
+     &                     'indexes A,B,C,D',A,B,C,D,
+     &                     ' INT=',INT   
+                          WRITE(LUPRI,'(A)')
+     &                     'actual integrals and Fock matrix elements:'
+                          DO IXYZ=1,3
+                              ABCD = PINT(INT,IXYZ)
+                              ABDC = QINT(INT,IXYZ)
+                           WRITE(LUPRI,'(A,2I3,A,2I3,A,I1,A,D12.6,$)')
+     &                      'int (',A,B,'|',C,D,')_',IXYZ,'=',ABCD
+                           WRITE(LUPRI,'(A,2I3,A,2I3,A,I1,A,D12.6)')
+     &                      '  int (',A,B,'|',D,C,')_',IXYZ,'=',ABDC
+                           DO IMAT=1,NDMAT
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     ' FT(',B,',',A,',',IMAT,',',IXYZ,')=',
+     &                      FT(B,A,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     '  FT(',D,',',C,',',IMAT,',',IXYZ,')=',
+     &                      FT(D,C,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6)')
+     &                     '  FT(',C,',',A,',',IMAT,',',IXYZ,')=',
+     &                      FT(C,A,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     ' FT(',D,',',A,',',IMAT,',',IXYZ,')=',
+     &                      FT(D,A,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     '  FT(',C,',',B,',',IMAT,',',IXYZ,')=',
+     &                      FT(C,B,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6)')
+     &                     '  FT(',D,',',B,',',IMAT,',',IXYZ,')=',
+     &                      FT(D,B,IMAT,IXYZ)
+                           ENDDO
+                          ENDDO
+                        END IF
+                        INT = INT + 1
+ 600                 CONTINUE
+ 500              CONTINUE
+ 510              IAOFF = IAOFF + NOABCD
+ 400           CONTINUE
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+
+      RETURN
+      END
+
+
+C  /* Deck polpri */
+      SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+CMI ... stolen from dalton(abacus/abadip.F)
+C      for making the dirac output of magnetizabilities 
+C      the same as is in the older brother dalton
+
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <codata.h>
+C#include <debye.h>
+      PARAMETER (D1 = 1.0 D00)
+      LOGICAL ALLREP, INERT, LARGE
+      DIMENSION AMAT(3,3), IND(3)
+      CHARACTER*(*) SPC
+      CHARACTER LAB(3)*2, CHRABC(3)*1
+#include "inirep.h"
+#include <abainf.h>
+#include <inftap.h>
+#include <dorps.h>
+#include <symmet.h>
+#include <chrxyz.h>
+      DATA CHRABC /'A','B','C'/
+C
+      INERT = INDEX(SPC,'PRI') .NE. 0
+      LARGE = ITYPE1 .EQ. -2
+      ITYPE = ABS(ITYPE1)
+C
+C     *****************************************
+C     ***** Units (atomic or Angstrom**3) *****
+C     *****************************************
+C
+      IF (INDEX(SPC,'EXP') .NE. 0) THEN
+         FAC = XTANG*XTANG*XTANG
+      ELSE IF (INDEX(SPC,'CGS') .NE. 0) THEN
+         FAC = XTANG*DEBYE
+      ELSE
+         FAC = D1
+      END IF
+C
+C     ***************************************
+C     ***** Pick up components to print *****
+C     ***************************************
+C
+      IF (.NOT.INERT) THEN
+         NCOMP = 0
+         DO 100 ICOOR = 1, 3
+            IF (DOSYM(ISYMAX(ICOOR,ITYPE) + 1)
+     &          .OR. ITYPE .EQ. 2) THEN
+               NCOMP = NCOMP + 1
+               IND(NCOMP) = IPTAX(ICOOR,ITYPE)
+               IF (ITYPE .EQ. 1) THEN
+                  LAB(NCOMP) = 'E'//CHRXYZ(-ICOOR)
+               ELSE
+                  LAB(NCOMP) = 'B'//CHRXYZ(-ICOOR)
+               END IF
+            END IF
+  100    CONTINUE
+      ELSE
+         NCOMP = 0
+         DO 200 ICOOR = 1, 3
+            ALLREP = .TRUE.
+            DO 210 IREPS = 1, NREPPI(ICOOR)
+               IF (.NOT.DOREPS(IREPPI(ICOOR,IREPS))) ALLREP = .FALSE.
+  210       CONTINUE
+            IF (ALLREP) THEN
+               NCOMP = NCOMP + 1
+               IND(NCOMP) = ICOOR
+               LAB(NCOMP) = 'E'//CHRABC(ICOOR)
+            END IF
+  200    CONTINUE
+      END IF
+C
+C     *****************
+C     ***** Print *****
+C     *****************
+C
+      IF (NCOMP .GT. 0) THEN
+         IF (INERT) WRITE (LUPRI,'(15X,A/)')
+     &      '(Along principal axes of moments of inertia)'
+         IF (LARGE) THEN
+            WRITE (LUPRI,'(15X,3(18X,A2))') (LAB(I),I=1,NCOMP)
+         ELSE
+            WRITE (LUPRI,'(15X,3(10X,A2))') (LAB(I),I=1,NCOMP)
+         END IF
+         WRITE (LUPRI, '(/)')
+         DO 300 I = 1, NCOMP
+            IF (LARGE) THEN
+               WRITE (LUPRI, '(12X,A2,3X,3F20.12)') LAB(I),
+     &                  (FAC*AMAT(IND(I),IND(J)),J=1,NCOMP)
+            ELSE
+               WRITE (LUPRI, '(12X,A2,3X,3F12.6)') LAB(I),
+     &                  (FAC*AMAT(IND(I),IND(J)),J=1,NCOMP)
+            END IF
+  300    CONTINUE
+csonia 04/10/95
+CMI ... LUCME not defined in Dirac!
+CMI      IF (LUCME.GT.0) THEN
+CMI         DO I = 1, NCOMP
+CMI            WRITE (LUCME, '(1X,A2,1X,3D23.15)') LAB(I),
+CMI  &                  (FAC*AMAT(IND(I),IND(J)),J=1,NCOMP)
+CMI         END DO
+CMI      END IF
+csonia 04/10/95
+      ELSE
+         WRITE (LUPRI,'(2X,A)') ' Polarizabilities not calculated - '//
+     &                       ' appropriate symmetries not requested.'
+      END IF
+      WRITE (LUPRI, '(/)')
       RETURN
       END

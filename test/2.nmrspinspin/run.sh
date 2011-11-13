@@ -2,8 +2,18 @@
 #
 # Set up calculation
 #
-MENU=spsp;
+#################################
 MOL=H2O;
-export MENU;
 export MOL;
+#################################
+echo "DC Hamiltonian"
+MENU=spsp;
+export MENU;
 ../run.sh
+#################################
+echo "BSS Hamiltonian"
+MENU=bss.spsp;
+export MENU;
+../run.sh
+#################################
+#################################

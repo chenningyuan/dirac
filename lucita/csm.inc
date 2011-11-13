@@ -1,4 +1,4 @@
-*comdeck csm.inc $Revision: 1.2 $ 
+*comdeck csm.inc $Revision: 2268 $ 
 
 *.CSM
       COMMON/CSM/NSMSX,NSMDX,NSMST,NSMCI,NSMXT,ITSSX,ITSDX,ITSXT

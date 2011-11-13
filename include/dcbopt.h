@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision: 1.13 $
-! DATE    : $Date: 2004/05/26 13:06:54 $
+! VERSION : $Revision: 7428 $
+! DATE    : $Date: 2008-08-25 15:22:41 +0200 (Mon, 25 Aug 2008) $
 ! FILE    : dcbopt.h
 !
 !*** 2nd order opt. ***
@@ -37,6 +37,14 @@
 !                 (19) Tight step contol for ground state also
 !                 (20) Skip extra termination tests
 !
+!     IDENSLR_STATE  - natural orbital occupation numbers for state xxx
+!     ISHMEM_TYPE    - type of MPI-2 based shared memory level
+!
+!     JKRRUNTYPE     - determines KR run type:
+!                                             0: second-order SCF
+!                                             1: second-order MCSCF
+!                                             2: KR-CI
+!
 !     Parameters for MCTYPE:
 !
       INTEGER JDHF, JODHF, JCAS, JMCMIN, JGAS
@@ -48,32 +56,36 @@
      &        IOPT_ISYMOP(2), NZVAR, NZVARQ, NZCONF, NZCONFQ, NZXOPT,   &
      &        NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZHOPT,        &
      &        NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO, MOPT_MXMACRO,     &
-     &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE,        &
+     &        MOPT_MAXBCK, NCIROOT, MXCIV, IRESTRK, IOPT_ISTATE, IANACI,&
      &        IOPT_SYMMETRY, KTRLVL, JTRLVL, LENPV, ITMAC, ITMICT,      &
      &        ITBCK, ITABS, ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF,     &
-     &        MCTYPE, JHESSIAN, IKRMCCNO, MAXMK2, MINMK2
+     &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
+     &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
+     &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
      &                NZXOPT, NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ,&
      &                NZHOPT, NZHOPTQ, NZHOPE, NZHOPEQ, MOPT_MXMICRO,   &
-     &                MOPT_MXMACRO, MOPT_MAXBCK, NCIROOT, MXCIV,        &
+     &                MOPT_MXMACRO, MOPT_MAXBCK, NCIROOT, MXCIV, IANACI,&
      &                IRESTRK, IOPT_ISTATE, IOPT_SYMMETRY, KTRLVL,      &
      &                JTRLVL, LENPV, ITMAC, ITMICT, ITBCK, ITABS,       &
      &                ITMACN, MAXCIT, IOPTST, MK2DEL, MK2REF, MCTYPE,   &
-     &                JHESSIAN, IKRMCCNO, MAXMK2, MINMK2
+     &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
+     &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
+     &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
-     &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC
+     &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
-     &                STPLEP, DLVLSH, THRPCI, COMPFAC
+     &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)
@@ -81,16 +93,21 @@
       LOGICAL FLAG(NOPTFLAGS)
       LOGICAL OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX
       LOGICAL OPT_NOCI, OPT_UCIBOS, OPT_MKCNST
-      LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT
+      LOGICAL DONR, FROZCI, LDIRNR, NATONL, FOCKON, COMPROT, NATOLCR
+      LOGICAL CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD, CINT_SPLIT
+      LOGICAL GENFOCK
       COMMON /DCLOPT/ OPT_SKIPEE, OPT_SKIPEP, OPT_NOPFQ, OPT_NOFQX,     &
      &                OPT_NOCI, OPT_UCIBOS, OPT_MKCNST, DONR, FROZCI,   &
-     &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT
+     &                LDIRNR, FLAG, NATONL, FOCKON, COMPROT, NATOLCR,   &
+     &                CRDFO_MAT, CWRTFO_MAT, CSHMEMO, CINT_REORD,       &
+     &                CINT_SPLIT, GENFOCK
 
       CHARACTER*72 OPT_INDSTR(3, 2)
       CHARACTER*9 OPT_INTTYP
       CHARACTER*8 OPT_CIPROGRAM
-      CHARACTER*72 OPT_FRZSTR(2)
-      COMMON /DCCOPT/ OPT_INTTYP, OPT_INDSTR, OPT_CIPROGRAM, OPT_FRZSTR
+      CHARACTER*72 OPT_FRZSTR(2), OPT_DELSTR(2)
+      COMMON /DCCOPT/ OPT_INTTYP, OPT_INDSTR, OPT_CIPROGRAM, OPT_FRZSTR,&
+     &                OPT_DELSTR
 
       INTEGER KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
       COMMON /DCMOPT/ KZCONF, KZXOPE, KZXOPP, LZCONF, LZXOPE, LZXOPP
