@@ -17,6 +17,7 @@ echo "Welcome to the DIRAC CDash buildup on miro.pd.uniza.sk."
 DIRAC=/home/ilias/qch_work/qch_software/dirac_git/dirac-git-repo
 # build dir
 BUILD=build_openmpi_gfortran_gcc_atlas_dirlapack_opt_ilp64
+BUILD_STATIC=build_gfortran_gcc_ilp64_static
 
 # go to the local DIRAC directory
 cd $DIRAC
@@ -25,8 +26,24 @@ git pull
 ./pamadm -a 
 /bin/rm -rf $BUILD
 # configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
-./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON --build=$BUILD 
+./setup --fc=/usr/local/openmpi_ilp64/bin/mpif90 --cc=/usr/local/openmpi_ilp64/bin/mpicc --cpp=/usr/local/openmpi_ilp64/bin/mpiCC -D BUILDNAME="miro_pd_uniza.linux.openmpi_gfortran_gcc_atlas_dirlapack.ilp64.opt" --mpi --math="-L/usr/local/atlas_ilp64/lib -llapack -lcblas -lf77blas -latlas" --int64 -D RUNTEST_NR_PROC=2 -D RUNTEST_TIMEOUT="00:40:00" -D FORCE_DIRAC_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D RUNTEST_BINARY=$DIRAC/$BUILD/dirac.x --build=$BUILD 
 cd $DIRAC/$BUILD
+make dirac.x
+make info_ext
+make Experimental
+
+#
+# run static version buildup
+#
+# go to the local DIRAC directory
+cd $DIRAC
+#git pull origin master
+git pull 
+./pamadm -a 
+/bin/rm -rf $BUILD_STATIC
+# configure step, without --debug; NOTE: CTest timeout must be higher than runtest's !
+./setup --fc=gfortran -D BUILDNAME="miro_pd_uniza.linux.gfortran_gcc_STATIC.ilp64.opt"  --internal-math --int64 -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_STATIC_LINKING=ON -D RUNTEST_BINARY=$DIRAC/$BUILD_STATIC/dirac.x  --build=$BUILD_STATIC 
+cd $DIRAC/$BUILD_STATIC
 make dirac.x
 make info_ext
 make Experimental
