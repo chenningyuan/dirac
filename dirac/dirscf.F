@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
@@ -376,9 +374,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1182,16 +1177,6 @@ C
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         IF (DODSCF) THEN
-            using_diffdens = .true.
-            CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
-          ELSE
-             using_diffdens = .false.
-          endif
-      ENDIF
-#endif
 C
 C     ***********************************
 C     ***** Perform SCF-iterations ******
@@ -1238,11 +1223,6 @@ C
 C        Get density matrices (normed to one)
 C
          CALL DENMAT(DMAT,CMO,IPRSCF)
-#ifdef MOD_LOG
-         call matexport_text('% In SCFCYC1')
-         call matexport_double3('D',DMAT,NTBAS(0),NTBAS(0),
-     &        NTBAS(0),NTBAS(0),NZ)
-#endif
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1545,9 +1525,6 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),

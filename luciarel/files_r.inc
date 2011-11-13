@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 7426 $
+C DATE    : $Date: 2008-08-25 15:13:05 +0200 (Mon, 25 Aug 2008) $
 C FILE    : files.inc
 C
 C     Files to be used in KRMC-LUCIAREL

@@ -1,4 +1,3 @@
-/* dalton_copyright_start */
 /*
  *     Copyright (c) 2005 by the authors of Dalton (see below).
  *     All Rights Reserved.
@@ -32,7 +31,6 @@
  *     For information on how to get a licence see:
  *        http://www.kjemi.uio.no/software/dalton/dalton.html
  */
-/* dalton_copyright_end */
 
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-pbex.c:

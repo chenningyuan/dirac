@@ -1,5 +1,5 @@
 !
-!$Id$
+!$Id: ibtfun.h 3207 2003-12-12 17:24:40Z luuk $
 !
       IBTAND(I,J) = IAND(I,J)
       IBTOR(I,J)  = IOR(I,J)

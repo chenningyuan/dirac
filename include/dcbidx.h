@@ -1,6 +1,6 @@
 ! FILE    : include/dcbidx.h
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 10871 $
+! DATE    : $Date: 2010-06-01 16:37:51 +0200 (Tue, 01 Jun 2010) $
 !
 ! Needs: maxorb.h, maxash.h
 !

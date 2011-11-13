@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  *
  *
- * $Id$
+ * $Id: tracing.c 10839 2010-05-17 18:47:17Z bast $
  *
  * tracing.c : functions to retrieve information from the execution stack and process them into fortran-friendly data
  *

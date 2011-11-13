@@ -1,6 +1,6 @@
 !
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 6563 $
+! DATE    : $Date: 2008-03-03 14:23:33 +0100 (Mon, 03 Mar 2008) $
 ! FILE    : typesz_mpi2.h
 !
 !     MPI-2 type size for memory allocation

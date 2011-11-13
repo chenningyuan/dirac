@@ -26,7 +26,7 @@
 !*
 !*
 !
-! $Id$
+! $Id: memory_allocator.F90 11588 2010-09-13 12:19:07Z gomes $
 !
 ! memory allocation subsystem
 !
@@ -55,17 +55,11 @@
 !
       module memory_allocator
 
-#ifdef MOD_UNRELEASED
-         use memory_tracker
-#endif
                   
          implicit none
          private
          public alloc, dealloc, allocp, deallocp, initData
          public allocator_init, allocator_setmax
-#ifdef MOD_UNRELEASED
-         public alloc_maxsize
-#endif
 
          interface alloc
             module procedure alloc_real_1d
@@ -116,11 +110,6 @@
             module procedure initDataInt_3d
          end interface initData
 
-#ifdef MOD_UNRELEASED
-         interface alloc_maxsize
-            module procedure alloc_maxsize_k8
-         end interface alloc_maxsize 
-#endif
 
 ! error codes, variable kinds
 
@@ -992,20 +981,8 @@
                endif
             end subroutine dealloc_pint_0d
 
-#ifdef MOD_UNRELEASED
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! interface to the tracker
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      subroutine allocator_init
-         call trackInitMemoryStack()
-!         call trackCreateGroup('main')          ! always create a main tracking group
-!         call trackInitGroup('main')
-      end subroutine allocator_init
-#else
       subroutine allocator_init
       end subroutine allocator_init
-#endif
 
       subroutine allocator_setmax(maxmemsize)
          integer :: maxmemsize
@@ -1019,71 +996,6 @@
          
       end subroutine allocator_setmax
 
-#ifdef MOD_UNRELEASED
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
-      subroutine alloc_maxsize_k8(maxsize,minsize,verbose)
-         integer :: step, i, nstep, maximum, status, minsize
-         integer :: maxsize, verbose, minimum, factor
-         real(kind=8), allocatable :: data(:)
-
-         factor  = 4096 
-
-         call get_maximum_mwords(maximum,verbose)
-
-         minimum = minsize 
-
-         if      ( (max_mem.gt.0).and.(maximum.gt.0) ) then  ! if  we have set max_mem, we use it as a guess for
-            maximum = min(max_mem,maximum*1024*1024)         ! the maximum or have as the ceiling for allocation
-         else if ( (max_mem.le.0).and.(maximum.gt.0) ) then     
-            maximum = maximum*1024*1024                      ! if max_mem is not set but maximum is, we use the latter
-         else if ( (max_mem.gt.0).and.(maximum.le.0) ) then     
-            maximum = max_mem                                ! if max_mem is set and maximum not, we use the former
-         else 
-            maximum = huge(maximum)/32                       ! if both max_mem and maximum are not valid, we use a large integer
-         endif
-
-
-!        write (*,*) 'debug, maximum(a):',maximum
-         if (mod(maximum,factor).ne.0) then
-            maximum = maximum+mod(maximum,factor) 
-         endif
-!        write (*,*) 'debug, maximum(b):',maximum
-
-!        write (*,*) 'debug, minimum(a):',minimum
-         if (mod(minimum,factor).ne.0) then
-            minimum = minimum+mod(minimum,factor) 
-         endif
-!        write (*,*) 'debug, minimum(b):',minimum
-
-         if (minimum.gt.0) nstep = maximum / minimum
-
-         if (maximum.ge.minimum) then
-
-            if (verbose.gt.0) then
-               write (*,*) 'minimal 8-byte words required   :',minimum
-               write (*,*) 'number of steps attepmted       :',nstep
-               write (*,*) 'maximum 8-byte words start      :',maximum
-            endif
-
-            do i=1,nstep
-               allocate(data(maximum),stat=status)
-               if (status.eq.0) then
-                  call initData(data,maximum)
-                  if (verbose.gt.0) write (*,*) 'at try',i,': allocation ok for ',maximum,'8-byte words'
-                  maxsize = maximum 
-                  deallocate(data)
-                  return
-               else
-                  maximum = maximum - maximum/(nstep-i+1) 
-               endif
-            enddo
-         else
-            call quit('Minimum space required unavaiable. Exiting.')
-         endif
-
-       end subroutine alloc_maxsize_k8
-#endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 ! end of memory allocator module definition

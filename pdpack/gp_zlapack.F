@@ -5,7 +5,7 @@
 !         http://www.netlib.org/lapack/complex16/
 !
 !
-! $Id$
+! $Id: gp_zlapack.F 11735 2010-10-09 04:27:25Z hjj $
 !
 #ifdef USE_DIRAC_ZLAPACK
       SUBROUTINE ZBDSQR( UPLO, N, NCVT, NRU, NCC, D, E, VT, LDVT, U,

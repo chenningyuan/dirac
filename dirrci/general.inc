@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 2495 $
+C DATE    : $Date: 2002-09-17 09:06:57 +0200 (Tue, 17 Sep 2002) $
 C FILE    : general.inc
 C SOURCE  : $Source$
 C

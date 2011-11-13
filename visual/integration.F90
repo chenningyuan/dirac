@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module visual_integrate
 
@@ -26,9 +24,6 @@ module visual_integrate
    use memory_allocator
    use visual_cfg
    use visual_in_point
-#ifdef MOD_UNRELEASED
-   use visual_london
-#endif
 
   public visual_integration
 
@@ -85,25 +80,6 @@ contains
 
         call reaqua(x, y, z, w, lunit, nr_points)
 
-#ifdef MOD_UNRELEASED
-!temporarily - gosia: fixme make all in 1 call
-        if (visual_cfg_london) then
-
-          if (.not. present(D_con) .or. nr_dmat_con == 0)  &
-             call quit("visual_integration: no D_con or nr_dmat_con=0")
-
-          CALL INTEGRATE_QUANTITY(nr_dmat, D,  &
-     &                            AO, &
-     &                            x, y, z, &
-     &                            buffer, &
-     &                            QUANTITY_INTEGRAL, &
-     &                            w, &
-     &                            NR_POINTS, &
-     &                            nr_dmat_con, &
-     &                            D_con=D_con)
-
-        else
-#endif
 
           CALL INTEGRATE_QUANTITY(nr_dmat, D, &
      &                            AO, &
@@ -114,9 +90,6 @@ contains
      &                            NR_POINTS, &
      &                            0)
 
-#ifdef MOD_UNRELEASED
-        end if
-#endif
 
         call dealloc(x)
         call dealloc(y)
@@ -203,25 +176,6 @@ contains
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
 
-#ifdef MOD_UNRELEASED
-!temporarily - gosia: fixme make all in 1 call
-            if (visual_cfg_london) then
-
-              if (.not. present(D_con) .or. nr_dmat_con == 0)  &
-                 call quit("visual_integration: no D_con or nr_dmat_con=0")
-
-              CALL INTEGRATE_QUANTITY(nr_dmat, D,  &
-     &                                AO, &
-     &                                x, y, z, &
-     &                                buffer, &
-     &                                QUANTITY_INTEGRAL, &
-     &                                w, &
-     &                                NR_POINTS, &
-     &                                nr_dmat_con, &
-     &                                D_con=D_con)
-
-            else
-#endif
               CALL INTEGRATE_QUANTITY(nr_dmat, D, &
      &                                AO, &
      &                                x, y, z, &
@@ -229,9 +183,6 @@ contains
      &                                QUANTITY_INTEGRAL, &
      &                                w, &
      &                                NR_POINTS, 0)
-#ifdef MOD_UNRELEASED
-            end if
-#endif
 
             call dealloc(x)
             call dealloc(y)
@@ -312,21 +263,6 @@ contains
 
       DO IPOINT = 1,NR_POINTS
 
-#ifdef MOD_UNRELEASED
-        if (visual_cfg_london) then
-          if (.not. present(D_con) .or. nr_dmat_con == 0)  &
-             call quit("integrate_quantity: no D_con or nr_dmat_con=0")
-
-          call get_quantity_lao_in_point(nr_dmat, D,         &
-                                         nr_dmat_con, D_con, &
-                                         ao,                 &
-                                         px(ipoint),         &
-                                         py(ipoint),         &
-                                         pz(ipoint),         &
-                                         buffer,             &
-                                         quantity)
-        else
-#endif
 
           CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                               AO, &
@@ -336,9 +272,6 @@ contains
      &                               buffer, &
      &                               QUANTITY)
 
-#ifdef MOD_UNRELEASED
-        end if
-#endif
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)

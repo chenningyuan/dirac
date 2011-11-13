@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
        SUBROUTINE MAKE_H2C(VMAT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -325,9 +323,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
 
-#ifdef MOD_OOF
-C      CALL TEST_OOF(WORK(KFREE),LFREE)
-#endif /* MOD_OOF  */
 C
 C     Print section
 C
@@ -3078,10 +3073,6 @@ C
          MZ = NZ
       END IF
 
-#ifdef MOD_OOF
-! ... perform the QTRANS inside the highly modularized routine
-      call handle_matrixes(VMAT,TMAT,WORK(KFREE),LFREE)
-#endif
 
       IOFT = 1
       IMAT = 1

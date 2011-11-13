@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
@@ -437,11 +435,9 @@ C
       IF (ECPCALC) THEN
         WRITE(LUPRI,'(1X,A)') 
      &   '  employing effective-core-potentials (ECP)'
-#ifndef MOD_ECP
         WRITE(LUPRI,'(//A)')
      &   ' SORRY! .ECP is not implemented in this version.'
         CALL QUIT('.ECP is not implemented in this version.')
-#endif
       END IF
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
@@ -2461,9 +2457,6 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
          CALL QUIT('.LUCIAREL as stand-alone not implemented yet')
       END IF
       IF(DOCCM) WRITE(LUPRI,'(A)') ' * Run RELCCSD code'
-#ifdef MOD_HSFS
-      IF (DOHSFS) WRITE(LUPRI,'(A)') ' * Run Higher Sectors FSCC code'
-#endif
       IF(DOCOSCI) WRITE(LUPRI,'(A)') ' * Run COSCI CI code'
 #ifdef MOD_KRMC
       IF(DOGASCIP) WRITE(LUPRI,'(A)') ' * Run GASCIP CI code'
@@ -2615,11 +2608,7 @@ C       if "*HSFS" is in the input but MOD_HSFS is not defined !!!
         GO TO 200
 C     '*KRCCCALC' - Kramers Restricted CC CALCulation
    15 CONTINUE
-#ifdef MOD_KRCC
-        CALL KRCC_INP(WORD,.FALSE.,WORK,LWORK)
-#else
         CALL QUIT('KRCC not activated.')
-#endif
         GO TO 200
 C
    16 CONTINUE
@@ -2658,9 +2647,6 @@ C
       CALL KRCI_INP(WORD,.TRUE.,WORK,LWORK)
 #endif
 
-#ifdef MOD_KRCC
-      CALL KRCC_INP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
 C
 C     Input of relccsd module
@@ -3964,9 +3950,6 @@ C
 #ifdef MOD_KRMC
       CALL OPTINI()
 #endif
-#ifdef MOD_ERI
-      CALL FCK3INI
-#endif
 C
       RETURN
       END
@@ -4012,9 +3995,6 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 C
       LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE
@@ -4342,18 +4322,6 @@ C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                     call quit('unknown functional after .DFT')
                   end if
 
-#ifdef MOD_ERI
-C aspg, 20070909
-c if the calculation is performed with non-hybrid functionals,
-C and j-engine is set, we force dolink to true even if it was
-C not specified in the input, so that no extra work in the
-c integral evaluation is done. for hfxfac set to zero, the
-C link driver just acts to scale the fock matrix according to
-c DIRAOF->SKLFC1
-                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
-                     DOLINK = .TRUE.
-                  ENDIF 
-#endif /* MOD_ERI */
 
                END IF
                dirac_cfg_dft_calculation = .true.
@@ -4462,11 +4430,7 @@ C      as they need to be modified within BSS transformations
 
 C&&& HFXMU: range separation
   127     CONTINUE
-#ifdef MOD_UNRELEASED
-          READ(LUCMD,*) HFXMU
-#else
           write (*,*) 'Keyword inactive in this release'
-#endif 
           GO TO 100
 
 !#ifdef MOD_AMFI 
@@ -4542,11 +4506,7 @@ C&&& MIXVAC: Alternative definition of vacuum polarisation
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
-#ifdef MOD_CAP
-             CAP  =  .TRUE.
-#else
              CAP  =  .FALSE.
-#endif
              GO TO 100
   140     CONTINUE
 C&&& NOVREF: Do not generate reference vacuum
@@ -4649,17 +4609,7 @@ C    (see MRCON1 of the MOLTRA module)
 
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
-#ifdef MOD_XCFUN
-          read(lucmd, '(a80)') line
-          call parse_functional(line, xc_fun)
-          call set_xc_fun_alda(xc_fun_alda)
-          call set_xc_fun_xalda(xc_fun_xalda)
-          dft_cfg_xcfun             = .true.
-          dirac_cfg_dft_calculation = .true.
-          dirac_cfg_scf_calculation = .true.
-#else
           call quit('XCFun not available in this version')
-#endif /* ifdef MOD_XCFUN */
           go to 100
 
   155     CONTINUE
@@ -4672,12 +4622,7 @@ CMI&& activate 4c-2c MO transformation
           TRMO4C2C=.TRUE.
           GOTO 100
   157     CONTINUE
-#ifdef MOD_UNRELEASED
-C activates fde response
-          dirac_cfg_fde_response =.TRUE.
-#else
           write (*,*) 'Keyword inactive in this release'
-#endif
           GOTO 100
 ! .xA
   158     CONTINUE
@@ -5098,14 +5043,6 @@ CMI ... this is on TODO list
         ENDIF
       ENDIF
 
-#ifdef MOD_CAP
-CMI ...  CAP processing
-      IF (CAP) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &  '* Activated calculation of the Complex'//
-     &  ' Absorption Potential (CAP) integrals '
-      ENDIF
-#endif
 
 #ifdef MOD_QDOTS 
 CMI    ... quantum dots
@@ -5129,30 +5066,13 @@ CMI    ... quantum dots
 
       if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_XCFUN
-        if (.not. dft_cfg_xcfun) then
-#endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda
 !         and if .dftauto functional is chosen
 !         it would report lda
 !         so let's not call it in this case
           call dftreport()
-#ifdef MOD_XCFUN
-        end if
-#endif
 
-#ifdef MOD_ERI
-C aspg, 20070909
-         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
-            WRITE (LUPRI,*) ' '
-            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
-     &                      'together with non-hybrid functionals,'
-            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
-     &                      ' will be calculated.'
-            WRITE (LUPRI,*) ' '
-         ENDIF 
-#endif /* MOD_ERI */
 
          IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN
@@ -5628,15 +5548,10 @@ C
 
 
     4 CONTINUE
-#ifdef MOD_CAP
-CMI    ... reading the CAP integrals characteristic
-        CALL CAPINP(WORD,.FALSE.,WORK,LWORK)
-#else
 CMI       dirac.x went into an infinite loop here
 C       if *CAP in input but MOD_CAP is not defined !!!
         CALL QUIT(
      &  '*CAP specified, but CAP is not included in this version')
-#endif
         GO TO 200
 !     .FDE, frozen density embedding
     5 CONTINUE
@@ -5671,9 +5586,6 @@ C
 
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 
-#ifdef MOD_CAP
-      IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
 #ifdef MOD_AMFI
       IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
@@ -5796,27 +5708,6 @@ CMI    ... utilize existing ipkinerg  in dcbham.h
       IPKINERG         = INDXPR
 
 c
-#ifdef MOD_ECP
-        IF (ECPCALC) THEN
-c     
-c     Spin-orbit integrals for ECP centres ...
-c     ========================================
-c        
-        PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 20 ! for the new definition
-        NPCOMP           = 3
-        PFAC(1)          = +1.0
-        PFAC(2)          = +1.0
-        PFAC(3)          = +1.0
-        PLABEL(1)        = 'X1SOPP  '
-        PLABEL(2)        = 'Y1SOPP  '
-        PLABEL(3)        = 'Z1SOPP  '
-        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
-c      ... use IPSOPP defined in dcbham.h
-        IPSOPP           = INDXPR
-        END IF         
-#endif
       ELSE
 CMI  ... pure Dirac Hamiltonian stuff ...
 C

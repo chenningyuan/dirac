@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 4346 $
+C DATE    : $Date: 2005-05-20 11:48:29 +0200 (Fri, 20 May 2005) $
 C FILE    : param.inc
 C SOURCE  : $Source$
 C

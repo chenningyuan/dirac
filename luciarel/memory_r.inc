@@ -1,6 +1,6 @@
 C
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 6375 $
+C DATE    : $Date: 2007-11-23 13:33:36 +0100 (Fri, 23 Nov 2007) $
 C FILE    : memory_r.inc
 C
 C memory information for LUCIAREL

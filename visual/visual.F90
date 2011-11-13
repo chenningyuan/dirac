@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module visual
 
@@ -29,9 +27,6 @@ module visual
   use matrix_defop
   use matrix_genop, only: copy_matrix_sym
   use dirac_interface
-#ifdef MOD_UNRELEASED
-  use visual_london
-#endif
   use visual_integrate
   use visual_in_point
 
@@ -112,13 +107,6 @@ contains
 
     end do
 
-#ifdef MOD_UNRELEASED
-!   if calculations with symmetry then the 'direct' lao contribution 
-!   is done with ao derivatives
-!   otherwise (london without symmetry) it is quicker to calculate 
-!   this contibution 'directly' from equation: (R_MN \times r)*ao*ao
-    if (visual_cfg_london .and. visual_cfg_london_with_sym) max_ao_m_order = 1
-#endif
 
 !   find occupation
 !   ===============
@@ -187,23 +175,10 @@ contains
 
     nr_dmat = 1
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-
-      nr_dmat_con = 0
-      call init_mat(D_con_ao, ntbas(0), ntbas(0))
-
-      debug_me = .false.
-
-    end if
-#endif
 
 
     do ivector = 1, visual_cfg_nr_xvectors
 
-#ifdef MOD_UNRELEASED
-      if (visual_cfg_london) call visual_london_init(ivector)
-#endif
 
       if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
         nr_dmat = nr_dmat + 1
@@ -234,181 +209,9 @@ contains
 
       else
         vector_to_matrix(ivector) = 1
-#ifdef MOD_UNRELEASED
-        if (visual_cfg_london) then
-          call quit('visual: ZORDER and LONDON cannot go together')
-        end if
-#endif
       end if
 
 
-#ifdef MOD_UNRELEASED
-!     if london - reorthonormalization contribution
-!     =============================================
-!     london - only for j^B and properties expressed in terms of j^B
-!     so we will need only matrices for iz = 2, 3, 4 (nz=4) as
-!     iz = 2 -> \alpha_z
-!     iz = 3 -> \alpha_y
-!     iz = 4 -> \alpha_x
-
-!     (*) gosia: todo later we can make the scheme
-!     D(1) -> unperturbed density matrix
-!     D(2:nr_dmat) -> perturbed density matrices
-!     D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
-!     etc..
-!     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
-
-      if (visual_cfg_london) then
-      
-        nr_dmat_con = nr_dmat_con + 1
-        vector_to_matrix_con(ivector) = nr_dmat_con
-
-        D_con_ao%elms = 0.0d0
-
-!       read connection matrices in AO basis from AOPROPER file
-!       -------------------------------------------------------
-        call setup_fo_conmat_ao(D_con_ao, ivector)
-
-        if (debug_me) then
-!         can be compared with matrices from PRPMAO when running response
-          call print_mat(D_con_ao, label = 'run_visual: debug D_con_ao in SA-AO basis')
-        end if
-
-
-!       transform connection matrices to MO basis:
-!       ------------------------------------------
-        D_con_mo = dag(C)*(D_con_ao*C)
-
-        call copy_matrix_sym(D_con_mo, D_con_ao)
-
-        if (debug_me) then
-!         can be compared with matrices from PRPMAT when running response
-          call print_mat(D_con_mo, label = 'run_visual: debug D_con_mo in MO basis')
-        end if
-
-
-!       create modified density matrices
-!       --------------------------------
-!       *) gosia todo: include ep in options, now it is hardcoded to .true.
-!          ep = .true.  - 'p'-summation over e+p shells
-!               .false. - only over e-shells
-
-!
-!        write(*, *) 'gosia: nz, nfsym, jbtof(D_con_mo%irep, 1) = ', &
-!                            nz, nfsym, jbtof(D_con_mo%irep, 1)
-
-!       symmetric connection
-        if (visual_cfg_connection(ivector) == 2) then
-
-!         D_con_mo(iz=1) is antisymmetric
-!         D_con_mo(iz=2,3,4) is symmetric, so:
-
-          if (nfsym == 2) then
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (C*(D_con_mo*dag(Ciu))) &
-                               + (Cig*(D_con_mo*dag(C))) &
-                               + (Ciu*(D_con_mo*dag(C)))
-          else
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (Cig*(D_con_mo*dag(C)))
-          end if
-
-          call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-
-          if (debug_me) then
-!           can be compared with matrices from GETMDM when running response
-            call print_mat(D_con(nr_dmat_con),   &
-                 label='run_visual: debug D_con (symmetric con)')
-          end if
-
-
-!       natural connection
-        else if (visual_cfg_connection(ivector) == 1) then
-
-!         D_con_mo is a general matrix
-!         so we do dag(D_con_mo), but dag(A) does only transposition
-!         so the sign is changed by hand -> that is why we have "-"
-          if (nfsym == 2) then
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (C*(D_con_mo*dag(Ciu))) &
-                               - (Cig*(dag(D_con_mo)*dag(C))) &
-                               - (Ciu*(dag(D_con_mo)*dag(C)))
-
-            !D_con(nr_dmat_con) = (Cig*(D_con_mo*dag(Cig))) &
-            !                   + (Ciu*(D_con_mo*dag(Ciu))) &
-            !                   - (Cig*(dag(D_con_mo)*dag(Cig))) &
-            !                   - (Ciu*(dag(D_con_mo)*dag(Ciu)))
-
-          else
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               - (Cig*(dag(D_con_mo)*dag(C)))
-          end if
-
-            call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-          if (debug_me) then
-!           can be compared with matrices from GETMDM when running response
-            call print_mat(D_con(nr_dmat_con),  &
-                 label='run_visual: debug D_con (natural con)')
-          end if
-
-
-!       <none> connection
-        else if (visual_cfg_connection(ivector) == 0) then
-
-!         'ij' block: overlap
-!         ===================
-!         if <none> connection, we take symmetric connection integrals to D_con_ao
-!         and they equal to -0.5d0*S^B, so:
-          D_2 = 2.0d0*D_con_mo
-
-!         create modified density matrix
-!         ------------------------------
-          !D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
-          if (nfsym == 2) then
-            D_con(nr_dmat_con) = Cig*(D_2*dag(Cig)) &
-                               + Ciu*(D_2*dag(Ciu))
-          else
-            D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
-          end if
-
-!         'ai' block: D_con_mo - D_mo
-!         ===========================
-!         iz = 1     -> D_mo     symmetric, D_con_mo antisymmetric
-!         iz = 2,3,4 -> D_mo antisymmetric, D_con_mo     symmetric
-!                       dag(D_mo) = -D_mo,  dag(D_con_mo) = D_con_mo
-!         and only iz = 2,3,4 are important here, so:
-
-!         later on D matrices are multipled by 2.0d0, so:
-          D_1a = D_con_mo - 2.0d0*D_mo
-!         D_1b = dag(D_1a)
-          D_1b = D_con_mo + 2.0d0*D_mo
-!
-!         create modified density matrix
-!         ------------------------------
-          D(nr_dmat)%elms = 0.0d0
-          if (nfsym == 2) then
-            D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
-                       + 0.5d0*(Csg*(D_1a*dag(Cig))) &
-                       + 0.5d0*(Ciu*(D_1b*dag(Csu))) &
-                       + 0.5d0*(Csu*(D_1a*dag(Ciu)))
-          else
-            D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
-                       + 0.5d0*(Csg*(D_1a*dag(Cig)))
-          end if
-
-
-!         "uninitialize"
-!         --------------
-          D_1a = 0
-          D_1b = 0
-          D_2  = 0
-
-        else
-          call quit('run_visual: visual_cfg_connection(ivector) != {0,1,2}')
-        end if
-      
-      end if
-#endif /* ifdef MOD_UNRELEASED */
 
     end do   ! do ivector = 1, visual_cfg_nr_xvectors
 
@@ -430,19 +233,6 @@ contains
       end if
     end do
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        if (nz < 4) then
-          do iz = 1, nz
-            iq   = ipqtoq(iz, D_con(imat)%irep)
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
-            call q2bphase('D', iq, 1, D_con(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
-    end if
-#endif
 
 
 !   scale density matrices
@@ -473,12 +263,6 @@ contains
       Csu = 0
     end if
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      D_con_ao = 0
-      D_con_mo = 0
-    end if
-#endif
 
 
 !   initialize ao module
@@ -498,16 +282,7 @@ contains
 
     time_start = second()
 
-#ifdef MOD_UNRELEASED
-!gosia todo: merge these two to one call to visual_driver
-    if (visual_cfg_london) then
-      call visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con=D_con)
-    else
-#endif
       call visual_driver(nr_dmat, D, ao, buffer, 0)
-#ifdef MOD_UNRELEASED
-    end if
-#endif
 
 !   end if
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
@@ -515,16 +290,7 @@ contains
     time_start = second()
     if (visual_cfg_integrate) then
 
-#ifdef MOD_UNRELEASED
-! gosia fixme: merge these two to one call to visual_integration
-      if (visual_cfg_london) then
-        call visual_integration(nr_dmat,D,ao,buffer,nr_dmat_con,D_con=D_con)
-      else
-#endif
         call visual_integration(nr_dmat, D, ao, buffer, 0)
-#ifdef MOD_UNRELEASED
-      end if
-#endif
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
@@ -539,13 +305,6 @@ contains
       D(imat) = 0
     end do
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        D_con(imat) = 0
-      end do
-    end if
-#endif
 
     call basis_info_delete()
 
@@ -622,20 +381,6 @@ contains
 
         DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
 
-#ifdef MOD_UNRELEASED
-                if (visual_cfg_london) then
-                  if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                     call quit("no D_con or nr_dmat_con=0")
-                  call get_quantity_lao_in_point(nr_dmat, D,         &
-                                                 nr_dmat_con, D_con, &
-                                                 ao,                 &
-                                                 visual_cfg_xyz_list(ipoint_in_list, 1), &
-                                                 visual_cfg_xyz_list(ipoint_in_list, 2), &
-                                                 visual_cfg_xyz_list(ipoint_in_list, 3), &
-                                                 buffer,             &
-                                                 quantity)
-                else
-#endif
 
           CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                               AO, &
@@ -644,9 +389,6 @@ contains
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
      &                               buffer, &
      &                               QUANTITY)
-#ifdef MOD_UNRELEASED
-          end if
-#endif
 
           WRITE(LUPRI,'(3E14.6,4E18.10)')  &
      &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
@@ -730,26 +472,11 @@ contains
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
 
-#ifdef MOD_UNRELEASED
-                if (visual_cfg_london) then
-                  if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                     call quit("no D_con or nr_dmat_con=0")
-                  call get_quantity_lao_in_point(nr_dmat, D,         &
-                                                 nr_dmat_con, D_con, &
-                                                 ao,                 &
-                                                 px, py, pz,         &
-                                                 buffer,             &
-                                                 quantity)
-                else
-#endif
                   CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                       ao, &
      &                                       PX,PY,PZ, &
      &                                       buffer, &
      &                                       QUANTITY)
-#ifdef MOD_UNRELEASED
-                end if
-#endif
 
 
 !               write to file
@@ -851,18 +578,6 @@ contains
 !             zero weight is so that it does not mess up results
 !             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
 
-#ifdef MOD_UNRELEASED
-              if (visual_cfg_london) then
-                if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                   call quit("no D_con or nr_dmat_con=0")
-                call get_quantity_lao_in_point(nr_dmat, D,         &
-                                               nr_dmat_con, D_con, &
-                                               ao,                 &
-                                               px, py, pz,         &
-                                               buffer,             &
-                                               quantity(0,kcube))
-              else
-#endif
 
                 CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                     ao, &
@@ -870,9 +585,6 @@ contains
      &                                     buffer, &
      &                                     QUANTITY(0,KCUBE))
 
-#ifdef MOD_UNRELEASED
-              end if
-#endif
 
             ENDDO
 
@@ -1100,33 +812,6 @@ contains
                         D_mo%elms,                &
                         D_mo%irep)
 
-#ifdef MOD_UNRELEASED
-!gosia
-!
-!      open(99, file='response_vec_vis',  &
-!               status='unknown', form='formatted', access='append')
-!      write(99, *) 'bla, INTFLG  = ', INTFLG 
-!      write(99, *) 'bla, JSYMOP1 = ', JSYMOP1
-!      write(99, *) 'bla, JSYMOP2 = ', JSYMOP2
-!      write(99, *) 'bla, JTIMOP1 = ', JTIMOP1
-!      write(99, *) 'bla, JTIMOP2 = ', JTIMOP2
-!      write(99, *) 'bla, LAB1    = ', LAB1   
-!      write(99, *) 'bla, LAB2    = ', LAB2   
-!      write(99, *) 'bla, TYP1    = ', TYP1   
-!      write(99, *) 'bla, TYP2    = ', TYP2   
-!      write(99, *) 'bla, ERGRSP  = ', ERGRSP 
-!      write(99, *) 'bla, NBAS    = ', NBAS   
-!      write(99, *) 'bla, NORBS   = ', NORBS  
-!      write(99, *) 'bla, unused  = ', unused
-!      write(99, *) 'bla,  length   = ', length
-!      do i = 1, nz
-!        do j = 1, length
-!          write(99, *) 'i, j, response_vector(j, i)   = ', i, j, response_vector(j, i)
-!        end do
-!      end do
-!      close(99, status='keep')
-!
-#endif
 
     call dealloc(orbital_rotation_indices)
     call dealloc(response_vector)
@@ -1134,114 +819,6 @@ contains
   end subroutine
 
 
-#ifdef MOD_UNRELEASED
-!  subroutine read_solution_vector_file(ixvector)
-!!   ----------------------------------------------------------------------------
-!    integer, intent(in) :: ixvector
-!
-!    integer :: xvc_file_unit
-!    integer       :: jsymop1, jsymop2, jtimop1, jtimop2
-!    logical :: file_exists
-!    real(8)       :: freq1, freq2, ergrsp, unused
-!    character(16) :: pattern, lab1, lab2, lbuf
-!    character(2)  :: typ1, typ2
-!    character(1)  :: pbuf
-!
-!
-!      type(matrix) :: D_mo
-!      real(8) :: STRING(*)
-!
-!      real(8), allocatable :: bvec(:)
-!
-!      integer, allocatable :: orbital_rotation_indices(:, :)
-!      real(8), allocatable :: response_vector(:, :)
-!      integer              :: length
-!      character(2)         :: vector_type
-!      real(8)              :: ih_factor
-!
-!      integer              :: nr_vectors, LUNIT_XVECTOR
-!      integer              :: ixvector, NBAS, NORBS, len
-!      integer              :: JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, IVECTOR
-!
-!!gosia, i'll remove it later
-!      integer :: i, j
-!      character(10) :: pattern
-!      character(16) :: text   
-!
-!
-!!   the purpose is to read solution vector from PAMXVC with the proper label, 
-!!   and not by the number of ivector
-!!   ----------------------------------------------------------------------------
-!
-!    inquire(file = visual_cfg_xvector_file(ixvector), exist = file_exists)
-!
-!    if(.not. file_exists) then
-!      write(lupri,'(a)') 'error in visual:'
-!      write(lupri,'(a,a6,a)') 'solution vector file ', &
-!            visual_cfg_xvector_file(ixvector),' not found'
-!      call quit('error in visual')
-!    endif
-!   
-!    xvc_file_unit = 17
-!    open(xvc_file_unit,                              &
-!         file   = visual_cfg_xvector_file(ixvector), &
-!         status = 'OLD',                             &
-!         access = 'SEQUENTIAL',                      &
-!         form   = 'UNFORMATTED')
-!
-!    rewind(xvc_file_unit)
-!
-!    pattern = "LAO-"//visual_cfg_lao_chcomp(ixvector)//"RM1H1"
-!
-!    do while (.true.)
-!      
-!      read(lunit_xvector) lab1, lab2, typ1, typ2, freq1, freq2,  &
-!                          jsymop1, jsymop2, jtimop1, jtimop2,    &
-!                          unused, len, intflg, ergrsp, nbas, norbs
-!
-!
-!    end do
-!! gosia, this works, assuming that before visual one runs shielding+london
-!! it is necessary for visual+london+symmetry
-!! i'll fix it later (run response only for one selected component of magnetic field)
-!
-!!      if (visual_cfg_london) then
-!!
-!!        REWIND LUNIT_XVECTOR
-!! 5      CONTINUE
-!!        READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2, &
-!!     &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, &
-!!     &                    UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-!!
-!!
-!!        IF(lab1 == 'END_OF_THIS_FILE') GOTO 6
-!!
-!!        if (lab1 == pattern) then
-!!!         now choose 'E' or 'P', 'E' comes first
-!!! lazy solution...
-!!          !IF(typ1(1:1) .eq. 'E') THEN
-!!          IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .eq. 5) THEN
-!!            GOTO 6
-!!          !else IF(typ1(1:1) .eq. 'P') THEN
-!!          else IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .eq. 6) THEN
-!!            GOTO 7
-!!          end if
-!!        else
-!!         ! READ(LUNIT_XVECTOR)
-!!         ! READ(LUNIT_XVECTOR)
-!!          GOTO 5
-!!        end if
-!! 7      CONTINUE
-!!        READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2, &
-!!     &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, &
-!!     &                    UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-!!
-!! 6    CONTINUE
-!!
-!!
-!  end subroutine
-!
-#endif
 
   subroutine scatter_vector(length,                   &
                             orbital_rotation_indices, &

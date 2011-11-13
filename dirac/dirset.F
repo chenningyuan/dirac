@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,10 +16,9 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -38,9 +36,6 @@ C***********************************************************************
 #ifdef MOD_VISUAL
       use visual_cfg
 #endif 
-#ifdef MOD_CAP
-      USE Memory
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -107,18 +102,6 @@ C
 #ifdef MOD_VISUAL
  11   continue
 #endif /* #ifdef MOD_VISUAL */
-#ifdef MOD_CAP
-CMI ... check if CAP is not for everlap control
-CMI  ... call of F90 routine
-!        call TEST_OOF(WORK,LWORK)
-!        call StickMemory(WORK,LWORK)
-!        call TEST_OOF ! memmory was unsticked here
-!         call StickMemory(WORK,LWORK) ! stick again
-!         call cap_ovlp
-        IF (CAP) CALL CAP_STUFF(WORK,LWORK)
-!    .... independent tests
-!       call test_oof_basis_fu(WORK,LWORK)
-#endif
 
       IF(DOHRM) THEN
         CALL TIMER('PAMSET',TIMSTR,TIMEND)

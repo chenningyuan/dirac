@@ -1,4 +1,4 @@
-*comdeck cstate.inc $Revision$ 
+*comdeck cstate.inc $Revision: 2268 $ 
 *. CSTATE
       COMMON/CSTATE/IREFSM,IREFML,IREFPA,IREFL,MS2,MULTS,
      &              NROOT,IROOT(100),IDC,PSSIGN,PLSIGN,INTSEL,IALIGN,

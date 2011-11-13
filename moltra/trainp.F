@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,10 +16,9 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : trainp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -853,20 +851,10 @@ C
         CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 300
   313 CONTINUE
-#ifdef MOD_HSCC
-      IF (DOHSCC) THEN
-        CALL HSCCINP(WORD,.false.)
-      ELSE
-        WRITE(LUPRI,'(2X,A)') 
-     &  '*HSCC input found, but not processed (DOHSCC=.false.).'
-        GOTO 400
-      ENDIF
-#else
 C       prevent dirac.x running into an infinite loop here
 C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
         CALL QUIT('*HSCC specified, '//
      &     'but HSCC module is not included in this version')
-#endif
         GO TO 300
   314 CONTINUE
         GO TO 300

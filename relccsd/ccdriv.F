@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,10 +16,9 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : ccdriv.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -700,16 +698,8 @@ C
 C 
       MXCORR1 = 0
 
-#ifdef MOD_UNRELEASED
-      if (lowmem) then
-         call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
-      else
-#endif
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
-#ifdef MOD_UNRELEASED
-      endif
-#endif
       IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
@@ -772,16 +762,8 @@ C
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
       IF (DOSORT) THEN
-#ifdef MOD_UNRELEASED
-         if (lowmem) then
-            call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
-         else
-#endif
             CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
-#ifdef MOD_UNRELEASED
-         endif
-#endif
       endif
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)

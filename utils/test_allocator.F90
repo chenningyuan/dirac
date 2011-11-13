@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,12 +16,11 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
-! $Id$
+! $Id: test_allocator.F90 11757 2010-10-10 07:06:37Z hjj $
 !
 !
-! $Id$
+! $Id: test_allocator.F90 11757 2010-10-10 07:06:37Z hjj $
 !
 ! memory allocation subsystem
 !

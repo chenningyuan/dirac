@@ -1,4 +1,4 @@
-*Comdeck datapow $Revision$
+*Comdeck datapow $Revision: 4230 $
       parameter (Lpowmax=6)
       dimension ixyzpow(3*(Lpowmax+1)*(Lpowmax+1))
 cbs   the ones and zeros stand four odd and even powers of x,y,z

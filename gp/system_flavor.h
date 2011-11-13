@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  *
  *
- * $Id$
+ * $Id: system_flavor.h 7029 2008-06-10 11:54:45Z gomes $
  *
  */
 #define LINUX   (0)

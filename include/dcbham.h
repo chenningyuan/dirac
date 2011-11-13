@@ -1,7 +1,7 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 11283 $
+! DATE    : $Date: 2010-08-09 14:37:27 +0200 (Mon, 09 Aug 2010) $
 ! FILE    : dcbham.h
 !
 !*****************************************************************************

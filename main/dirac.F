@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,10 +16,9 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
-C VERSION : $Revision$
-C DATE    : $Date$
+C VERSION : $Revision: 11757 $
+C DATE    : $Date: 2010-10-10 09:06:37 +0200 (Sun, 10 Oct 2010) $
 C FILE    : dirac.F
 C
 C***********************************************************************
@@ -102,12 +100,6 @@ C***********************************************************************
 C*****  E C P  I N T E G R A L  M O D U L E  ***************************
 C***********************************************************************
 C
-#ifdef MOD_ECP
-      IF (ECPCALC) THEN
-         CALL ARGOSIN
-         CALL ARGOS
-      END IF
-#endif
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
@@ -435,26 +427,8 @@ C***** C C *************************************************************
 C***********************************************************************
 C
       IF(DOKRCC.AND.DOPSI) THEN
-#ifdef MOD_KRCC
-C
-C        Transfer KR-CI info to common block DCBORB
-C        and recalculate DCBORB.
-C
-C        ... reset dcbopt.h
-C
-C Not sure which to include?
-C
-         CALL OPTINI
-         CALL TKRCCORB
-C         CALL TKRMCORB
-         CALL SETDC2(0)
-C         CALL SETDCBIDX()
-C
-         CALL PAMKRCC(WORK,LWORK)
-#else
             CALL QUIT(
      &  ' KR-CC module not included in this version')
-#endif
       END IF
 C
 
@@ -463,12 +437,6 @@ C***********************************************************************
 C***** High Sect F S C C  M O D U L E **********************************
 C***********************************************************************
 C
-#ifdef MOD_HSFS
-!     ... interface from HSFS module
-      IF (DOHSFS) THEN
-        CALL HSFS_STUFF(WORK,LWORK)
-      ENDIF
-#endif
 
       CALL QEXIT('PAMPSI')
       RETURN
@@ -1201,136 +1169,3 @@ C
 #endif /* VAR_MPI */
       RETURN
       END
-#ifdef MOD_KRCC
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck tkrciorb */
-      SUBROUTINE TKRCCORB
-C***********************************************************************
-C
-C     Transfer information from common block DCOCI to 
-C     common block DCBORB and set common block DCxOPT
-C
-C     Based on TKRMCORB.
-C
-C     Written by S. Knecht - Aug 2008. 
-C     Well Lasse did a copy and paste of it to this routine 2010
-C     Last revision: 
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dgroup.h"
-#include "dcborb.h"
-C#include "dcbkrci.h"
-#include "dcbopt.h"
-#include "dcbgascip.h"
-#include "dcbibt.h"
-C Scratch
-      INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXMCGAS)
-      INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXMCGAS)
-C
-      CALL QENTER('TKRCCORB')
-C
-C be careful with these
-C since there are some variables with the same name we will call a routine for this
-      CALL TRANSFER_KRCC_TO_KRMC(NKRCCGAS,NKRCC_MK2REF,
-     &                           NKRCC_MK2DEL,NKRCCAELEC,NFSYM,
-     &                           NKRCC_MINMK2,NKRCC_MAXMK2,NKRCCISH,
-     &                           NKRCCASH,NKRCCGSH,NKRCCSSH,NKRCCFRO,
-     &                           NKRCCGSP,MAXCIT_KRCC)
-      NGAS_DC= NKRCCGAS
-      MK2REF = NKRCC_MK2REF
-      MK2DEL = NKRCC_MK2DEL
-      MINMK2 = NKRCC_MINMK2
-      MAXMK2 = NKRCC_MAXMK2
-C     ... do not change MXMCGAS to MXCIGAS; not necessary...
-      CALL IZERO(NGSHT,MXMCGAS)
-      DO I = 1,NFSYM 
-         NISH(I) = NKRCCISH(I)
-         NASH(I) = NKRCCASH(I)
-         DO J = 1, NGAS_DC
-            NGSH(I,J) = NKRCCGSH(I,J)
-            NGSHT(J) = NGSHT(J) + NGSH(I,J)
-         END DO
-         NOCC(I) = NISH(I) + NASH(I)
-         NSSH(I) = NKRCCSSH(I)
-         NFRO(I) = NKRCCFRO(I)
-      END DO
-      NAELEC = NKRCCAELEC
-C     min and max electrons in each gas space:
-      DO J = 1, NGAS_DC
-         NGSP(1,J) = NKRCCGSP(1,J)
-         NGSP(2,J) = NKRCCGSP(2,J)
-      END DO
-C
-C
-C     Set common block DCIOPT
-C     
-      IPROPT = 0 !IPRKRCI
-      IOPT_ITRINT(1) = 1 !IKRCI_ITRINT(1)
-      IOPT_ITRINT(2) = 1 !IKRCI_ITRINT(2)
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-C IOPT_INTDEF controls the Hamiltonian
-      IOPT_INTDEF    = ILLINT + 2*ISLINT + 4*ISSINT !IKRCI_INTDEF
-      IOPT_INTFLG    = 0 !IKRCI_INTFLG
-      IOPT_INTBUF    = 0 !IKRCI_INTBUF
-      MOPT_MXMICRO   =  0
-      MOPT_MXMACRO   = -1
-      MOPT_MAXBCK    =  0
-      IOPT_ISTATE    =  1
-      IOPT_SYMMETRY  = -1
-      IMEMFAC        = 9 !IKRCI_MEMFAC
-      JKRRUNTYPE     = 2
-C     
-C     Set common block DCROPT
-C     
-      LVCORR_MC      = 0.0d0
-
-      OPT_CIPROGRAM  = 'KRCC' !KRCI_CIPROGRAM
-      DO I = 1, NFSYM
-         OPT_FRZSTR(I) = ' '
-      END DO
-      DO I = 1, NFSYM
-         OPT_DELSTR(I) = ' '
-      END DO
-C
-C so far only this sym
-      NMAX_SYM    = 1 !NKRCI_MAX_SYM
-      MAXCIT      = MAXCIT_KRCC
-C transformation level
-      KTRLVL      = 3 !KTRLVL_KRCI
-      IANACI      = 0 !IANACI_KRCI
-      NCIROOT     = -1
-C dont think i need max number of ci vectors for subspace
-      MXCIV       = 0 !MXCIV_KRCI
-C at the moment this is not the way to restart
-      IRESTRK     = 0 !IRESTRK_KRCI
-C parallel stuff
-      IDOPARIO    = 0 !IDOPARIO_KRCI
-      IOPTST      = 1531
-      IKRMCCNO    =  - 3
-      OPT_NOPFQ   = .FALSE.
-      OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
-      COMPROT     = .FALSE.
-C at the moment no fock type orbitlas
-      GENFOCK     = .FALSE. !GENFOCK_KRCI
-      NATOLCR     = .FALSE. !NATOLCR_KRCI
-      TRA_NATO    = .FALSE. !TRANATO_KRCI
-      CRDFO_MAT   = .FALSE. !CRDFO_MAT_KRCI
-      CWRTFO_MAT  = .FALSE. !CWRTFO_MAT_KRCI
-      CSHMEMO     = .FALSE. !CSHMEMO_KRCI
-      CINT_REORD  = .FALSE. !CINT_REORD_KRCI
-      CINT_SPLIT  = .FALSE. !CINT_SPLIT_KRCI
-      CINT_LOWSRT = .FALSE. !LOWSORT_KRCI
-      COMPFAC     = 0.01D00
-      CHCKPT_WRT  = .FALSE. !CHCKPT_KRCI
-      CPBLCK_FILE = .FALSE. !CUSE_PBLFL_KRCI
-C
-      CALL QEXIT('TKRCCORB')
-      END
-#endif /* MOD_KRCC */

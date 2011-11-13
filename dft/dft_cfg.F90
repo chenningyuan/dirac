@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module dft_cfg
 
@@ -29,9 +27,6 @@ module dft_cfg
    use dirac_mpi
 #endif
    use block_config
-#ifdef MOD_XCFUN
-   use xcfun
-#endif
 
   implicit none
 
@@ -43,11 +38,7 @@ module dft_cfg
 
   public functional
   type functional
-#ifdef MOD_XCFUN
-     real(8) :: w(XC_NR_PARAMS)
-#else
      real(8) :: w(1)
-#endif
      integer :: id
      logical :: xcfun_id_is_set
      real(8), allocatable :: input(:, :)
@@ -131,9 +122,6 @@ contains
 
       call dirac_mpi_bcast(f%w)
       call dirac_mpi_bcast(f%id)
-#ifdef MOD_XCFUN
-      call dirac_mpi_bcast(f%xcfun_id_is_set)
-#endif
 
    end subroutine
 

@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
@@ -3552,9 +3550,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
@@ -3599,9 +3594,6 @@ C
 C     Calculate AO Fock matrices
 C     --------------------------
 C
-#ifdef MOD_DNF
-      DODFLR = .TRUE.
-#endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
@@ -3610,9 +3602,6 @@ C
 
         if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_DNF
-        if (.not. df_fitvxc) then
-#endif
 
           if (ncsim > 0) then
             call quit('gmolitx1: mcscf-dft not implemented')
@@ -3642,9 +3631,6 @@ C
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-#ifdef MOD_DNF
-        end if
-#endif
 
         end if
 
@@ -4341,13 +4327,6 @@ C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
            iopt_spinfree = IOPT
-#ifdef MOD_MCSCF_spinfree
-!radovan:  the following line breaks .SPINFREE and .LEVY-LEBLOND
-!          magnetic response
-!          if (SPINFR) iopt_spinfree = 1
-!          rather do:
-           if (SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) iopt_spinfree = 1
-#endif
 !          IF(IOPT.GT.0) THEN
            IF(iopt_spinfree.GT.0) THEN
              CALL QBTRANS(JREP,'AOMO','S',D0,
