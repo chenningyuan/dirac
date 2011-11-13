@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module visual_integrate
 
@@ -28,9 +26,6 @@ module visual_integrate
    use visual_in_point
    use interface_grid
    use file_units
-#ifdef MOD_UNRELEASED
-   use visual_london
-#endif
 
   public visual_integration
 

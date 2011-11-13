@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C FILE    : dirset.F
 C
@@ -35,9 +33,6 @@ C
 C***********************************************************************
       use visual_cfg
       use x2cmod_cfg
-#ifdef MOD_CAP
-      USE Memory
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -84,9 +79,6 @@ C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
 !     youngc:  RECP integral     
-#ifdef MOD_ECP
-      IF (ECPCALC) CALL RECP
-#endif
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london
@@ -104,18 +96,6 @@ C
         CALL ONEGEN(WORK,LWORK)
       ENDIF
  11   continue
-#ifdef MOD_CAP
-CMI ... check if CAP is not for everlap control
-CMI  ... call of F90 routine
-!        call TEST_OOF(WORK,LWORK)
-!        call StickMemory(WORK,LWORK)
-!        call TEST_OOF ! memmory was unsticked here
-!         call StickMemory(WORK,LWORK) ! stick again
-!         call cap_ovlp
-        IF (CAP) CALL CAP_STUFF(WORK,LWORK)
-!    .... independent tests
-!       call test_oof_basis_fu(WORK,LWORK)
-#endif
 
       IF(DOHRM) THEN
         CALL TIMER('PAMSET',TIMSTR,TIMEND)

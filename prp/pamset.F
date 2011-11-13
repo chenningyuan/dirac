@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -687,29 +685,6 @@ C          Hermitian operator
      &                           dirac_cfg_overlap_diagnostic)
         end if
 
-#ifdef MOD_UNRELEASED
-!!!!!!
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
-
-           if (.not.dirac_cfg_dft_calculation) then
-              call genden(fao, cmo, 1, iprint)
-           endif
-
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call integrate_fde(fde_mat_dim            = ntbas(0),
-     &                       fde_nz                 = nz,
-     &                       fde_dmat_0             = fao, 
-     &                       fde_nr_dmat            = 0,
-     &                       fde_nr_fmat            = 1,
-     &                       fde_fmat               = fmo,
-     &                       fde_do_potential       = .true.)
-
-        endif
-!!!!!
-#endif
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================

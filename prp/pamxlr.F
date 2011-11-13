@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1731,9 +1729,6 @@ C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
 
-#ifdef MOD_UNRELEASED
-      use overlap_diagnostic
-#endif
       use dirac_cfg
 
 #include "implicit.h"
@@ -1754,11 +1749,6 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
-#ifdef MOD_UNRELEASED
-      if (dirac_cfg_overlap_diagnostic) then
-         call o_matrix_from_disc()
-      end if
-#endif
 
 C
 C     Check if file of solution vectors is present
@@ -1968,9 +1958,6 @@ C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
 
-#ifdef MOD_UNRELEASED
-      use overlap_diagnostic
-#endif
       use dirac_cfg
 
 #include "implicit.h"
@@ -2153,30 +2140,6 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
-#ifdef MOD_UNRELEASED
-        if (dirac_cfg_overlap_diagnostic) then
-           lambda_numerator   = 0.0d0
-           lambda_denominator = 0.0d0
-           do j = nbdim, 1, -1
-              jj = indx(j)
-              i1 = jxop(1, jj)
-              i2 = jxop(2, jj)
-              call sum_lambda(lambda_numerator,  
-     &                        lambda_denominator,
-     &                        iorbcl(2, i1),            
-     &                        iorbcl(2, i2),        
-     &                        iorbcl(3, i1),
-     &                        iorbcl(3, i2),
-     &                        buf2(jj))
-           enddo
-           write(lupri, '(a)') '   PBHT MO Overlap Diagnostic'
-           write(lupri, '(a)') '     ref.: M. J. G. Peach, '//
-     &        'P. Benfield, T. Helgaker, and D. J. Tozer'
-           write(lupri, '(a44)') 'J. Chem. Phys. 128, 044118 (2008)'
-           write(lupri, '(a, f8.5)') '     lambda = ', 
-     &        lambda_numerator/lambda_denominator
-        end if
-#endif
       ENDIF
  20   CONTINUE
       ENDDO

@@ -1,7 +1,0 @@
-$ERROR 1.E-6
-FromRE:dg Alpha
-ToRE:SCR
-
-$ERROR 1.E-6
-FromRE:Gamma
-ToRE: total

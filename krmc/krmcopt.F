@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C FILE    : krmcopt.F
 C
@@ -113,23 +111,7 @@ C
 C     ... default quadratic conv. factor for MCSCF
 
 !     set logical flag on common block in dcbopt.h for spinfree MCSCF
-#ifdef MOD_MCSCF_spinfree
-!     if(spinfr.or.levyle)then
-      if(spinfr)then
-        spinfr_krmc = .true.
-      else if(levyle)then
-!       fixme: already the initial CI using Levy-Leblond yields
-!              wrong results compared to Dalton. S. Knecht - Aug 2010
-        write(lupri,*) ' *** error in KRMCSCF: MCSCF with
-     &            Levy-Leblond Hamiltonian is not working.***'
-        call quit('*** error in KRMCSCF: MCSCF with '//
-     &            'Levy-Leblond Hamiltonian is not working.***')
-      else
         spinfr_krmc = .false.
-      end if
-#else
-        spinfr_krmc = .false.
-#endif
 cdebug
 c     opt_ucibos = .false.
 cdebug

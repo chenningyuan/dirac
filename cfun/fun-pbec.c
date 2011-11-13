@@ -1,4 +1,3 @@
-/* dalton_copyright_start */
 /*
  *     Copyright (c) 2011 by the authors of Dalton (see below).
  *     All Rights Reserved.
@@ -21,7 +20,6 @@
  *     For further information, including how to get a licence, see:
  *        http://daltonprogram.org
  */
-/* dalton_copyright_end */
 
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-pbec.c:

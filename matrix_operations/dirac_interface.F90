@@ -280,9 +280,6 @@ contains
 
   subroutine init_dirac_interface()
 
-#ifdef MOD_OPENRSP
-    use openrsp_cfg
-#endif
 
 !   ----------------------------------------------------------------------------
     integer :: ill_int
@@ -340,16 +337,6 @@ contains
         include_gt_integrals = .true.
       end if
 
-#ifdef MOD_OPENRSP
-      if (.not. openrsp_cfg_skip_pp) then
-        include_pp_rotations = .true.
-      end if
-
-      if (nonzero_small_metric .and. .not. openrsp_cfg_skip_pn) then
-        include_pn_rotations = .true.
-        diamagnetic_via_pn   = .true.
-      end if
-#endif
 
       openrsp_levy_leblond = levyle
       openrsp_spinfree     = spinfr

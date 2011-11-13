@@ -15,13 +15,6 @@ module xcint_main
    use xc_blas3
    use xc_max_block_length
    use xc_geometric
-#ifdef MOD_UNRELEASED
-   use overlap_diagnostic
-   use xc_london_c1
-#endif
-#ifdef MOD_OPENRSP
-   use xc_response
-#endif
    use xc_mpi
 #ifdef MOD_XCFUN
    use xcfun
@@ -291,7 +284,6 @@ contains
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
       end if
 
-#ifndef MOD_UNRELEASED
       if (do_london_rhs_direct .or. &
           do_london_rhs_ro     .or. &
           do_london_ks         .or. &
@@ -303,7 +295,6 @@ contains
          print *, 'error: overlap diagnostic not available in this version'
          stop 1
       end if
-#endif
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -454,12 +445,10 @@ contains
       end if
 #endif
 
-#ifndef MOD_UNRELEASED
       if (fun_is_tau_mgga(xc_fun)) then
          print *, 'error: meta-GGA not available in this version'
          stop 1
       end if
-#endif
 
 !     check whether gga code structure will be used
       use_gga_qr = (fun_is_gga(xc_fun) .or. fun_is_tau_mgga(xc_fun))
@@ -583,26 +572,9 @@ contains
       fmat = 0.0d0
 #endif
 
-#ifdef MOD_UNRELEASED
-      if (do_overlap_diagnostic) then
-         call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
-      end if
-#endif
 
       call loop_over_batches()
 
-#ifdef MOD_UNRELEASED
-      if (do_overlap_diagnostic) then
-#ifdef VAR_MPI
-         if (parallel_xc) then
-            call overlap_diagnostic_collect(xc_mpi_is_master())
-         end if
-#endif
-         if (xc_mpi_is_master()) then
-            call o_matrix_to_disc()
-         end if
-      end if
-#endif
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -912,21 +884,11 @@ contains
     end if
 
 #ifdef MOD_XCFUN
-#ifdef MOD_OPENRSP
-    if (response_order_ao > 0) then
-      derv_length = xc_output_length(xc_fun%id, response_order_ao)
-      allocate(derv(derv_length, max_block_length))
-      allocate(derv_nadd(derv_length, max_block_length))
-    else
-#endif
 #endif
       derv_length = nr_nonzero_derv
       allocate(derv(max_block_length, 0:derv_length))
       allocate(derv_nadd(max_block_length, 0:derv_length))
 #ifdef MOD_XCFUN
-#ifdef MOD_OPENRSP
-    end if
-#endif
 #endif
 
 !       better safe than sorry
@@ -983,11 +945,6 @@ contains
                                     xc_energy                 &
                                    )
 
-#ifdef MOD_UNRELEASED
-         if (do_overlap_diagnostic) then
-            call integrate_o_matrix(block_length, rw(ipoint), ao)
-         end if
-#endif
 
          deallocate(ao)
          deallocate(buffer)
@@ -1045,28 +1002,12 @@ contains
 
          w(1) = rw(ipoint)
 
-#ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(tau,     &
-                         0,       &
-                         mat_dim, &
-                         dmat_0,  &
-                         buffer,  &
-                         ao)
-            tau_integral = tau_integral + w(1)*tau
-         end if
-#endif /* ifdef MOD_UNRELEASED */
 
 !       number of electrons
         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
         
         time_derv_start = second()
 #ifdef MOD_XCFUN
-#ifdef MOD_OPENRSP
-!       if we run openrsp with xcfun we evaluate derivatives
-!       somewhere else
-        if (response_order_ao == 0) then
-#endif
 #endif
           call get_functional_derv(xc_fun,                    &
                                    xc_fun_alda,               &
@@ -1084,9 +1025,6 @@ contains
                                    tau=(/tau/))
 
 #ifdef MOD_XCFUN
-#ifdef MOD_OPENRSP
-        end if
-#endif
 #endif
         time_derv = time_derv + second() - time_derv_start
 
@@ -1129,89 +1067,11 @@ contains
 !           yields two identical terms (one left, one right)
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
-#ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga(xc_fun)) then
-            u%tn(1) = derv(1, d0000010)
-         end if
-#endif
 
         end if !exchange-correlation potential
 
 
 
-#ifdef MOD_UNRELEASED
-!       direct-lao contribution to differentiated kohn-sham matrix
-!       ==========================================================
-
-!       gosia: this part is correct only for closed-shell systems
-!       some xc contributions to differentiated Fock matrix have not been
-!       programmed as for closed-shell systems they are = 0 by definition
-
-        if (do_london_rhs_direct) then
-            if (use_gga) then
-              call gga_london_distribute_r(derv(1, d1000000),                 &
-                                           2.0d0*derv(1, d0010000),           &
-                                           gn_0_pointwise,                    &
-                                           fmat_pg_sym,                       &
-                                           mat_dim,                           &
-                                           nz,                                &
-                                           fmat,                              &
-                                           ao, &
-                                           rx(ipoint), ry(ipoint), rz(ipoint))
-            else
-              call lda_london_distribute_r(derv(1, d1000000),                 &
-                                           fmat_pg_sym,                       &
-                                           mat_dim,                           &
-                                           nz,                                &
-                                           fmat,                              &
-                                           ao,                                &
-                                           rx(ipoint), ry(ipoint), rz(ipoint))
-            end if
-
-          end if
-
-
-!       london reorthogonalization spin density contribution
-!       ====================================================
-
-        if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
-           call lr_sdft_lao_reorth(bllen,          &
-                                   mat_dim,        &
-                                   nz,             &
-                                   ao,             &
-                                   n_0,            &
-                                   gn_0_pointwise, &
-                                   gnn_0,          &
-                                   w,              &
-                                   use_gga_qi,     &
-                                   dmat,           &
-                                   dmat_pg_sym,    &
-                                   buffer,         &
-                                   derv_length,    &
-                                   derv, u)
-        end if
-
-
-!       london direct spin density contribution
-!       =======================================
-
-        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
-!radovan: this code is commented and tests pass, strange
-              !call lr_sdft_lao_direct(bllen,          &
-              !                        mat_dim,        &
-              !                        nz,             &
-              !                        ao,             &
-              !                        n_0,            &
-              !                        gn_0_pointwise, &
-              !                        gnn_0,          &
-              !                        w,              &
-              !                        use_gga_qi,     &
-              !                        buffer,         &
-              !                        derv_length,    &
-              !                        derv, u,        &
-              !                        rx(ipoint), ry(ipoint), rz(ipoint))
-        end if
-#endif /* #ifdef MOD_UNRELEASED */
 
 
 !       linear response
@@ -1286,30 +1146,6 @@ contains
 
 
 #ifdef MOD_XCFUN
-#ifdef MOD_OPENRSP
-          if (response_order_ao > 0) then
-            call xc_response_contribution(response_order_ao,                 &
-                                          mat_dim,   &
-                                          nz,        &
-                                          fmat,      &
-                                          nr_dmat, &
-                                          dmat,    &
-                                          dmat_pg_sym,      &
-                                          dmat_ih_sym,      &
-                                          fmat_pg_sym,      &
-                                          use_gga,                           &
-                                          ao, &
-                                          n_0(1),                            &
-                                          gn_0_pointwise,                               &
-                                          rx(ipoint),                      &
-                                          ry(ipoint),                      &
-                                          rz(ipoint),                      &
-                                          w(1),                              &
-                                          buffer, &
-                                          derv_length,  &
-                                          derv)
-          end if
-#endif
 #endif
 
           if (do_geo_0) then
@@ -1330,96 +1166,6 @@ contains
              end if
           end if
 
-#ifdef MOD_UNRELEASED
-          if (do_geo_1) then
-             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
-             call xc_geo_1_lda_c1(property_gradient, &
-                                  derv(1, d1000000),      &
-                                  derv(1, d2000000),     &
-                                  r_t1(1),           &
-                                  mat_dim,           &
-                                  dmat_0,            &
-                                  tmat_1,            &
-                                  ao)
-          end if
-
-          if (do_geo_2) then
-             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
-             call get_n(r_t2(1), 0, mat_dim, tmat_2, buffer, ao)
-             call xc_geo_2_lda_c1(property_gradient, &
-                                  derv(1, d2000000),     &
-                                  derv(1, d3000000),    &
-                                  r_t1(1),           &
-                                  r_t2(1),           &
-                                  mat_dim,           &
-                                  dmat_0,            &
-                                  tmat_1,            &
-                                  tmat_2,            &
-                                  ao)
-          end if
-
-          if (do_london_ks) then
-             if (use_gga) then
-                call xc_london_c1_ks_gga(derv(1, d1000000),               &
-                                         derv(1, d0010000),               &
-                                         gn_0_pointwise,                             &
-                                         mat_dim,                         &
-                                         nz,                              &
-                                         fmat,                            &
-                                         ao,                              &
-                                         (/rx(ipoint), ry(ipoint), rz(ipoint)/))
-             else
-                call xc_london_c1_ks_lda(derv(1, d1000000), &
-                                         mat_dim,           &
-                                         nz,                &
-                                         fmat,              &
-                                         ao,                &
-                                         (/rx(ipoint), ry(ipoint), rz(ipoint)/))
-             end if
-          end if
-
-          if (do_london_lr) then
-             if (use_gga) then
-                call xc_london_c1_lr_gga_densities(mat_dim,                         &
-                                                   nz,                              &
-                                                   dmat,                            &
-                                                   ao,                              &
-                                                 (/rx(ipoint),                      &
-                                                   ry(ipoint),                      &
-                                                   rz(ipoint)/),                    &
-                                                   gn_0_pointwise,                            &
-                                                   n_b,                             &
-                                                   gn_b,                            &
-                                                   gnn_b)
-             else
-                call xc_london_c1_lr_lda_densities(mat_dim,      &
-                                                   nz,           &
-                                                   dmat,         &
-                                                   ao,           &
-                                                 (/rx(ipoint),   &
-                                                   ry(ipoint),   &
-                                                   rz(ipoint)/), &
-                                                   n_b)
-             end if
-!radovan:    a short explanation of what is happening here
-!            (because this is done differently than in Dalton):
-!            the above routines evaluate magnetic field derivatives
-!            (there are three: im = 1, 3)
-!            of perturbed density variables using the transition density matrix dmat
-!            next we form u%n and u%gn and distribute over matrices
-!            as if it was a normal linear response run
-!            this makes the otherwise very lengthy operation rather compact
-             do im = 1, 3
-                u%n(im) = derv(1, d2000000)*n_b(im)
-                if (use_gga) then
-                   u%n(im) = u%n(im) + derv(1, d1010000)*gnn_b(im)
-                   u%gn(1:3, im) = 2.0d0*gn_0_pointwise(1:3)*n_b(im)*derv(1, d1010000)   &
-                                 + 2.0d0*gn_0_pointwise(1:3)*gnn_b(im)*derv(1, d0020000) &
-                                 + 2.0d0*gn_b(1:3, im)*derv(1, d0010000)
-                end if
-             end do
-          end if
-#endif /* ifdef MOD_UNRELEASED */
 
 
 
@@ -1508,120 +1254,6 @@ contains
                 end if
              end if
 
-#ifdef MOD_UNRELEASED
-             utn_above_threshold = .false.
-             if (dabs(u%tn(im)) > tiny(0.0d0)) then
-                utn_above_threshold = .true.
-             end if
-
-             if (utn_above_threshold) then
-!               F_pq += 0.5 u%tn (\nabla_i \chi_p*) (\nabla_i \chi_q)
-                call omega_real(fmat,                &
-                                im,                  &
-                                fmat_pg_sym(im) - 1, &
-                                mat_dim,             &
-                                nz,                  &
-                                0.5d0*u%tn(im),      &
-                                ao(1, ao_off_g1_m0(1, 0) + 1))
-                call omega_real(fmat,                &
-                                im,                  &
-                                fmat_pg_sym(im) - 1, &
-                                mat_dim,             &
-                                nz,                  &
-                                0.5d0*u%tn(im),      &
-                                ao(1, ao_off_g1_m0(2, 0) + 1))
-                call omega_real(fmat,                &
-                                im,                  &
-                                fmat_pg_sym(im) - 1, &
-                                mat_dim,             &
-                                nz,                  &
-                                0.5d0*u%tn(im),      &
-                                ao(1, ao_off_g1_m0(3, 0) + 1))
-             end if
-
-             uts_above_threshold = .false.
-             if (maxval((/dabs(u%ts(1, im)), &
-                          dabs(u%ts(2, im)), &
-                          dabs(u%ts(3, im))/)) > tiny(0.0d0)) then
-                uts_above_threshold = .true.
-             end if
-
-             if (uts_above_threshold) then
-!               F_pq += 0.5 u%ts_j (\nabla_i \chi_p*) \Sigma_j (\nabla_i \chi_q)
-                u%ts(:, im) = 0.5d0*u%ts(:, im)
-                call omega_imag(fmat,                &
-                                im,                  &
-                                fmat_pg_sym(im) - 1, &
-                                mat_dim,             &
-                                nz,                  &
-                                u%ts(1, im),         &
-                                ao(1, ao_off_g1_m0(1, 0) + 1))
-                call omega_imag(fmat,                &
-                                im,                  &
-                                fmat_pg_sym(im) - 1, &
-                                mat_dim,             &
-                                nz,                  &
-                                u%ts(1, im),         &
-                                ao(1, ao_off_g1_m0(2, 0) + 1))
-                call omega_imag(fmat,                &
-                                im,                  &
-                                fmat_pg_sym(im) - 1, &
-                                mat_dim,             &
-                                nz,                  &
-                                u%ts(1, im),         &
-                                ao(1, ao_off_g1_m0(3, 0) + 1))
-             end if
-
-!gosia:
-!sdft+lao now separately, later will be moved to u%s and u%gs,
-!now i left it separately for debugging
-
-!radovan: this code does not seem to be covered by any test, is this true?
-
-             us_lao_above_threshold = .false.
-             if (maxval((/dabs(u%s_lao(1, im)), &
-                          dabs(u%s_lao(2, im)), &
-                          dabs(u%s_lao(3, im))/)) > tiny(0.0d0)) then
-                us_lao_above_threshold = .true.
-             end if
-
-             ugs_lao_above_threshold = .false.
-             if (maxval((/dabs(u%gs_lao(1, 1, im)), &
-                          dabs(u%gs_lao(1, 2, im)), &
-                          dabs(u%gs_lao(1, 3, im)), &
-                          dabs(u%gs_lao(2, 1, im)), &
-                          dabs(u%gs_lao(2, 2, im)), &
-                          dabs(u%gs_lao(2, 3, im)), &
-                          dabs(u%gs_lao(3, 1, im)), &
-                          dabs(u%gs_lao(3, 2, im)), &
-                          dabs(u%gs_lao(3, 3, im))/)) > tiny(0.0d0)) then
-                ugs_lao_above_threshold = .true.
-             end if
-
-             if (ugs_lao_above_threshold) then
-                call nabla_omega_imag(fmat,                &
-                                      im,                  &
-                                      fmat_pg_sym(im) - 1, &
-                                      mat_dim,             &
-                                      nz,                  &
-                                      u%s_lao(1, im),      &
-                                      u%gs_lao(1, 1, im),  &
-                                      ao)
-             else
-                if (us_lao_above_threshold) then
-!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
-                   call omega_imag(fmat,                &
-                                   im,                  &
-                                   fmat_pg_sym(im) - 1, &
-                                   mat_dim,             &
-                                   nz,                  &
-                                   u%s_lao(1:3, im),    &
-                                   ao)
-                end if
-             end if
-!end gosia
-
-#endif /* ifdef MOD_UNRELEASED */
 
           end do
 
@@ -1904,16 +1536,6 @@ contains
 !     hermitian contribution (qr = quaternion real)
       if (calculate_qr) then
 
-#ifdef MOD_UNRELEASED
-         if (fun_is_tau_mgga(xc_fun)) then
-            call get_tau(t_b,     &
-                         isym(im) - 1,             &
-                         mat_dim, &
-                         dmaterturbed(1 + im_off), &
-                         buffer,  &
-                         ao)
-         end if
-#endif /* ifdef MOD_UNRELEASED */
 
          if (is_gga_qr) then
             if (allow_nonhermitian) then
@@ -1956,15 +1578,6 @@ contains
                                          + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
-#ifdef MOD_UNRELEASED
-        if (fun_is_tau_mgga(xc_fun)) then
-           u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
-           u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
-           u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
-           u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
-           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
-        end if
-#endif /* ifdef MOD_UNRELEASED */
 
       end if !end of qr contribution
 
@@ -1998,16 +1611,6 @@ contains
                    buffer,                     &
                    ao)
         end if
-#ifdef MOD_UNRELEASED
-        if (fun_is_tau_mgga(xc_fun)) then
-           call get_tau_imag(ts_b,     &
-                             isym(im) - 1,             &
-                             mat_dim, &
-                             dmaterturbed(1 + im_off), &
-                             buffer,  &
-                             ao)
-        end if
-#endif /* ifdef MOD_UNRELEASED */
 
         do k = k_start, 3
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
@@ -2023,15 +1626,6 @@ contains
                                                   +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
-#ifdef MOD_UNRELEASED
-           if (fun_is_tau_mgga(xc_fun)) then
-              u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
-              u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
-              u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
-              u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
-              u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
-           end if
-#endif /* ifdef MOD_UNRELEASED */
         end do
 
       end if !end of qi contribution

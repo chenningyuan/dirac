@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module visual
 
@@ -29,10 +27,6 @@ module visual
   use matrix_defop
   use matrix_genop, only: copy_matrix_sym
   use dirac_interface
-#ifdef MOD_UNRELEASED
-  use visual_london
-  use xc_london_c1
-#endif
   use visual_integrate
   use visual_in_point
 
@@ -215,68 +209,6 @@ contains
 
     call init_mat(D_mo, norbt, norbt)
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-
-       D_mo%elms = 0.0d0
-       do m = 1, norbt
-          D_mo%elms((m - 1)*norbt + m) = occupation(m)
-       end do
-       D(imat) = C*(D_mo*dag(C))
-
-       D_0 = C*(D_mo*dag(C))
-       D_0 = 2.0d0*D_0
-
-
-!      get T^B matrix in MO basis
-
-       call init_mat(D_con_mo, norbt, norbt)
-       D_con_mo%elms = 0.0d0
-
-       if (visual_cfg_london_none) then
-
-          call init_mat(D_con_mo_ai, norbt, norbt)
-          D_con_mo_ai%elms = 0.0d0
-
-          call get_d_con_mo(D_con_mo, &
-                            D_con_mo_ai = D_con_mo_ai)
-
-          call copy_matrix_sym(D_con_mo_ai, D_con_mo)
-
-       else
-
-          call get_d_con_mo(D_con_mo)
-
-       end if
-
-       if (.not. levyle) then
-!         radovan: magic factor for levyle
-!                  need to find the reason for it
-          D_con_mo = 0.5d0*D_con_mo
-          if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
-       end if       
-
-
-!      build 'modified' (by T^B) density matrices:
-
-       call init_mat(D_con, norbt, norbt)
-       D_con%elms = 0.0d0
-       call copy_matrix_sym(D_con, D_con_mo)
-
-       if (nfsym == 2) then
-          call get_mdm_con(D_con,                     &
-                           D_con_mo,                  &
-                           C, Cig, Csg,               &
-                           Ciu = Ciu,                 &
-                           Csu = Csu)
-       else
-          call get_mdm_con(D_con,                     &
-                           D_con_mo,                  &
-                           C, Cig, Csg)
-       end if
-
-    end if
-#endif
 
     do imat = 1, visual_cfg_nr_dmat
 
@@ -352,23 +284,6 @@ contains
     end if
 
     do imat = 1, visual_cfg_nr_dmat
-#ifdef MOD_UNRELEASED
-       if (visual_cfg_london) then
-          if (visual_cfg_london_skip_kappa) then
-!            zero out kappa contribution
-!            this is useful to isolate direct and/or reortho contributions
-             D(imat) = tiny(0.0d0)*D(imat)
-          end if
-
-          if (.not. visual_cfg_london_skip_ro) then
-!            dirty trick add D_con on top of D
-!            on trunk we will have to check that this only
-!            happes to the current, mag field, and so on
-             D(imat) = D(imat) + D_con
-          end if
-
-       end if
-#endif
 
 !      scale density matrix
        D(imat) = 2.0d0*D(imat)
@@ -417,13 +332,6 @@ contains
     call alloc(ao,     nr_ao_slices*nr_ao_cartesian)
     call alloc(buffer, nr_ao_slices*nr_ao_cartesian)
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-       D_con_mo = 0
-       D_con    = 0
-       if (visual_cfg_london_none) D_con_mo_ai = 0
-    end if
-#endif
 
 
 !   plot and integrate
@@ -458,11 +366,6 @@ contains
     do imat = 1, visual_cfg_nr_dmat
        D(imat) = 0
     end do
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-       D_con = 0
-    end if
-#endif
 
     end subroutine
 

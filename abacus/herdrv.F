@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C
 C
@@ -114,10 +112,6 @@ C
         DIRAC  = .FALSE.
         SUPMAT = .NOT. DIRCAL
       ENDIF
-#ifdef MOD_DNF
-C     Initialize defaults for density fitting
-      CALL DFIINI
-#endif
 
 C#ifdef MOD_ERI
       RUNERI = .FALSE.
@@ -238,9 +232,6 @@ C         if reading input from a terminal
          GOTO 1
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
-#ifdef MOD_ERI
-         CALL ER2INI
-#endif
          WORD = '*END OF'
          GOTO 1
   930 CONTINUE
@@ -649,31 +640,12 @@ C&&& MAGCOR - print magnetic coordinates
             GO TO 100
  179     CONTINUE
 C&&& JENGIN - activate J-engine
-#ifdef MOD_ERI
-            DOFCK3=.TRUE.
-#endif
             GO TO 100
  180     CONTINUE
 C&&& RUNERI - activates ERI code
-#ifdef MOD_ERI
-            RUNERI=.TRUE.
-#endif
             GO TO 100
  181     CONTINUE
-#ifdef MOD_ERI
-CC&&&& DOLINK - activates the fast exchange code
-            DOLINK = .TRUE. 
-            GO TO 100
-#endif 
  182     CONTINUE
-#ifdef MOD_ERI
-#ifdef MOD_DNF
-CC&&&& DENSFIT: Density fitting (Not yet implemented)
-            DOFIT = .TRUE.
-            DOFCK3 = .TRUE.
-            GO TO 100
-#endif
-#endif
  183     CONTINUE
 
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -687,27 +659,6 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
-#ifdef MOD_ERI
-      IF (RUNERI) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     ' Integrals are calculated using ERI '//
-     &     'instead of HERMIT (where possible)'
-      ENDIF
-      IF (DOFCK3) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     'J-engine (FCK3) used for Coulomb'
-      ENDIF
-      IF (DOLINK) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     'LinK scheme for exchange'
-      ENDIF
-#ifdef MOD_DNF
-      IF (DOFIT) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     'Density-fitted Coulomb contribution'
-      ENDIF
-#endif
-#endif
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
      &    'Gaussian charge distribution.'
@@ -967,9 +918,6 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
-#ifdef MOD_ERI
-      CALL ER2INI
-#endif
  201  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -1006,23 +954,10 @@ C
       CALL QUIT('No ERI 2-el. integrals in parallel code')
 #else
     6   CONTINUE
-#ifdef MOD_ERI
-        CALL ER2INP(WORD)
-#endif
       GO TO 201
 #endif
     7    CONTINUE
-#ifdef MOD_ERI
-C&&& JENGINE: Read input for J-engine for Coulom contribution
-        CALL FCK3INP(WORD)
-      GO TO 201
-#endif
     8    CONTINUE
-#ifdef MOD_DNF
-C&&& JENGINE: Read input for density fitting 
-        CALL DFIINP(WORD)
-      GO TO 201
-#endif
     9    CONTINUE
       GO TO 201
 C
@@ -1033,10 +968,6 @@ C
 #ifndef PRG_DIRAC
       CALL HRSINP(WORD)
 #endif /* ifndef PRG_DIRAC */
-#ifdef MOD_ERI
-      CALL ER2INP(WORD)
-      IF (DOFCK3) CALL FCK3INP(WORD)
-#endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
 C     kr and vb, April-96
@@ -2294,31 +2225,9 @@ C     ********************************
 C     ***** New integral program *****
 C     ********************************
 C
-#ifdef MOD_ERI
-      IF (RUNERI) THEN
-#endif
 #if defined (VAR_MPI)
       CALL QUIT('No ERI 2-el. integrals in parallel version')
 #else
-#ifdef MOD_ERI
-         IF (IPRDEF .GT. 0) CALL TITLER('Output from ER2INT','*',126)
-C
-C        ********************************************
-C        ***** Two-electron repulsion integrals *****
-C        ********************************************
-C
-         IF (HAMILT) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            IRNTYP = 0
-            IF (DISTST) THEN
-CTROND               CALL ER2DIS(WORK,LWORK)
-            ELSE
-CTROND               CALL ER2INT(WORK,LWORK)
-            END IF
-            CALL TIMER('ERIDRV',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-         END IF
-#endif
 #endif
       END IF
 C

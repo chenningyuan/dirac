@@ -1,4 +1,3 @@
-/* dirac_copyright_start */
 /*
  *     Copyright (c) 2011 by the authors of DIRAC.
  *     All Rights Reserved.
@@ -19,7 +18,6 @@
  *     author list and the complete list of contributors to the
  *     DIRAC program, see: http://dirac.chem.vu.nl
  */
-/* dirac_copyright_end */
 
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* functionals.c:
@@ -87,12 +85,6 @@ Functional* available_functionals[] = {
     &RPBEFunctional,
     &SVWN3Functional,
     &SVWN5Functional,
-#ifdef MOD_UNRELEASED
-    /* range-separated fnuctionals */
-    &SRVWN5Functional,
-    &HjsxFunctional,
-    &SrpbecFunctional,
-#endif
     NULL
 };
 

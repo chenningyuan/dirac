@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -39,11 +37,6 @@ C***********************************************************************
 
          use dirac_cfg
          use input_reader
-#ifdef MOD_OPENRSP
-         use dirac_interface
-         use openrsp_cfg
-         use openrsp_interface_1el
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -226,10 +219,6 @@ C&&&& POLAR - electronic dipole polarizabilities
             GO TO 100
   104    CONTINUE
 C&&&& MAGNET - magnetic susceptibilities
-#ifdef MOD_MAGNETIZ
-            DOXLR  = .TRUE.
-            MSUSCP = .TRUE.
-#endif
             GO TO 100
   105    CONTINUE
 C&&&& NMR parameters:
@@ -352,10 +341,6 @@ CMI ... at present it is not implemented
             GO TO 100
   127    CONTINUE 
 C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
-#ifdef MOD_MAGNETIZ
-            MSUSCDIA = .TRUE.
-            DOEXP    = .TRUE.
-#endif
             GO TO 100
   128    CONTINUE 
 C&&&& PV contribution to spin-spin coupling
@@ -519,11 +504,7 @@ CMI ... changed for LAO-based magnetic properties
         GO TO 200
 
     7 CONTINUE
-#ifdef MOD_ESR
-        CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
-#else
         CALL QUIT('*ESR    not included in this version')
-#endif
         GO TO 200
     8 CONTINUE
          CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
@@ -535,18 +516,7 @@ C     *STEX
 
 !     *OPENRSP    
    10 continue
-#ifdef MOD_OPENRSP
-         dirac_cfg_openrsp = .true.
-         call init_dirac_interface()
-         call move_to_next_star(word)
-         if (openrsp_cfg_skip_1el) then
-            write(*, *) 'OpenRSP: skipping calculation of 1el integrals'
-         else
-            call order_1el_integrals()
-         end if
-#else
          call quit('*OpenRSP not included in this version')
-#endif
       go to 200
 
     1 CONTINUE
@@ -563,9 +533,6 @@ CMI ... read again the input
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
-#ifdef MOD_ESR
-      IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 C===========================================================================
 C Define special operators for the list of properties programmed in DIRAC
 C===========================================================================

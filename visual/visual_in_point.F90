@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module visual_in_point
 
@@ -30,10 +28,6 @@ module visual_in_point
   use ao_eval
   use density_eval
   use matrix_defop
-#ifdef MOD_UNRELEASED
-  use visual_london
-  use xc_london_c1
-#endif
 
   implicit none
 
@@ -195,24 +189,6 @@ contains
                              buffer,       &
                              ao)
                end if
-#ifdef MOD_UNRELEASED
-               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-                  if (levyle) then
-                     call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
-                                       ntbas(0),                      &
-                                       ao, &
-                                       (/px, py, pz/),                &
-                                       v2)
-                  else
-                     call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
-                                    ntbas(0),                      &
-                                    ao, &
-                                    (/px, py, pz/),                &
-                                    v2)
-                  end if
-                  v = v + v2
-               end if
-#endif
                result(1:3) = result(1:3) + v(1:3)
             end if
             
@@ -265,23 +241,6 @@ contains
                            buffer,       &
                            ao)
 
-#ifdef MOD_UNRELEASED
-               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-                  if (levyle) then
-                     print *, 'error: Levy-Leblond divj and rotj not implemented'
-                     stop
-                  else
-                     call get_gjblao(visual_cfg_london_component, &
-                                     cval,                        &
-                                     D_0%elms,                    &
-                                     ntbas(0),                    &
-                                     ao,                          &
-                                     (/px, py, pz/),              &
-                                     temp_33)
-                  end if
-                  matrix_33 = matrix_33 + temp_33
-               end if
-#endif
 
                if (visual_cfg_property(imat) == iq_divj) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
@@ -390,24 +349,6 @@ contains
                              buffer,       &
                              ao)
                end if
-#ifdef MOD_UNRELEASED
-               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-                  if (levyle) then
-                     call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
-                                       ntbas(0),                      &
-                                       ao, &
-                                       (/px, py, pz/),                &
-                                       v2)
-                  else
-                     call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
-                                    ntbas(0),                      &
-                                    ao, &
-                                    (/px, py, pz/),                &
-                                    v2)
-                  end if
-                  v = v + v2
-               end if
-#endif
             
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
                ry = py - cord(2, visual_cfg_ref_nucleus(imat))
@@ -434,17 +375,7 @@ contains
                if (nr_boson_ireps > 1) then
                   call quit('visualization of nuclear magnetic dipole only works with C1 symmetry')
                end if
-#ifdef MOD_UNRELEASED
-               call j_dia(matrix_33,               &
-                          visual_cfg_london,       &
-                          visual_cfg_gauge_origin, &
-                          D(imat)%nrow,            &
-                          D(imat)%elms,            &
-                          ao,                      &
-                          (/px, py, pz/))
-#else
                call quit('ndip dia not part of this released version')
-#endif
 
                if (visual_cfg_property(imat) == iq_ndipxdia) i = 1
                if (visual_cfg_property(imat) == iq_ndipydia) i = 2

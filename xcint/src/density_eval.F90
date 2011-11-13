@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module density_eval
 
@@ -47,11 +45,6 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
-#ifdef MOD_UNRELEASED
-   public get_jblao
-   public get_gjblao
-   public get_jblao_ll
-#endif
 
    private
 
@@ -1259,190 +1252,5 @@ contains
 
    end subroutine
 
-#ifdef MOD_UNRELEASED
-   subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
-
-!     --------------------------------------------------------------------------
-      character, intent(in)  :: perturbation_component
-      real(8),   intent(in)  :: cval
-      integer,   intent(in)  :: mat_dim
-      real(8),   intent(in)  :: D_0(mat_dim, mat_dim, *)
-      real(8),   intent(in)  :: ao(*)
-      real(8),   intent(in)  :: r(3)
-      real(8),   intent(out) :: j(3)
-!     --------------------------------------------------------------------------
-      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
-      real(8)                :: f
-!     --------------------------------------------------------------------------
-
-      select case (perturbation_component)
-         case ('X')
-            b = 2
-            c = 3
-         case ('Y')
-            b = 3
-            c = 1
-         case ('Z')
-            b = 1
-            c = 2
-      end select
-    
-      j = 0.0d0
-
-      do ixyz = 1, 3
-         do iblock = 1, nr_ao_blocks
-            nr1 = ao_block_nr(iblock)
-            st1 = ao_block_start(iblock)
-            nr2 = ao_block_nr(lssl_block_partner(iblock, ixyz, 0))
-            st2 = ao_block_start(lssl_block_partner(iblock, ixyz, 0))
-            if ((nr1 < 1) .or. (nr2 < 1)) cycle
-            do k = st1, st1 + nr1 - 1
-               do l = st2, st2 + nr2 - 1
-                  f = (r(c)*ao(ao_off_g0_m1(0, b) + l) &
-                     - r(b)*ao(ao_off_g0_m1(0, c) + l))*ao(k) &
-                    - (r(c)*ao(ao_off_g0_m1(0, b) + k) &
-                     - r(b)*ao(ao_off_g0_m1(0, c) + k))*ao(l)
-                  
-                  j(ixyz) = j(ixyz) + f*D_0(l, k, iq(ixyz))
-               end do
-            end do
-         end do
-      end do
-
-      j = -0.5d0*cval*j
-
-   end subroutine
-
-   subroutine get_gjblao(perturbation_component, cval, D_0, mat_dim, ao, r, gj)
-
-!     --------------------------------------------------------------------------
-      character, intent(in)  :: perturbation_component
-      real(8),   intent(in)  :: cval
-      integer,   intent(in)  :: mat_dim
-      real(8),   intent(in)  :: D_0(mat_dim, mat_dim, *)
-      real(8),   intent(in)  :: ao(*)
-      real(8),   intent(in)  :: r(3)
-      real(8),   intent(out) :: gj(3, 3)
-!     --------------------------------------------------------------------------
-      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz, jxyz
-      real(8)                :: f
-!     --------------------------------------------------------------------------
-
-      select case (perturbation_component)
-         case ('X')
-            b = 2
-            c = 3
-         case ('Y')
-            b = 3
-            c = 1
-         case ('Z')
-            b = 1
-            c = 2
-      end select
-    
-      gj = 0.0d0
-
-      do ixyz = 1, 3
-         do iblock = 1, nr_ao_blocks
-            nr1 = ao_block_nr(iblock)
-            st1 = ao_block_start(iblock)
-            nr2 = ao_block_nr(lssl_block_partner(iblock, ixyz, 0))
-            st2 = ao_block_start(lssl_block_partner(iblock, ixyz, 0))
-            if ((nr1 < 1) .or. (nr2 < 1)) cycle
-            do jxyz = 1, 3
-               do k = st1, st1 + nr1 - 1
-                  do l = st2, st2 + nr2 - 1
-                  f = (r(c)*ao(ao_off_g0_m1(0, b) + l) &
-                     - r(b)*ao(ao_off_g0_m1(0, c) + l))*ao(ao_off_g1_m0(jxyz, 0) + k) &
-                    - (r(c)*ao(ao_off_g0_m1(0, b) + k) &
-                     - r(b)*ao(ao_off_g0_m1(0, c) + k))*ao(ao_off_g1_m0(jxyz, 0) + l) &
-                    + (r(c)*ao(ao_off_g1_m1(jxyz, b) + l) &
-                     - r(b)*ao(ao_off_g1_m1(jxyz, c) + l))*ao(k) &
-                    - (r(c)*ao(ao_off_g1_m1(jxyz, b) + k) &
-                     - r(b)*ao(ao_off_g1_m1(jxyz, c) + k))*ao(l)
-
-                     gj(jxyz, ixyz) = gj(jxyz, ixyz) + f*D_0(l, k, iq(ixyz))
-
-                     if (jxyz == b) then
-                        f = - ao(ao_off_g0_m1(0, c) + l)*ao(k) &
-                            + ao(ao_off_g0_m1(0, c) + k)*ao(l)
-                        gj(jxyz, ixyz) = gj(jxyz, ixyz) + f*D_0(l, k, iq(ixyz))
-                     end if
-                     if (jxyz == c) then
-                        f = + ao(ao_off_g0_m1(0, b) + l)*ao(k) &
-                            - ao(ao_off_g0_m1(0, b) + k)*ao(l)
-                        gj(jxyz, ixyz) = gj(jxyz, ixyz) + f*D_0(l, k, iq(ixyz))
-                     end if
-                  end do
-               end do
-            end do
-         end do
-      end do
-
-      gj = -0.5d0*cval*gj
-
-   end subroutine
-
-   subroutine get_jblao_ll(perturbation_component, &
-                           D_0,                    &
-                           mat_dim,                &
-                           ao,                     &
-                           r,                      &
-                           j)
-
-!     --------------------------------------------------------------------------
-      character, intent(in)  :: perturbation_component
-      integer,   intent(in)  :: mat_dim
-      real(8),   intent(in)  :: D_0(mat_dim, mat_dim, *)
-      real(8),   intent(in)  :: ao(*)
-      real(8),   intent(in)  :: r(3)
-      real(8),   intent(out) :: j(3)
-!     --------------------------------------------------------------------------
-      integer                :: nr1, nr2, st1, st2, iblock, k, l, b, c, ixyz
-      real(8)                :: f
-!     --------------------------------------------------------------------------
-
-      select case (perturbation_component)
-         case ('X')
-            b = 2
-            c = 3
-         case ('Y')
-            b = 3
-            c = 1
-         case ('Z')
-            b = 1
-            c = 2
-      end select
-    
-      j = 0.0d0
-
-      do iblock = 1, nr_ao_blocks
-         nr1 = ao_block_nr(iblock)
-         st1 = ao_block_start(iblock)
-         nr2 = ao_block_nr(llss_block_partner(iblock, 0, 0))
-         st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
-         if ((nr1 < 1) .or. (nr2 < 1)) cycle
-         do k = st1, st1 + nr1 - 1
-            do l = st2, st2 + nr2 - 1
-               do ixyz = 1, 3
-                  f = (r(c)*ao(ao_off_g0_m1(0, b) + l) &
-                     - r(b)*ao(ao_off_g0_m1(0, c) + l))*ao(ao_off_g1_m0(ixyz, 0) + k) &
-                    + (r(c)*ao(ao_off_g0_m1(0, b) + k) &
-                     - r(b)*ao(ao_off_g0_m1(0, c) + k))*ao(ao_off_g1_m0(ixyz, 0) + l) &
-                    - (r(c)*ao(ao_off_g1_m1(ixyz, b) + l) &
-                     - r(b)*ao(ao_off_g1_m1(ixyz, c) + l))*ao(k) &
-                    - (r(c)*ao(ao_off_g1_m1(ixyz, b) + k) &
-                     - r(b)*ao(ao_off_g1_m1(ixyz, c) + k))*ao(l)
-
-                  j(ixyz) = j(ixyz) + f*D_0(l, k, iq(0))
-               end do
-            end do
-         end do
-      end do
-
-      j = -0.5d0*j
-
-   end subroutine
-#endif /* #ifdef MOD_UNRELEASED */
 
 end module

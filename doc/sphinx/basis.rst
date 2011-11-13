@@ -1,1 +1,57 @@
-../../basis/README.rst
+
+
+Relativistic Basis Sets for Use with Dirac
+==========================================
+
+There are now a fair number of basis sets developed for all-electron
+relativistic calculations, and in this directory one can find some of
+these basis sets.
+
+The authors of Dirac, however, recommend that the Dyall basis sets
+(see, for instance http://dirac.chem.sdu.dk/basisarchives/dyall/index.html)
+are used in Dirac calculations whenever they are available for the
+elements of interest. In order to make that usage as convenient as possible,
+the following files, containing all sets currently available at the
+URL above (published or to be published), are made available:
+
++------------------+-------------+----------------+
+|     quality      |  valence    |  core-valence  |
++==================+=============+================+
+|     double-zeta  |  dyall.v2z  |  dyall.cv2z    |
++------------------+-------------+----------------+
+|     triple-zeta  |  dyall.v3z  |  dyall.cv3z    |
++------------------+-------------+----------------+
+|  quadruple-zeta  |  dyall.v4z  |  dyall.cv4z    |
++------------------+-------------+----------------+
+
+While the division in "valence" and "core-valence" can be at times
+not so clear-cut as for lighter elements, the option was made to
+stick to the usual jargon of non-relativistic theory, particularly
+in relation to the "correlation-consistent" family of basis sets.
+
+Therefore, one should keep in mind that the major difference between
+the "valence" and "core-valence" sets above is that for the latter
+all the exponents contained in the archives found on the URL above
+are present, whereas for "valence" basis usually all but
+the exponents related to core correlation are included. Users are
+encouraged to look in these files and in the original archives
+published at Theor. Chem. Acc. (as, for instance, for the 5p TZ
+basis, http://dirac.chem.sdu.dk/basisarchives/dyall/5p_tz_archive)
+to get a feel for what is included in each case.
+
+In the case of p-block elements, additional files containing the
+corresponding diffuse functions, in addition to the the valence and
+core-valence basis sets mentione above, are also provided.
+
++------------------+--------------+-----------------+
+|     quality      |  valence     |  core-valence   |
++==================+==============+=================+
+|     double-zeta  |  dyall.av2z  |  dyall.acv2z    |
++------------------+--------------+-----------------+
+|     triple-zeta  |  dyall.av3z  |  dyall.acv3z    |
++------------------+--------------+-----------------+
+|  quadruple-zeta  |  dyall.av4z  |  dyall.acv4z    |
++------------------+--------------+-----------------+
+
+In case of errors or omissions on any of the files in this directory,
+users are kindly asked to contact the authors of Dirac.

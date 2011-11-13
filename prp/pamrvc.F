@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
@@ -3529,9 +3527,6 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
@@ -3576,9 +3571,6 @@ C
 C     Calculate AO Fock matrices
 C     --------------------------
 C
-#ifdef MOD_DNF
-      DODFLR = .TRUE.
-#endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
@@ -3587,9 +3579,6 @@ C
 
         if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_DNF
-        if (.not. df_fitvxc) then
-#endif
 
           if (ncsim > 0) then
             call quit('gmolitx1: mcscf-dft not implemented')
@@ -3621,41 +3610,9 @@ C
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-#ifdef MOD_DNF
-        end if
-#endif
 
         end if
 
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde_response .and. itmp%im_frozen) then
-
-           if (.not.dirac_cfg_dft_calculation) then
-!         generate standard density matrix
-              call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
-              call genden(work(kbuf), cmo, 1, iprxrs)
-           endif
-
-!          call fde_set_nz(nz)
-!          call fde_calculate_rspkernel(ntbas(0),work(kbuf),ndmatdmat,fock)
-
-          call integrate_fde(fde_mat_dim            = ntbas(0),
-     &                       fde_nz                 = nz,
-     &                       fde_dmat_0             = work(kbuf),
-     &                       fde_nr_dmat            = ndmat,
-     &                       fde_nr_fmat            = ndmat,
-     &                       fde_dmat               = fmo,
-     &                       fde_fmat               = fao,
-     &                       fde_fmat_pg_sym        = isymop,
-     &                       fde_dmat_pg_sym        = isymop,
-     &                       fde_dmat_ih_sym        = ihrmop,
-     &                       fde_response_order_mo = 1)
-
-          call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
-
-        endif
-#endif
 C
 C     Add solvent contributions
 C     -------------------------
@@ -4349,13 +4306,6 @@ C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
            iopt_spinfree = IOPT
-#ifdef MOD_MCSCF_spinfree
-!radovan:  the following line breaks .SPINFREE and .LEVY-LEBLOND
-!          magnetic response
-!          if (SPINFR) iopt_spinfree = 1
-!          rather do:
-           if (SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) iopt_spinfree = 1
-#endif
 !          IF(IOPT.GT.0) THEN
            IF(iopt_spinfree.GT.0) THEN
              CALL QBTRANS(JREP,'AOMO','S',D0,

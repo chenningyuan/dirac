@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
@@ -392,9 +390,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -572,15 +567,6 @@ C
 
         call interface_mo_write()
         
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
-
-           tdfde =  second() - tdfde
-        endif
-#endif
 
         tdxc = second()
 !       xc contribution
@@ -1237,16 +1223,6 @@ C
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         IF (DODSCF) THEN
-            using_diffdens = .true.
-            CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
-          ELSE
-             using_diffdens = .false.
-          endif
-      ENDIF
-#endif
 C
 C     ***********************************
 C     ***** Perform SCF-iterations ******
@@ -1389,14 +1365,6 @@ C
         tdfde= second()
         call interface_mo_write()
 
-#ifdef MOD_UNRELEASED
-        call fde_get_import_info(itmp)
-        if (dirac_cfg_fde .and. itmp%im_update_vemb) then
-           call fde_set_nz(nz)
-           call fde_calculate_embpot(ntbas(0),dmat,fock)
-           tdfde = second() - tdfde
-        endif
-#endif
         
         TDXC = SECOND()
 !       xc contribution
@@ -1614,9 +1582,6 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),

@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module input_reader
 
@@ -442,28 +440,6 @@ contains
          end if
       end if
 
-#ifdef MOD_UNRELEASED
-      if (kw_matches(word, '.LONDON')) then
-         visual_cfg_london = .true.
-         read(unit_in, *) visual_cfg_london_component
-      end if
-
-      if (kw_matches(word, '.NONE  ')) then
-         visual_cfg_london_none      = .true.
-      end if
-
-      if (kw_matches(word, '.NODIRE')) then
-         visual_cfg_london_skip_direct = .true.
-      end if
-
-      if (kw_matches(word, '.NOREOR')) then
-         visual_cfg_london_skip_ro = .true.
-      end if
-
-      if (kw_matches(word, '.NOKAPP')) then
-         visual_cfg_london_skip_kappa = .true.
-      end if
-#endif
 
       call check_whether_kw_found(word, kw_section)
 
@@ -515,9 +491,6 @@ contains
 
    subroutine read_input_openrsp(word, kw_section)
 
-#ifdef MOD_OPENRSP
-      use openrsp_cfg
-#endif
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -526,200 +499,7 @@ contains
       integer                          :: i
 !     --------------------------------------------------------------------------
 
-#ifndef MOD_OPENRSP
       call quit(kw_section//' not available in this version')
-#else
-
-      call reset_available_kw_list()
-
-      if (kw_matches(word, '.THRESH')) then
-         call kw_read(word, openrsp_cfg_threshold_response, openrsp_cfg_threshold_rhs)
-      end if
-
-      if (kw_matches(word, '.FREQ  ')) then
-         call kw_read(word, openrsp_cfg_nr_freq)
-         allocate(openrsp_cfg_freq(openrsp_cfg_nr_freq))
-         do i = 1, openrsp_cfg_nr_freq
-            call kw_read(word, openrsp_cfg_freq(i))
-         end do
-      end if
-
-      if (kw_matches(word, '.FREQ_P')) then
-!        give frequency for a process
-         call kw_read(word, openrsp_cfg_freq_process)
-      end if
-
-      if (kw_matches(word, '.SKIPEE')) then
-         openrsp_cfg_skip_pp = .true.
-      end if
-
-      if (kw_matches(word, '.SKIPEP')) then
-         openrsp_cfg_skip_pn = .true.
-      end if
-
-      if (kw_matches(word, '.SKIP1E')) then
-         openrsp_cfg_skip_1el = .true.
-      end if
-
-      if (kw_matches(word, '.ALPHA ')) then
-!        frequency-dependent \alpha
-         openrsp_cfg_alpha = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.0ALPHA')) then
-!        static \alpha
-         openrsp_cfg_alpha_lin_static = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.BETA  ')) then
-!        frequency-dependent \beta by the n+1 rule
-         openrsp_cfg_beta = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.BETA2N')) then
-!        frequency-dependent \beta by the 2n+1 rule
-         openrsp_cfg_beta_2np1 = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.0BETA ')) then
-!        static \beta
-         openrsp_cfg_beta_lin_static = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.GAMMA ')) then
-!        frequency-dependent \gamma
-         openrsp_cfg_gamma = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.0GAMMA')) then
-!        static \gamma
-         openrsp_cfg_gamma_lin_static = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.DC-SHG')) then
-         openrsp_cfg_gamma_lin_dc_shg = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.THG   ')) then
-         openrsp_cfg_gamma_lin_thg = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.IDRI  ')) then
-         openrsp_cfg_gamma_lin_idri = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.DC-KER')) then
-         openrsp_cfg_gamma_lin_dc_kerr = .true.
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.MAGNET')) then
-         openrsp_cfg_magnetizability = .true.
-         need_1el_o = .true.
-         need_1el_b = .true.
-      end if
-
-      if (kw_matches(word, '.QUADRU')) then
-         openrsp_cfg_quadrupole = .true.
-         need_1el_q = .true.
-      end if
-
-      if (kw_matches(word, '.ROA   ')) then
-         openrsp_cfg_roa = .true.
-         need_1el_f = .true.
-         need_1el_q = .true.
-         need_1el_o = .true.
-         need_1el_g = .true.
-      end if
-
-      if (kw_matches(word, '.CARS  ')) then
-         openrsp_cfg_cars = .true.
-         need_1el_f = .true.
-         need_1el_q = .true.
-         need_1el_o = .true.
-         need_1el_g = .true.
-      end if
-
-      if (kw_matches(word, '.PVBETA')) then
-         openrsp_cfg_pv_beta = .true.
-         need_1el_f = .true.
-         need_1el_g = .true.
-      end if
-
-      if (kw_matches(word, '.PVGAMM')) then
-         openrsp_cfg_pv_gamma = .true.
-         need_1el_f = .true.
-         need_1el_g = .true.
-      end if
-
-      if (kw_matches(word, '.NOLAO ')) then
-         openrsp_cfg_nolao = .true.
-      end if
-
-      if (kw_matches(word, '.EFGB  ')) then
-         openrsp_cfg_efgb = .true.
-         need_1el_f = .true.
-         need_1el_q = .true.
-         need_1el_v = .true.
-         need_1el_o = .true.
-         need_1el_b = .true.
-      end if
-
-      if (kw_matches(word, '.JONES ')) then
-         openrsp_cfg_jones = .true.
-         need_1el_f = .true.
-         need_1el_q = .true.
-         need_1el_o = .true.
-         need_1el_b = .true.
-      end if
-
-      if (kw_matches(word, '.CME   ')) then
-         openrsp_cfg_cme = .true.
-         need_1el_f = .true.
-         need_1el_q = .true.
-         need_1el_o = .true.
-         need_1el_b = .true.
-      end if
-
-      if (kw_matches(word, '.MOLGRD')) then
-         openrsp_cfg_dg_energy = .true.
-         need_1el_f = .true.
-         need_1el_g = .true.
-      end if
-
-      if (kw_matches(word, '.INTEGR')) then
-         openrsp_cfg_integrate = .true.
-      end if
-
-      if (kw_matches(word, '.VISUAL')) then
-         openrsp_cfg_visual = .true.
-      end if
-
-      if (kw_matches(word, '.ZZZ   ')) then
-!        calculate static derivatives E_{zzz...}
-!        of given order
-         openrsp_cfg_zzz = .true.
-         call kw_read(word, openrsp_cfg_zzz_order)
-         need_1el_f = .true.
-      end if
-
-      if (kw_matches(word, '.DELTA ')) then
-         openrsp_cfg_test_delta = .true.
-         need_1el_f = .true.
-      end if
-
-      call check_whether_kw_found(word, kw_section)
-#endif /* ifndef MOD_OPENRSP */
 
    end subroutine
 

@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -620,9 +618,6 @@ C     Fill in complete core-Fock matrix in complex form
 C
       CALL MOLTODIR(FMO,FMOM,NSTR,NSTRT,FORWARD,IPRTRA)
 
-#ifdef MOD_CAP
-      CALL CAPMFDADAPT(CAP,NSTRT,NSTR,FMO,FMOM,WORK(KFREE),LFREE)
-#endif
 C
 C     Write MRCONEE file
 C

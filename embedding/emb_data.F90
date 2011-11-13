@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 module fde_data
       
@@ -37,9 +35,6 @@ module fde_data
    public get_fde_grid_weight
    public fde_test_frozen_density
    public fde_test_active_density
-#ifdef MOD_UNRELEASED
-   public fde_import_frozen
-#endif
    public fde_import_static
    public fde_initialize_data
 
@@ -175,46 +170,6 @@ module fde_data
       call deallocp(gridp)
    end subroutine fde_import_static
 
-#ifdef MOD_UNRELEASED
-!   ----------------------------------------------------------------------------
-   subroutine fde_import_frozen
-!   ----------------------------------------------------------------------------
-      integer :: file_unit
-      character(len=60) :: file_name
-      integer :: i
-      real(kind=8), pointer :: fde_frozen_prp(:,:), gridp(:,:)
-      type(fde_files)  :: ftmp
-
-      call fde_get_files_info(ftmp)
-      
-      file_unit = ftmp%frozen%unit
-      file_name = ftmp%frozen%name
-
-      call fde_open_file(file_name,file_unit)
-      call read_grid(file_unit,gridp,fde_frozen_prp)
-      call fde_close_file(file_unit)
-
-      fde_grid_np = size(gridp,2)
-
-      call fde_initialize_data
-      
-      do i=1, fde_grid_np
-         fde_frozen_elpot(i) = fde_frozen_prp(1,i) + fde_frozen_prp(2,i)
-         fde_frozen_n(i)     = fde_frozen_prp(3,i)
-         fde_frozen_gn(i,1)  = fde_frozen_prp(4,i)
-         fde_frozen_gn(i,2)  = fde_frozen_prp(5,i)
-         fde_frozen_gn(i,3)  = fde_frozen_prp(6,i)
-         
-         fde_grid(1,i)       = gridp(1,i)
-         fde_grid(2,i)       = gridp(2,i)
-         fde_grid(3,i)       = gridp(3,i)
-         fde_grid(4,i)       = gridp(4,i)
-      enddo
-
-      call deallocp(fde_frozen_prp)
-      call deallocp(gridp)
-   end subroutine fde_import_frozen
-#endif /* MOD_UNRELEASED */ 
 
 
 !   ----------------------------------------------------------------------------

@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2011 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.vu.nl
-!dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onegen */
@@ -624,25 +622,6 @@ C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
 
-#ifdef MOD_ECP
-c
-C      *********************************************
-C      **                                         **
-C      **      this part adds ARGOS ARPP          **
-C      **    nuc-elec attraction integrals.       **
-C      **                                         **
-C      *********************************************
-      IF (ECPCALC) then
-         OPEN(59,FORM='UNFORMATTED',FILE='RECP_INT_C')
-         CALL MEMGET('REAL',KARPP,NNBBAST,WORK,KFREE,LFREE)
-         CALL READT(59,NNBBAST,WORK(KARPP))
-         close(59)
-         DO I=0,NNBBAST-1
-            WORK(KNUCS+I)=WORK(KNUCS+I)+WORK(KARPP+I)
-         ENDDO
-         CALL MEMREL('NUCAT1.ECPCALC',WORK,KWORK,KARPP,KFREE,LFREE)
-      ENDIF
-#endif
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
 
 C
